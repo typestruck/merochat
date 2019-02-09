@@ -1,0 +1,16 @@
+{
+	"commentStamp" : "EduardoAsafe 7/24/2018 19:11",
+	"super" : "Table",
+	"category" : "Melanchat-DB",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"uuid",
+		"created",
+		"active",
+		"recoverer"
+	],
+	"name" : "Recoveries",
+	"type" : "normal"
+}

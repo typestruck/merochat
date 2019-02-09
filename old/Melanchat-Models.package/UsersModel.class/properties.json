@@ -1,0 +1,15 @@
+{
+	"commentStamp" : "EduardoAsafe 7/22/2018 20:19",
+	"super" : "Users",
+	"category" : "Melanchat-Models",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"avatar",
+		"languages",
+		"tags"
+	],
+	"name" : "UsersModel",
+	"type" : "normal"
+}

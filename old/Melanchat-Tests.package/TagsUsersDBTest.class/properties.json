@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "",
+	"super" : "MelanchatDBTest",
+	"category" : "Melanchat-Tests",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"table"
+	],
+	"name" : "TagsUsersDBTest",
+	"type" : "normal"
+}

@@ -1,0 +1,1 @@
+I convert objects to dictionaries and vice versa.

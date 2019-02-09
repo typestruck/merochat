@@ -1,0 +1,16 @@
+{
+	"commentStamp" : "EduardoAsafe 7/22/2018 20:54",
+	"super" : "Object",
+	"category" : "Melanchat",
+	"classinstvars" : [
+		"singleton",
+		"configFile"
+	],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"configuration"
+	],
+	"name" : "MelanchatConfiguration",
+	"type" : "normal"
+}

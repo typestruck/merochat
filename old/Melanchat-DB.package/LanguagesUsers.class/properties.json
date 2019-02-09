@@ -1,0 +1,14 @@
+{
+	"commentStamp" : "EduardoAsafe 7/24/2018 21:32",
+	"super" : "Table",
+	"category" : "Melanchat-DB",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"speaker",
+		"language"
+	],
+	"name" : "LanguagesUsers",
+	"type" : "normal"
+}

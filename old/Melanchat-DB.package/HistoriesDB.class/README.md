@@ -1,0 +1,1 @@
+I am responsible for database access for chat history related queries.

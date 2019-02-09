@@ -1,0 +1,112 @@
+body {
+    background-color: rgb(38, 38, 38);
+    font-size: 18px;
+    color: white;
+}
+
+* {
+    background: inherit
+}
+
+svg {
+    margin: 0.4em;
+    overflow: visible;
+    stroke: white;
+}
+
+.svg-more {
+    fill: white;
+}
+
+h1, h2 {
+    font-weight: bold;
+}
+
+h3, h4 {
+    color: white;
+    font-weight: bold
+}
+
+a {
+    color: orange;
+}
+
+.selected a, a:hover, a:focus {
+    color: white;
+    text-decoration: none;
+}
+
+li:hover::after, li.selected::after {
+    color: white;
+}
+
+input, textarea {
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    color: white;
+}
+
+input[type="submit"], input[type="button"] {
+    border: 1px solid orange;
+    color: orange;
+    font-weight: bold;
+}
+
+::placeholder {
+    color: white;
+}
+
+.green-area * {
+    background: transparent
+}
+
+.recipient-message .text {
+    border-bottom: 2px solid orange;
+    border-right: 1px solid orange;
+   
+    background: initial;
+    border-radius: 0;
+    border-bottom-right-radius: 6px;
+}
+
+.sender-message .text {
+    background: initial;
+    border-left: 1px solid green;
+    border-bottom: 2px solid green;
+    border-radius: 0;
+    border-bottom-left-radius: 6px;
+}
+
+.orange-blurb a {
+    color: green;
+}
+
+.chatting {
+    border: 1px solid orange;
+    background: initial;
+}
+
+.dropdown-wrapper-visible .drop-menu{
+    background:  rgb(38, 38, 38);
+    border-color: white
+}
+
+svg.toolbar-action {
+    fill: white;
+}
+
+.CodeMirror{
+    background-color: rgb(38, 38, 38);
+        color: white;
+}
+
+.CodeMirror-cursor {
+    border-left:1px solid white
+}
+
+ .message-options {
+    background: rgb(38, 38, 38);
+
+    border-color: white;
+
+ }

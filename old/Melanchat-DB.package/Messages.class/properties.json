@@ -1,0 +1,17 @@
+{
+	"commentStamp" : "EduardoAsafe 7/30/2018 15:57",
+	"super" : "Table",
+	"category" : "Melanchat-DB",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"sender",
+		"recipient",
+		"date",
+		"content",
+		"status"
+	],
+	"name" : "Messages",
+	"type" : "normal"
+}

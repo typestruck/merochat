@@ -1,0 +1,11 @@
+{
+	"commentStamp" : "",
+	"super" : "MelanchatDBTest",
+	"category" : "Melanchat-Tests",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [ ],
+	"name" : "MelanchatMapperTest",
+	"type" : "normal"
+}

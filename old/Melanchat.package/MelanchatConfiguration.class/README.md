@@ -1,0 +1,1 @@
+I am used as a global for melanchat configuration.

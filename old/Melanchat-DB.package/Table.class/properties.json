@@ -1,0 +1,15 @@
+{
+	"commentStamp" : "EduardoAsafe 7/24/2018 22:02",
+	"super" : "Object",
+	"category" : "Melanchat-DB",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"id",
+		"db",
+		"model"
+	],
+	"name" : "Table",
+	"type" : "normal"
+}

@@ -1,0 +1,1 @@
+I represent a database table with the primary key field.

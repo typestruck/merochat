@@ -1,0 +1,1 @@
+I represent the users table.

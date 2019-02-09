@@ -1,0 +1,17 @@
+{
+	"commentStamp" : "EduardoAsafe 7/26/2018 17:16",
+	"super" : "Object",
+	"category" : "Melanchat-DB",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"connectionString",
+		"sql",
+		"table",
+		"parameters",
+		"transactionConnection"
+	],
+	"name" : "MelanchatDB",
+	"type" : "normal"
+}

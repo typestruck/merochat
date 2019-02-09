@@ -1,0 +1,1 @@
+I hold the fieds query and parameters to easy communication between classes.

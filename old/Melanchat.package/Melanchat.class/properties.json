@@ -1,0 +1,14 @@
+{
+	"commentStamp" : "EduardoAsafe 3/23/2018 21:55",
+	"super" : "Object",
+	"category" : "Melanchat",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"imSockets",
+		"configFile"
+	],
+	"name" : "Melanchat",
+	"type" : "normal"
+}

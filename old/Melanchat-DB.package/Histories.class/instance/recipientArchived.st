@@ -1,0 +1,3 @@
+accessing
+recipientArchived
+	^ recipientArchived

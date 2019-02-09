@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Flamenco');
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Open sans", "sans serif";
+    font-size: 17px;
+    line-height: 1.42857143;
+    color: #3f414e;
+    background: #fff;
+    display: grid;
+    grid-template-rows: 1fr auto;
+}
+
+footer {
+    grid-row-start: 2;
+    grid-row-end: 3;
+    text-align: center;
+    padding: 10px;
+}
+
+label {
+    display: block
+}
+
+h1, h2, h3, h4 {
+    -webkit-margin-before: 0.0em;
+    -webkit-margin-after: 0.0em;
+    font-weight: normal;
+    color: green;
+}
+
+img {
+    max-width: 100%;
+}
+
+h1, h2 {
+    font-family: "Flamenco";
+}
+
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.6em;
+}
+
+h3 {
+    font-size: 1.1em;
+}
+
+a {
+    color: green;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a:hover {
+    color: orange;
+}
+
+input {
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+input[type="submit"], input[type="button"] {
+    border: 1px solid green;
+    color: green;
+    cursor: pointer;
+    background: MintCream;
+    font-weight: bold;
+}
+
+ul {
+    -webkit-padding-start: 0;
+}
+
+ul li {
+    display: inline;
+}
+
+.ul-vertical li {
+    display: block;
+    padding: 10px 0px;
+}
+
+i.watermelon, .ul-vertical li::before, ul:not(.ul-vertical) li::after, ul:not(.ul-vertical) li:first-child::before {
+    content: "";
+    font-size: 0.5em;
+    margin: 0 10px;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+ul:not(.ul-vertical) li::after {
+    content: "🍉";
+    color: red;
+}
+
+.ul-vertical li::before {
+    content: "🍉";
+    color: red;
+}
+
+ul:not(.ul-vertical) li:hover::after, ul:not(.ul-vertical) li.selected::after {
+    color: orange;
+}
+
+ul li:last-child::after {
+    content: "";
+}
+
+.landing {
+    display: grid;
+    grid-gap: 30px;
+    justify-items: center;
+}
+
+.green-area {
+    display: grid;
+    grid-gap: 10px;
+    background: green;
+    width: 100%;
+    padding-top: 50px;
+    padding-bottom: 70px;
+    border-radius: 5px;
+    color: white;
+}
+
+.green-area h1, .green-area h2, .green-area h3, .green-area h4 {
+    text-align: center;
+    font-weight: bold;
+}
+
+.green-area h1, .green-area h2, .green-area h3, .green-area h4, .green-area a {
+    color: white;
+}
+
+.green-area label {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.heading h1 {
+    font-size: 3em;
+}
+
+.heading h4 {
+    font-size: 1.1em;
+}
+
+.header {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 50px;
+}
+
+.logo {
+    font-family: "Flamenco";
+    font-size: 2.8em;
+    font-weight: bold;
+}
+
+.sign-up {
+    justify-self: center;
+}
+
+.sign-up input {
+    height: 60px;
+    display: block;
+    width: 500px;
+    padding: 20px;
+    font-size: 1.1em;
+    border-radius: 5px;
+}
+
+.sign-up input[type=button] {
+    background: #ea042b;
+    color: white;
+    font-weight: bold;
+    border: none;
+    outline: none
+}
+
+.sign-up input[type="text"], .sign-up input[type="password"] {
+    margin: 15px 0px;
+}
+
+.landing p {
+    text-align: justify
+}
+
+.selected a, a:hover, a:focus {
+    color: orange;
+}
+
+.sign-up-a {
+    font-size: 1.5em;
+    font-family: Flamenco;
+    text-decoration: underline;
+}
+
+.h1-er {
+    font-size: 2.3em;
+}
+
+.login {
+    align-self: center
+}
+
+.login a {
+    font-weight: bold;
+    border: 1px solid white;
+    border-radius: 3px;
+    padding: 10px 15px;
+}
+
+.login a:hover {
+    border: 1px solid orange;
+}
+
+.loading {
+    display: none;
+    z-index: 200;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+.blurb {
+    margin: 20px 10%;
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+.orange-blurb {
+    background: orange/*#ea042b*/
+    ;
+    color: white;
+    width: 100%;
+}
+
+.orange-blurb * {
+    background: orange/*#ea042b*/
+    ;
+}
+
+.red-call {
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-bottom: 20px;
+    background: #ea042b;
+    text-align: center;
+}
+
+.red-call * {
+    background: #ea042b;
+}
+
+.padding-gap {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.orange-blurb h2, .red-call h1 {
+    color: white;
+}
+
+.bold {
+    font-weight: bold
+}

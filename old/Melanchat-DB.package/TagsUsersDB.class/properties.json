@@ -1,0 +1,11 @@
+{
+	"commentStamp" : "EduardoAsafe 7/24/2018 21:47",
+	"super" : "TagsUsers",
+	"category" : "Melanchat-DB",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [ ],
+	"name" : "TagsUsersDB",
+	"type" : "normal"
+}

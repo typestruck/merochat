@@ -1,0 +1,1 @@
+I am responsible for database access for user tags related queries.

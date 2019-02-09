@@ -1,0 +1,1 @@
+I am a plain object representing the users table.
