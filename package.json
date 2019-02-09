@@ -1,0 +1,22 @@
+{
+  "name": "melanchat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "repl-s": "pulp repl --src-path src/server --include src/shared/",
+    "repl-c": "pulp repl --src-path src/client --include src/shared/",
+    "watch-s": "pulp --watch run -o output/server --src-path src/server --include src/shared/",
+    "watch-c": "pulp --watch browserify -o output/client --src-path src/client --include src/shared/ --to src/client/javascript/m.bundle.js --source-maps",
+    "watch": "npm run watch-s & npm run watch-c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+
+  }
+}
