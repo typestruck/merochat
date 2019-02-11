@@ -98,7 +98,7 @@ Besides the usual account sign up found in most websites, users may be registere
 
 Mockup of landing page with call to action for registering a new account:
 
-![landing page](images/registerlanding_page.png) [#6](https://github.com/azafeh/melanchat/issues/6)
+![landing page](images/registerlanding_page.png)
 
 * This page is only available to non logged in Users
 

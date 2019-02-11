@@ -62,7 +62,7 @@ Mockup of user menu component:
 
     d) Link to the Backer help page
 
-    e) [Logout](../user/requirements.md#logout) 
+    e) [Logout](../user/requirements.md#logout)
 
 ## Filters
 
@@ -136,7 +136,7 @@ Mockup of contact list component:
 
 ## Suggestions
 
-A suggestion is a new(or from the contact list) User picked by the application for the current User to chat with. 
+A suggestion is a new(or from the contact list) User picked by the application for the current User to chat with.
 
 * Users can skip ahead suggestions and also see the previous ones again
 
@@ -164,7 +164,7 @@ Suggestion component mockup:
 
 ![suggestions](images/suggestions.png)
 
-* When an User first sends a messages to a suggestion, or clicks on the contact list to chat up a contact, this component shrinks: 
+* When an User first sends a messages to a suggestion, or clicks on the contact list to chat up a contact, this component shrinks:
 
 ![shrunk menu](images/suggestions_chatting.png)
 
@@ -182,7 +182,7 @@ Suggestion component mockup:
 
 7. Suggestion list of tags
 
-8. privates notes for this suggestion 
+8. privates notes for this suggestion
 
 9.  Options
 
@@ -250,7 +250,7 @@ c) See message date and message status
 
 5. Second Message
 
-6.  Options for outgoing messages 
+6.  Options for outgoing messages
 
     Mockup for drop down menu:
 
@@ -272,13 +272,13 @@ Mockup of chat input component:
 
 ![chat input](images/chat_input.png)
 
-1. Emojis [#1](https://github.com/azafeh/melanchat/issues/1)
+1. Emojis
 
 2. Text input
 
-    * Markdown able [#2](https://github.com/azafeh/melanchat/issues/2) [#4](https://github.com/azafeh/melanchat/issues/4) 
-    
-    * Image/video able(both inline markdown and drag drop) [#4](https://github.com/azafeh/melanchat/issues/5)
+    * Markdown able
+
+    * Image/video able(both inline markdown and drag drop)
 
 3.  Chat input options
 
@@ -286,9 +286,9 @@ Mockup of chat input component:
 
     ![chat input options](images/chat_input_options_drop_down_menu.png)
 
-    a) Whether to send messages with enter or pressing a button [#3](https://github.com/azafeh/melanchat/issues/3)
- 
-    b) Image/video upload 
+    a) Whether to send messages with enter or pressing a button
+
+    b) Image/video upload
 
     c) Upload an audio message
 
