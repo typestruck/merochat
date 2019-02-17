@@ -12,6 +12,7 @@
     "purescript-effect": "^2.0.1",
     "purescript-httpure": "^0.7.1",
     "purescript-affjax": "^7.0.2",
+    "purescript-smolder": "^11.0.1",
     "purescript-halogen": "^4.0.0"
   },
   "devDependencies": {
