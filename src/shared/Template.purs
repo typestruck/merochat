@@ -1,30 +1,47 @@
 -- | Basic functions to compose templates.
 module Template where
 
-import Text.Smolder.HTML
-import Text.Smolder.HTML.Attributes
+import Hedwig as H
+import Data.Unit(Unit)
+import Hedwig(Html)
 import Prelude(($))
 
-template { script, css, content  }=
-	html ! lang "en" $ do
-		head $ do
-			meta ! charset "UTF-8"
-			meta ! name "viewport" ! content "width=device-width, initial-scale=1.0"
-			link ! rel "shortcut icon" ! type' "image/ico" ! href "/media/favicon.ico"
-			link ! rel "stylesheet" ! type' "text/css" href ! "/css/base.css"
-    			title $ text "MelanChat (friendly) random webchat"
-	body $ do
-	    div ! class' "content" $ do
-	        header $ do
-	            a ! href "/" ! class' "logo" $ text "MelanChat"
-	            div class' ! "login" $
-	                a ! href "/login" $ text "Login"
-	        main content
-	        div ! id "loading" ! class' "loading"
-	    footer
-	        a ! href "/" $ img ! src "/media/logo.png"
-	        ul $ do
-	            li $ a ! href "#" $ text "Help"
-	            li $ a ! href "https://github.com/azafeh/melanchat" $ text "Source code"
-	            li $ a ! href "#" $ text "Become a backer"
-	            li $ a ! href "/login" $ text "Login"
+type Html' = Html Unit
+type Parameters = { javascript :: Html', css :: Html', content :: Html', footer :: Html'}
+
+defaultParameters :: Parameters
+defaultParameters = { javascript : H.script [] [], css : H.link [] [], content : H.div [] [], footer : H.footer [] [] }
+
+template :: Parameters -> Html'
+template { javascript : javascript, css : css, content : content, footer : footer } =
+	H.html [H.lang "en"] [
+		H.head [] [
+			H.meta [H.charset "UTF-8"] [],
+			H.meta [H.name "viewport", H.content "width=device-width, initial-scale=1.0"] [],
+			H.link [H.rel "shortcut icon", H.type' "image/ico", H.href "/media/favicon.ico"] [],
+			H.link [H.rel "stylesheet", H.type' "text/css", H.href "/css/base.css"] [],
+			css,
+			H.title' [] [H.text "MelanChat (friendly) random webchat"]
+		],
+		H.body [] [
+			H.div [H.class' "content"] [
+				H.main [H.id "main"] [content],
+				H.div [H.id "loading", H.class' "loading"] []
+			],
+			footer,
+			javascript
+		]
+	]
+
+externalFooter :: Html'
+externalFooter =
+	H.footer [] [
+		H.a [H.href "/"] [H.img [H.src "/media/logo.png"] []],
+		H.ul [] [
+			H.li [] [H.a [H.href "#"] [H.text "Help"]],
+			H.li [] [H.a [H.href "https://github.com/azafeh/melanchat"] [H.text "Source code"]],
+            H.li [] [H.a [H.href "#"] [H.text "Become a backer"]],
+            H.li [] [H.a [H.href "/login"] [H.text "Login"]]
+		]
+	]
+
