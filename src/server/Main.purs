@@ -9,6 +9,8 @@ import HTTPure(ServerM)
 import Template.Landing as L
 import Effect.Class as E
 
+--TODO config files
+
 main :: ServerM
 main =  H.serve 8000 router $ C.log "Server now up on port 8000"
         where router { path : [] } = do
