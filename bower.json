@@ -12,7 +12,11 @@
     "purescript-effect": "^2.0.1",
     "purescript-httpure": "^0.7.1",
     "purescript-affjax": "^7.0.2",
-    "purescript-hedwig": "https://github.com/azafeh/purescript-hedwig.git#70f2adedc9d0a711c724f43d6aac5889dad48f60"
+    "purescript-hedwig": "https://github.com/azafeh/purescript-hedwig.git#70f2adedc9d0a711c724f43d6aac5889dad48f60",
+    "purescript-node-fs-aff": "^6.0.0",
+    "purescript-node-buffer": "^5.0.0",
+    "purescript-simple-json": "^4.4.0",
+    "purescript-exceptions": "^4.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"

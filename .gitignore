@@ -11,3 +11,4 @@ generated-docs
 *.bundle.*
 .vscode
 src/client/media/upload
+configuration.json
