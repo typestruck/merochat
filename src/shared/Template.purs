@@ -20,8 +20,8 @@ template { javascript : javascript, css : css, content : content, footer : foote
 		H.head [] ([
 			H.meta [H.charset "UTF-8"] [],
 			H.meta [H.name "viewport", H.content "width=device-width, initial-scale=1.0"] [],
-			H.link [H.rel "shortcut icon", H.type' "image/ico", H.href "/media/favicon.ico"] [],
-			H.link [H.rel "stylesheet", H.type' "text/css", H.href "/css/base.css"] [],
+			H.link [H.rel "shortcut icon", H.type' "image/ico", H.href "/client/media/favicon.ico"] [],
+			H.link [H.rel "stylesheet", H.type' "text/css", H.href "/client/css/base.css"] [],
 			H.title' [] [H.text "MelanChat (friendly) random webchat"]
 		] <> css),
 		H.body [] ([
@@ -35,7 +35,7 @@ template { javascript : javascript, css : css, content : content, footer : foote
 externalFooter :: Array Html'
 externalFooter = [
 	H.footer [] [
-		H.a [H.href "/"] [H.img [H.src "/media/logo.png"] []],
+		H.a [H.href "/"] [H.img [H.src "/client/media/logo.png"] []],
 		H.ul [] [
 			H.li [] [H.a [H.href "#"] [H.text "Help"]],
 			H.li [] [H.a [H.href "https://github.com/azafeh/melanchat"] [H.text "Source code"]],

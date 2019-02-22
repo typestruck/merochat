@@ -10,7 +10,7 @@ landing :: Effect String
 landing = H.render $ T.template defaultParameters { footer = externalFooter, content = content, javascript = javascript }
 	where   javascript = [
 			H.script [H.src "https://www.google.com/recaptcha/api.js"] [],
-    			H.script [H.type' "text/javascript", H.src "/public/javascript/landing.bundle.js"] []
+    			H.script [H.type' "text/javascript", H.src "/client/javascript/landing.bundle.js"] []
 		]
 		content = [
 		H.div [H.class' "landing"] [
