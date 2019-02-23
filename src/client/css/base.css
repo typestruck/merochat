@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Flamenco');
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Open sans", "sans serif";
+    font-size: 17px;
+    line-height: 1.42857143;
+    color: #3f414e;
+    background: #fff;
+    display: grid;
+    grid-template-rows: 1fr auto;
+}
+
+label {
+    display: block
+}
+
+h1, h2, h3, h4 {
+    -webkit-margin-before: 0.0em;
+    -webkit-margin-after: 0.0em;
+    font-weight: normal;
+    color: green;
+}
+
+img {
+    max-width: 100%;
+}
+
+h1, h2 {
+    font-family: "Flamenco";
+}
+
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.6em;
+}
+
+h3 {
+    font-size: 1.1em;
+}
+
+a {
+    color: green;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a:hover {
+    color: orange;
+}
+
+.logo {
+    font-family: "Flamenco";
+    font-size: 2.8em;
+    font-weight: bold;
+}
+
+input{
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+input[type="submit"], input[type="button"] {
+    border: 1px solid green;
+    color: green;
+    cursor: pointer;
+    background: MintCream;
+
+    font-weight: bold;
+}
+
+ul {
+    -webkit-padding-start: 0;
+}
+
+ul li {
+    display: inline;
+}
+
+i.watermelon, .ul li::after, ul li:first-child::before {
+    content: "";
+    font-size: 0.5em;
+    margin: 0 10px;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+ul li::after {
+    content: "🍉";
+    color: red;
+}
+
+ul li:hover::after, ul li.selected::after {
+    color: orange;
+}
+
+ul li:last-child::after {
+    content: "";
+}
+
+textarea:focus, input:focus {
+    border: orange 1px solid;
+}
+
+.loading{
+    display: none;
+    z-index: 200;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+}
+
+.hidden{
+    display: none;
+}
