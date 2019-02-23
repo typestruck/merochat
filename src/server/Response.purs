@@ -1,51 +1,35 @@
 module Response(html, serveDevelopmentFile) where
 
 import HTTPure as H
-import HTTPure.Headers as HH
-import HTTPure (ResponseM)
-
-import Data.MediaType (MediaType(MediaType))
-import Data.MediaType.Common as MediaType
-import Data.String as String
-import Effect.Aff (Aff, catchError)
-import HTTPure as HTTPure
+import HTTPure (ResponseM, Headers)
+import Node.Encoding(Encoding(..))
+import Data.String as S
+import Effect.Aff (catchError)
 import Node.FS.Aff as FS
-import Node.Path (FilePath)
-import Node.Path as Path
+import Effect.Class(liftEffect)
+import Effect.Console(log)
+import Prelude(bind, ($), (<>), const, discard)
+import Node.Path as P
 
 html :: String -> ResponseM
-html contents = H.ok' headers contents
-	where headers = HH.header "Content-Type" "text/html"
+html contents = H.ok' (contentType "_.html") contents
 
 serveDevelopmentFile :: String -> String -> ResponseM
-serveDevelopmentFile = ?hole
+serveDevelopmentFile folder fileName = catchError read (const H.notFound)
+ 	where read = do
+      		contents <- FS.readTextFile UTF8 $ "src/client/" <> folder <> "/" <> fileName
+      		H.ok' (contentType fileName) contents
 
-serveFile :: FilePath -> Aff HTTPure.Response
-serveFile path =
-  catchError read (const HTTPure.notFound)
-  where
-    read = do
-      contents <- FS.readFile path
-      HTTPure.binaryResponse' 200 (contentType path) contents
-
-contentType :: FilePath -> HTTPure.Headers
-contentType path =
-  HTTPure.header "Content-Type" mediaType
-  where
-    (MediaType mediaType) = extMediaType (Path.extname path)
-
-extMediaType :: FilePath -> MediaType
-extMediaType ext =
-  case String.toLower ext of
-    ".json" -> MediaType.applicationJSON
-    ".js" -> MediaType.applicationJavascript
-    ".gif" -> MediaType.imageGIF
-    ".jpeg" -> MediaType.imageJPEG
-    ".jpg" -> MediaType.imageJPEG
-    ".png" -> MediaType.imagePNG
-    ".csv" -> MediaType.textCSV
-    ".html" -> MediaType.textHTML
-    ".htm" -> MediaType.textHTML
-    ".txt" -> MediaType.textPlain
-    ".xml" -> MediaType.textXML
-    _ -> MediaType.applicationOctetStream
+contentType :: String -> Headers
+contentType path = H.header "Content-Type" mediaType
+  	where   mediaType =
+			case S.toLower $ P.extname path of
+		                    ".json" -> "application/json"
+				    ".js" -> "application/javascript"
+				    ".gif" -> "image/gif"
+				    ".jpeg" -> "image/jpeg"
+				    ".jpg" -> "image/jpeg"
+				    ".png" -> "image/png"
+				    ".css" -> "text/css"
+				    ".html" -> "text/html"
+				    _ -> "application/octet-stream"

@@ -13,5 +13,5 @@ type Configuration = { port :: Int, development :: Boolean }
 
 readConfiguration :: Effect Configuration
 readConfiguration = do
-	contents <- readTextFile UTF8 "../../configuration.json"
-	either pure (const $ throwException $ error "Could not parse configuration") $ readJSON contents
+	contents <- readTextFile UTF8 "configuration.json"
+	either (const $ throwException $ error "Could not parse configuration") pure $ readJSON contents

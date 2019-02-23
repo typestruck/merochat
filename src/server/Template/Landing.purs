@@ -7,10 +7,13 @@ import Effect(Effect)
 import Prelude(($))
 
 landing :: Effect String
-landing = H.render $ T.template defaultParameters { footer = externalFooter, content = content, javascript = javascript }
+landing = H.render $ T.template defaultParameters { footer = externalFooter, content = content, javascript = javascript, css = css }
 	where   javascript = [
 			H.script [H.src "https://www.google.com/recaptcha/api.js"] [],
     			H.script [H.type' "text/javascript", H.src "/client/javascript/landing.bundle.js"] []
+		]
+		css = [
+			H.link [H.rel "stylesheet", H.type' "text/css", H.href "/client/css/landing.css"] []
 		]
 		content = [
 		H.div [H.class' "landing"] [
