@@ -4,6 +4,7 @@ module Template where
 import Hedwig as H
 import Data.Unit(Unit)
 import Hedwig(Html)
+import Data.Array((:))
 import Prelude((<>))
 
 --TODO memoization, caching
@@ -24,12 +25,7 @@ template { javascript : javascript, css : css, content : content, footer : foote
 			H.link [H.rel "stylesheet", H.type' "text/css", H.href "/client/css/base.css"] [],
 			H.title' [] [H.text "MelanChat (friendly) random webchat"]
 		] <> css),
-		H.body [] ([
-			H.div [H.class' "content"] [
-				H.main [H.id "main"] content,
-				H.div [H.id "loading", H.class' "loading"] []
-			]
-		] <> footer <> javascript)
+		H.body [] (H.div [H.id "loading", H.class' "loading"] [] : content <> footer <> javascript)
 	]
 
 externalFooter :: Array Html'

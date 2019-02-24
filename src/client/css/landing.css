@@ -1,5 +1,13 @@
+h2 {
+    text-align: center
+}
+
 ul {
     -webkit-padding-start: 0;
+}
+
+ul li::after {
+    content: ''
 }
 
 ul li {
@@ -11,7 +19,11 @@ ul li {
     padding: 10px 0px;
 }
 
-i.watermelon, .ul-vertical li::before, ul:not(.ul-vertical) li::after, ul:not(.ul-vertical) li:first-child::before {
+p {
+    text-align: justify
+}
+
+i.watermelon, ul:not(.ul-vertical) li::after {
     content: "";
     font-size: 0.5em;
     margin: 0 10px;
@@ -19,14 +31,13 @@ i.watermelon, .ul-vertical li::before, ul:not(.ul-vertical) li::after, ul:not(.u
     vertical-align: middle;
 }
 
-ul:not(.ul-vertical) li::after {
-    content: "🍉";
-    color: red;
-}
-
 .ul-vertical li::before {
+    display: inline-flex;
+    vertical-align: middle;
+    margin: 0 10px;
     content: "🍉";
     color: red;
+    font-size: 0.7em;
 }
 
 ul:not(.ul-vertical) li:hover::after, ul:not(.ul-vertical) li.selected::after {
@@ -203,8 +214,14 @@ ul li:last-child::after {
 }
 
 footer {
-    grid-row-start: 2;
-    grid-row-end: 3;
     text-align: center;
     padding: 10px;
+}
+
+a:hover {
+    color: white
+}
+
+footer a:hover {
+    color: orange
 }

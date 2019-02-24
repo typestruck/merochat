@@ -10,7 +10,7 @@
     "purescript-prelude": "^4.1.0",
     "purescript-console": "^4.2.0",
     "purescript-effect": "^2.0.1",
-    "purescript-httpure": "^0.7.1",
+    "purescript-httpure": "https://github.com/cprussin/purescript-httpure.git#cca1ca3986d3fc00fe7d84a4168c76989ee92c48",
     "purescript-affjax": "^7.0.2",
     "purescript-hedwig": "https://github.com/azafeh/purescript-hedwig.git#70f2adedc9d0a711c724f43d6aac5889dad48f60",
     "purescript-node-buffer": "^5.0.0",

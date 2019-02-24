@@ -17,7 +17,7 @@ html contents = H.ok' (contentType "_.html") contents
 serveDevelopmentFile :: String -> String -> ResponseM
 serveDevelopmentFile folder fileName = catchError read (const H.notFound)
  	where read = do
-      		contents <- FS.readTextFile UTF8 $ "src/client/" <> folder <> "/" <> fileName
+      		contents <- FS.readFile $ "src/client/" <> folder <> "/" <> fileName
       		H.ok' (contentType fileName) contents
 
 contentType :: String -> Headers
