@@ -12,7 +12,9 @@ landing = do
 	H.render $ contents
 	where   javascript = [
 			H.script [H.src "https://www.google.com/recaptcha/api.js"] [],
-    			H.script [H.type' "text/javascript", H.src "/client/javascript/landing.bundle.js"] []
+    			H.script [H.type' "text/javascript", H.src "/client/javascript/landing.bundle.js"] [],
+			--we need a global callback for grecaptha so we need to directly call the bundled code
+			H.script [H.type' "text/javascript"] [H.text "Landing.main()"]
 		]
 		css = [
 			H.link [H.rel "stylesheet", H.type' "text/css", H.href "/client/css/landing.css"] []
@@ -35,8 +37,8 @@ landing = do
 		                H.div [H.class' "sign-up"] [
 		                	H.input [H.type' "text", H.id "email", H.placeholder "Email"] [],
 		                    	H.input [H.type' "password", H.id "password", H.placeholder "Password"] [],
-		                    	H.div [H.class' "g-recaptcha", H.property "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", H.id "captcha", H.property "data-callback" "completeSignUp", H.property "data-size" "invisible"] [],
-		                    	H.input [H.type' "button", H.id "create-account", H.value "Create account"] []
+		                    	H.div [H.class' "g-recaptcha", H.property "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", H.id "captcha", H.property "data-callback" "Landing.completeRegistration", H.property "data-size" "invisible"] [],
+		                    	H.input [H.type' "button", H.id "register", H.value "Create account"] []
 				]
 			]
 		],

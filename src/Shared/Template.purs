@@ -25,7 +25,7 @@ defaultParameters = { javascript : [], css : [], content : [], footer : [], nigh
 template :: Parameters -> Effect Html'
 template parameters = do
 	Time hour _ _ _ <- E.nowTime
-	pure $ templateWith parameters {nightTheme = true}-- (fromEnum hour) >= 17 && (fromEnum hour) <= 7}
+	pure $ templateWith parameters {nightTheme = false}-- (fromEnum hour) >= 17 && (fromEnum hour) <= 7}
 
 templateWith :: Parameters -> Html'
 templateWith parameters =

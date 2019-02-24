@@ -66,6 +66,8 @@ a:hover {
 
 input{
     border-radius: 3px;
+    background-color: white;
+    color:#3f414e;
     border: 1px solid #ccc;
 }
 

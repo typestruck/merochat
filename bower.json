@@ -18,9 +18,17 @@
     "purescript-exceptions": "^4.0.0",
     "purescript-node-fs": "^5.0.0",
     "purescript-now": "^4.0.0",
-    "purescript-enums": "^4.0.1"
+    "purescript-enums": "^4.0.1",
+    "purescript-web-uievents": "^2.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"
+  },
+  "resolutions": {
+    "purescript-web-dom": "^2.0.0",
+    "purescript-web-events": "^2.0.0",
+    "purescript-web-file": "^2.0.0",
+    "purescript-web-html": "^2.0.0",
+    "purescript-web-storage": "^3.0.0"
   }
 }
