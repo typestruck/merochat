@@ -4,10 +4,12 @@ import Hedwig as H
 import Template as T
 import Template(defaultParameters, externalFooter)
 import Effect(Effect)
-import Prelude(($))
+import Prelude(($), bind)
 
 landing :: Effect String
-landing = H.render $ T.template defaultParameters { footer = externalFooter, content = content, javascript = javascript, css = css }
+landing = do
+	contents <- T.template defaultParameters { footer = externalFooter, content = content, javascript = javascript, css = css }
+	H.render $ contents
 	where   javascript = [
 			H.script [H.src "https://www.google.com/recaptcha/api.js"] [],
     			H.script [H.type' "text/javascript", H.src "/client/javascript/landing.bundle.js"] []

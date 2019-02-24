@@ -16,7 +16,9 @@
     "purescript-node-buffer": "^5.0.0",
     "purescript-simple-json": "^4.4.0",
     "purescript-exceptions": "^4.0.0",
-    "purescript-node-fs": "^5.0.0"
+    "purescript-node-fs": "^5.0.0",
+    "purescript-now": "^4.0.0",
+    "purescript-enums": "^4.0.1"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"
