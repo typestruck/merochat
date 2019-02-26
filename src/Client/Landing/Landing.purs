@@ -15,4 +15,5 @@ completeRegistration captchaResponse = R.registerOrLogin Register false captchaR
 
 main :: Effect Unit
 main = do
-	C.addEventListener "#register" click (const (R.registerOrLogin Register true ""))
+	register <- C.querySelector "#register"
+	C.addEventListener register click (const (R.registerOrLogin Register true ""))
