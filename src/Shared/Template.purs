@@ -1,5 +1,5 @@
 -- | Basic functions to compose templates.
-module Template(template, externalFooter, defaultParameters) where
+module Shared.Template(template, externalFooter, defaultParameters) where
 
 import Data.Array ((:))
 import Data.Unit (Unit)
