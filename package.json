@@ -10,7 +10,7 @@
     "repl-s": "pulp repl --src-path src/Server --include src/Shared/",
     "watch-s": "pulp --watch run -o output/Server --src-path src/Server --include src/Shared/",
 
-    "repl-c": "pulp repl --src-path src/Client --include src/Shared/",
+    "repl-l": "pulp repl --src-path src/Client/Landing --include src/Shared:src/Client/Common:src/Client/External",
 
     "w-landing": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Landing.Main --include src/Shared:src/Client/Common:src/Client/External --to src/Client/javascript/landing.bundle.js --source-maps --standalone Landing",
 

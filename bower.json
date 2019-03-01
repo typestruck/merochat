@@ -10,7 +10,7 @@
     "purescript-prelude": "^4.1.0",
     "purescript-console": "^4.2.0",
     "purescript-effect": "^2.0.1",
-    "purescript-httpure": "https://github.com/cprussin/purescript-httpure.git#cca1ca3986d3fc00fe7d84a4168c76989ee92c48",
+    "purescript-httpure": "https://github.com/cprussin/purescript-httpure.git#92408f9636240d6c0bc02c5b5285c0fb41baab25",
     "purescript-affjax": "^8.0.0",
     "purescript-hedwig": "https://github.com/azafeh/purescript-hedwig.git#70f2adedc9d0a711c724f43d6aac5889dad48f60",
     "purescript-node-buffer": "^5.0.0",
@@ -20,7 +20,9 @@
     "purescript-now": "^4.0.0",
     "purescript-enums": "^4.0.1",
     "purescript-web-uievents": "^2.0.0",
-    "purescript-argonaut-core": "^4.0.1"
+    "purescript-argonaut-core": "^4.0.1",
+    "purescript-argonaut-codecs": "^5.1.2",
+    "purescript-browser-cookies": "^0.0.1"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"

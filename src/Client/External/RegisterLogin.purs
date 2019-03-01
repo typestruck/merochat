@@ -4,43 +4,63 @@ import Prelude
 
 import Common as C
 import Effect (Effect)
+import Effect.Class (liftEffect)
 import Effect.Console (log)
 import Type.Data.Boolean (kind Boolean)
 import Data.String as S
-import Affjax as AJ
+import Data.Maybe(Maybe(..))
 import Effect.Aff as A
-import Shared.Types(RegisterLogin(..))
-import Affjax.ResponseFormat as RF
-import Affjax.RequestBody as RB
+import Shared.Types
+import Data.Unit(unit)
+import Browser.Cookie as BC
+import Browser.Cookies.Data(CookieOpts(..), SetCookie(..), Cookie(..))
 
 data Endpoint = Register | Login
 
---registerOrLogin :: Endpoint -> Boolean -> String -> Effect Unit
---registerOrLogin endpoint captcha captchaResponse = do
-		--emailElement <- C.querySelector "#email"
-		--pure ()
-	    -- passwordElement <- C.querySelector "#password"
-		-- email <- C.value emailElement
-		-- password <- C.value passwordElement
+derive instance eqEndpoint :: Eq Endpoint
 
-    	-- if S.null email || S.null password then
-        -- 	C.alert "Email and password are mandatory"
-        -- 	pure ()
-    	-- else if captcha then
-        -- 	grecaptchaExecute
-		-- else A.launchAff $ do
-		--         response <- AJ.post RF.json url RB.json $ RegisterLogin {
-		--             email: email,
-		--             password: password,
-		--             captchaResponse: captchaResponse
-		--         }
+foreign import grecaptchaExecute :: Effect Unit
 
-		-- 		case response of
-		-- 			Left a -> pure ()
-		-- 			Left b -> pure ()
-			-- token => {
-	        --     //tokenPOST is a mitigation for csrf/cookie interception (since zinc http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests, since I don't to make it a single page application
-	        --     document.cookie = `melanchat=${token.tokenGET};max-age=3471300000;path=/`
+registerLogin :: Endpoint -> Boolean -> Maybe String -> Effect Unit
+registerLogin endpoint captcha captchaResponse = do
+	emailElement <- C.querySelector "#email"
+	passwordElement <- C.querySelector "#password"
+	email <- C.value emailElement
+	password <- C.value passwordElement
+
+	if S.null email || S.null password then do
+		C.alert "Email and password are mandatory"
+		pure unit
+	 else if captcha then
+		grecaptchaExecute
+	 else
+		A.launchAff_ $ do
+			Token { tokenGET : tokenGET, tokenPOST : tokenPOST } <- C.post url $ RegisterLogin {
+				email: email,
+				password: password,
+				captchaResponse: captchaResponse
+			}
+			liftEffect <<< BC.setCookie $ SetCookie {
+				cookie : Cookie {
+					key : "melanchat",
+					value : tokenGET
+				},
+				opts : Just $ CookieOpts {
+					maxAge : Just 3471300000.0,
+					expires : Nothing,
+					secure : false,
+					httpOnly : false,
+					samesite : Nothing,
+					domain : Nothing,
+					path : Just "/"
+				}
+			}
+
+	where url | endpoint == Register = "/register"
+		  | otherwise = "/login"
+
+
+
 	        --     localStorage.setItem('token', token.tokenPOST)
 	        --     location.href = (new URLSearchParams(document.location.search.substring(1))).get('next') || '/im'
 	        -- }, error => {
@@ -48,5 +68,3 @@ data Endpoint = Register | Login
 	        --         grecaptcha.reset();
 	        --     C.alert $ error.errorMessage
 	        -- })
-
-foreign import grecaptchaExecute :: Effect Unit
