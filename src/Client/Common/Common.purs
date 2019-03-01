@@ -28,6 +28,20 @@ import Data.Either as DET
 import Data.Argonaut.Decode (class DecodeJson, decodeJson)
 import Data.Argonaut.Encode (class EncodeJson, encodeJson)
 import Control.Monad.Error.Class(throwError)
+import Data.Function.Uncurried (Fn1, Fn2, runFn1, runFn2)
+
+--purescript doesnt seem to have (up to date) bindings for localStorage
+foreign import localStorageSetItem :: Fn2 String String (Effect Unit)
+foreign import localStorageGetItem :: Fn1 String (Effect String)
+
+setItem :: String -> String -> Effect Unit
+setItem = runFn2 localStorageSetItem
+
+getItem :: String -> Effect String
+getItem = runFn1 localStorageGetItem
+
+tokenKey :: String
+tokenKey = "token"
 
 -- | Adds an event to the given element.
 addEventListener :: forall a . Element -> EventType -> (Event -> Effect a) -> Effect Unit
@@ -56,6 +70,14 @@ alert message = do
 
 post :: forall a b . EncodeJson a => DecodeJson b => String -> a -> Aff b
 post url data' = do
-	response <- AJ.post RF.json url <<< RB.json $ encodeJson data'
+	token <- liftEffect $ getItem tokenKey
+	response <- AJ.request $ AJ.defaultRequest {
+		url = url,
+		method = Left POST,
+		responseFormat = RF.json,
+		headers = [Accept $ MediaType "application/json", ContentType $ MediaType "application/json"
+    RequestHeader "x-access-token" token],
+		content = Just <<< RB.json $ encodeJson data'
+	}
 	DET.either (parseError <<< AJ.printResponseFormatError) (DET.either parseError pure <<< decodeJson)response.body
 	where parseError = throwError <<< error <<< ("Could not parse json: " <> _)

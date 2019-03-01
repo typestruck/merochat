@@ -11,6 +11,7 @@ import Data.String as S
 import Data.Maybe(Maybe(..))
 import Effect.Aff as A
 import Shared.Types
+import Common(tokenKey)
 import Data.Unit(unit)
 import Browser.Cookie as BC
 import Browser.Cookies.Data(CookieOpts(..), SetCookie(..), Cookie(..))
@@ -40,28 +41,27 @@ registerLogin endpoint captcha captchaResponse = do
 				password: password,
 				captchaResponse: captchaResponse
 			}
-			liftEffect <<< BC.setCookie $ SetCookie {
-				cookie : Cookie {
-					key : "melanchat",
-					value : tokenGET
-				},
-				opts : Just $ CookieOpts {
-					maxAge : Just 3471300000.0,
-					expires : Nothing,
-					secure : false,
-					httpOnly : false,
-					samesite : Nothing,
-					domain : Nothing,
-					path : Just "/"
+			liftEffect $ do
+				BC.setCookie $ SetCookie {
+					cookie : Cookie {
+						key : "melanchat",
+						value : tokenGET
+					},
+					opts : Just $ CookieOpts {
+						maxAge : Just 3471300000.0,
+						expires : Nothing,
+						secure : false,
+						httpOnly : false,
+						samesite : Nothing,
+						domain : Nothing,
+						path : Just "/"
+					}
 				}
-			}
+				C.setItem tokenKey tokenGET
 
 	where url | endpoint == Register = "/register"
 		  | otherwise = "/login"
 
-
-
-	        --     localStorage.setItem('token', token.tokenPOST)
 	        --     location.href = (new URLSearchParams(document.location.search.substring(1))).get('next') || '/im'
 	        -- }, error => {
 	        --     if (window['grecaptcha'])
