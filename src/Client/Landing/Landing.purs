@@ -8,7 +8,6 @@ import RegisterLogin(Endpoint(..))
 import RegisterLogin as R
 import Type.Data.Boolean (kind Boolean)
 import Web.UIEvent.MouseEvent.EventTypes (click)
-import Data.Unit(Unit)
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit

@@ -15,12 +15,15 @@ import Common(tokenKey)
 import Data.Unit(unit)
 import Browser.Cookie as BC
 import Browser.Cookies.Data(CookieOpts(..), SetCookie(..), Cookie(..))
+import Data.String.Pattern(Pattern(..))
+import Data.String.Common as CC
 
 data Endpoint = Register | Login
 
 derive instance eqEndpoint :: Eq Endpoint
 
 foreign import grecaptchaExecute :: Effect Unit
+foreign import grecaptchaReset :: Effect Unit
 
 registerLogin :: Endpoint -> Boolean -> Maybe String -> Effect Unit
 registerLogin endpoint captcha captchaResponse = do
@@ -36,12 +39,20 @@ registerLogin endpoint captcha captchaResponse = do
 		grecaptchaExecute
 	 else
 		A.launchAff_ $ do
-			Token { tokenGET : tokenGET, tokenPOST : tokenPOST } <- C.post url $ RegisterLogin {
+			let data' = RegisterLogin {
 				email: email,
 				password: password,
 				captchaResponse: captchaResponse
 			}
-			liftEffect $ do
+			C.post url data' enter (const (liftEffect grecaptchaReset))
+
+	where   url | endpoint == Register = "/register"
+		    | otherwise = "/login"
+		-- the location to go after login is either the query parameter next or /im
+		next ["?next=", destination] = destination
+		next _ = "/im"
+
+		enter (Token { tokenGET : tokenGET, tokenPOST : tokenPOST }) = liftEffect $ do
 				BC.setCookie $ SetCookie {
 					cookie : Cookie {
 						key : "melanchat",
@@ -58,13 +69,5 @@ registerLogin endpoint captcha captchaResponse = do
 					}
 				}
 				C.setItem tokenKey tokenGET
-
-	where url | endpoint == Register = "/register"
-		  | otherwise = "/login"
-
-	        --     location.href = (new URLSearchParams(document.location.search.substring(1))).get('next') || '/im'
-	        -- }, error => {
-	        --     if (window['grecaptcha'])
-	        --         grecaptcha.reset();
-	        --     C.alert $ error.errorMessage
-	        -- })
+				splitQueryString <- CC.split (Pattern "=") <$> C.search
+				C.setLocation $ next splitQueryString

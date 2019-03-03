@@ -22,7 +22,9 @@
     "purescript-web-uievents": "^2.0.0",
     "purescript-argonaut-core": "^4.0.1",
     "purescript-argonaut-codecs": "^5.1.2",
-    "purescript-browser-cookies": "^0.0.1"
+    "purescript-browser-cookies": "^0.0.1",
+    "purescript-web-storage": "^3.0.0",
+    "purescript-http-methods": "^4.0.2"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"
