@@ -10,6 +10,8 @@ import Template.Landing as L
 import Configuration as CF
 import Effect.Class as E
 
+--add here safe routing
+
 main :: ServerM
 main = do
         configuration <- CF.readConfiguration

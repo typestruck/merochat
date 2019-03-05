@@ -15,7 +15,6 @@ import Prelude
 
 import Data.Maybe as M
 import Effect (Effect)
-import Effect.Exception(Error)
 import Effect.Exception as EE
 import Type.Data.Boolean (kind Boolean)
 import Web.DOM.Document as D
@@ -47,7 +46,6 @@ import Data.HTTP.Method(Method(..))
 import Affjax.RequestHeader(RequestHeader(..))
 import Data.MediaType(MediaType(..))
 import Data.Maybe(Maybe(..))
-import Control.Monad.Error.Class(class MonadThrow)
 
 tokenKey :: String
 tokenKey = "token"
@@ -110,10 +108,6 @@ request url method extraHeaders data' success error = do
 		success' json = do
 			_ <- success json
 			pure unit
-
--- we need a better strategy here, even if it is just a popup with the error message
-parseJSONError :: forall a b. MonadThrow Error a => String -> a b
-parseJSONError = EC.throwError <<< EE.error <<< ("Could not parse json: " <> _)
 
 setLocation :: String -> Effect Unit
 setLocation url = do
