@@ -6,6 +6,7 @@ import Data.Argonaut.Decode (class DecodeJson, (.:), decodeJson)
 import Data.Argonaut.Encode (class EncodeJson, (~>), (:=))
 import Data.Argonaut.Core(jsonEmptyObject)
 import Data.Maybe (Maybe)
+import Data.String.Read(class Read)
 
 newtype RegisterLogin = RegisterLogin
 	{
@@ -38,3 +39,5 @@ instance decodeJsonToken :: DecodeJson Token where
 		tokenGET <- t .: "tokenGET"
 		tokenPOST <- t .: "tokenGET"
 		pure $ Token { tokenGET, tokenPOST }
+
+data Route = Landing | Register | Login (Maybe String)

@@ -46,8 +46,7 @@ registerLogin endpoint captcha captchaResponse = do
 			}
 			C.post url data' enter (const (liftEffect grecaptchaReset))
 
-	where   url | endpoint == Register = "/register"
-		    | otherwise = "/login"
+	where   url = ?hole
 		-- the location to go after login is either the query parameter next or /im
 		next ["?next=", destination] = destination
 		next _ = "/im"
