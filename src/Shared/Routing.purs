@@ -1,20 +1,20 @@
 module Shared.Routing where
 
 import Routing.Parser as P
-import Data.Foldable as F
 import Prelude
 import Shared.Types
-import Routing.Match as M
 import Data.Maybe(Maybe(..))
-import Routing.Match (Match)
-import Control.Alt ((<|>))
+import Routing.Duplex.Generic as G
+import Routing.Duplex as D
+import Routing.Duplex (RouteDuplex')
+import Routing.Duplex ((/))
 
--- finish here
+routes :: RouteDuplex' Route
+routes = D.root $ G.sum {
+	"Landing" : G.noArgs,
+	"Register" : "register" / G.noArgs,
+	"Login": "login" ? { next : optional }
+}
 
-routes :: Match Route
-routes = F.oneOf [
-	Landing <$ M.lit "",
-	Landing <$ M.lit "/",
-	Register <$ M.lit "register",
-	Login <$> (M.lit "login" *> (Just <$> M.param "next" <|> pure Nothing))
-]
+toResource :: Route -> String
+toResource = D.print routes

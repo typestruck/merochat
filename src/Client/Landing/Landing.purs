@@ -12,6 +12,10 @@ import Web.UIEvent.MouseEvent.EventTypes (click)
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit
 completeRegistration captchaResponse = R.registerLogin Register false $ Just captchaResponse
+	Landing <$ M.lit "",
+	Landing <$ M.lit "/",
+	Register <$ M.lit "register",
+	Login <$> (M.lit "login" *> (Just <$> M.param "next" <|> pure Nothing))
 
 main :: Effect Unit
 main = do

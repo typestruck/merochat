@@ -17,6 +17,7 @@ import Browser.Cookie as BC
 import Browser.Cookies.Data(CookieOpts(..), SetCookie(..), Cookie(..))
 import Data.String.Pattern(Pattern(..))
 import Data.String.Common as CC
+import Shared.Routing as R
 
 data Endpoint = Register | Login
 
@@ -46,7 +47,8 @@ registerLogin endpoint captcha captchaResponse = do
 			}
 			C.post url data' enter (const (liftEffect grecaptchaReset))
 
-	where   url = ?hole
+	where   url | endpoint == Register = R.toResource Register
+		    | otherwise = R.toResource $ Login Nothing
 		-- the location to go after login is either the query parameter next or /im
 		next ["?next=", destination] = destination
 		next _ = "/im"

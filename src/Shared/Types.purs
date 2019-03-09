@@ -7,6 +7,9 @@ import Data.Argonaut.Encode (class EncodeJson, (~>), (:=))
 import Data.Argonaut.Core(jsonEmptyObject)
 import Data.Maybe (Maybe)
 import Data.String.Read(class Read)
+import Data.Generic.Rep (class Generic)
+
+-- look into generic to aleviate the json boilerplate
 
 newtype RegisterLogin = RegisterLogin
 	{
@@ -40,4 +43,6 @@ instance decodeJsonToken :: DecodeJson Token where
 		tokenPOST <- t .: "tokenGET"
 		pure $ Token { tokenGET, tokenPOST }
 
-data Route = Landing | Register | Login (Maybe String)
+data Route = Landing | Register | Login { next :: Maybe String }
+
+derive instance genericRoute :: Generic Route _
