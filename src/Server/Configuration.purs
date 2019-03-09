@@ -1,4 +1,4 @@
-module Configuration where
+module Server.Configuration where
 
 import Prelude(bind, const, ($), pure)
 import Node.FS.Sync(readTextFile)

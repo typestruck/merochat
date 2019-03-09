@@ -1,4 +1,4 @@
-module Template.Landing where
+module Server.Template.Landing where
 
 import Hedwig as H
 import Shared.Template as T

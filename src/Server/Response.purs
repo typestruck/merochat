@@ -1,19 +1,18 @@
-module Response(html, serveDevelopmentFile) where
+module Server.Response(html, json, serveDevelopmentFile) where
 
-import HTTPure as H
 import HTTPure (ResponseM, Headers)
-import Node.Encoding(Encoding(..))
 import Data.String as S
 import Effect.Aff (catchError)
 import Node.FS.Aff as FS
-import Effect.Class(liftEffect)
-import Effect.Console(log)
-import Prelude(bind, ($), (<>), const, discard)
+import Prelude
+import HTTPure as H
 import Node.Path as P
-import Data.Argonaut.Encode (class EncodeJson)
-import Data.Either as E
-import Shared.Common as SC
-import Data.String.Read(class Read)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Core as C
+import Data.String.Read(class Read, read)
+import Data.Maybe(Maybe(..))
+import Data.Maybe as M
+import Partial.Unsafe as U
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
@@ -42,10 +41,10 @@ instance contentTypeRead :: Read ContentType where
 		where value = S.trim $ S.toLower v
 
 html :: String -> ResponseM
-html contents = H.ok' (show HTML) contents
+html contents = H.ok' (headerContentType $ show HTML) contents
 
 json :: forall a. EncodeJson a => a -> ResponseM
-json value = E.either SC.parseJSONError (H.ok' (show JSON)) $ encodeJson value
+json value = H.ok' (headerContentType $ show JSON) <<< C.stringify $ encodeJson value
 
 serveDevelopmentFile :: String -> String -> ResponseM
 serveDevelopmentFile folder fileName = catchError read (const H.notFound)
@@ -54,4 +53,9 @@ serveDevelopmentFile folder fileName = catchError read (const H.notFound)
       		H.ok' (contentTypeFromExtension fileName) contents
 
 contentTypeFromExtension :: String -> Headers
-contentTypeFromExtension path = H.header "Content-Type" <<< show <<< read <<< P.extname
+contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
+	where   read' :: String -> ContentType
+		read' = U.unsafePartial M.fromJust <<< read
+
+headerContentType :: String -> Headers
+headerContentType = H.header "Content-Type"

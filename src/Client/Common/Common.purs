@@ -1,4 +1,4 @@
-module Common(
+module Client.Common(
 	setItem,
 	post,
 	post',
@@ -39,10 +39,10 @@ import Affjax.ResponseFormat(ResponseFormatError)
 import Data.Either as DET
 import Data.Argonaut.Decode (class DecodeJson, decodeJson)
 import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Control.Monad.Error.Class as EC
 import Web.HTML.Location as L
 import Web.Storage.Storage as S
 import Data.HTTP.Method(Method(..))
+import Shared.Common as C
 import Affjax.RequestHeader(RequestHeader(..))
 import Data.MediaType(MediaType(..))
 import Data.Maybe(Maybe(..))
@@ -77,7 +77,7 @@ alert message = do
 
 -- | A simplified version of post without the option to handle errors
 post' :: forall a b c. EncodeJson a => DecodeJson b => String -> a -> (b -> Aff c) -> Aff Unit
-post' url data' success = post url data' success (parseJSONError <<< AJ.printResponseFormatError)
+post' url data' success = post url data' success (C.parseJSONError <<< AJ.printResponseFormatError)
 
 -- | Performs a POST request
 post :: forall a b c d. EncodeJson a => DecodeJson b => String -> a -> (b -> Aff c) -> (ResponseFormatError -> Aff d) -> Aff Unit
@@ -100,7 +100,7 @@ request url method extraHeaders data' success error = do
 		] <> extraHeaders,
 		content = Just <<< RB.json $ encodeJson data'
 	}
-	DET.either error' (DET.either parseJSONError success' <<< decodeJson) response.body
+	DET.either error' (DET.either C.parseJSONError success' <<< decodeJson) response.body
 	pure unit
 	where   error' formatError = do
 			_ <- error formatError

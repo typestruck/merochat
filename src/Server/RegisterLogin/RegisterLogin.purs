@@ -1,8 +1,9 @@
-module RegisterLogin where
+module Server.RegisterLogin where
 
 import HTTPure as H
-import Response as R
+import Server.Response as R
 import HTTPure(ResponseM)
+import Shared.Types
 
 register :: RegisterLogin -> ResponseM
 register registration = do

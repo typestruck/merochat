@@ -1,8 +1,8 @@
-module RegisterLogin where
+module Client.External.RegisterLogin where
 
 import Prelude
 
-import Common as C
+import Client.Common as C
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Console (log)
@@ -11,7 +11,7 @@ import Data.String as S
 import Data.Maybe(Maybe(..))
 import Effect.Aff as A
 import Shared.Types
-import Common(tokenKey)
+import Client.Common(tokenKey)
 import Data.Unit(unit)
 import Browser.Cookie as BC
 import Browser.Cookies.Data(CookieOpts(..), SetCookie(..), Cookie(..))

@@ -1,11 +1,11 @@
-module Landing.Main where
+module Client.Landing.Main where
 
-import Common as C
+import Client.Common as C
 import Effect (Effect)
 import Prelude
 import Data.Maybe(Maybe(..))
-import RegisterLogin(Endpoint(..))
-import RegisterLogin as R
+import Client.External.RegisterLogin(Endpoint(..))
+import Client.External.RegisterLogin as R
 import Type.Data.Boolean (kind Boolean)
 import Web.UIEvent.MouseEvent.EventTypes (click)
 

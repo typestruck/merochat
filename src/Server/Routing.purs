@@ -1,13 +1,16 @@
-module Routing where
+module Server.Routing where
 
 import Effect.Class(liftEffect)
-import Template.Landing
 import HTTPure.Lookup((!@))
-import Response as R
+import Server.Response as R
 import HTTPure as H
+import HTTPure(ResponseM, Request)
+import Server.Configuration(Configuration(..))
 import Shared.Types
+import Prelude
+import Server.Template.Landing as L
 
-
+router :: Configuration -> Request -> ResponseM
 router configuration { path : [] } = do
 	html <- liftEffect L.landing
       	R.html html
