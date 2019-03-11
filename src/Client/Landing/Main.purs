@@ -1,3 +1,13 @@
+module Client.Landing.Main where
+
+import Client.Common as C
+import Effect (Effect)
+import Prelude
+import Data.Maybe(Maybe(..))
+import Client.External.RegisterLogin(Action(..))
+import Client.External.RegisterLogin as R
+import Type.Data.Boolean (kind Boolean)
+import Web.UIEvent.MouseEvent.EventTypes (click)
 module Client.External.RegisterLogin where
 
 import Prelude
@@ -72,3 +82,12 @@ registerLogin endpoint captcha captchaResponse = do
 				C.setItem tokenKey tokenGET
 				splitQueryString <- CC.split (Pattern "=") <$> C.search
 				C.setLocation $ next splitQueryString
+				
+-- | Callback for grecaptcha
+completeRegistration :: String -> Effect Unit
+completeRegistration captchaResponse = R.registerLogin RegisterAction false $ Just captchaResponse
+
+main :: Effect Unit
+main = do
+	register <- C.querySelector "#register"
+	C.addEventListener register click (const (R.registerLogin RegisterAction true Nothing))

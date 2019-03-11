@@ -1,8 +1,7 @@
 module Shared.Routing (fromResource, toResource) where
 
-import Prelude
-import Shared.Types
-
+import Prelude ((#), ($))
+import Shared.Types (Route)
 import Data.Either (Either)
 import Data.Symbol (SProxy(..))
 import Routing.Duplex (RouteDuplex', (:=))

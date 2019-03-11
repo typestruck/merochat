@@ -1,4 +1,4 @@
-module Server.Template.Landing where
+module Server.Landing.Template where
 
 import Hedwig as H
 import Shared.Template as T
@@ -6,8 +6,8 @@ import Shared.Template(defaultParameters, externalFooter)
 import Effect(Effect)
 import Prelude(($), bind)
 
-landing :: Effect String
-landing = do
+template :: Effect String
+template = do
 	contents <- T.template defaultParameters { footer = externalFooter, content = content, javascript = javascript, css = css }
 	H.render $ contents
 	where   javascript = [
