@@ -8,6 +8,7 @@ import Data.Argonaut.Core(jsonEmptyObject)
 import Data.Maybe (Maybe)
 import Data.String.Read(class Read)
 import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show as S
 
 -- look into generic to aleviate the json boilerplate
 
@@ -46,3 +47,7 @@ instance decodeJsonToken :: DecodeJson Token where
 data Route = Landing | Register | Login { next :: Maybe String }
 
 derive instance genericRoute :: Generic Route _
+derive instance eqRoute :: Eq Route
+
+instance showMyRecord :: Show Route where
+	show = S.genericShow

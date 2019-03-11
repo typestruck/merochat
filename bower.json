@@ -30,13 +30,7 @@
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",
-    "purescript-routing": "^8.0.0"
-  },
-  "resolutions": {
-    "purescript-web-storage": "^3.0.0",
-    "purescript-web-html": "^2.0.0",
-    "purescript-web-dom": "^2.0.0",
-    "purescript-web-events": "^2.0.0",
-    "purescript-web-file": "^2.0.0"
+    "purescript-routing": "^8.0.0",
+    "purescript-test-unit": "^14.0.0"
   }
 }

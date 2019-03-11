@@ -19,14 +19,14 @@ import Data.String.Pattern(Pattern(..))
 import Data.String.Common as CC
 import Shared.Routing as R
 
-data Endpoint = Register | Login
+data Action = RegisterAction | LoginAction
 
-derive instance eqEndpoint :: Eq Endpoint
+derive instance eqEndpoint :: Eq Action
 
 foreign import grecaptchaExecute :: Effect Unit
 foreign import grecaptchaReset :: Effect Unit
 
-registerLogin :: Endpoint -> Boolean -> Maybe String -> Effect Unit
+registerLogin :: Action -> Boolean -> Maybe String -> Effect Unit
 registerLogin endpoint captcha captchaResponse = do
 	emailElement <- C.querySelector "#email"
 	passwordElement <- C.querySelector "#password"
@@ -47,8 +47,8 @@ registerLogin endpoint captcha captchaResponse = do
 			}
 			C.post url data' enter (const (liftEffect grecaptchaReset))
 
-	where   url | endpoint == Register = R.toResource Register
-		    | otherwise = R.toResource $ Login Nothing
+	where   url | endpoint == RegisterAction = R.toResource Register
+		    | otherwise = R.toResource <<< Login $ {next : Nothing }
 		-- the location to go after login is either the query parameter next or /im
 		next ["?next=", destination] = destination
 		next _ = "/im"
