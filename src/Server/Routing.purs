@@ -20,7 +20,7 @@ router configuration { path, method }
 	| A.null path = do
 		html <- liftEffect L.landing
       		R.html html
-	| method == Post && path == [ SR.toResource Register ] = RL.register
+	| method == Post && path == [ SR.toRoute Register ] = RL.register
 	--TODO: type this route
         | configuration.development && path !@ 0 == "client" = R.serveDevelopmentFile (path !@ 1) (path !@ 2)
         | otherwise = H.notFound

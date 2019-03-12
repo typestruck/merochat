@@ -12,7 +12,7 @@
 
     "repl-l": "pulp repl --src-path src/Client/Landing --include src/Shared:src/Client/Common:src/Client/External",
 
-    "w-landing": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common:src/Client/External --to src/Client/javascript/landing.bundle.js --source-maps --standalone Landing",
+    "w-landing": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common --to src/Client/javascript/landing.bundle.js --source-maps --standalone Landing",
 
     "watch-c": "npm run w-landing",
 

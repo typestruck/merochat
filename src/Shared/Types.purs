@@ -44,7 +44,7 @@ instance decodeJsonToken :: DecodeJson Token where
 		tokenPOST <- t .: "tokenGET"
 		pure $ Token { tokenGET, tokenPOST }
 
-data Route = Landing | Register | Login { next :: Maybe String }
+data Route = Landing | Register | Login { next :: Maybe String } | IM
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route

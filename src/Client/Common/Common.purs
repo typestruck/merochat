@@ -13,39 +13,39 @@ module Client.Common(
 
 import Prelude
 
+import Affjax as AJ
+import Affjax.RequestBody as RB
+import Affjax.RequestHeader (RequestHeader(..))
+import Affjax.ResponseFormat (ResponseFormatError)
+import Affjax.ResponseFormat as RF
+import Control.Monad.Error.Class as EC
+import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Either (Either(..))
+import Data.Either as DET
+import Data.HTTP.Method (Method(..))
+import Data.Maybe (Maybe(..))
 import Data.Maybe as M
+import Data.MediaType (MediaType(..))
 import Effect (Effect)
+import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
 import Effect.Exception as EE
 import Type.Data.Boolean (kind Boolean)
 import Web.DOM.Document as D
+import Web.DOM.Element (Element)
 import Web.DOM.Element as E
-import Affjax as AJ
-import Web.DOM.Element(Element)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as P
 import Web.Event.Event (EventType)
-import Affjax.ResponseFormat as RF
-import Affjax.RequestBody as RB
 import Web.Event.EventTarget as ET
 import Web.Event.Internal.Types (Event)
 import Web.HTML as H
-import Effect.Class(liftEffect)
 import Web.HTML.HTMLDocument as HD
-import Effect.Aff(Aff)
-import Data.Either(Either(..))
-import Web.HTML.Window as W
 import Web.HTML.HTMLInputElement as HI
-import Affjax.ResponseFormat(ResponseFormatError)
-import Data.Either as DET
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
 import Web.HTML.Location as L
+import Web.HTML.Window as W
 import Web.Storage.Storage as S
-import Data.HTTP.Method(Method(..))
-import Shared.Common as C
-import Affjax.RequestHeader(RequestHeader(..))
-import Data.MediaType(MediaType(..))
-import Data.Maybe(Maybe(..))
 
 tokenKey :: String
 tokenKey = "token"
@@ -77,7 +77,7 @@ alert message = do
 
 -- | A simplified version of post without the option to handle errors
 post' :: forall a b c. EncodeJson a => DecodeJson b => String -> a -> (b -> Aff c) -> Aff Unit
-post' url data' success = post url data' success (C.parseJSONError <<< AJ.printResponseFormatError)
+post' url data' success = post url data' success (parseJSONError <<< AJ.printResponseFormatError)
 
 -- | Performs a POST request
 post :: forall a b c d. EncodeJson a => DecodeJson b => String -> a -> (b -> Aff c) -> (ResponseFormatError -> Aff d) -> Aff Unit
@@ -100,7 +100,7 @@ request url method extraHeaders data' success error = do
 		] <> extraHeaders,
 		content = Just <<< RB.json $ encodeJson data'
 	}
-	DET.either error' (DET.either C.parseJSONError success' <<< decodeJson) response.body
+	DET.either error' (DET.either parseJSONError success' <<< decodeJson) response.body
 	pure unit
 	where   error' formatError = do
 			_ <- error formatError
@@ -108,6 +108,10 @@ request url method extraHeaders data' success error = do
 		success' json = do
 			_ <- success json
 			pure unit
+
+parseJSONError message = do
+	liftEffect $ alert message
+	EC.throwError <<< EE.error $ "Could not parse json: " <> message
 
 setLocation :: String -> Effect Unit
 setLocation url = do
