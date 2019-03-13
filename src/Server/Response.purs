@@ -1,4 +1,4 @@
-module Server.Response(html, json, serveDevelopmentFile) where
+module Server.Response(html, json, serveDevelopmentFile, badRequest) where
 
 import HTTPure (ResponseM, Headers)
 import Data.String as S
@@ -59,3 +59,6 @@ contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
 
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"
+
+badRequest :: String -> ResponseM
+badRequest message = H.badRequest' (headerContentType $ show JSON) <<< hole? $ BadRequest {reason :: message}

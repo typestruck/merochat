@@ -51,3 +51,8 @@ derive instance eqRoute :: Eq Route
 
 instance showMyRecord :: Show Route where
 	show = S.genericShow
+
+newtype BadRequest = BadRequest {reason :: String}
+
+--json instance badrequest
+
