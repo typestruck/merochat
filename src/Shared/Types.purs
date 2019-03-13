@@ -6,7 +6,6 @@ import Data.Argonaut.Decode (class DecodeJson, (.:), decodeJson)
 import Data.Argonaut.Encode (class EncodeJson, (~>), (:=))
 import Data.Argonaut.Core(jsonEmptyObject)
 import Data.Maybe (Maybe)
-import Data.String.Read(class Read)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as S
 
@@ -54,5 +53,6 @@ instance showMyRecord :: Show Route where
 
 newtype BadRequest = BadRequest {reason :: String}
 
---json instance badrequest
+derive instance genericRoute :: Generic BadRequest _
+
 

@@ -1,3 +1,7 @@
 module Server.Landing.Action where
 
-register
+import HTTPure (ResponseM)
+import HTTPure as H
+
+register :: RegisterLogin -> ResponseM
+register registerLogin = holes?

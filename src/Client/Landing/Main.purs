@@ -9,7 +9,7 @@ import Type.Data.Boolean (kind Boolean)
 import Web.UIEvent.MouseEvent.EventTypes (click)
 import Effect.Class (liftEffect)
 import Effect.Aff as A
-import Shared.Types (RegisterLogin(..), Route(..), Token(..))
+import Shared.Types (RegisterLogin(..), Route(..))
 import Client.Common.External as E
 import Shared.Routing as R
 
