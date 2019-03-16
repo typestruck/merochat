@@ -1,15 +1,9 @@
 module Shared.Types where
 
 import Prelude
-
-import Data.Argonaut.Decode (class DecodeJson, (.:), decodeJson)
-import Data.Argonaut.Encode (class EncodeJson, (~>), (:=))
-import Data.Argonaut.Core(jsonEmptyObject)
 import Data.Maybe (Maybe)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as S
-
--- look into generic to aleviate the json boilerplate
 
 newtype RegisterLogin = RegisterLogin
 	{
@@ -18,30 +12,19 @@ newtype RegisterLogin = RegisterLogin
 	        captchaResponse:: Maybe String
 	}
 
-instance decodeJsonRegisterLogin :: DecodeJson RegisterLogin where
-	decodeJson json = do
-		rl <- decodeJson json
-		email <- rl .: "email"
-		password <- rl .: "password"
-		captchaResponse <- rl .: "captchaResponse"
-		pure $ RegisterLogin { email, password, captchaResponse }
-
-instance encodeJsonRegisterLogin :: EncodeJson RegisterLogin where
-	encodeJson (RegisterLogin rl) =
-    		"email" := rl.email
-      		~> "password" := rl.password
-		~> "captchaResponse" := rl.captchaResponse
-      		~> jsonEmptyObject
+derive instance genericRegisterLogin :: Generic RegisterLogin _
 
 -- | tokenPOST is a mitigation for csrf/cookie interception (since zinc http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests, since I don't to make it a single page application
 newtype Token = Token { tokenGET :: String, tokenPOST :: String}
 
-instance decodeJsonToken :: DecodeJson Token where
-	decodeJson json = do
-		t <- decodeJson json
-		tokenGET <- t .: "tokenGET"
-		tokenPOST <- t .: "tokenGET"
-		pure $ Token { tokenGET, tokenPOST }
+derive instance genericToken :: Generic Token _
+
+-- instance decodeJsonToken :: DecodeJson Token where
+-- 	decodeJson json = do
+-- 		t <- decodeJson json
+-- 		tokenGET <- t .: "tokenGET"
+-- 		tokenPOST <- t .: "tokenGET"
+-- 		pure $ Token { tokenGET, tokenPOST }
 
 data Route = Landing | Register | Login { next :: Maybe String } | IM
 
@@ -53,6 +36,6 @@ instance showMyRecord :: Show Route where
 
 newtype BadRequest = BadRequest {reason :: String}
 
-derive instance genericRoute :: Generic BadRequest _
+derive instance genericBadRequest :: Generic BadRequest _
 
 

@@ -25,7 +25,7 @@ register captchaResponse = do
 			if M.isNothing captchaResponse then
 				grecaptchaExecute
 			 else
-				A.launchAff_ $ C.post (R.fromRoute Register) (rl { captchaResponse = captchaResponse }) enter (const (liftEffect grecaptchaReset))
+				A.launchAff_ $ C.post (R.fromRoute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse }) enter (const (liftEffect grecaptchaReset))
 
 	where   enter token = liftEffect <<< E.login token $ R.fromRoute IM
 

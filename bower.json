@@ -26,7 +26,8 @@
     "purescript-web-storage": "^3.0.0",
     "purescript-http-methods": "^4.0.2",
     "purescript-read": "^1.0.1",
-    "purescript-routing-duplex": "^0.2.0"
+    "purescript-routing-duplex": "^0.2.0",
+    "purescript-argonaut-generic": "^4.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",

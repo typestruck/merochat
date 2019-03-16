@@ -1,17 +1,22 @@
 module Server.Response(html, json, serveDevelopmentFile, badRequest) where
 
-import HTTPure (ResponseM, Headers)
-import Data.String as S
-import Effect.Aff (catchError)
-import Node.FS.Aff as FS
 import Prelude
-import HTTPure as H
-import Node.Path as P
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+
 import Data.Argonaut.Core as C
-import Data.String.Read(class Read, read)
-import Data.Maybe(Maybe(..))
+import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
+import Data.Argonaut.Decode.Generic.Rep as DGR
+import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
+import Data.Argonaut.Encode.Generic.Rep as EGR
+import Data.Generic.Rep (class Generic)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as M
+import Data.String as S
+import Data.String.Read (class Read, read)
+import Effect.Aff (catchError)
+import HTTPure (ResponseM, Headers)
+import HTTPure as H
+import Node.FS.Aff as FS
+import Node.Path as P
 import Partial.Unsafe as U
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
@@ -43,8 +48,8 @@ instance contentTypeRead :: Read ContentType where
 html :: String -> ResponseM
 html contents = H.ok' (headerContentType $ show HTML) contents
 
-json :: forall a. EncodeJson a => a -> ResponseM
-json value = H.ok' (headerContentType $ show JSON) <<< C.stringify $ encodeJson value
+--json :: forall a. EncodeJson a => a -> ResponseM
+json value = H.ok' (headerContentType $ show JSON) <<< C.stringify $ EGR.genericEncodeJson value
 
 serveDevelopmentFile :: String -> String -> ResponseM
 serveDevelopmentFile folder fileName = catchError read (const H.notFound)

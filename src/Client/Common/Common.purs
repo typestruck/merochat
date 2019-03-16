@@ -19,8 +19,6 @@ import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat (ResponseFormatError)
 import Affjax.ResponseFormat as RF
 import Control.Monad.Error.Class as EC
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
 import Data.Either (Either(..))
 import Data.Either as DET
 import Data.HTTP.Method (Method(..))
@@ -46,6 +44,11 @@ import Web.HTML.HTMLInputElement as HI
 import Web.HTML.Location as L
 import Web.HTML.Window as W
 import Web.Storage.Storage as S
+import Data.Argonaut.Encode.Generic.Rep as EGR
+import Data.Argonaut.Encode.Generic.Rep(class EncodeRep)
+import Data.Argonaut.Decode.Generic.Rep as DGR
+import Data.Argonaut.Decode.Generic.Rep(class DecodeRep)
+import Data.Generic.Rep(class Generic)
 
 tokenKey :: String
 tokenKey = "token"
@@ -76,11 +79,11 @@ alert message = do
 	W.alert message window
 
 -- | A simplified version of post without the option to handle errors
-post' :: forall a b c. EncodeJson a => DecodeJson b => String -> a -> (b -> Aff c) -> Aff Unit
+post' :: forall a c d e f. Generic d c => EncodeRep c => Generic f e => DecodeRep e => String -> d -> (f -> Aff a) -> Aff Unit
 post' url data' success = post url data' success (parseJSONError <<< AJ.printResponseFormatError)
 
 -- | Performs a POST request
-post :: forall a b c d. EncodeJson a => DecodeJson b => String -> a -> (b -> Aff c) -> (ResponseFormatError -> Aff d) -> Aff Unit
+post :: forall a b c d e f. Generic d c => EncodeRep c => Generic f e => DecodeRep e => String -> d -> (f -> Aff a) -> (ResponseFormatError -> Aff b) -> Aff Unit
 post url data' success error = do
 	--see Token in shared/Types.purs
 	token <- liftEffect $ getItem tokenKey
@@ -88,7 +91,7 @@ post url data' success error = do
 
 -- using callbacks avoids here actually simplifies things as 99% of requests will be the same parsing/error handling
 -- | Performs a HTTP request sending JSON
-request :: forall a b c d. EncodeJson a => DecodeJson b => String -> Method -> Array RequestHeader -> a -> (b -> Aff c) -> (ResponseFormatError -> Aff d) -> Aff Unit
+request :: forall a b c d e f. Generic d c => EncodeRep c => Generic f e => DecodeRep e => String -> Method -> Array RequestHeader -> d -> (f -> Aff a) -> (ResponseFormatError -> Aff b) -> Aff Unit
 request url method extraHeaders data' success error = do
 	response <- AJ.request $ AJ.defaultRequest {
 		url = url,
@@ -98,9 +101,9 @@ request url method extraHeaders data' success error = do
 			Accept $ MediaType "application/json",
 			ContentType $ MediaType "application/json"
 		] <> extraHeaders,
-		content = Just <<< RB.json $ encodeJson data'
+		content = Just <<< RB.json $ EGR.genericEncodeJson data'
 	}
-	DET.either error' (DET.either parseJSONError success' <<< decodeJson) response.body
+	DET.either error' (DET.either parseJSONError success' <<< DGR.genericDecodeJson) response.body
 	pure unit
 	where   error' formatError = do
 			_ <- error formatError
