@@ -1,17 +1,23 @@
 module Server.Main where
 
-import Prelude (($), bind, otherwise, (&&), (==))
+import Server.Types
+
+import Data.Maybe (Maybe(..))
 import Effect.Console as C
+import HTTPure (ServerM)
 import HTTPure as H
-import HTTPure(ServerM)
+import Prelude (($), bind, otherwise, (&&), (==))
+import Run as R
+import Run.Reader as RR
+import Run.State as RS
 import Server.Configuration as CF
+import Server.Database as B
 import Server.Routing as RO
 
---configuration, database pool, session have to be threaded around
--- thus needing a state monad of some sort
--- check if algebraic effects or monads transformers are more convenient in purescript
+--use https://pursuit.purescript.org/packages/purescript-run
 
 main :: ServerM
 main = do
         configuration <- CF.readConfiguration
-        H.serve configuration.port (RO.router configuration) $ C.log "Server now up on port 8000"
+        pool <- B.newPool
+        H.serve configuration.port (R.runBaseAff <<< RS.runState {user : Nothing} <<< RR.runReader {configuration : configuration, pool : pool} <<< RO.router) $ C.log "Server now up on port 8000"

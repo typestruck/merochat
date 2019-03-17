@@ -1,6 +1,8 @@
 module Server.Response(html, json, serveDevelopmentFile, badRequest) where
 
 import Prelude
+import Server.Types
+import Shared.Types
 
 import Data.Argonaut.Core as C
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
@@ -13,11 +15,14 @@ import Data.Maybe as M
 import Data.String as S
 import Data.String.Read (class Read, read)
 import Effect.Aff (catchError)
-import HTTPure (ResponseM, Headers)
+import HTTPure (Headers, ResponseM, Response)
 import HTTPure as H
+import HTTPure.Body (class Body)
 import Node.FS.Aff as FS
 import Node.Path as P
 import Partial.Unsafe as U
+import Run (Run, AFF)
+import Run as R
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
@@ -45,17 +50,23 @@ instance contentTypeRead :: Read ContentType where
 			 else OctetStream
 		where value = S.trim $ S.toLower v
 
-html :: String -> ResponseM
-html contents = H.ok' (headerContentType $ show HTML) contents
+--ok' :: forall a. Body a => Headers -> a -> ResponseEffect
+ok' headers = R.liftAff <<< H.ok' headers
 
---json :: forall a. EncodeJson a => a -> ResponseM
-json value = H.ok' (headerContentType $ show JSON) <<< C.stringify $ EGR.genericEncodeJson value
+--html :: String -> ResponseEffect
+html contents = ok' (headerContentType $ show HTML) contents
 
-serveDevelopmentFile :: String -> String -> ResponseM
-serveDevelopmentFile folder fileName = catchError read (const H.notFound)
- 	where read = do
-      		contents <- FS.readFile $ "src/Client/" <> folder <> "/" <> fileName
-      		H.ok' (contentTypeFromExtension fileName) contents
+json :: forall a b c. Generic b a => EncodeRep a => b -> Run (aff :: AFF | c) Response
+json value = ok' (headerContentType $ show JSON) <<< C.stringify $ EGR.genericEncodeJson value
+
+serveDevelopmentFile :: forall c. String -> String -> Run (aff :: AFF | c) Response
+serveDevelopmentFile folder fileName = do
+      	contents <- R.liftAff <<< FS.readFile $ "src/Client/" <> folder <> "/" <> fileName
+      	ok' (contentTypeFromExtension fileName) contents
+-- serveDevelopmentFile folder fileName = catchError read (const (R.liftAff H.notFound))
+--  	where read = do
+--       		contents <- R.liftAff <<< FS.readFile $ "src/Client/" <> folder <> "/" <> fileName
+--       		ok' (contentTypeFromExtension fileName) contents
 
 contentTypeFromExtension :: String -> Headers
 contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
@@ -65,5 +76,5 @@ contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"
 
-badRequest :: String -> ResponseM
-badRequest message = H.badRequest' (headerContentType $ show JSON) <<< hole? $ BadRequest {reason :: message}
+--badRequest :: String -> ResponseEffect
+badRequest message = R.liftAff <<< H.badRequest' (headerContentType $ show JSON) <<< C.stringify <<< EGR.genericEncodeJson $ BadRequest { reason : message}
