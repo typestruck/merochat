@@ -5,6 +5,7 @@ import Data.Maybe (Maybe)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as S
 
+-- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin
 	{
 	        email:: String,
@@ -14,18 +15,12 @@ newtype RegisterLogin = RegisterLogin
 
 derive instance genericRegisterLogin :: Generic RegisterLogin _
 
--- | tokenPOST is a mitigation for csrf/cookie interception (since zinc http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests, since I don't to make it a single page application
+-- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests, since I don't to make it a single page application
 newtype Token = Token { tokenGET :: String, tokenPOST :: String}
 
 derive instance genericToken :: Generic Token _
 
--- instance decodeJsonToken :: DecodeJson Token where
--- 	decodeJson json = do
--- 		t <- decodeJson json
--- 		tokenGET <- t .: "tokenGET"
--- 		tokenPOST <- t .: "tokenGET"
--- 		pure $ Token { tokenGET, tokenPOST }
-
+-- | All available endpoints for melanchat
 data Route = Landing | Register | Login { next :: Maybe String } | IM
 
 derive instance genericRoute :: Generic Route _

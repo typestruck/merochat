@@ -9,6 +9,7 @@ import Data.Argonaut.Parser as P
 import Data.Array as A
 import Data.Either as DET
 import Effect.Class (liftEffect)
+import Effect.Class.Console (log)
 import HTTPure (Method(..), Request, ResponseM)
 import HTTPure as H
 import HTTPure.Lookup ((!@))
@@ -23,11 +24,11 @@ import Server.Routing as SR
 
 --split this into individual folders?
 router :: Configuration -> Request -> ResponseM
-router configuration { path, method, body }
+router configuration { headers, path, method, body }
 	| A.null path = do
 		html <- liftEffect L.template
       		R.html html
-	| method == Post && path == [ SR.toRoute Register ] = requestJSON body LA.register
+	| method == Post && path == [ SR.toRoute Register ] = liftEffect (log (show headers)) >> requestJSON body (LA.register "")
 	--TODO: type this route
         | configuration.development && path !@ 0 == "client" = R.serveDevelopmentFile (path !@ 1) (path !@ 2)
         | otherwise = H.notFound

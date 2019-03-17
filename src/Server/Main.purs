@@ -7,7 +7,9 @@ import HTTPure(ServerM)
 import Server.Configuration as CF
 import Server.Routing as RO
 
---add here safe routing
+--configuration, database pool, session have to be threaded around
+-- thus needing a state monad of some sort
+-- check if algebraic effects or monads transformers are more convenient in purescript
 
 main :: ServerM
 main = do
