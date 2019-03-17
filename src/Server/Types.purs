@@ -4,8 +4,8 @@ module Server.Types where
 import Data.Int53
 
 import Database.PostgreSQL (Pool(..))
-import HTTPure (ResponseM)
-import Run (AFF, Run(..))
+import HTTPure (Response)
+import Run (AFF, Run(..), EFFECT)
 import Data.Maybe(Maybe(..))
 import Run.Reader (READER)
 import Run.State (STATE)
@@ -21,6 +21,8 @@ type ServerState = { session :: Session }
 
 type ServerReader = { configuration :: Configuration, pool :: Pool }
 
-type ServerEffect a = Run (state :: STATE ServerState, read :: READER ServerReader, aff :: AFF) a
+--needs error strategy as well as logging
 
-type ResponseEffect = ServerEffect ResponseM
+type ServerEffect a = Run (reader :: READER ServerReader, state :: STATE ServerState, aff :: AFF, effect :: EFFECT) a
+
+type ResponseEffect = ServerEffect Response

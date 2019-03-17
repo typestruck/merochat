@@ -11,6 +11,6 @@ import Data.Tuple.Nested ((/\))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 
-pool ∷ Aff Pool
-pool = P.newPool $ (P.defaultPoolConfiguration "melanchat") { idleTimeoutMillis = Just 1000 }
+newPool ∷ Aff Pool
+newPool = P.newPool $ (P.defaultPoolConfiguration "melanchat") { idleTimeoutMillis = Just 1000 }
 

@@ -50,23 +50,19 @@ instance contentTypeRead :: Read ContentType where
 			 else OctetStream
 		where value = S.trim $ S.toLower v
 
---ok' :: forall a. Body a => Headers -> a -> ResponseEffect
+ok' :: forall a. Body a => Headers -> a -> ResponseEffect
 ok' headers = R.liftAff <<< H.ok' headers
 
---html :: String -> ResponseEffect
+html :: String -> ResponseEffect
 html contents = ok' (headerContentType $ show HTML) contents
 
-json :: forall a b c. Generic b a => EncodeRep a => b -> Run (aff :: AFF | c) Response
+json :: forall a b c. Generic b a => EncodeRep a => b -> ResponseEffect
 json value = ok' (headerContentType $ show JSON) <<< C.stringify $ EGR.genericEncodeJson value
 
-serveDevelopmentFile :: forall c. String -> String -> Run (aff :: AFF | c) Response
+serveDevelopmentFile :: String -> String -> ResponseEffect
 serveDevelopmentFile folder fileName = do
       	contents <- R.liftAff <<< FS.readFile $ "src/Client/" <> folder <> "/" <> fileName
       	ok' (contentTypeFromExtension fileName) contents
--- serveDevelopmentFile folder fileName = catchError read (const (R.liftAff H.notFound))
---  	where read = do
---       		contents <- R.liftAff <<< FS.readFile $ "src/Client/" <> folder <> "/" <> fileName
---       		ok' (contentTypeFromExtension fileName) contents
 
 contentTypeFromExtension :: String -> Headers
 contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
@@ -76,5 +72,5 @@ contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"
 
---badRequest :: String -> ResponseEffect
+badRequest :: String -> ResponseEffect
 badRequest message = R.liftAff <<< H.badRequest' (headerContentType $ show JSON) <<< C.stringify <<< EGR.genericEncodeJson $ BadRequest { reason : message}
