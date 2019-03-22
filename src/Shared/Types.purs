@@ -26,11 +26,15 @@ data Route = Landing | Register | Login { next :: Maybe String } | IM
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
 
-instance showMyRecord :: Show Route where
+instance showRoute :: Show Route where
 	show = S.genericShow
 
-newtype BadRequest = BadRequest {reason :: String}
+-- | Errors that should be reported back to the user
+data ResponseError = NotFound String | BadRequest {reason :: String} | InternalError {message :: String}
 
-derive instance genericBadRequest :: Generic BadRequest _
+derive instance genericResponseError :: Generic ResponseError _
+
+instance showResponseError :: Show ResponseError where
+	show = S.genericShow
 
 

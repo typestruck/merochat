@@ -8,13 +8,16 @@ import HTTPure (ResponseM)
 import HTTPure as H
 import Server.Response as R
 import Server.Types
+import Run.Except as RE
+import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
+import Data.Generic.Rep (class Generic)
 
-register :: String -> RegisterLogin -> ResponseEffect
+register :: String -> RegisterLogin -> ServerEffect Token
 register remoteIP (RegisterLogin registerLogin) = do
 	if S.null registerLogin.email || S.null registerLogin.password then
-		R.badRequest "Invalid email or password"
+		RE.throw $ BadRequest {reason :  "Invalid email or password" }
 	 else do
-		R.badRequest "Invalid email or password"
+		RE.throw $ BadRequest {reason:  "Invalid email or password" }
 	-- 	let user = (UsersDB new email: email) selectByEmail.
 	-- user ifNotNil: [ BadRequest signal: 'Email already registered' ].
 	-- MelanchatConfiguration development

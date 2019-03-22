@@ -1,9 +1,8 @@
-module Server.Response(html, json, serveDevelopmentFile, badRequest) where
+module Server.Response(html, json, serveDevelopmentFile, requestError) where
 
 import Prelude
 import Server.Types
 import Shared.Types
-
 import Data.Argonaut.Core as C
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Decode.Generic.Rep as DGR
@@ -21,7 +20,7 @@ import HTTPure.Body (class Body)
 import Node.FS.Aff as FS
 import Node.Path as P
 import Partial.Unsafe as U
-import Run (Run, AFF)
+import Run (Run, AFF, EFFECT)
 import Run as R
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
@@ -56,7 +55,7 @@ ok' headers = R.liftAff <<< H.ok' headers
 html :: String -> ResponseEffect
 html contents = ok' (headerContentType $ show HTML) contents
 
-json :: forall a b c. Generic b a => EncodeRep a => b -> ResponseEffect
+json :: forall a b. Generic b a => EncodeRep a => b -> ResponseEffect
 json value = ok' (headerContentType $ show JSON) <<< C.stringify $ EGR.genericEncodeJson value
 
 serveDevelopmentFile :: String -> String -> ResponseEffect
@@ -72,5 +71,11 @@ contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"
 
-badRequest :: String -> ResponseEffect
-badRequest message = R.liftAff <<< H.badRequest' (headerContentType $ show JSON) <<< C.stringify <<< EGR.genericEncodeJson $ BadRequest { reason : message}
+requestError :: ResponseError -> Run (aff :: AFF, effect :: EFFECT) Response
+requestError  =
+	case _ of
+		baddie@(BadRequest _) -> liftedJSONResponse H.badRequest' baddie
+		err@(InternalError _) -> liftedJSONResponse H.internalServerError' err
+		--this should be a page
+		NotFound message -> R.liftAff $ H.notFound
+	where liftedJSONResponse handler = R.liftAff <<< handler (headerContentType $ show JSON) <<< C.stringify <<< EGR.genericEncodeJson
