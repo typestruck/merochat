@@ -1,6 +1,6 @@
 # Software Requirements Specification
 
-Author: @azafeh
+Author: @easafe
 
 ## Overview
 
