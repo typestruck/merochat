@@ -22,7 +22,7 @@ A new User starts off with the Karma earned by new User [trophies](#trophies).
 
 **CONSTANT** _in this document is equal to 10_
 
-* Karma algorithm
+* Karma algorithm ([#7](https://github.com/easafe/melanchat/issues/7))
 
     To compute Karma from chats, the following algorithm is used:
 
