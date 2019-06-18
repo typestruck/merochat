@@ -14,15 +14,15 @@ import Data.Maybe(Maybe(..))
 tests :: Effect Unit
 tests = M.runTest $ do
 	U.suite "routing" $ do
-		U.test "fromResouce" $ do
-			A.equal (R.fromRoute "/") $ Right Landing
-			A.equal (R.fromRoute "/register") $ Right Register
-			A.equal (R.fromRoute "/login") <<< Right $ Login { next: Nothing }
-			A.equal (R.fromRoute "/login?next=/im") <<< Right $ Login { next: Just "/im" }
-			A.assert "should not parse" <<< E.isLeft $ (R.fromRoute "mlkhhihsoad2342423kkkkk")
-        	U.test "toRoute" $ do
-			A.equal (R.toRoute Landing) "/"
-			A.equal (R.toRoute Register) "/register"
-			A.equal (R.toRoute $ Login {next :Nothing}) "/login"
+		U.test "fromRoute" $ do
+			A.equal (R.fromRoute Landing) "/"
+			A.equal (R.fromRoute Register) "/register"
+			A.equal (R.fromRoute $ Login {next :Nothing}) "/login"
 			--routing duplex automaticaly encodes url
-			A.equal (R.toRoute $ Login {next : Just "/im"}) "/login?next=%2Fim"
+			A.equal (R.fromRoute $ Login {next : Just "/im"}) "/login?next=%2Fim"
+        	U.test "toRoute" $ do
+			A.equal (R.toRoute "/") $ Right Landing
+			A.equal (R.toRoute "/register") $ Right Register
+			A.equal (R.toRoute "/login") <<< Right $ Login { next: Nothing }
+			A.equal (R.toRoute "/login?next=/im") <<< Right $ Login { next: Just "/im" }
+			A.assert "should not parse" <<< E.isLeft $ R.toRoute "mlkhhihsoad2342423kkkkk"

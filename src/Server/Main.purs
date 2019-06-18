@@ -20,5 +20,5 @@ main :: Effect Unit
 main = A.launchAff_ $ do
         c@(Configuration configuration) <- CF.readConfiguration
         pool <- D.newPool
-        EC.liftEffect $ H.serve configuration.port (RO.runRouter {c, pool}) $ C.log "Server now up on port 8000"
+        EC.liftEffect $ H.serve configuration.port (RO.runRouter {configuration : c, pool}) $ C.log "Server now up on port 8000"
 

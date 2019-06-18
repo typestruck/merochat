@@ -1,6 +1,5 @@
 body {
     background-color: rgb(38, 38, 38);
-    font-size: 18px;
     color: white;
 }
 
@@ -63,7 +62,7 @@ input[type="submit"], input[type="button"] {
 .recipient-message .text {
     border-bottom: 2px solid orange;
     border-right: 1px solid orange;
-   
+
     background: initial;
     border-radius: 0;
     border-bottom-right-radius: 6px;

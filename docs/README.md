@@ -1,6 +1,6 @@
 # Software Requirements Specification
 
-Author: @easafe
+Author: [@easafe](https://github.com/easafe)
 
 ## Overview
 
