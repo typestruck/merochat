@@ -12,7 +12,7 @@
     "purescript-effect": "^2.0.1",
     "purescript-httpure": "https://github.com/cprussin/purescript-httpure.git#92408f9636240d6c0bc02c5b5285c0fb41baab25",
     "purescript-affjax": "^8.0.0",
-    "purescript-hedwig": "https://github.com/azafeh/purescript-hedwig.git#70f2adedc9d0a711c724f43d6aac5889dad48f60",
+    "purescript-flame": "^0.3.0",
     "purescript-node-buffer": "^5.0.0",
     "purescript-exceptions": "^4.0.0",
     "purescript-node-fs": "^5.0.0",

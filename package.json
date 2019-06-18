@@ -19,7 +19,8 @@
   "license": "ISC",
   "dependencies": {
     "decimal.js": "^10.1.1",
-    "pg": "^7.9.0"
+    "pg": "^7.9.0",
+    "snabbdom-to-html": "^5.1.1"
   },
   "devDependencies": {}
 }
