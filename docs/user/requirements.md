@@ -94,9 +94,9 @@ Conversely, the following information is private:
 
 ## User Creation
 
-Besides the usual account sign up found in most websites, users may be registered as throwaways for purposes of testing the app- such users are called Temporary Users in this document. Temporary Users do not require entering any information to sign up- but expire after logout(be it by manually logging out or end of browser session) or 3 days, and cannot edit their profile. Temporary Users can be made permanent at any time by updating their setting with the necessary [information](#update-settings).
+Besides the usual account sign up found in most websites, users may be registered as throwaways for purposes of testing the app- such users are called Temporary Users in this document. Temporary Users do not require entering any information to sign up- but expire after logout (be it by manually logging out or end of browser session) or 3 days, and cannot edit their profile. Temporary Users can be made permanent at any time by updating their setting with the necessary [information](#update-settings).
 
-Mockup of landing page with call to action for registering a new account:
+Mockup of landing page with call to action for registering a new account ([#3](https://github.com/easafe/melanchat/issues/3)):
 
 ![landing page](images/registerlanding_page.png)
 
@@ -112,7 +112,7 @@ Mockup of landing page with call to action for registering a new account:
 
     * No restrictions besides non blank are applied
 
-3. (Regular) User creation
+3. (Regular) User creation ([#5](https://github.com/easafe/melanchat/issues/5))
 
     a) User is created with auto generated values for Avatar, Name, Headline and Description
 
@@ -132,7 +132,7 @@ Mockup of landing page with call to action for registering a new account:
 
 Login works as traditional by supplying account details. Third party login strategies(i.e., Facebook or Google) are out of scope.
 
-Mockup of login page:
+Mockup of login page ([#4](https://github.com/easafe/melanchat/issues/4)):
 
 ![login page](images/login.png)
 
