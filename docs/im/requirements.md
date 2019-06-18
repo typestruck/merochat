@@ -24,7 +24,7 @@ Mockup of IM screen colorized by individual components:
 
 Component for the logged in User profile and settings.
 
-Mockup of user menu component:
+Mockup of user menu component ([#6](https://github.com/easafe/melanchat/issues/6)) :
 
 ![user menu](images/user_menu.png)
 
@@ -100,7 +100,7 @@ This component shows all Users previously chatted with.
 
 * Infinite scrolling for pagination
 
-Mockup of contact list component:
+Mockup of contact list component ([#9](https://github.com/easafe/melanchat/issues/9)):
 
 ![contact list](images/contact_list.png)
 
@@ -160,7 +160,7 @@ a) Ignore this suggestion and jump to next suggestion
 
 b) Chat with this contact
 
-Suggestion component mockup:
+Suggestion component mockup ([#10](https://github.com/easafe/melanchat/issues/10)):
 
 ![suggestions](images/suggestions.png)
 
@@ -220,7 +220,7 @@ Chat history is the collections of messages between Users on a given chat. A mes
 
 * Reactions(se [Reactions](../gamification/requirements.md#reactions))
 
-Mockup of chat history component:
+Mockup of chat history component ([#11](https://github.com/easafe/melanchat/issues/11)):
 
 ![chat history](images/chat_history.png)
 
@@ -276,7 +276,7 @@ Mockup of chat input component:
 
 2. Text input
 
-    * Markdown able
+    * Markdown able ([#12](https://github.com/easafe/melanchat/issues/12))
 
     * Image/video able(both inline markdown and drag drop)
 
