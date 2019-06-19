@@ -4,14 +4,14 @@ module Shared.Template(template, externalFooter, defaultParameters) where
 import Data.Array ((:))
 import Data.Unit (Unit)
 import Effect (Effect)
-import Hedwig (Html)
-import Hedwig as H
-import Prelude ((<>), bind, ($), pure, (>=), (<=), (&&), discard, show)
-import Effect.Now as E
-import Effect.Console
+import Flame (Html)
+import Flame.HTML.Element as HE
+import Flame.HTML.Attribute as HA
+import Prelude
+import Effect.Now as EN
 import Effect.Class(liftEffect)
 import Data.Time(Time(..))
-import Data.Enum(fromEnum)
+import Data.Enum as DE
 
 --TODO memoization, caching
 
@@ -24,32 +24,32 @@ defaultParameters = { javascript : [], css : [], content : [], footer : [], nigh
 --inclusion of night theme should be a setting
 template :: Parameters -> Effect Html'
 template parameters = do
-	Time hour _ _ _ <- E.nowTime
-	pure $ templateWith parameters {nightTheme = false}-- (fromEnum hour) >= 17 && (fromEnum hour) <= 7}
+	Time hour _ _ _ <- EN.nowTime
+	pure $ templateWith parameters {nightTheme = false}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
 
 templateWith :: Parameters -> Html'
 templateWith parameters =
-	H.html [H.lang "en"] [
-		H.head [] ([
-			H.meta [H.charset "UTF-8"] [],
-			H.meta [H.name "viewport", H.content "width=device-width, initial-scale=1.0"] [],
-			H.link [H.rel "shortcut icon", H.type' "image/ico", H.href "/client/media/favicon.ico"] [],
-			H.title' [] [H.text "MelanChat (friendly) random webchat"]
+	HE.html (HA.lang "en") [
+		HE.head_ ([
+			HE.meta $ HA.charset "UTF-8",
+			HE.meta [HA.name "viewport", HA.content "width=device-width, initial-scale=1.0"],
+			HE.link [HA.rel "shortcut icon", HA.type' "image/ico", HA.href "/client/media/favicon.ico"],
+			HE.title "MelanChat (friendly) random webchat"
 		] <> styleSheets <> parameters.css),
-		H.body [] (H.div [H.id "loading", H.class' "loading"] [] : parameters.content <> parameters.footer <> parameters.javascript)
+		HE.body_ (HE.div' [HA.id "loading", HA.class' "loading"] : parameters.content <> parameters.footer <> parameters.javascript)
 	]
-	where defaultCss = [H.link [H.rel "stylesheet", H.type' "text/css", H.href "/client/css/base.css"] []]
-	      styleSheets = if parameters.nightTheme then defaultCss <> [H.link [H.rel "stylesheet", H.type' "text/css", H.href "/client/css/night.css"] []] else defaultCss
+	where defaultCss = [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]]
+	      styleSheets = if parameters.nightTheme then defaultCss <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/night.css"]] else defaultCss
 
 externalFooter :: Array Html'
 externalFooter = [
-	H.footer [] [
-		H.a [H.href "/"] [H.img [H.src "/client/media/logo.png"] []],
-		H.ul [] [
-			H.li [] [H.a [H.href "#"] [H.text "Help"]],
-			H.li [] [H.a [H.href "https://github.com/azafeh/melanchat"] [H.text "Source code"]],
-            H.li [] [H.a [H.href "#"] [H.text "Become a backer"]],
-            H.li [] [H.a [H.href "/login"] [H.text "Login"]]
+	HE.footer_ [
+		HE.a (HA.href "/") <<< HE.img $ HA.src "/client/media/logo.png",
+		HE.ul_ [
+			HE.li_ $ HA.a (HA.href "#") "Help",
+			HE.li_ $ HA.a (HA.href "https://github.com/azafeh/melanchat") "Source code",
+            		HE.li_ $ HA.a (HA.href "#") "Become a backer",
+            		HE.li_ $ HA.a (HA.href "/login") "Login"
 		]
 	]
 ]
