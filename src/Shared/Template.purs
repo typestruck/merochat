@@ -9,7 +9,6 @@ import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
 import Prelude
 import Effect.Now as EN
-import Effect.Class(liftEffect)
 import Data.Time(Time(..))
 import Data.Enum as DE
 
@@ -25,7 +24,7 @@ defaultParameters = { javascript : [], css : [], content : [], footer : [], nigh
 template :: Parameters -> Effect Html'
 template parameters = do
 	Time hour _ _ _ <- EN.nowTime
-	pure $ templateWith parameters {nightTheme = false}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
+	pure $ templateWith parameters {nightTheme = true}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
 
 templateWith :: Parameters -> Html'
 templateWith parameters =
@@ -44,12 +43,12 @@ templateWith parameters =
 externalFooter :: Array Html'
 externalFooter = [
 	HE.footer_ [
-		HE.a (HA.href "/") <<< HE.img $ HA.src "/client/media/logo.png",
+		HE.a (HA.href "/") <<< HE.img' $ HA.src "/client/media/logo.png",
 		HE.ul_ [
-			HE.li_ $ HA.a (HA.href "#") "Help",
-			HE.li_ $ HA.a (HA.href "https://github.com/azafeh/melanchat") "Source code",
-            		HE.li_ $ HA.a (HA.href "#") "Become a backer",
-            		HE.li_ $ HA.a (HA.href "/login") "Login"
+			HE.li_ $ HE.a (HA.href "#") "Help",
+			HE.li_ $ HE.a (HA.href "https://github.com/azafeh/melanchat") "Source code",
+            		HE.li_ $ HE.a (HA.href "#") "Become a backer",
+            		HE.li_ $ HE.a (HA.href "/login") "Login"
 		]
 	]
 ]

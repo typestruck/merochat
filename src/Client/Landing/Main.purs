@@ -13,6 +13,7 @@ import Shared.Types (RegisterLogin(..), Route(..))
 import Client.Common.External as E
 import Shared.Routing as R
 
+foreign import sss :: forall a. a -> String
 foreign import grecaptchaExecute :: Effect Unit
 foreign import grecaptchaReset :: Effect Unit
 

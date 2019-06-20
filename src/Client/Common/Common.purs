@@ -89,7 +89,7 @@ post url data' success error = do
 	token <- liftEffect $ getItem tokenKey
 	request url POST [RequestHeader "x-access-token" token] data' success error
 
--- using callbacks avoids here actually simplifies things as 99% of requests will be the same parsing/error handling
+-- see if this can be worked into not using callbacks
 -- | Performs a HTTP request sending JSON
 request :: forall a b c d e f. Generic d c => EncodeRep c => Generic f e => DecodeRep e => String -> Method -> Array RequestHeader -> d -> (f -> Aff a) -> (ResponseFormatError -> Aff b) -> Aff Unit
 request url method extraHeaders data' success error = do

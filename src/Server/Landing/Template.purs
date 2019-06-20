@@ -1,12 +1,13 @@
 module Server.Landing.Template where
 
-import Flame.HTML.Element as HE
-import Flame.HTML.Attribute as HA
-import Flame.Renderer.String as FRS
-import Shared.Template as ST
-import Shared.Template(defaultParameters, externalFooter)
-import Effect(Effect)
 import Prelude
+
+import Effect (Effect)
+import Flame.HTML.Attribute as HA
+import Flame.HTML.Element as HE
+import Flame.Renderer.String as FRS
+import Shared.Template (defaultParameters, externalFooter)
+import Shared.Template as ST
 
 template :: Effect String
 template = do
@@ -26,9 +27,9 @@ template = do
 				HE.div (HA.class' "green-area") [
 					HE.div (HA.class' "header") [
 						HE.a [HA.href "/", HA.class' "logo"] "MelanChat",
-						HE.div (HA.class' "login") $ HA.a (HA.href "/login") "Login"]
+						HE.div (HA.class' "login") $ HE.a (HA.href "/login") "Login"
 					],
-					HE.div [HA.class' "heading", HE.id "headline"] [
+					HE.div [HA.class' "heading", HA.id "headline"] [
 						HE.h1_ "Friendly. Random. Chat. #melanchat",
 						HE.h4_ [
 							HE.text "Create an account and chat right away with",
@@ -37,10 +38,10 @@ template = do
 						]
 					],
 					HE.div (HA.class' "sign-up") [
-						HE.input [HA.type' "text", HE.id "email", HE.placeholder "Email"],
-						HE.input [HA.type' "password", HE.id "password", HE.placeholder "Password"] ,
-						HE.div' [HA.class' "g-recaptcha", HE.property "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HE.id "captcha", HE.property "data-callback" "Landing.completeRegistration", HE.property "data-size" "invisible"],
-						HE.input [HA.type' "button", HE.id "register", HE.value "Create account"]
+						HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
+						HE.input [HA.type' "password", HA.id "password", HA.placeholder "Password"] ,
+						HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "Landing.completeRegistration", HA.createAttribute "data-size" "invisible"],
+						HE.input [HA.type' "button", HA.id "register", HA.value "Create account"]
 					]
 				]
 			],
@@ -99,6 +100,6 @@ template = do
 				],
 
 			HE.div (HA.class' "red-call") [
-				HE.a (HA.href "#headline") $ HA.h1_ "It is free! Create an account and start chatting right away #melanchat"
+				HE.a (HA.href "#headline") $ HE.h1_ "It is free! Click here to create an account and chat right away #melanchat"
 			]
 		]

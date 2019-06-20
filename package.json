@@ -1,6 +1,10 @@
 {
   "name": "melanchat",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/easafe/melanchat.git"
+  },
   "description": "",
   "main": "index.js",
   "directories": {
@@ -8,8 +12,8 @@
   },
   "scripts": {
     "repl-s": "pulp repl --src-path src/Server --include src/Shared/",
-    "watch-s": "pulp --watch run -o output/Server --src-path src/Server --include src/Shared/",
-    "repl-l": "pulp repl --src-path src/Client/Landing --include src/Shared:src/Client/Common:src/Client/External",
+    "watch-s": "pulp --watch run -o output/Server --src-path src/Server --include src/Shared/ --main Server.Main ",
+    "repl-l": "pulp repl --src-path src/Client/Landing --include src/Shared:src/Client/Common",
     "w-landing": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common --to src/Client/javascript/landing.bundle.js --source-maps --standalone Landing",
     "watch-c": "npm run w-landing",
     "watch": "npm run watch-s & npm run watch-c",
@@ -18,9 +22,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "decimal.js": "^10.1.1",
-    "pg": "^7.9.0",
+    "decimal.js": "^10.2.0",
+    "pg": "^7.11.0",
     "snabbdom-to-html": "^5.1.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "snabbdom": "^0.7.3"
+  }
 }

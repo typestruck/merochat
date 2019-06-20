@@ -7,7 +7,6 @@ import Shared.Types
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Decode.Generic.Rep as DGR
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
-import Data.Argonaut.Encode.Generic.Rep as EGR
 import Data.Argonaut.Parser as P
 import Data.Array as A
 import Data.Either as DET
