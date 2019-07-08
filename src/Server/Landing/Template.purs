@@ -14,10 +14,10 @@ template = do
 	contents <- ST.template defaultParameters { footer = externalFooter, content = content, javascript = javascript, css = css }
 	FRS.render contents
 	where   javascript = [
-			HE.script' $ HA.src "https://www.google.com/recaptcha/api.js",
-    			HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/landing.bundle.js"],
+			HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/landing.bundle.js"],
 			--we need a global callback for grecaptha so we need to directly call the bundled code
-			HE.script (HA.type' "text/javascript") "Landing.main()"
+			HE.script (HA.type' "text/javascript") "window.completeRegistration = function(cpt){return Landing.completeRegistration(cpt)();}; Landing.main();",
+			HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
 		]
 		css = [
 			HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/landing.css"]
@@ -40,7 +40,7 @@ template = do
 					HE.div (HA.class' "sign-up") [
 						HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
 						HE.input [HA.type' "password", HA.id "password", HA.placeholder "Password"] ,
-						HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "Landing.completeRegistration", HA.createAttribute "data-size" "invisible"],
+						HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
 						HE.input [HA.type' "button", HA.id "register", HA.value "Create account"]
 					]
 				]

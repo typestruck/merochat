@@ -1,11 +1,15 @@
 module Shared.Types where
 
 import Prelude
-import Data.Maybe (Maybe)
+
+import Data.Date (Date)
+import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
-import Data.Int53(Int53)
-import Data.Date(Date)
 import Data.Generic.Rep.Show as S
+import Data.Int53 (Int53)
+import Data.Maybe (Maybe)
+import Database.PostgreSQL (class FromSQLValue)
+import Foreign as F
 
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin
@@ -56,3 +60,6 @@ newtype User = User {
 	country :: Int53,
 	messageOnEnter :: Boolean
 }
+
+instance userSQLValue :: FromSQLValue User where
+	fromSQLValue = Right <<< F.unsafeFromForeign

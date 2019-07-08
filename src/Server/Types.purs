@@ -7,7 +7,8 @@ import Shared.Types
 import Data.Date (Date)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Pool(..))
+import Database.PostgreSQL (class ToSQLValue, Pool(..))
+import Foreign as F
 import HTTPure (Response)
 import Run (AFF, Run(..), EFFECT)
 import Run.Except (EXCEPT)
@@ -30,10 +31,15 @@ type ServerReader = {
 	pool :: Pool
 }
 
---needs error strategy as well as logging
+--needs logging strategy
 
 type ServerEffect a = Run (reader :: READER ServerReader, state :: STATE ServerState, except :: EXCEPT ResponseError, aff :: AFF, effect :: EFFECT) a
 
 type ResponseEffect = ServerEffect Response
 
-data By = ID Int53 | Email String | Name String
+data By = ID PrimaryKey | Email String
+
+newtype PrimaryKey = PrimaryKey Int53
+
+instance primaryKeySQLValue :: ToSQLValue PrimaryKey where
+	toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer

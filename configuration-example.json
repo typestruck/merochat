@@ -1,4 +1,7 @@
 {
-	"port" : 8000,
-	"development" : true
+	"values": [{
+		"port": 8000,
+		"development": true
+	}],
+	"tag": "Configuration"
 }

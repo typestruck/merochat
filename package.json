@@ -27,6 +27,7 @@
     "snabbdom-to-html": "^5.1.1"
   },
   "devDependencies": {
+    "pg-native": "^3.0.0",
     "snabbdom": "^0.7.3"
   }
 }
