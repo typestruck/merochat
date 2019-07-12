@@ -33,7 +33,13 @@ type ServerReader = {
 
 --needs logging strategy
 
-type ServerEffect a = Run (reader :: READER ServerReader, state :: STATE ServerState, except :: EXCEPT ResponseError, aff :: AFF, effect :: EFFECT) a
+type ServerEffect a = Run (
+	reader :: READER ServerReader,
+	state :: STATE ServerState,
+	except :: EXCEPT ResponseError,
+	aff :: AFF,
+	effect :: EFFECT
+) a
 
 type ResponseEffect = ServerEffect Response
 

@@ -39,7 +39,10 @@ instance showRoute :: Show Route where
 	show = S.genericShow
 
 -- | Errors that should be reported back to the user
-data ResponseError = NotFound String | BadRequest {reason :: String} | InternalError {message :: String}
+data ResponseError =
+	NotFound { reason :: String, isPost :: Boolean } |
+	BadRequest { reason :: String } |
+	InternalError { reason :: String }
 
 derive instance genericResponseError :: Generic ResponseError _
 

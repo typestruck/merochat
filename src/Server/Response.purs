@@ -3,25 +3,25 @@ module Server.Response(html, json, serveDevelopmentFile, requestError) where
 import Prelude
 import Server.Types
 import Shared.Types
-import Data.Argonaut.Core as C
+import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Argonaut.Decode.Generic.Rep as DGR
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
-import Data.Argonaut.Encode.Generic.Rep as EGR
+import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Maybe as M
-import Data.String as S
-import Data.String.Read (class Read, read)
-import Effect.Aff (catchError)
+import Data.Maybe as DM
+import Data.String as DS
+import Data.String.Read (class Read)
+import Data.String.Read as DSR
 import HTTPure (Headers, ResponseM, Response)
 import HTTPure as H
 import HTTPure.Body (class Body)
-import Node.FS.Aff as FS
-import Node.Path as P
-import Partial.Unsafe as U
+import Node.FS.Aff as NFA
+import Node.Path as NP
+import Partial.Unsafe as PU
 import Run (Run, AFF, EFFECT)
 import Run as R
+import Server.NotFound.Template as SNT
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
@@ -47,7 +47,7 @@ instance contentTypeRead :: Read ContentType where
 			 else if value == ".css" || value == show CSS then CSS
 			 else if value == ".html" || value == show HTML then HTML
 			 else OctetStream
-		where value = S.trim $ S.toLower v
+		where value = DS.trim $ DS.toLower v
 
 ok' :: forall a. Body a => Headers -> a -> ResponseEffect
 ok' headers = R.liftAff <<< H.ok' headers
@@ -56,17 +56,17 @@ html :: String -> ResponseEffect
 html contents = ok' (headerContentType $ show HTML) contents
 
 json :: forall a b. Generic b a => EncodeRep a => b -> ResponseEffect
-json value = ok' (headerContentType $ show JSON) <<< C.stringify $ EGR.genericEncodeJson value
+json value = ok' (headerContentType $ show JSON) <<< DAC.stringify $ DAEGR.genericEncodeJson value
 
 serveDevelopmentFile :: String -> String -> ResponseEffect
 serveDevelopmentFile folder fileName = do
-      	contents <- R.liftAff <<< FS.readFile $ "src/Client/" <> folder <> "/" <> fileName
+      	contents <- R.liftAff <<< NFA.readFile $ "src/Client/" <> folder <> "/" <> fileName
       	ok' (contentTypeFromExtension fileName) contents
 
 contentTypeFromExtension :: String -> Headers
-contentTypeFromExtension = headerContentType <<< show <<< read' <<< P.extname
+contentTypeFromExtension = headerContentType <<< show <<< read' <<< NP.extname
 	where   read' :: String -> ContentType
-		read' = U.unsafePartial M.fromJust <<< read
+		read' = PU.unsafePartial DM.fromJust <<< DSR.read
 
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"
@@ -74,8 +74,12 @@ headerContentType = H.header "Content-Type"
 requestError :: ResponseError -> Run (aff :: AFF, effect :: EFFECT) Response
 requestError  =
 	case _ of
-		baddie@(BadRequest _) -> liftedJSONResponse H.badRequest' baddie
-		err@(InternalError _) -> liftedJSONResponse H.internalServerError' err
-		--this should be a page
-		NotFound message -> R.liftAff $ H.notFound
-	where liftedJSONResponse handler = R.liftAff <<< handler (headerContentType $ show JSON) <<< C.stringify <<< EGR.genericEncodeJson
+		baddie@(BadRequest { reason }) -> liftedJSONResponse H.badRequest' reason
+		err@(InternalError { reason }) -> liftedJSONResponse H.internalServerError' reason
+		unfound@(NotFound { reason, isPost }) ->
+			if isPost then
+				liftedJSONResponse (const <<< H.notFound') reason
+			 else do
+				contents <- R.liftEffect SNT.template
+				R.liftAff $ H.ok' (headerContentType $ show HTML) contents
+	where liftedJSONResponse handler = R.liftAff <<< handler (headerContentType $ show JSON)

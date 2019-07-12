@@ -18,6 +18,7 @@ import Affjax.RequestBody as RB
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat (ResponseFormatError)
 import Affjax.ResponseFormat as RF
+import Affjax.StatusCode (StatusCode(..))
 import Control.Monad.Error.Class as CMEC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Decode.Generic.Rep as DADGR
@@ -84,7 +85,7 @@ post' url data' = do
 	response <- post url data'
 	case response of
 		Right right -> pure right
-		Left error -> parseJSONError $ A.printResponseFormatError error
+		Left error -> alertResponseError $ A.printResponseFormatError error
 
 -- | Performs a POST request
 post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> contents -> Aff (Either ResponseFormatError response)
@@ -107,10 +108,15 @@ request url method extraHeaders data' = do
 			content = Just <<< RB.json $ DAEGR.genericEncodeJson data'
 		}
 	case response.body of
-		Right payload -> DE.either parseJSONError (pure <<< Right) $ DADGR.genericDecodeJson payload
+		Right payload ->
+			if response.status == StatusCode 200 then
+				DE.either alertResponseError (pure <<< Right) $ DADGR.genericDecodeJson payload
+			 else
+				alertResponseError response.statusText
 		Left left -> pure $ Left left
 
-parseJSONError message = do
+--type this shit
+alertResponseError message = do
 	liftEffect $ alert message
 	CMEC.throwError <<< EE.error $ "Could not parse json: " <> message
 
