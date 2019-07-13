@@ -17,7 +17,8 @@ import Run.State (STATE)
 
 newtype Configuration = Configuration {
 	port :: Int,
-	development :: Boolean
+	development :: Boolean,
+	captchaSecret :: String
 }
 
 derive instance genericConfiguration :: Generic Configuration _

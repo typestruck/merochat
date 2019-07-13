@@ -27,11 +27,11 @@ register captchaResponse = do
 				grecaptchaExecute
 			 else
 				EA.launchAff_ $ do
-					response <- CC.post (SR.fromRoute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse })
+					response <- CC.post (SR.fromRouteAbsolute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse })
 					case response of
 						Right token -> enter token
 						_ -> liftEffect grecaptchaReset
-	where   enter token = liftEffect <<< CCE.login token $ SR.fromRoute IM
+	where   enter token = liftEffect <<< CCE.login token $ SR.fromRouteAbsolute IM
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit

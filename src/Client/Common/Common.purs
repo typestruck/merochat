@@ -118,7 +118,7 @@ request url method extraHeaders data' = do
 --type this shit
 alertResponseError message = do
 	liftEffect $ alert message
-	CMEC.throwError <<< EE.error $ "Could not parse json: " <> message
+	CMEC.throwError <<< EE.error $ "Error: " <> message
 
 setLocation :: String -> Effect Unit
 setLocation url = do

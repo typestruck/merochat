@@ -2,27 +2,27 @@ module Test.Shared.Routing where
 
 import Prelude
 import Effect (Effect)
-import Test.Unit as U
-import Test.Unit.Main as M
-import Test.Unit.Assert as A
+import Test.Unit as TU
+import Test.Unit.Main as TUM
+import Test.Unit.Assert as TUA
 import Data.Either(Either(..))
-import Data.Either as E
-import Shared.Routing as R
+import Data.Either as DE
+import Shared.Routing as SR
 import Shared.Types
 import Data.Maybe(Maybe(..))
 
 tests :: Effect Unit
-tests = M.runTest $ do
-	U.suite "routing" $ do
-		U.test "fromRoute" $ do
-			A.equal (R.fromRoute Landing) "/"
-			A.equal (R.fromRoute Register) "/register"
-			A.equal (R.fromRoute $ Login {next :Nothing}) "/login"
+tests = TUM.runTest $ do
+	TU.suite "routing" $ do
+		TU.test "fromRouteAbsolute" $ do
+			TUA.equal (SR.fromRouteAbsolute Landing) "/"
+			TUA.equal (SR.fromRouteAbsolute Register) "/register"
+			TUA.equal (SR.fromRouteAbsolute $ Login {next :Nothing}) "/login"
 			--routing duplex automaticaly encodes url
-			A.equal (R.fromRoute $ Login {next : Just "/im"}) "/login?next=%2Fim"
-        	U.test "toRoute" $ do
-			A.equal (R.toRoute "/") $ Right Landing
-			A.equal (R.toRoute "/register") $ Right Register
-			A.equal (R.toRoute "/login") <<< Right $ Login { next: Nothing }
-			A.equal (R.toRoute "/login?next=/im") <<< Right $ Login { next: Just "/im" }
-			A.assert "should not parse" <<< E.isLeft $ R.toRoute "mlkhhihsoad2342423kkkkk"
+			TUA.equal (SR.fromRouteAbsolute $ Login {next : Just "/im"}) "/login?next=%2Fim"
+        	TU.test "toRoute" $ do
+			TUA.equal (SR.toRoute "/") $ Right Landing
+			TUA.equal (SR.toRoute "/register") $ Right Register
+			TUA.equal (SR.toRoute "/login") <<< Right $ Login { next: Nothing }
+			TUA.equal (SR.toRoute "/login?next=/im") <<< Right $ Login { next: Just "/im" }
+			TUA.assert "should not parse" <<< DE.isLeft $ SR.toRoute "mlkhhihsoad2342423kkkkk"

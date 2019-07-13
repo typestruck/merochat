@@ -21,10 +21,10 @@ login = do
 	registerLogin  <- E.validateEmailPassword
 	M.maybe (pure unit) $ \rl -> A.launchAff_ $ C.post' (R.toResource Login) rl enter
 	where  -- the location to go after login is either the query parameter next or /im
-		defaultNext = R.fromRoute $ Login {next: Just $ R.fromRoute IM }
+		defaultNext = R.fromRouteAbsolute $ Login {next: Just $ R.fromRouteAbsolute IM }
 
 		next [] = defaultNext
-		next location = R.fromRoute $ Login {next: Just location}
+		next location = R.fromRouteAbsolute $ Login {next: Just location}
 
 		enter token = liftEffect $ do
 			redirect <- R.toRoute <<< next <$> C.search

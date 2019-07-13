@@ -34,7 +34,6 @@ router { headers, path, method, body }
 		html <- R.liftEffect SLL.template
       		SRR.html html
 	| method == Post && path == [ SRO.fromRoute Register ] = do
-		R.liftEffect (EC.log (show headers))
 		json body (SLA.register "")
 	--TODO: type this route
         | otherwise = do

@@ -12,7 +12,10 @@ import Run as R
 import Run.Reader as RR
 
 newPool ∷ Aff Pool
-newPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchat") { idleTimeoutMillis = Just 1000 }
+newPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {
+        user = Just "melanchat",
+        idleTimeoutMillis = Just 1000
+}
 
 scalar query row = withConnection (\connection -> DP.scalar connection query row)
 
