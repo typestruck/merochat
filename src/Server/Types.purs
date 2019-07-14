@@ -1,7 +1,8 @@
 -- | Types common to all modules
 module Server.Types where
 
-import Data.Int53
+import Data.Int53 as DI
+import Data.Int53 (Int53)
 import Shared.Types
 import Prelude
 import Data.Date (Date)
@@ -21,7 +22,9 @@ import Data.Bifunctor as DB
 newtype Configuration = Configuration {
 	port :: Int,
 	development :: Boolean,
-	captchaSecret :: String
+	captchaSecret :: String,
+	benderURL :: String,
+	useBender :: Boolean
 }
 
 newtype CaptchaResponse = CaptchaResponse {
@@ -59,7 +62,7 @@ instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
 	toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
-	fromSQLValue = DB.lmap show <<< CME.runExcept <<< F.readInt
+	fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
 
 data BenderAction = Name | Description
 

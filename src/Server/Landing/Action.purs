@@ -13,7 +13,9 @@ import Server.Database.User as SDA
 import Run.Except as RE
 import Node.HTTP.Client as NTC
 import Run.Reader as RR
+import Data.Int53 (Int53)
 import Run as R
+import Data.Either as DE
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Generic.Rep (class Generic)
 import Data.HTTP.Method (Method(..))
@@ -65,15 +67,15 @@ register remoteIP (RegisterLogin registerLogin) = do
 				headline <- SB.generateHeadline
 				description <- SB.generateDescription
 				password <- hashPassword registerLogin.password
-				SDA.createUser $ User {
+				PrimaryKey id <- SDA.createUser $ User {
 					email: registerLogin.email,
 					name,
 					password,
 					headline,
 					description
 				}
-				createToken
-			| otherwise = throwInternalError "Incorrect captcha"
+				createToken id
+			| otherwise = SRR.throwInternalError "Incorrect captcha"
 	-- ^ Melanchat
 	-- 	createToken:
 	-- 		((UsersDB new
@@ -83,3 +85,9 @@ register remoteIP (RegisterLogin registerLogin) = do
 	-- 					headline: self generateHeadline;
 	-- 					description: self generateDescription;
 	-- 					insert))
+
+hashPassword :: String -> ServerEffect _
+hashPassword = ?hole
+
+createToken :: Int53 -> ServerEffect _
+createToken = ?hole2

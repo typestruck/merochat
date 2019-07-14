@@ -1,4 +1,10 @@
-module Server.Response(html, json, serveDevelopmentFile, requestError) where
+module Server.Response(
+	html,
+	json,
+	serveDevelopmentFile,
+	requestError,
+	throwInternalError
+) where
 
 import Prelude
 import Server.Types
