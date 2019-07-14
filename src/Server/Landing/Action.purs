@@ -28,6 +28,8 @@ import Affjax.ResponseFormat (ResponseFormatError)
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
 import Data.FormURLEncoded as DF
+import Server.Database.Action as SDA
+import Server.Bender as SB
 
 register :: String -> RegisterLogin -> ServerEffect Token
 register remoteIP (RegisterLogin registerLogin) = do
@@ -38,10 +40,10 @@ register remoteIP (RegisterLogin registerLogin) = do
 	when (DM.isJust user) <<< RE.throw $ BadRequest { reason:  "Email already registered" }
 
 	{ configuration : Configuration configuration } <- RR.ask
-	response <- A.request $ A.defaultRequest {
+	response <- R.liftAff <<< A.request $ A.defaultRequest {
 			url = "https://www.google.com/recaptcha/api/siteverify",
 			method = Left POST,
-			responseFormat = RF.string,
+			responseFormat = RF.json,
 			content = Just <<< RB.formURLEncoded $ DF.fromArray [
 				Tuple "secret" $ Just configuration.captchaSecret,
 				Tuple "response" registerLogin.captchaResponse
@@ -50,19 +52,28 @@ register remoteIP (RegisterLogin registerLogin) = do
 	case response.body of
 		Right payload ->
 			if response.status == StatusCode 200 then
-				R.liftEffect $ EC.log payload
+				DE.either SRR.throwInternalError finish $ DADGR.genericDecodeJson payload
 			 else
-				R.liftEffect $ EC.log response.statusText
-		Left left -> RE.throw $ InternalError { reason: left }
+				SRR.throwInternalError response.statusText
+		Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
 
 	pure $ Token {tokenGET: "", tokenPOST: ""}
-	-- MelanchatConfiguration development
-	-- 	ifFalse: [ ((NeoJSONReader
-	-- 			fromString:
-	-- 				(ZnClient new
-	-- 					formAt: #remoteip put: remoteIP;
-	-- 					post)) at: #success)
-	-- 			ifFalse: [ BadRequest signal: 'Incorrect captcha' ] ].
+
+	where   finish CaptchaResponse {success}
+			| success = do
+				name <- SB.generateName
+				headline <- SB.generateHeadline
+				description <- SB.generateDescription
+				password <- hashPassword registerLogin.password
+				SDA.createUser $ User {
+					email: registerLogin.email,
+					name,
+					password,
+					headline,
+					description
+				}
+				createToken
+			| otherwise = throwInternalError "Incorrect captcha"
 	-- ^ Melanchat
 	-- 	createToken:
 	-- 		((UsersDB new

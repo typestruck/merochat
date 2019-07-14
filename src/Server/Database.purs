@@ -10,12 +10,21 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Run as R
 import Run.Reader as RR
+import Data.Maybe as DM
+import Partial.Unsafe as PU
 
 newPool ∷ Aff Pool
 newPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {
         user = Just "melanchat",
         idleTimeoutMillis = Just 1000
 }
+
+insert query row = withConnection insertReturnID
+        where   addReturnID (Query text) = Query $ text <> " returning id"
+
+                insertReturnID connection = do
+                        result <- DP.scalar connection (addReturnID query) row
+                        pure $ PU.unsafePartial (DM.fromJust result)
 
 scalar query row = withConnection (\connection -> DP.scalar connection query row)
 

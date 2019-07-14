@@ -1,7 +1,10 @@
 {
 	"values": [{
 		"port": 8000,
-		"development": true
+		"development": true,
+		"captchaSecret": "secret",
+		"benderURL": "http://localhost:1337/",
+		"useBender": true
 	}],
 	"tag": "Configuration"
 }

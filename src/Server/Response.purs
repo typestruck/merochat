@@ -20,6 +20,7 @@ import Node.FS.Aff as NFA
 import Node.Path as NP
 import Partial.Unsafe as PU
 import Run (Run, AFF, EFFECT)
+import Run.Except as RE
 import Run as R
 import Server.NotFound.Template as SNT
 
@@ -49,13 +50,13 @@ instance contentTypeRead :: Read ContentType where
 			 else OctetStream
 		where value = DS.trim $ DS.toLower v
 
-ok' :: forall a. Body a => Headers -> a -> ResponseEffect
+ok' :: forall response. Body response => Headers -> response -> ResponseEffect
 ok' headers = R.liftAff <<< H.ok' headers
 
 html :: String -> ResponseEffect
 html contents = ok' (headerContentType $ show HTML) contents
 
-json :: forall a b. Generic b a => EncodeRep a => b -> ResponseEffect
+json :: forall response r. Generic response r => EncodeRep r => response -> ResponseEffect
 json value = ok' (headerContentType $ show JSON) <<< DAC.stringify $ DAEGR.genericEncodeJson value
 
 serveDevelopmentFile :: String -> String -> ResponseEffect
@@ -83,3 +84,6 @@ requestError  =
 				contents <- R.liftEffect SNT.template
 				R.liftAff $ H.ok' (headerContentType $ show HTML) contents
 	where liftedJSONResponse handler = R.liftAff <<< handler (headerContentType $ show JSON)
+
+throwInternalError :: forall whatever. String -> ServerEffect whatever
+throwInternalError reason = RE.throw $ InternalError { reason: reason }
