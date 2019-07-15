@@ -11,7 +11,6 @@ import Data.Argonaut.Parser as DAP
 import Data.Array as DA
 import Data.Either as DET
 import Data.Generic.Rep (class Generic)
-import Effect.Console as EC
 import HTTPure (Method(..), Request, ResponseM)
 import Data.Maybe(Maybe(..))
 import HTTPure.Lookup ((!@))

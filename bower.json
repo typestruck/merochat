@@ -35,7 +35,9 @@
     "purescript-psci-support": "^4.0.0",
     "purescript-routing": "^8.0.0",
     "purescript-test-unit": "^14.0.0",
-    "purescript-debug": "^4.0.0"
+    "purescript-debug": "^4.0.0",
+    "purescript-crypto": "^2.0.0",
+    "purescript-simple-jwt": "^1.0.2"
   },
   "resolutions": {
     "purescript-typelevel-prelude": "^4.0.0",
