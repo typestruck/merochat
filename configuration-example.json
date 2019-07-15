@@ -6,7 +6,8 @@
 		"benderURL": "http://localhost:1337/",
 		"useBender": true,
 		"tokenSecretGET": "this is my get secret",
-		"tokenSecretPOST": "this is my post secret"
+		"tokenSecretPOST": "this is my post secret",
+		"salt": "this is my salt"
 	}],
 	"tag": "Configuration"
 }

@@ -27,7 +27,8 @@ newtype Configuration = Configuration {
 	benderURL :: String,
 	useBender :: Boolean,
 	tokenSecretGET :: String,
-	tokenSecretPOST :: String
+	tokenSecretPOST :: String,
+	salt :: String
 }
 
 derive instance genericConfiguration :: Generic Configuration _
@@ -41,7 +42,6 @@ instance decodeCaptchaResponse :: DecodeJson CaptchaResponse where
 		object <- DAD.decodeJson json
    		success <- DAD.getField object "success"
    		pure $ CaptchaResponse { success }
-
 
 type Session = { user :: Maybe Int53 }
 

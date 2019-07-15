@@ -4,14 +4,15 @@ import Prelude
 import Server.Types
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Connection, Pool(..), Query(..))
+import Data.Maybe as DM
+import Database.PostgreSQL (class FromSQLValue, class ToSQLRow, Connection, Pool(..), Query(..), Row1(..))
 import Database.PostgreSQL as DP
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Console as EC
+import Partial.Unsafe as PU
 import Run as R
 import Run.Reader as RR
-import Data.Maybe as DM
-import Partial.Unsafe as PU
 
 newPool ∷ Aff Pool
 newPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {

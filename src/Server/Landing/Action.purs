@@ -26,7 +26,8 @@ import Data.Tuple (Tuple(..))
 import Effect.Console as EC
 import HTTPure (ResponseM)
 import HTTPure as H
-import Node.Crypto.Hash as NCH
+import Node.Crypto.Hash as NCHA
+import Node.Crypto.Hmac as NCH
 import Node.HTTP.Client as NTC
 import Node.Simple.Jwt (Jwt(..))
 import Node.Simple.Jwt as NSJ
@@ -69,6 +70,7 @@ register remoteIP (RegisterLogin registerLogin) = do
 				headline <- SB.generateHeadline
 				description <- SB.generateDescription
 				password <- hashPassword registerLogin.password
+				R.liftEffect $ EC.log password
 				PrimaryKey id <- SDA.createUser {
 					email: registerLogin.email,
 					name,
@@ -89,7 +91,9 @@ register remoteIP (RegisterLogin registerLogin) = do
 	-- 					insert))
 
 hashPassword :: String -> ServerEffect String
-hashPassword = R.liftEffect <<< NCH.hex NCH.SHA512
+hashPassword password = do
+	{ configuration : Configuration configuration } <- RR.ask
+	R.liftEffect $ NCH.hex NCHA.SHA512 configuration.salt password
 
 createToken :: Int53 -> ServerEffect Token
 createToken id = do

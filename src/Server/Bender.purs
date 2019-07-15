@@ -4,32 +4,36 @@ module Server.Bender (
         generateDescription
 ) where
 
+import Prelude
+import Server.Types
+
 import Affjax as A
 import Affjax.RequestBody as RB
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat (ResponseFormatError)
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
-import Data.FormURLEncoded as DF
+import Data.Either (Either(..))
 import Data.HTTP.Method (Method(..))
-import Effect.Console as EC
-import Data.Either(Either(..))
-import Data.Tuple(Tuple(..))
-import Data.Maybe(Maybe(..))
-import Run.Reader as RR
-import Effect.Random as ER
-import Prelude
-import Data.String as DS
-import Run as R
+import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
-import Server.Types
+import Data.String as DS
+import Data.Tuple (Tuple(..))
+import Effect.Console as EC
+import Effect.Random as ER
+import Run as R
+import Run.Reader as RR
 import Server.Response as SRR
 
 generateName :: ServerEffect String
-generateName = pure ""
+generateName = do
+        size <- R.liftEffect $ ER.randomInt 10 30
+        generate Name size
 
 generateDescription :: ServerEffect String
-generateDescription = pure ""
+generateDescription = do
+        size <- R.liftEffect $ ER.randomInt 120 1000
+        generate Description size
 
 generateHeadline :: ServerEffect String
 generateHeadline = do
@@ -54,7 +58,7 @@ generate action size = do
 
         if configuration.useBender then do
                 response <- R.liftAff <<< A.request $ A.defaultRequest {
-                                url = configuration.benderURL <> "generate?what=" <> show action <> "&max-chars" <> show size,
+                                url = configuration.benderURL <> "generate?what=" <> show action <> "&max-chars=" <> show size,
                                 method = Left GET,
                                 responseFormat = RF.string
                         }

@@ -8,7 +8,7 @@ create table users
 (
     id serial primary key,
     name varchar(50) not null,
-    password char(32) not null,
+    password char(128) not null,
     joined timestamp default clock_timestamp(),
     email varchar(50) not null,
     birthday date,

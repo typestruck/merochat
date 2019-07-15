@@ -9,6 +9,7 @@ module Server.Response(
 import Prelude
 import Server.Types
 import Shared.Types
+
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
@@ -19,6 +20,7 @@ import Data.Maybe as DM
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
+import Effect.Console as EC
 import HTTPure (Headers, ResponseM, Response)
 import HTTPure as H
 import HTTPure.Body (class Body)
@@ -26,8 +28,8 @@ import Node.FS.Aff as NFA
 import Node.Path as NP
 import Partial.Unsafe as PU
 import Run (Run, AFF, EFFECT)
-import Run.Except as RE
 import Run as R
+import Run.Except as RE
 import Server.NotFound.Template as SNT
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
@@ -79,8 +81,9 @@ headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"
 
 requestError :: ResponseError -> Run (aff :: AFF, effect :: EFFECT) Response
-requestError  =
-	case _ of
+requestError ohno = do
+	R.liftEffect <<< EC.log $ show ohno
+	case ohno of
 		baddie@(BadRequest { reason }) -> liftedJSONResponse H.badRequest' reason
 		err@(InternalError { reason }) -> liftedJSONResponse H.internalServerError' reason
 		unfound@(NotFound { reason, isPost }) ->
