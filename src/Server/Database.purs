@@ -27,7 +27,11 @@ insert query row = withConnection insertReturnID
                         result <- DP.scalar connection (addReturnID query) row
                         pure $ PU.unsafePartial (DM.fromJust result)
 
-scalar query row = withConnection (\connection -> DP.scalar connection query row)
+scalar query row = withConnection $ \connection -> DP.scalar connection query row
+
+scalar' query row = withConnection $ \connection -> do
+        row <- DP.scalar connection query row
+        pure $ PU.unsafePartial (DM.fromJust row)
 
 withConnection runner = do
         { pool } <- RR.ask

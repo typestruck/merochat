@@ -39,56 +39,56 @@ import Server.Database.Action as SDA
 import Server.Database.User as SDU
 import Server.Response as SRR
 
+invalidUserEmailMessage :: String
+invalidUserEmailMessage = "Invalid email or password"
+
 register :: String -> RegisterLogin -> ServerEffect Token
 register remoteIP (RegisterLogin registerLogin) = do
-	when (DS.null registerLogin.email || DS.null registerLogin.password) <<< RE.throw $ BadRequest { reason: "Invalid email or password" }
+	when (DS.null registerLogin.email || DS.null registerLogin.password) <<< RE.throw $ BadRequest { reason: invalidUserEmailMessage }
 
 	user <- SDU.userBy $ Email registerLogin.email
 
 	when (DM.isJust user) <<< RE.throw $ BadRequest { reason:  "Email already registered" }
 
 	{ configuration : Configuration configuration } <- RR.ask
-	response <- R.liftAff <<< A.request $ A.defaultRequest {
-			url = "https://www.google.com/recaptcha/api/siteverify",
-			method = Left POST,
-			responseFormat = RF.json,
-			content = Just <<< RB.formURLEncoded $ DF.fromArray [
-				Tuple "secret" $ Just configuration.captchaSecret,
-				Tuple "response" registerLogin.captchaResponse
-			]
-		}
-	case response.body of
-		Right payload ->
-			if response.status == StatusCode 200 then
-				DE.either SRR.throwInternalError finish $ DAD.decodeJson payload
-			 else
-				SRR.throwInternalError response.statusText
-		Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
-	where   finish (CaptchaResponse {success})
-			| success = do
-				name <- SB.generateName
-				headline <- SB.generateHeadline
-				description <- SB.generateDescription
-				password <- hashPassword registerLogin.password
-				R.liftEffect $ EC.log password
-				PrimaryKey id <- SDA.createUser {
-					email: registerLogin.email,
-					name,
-					password,
-					headline,
-					description
+
+	if not configuration.development then do
+		response <- R.liftAff <<< A.request $ A.defaultRequest {
+					url = "https://www.google.com/recaptcha/api/siteverify",
+					method = Left POST,
+					responseFormat = RF.json,
+					content = Just <<< RB.formURLEncoded $ DF.fromArray [
+						Tuple "secret" $ Just configuration.captchaSecret,
+						Tuple "response" registerLogin.captchaResponse
+					]
 				}
-				createToken id
+		case response.body of
+			Right payload ->
+				if response.status == StatusCode 200 then
+					DE.either SRR.throwInternalError finishWithCaptcha $ DAD.decodeJson payload
+				else
+					SRR.throwInternalError response.statusText
+			Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
+	 else
+	 	finish
+	where
+		finish = do
+			name <- SB.generateName
+			headline <- SB.generateHeadline
+			description <- SB.generateDescription
+			password <- hashPassword registerLogin.password
+			PrimaryKey id <- SDA.createUser {
+				email: registerLogin.email,
+				name,
+				password,
+				headline,
+				description
+			}
+			createToken id
+
+		finishWithCaptcha (CaptchaResponse {success})
+			| success = finish
 			| otherwise = SRR.throwInternalError "Incorrect captcha"
-	-- ^ Melanchat
-	-- 	createToken:
-	-- 		((UsersDB new
-	-- 					name: self generateName;
-	-- 					password: (self class hashPassword: password);
-	-- 					email: email;
-	-- 					headline: self generateHeadline;
-	-- 					description: self generateDescription;
-	-- 					insert))
 
 hashPassword :: String -> ServerEffect String
 hashPassword password = do

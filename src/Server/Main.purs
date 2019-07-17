@@ -4,17 +4,17 @@ import Prelude
 import Server.Types
 
 import Effect (Effect)
-import Effect.Aff as A
-import Effect.Class as EC
+import Effect.Aff as EA
+import Effect.Class (liftEffect)
 import Effect.Console as C
 import HTTPure as H
 import Server.Configuration as CF
-import Server.Database as D
-import Server.Routing as RO
+import Server.Database as SD
+import Server.Routing as SR
 
 main :: Effect Unit
-main = A.launchAff_ $ do
+main = EA.launchAff_ $ do
         c@(Configuration configuration) <- CF.readConfiguration
-        pool <- D.newPool
-        EC.liftEffect $ H.serve configuration.port (RO.runRouter {configuration : c, pool}) $ C.log "Server now up on http://localhost:8000"
+        pool <- SD.newPool
+        liftEffect $ H.serve configuration.port (SR.runRouter {configuration : c, pool}) $ EC.log "Server now up on http://localhost:8000"
 

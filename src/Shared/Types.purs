@@ -12,8 +12,7 @@ import Database.PostgreSQL (class FromSQLValue)
 import Foreign as F
 
 -- | Fields for registration or login
-newtype RegisterLogin = RegisterLogin
-	{
+newtype RegisterLogin = RegisterLogin {
 	        email:: String,
 	        password:: String,
 	        captchaResponse:: Maybe String
