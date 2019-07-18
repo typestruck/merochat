@@ -6,7 +6,9 @@ import Shared.Types
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Aff as EA
+import HTTPure (Response)
 import Run (Run, AFF, EFFECT)
 import Run as R
 import Run.Except as RE
@@ -27,36 +29,32 @@ configuration = Configuration {
         salt: "ghi"
 }
 
-serverAction :: forall result. (Unit -> ServerEffect result) -> Effect Unit
-serverAction action =
-        EA.launchAff_ $ do
-                pool <- SD.newPool
-                R.runBaseAff' <<<
-                RE.catch SRR.requestError <<<
-                RS.evalState {
-                        session : { user : Nothing }
-                } <<<
-                RR.runReader {
-                        configuration,
-                        pool
-                } $ do
-                        _ <- action unit
-                        SRR.html ""
+serverAction :: forall result. (Unit -> ServerEffect result) -> Aff Response
+serverAction action = do
+        pool <- SD.newPool
+        R.runBaseAff' <<<
+        RE.catch SRR.requestError <<<
+        RS.evalState {
+                session : { user : Nothing }
+        } <<<
+        RR.runReader {
+                configuration,
+                pool
+        } $ do
+                _ <- action unit
+                SRR.html ""
 
-serverActionCatch :: forall result. (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> (Unit -> ServerEffect result) -> Effect Unit
-serverActionCatch catch action  =
-        EA.launchAff_ $ do
-                pool <- SD.newPool
-                R.runBaseAff' <<<
-                RE.catch catch <<<
-                RS.evalState {
-                        session : { user : Nothing }
-                } <<<
-                RR.runReader {
-                        configuration,
-                        pool
-                } $ do
-                        _ <- action unit
-                        SRR.html ""
-
-
+serverActionCatch :: forall result. (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> (Unit -> ServerEffect result) -> Aff Response
+serverActionCatch catch action  = do
+        pool <- SD.newPool
+        R.runBaseAff' <<<
+        RE.catch catch <<<
+        RS.evalState {
+                session : { user : Nothing }
+        } <<<
+        RR.runReader {
+                configuration,
+                pool
+        } $ do
+                _ <- action unit
+                SRR.html ""

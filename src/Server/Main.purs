@@ -6,7 +6,7 @@ import Server.Types
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Effect.Console as C
+import Effect.Console as EC
 import HTTPure as H
 import Server.Configuration as CF
 import Server.Database as SD

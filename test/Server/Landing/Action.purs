@@ -29,13 +29,13 @@ tests = TUM.runTest $ do
                             catch other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
 
                         TS.serverActionCatch catch $ \_ -> do
-                                _ <- SLA.register "" RegisterLogin {
+                                _ <- SLA.register "" $ RegisterLogin {
                                         email: "",
                                         password: "",
                                         captchaResponse: Nothing
                                 }
                                 users <- userCount
-                                R.liftAff $ TUA.assert 0 users
+                                R.liftAff $ TUA.equal 0 users
 
 
 
