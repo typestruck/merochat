@@ -1,4 +1,4 @@
-module Server.Database.Action where
+module Server.Landing.Database where
 
 import Server.Types
 import Shared.Types

@@ -29,22 +29,20 @@ configuration = Configuration {
         salt: "ghi"
 }
 
-serverAction :: forall result. (Unit -> ServerEffect result) -> Aff Response
+serverAction :: (Unit -> ServerEffect Unit) -> Aff Unit
 serverAction action = do
         pool <- SD.newPool
         R.runBaseAff' <<<
-        RE.catch SRR.requestError <<<
+        RE.catch (const (pure unit)) <<<
         RS.evalState {
                 session : { user : Nothing }
         } <<<
         RR.runReader {
                 configuration,
                 pool
-        } $ do
-                _ <- action unit
-                SRR.html ""
+        } $ action unit
 
-serverActionCatch :: forall result. (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> (Unit -> ServerEffect result) -> Aff Response
+serverActionCatch :: (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> (Unit -> ServerEffect Unit) -> Aff Unit
 serverActionCatch catch action  = do
         pool <- SD.newPool
         R.runBaseAff' <<<
@@ -55,6 +53,4 @@ serverActionCatch catch action  = do
         RR.runReader {
                 configuration,
                 pool
-        } $ do
-                _ <- action unit
-                SRR.html ""
+        } $ action unit
