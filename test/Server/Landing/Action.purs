@@ -65,17 +65,17 @@ tests = TUM.runTest $ do
                                                 password: "ss",
                                                 captchaResponse: Nothing
                                         }
-                TU.test "register - user creation" $
-                        TS.serverAction $ \_ -> do
-                                let password = "hunter12"
-                                _ <- SLA.register "" $ RegisterLogin {
-                                                email,
-                                                password,
-                                                captchaResponse: Nothing
-                                        }
-                                maybeUser <- SDU.userBy (Email email)
-                                case maybeUser of
-                                        Nothing -> R.liftAff $ TU.failure "user not created!"
-                                        Just user -> do
-                                                hashed <- ST.hashPassword password
-                                                R.liftAff $ TUA.equal hashed password
+                -- TU.test "register - user creation" $
+                --         TS.serverAction $ \_ -> do
+                --                 let password = "hunter12"
+                --                 _ <- SLA.register "" $ RegisterLogin {
+                --                                 email,
+                --                                 password,
+                --                                 captchaResponse: Nothing
+                --                         }
+                --                 maybeUser <- SDU.userBy (Email email)
+                --                 case maybeUser of
+                --                         Nothing -> R.liftAff $ TU.failure "user not created!"
+                --                         Just user -> do
+                --                                 hashed <- ST.hashPassword password
+                --                                 R.liftAff $ TUA.equal hashed password
