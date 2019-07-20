@@ -37,6 +37,8 @@ withConnection runner = do
         { pool } <- RR.ask
         R.liftAff $ DP.withConnection pool runner
 
+execute query row = withConnection $ \connection -> DP.execute connection query row
+
 -- singleBy :: forall a . FromSQLValue a => String -> By -> ServerEffect (Maybe a)
 -- singleBy table by = do
 -- 	{ pool } <- RR.ask

@@ -5,7 +5,8 @@ import Server.Types
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Pool)
+import Database.PostgreSQL (Pool, Query(..), Row0(..))
+import Database.PostgreSQL as DP
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
@@ -36,8 +37,6 @@ newTestPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchatTest") {
         idleTimeoutMillis = Just 1000
 }
 
---this needs to truncate tables after the test is run
-
 serverAction :: (Unit -> ServerEffect Unit) -> Aff Unit
 serverAction action = do
         pool <- newTestPool
@@ -49,7 +48,9 @@ serverAction action = do
         RR.runReader {
                 configuration,
                 pool
-        } $ action unit
+        } $ do
+                truncateTables
+                action unit
 
 serverActionCatch :: (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> (Unit -> ServerEffect Unit) -> Aff Unit
 serverActionCatch catch action  = do
@@ -62,4 +63,9 @@ serverActionCatch catch action  = do
         RR.runReader {
                 configuration,
                 pool
-        } $ action unit
+        } $ do
+                truncateTables
+                action unit
+
+truncateTables :: ServerEffect Unit
+truncateTables = SD.execute (Query "select truncateTables()") Row0
