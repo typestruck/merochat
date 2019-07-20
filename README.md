@@ -1,41 +1,39 @@
 # MelanChat
 
-MelanChat is a random chat with emphasis on friendliness. By random is meant:
+MelanChat is a friendly random chat.
 
-* User profiles start off with algorithmically generated info
+## Random
 
-* Users to chat with are randomly suggested by the app- besides skipping suggestions, it is not possible to search or filter potential new chats 
+* User profiles start off as auto generated, i.e., name, bio, avatar, etc are picked by [bender](https://github.com/easafe/bender) 
 
-* Users may be allowed to participate in novel chat features(similar to April's Fool Reddit gimmicks)
+* Users to chat with are suggested by the app - besides skipping suggestions, it is not possible to search or filter potential new chats 
 
-and as importantly, friendliness is _enforced_ by:
+* Users may be invited to participate in novel chat experiments or features, similarly to April's Fool Reddit gimmicks
 
-* Self moderation by Karma, which ~~are fake internet points~~ is a numeric score of how much MelanChat trusts a given user: every feature on the app(e.g., profile visibility, sending audio or pictures, etc) is unlocked by reaching a certain amount of Karma
+## Friendly
+
+* Self moderation by Karma: ~~fake internet points~~ a numeric score of how much a given user is trusted by the community
+
+* Features (e.g., profile visibility, sending audio or pictures, etc) are unlocked by gaining Karma
 
 * Privacy: users may choose to temporarily suspend, delete or restrict their account at any given time
 
 * Zero tolerance for bots, spammers or peverts
 
-A note on naming: melan is short for _melancia_, the Portuguese word for watermelon. Hence why the fruit theming.
+A note on naming: melan is short for _melancia_, the Portuguese word for watermelon. Hence the fruit theming.
 
 ## Contribuing
 
-Pull requests are welcome! I am still about to set up a proper workflow, but we do have a [spec](docs/README.md). Issues should be open to account for whats being done.
+Pull requests are welcome! MelanChat is still in early stages of development, but we do have a [spec](docs/README.md). Issues correspond to spec items, but feel free to contact me (or just fork the thing) if you wish to help.  
 
-MelanChat is written in Smalltalk(purely for the irony of it), PostgreSQL, TypeScript and React. CI and Monticello packages are yet TODO, however you can run it on a development machine as follows:
+MelanChat is written in PureScript, both server-side and client-side. It uses [purescript-flame](https://github.com/easafe/purescript-flame), [httpure](https://github.com/cprussin/purescript-httpure), [purescript-run](https://github.com/natefaubion/purescript-run) and PostgreSQL. To get it running locally:
 
-* Get the [Pharo VM](https://pharo.org/) 
+* Run `npm install && bower install` 
 
-* Install the dependencies from [deps.st](deps.st)
+* Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql) (the user "melanchat" and databases "melanchat" and "melanchatTest" are expected) 
 
-* Configuration goes to config.json and config-test.json, which should be placed on the root path of the Pharo VM
+* Set configuration.json (see the [example configuration](configuration-example.json))
 
-* Set up and populate the database(s) with [index.sql](sql/index.sql)
+* Get [bender](https://github.com/easafe/bender) running locally or disable it via `useBender` in configuration.json
 
-* ```npm install``` will install React and the whole humdrum JavaScript enviroment alongside TypeScript
-
-* By default, the app relies on [Bender](https://github.com/azafeh/bender) running locally: this can be disabled by setting useBender to false in config.json(and config-test.json)
-
-* Evaluate ```Melanchat configure: 'config.json'``` in the Pharo VM 
-
-* ```npm dev``` will build and watch the TypeScript assets
+* Run `npm run watch` for a hot reloading server at http://localhost:8000
