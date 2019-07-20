@@ -2,35 +2,35 @@ module Client.Login.Main where
 
 import Prelude
 
-import Client.Common as C
-import Client.Common.External as E
-import Data.Either as DET
+import Client.Common as CC
+import Client.Common.External as CCE
+import Data.Either as DE
 import Data.Maybe (Maybe(..))
-import Data.Maybe as M
-import Data.String as S
+import Data.Maybe as DM
+import Data.String as DS
 import Effect (Effect)
-import Effect.Aff as A
+import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Shared.Routing as R
+import Shared.Routing as SR
 import Shared.Types (RegisterLogin(..), Route(..), Token(..))
-import Type.Data.Boolean (kind Boolean)
 import Web.UIEvent.MouseEvent.EventTypes (click)
 
 login :: Effect Unit
 login = do
-	registerLogin  <- E.validateEmailPassword
-	M.maybe (pure unit) $ \rl -> A.launchAff_ $ C.post' (R.toResource Login) rl enter
-	where  -- the location to go after login is either the query parameter next or /im
-		defaultNext = R.fromRoute $ Login {next: Just $ R.fromRoute IM }
+	registerLogin  <- CCE.validateEmailPassword
+	EA.launchAff_ $
+		pure unit-- <- CC.post' (SR.toRoute Login) rl enter
+	-- where  -- the location to go after login is either the query parameter next or /im
+	-- 	defaultNext = SR.fromRouteAbsolute $ Login {next: Just $ SR.fromRouteAbsolute IM }
 
-		next [] = defaultNext
-		next location = R.fromRoute $ Login {next: Just location}
+	-- 	next "" = defaultNext
+	-- 	next location = SR.fromRouteAbsolute $ Login {next: Just location}
 
-		enter token = liftEffect $ do
-			redirect <- R.toRoute <<< next <$> C.search
-			E.login token $ DET.either defaultNext identity redirect
+	-- 	enter token = liftEffect $ do
+	-- 		redirect <- SR.toRoute <<< next <$> CC.search
+	-- 		CCE.login token $ DE.either (const defaultNext) SR.fromRouteAbsolute redirect
 
 main :: Effect Unit
 main = do
-	loginButton <- C.querySelector "#login"
-	C.addEventListener loginButton click (const login)
+	loginButton <- CC.querySelector "#login"
+	CC.addEventListener loginButton click (const login)

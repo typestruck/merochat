@@ -1,15 +1,18 @@
 module Shared.Types where
 
 import Prelude
-import Data.Maybe (Maybe)
+
+import Data.Date (Date)
+import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
-import Data.Int53(Int53)
-import Data.Date(Date)
 import Data.Generic.Rep.Show as S
+import Data.Int53 (Int53)
+import Data.Maybe (Maybe)
+import Database.PostgreSQL (class FromSQLValue)
+import Foreign as F
 
 -- | Fields for registration or login
-newtype RegisterLogin = RegisterLogin
-	{
+newtype RegisterLogin = RegisterLogin {
 	        email:: String,
 	        password:: String,
 	        captchaResponse:: Maybe String
@@ -35,7 +38,10 @@ instance showRoute :: Show Route where
 	show = S.genericShow
 
 -- | Errors that should be reported back to the user
-data ResponseError = NotFound String | BadRequest {reason :: String} | InternalError {message :: String}
+data ResponseError =
+	NotFound { reason :: String, isPost :: Boolean } |
+	BadRequest { reason :: String } |
+	InternalError { reason :: String }
 
 derive instance genericResponseError :: Generic ResponseError _
 
@@ -56,3 +62,6 @@ newtype User = User {
 	country :: Int53,
 	messageOnEnter :: Boolean
 }
+
+instance userSQLValue :: FromSQLValue User where
+	fromSQLValue = Right <<< F.unsafeFromForeign

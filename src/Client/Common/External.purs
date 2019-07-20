@@ -2,12 +2,11 @@ module Client.Common.External where
 
 import Prelude
 
-import Client.Common as C
+import Client.Common as CC
 import Data.Maybe (Maybe(..))
-import Data.String as S
+import Data.String as DS
 import Effect (Effect)
 import Shared.Types (RegisterLogin(..), Token(..))
-import Type.Data.Boolean (kind Boolean)
 import Browser.Cookie as BC
 import Browser.Cookies.Data(CookieOpts(..), SetCookie(..), Cookie(..))
 import Client.Common(tokenKey)
@@ -15,13 +14,13 @@ import Client.Common(tokenKey)
 -- | Abstracts the validation common to register and login
 validateEmailPassword :: Effect (Maybe RegisterLogin)
 validateEmailPassword = do
-	emailElement <- C.querySelector "#email"
-	passwordElement <- C.querySelector "#password"
-	email <- C.value emailElement
-	password <- C.value passwordElement
+	emailElement <- CC.querySelector "#email"
+	passwordElement <- CC.querySelector "#password"
+	email <- CC.value emailElement
+	password <- CC.value passwordElement
 
-	if S.null email || S.null password then do
-		C.alert "Email and password are mandatory"
+	if DS.null email || DS.null password then do
+		CC.alert "Email and password are mandatory"
 		pure Nothing
 	 else pure <<< Just $ RegisterLogin {
 				email: email,
@@ -30,7 +29,7 @@ validateEmailPassword = do
 			}
 
 login :: Token -> String -> Effect Unit
-login (Token { tokenGET : tokenGET, tokenPOST : tokenPOST }) redirect =  do
+login (Token { tokenGET, tokenPOST }) redirect =  do
 	BC.setCookie $ SetCookie {
 		cookie : Cookie {
 			key : "melanchat",
@@ -46,5 +45,5 @@ login (Token { tokenGET : tokenGET, tokenPOST : tokenPOST }) redirect =  do
 			path : Just "/"
 		}
 	}
-	C.setItem tokenKey tokenGET
-	C.setLocation redirect
+	CC.setItem tokenKey tokenGET
+	CC.setLocation redirect
