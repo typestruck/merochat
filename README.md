@@ -22,7 +22,7 @@ MelanChat is a friendly random chat.
 
 A note on naming: melan is short for _melancia_, the Portuguese word for watermelon. Hence the fruit theming.
 
-## Contribuing
+## Contributing
 
 Pull requests are welcome! MelanChat is still in early stages of development, but we do have a [spec](docs/README.md). Issues correspond to spec items, but feel free to contact me (or just fork the thing) if you wish to help.  
 
