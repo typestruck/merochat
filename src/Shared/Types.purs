@@ -97,7 +97,7 @@ instance userFromSQLRow :: FromSQLRow User where
 	] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
 		id <- DI.fromInt <$> F.readInt foreignerID
 		name <- F.readString foreignerName
-		password <- F.readString foreignerName
+		password <- F.readString foreignerPassword
 		joined <- PU.unsafePartial (DM.fromJust <<< DJ.toDate) <$> DJ.readDate foreignerJoined
 		email <- F.readString foreignerEmail
 		maybeForeignerBirthday <- F.readNull foreignerBirthday

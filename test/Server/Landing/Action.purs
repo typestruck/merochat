@@ -12,10 +12,10 @@ import Server.Database.User as SDU
 import Server.Landing.Action (invalidUserEmailMessage, emailAlreadyRegisteredMessage)
 import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
+import Server.Token as ST
 import Server.Types (By(..), ServerEffect)
 import Test.Server as TS
 import Test.Unit as TU
-import Server.Token as ST
 import Test.Unit.Assert as TUA
 import Test.Unit.Main as TUM
 
@@ -65,17 +65,17 @@ tests = TUM.runTest $ do
                                                 password: "ss",
                                                 captchaResponse: Nothing
                                         }
-                -- TU.test "register - user creation" $
-                --         TS.serverAction $ \_ -> do
-                --                 let password = "hunter12"
-                --                 _ <- SLA.register "" $ RegisterLogin {
-                --                                 email,
-                --                                 password,
-                --                                 captchaResponse: Nothing
-                --                         }
-                --                 maybeUser <- SDU.userBy (Email email)
-                --                 case maybeUser of
-                --                         Nothing -> R.liftAff $ TU.failure "user not created!"
-                --                         Just user -> do
-                --                                 hashed <- ST.hashPassword password
-                --                                 R.liftAff $ TUA.equal hashed password
+                TU.test "register - user creation" $
+                        TS.serverAction $ \_ -> do
+                                let password = "hunter12"
+                                _ <- SLA.register "" $ RegisterLogin {
+                                                email,
+                                                password,
+                                                captchaResponse: Nothing
+                                        }
+                                maybeUser <- SDU.userBy (Email email)
+                                case maybeUser of
+                                        Nothing -> R.liftAff $ TU.failure "user not created!"
+                                        Just (User user) -> do
+                                                hashed <- ST.hashPassword password
+                                                R.liftAff $ TUA.equal hashed user.password
