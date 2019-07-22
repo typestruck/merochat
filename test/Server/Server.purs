@@ -7,17 +7,13 @@ import Shared.Types
 import Data.Maybe (Maybe(..))
 import Database.PostgreSQL (Pool, Query(..), Row0(..))
 import Database.PostgreSQL as DP
-import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Aff as EA
-import HTTPure (Response)
 import Run (Run, AFF, EFFECT)
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Run.State as RS
 import Server.Database as SD
-import Server.Response as SRR
 
 configuration :: Configuration
 configuration = Configuration {

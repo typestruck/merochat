@@ -37,7 +37,8 @@
     "purescript-test-unit": "^14.0.0",
     "purescript-debug": "^4.0.0",
     "purescript-crypto": "^2.0.0",
-    "purescript-simple-jwt": "^1.0.2"
+    "purescript-simple-jwt": "^1.0.2",
+    "purescript-js-date": "^6.0.0"
   },
   "resolutions": {
     "purescript-typelevel-prelude": "^4.0.0",
