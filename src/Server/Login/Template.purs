@@ -6,22 +6,17 @@ import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
-import Shared.Template (defaultParameters, externalFooter)
+import Shared.Template (externalDefaultParameters)
 import Shared.Template as ST
 
 template :: Effect String
 template = do
-	contents <- ST.template defaultParameters {
-		footer = externalFooter,
-		content = content,
-		javascript = javascript,
-		css = css
+	contents <- ST.template externalDefaultParameters {
+		content = externalDefaultParameters.content <> content,
+		javascript = javascript
 	}
 	FRS.render contents
-	where   css = [
-			HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/external.css"]
-		]
-		javascript = [
+	where   javascript = [
 			HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/login.bundle.js"]
 		]
 		content = [

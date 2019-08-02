@@ -81,6 +81,7 @@ input[type="submit"], input[type="button"] {
 }
 
 ul {
+    -moz-padding-start: 0;
     -webkit-padding-start: 0;
 }
 

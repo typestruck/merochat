@@ -35,8 +35,39 @@
 }
 
 footer {
-        grid-row-start: 2;
-        grid-row-end: 3;
         text-align: center;
         padding: 10px;
+}
+
+ul li::after {
+        margin: 0 5px;
+}
+
+.header {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 50px;
+}
+
+.logo {
+        font-family: "Flamenco";
+        font-size: 2.8em;
+        font-weight: bold;
+        align-self: center
+}
+
+
+.login {
+        align-self: center
+}
+
+.login a {
+        font-weight: bold;
+        border: 1px solid green;
+        border-radius: 3px;
+        padding: 10px 15px;
+}
+
+.login a:hover {
+        border: 1px solid orange;
 }

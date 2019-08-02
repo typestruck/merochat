@@ -1,5 +1,10 @@
 -- | Basic functions to compose templates.
-module Shared.Template(template, externalFooter, defaultParameters) where
+module Shared.Template(
+	template,
+	externalFooter,
+	defaultParameters,
+	externalDefaultParameters
+) where
 
 import Data.Array ((:))
 import Data.Unit (Unit)
@@ -18,13 +23,35 @@ type Html' = Html Unit
 type Parameters = { javascript :: Array Html', css :: Array Html', content :: Array Html', footer :: Array Html', nightTheme :: Boolean}
 
 defaultParameters :: Parameters
-defaultParameters = { javascript : [], css : [], content : [], footer : [], nightTheme : false }
+defaultParameters = {
+	javascript: [],
+	css: [],
+	content: [],
+	footer: [],
+	nightTheme: false
+}
+
+externalDefaultParameters :: Parameters
+externalDefaultParameters = {
+	javascript: [],
+	css: [
+		HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/external.css"]
+	],
+	content: [
+		HE.div (HA.class' "header") [
+			HE.a [HA.href "/", HA.class' "logo"] "MelanChat",
+			HE.div (HA.class' "login") $ HE.a (HA.href "/login") "Login"
+		]
+	],
+	footer: externalFooter,
+	nightTheme: false
+}
 
 --inclusion of night theme should be a setting
 template :: Parameters -> Effect Html'
 template parameters = do
 	Time hour _ _ _ <- EN.nowTime
-	pure $ templateWith parameters {nightTheme = true}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
+	pure $ templateWith parameters {nightTheme = false}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
 
 templateWith :: Parameters -> Html'
 templateWith parameters =

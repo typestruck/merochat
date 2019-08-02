@@ -3,7 +3,8 @@ module Server.Response(
 	json,
 	serveDevelopmentFile,
 	requestError,
-	throwInternalError
+	throwInternalError,
+	throwBadRequest
 ) where
 
 import Prelude
@@ -12,8 +13,11 @@ import Shared.Types
 
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
+import Data.Argonaut.Encode as DAE
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
+import Data.Argonaut.Parser as DAP
+import Data.Either as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -27,6 +31,7 @@ import HTTPure.Body (class Body)
 import Node.FS.Aff as NFA
 import Node.Path as NP
 import Partial.Unsafe as PU
+import Partial.Unsafe as UP
 import Run (Run, AFF, EFFECT)
 import Run as R
 import Run.Except as RE
@@ -92,7 +97,10 @@ requestError ohno = do
 			 else do
 				contents <- R.liftEffect SNT.template
 				R.liftAff $ H.ok' (headerContentType $ show HTML) contents
-	where liftedJSONResponse handler = R.liftAff <<< handler (headerContentType $ show JSON)
+	where liftedJSONResponse handler = R.liftAff <<< handler (headerContentType $ show JSON) <<< DAC.stringify <<< DAE.encodeJson
 
 throwInternalError :: forall whatever. String -> ServerEffect whatever
 throwInternalError reason = RE.throw $ InternalError { reason: reason }
+
+throwBadRequest :: forall whatever. String -> ServerEffect whatever
+throwBadRequest reason = RE.throw $ BadRequest { reason: reason }

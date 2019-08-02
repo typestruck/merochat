@@ -15,8 +15,8 @@
     "watch-s": "pulp --watch run -o output/Server --src-path src/Server --include src/Shared/ --main Server.Main ",
     "repl-l": "pulp repl --src-path src/Client/Landing --include src/Shared:src/Client/Common",
     "repl-li": "pulp repl --src-path src/Client/Login --include src/Shared:src/Client/Common",
-    "watch-l": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common --to src/Client/javascript/landing.bundle.js --source-maps --standalone Landing",
-    "watch-li": "pulp --watch browserify -o output/Client/Login --src-path src/Client/Login --main Client.Login.Main --include src/Shared:src/Client/Common --to src/Client/javascript/login.bundle.js --source-maps",
+    "watch-l": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common --to src/Client/javascript/landing.bundle.js --standalone Landing",
+    "watch-li": "pulp --watch browserify -o output/Client/Login --src-path src/Client/Login --main Client.Login.Main --include src/Shared:src/Client/Common --to src/Client/javascript/login.bundle.js",
     "watch-c": "npm run watch-l & npm run watch-li",
     "watch": "npm run watch-s & npm run watch-c",
     "test": "echo \"Error: no test specified\" && exit 1"
