@@ -2,14 +2,16 @@ module Client.Common.External where
 
 import Prelude
 
+import Browser.Cookie as BC
+import Browser.Cookies.Data (CookieOpts(..), SetCookie(..), Cookie(..))
+import Client.Common (tokenKey)
 import Client.Common as CC
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect (Effect)
+import Effect.Class.Console as EC
+import Run (liftEffect)
 import Shared.Types (RegisterLogin(..), Token(..))
-import Browser.Cookie as BC
-import Browser.Cookies.Data(CookieOpts(..), SetCookie(..), Cookie(..))
-import Client.Common(tokenKey)
 
 -- | Abstracts the validation common to register and login
 validateEmailPassword :: Effect (Maybe RegisterLogin)

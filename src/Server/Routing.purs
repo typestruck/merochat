@@ -48,6 +48,10 @@ router { headers, path, method, body }
 		 else
 			RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
 
+-- ifAnonymous ::
+
+-- ifLogged ::
+
 serveTemplate :: Effect String -> ResponseEffect
 serveTemplate template = do
 	html <- R.liftEffect template
