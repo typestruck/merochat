@@ -7,6 +7,7 @@ import Shared.Types
 import Data.Either as DE
 import Data.Int53 (Int53)
 import Data.Int53 as DI
+import Data.Maybe (Maybe(..))
 import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
 import Node.Simple.Jwt (Jwt(..))
@@ -29,5 +30,5 @@ createToken id = do
 	Jwt tokenPOST <- R.liftEffect <<< NSJ.encode configuration.tokenSecretPOST NSJ.HS512 $ show id
 	pure $ Token { tokenGET, tokenPOST }
 
-userFromToken :: String -> String -> _ (Maybe Int53)
-userFromToken secret = R.liftEffect <<< DE.either (const Nothing) (Just <<< DI.fromInt) <<< NSJ.decode secret <<< Jwt
+userIDFromToken :: String -> String -> ServerEffect (Maybe Int53)
+userIDFromToken secret = R.liftEffect <<< map (DE.either (const Nothing) (Just <<< DI.fromInt)) <<< NSJ.decode secret <<< Jwt

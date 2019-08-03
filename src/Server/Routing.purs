@@ -29,6 +29,7 @@ import Server.Landing.Template as SLT
 import Server.Login.Template as SLIT
 import Server.Response as SRR
 import Shared.Routing as SRO
+import Server.Token as ST
 import Shared.Header (xAccessToken)
 
 --TODO: logging
@@ -68,22 +69,23 @@ json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) r
 			SRR.json response
 
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
-session :: Request -> _ ServerState
-session { headers, method }
-	| method == Get = sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
-	| otherwise = sessionFromXHeader (headers !@ xAccessToken)
+session :: Request -> ServerEffect ServerState
+session { headers, method } = do
+	maybeUserID <- if method == Get then
+				sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
+			 else
+				sessionFromXHeader (headers !@ xAccessToken)
+	pure { session: { userID: maybeUserID } }
 	where 	sessionFromCookie =
 			case _ of -- we might have other cookies later...
 				[Cookie { value }] -> do
 					{ configuration : Configuration configuration } <- RR.ask
-					maybeUserID <- ST.userFromToken configuration.tokenSecretGET value
-					pure { session: maybeUserID }
-				_ -> pure { session: Nothing }
+					ST.userIDFromToken configuration.tokenSecretGET value
+				_ -> pure Nothing
 
-		sessionFromXHeader = do
+		sessionFromXHeader value = do
 			{ configuration : Configuration configuration } <- RR.ask
-			maybeUserID <- ST.userFromToken configuration.tokenSecretPOST value
-			pure { session: maybeUserID }
+			ST.userIDFromToken configuration.tokenSecretPOST value
 
 --needs logging as well
 runRouter :: ServerReader -> Request -> ResponseM
