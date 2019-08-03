@@ -1,0 +1,73 @@
+.center-box {
+        display: grid;
+        grid-gap: 10px;
+        justify-items: center;
+}
+
+.center-box h1,
+.center-box h2,
+.center-box h3,
+.center-box h4 {
+        text-align: center;
+        font-weight: bold;
+}
+
+.box-action input {
+        height: 60px;
+        display: block;
+        width: 500px;
+        padding: 20px;
+        font-size: 1.1em;
+        border-radius: 5px;
+}
+
+.box-action input[type=button] {
+        background: #ea042b;
+        color: white;
+        font-weight: bold;
+        border: none;
+        outline: none
+}
+
+.box-action input[type="text"],
+.box-action input[type="password"] {
+        margin: 15px 0px;
+}
+
+footer {
+        text-align: center;
+        padding: 10px;
+}
+
+ul li::after {
+        margin: 0 5px;
+}
+
+.header {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 50px;
+}
+
+.logo {
+        font-family: "Flamenco";
+        font-size: 2.8em;
+        font-weight: bold;
+        align-self: center
+}
+
+
+.login {
+        align-self: center
+}
+
+.login a {
+        font-weight: bold;
+        border: 1px solid green;
+        border-radius: 3px;
+        padding: 10px 15px;
+}
+
+.login a:hover {
+        border: 1px solid orange;
+}

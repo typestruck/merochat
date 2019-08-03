@@ -44,11 +44,11 @@ emailAlreadyRegisteredMessage = "Email already registered"
 
 register :: String -> RegisterLogin -> ServerEffect Token
 register remoteIP (RegisterLogin registerLogin) = do
-	when (DS.null registerLogin.email || DS.null registerLogin.password) <<< RE.throw $ BadRequest { reason: invalidUserEmailMessage }
+	when (DS.null registerLogin.email || DS.null registerLogin.password) $ SRR.throwBadRequest invalidUserEmailMessage
 
 	user <- SDU.userBy $ Email registerLogin.email
 
-	when (DM.isJust user) <<< RE.throw $ BadRequest { reason: emailAlreadyRegisteredMessage }
+	when (DM.isJust user) $ SRR.throwBadRequest emailAlreadyRegisteredMessage
 
 	{ configuration : Configuration configuration } <- RR.ask
 
@@ -67,7 +67,7 @@ register remoteIP (RegisterLogin registerLogin) = do
 				if response.status == StatusCode 200 then
 					DE.either SRR.throwInternalError finishWithCaptcha $ DAD.decodeJson payload
 				else
-					SRR.throwInternalError response.statusText
+					SRR.throwBadRequest response.statusText
 			Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
 	 else
 	 	finish
@@ -88,4 +88,4 @@ register remoteIP (RegisterLogin registerLogin) = do
 
 		finishWithCaptcha (CaptchaResponse {success})
 			| success = finish
-			| otherwise = SRR.throwInternalError "Incorrect captcha"
+			| otherwise = SRR.throwBadRequest "Incorrect captcha"

@@ -11,7 +11,12 @@ import Shared.Template as ST
 
 template :: Effect String
 template = do
-	contents <- ST.template defaultParameters { footer = externalFooter, content = content, javascript = javascript, css = css }
+	contents <- ST.template defaultParameters {
+		footer = externalFooter,
+		content = content,
+		javascript = javascript,
+		css = css
+	}
 	FRS.render contents
 	where   javascript = [
 			HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/landing.bundle.js"],

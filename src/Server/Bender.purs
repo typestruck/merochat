@@ -13,9 +13,11 @@ import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat (ResponseFormatError)
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
+import Data.Argonaut.Core as DAC
 import Data.Either (Either(..))
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Tuple (Tuple(..))
@@ -60,15 +62,15 @@ generate action size = do
                 response <- R.liftAff <<< A.request $ A.defaultRequest {
                                 url = configuration.benderURL <> "generate?what=" <> show action <> "&max-chars=" <> show size,
                                 method = Left GET,
-                                responseFormat = RF.string
+                                responseFormat = RF.json
                         }
                 case response.body of
                         Right payload ->
                                 if response.status == StatusCode 200 then
-                                        pure payload
+                                        DM.maybe (SRR.throwInternalError "could not get text") pure $ DAC.toString payload
                                 else
                                         SRR.throwInternalError response.statusText
                         Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
          else do
                 number <- R.liftEffect $ ER.randomInt 1 1000000
-                pure $ show action <> show "-test-" <> show number
+                pure $ show action <> "-test-" <> show number

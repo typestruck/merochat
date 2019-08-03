@@ -13,5 +13,5 @@ import Server.Database as SD
 userBy :: By -> ServerEffect (Maybe User)
 userBy by =
         case by of
-                Email value -> SD.scalar (Query "select * from users where email = $1") $ Row1 value
-                ID value -> SD.scalar (Query "select * from users where id = $1") $ Row1 value
+                Email value -> SD.single (Query "select * from users where email = $1") $ Row1 value
+                ID value -> SD.single (Query "select * from users where id = $1") $ Row1 value

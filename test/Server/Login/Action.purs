@@ -1,4 +1,4 @@
-module Test.Server.Landing.Action where
+module Test.Server.Login.Action where
 
 import Prelude
 import Shared.Types
@@ -35,36 +35,8 @@ tests = TUM.runTest $ do
                                 registerExceptionTest rl = do
                                         _ <- SLA.register "" rl
                                         users <- userCount
-                                        R.liftAff $ TUA.equal 0 users
+                                        R.liftAff $ TUA.equal 0 1
 
-                        TS.serverActionCatch (catch invalidUserEmailMessage)
-                                $ \_ -> registerExceptionTest $ RegisterLogin {
-                                        email: "",
-                                        password: "",
-                                        captchaResponse: Nothing
-                                }
-
-                        TS.serverActionCatch (catch invalidUserEmailMessage)
-                                $ \_ -> registerExceptionTest $ RegisterLogin {
-                                        email,
-                                        password: "",
-                                        captchaResponse: Nothing
-                                }
-
-                        TS.serverActionCatch (catch emailAlreadyRegisteredMessage)
-                                $ \_ -> do
-                                        _ <- SLD.createUser {
-                                                email,
-                                                name: "sdsd",
-                                                password: "ss",
-                                                headline: "sd",
-                                                description: "ss"
-                                        }
-                                        registerExceptionTest $ RegisterLogin {
-                                                email,
-                                                password: "ss",
-                                                captchaResponse: Nothing
-                                        }
                 TU.test "register - user creation" $
                         TS.serverAction $ \_ -> do
                                 let password = "hunter12"

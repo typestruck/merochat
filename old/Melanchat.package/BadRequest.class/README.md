@@ -1,1 +1,0 @@
-I am the exception for bad requests raised by model classes.

@@ -20,6 +20,7 @@ import Affjax.ResponseFormat (ResponseFormatError)
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
 import Control.Monad.Error.Class as CMEC
+import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
@@ -35,6 +36,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception as EE
+import Partial.Unsafe as UP
 import Type.Data.Boolean (kind Boolean)
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
@@ -112,7 +114,7 @@ request url method extraHeaders data' = do
 			if response.status == StatusCode 200 then
 				DE.either alertResponseError (pure <<< Right) $ DADGR.genericDecodeJson payload
 			 else
-				alertResponseError response.statusText
+				alertResponseError <<< UP.unsafePartial $ DE.fromRight $ DAD.decodeJson payload
 		Left left -> pure $ Left left
 
 --type this shit

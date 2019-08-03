@@ -1,3 +1,0 @@
-accessing
-recentEmoji
-	^ recentEmoji
