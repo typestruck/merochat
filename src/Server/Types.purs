@@ -43,9 +43,13 @@ instance decodeCaptchaResponse :: DecodeJson CaptchaResponse where
    		success <- DAD.getField object "success"
    		pure $ CaptchaResponse { success }
 
-type Session = { user :: Maybe Int53 }
+type Session = {
+	userID :: Maybe Int53
+}
 
-type ServerState = { session :: Session }
+type ServerState = {
+	session :: Session
+}
 
 type ServerReader = {
 	configuration :: Configuration,

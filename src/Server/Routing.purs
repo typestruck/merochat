@@ -4,12 +4,15 @@ import Prelude
 import Server.Types
 import Shared.Types
 
+import Browser.Cookies.Data (Cookie(..))
+import Browser.Cookies.Internal as BCI
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
 import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Parser as DAP
 import Data.Array as DA
 import Effect (Effect)
+import Data.Array as DS
 import Data.Either as DET
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
@@ -26,6 +29,7 @@ import Server.Landing.Template as SLT
 import Server.Login.Template as SLIT
 import Server.Response as SRR
 import Shared.Routing as SRO
+import Shared.Header (xAccessToken)
 
 --TODO: logging
 
@@ -63,13 +67,29 @@ json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) r
 			response <- handler $ unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
 			SRR.json response
 
+-- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
+session :: Request -> _ ServerState
+session { headers, method }
+	| method == Get = sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
+	| otherwise = sessionFromXHeader (headers !@ xAccessToken)
+	where 	sessionFromCookie =
+			case _ of -- we might have other cookies later...
+				[Cookie { value }] -> do
+					{ configuration : Configuration configuration } <- RR.ask
+					maybeUserID <- ST.userFromToken configuration.tokenSecretGET value
+					pure { session: maybeUserID }
+				_ -> pure { session: Nothing }
+
+		sessionFromXHeader = do
+			{ configuration : Configuration configuration } <- RR.ask
+			maybeUserID <- ST.userFromToken configuration.tokenSecretPOST value
+			pure { session: maybeUserID }
+
 --needs logging as well
 runRouter :: ServerReader -> Request -> ResponseM
-runRouter reading =
+runRouter reading request =
 	R.runBaseAff' <<<
         RE.catch SRR.requestError <<<
-        RS.evalState {
-                session : { user : Nothing }
-        } <<<
         RR.runReader reading <<<
-	router
+        (RS.evalState <=< session request) $
+	router request

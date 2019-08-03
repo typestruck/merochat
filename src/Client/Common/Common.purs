@@ -52,6 +52,7 @@ import Web.HTML.HTMLInputElement as WHHI
 import Web.HTML.Location as WHL
 import Web.HTML.Window as WHW
 import Web.Storage.Storage as WSS
+import Shared.Header (xAccessToken)
 
 tokenKey :: String
 tokenKey = "token"
@@ -94,7 +95,7 @@ post :: forall contents c response r. Generic contents c => EncodeRep c => Gener
 post url data' = do
 	--see Token in shared/Types.purs
 	token <- liftEffect $ getItem tokenKey
-	request url POST [RequestHeader "x-access-token" token] data'
+	request url POST [RequestHeader xAccessToken token] data'
 
 -- | Performs a HTTP request with a JSON payload
 request :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Method -> Array RequestHeader -> contents -> Aff (Either ResponseFormatError response)
