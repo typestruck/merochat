@@ -1,4 +1,7 @@
-module Server.Routing (runRouter) where
+module Server.Routing (
+	runRouter,
+	session
+) where
 
 import Prelude
 import Server.Types
@@ -69,29 +72,24 @@ json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) r
 			SRR.json response
 
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
-session :: Request -> ServerEffect ServerState
-session { headers, method } = do
-	maybeUserID <- if method == Get then
+session :: Configuration -> Request -> Effect Session
+session (Configuration configuration) { headers, method } = do
+	map { userID: _ } $ if method == Get then
 				sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
-			 else
+			     else
 				sessionFromXHeader (headers !@ xAccessToken)
-	pure { session: { userID: maybeUserID } }
 	where 	sessionFromCookie =
 			case _ of -- we might have other cookies later...
-				[Cookie { value }] -> do
-					{ configuration : Configuration configuration } <- RR.ask
-					ST.userIDFromToken configuration.tokenSecretGET value
+				[Cookie { value }] -> ST.userIDFromToken configuration.tokenSecretGET value
 				_ -> pure Nothing
 
-		sessionFromXHeader value = do
-			{ configuration : Configuration configuration } <- RR.ask
-			ST.userIDFromToken configuration.tokenSecretPOST value
+		sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value
 
 --needs logging as well
-runRouter :: ServerReader -> Request -> ResponseM
-runRouter reading request =
+runRouter :: ServerReader -> ServerState -> Request -> ResponseM
+runRouter reading stating =
 	R.runBaseAff' <<<
         RE.catch SRR.requestError <<<
+        RS.evalState stating <<<
         RR.runReader reading <<<
-        (RS.evalState <=< session request) $
-	router request
+	router
