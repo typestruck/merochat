@@ -1,1 +1,0 @@
-I am responsible for database access for tags related queries.

@@ -1,3 +1,0 @@
-accessing
-active
-	^ active

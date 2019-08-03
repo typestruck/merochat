@@ -1,3 +1,0 @@
-accessing
-chatting
-	^ chatting

@@ -1,3 +1,0 @@
-accessing
-recipient
-	^ recipient

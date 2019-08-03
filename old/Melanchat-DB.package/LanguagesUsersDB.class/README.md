@@ -1,1 +1,0 @@
-I am responsible for database access for user account recovery related queries.
