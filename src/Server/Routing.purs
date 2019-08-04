@@ -14,12 +14,13 @@ import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Parser as DAP
 import Data.Array as DA
-import Effect (Effect)
 import Data.Array as DS
 import Data.Either as DET
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import HTTPure (Method(..), Request, ResponseM)
+import Data.Maybe as DM
+import Effect (Effect)
+import HTTPure (Method(..), Request, ResponseM, Path)
 import HTTPure.Lookup ((!@))
 import Partial.Unsafe (unsafePartial)
 import Run as R
@@ -27,26 +28,27 @@ import Run.Except as RE
 import Run.Reader as RR
 import Run.State as RS
 import Server.Landing.Action as SLA
-import Server.Login.Action as SLI
 import Server.Landing.Template as SLT
+import Server.Login.Action as SLI
 import Server.Login.Template as SLIT
 import Server.Response as SRR
-import Shared.Routing as SRO
 import Server.Token as ST
 import Shared.Header (xAccessToken)
+import Shared.Routing as SRO
 
 --TODO: logging
 
 --split this into individual folders?
 router :: Request -> ResponseEffect
 router { headers, path, method, body }
-	| DA.null path = serveTemplate SLT.template
+	| DA.null path = ifAnonymous path (serveTemplate SLT.template)
 	| path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) =
-		if method == Get then
-			serveTemplate SLIT.template
-		 else
-		 	json body SLI.login
-	| path == [ SRO.fromRoute Register ] && method == Post = json body (SLA.register "")
+		ifAnonymous path $ if method == Get then
+					serveTemplate SLIT.template
+				else
+					json body SLI.login
+	| path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous path (json body (SLA.register ""))
+	| path == [ SRO.fromRoute IM ] = SRR.html "IM"
 	--TODO: type this route
         | otherwise = do
 		{ configuration : Configuration configuration } <- RR.ask
@@ -56,7 +58,13 @@ router { headers, path, method, body }
 		 else
 			RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
 
--- ifAnonymous ::
+ifAnonymous :: Path -> ResponseEffect -> ResponseEffect
+ifAnonymous path handler = do
+	{ session : { userID } } <- RS.get
+	if DM.isNothing userID then
+		handler
+	 else
+		SRR.redirect <<< SRO.fromRouteAbsolute $ Login { next: Just $ show path }
 
 -- ifLogged ::
 

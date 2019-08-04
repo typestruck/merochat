@@ -4,7 +4,8 @@ module Server.Response(
 	serveDevelopmentFile,
 	requestError,
 	throwInternalError,
-	throwBadRequest
+	throwBadRequest,
+	redirect
 ) where
 
 import Prelude
@@ -25,7 +26,7 @@ import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
 import Effect.Console as EC
-import HTTPure (Headers, ResponseM, Response)
+import HTTPure (Headers, Response, ResponseM, Path)
 import HTTPure as H
 import HTTPure.Body (class Body)
 import Node.FS.Aff as NFA
@@ -104,3 +105,6 @@ throwInternalError reason = RE.throw $ InternalError { reason: reason }
 
 throwBadRequest :: forall whatever. String -> ServerEffect whatever
 throwBadRequest reason = RE.throw $ BadRequest { reason: reason }
+
+redirect :: String -> ResponseEffect
+redirect = R.liftAff <<< flip H.temporaryRedirect' "" <<< H.header "Location"
