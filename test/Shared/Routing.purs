@@ -1,18 +1,20 @@
 module Test.Shared.Routing where
 
 import Prelude
-import Effect (Effect)
-import Test.Unit as TU
-import Test.Unit.Main as TUM
-import Test.Unit.Assert as TUA
-import Data.Either(Either(..))
-import Data.Either as DE
-import Shared.Routing as SR
 import Shared.Types
-import Data.Maybe(Maybe(..))
 
-tests :: Effect Unit
-tests = TUM.runTest $ do
+import Data.Either (Either(..))
+import Data.Either as DE
+import Data.Maybe (Maybe(..))
+import Effect (Effect)
+import Shared.Routing as SR
+import Test.Unit (TestSuite)
+import Test.Unit as TU
+import Test.Unit.Assert as TUA
+import Test.Unit.Main as TUM
+
+tests :: TestSuite
+tests = do
 	TU.suite "routing" $ do
 		TU.test "fromRouteAbsolute" $ do
 			TUA.equal (SR.fromRouteAbsolute Landing) "/"

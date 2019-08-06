@@ -15,6 +15,7 @@ import Server.Landing.Database as SLD
 import Server.Token as ST
 import Server.Types (By(..), ServerEffect)
 import Test.Server as TS
+import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 import Test.Unit.Main as TUM
@@ -25,8 +26,8 @@ userCount = SD.scalar' (Query "select count(1) from users") Row0
 email :: String
 email = "e@a.com"
 
-tests :: Effect Unit
-tests = TUM.runTest $ do
+tests :: TestSuite
+tests = do
         TU.suite "landing actions" $ do
                 TU.test "register - validation" $ do
                         let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason

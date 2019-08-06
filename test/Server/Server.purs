@@ -39,7 +39,7 @@ serverAction action = do
         R.runBaseAff' <<<
         RE.catch (const (pure unit)) <<<
         RS.evalState {
-                session : { user : Nothing }
+                session : { userID : Nothing }
         } <<<
         RR.runReader {
                 configuration,
@@ -54,7 +54,7 @@ serverActionCatch catch action  = do
         R.runBaseAff' <<<
         RE.catch catch <<<
         RS.evalState {
-                session : { user : Nothing }
+                session : { userID : Nothing }
         } <<<
         RR.runReader {
                 configuration,

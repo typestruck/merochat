@@ -41,14 +41,14 @@ import Shared.Routing as SRO
 --split this into individual folders?
 router :: Request -> ResponseEffect
 router { headers, path, method, body }
-	| DA.null path = ifAnonymous path (serveTemplate SLT.template)
+	| DA.null path = ifAnonymous (serveTemplate SLT.template)
 	| path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) =
-		ifAnonymous path $ if method == Get then
+		ifAnonymous $ if method == Get then
 					serveTemplate SLIT.template
 				else
 					json body SLI.login
-	| path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous path (json body (SLA.register ""))
-	| path == [ SRO.fromRoute IM ] = SRR.html "IM"
+	| path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous (json body (SLA.register ""))
+	| path == [ SRO.fromRoute IM ] = ifLogged path (SRR.html "IM")
 	--TODO: type this route
         | otherwise = do
 		{ configuration : Configuration configuration } <- RR.ask
@@ -58,15 +58,21 @@ router { headers, path, method, body }
 		 else
 			RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
 
-ifAnonymous :: Path -> ResponseEffect -> ResponseEffect
-ifAnonymous path handler = do
+ifAnonymous :: ResponseEffect -> ResponseEffect
+ifAnonymous handler = do
 	{ session : { userID } } <- RS.get
 	if DM.isNothing userID then
 		handler
 	 else
-		SRR.redirect <<< SRO.fromRouteAbsolute $ Login { next: Just $ show path }
+		SRR.redirect $ SRO.fromRouteAbsolute IM
 
--- ifLogged ::
+ifLogged :: Path -> ResponseEffect -> ResponseEffect
+ifLogged path handler = do
+	{ session : { userID } } <- RS.get
+	if DM.isJust userID then
+		handler
+	 else
+		SRR.redirect <<< SRO.fromRouteAbsolute $ Login { next: Just (path !@ 0) }
 
 serveTemplate :: Effect String -> ResponseEffect
 serveTemplate template = do
