@@ -4,15 +4,20 @@ import Prelude
 import Server.Types
 import Shared.Types
 
+import Data.Array.NonEmpty as DAN
 import Data.Either as DE
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.String.Regex as DSR
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe as DSSU
+import Effect (Effect)
 import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
 import Node.Simple.Jwt (Jwt(..))
 import Node.Simple.Jwt as NSJ
-import Effect (Effect)
 import Run as R
 import Run.Reader as RR
 
@@ -32,4 +37,11 @@ createToken id = do
 	pure $ Token { tokenGET, tokenPOST }
 
 userIDFromToken :: String -> String -> Effect (Maybe Int53)
-userIDFromToken secret = map (DE.either (const Nothing) (Just <<< DI.fromInt)) <<< NSJ.decode secret <<< Jwt
+userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.decode secret <<< Jwt
+	where 	parseInt53 input = do
+			--so glad we dont have to do if err != nil
+			matched <- DSR.match (DSSU.unsafeRegex "(Int53 (\\d+))" noFlags) input
+			position <- DAN.index matched 3
+			match <- position
+			DI.fromString match
+
