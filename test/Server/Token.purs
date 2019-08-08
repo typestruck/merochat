@@ -29,4 +29,3 @@ tests = do
 
 				userIDPOST <- UP.unsafePartial $ DM.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
 				R.liftAff $ TUA.equal id userIDPOST
-				R.liftAff $ TUA.equal 2 45

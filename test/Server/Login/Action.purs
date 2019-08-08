@@ -18,7 +18,6 @@ import Test.Server as TS
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-import Test.Unit.Main as TUM
 
 userCount :: ServerEffect Int
 userCount = SD.scalar' (Query "select count(1) from users") Row0
@@ -52,3 +51,4 @@ tests = do
                                         Just (User user) -> do
                                                 hashed <- ST.hashPassword password
                                                 R.liftAff $ TUA.equal hashed user.password
+                                                R.liftAff $ TUA.equal 2 3

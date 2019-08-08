@@ -5,6 +5,7 @@ import Server.Types
 import Shared.Types
 
 import Data.Array.NonEmpty as DAN
+import Data.Either (Either)
 import Data.Either as DE
 import Data.Int53 (Int53)
 import Data.Int53 as DI
@@ -13,10 +14,12 @@ import Data.Maybe as DM
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSSU
+import Debug.Trace as DT
 import Effect (Effect)
+import Effect.Class.Console as EC
 import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
-import Node.Simple.Jwt (Jwt(..))
+import Node.Simple.Jwt (Jwt(..), JwtError)
 import Node.Simple.Jwt as NSJ
 import Run as R
 import Run.Reader as RR
@@ -41,7 +44,7 @@ userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.deco
 	where 	parseInt53 input = do
 			--so glad we dont have to do if err != nil
 			matched <- DSR.match (DSSU.unsafeRegex "(Int53 (\\d+))" noFlags) input
-			position <- DAN.index matched 3
+			position <- DAN.index matched 2
 			match <- position
 			DI.fromString match
 
