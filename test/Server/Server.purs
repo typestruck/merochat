@@ -14,6 +14,7 @@ import Run.Except as RE
 import Run.Reader as RR
 import Run.State as RS
 import Server.Database as SD
+import Test.Unit as TUA
 
 configuration :: Configuration
 configuration = Configuration {
@@ -37,7 +38,7 @@ serverAction :: (Unit -> ServerEffect Unit) -> Aff Unit
 serverAction action = do
         pool <- newTestPool
         R.runBaseAff' <<<
-        RE.catch (const (pure unit)) <<<
+        RE.catch (\ex -> R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex) ) <<<
         RS.evalState {
                 session : { userID : Nothing }
         } <<<

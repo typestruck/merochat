@@ -12,3 +12,4 @@ generated-docs
 .vscode
 src/client/media/upload
 configuration.json
+old/

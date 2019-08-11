@@ -5,15 +5,14 @@ import Shared.Types
 
 import Data.Maybe (Maybe(..))
 import Database.PostgreSQL (Query(..), Row0(..))
-import Effect (Effect)
 import Run as R
 import Server.Database as SD
 import Server.Database.User as SDU
-import Server.Landing.Action (invalidUserEmailMessage, emailAlreadyRegisteredMessage)
-import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
+import Server.Login.Action (invalidLogin, invalidUserEmailMessage)
+import Server.Login.Action as SLIA
 import Server.Token as ST
-import Server.Types (By(..), ServerEffect)
+import Server.Types (By(..), PrimaryKey(..), ServerEffect)
 import Test.Server as TS
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -25,30 +24,73 @@ userCount = SD.scalar' (Query "select count(1) from users") Row0
 email :: String
 email = "e@a.com"
 
+password :: String
+password = "hunter12"
+
 tests :: TestSuite
 tests = do
-        TU.suite "landing actions" $ do
-                -- TU.test "register - validation" $ do
-                --         let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
-                --                 catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
+         TU.suite "login actions" $ do
+                TU.test "login - validation" $ do
+                        let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
+                                catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
 
-                --                 registerExceptionTest rl = do
-                --                         _ <- SLA.register "" rl
-                --                         users <- userCount
-                --                         R.liftAff $ TUA.equal 0 1
+                                expectExpection rl = do
+                                        _ <- SLIA.login rl
+                                        pure unit
 
-                TU.test "register - user creation" $
-                        TS.serverAction $ \_ -> do
-                                let password = "hunter12"
-                                _ <- SLA.register "" $ RegisterLogin {
+                        TS.serverActionCatch (catch invalidUserEmailMessage)
+                                $ \_ -> expectExpection $ RegisterLogin {
+                                        email: "",
+                                        password: "",
+                                        captchaResponse: Nothing
+                                }
+
+                        TS.serverActionCatch (catch invalidUserEmailMessage)
+                                $ \_ -> expectExpection $ RegisterLogin {
+                                        email,
+                                        password: "",
+                                        captchaResponse: Nothing
+                                }
+
+                        TS.serverActionCatch (catch invalidLogin)
+                                $ \_ -> expectExpection $ RegisterLogin {
+                                        email,
+                                        password,
+                                        captchaResponse: Nothing
+                                }
+
+                        TS.serverActionCatch (catch invalidLogin)
+                                $ \_ -> do
+                                        _ <- SLD.createUser {
                                                 email,
-                                                password,
+                                                password: "sf",
+                                                name: "sdsd",
+                                                headline: "sd",
+                                                description: "ss"
+                                        }
+                                        _ <- SLIA.login $ RegisterLogin {
+                                                email,
+                                                password: "sssss",
                                                 captchaResponse: Nothing
                                         }
-                                maybeUser <- SDU.userBy (Email email)
-                                case maybeUser of
-                                        Nothing -> R.liftAff $ TU.failure "user not created!"
-                                        Just (User user) -> do
-                                                hashed <- ST.hashPassword password
-                                                R.liftAff $ TUA.equal hashed user.password
-                                                R.liftAff $ TUA.equal 2 3
+                                        pure unit
+                TU.test "login - token" $
+                        TS.serverAction $ \_ -> do
+                                let email2 = "email@email.com.jp"
+                                PrimaryKey id <- SLD.createUser {
+                                                email: email2,
+                                                password,
+                                                name: "sdsd",
+                                                headline: "sd",
+                                                description: "ss"
+                                }
+
+                                _ <- SLIA.login $ RegisterLogin {
+                                                email: email2,
+                                                password,
+                                                captchaResponse: Nothing
+                                }
+                                pure unit
+
+
+

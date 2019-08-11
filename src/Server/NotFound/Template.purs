@@ -5,8 +5,8 @@ import Prelude
 import Effect (Effect)
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
-import Shared.Template (defaultParameters, externalFooter)
-import Shared.Template as ST
+import Server.Template (defaultParameters, externalFooter)
+import Server.Template as ST
 
 template :: Effect String
 template = do

@@ -1,1 +1,0 @@
-I am a plain object representing the languagesUsers table.

@@ -126,3 +126,9 @@ instance userFromSQLRow :: FromSQLRow User where
 			messageOnEnter
 		}
 	fromSQLRow _ = Left "missing fields from users table"
+
+newtype IMModel = IMModel {
+	user :: User
+}
+
+data IMMessage
