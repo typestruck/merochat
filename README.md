@@ -18,7 +18,7 @@ MelanChat is a friendly random chat.
 
 * Privacy: users may choose to temporarily suspend, delete or restrict their account at any given time
 
-* Zero tolerance for bots, spammers or peverts
+* Zero tolerance for bots, spammers or perverts
 
 A note on naming: melan is short for _melancia_, the Portuguese word for watermelon. Hence the fruit theming.
 
