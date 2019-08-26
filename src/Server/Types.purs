@@ -18,7 +18,7 @@ import HTTPure (Response)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
 import Run.Reader (READER)
-import Run.State (STATE)
+--import Run.State (STATE)
 
 newtype Configuration = Configuration {
 	port :: Int,
@@ -47,12 +47,13 @@ type Session = {
 	userID :: Maybe Int53
 }
 
-type ServerState = {
-	session :: Session
-}
+-- type ServerState = {
+
+-- }
 
 type ServerReader = {
 	configuration :: Configuration,
+	session :: Session,
 	pool :: Pool
 }
 
@@ -60,7 +61,7 @@ type ServerReader = {
 
 type ServerEffect a = Run (
 	reader :: READER ServerReader,
-	state :: STATE ServerState,
+	--state :: STATE ServerState,
 	except :: EXCEPT ResponseError,
 	aff :: AFF,
 	effect :: EFFECT

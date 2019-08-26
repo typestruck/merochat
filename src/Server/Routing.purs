@@ -23,10 +23,12 @@ import Effect (Effect)
 import HTTPure (Method(..), Request, ResponseM, Path)
 import HTTPure.Lookup ((!@))
 import Partial.Unsafe (unsafePartial)
+import Partial.Unsafe as PU
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
-import Run.State as RS
+import Server.Database.User as SDU
+import Server.IM.Template as SIT
 import Server.Landing.Action as SLA
 import Server.Landing.Template as SLT
 import Server.Login.Action as SLI
@@ -48,7 +50,12 @@ router { headers, path, method, body }
 				else
 					json body SLI.login
 	| path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous (json body (SLA.register ""))
-	| path == [ SRO.fromRoute IM ] = ifLogged path (SRR.html "IM")
+	| path == [ SRO.fromRoute IM ] = do
+		let im = do
+			{ session: { userID } } <- RR.ask
+			user <- SDU.userBy <<< ID <<< PrimaryKey (PU.unsafePartial $ DM.fromJust) userID
+			serveTemplate $ SIT.template user
+		ifLogged path im
 	--TODO: type this route
         | otherwise = do
 		{ configuration : Configuration configuration } <- RR.ask
@@ -100,10 +107,10 @@ session (Configuration configuration) { headers, method } = do
 		sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value
 
 --needs logging as well
-runRouter :: ServerReader -> ServerState -> Request -> ResponseM
-runRouter reading stating =
+runRouter :: ServerReader {- -> ServerState  -} -> Request -> ResponseM
+runRouter reading {- stating -} =
 	R.runBaseAff' <<<
         RE.catch SRR.requestError <<<
-        RS.evalState stating <<<
+        --RS.evalState stating <<<
         RR.runReader reading <<<
 	router

@@ -65,20 +65,25 @@ derive instance genericResponseError :: Generic ResponseError _
 instance showResponseError :: Show ResponseError where
 	show = S.genericShow
 
-newtype User = User {
+--fields needed by the IM page
+type IMUser = SanitizedUser ()
+
+type SanitizedUser fields = {
 	id :: Int53,
 	name :: String,
 	email :: String,
 	joined :: Date,
-	password :: String,
 	headline :: String,
 	description :: String,
 	birthday :: Maybe Date,
 	gender :: Maybe String,
 	recentEmoji :: Maybe String,
 	country :: Maybe Int53,
-	messageOnEnter :: Boolean
+	messageOnEnter :: Boolean |
+	fields
 }
+
+newtype User = User (SanitizedUser (password :: String))
 
 instance userFromSQLRow :: FromSQLRow User where
 	fromSQLRow [
@@ -128,7 +133,7 @@ instance userFromSQLRow :: FromSQLRow User where
 	fromSQLRow _ = Left "missing fields from users table"
 
 newtype IMModel = IMModel {
-	user :: User
+	user :: IMUser
 }
 
 data IMMessage

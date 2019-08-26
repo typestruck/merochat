@@ -21,4 +21,4 @@ main = EA.launchAff_ $ do
         liftEffect $ H.serve configuration.port (router c pool) $ EC.log "Server now up on http://localhost:8000"
         where router configuration pool request@{ path } = do
                 session <- liftEffect $ SR.session configuration request
-                SR.runRouter {configuration, pool} { session } request
+                SR.runRouter { configuration, pool, session } request
