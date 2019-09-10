@@ -19,14 +19,14 @@ invalidLogin = "Email not registered or incorrect password"
 
 login :: RegisterLogin -> ServerEffect Token
 login (RegisterLogin registerLogin) = do
-	when (DS.null registerLogin.email || DS.null registerLogin.password) $ SRR.throwBadRequest invalidUserEmailMessage
+        when (DS.null registerLogin.email || DS.null registerLogin.password) $ SRR.throwBadRequest invalidUserEmailMessage
 
-	maybeUser <- SDU.userBy $ Email registerLogin.email
-	case maybeUser of
-		Nothing -> SRR.throwBadRequest invalidLogin
-		Just (User user) -> do
-			hashed <- ST.hashPassword registerLogin.password
+        maybeUser <- SDU.userBy $ Email registerLogin.email
+        case maybeUser of
+                Nothing -> SRR.throwBadRequest invalidLogin
+                Just (User user) -> do
+                        hashed <- ST.hashPassword registerLogin.password
 
-			when (hashed /= user.password) $ SRR.throwBadRequest invalidLogin
+                        when (hashed /= user.password) $ SRR.throwBadRequest invalidLogin
 
-			ST.createToken user.id
+                        ST.createToken user.id

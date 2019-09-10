@@ -21,30 +21,30 @@ import Run.Reader (READER)
 --import Run.State (STATE)
 
 newtype Configuration = Configuration {
-	port :: Int,
-	development :: Boolean,
-	captchaSecret :: String,
-	benderURL :: String,
-	useBender :: Boolean,
-	tokenSecretGET :: String,
-	tokenSecretPOST :: String,
-	salt :: String
+        port :: Int,
+        development :: Boolean,
+        captchaSecret :: String,
+        benderURL :: String,
+        useBender :: Boolean,
+        tokenSecretGET :: String,
+        tokenSecretPOST :: String,
+        salt :: String
 }
 
 derive instance genericConfiguration :: Generic Configuration _
 
 newtype CaptchaResponse = CaptchaResponse {
-	success :: Boolean
+        success :: Boolean
 }
 
 instance decodeCaptchaResponse :: DecodeJson CaptchaResponse where
-	decodeJson json = do
-		object <- DAD.decodeJson json
-   		success <- DAD.getField object "success"
-   		pure $ CaptchaResponse { success }
+        decodeJson json = do
+                object <- DAD.decodeJson json
+                success <- DAD.getField object "success"
+                pure $ CaptchaResponse { success }
 
 type Session = {
-	userID :: Maybe Int53
+        userID :: Maybe Int53
 }
 
 -- type ServerState = {
@@ -52,36 +52,27 @@ type Session = {
 -- }
 
 type ServerReader = {
-	configuration :: Configuration,
-	session :: Session,
-	pool :: Pool
+        configuration :: Configuration,
+        session :: Session,
+        pool :: Pool
 }
 
 --needs logging strategy
 
 type ServerEffect a = Run (
-	reader :: READER ServerReader,
-	--state :: STATE ServerState,
-	except :: EXCEPT ResponseError,
-	aff :: AFF,
-	effect :: EFFECT
+        reader :: READER ServerReader,
+        --state :: STATE ServerState,
+        except :: EXCEPT ResponseError,
+        aff :: AFF,
+        effect :: EFFECT
 ) a
 
 type ResponseEffect = ServerEffect Response
 
-data By = ID PrimaryKey | Email String
-
-newtype PrimaryKey = PrimaryKey Int53
-
-instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
-	toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
-
-instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
-	fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
 
 data BenderAction = Name | Description
 
 instance benderActionShow :: Show BenderAction where
-	show Name = "name"
-	show Description = "description"
+        show Name = "name"
+        show Description = "description"
 

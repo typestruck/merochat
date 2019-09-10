@@ -539,9 +539,9 @@ end;
 --   RETURNS void AS
 -- $BODY$
 -- begin
--- 	truncate table users  RESTART IDENTITY cascade;
--- 	truncate table messages RESTART IDENTITY cascade ;
--- 	truncate table tags RESTART IDENTITY cascade ;
+--         truncate table users  RESTART IDENTITY cascade;
+--         truncate table messages RESTART IDENTITY cascade ;
+--         truncate table tags RESTART IDENTITY cascade ;
 -- end;
 --   $BODY$
 --   LANGUAGE plpgsql;

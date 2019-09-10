@@ -14,13 +14,13 @@ import Shared.Types (Route)
 
 routes :: RouteDuplex' Route
 routes = RD.root $ RDG.sum {
-	"Landing" : RDG.noArgs,
-	"Register" : "register" / RDG.noArgs,
-	--the type level voodoo on the examples doesn't typecheck
-	"Login": RD.path "login" (RD.record # _next := RD.optional (RD.param "next")),
-	"IM": "im" / RDG.noArgs
+        "Landing" : RDG.noArgs,
+        "Register" : "register" / RDG.noArgs,
+        --the type level voodoo on the examples doesn't typecheck
+        "Login": RD.path "login" (RD.record # _next := RD.optional (RD.param "next")),
+        "IM": "im" / RDG.noArgs
 }
-	where     _next = SProxy :: SProxy "next"
+        where     _next = SProxy :: SProxy "next"
 
 toRoute :: String -> Either RouteError Route
 toRoute = RD.parse routes

@@ -28,6 +28,9 @@ configuration = Configuration {
         salt: "ghi"
 }
 
+session :: Session
+session = { userID : Nothing }
+
 newTestPool ∷ Aff Pool
 newTestPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchatTest") {
         user = Just "melanchat",
@@ -39,12 +42,10 @@ serverAction action = do
         pool <- newTestPool
         R.runBaseAff' <<<
         RE.catch (\ex -> R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex) ) <<<
-        RS.evalState {
-                session : { userID : Nothing }
-        } <<<
         RR.runReader {
                 configuration,
-                pool
+                pool,
+                session
         } $ do
                 truncateTables
                 action unit
@@ -54,12 +55,10 @@ serverActionCatch catch action  = do
         pool <- newTestPool
         R.runBaseAff' <<<
         RE.catch catch <<<
-        RS.evalState {
-                session : { userID : Nothing }
-        } <<<
         RR.runReader {
                 configuration,
-                pool
+                pool,
+                session
         } $ do
                 truncateTables
                 action unit

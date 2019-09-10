@@ -17,5 +17,5 @@ import Partial.Unsafe (unsafePartial)
 
 readConfiguration :: Aff Configuration
 readConfiguration = do
-	contents <- NFA.readTextFile UTF8 "configuration.json"
-	DE.either (const $ EA.throwError $ EE.error "Could not parse configuration") (pure <<< unsafePartial (DE.fromRight <<< DADGR.genericDecodeJson)) $ DAP.jsonParser contents
+        contents <- NFA.readTextFile UTF8 "configuration.json"
+        DE.either (const $ EA.throwError $ EE.error "Could not parse configuration") (pure <<< unsafePartial (DE.fromRight <<< DADGR.genericDecodeJson)) $ DAP.jsonParser contents

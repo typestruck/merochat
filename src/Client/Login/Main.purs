@@ -15,18 +15,18 @@ import Web.UIEvent.MouseEvent.EventTypes (click)
 
 login :: Effect Unit
 login = do
-	maybeRegisterLogin  <- CCE.validateEmailPassword
-	case maybeRegisterLogin of
-		Nothing -> pure unit
-		Just registerLogin -> EA.launchAff_ $ do
-			token <- CC.post' (SR.fromRouteAbsolute $ Login { next: Nothing }) registerLogin
-			liftEffect $ do
-				-- the location to go after login is either the query parameter next or /im
-				redirect <- SR.toRoute <$> CC.search
-				CCE.login token $ DE.either (const defaultNext) SR.fromRouteAbsolute redirect
-	where   defaultNext = SR.fromRouteAbsolute IM
+        maybeRegisterLogin  <- CCE.validateEmailPassword
+        case maybeRegisterLogin of
+                Nothing -> pure unit
+                Just registerLogin -> EA.launchAff_ $ do
+                        token <- CC.post' (SR.fromRouteAbsolute $ Login { next: Nothing }) registerLogin
+                        liftEffect $ do
+                                -- the location to go after login is either the query parameter next or /im
+                                redirect <- SR.toRoute <$> CC.search
+                                CCE.login token $ DE.either (const defaultNext) SR.fromRouteAbsolute redirect
+        where   defaultNext = SR.fromRouteAbsolute IM
 
 main :: Effect Unit
 main = do
-	loginButton <- CC.querySelector "#login"
-	CC.addEventListener loginButton click (const login)
+        loginButton <- CC.querySelector "#login"
+        CC.addEventListener loginButton click (const login)

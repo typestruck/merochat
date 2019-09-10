@@ -1,6 +1,6 @@
 module Server.Routing (
-	runRouter,
-	session
+        runRouter,
+        session
 ) where
 
 import Prelude
@@ -43,74 +43,74 @@ import Shared.Routing as SRO
 --split this into individual folders?
 router :: Request -> ResponseEffect
 router { headers, path, method, body }
-	| DA.null path = ifAnonymous (serveTemplate SLT.template)
-	| path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) =
-		ifAnonymous $ if method == Get then
-					serveTemplate SLIT.template
-				else
-					json body SLI.login
-	| path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous (json body (SLA.register ""))
-	| path == [ SRO.fromRoute IM ] = do
-		let im = do
-			{ session: { userID } } <- RR.ask
-			user <- SDU.userBy <<< ID <<< PrimaryKey (PU.unsafePartial $ DM.fromJust) userID
-			serveTemplate $ SIT.template user
-		ifLogged path im
-	--TODO: type this route
+        | DA.null path = ifAnonymous (serveTemplate SLT.template)
+        | path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) =
+                ifAnonymous $ if method == Get then
+                                        serveTemplate SLIT.template
+                                else
+                                        json body SLI.login
+        | path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous (json body (SLA.register ""))
+        | path == [ SRO.fromRoute IM ] = do
+                let im = do
+                        { session: { userID } } <- RR.ask
+                        user <- SDU.userBy <<< ID <<< PrimaryKey <<< PU.unsafePartial $ DM.fromJust userID
+                        serveTemplate <<< SIT.template <<< PU.unsafePartial $ DM.fromJust user
+                ifLogged path im
+        --TODO: type this route
         | otherwise = do
-		{ configuration : Configuration configuration } <- RR.ask
+                { configuration : Configuration configuration } <- RR.ask
 
-		if configuration.development && path !@ 0 == "client" then
-			SRR.serveDevelopmentFile (path !@ 1) (path !@ 2)
-		 else
-			RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
+                if configuration.development && path !@ 0 == "client" then
+                        SRR.serveDevelopmentFile (path !@ 1) (path !@ 2)
+                 else
+                        RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
 
 ifAnonymous :: ResponseEffect -> ResponseEffect
 ifAnonymous handler = do
-	{ session : { userID } } <- RS.get
-	if DM.isNothing userID then
-		handler
-	 else
-		SRR.redirect $ SRO.fromRouteAbsolute IM
+        { session : { userID } } <- RR.ask
+        if DM.isNothing userID then
+                handler
+         else
+                SRR.redirect $ SRO.fromRouteAbsolute IM
 
 ifLogged :: Path -> ResponseEffect -> ResponseEffect
 ifLogged path handler = do
-	{ session : { userID } } <- RS.get
-	if DM.isJust userID then
-		handler
-	 else
-		SRR.redirect <<< SRO.fromRouteAbsolute $ Login { next: Just (path !@ 0) }
+        { session : { userID } } <- RR.ask
+        if DM.isJust userID then
+                handler
+         else
+                SRR.redirect <<< SRO.fromRouteAbsolute $ Login { next: Just (path !@ 0) }
 
 serveTemplate :: Effect String -> ResponseEffect
 serveTemplate template = do
-	html <- R.liftEffect template
-      	SRR.html html
+        html <- R.liftEffect template
+        SRR.html html
 
 json :: forall a b c d. Generic a b => EncodeRep b => Generic c d => DecodeRep d => String -> (c -> ServerEffect a) -> ResponseEffect
 json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) runHandler $ DAP.jsonParser body
-	where   runHandler arg = do
-			response <- handler $ unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
-			SRR.json response
+        where   runHandler arg = do
+                        response <- handler $ unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
+                        SRR.json response
 
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
 session :: Configuration -> Request -> Effect Session
 session (Configuration configuration) { headers, method } = do
-	map { userID: _ } $ if method == Get then
-				sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
-			     else
-				sessionFromXHeader (headers !@ xAccessToken)
-	where 	sessionFromCookie =
-			case _ of -- we might have other cookies later...
-				[Cookie { value }] -> ST.userIDFromToken configuration.tokenSecretGET value
-				_ -> pure Nothing
+        map { userID: _ } $ if method == Get then
+                                sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
+                             else
+                                sessionFromXHeader (headers !@ xAccessToken)
+        where   sessionFromCookie =
+                        case _ of -- we might have other cookies later...
+                                [Cookie { value }] -> ST.userIDFromToken configuration.tokenSecretGET value
+                                _ -> pure Nothing
 
-		sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value
+                sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value
 
 --needs logging as well
 runRouter :: ServerReader {- -> ServerState  -} -> Request -> ResponseM
 runRouter reading {- stating -} =
-	R.runBaseAff' <<<
+        R.runBaseAff' <<<
         RE.catch SRR.requestError <<<
         --RS.evalState stating <<<
         RR.runReader reading <<<
-	router
+        router

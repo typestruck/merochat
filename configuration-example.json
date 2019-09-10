@@ -1,13 +1,13 @@
 {
-	"values": [{
-		"port": 8000,
-		"development": true,
-		"captchaSecret": "secret",
-		"benderURL": "http://localhost:1337/",
-		"useBender": true,
-		"tokenSecretGET": "this is my get secret",
-		"tokenSecretPOST": "this is my post secret",
-		"salt": "this is my salt"
-	}],
-	"tag": "Configuration"
+        "values": [{
+                "port": 8000,
+                "development": true,
+                "captchaSecret": "secret",
+                "benderURL": "http://localhost:1337/",
+                "useBender": true,
+                "tokenSecretGET": "this is my get secret",
+                "tokenSecretPOST": "this is my post secret",
+                "salt": "this is my salt"
+        }],
+        "tag": "Configuration"
 }

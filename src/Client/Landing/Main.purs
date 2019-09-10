@@ -19,19 +19,19 @@ foreign import grecaptchaReset :: Effect Unit
 
 register :: Maybe String -> Effect Unit
 register captchaResponse = do
-	registerLogin <- CCE.validateEmailPassword
-	case registerLogin of
-		Nothing -> pure unit
-	 	Just (RegisterLogin rl) ->
-			if DM.isNothing captchaResponse then
-				grecaptchaExecute
-			 else
-				EA.launchAff_ $ do
-					response <- CC.post (SR.fromRouteAbsolute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse })
-					case response of
-						Right token -> enter token
-						_ -> liftEffect grecaptchaReset
-	where   enter token = liftEffect <<< CCE.login token $ SR.fromRouteAbsolute IM
+        registerLogin <- CCE.validateEmailPassword
+        case registerLogin of
+                Nothing -> pure unit
+                Just (RegisterLogin rl) ->
+                        if DM.isNothing captchaResponse then
+                                grecaptchaExecute
+                         else
+                                EA.launchAff_ $ do
+                                        response <- CC.post (SR.fromRouteAbsolute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse })
+                                        case response of
+                                                Right token -> enter token
+                                                _ -> liftEffect grecaptchaReset
+        where   enter token = liftEffect <<< CCE.login token $ SR.fromRouteAbsolute IM
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit
@@ -39,5 +39,5 @@ completeRegistration captchaResponse = register $ Just captchaResponse
 
 main :: Effect Unit
 main = do
-	registerButton <- CC.querySelector "#register"
-	CC.addEventListener registerButton click (const (register Nothing))
+        registerButton <- CC.querySelector "#register"
+        CC.addEventListener registerButton click (const (register Nothing))

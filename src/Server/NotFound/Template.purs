@@ -10,9 +10,9 @@ import Server.Template as ST
 
 template :: Effect String
 template = do
-	contents <- ST.template defaultParameters {
-		footer = externalFooter,
-		content = content
-	}
-	FRS.render contents
-	where   content = [ HE.text "Page not found" ]
+        contents <- ST.template defaultParameters {
+                footer = externalFooter,
+                content = content
+        }
+        FRS.render contents
+        where   content = [ HE.text "Page not found" ]
