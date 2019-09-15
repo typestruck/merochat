@@ -3,29 +3,33 @@ module Shared.Types where
 import Prelude
 
 import Control.Monad.Except as CME
+import Control.Monad.Except as CME
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Encode (class EncodeJson, encodeJson)
 import Data.Bifunctor as DB
 import Data.Date (Date)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show as DGRS
 import Data.Generic.Rep.Show as S
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.JSDate as DJ
-import Database.PostgreSQL (class ToSQLValue, Pool, class FromSQLValue)
-import Foreign as F
 import Data.List.NonEmpty as DLN
-import Control.Monad.Except as CME
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Database.PostgreSQL (class FromSQLRow)
+import Database.PostgreSQL (class ToSQLValue, Pool, class FromSQLValue)
+import Effect.Aff (Aff)
+import Foreign as F
 import Foreign as F
 import Partial.Unsafe as PU
 
 foreign import fromDate :: Date -> Json
 foreign import fromInt53 :: Int53 -> Json
 foreign import fromIMUser :: SanitizedUser () -> Json
+
+foreign import sss :: forall a. a -> Aff Unit
 
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin {

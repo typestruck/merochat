@@ -13,7 +13,7 @@ import Server.Landing.Action (invalidUserEmailMessage, emailAlreadyRegisteredMes
 import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
 import Server.Token as ST
-import Server.Types (By(..), ServerEffect)
+import Server.Types
 import Test.Server as TS
 import Test.Unit (TestSuite)
 import Test.Unit as TU

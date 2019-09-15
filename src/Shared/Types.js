@@ -9,3 +9,7 @@ exports.fromInt53 = function(id) {
 exports.fromIMUser = function(user) {
         return user;
 }
+
+exports.sss = function(a) {
+        console.log(a);
+}

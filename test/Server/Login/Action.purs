@@ -1,6 +1,7 @@
 module Test.Server.Login.Action where
 
 import Prelude
+import Server.Types
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
@@ -12,7 +13,6 @@ import Server.Landing.Database as SLD
 import Server.Login.Action (invalidLogin, invalidUserEmailMessage)
 import Server.Login.Action as SLIA
 import Server.Token as ST
-import Server.Types (By(..), PrimaryKey(..), ServerEffect)
 import Test.Server as TS
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -77,9 +77,10 @@ tests = do
                 TU.test "login - token" $
                         TS.serverAction $ \_ -> do
                                 let email2 = "email@email.com.jp"
+                                hashed <- ST.hashPassword password
                                 PrimaryKey id <- SLD.createUser {
                                                 email: email2,
-                                                password,
+                                                password: hashed,
                                                 name: "sdsd",
                                                 headline: "sd",
                                                 description: "ss"
@@ -91,6 +92,3 @@ tests = do
                                                 captchaResponse: Nothing
                                 }
                                 pure unit
-
-
-
