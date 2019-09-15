@@ -25,10 +25,6 @@ import Foreign as F
 import Foreign as F
 import Partial.Unsafe as PU
 
-foreign import fromDate :: Date -> Json
-foreign import fromInt53 :: Int53 -> Json
-foreign import fromIMUser :: SanitizedUser () -> Json
-
 foreign import sss :: forall a. a -> Aff Unit
 
 -- | Fields for registration or login
@@ -78,50 +74,45 @@ derive instance genericResponseError :: Generic ResponseError _
 instance showResponseError :: Show ResponseError where
         show = S.genericShow
 
-newtype GDate = GDate Date
+data By =
+        ID Int53 |
+        Email String
 
-derive instance genericDate :: Generic GDate _
+-- data By = ID PrimaryKey | Email String
 
-instance encodeJsonGdate :: EncodeJson GDate where
-        encodeJson (GDate date) = fromDate date
+-- newtype PrimaryKey = PrimaryKey Int53
 
-instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
-        encodeJson (PrimaryKey id) = fromInt53 id
+-- instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
+--         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
-data By = ID PrimaryKey | Email String
+-- instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
+--         fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
 
-newtype PrimaryKey = PrimaryKey Int53
-
-instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
-        toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
-
-instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
-        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
-
-type SanitizedUser fields = {
-        id :: PrimaryKey,
+type BasicUser fields = {
+        id :: Int53,
         name :: String,
         email :: String,
-        joined :: GDate,
         headline :: String,
         description :: String,
-        birthday :: Maybe GDate,
         gender :: Maybe String,
         recentEmoji :: Maybe String,
-        country :: Maybe PrimaryKey,
+        country :: Maybe Int53,
         messageOnEnter :: Boolean |
         fields
 }
 
 --fields needed by the IM page
-newtype IMUser = IMUser (SanitizedUser ())
+newtype IMUser = IMUser (BasicUser (
+        birthday :: Maybe Int
+))
 
 derive instance genericIMUser :: Generic IMUser _
 
-instance encodeIMUser :: EncodeJson IMUser where
-        encodeJson (IMUser user) = fromIMUser user
-
-newtype User = User (SanitizedUser (password :: String))
+newtype User = User (BasicUser (
+        password :: String,
+        joined :: Date,
+        birthday :: Maybe Date
+))
 
 derive instance genericUser :: Generic User _
 
@@ -157,17 +148,17 @@ instance userFromSQLRow :: FromSQLRow User where
                 country <- DM.maybe (pure Nothing) (map (Just <<< DI.fromInt) <<< F.readInt) maybeCountry
                 messageOnEnter <- F.readBoolean foreignerMessageOnEnter
                 pure $ User {
-                        id: PrimaryKey id,
+                        id,
                         name,
                         password,
-                        joined: GDate joined,
+                        joined,
                         email,
-                        birthday: map GDate birthday,
+                        birthday,
                         gender,
                         headline,
                         description,
                         recentEmoji,
-                        country: map PrimaryKey country,
+                        country,
                         messageOnEnter
                 }
         fromSQLRow _ = Left "missing fields from users table"

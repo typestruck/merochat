@@ -28,7 +28,6 @@
     "purescript-affjax": "^9.0.1",
     "purescript-web-uievents": "^2.0.0",
     "purescript-web-storage": "^3.0.0"
-
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",

@@ -88,7 +88,7 @@ tests = do
 
                                 _ <- SLIA.login $ RegisterLogin {
                                                 email: email2,
-                                                password,
+                                                password ,
                                                 captchaResponse: Nothing
                                 }
                                 pure unit
