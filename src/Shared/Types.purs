@@ -22,10 +22,14 @@ import Database.PostgreSQL (class FromSQLRow)
 import Database.PostgreSQL (class ToSQLValue, Pool, class FromSQLValue)
 import Effect.Aff (Aff)
 import Foreign as F
-import Foreign as F
 import Partial.Unsafe as PU
 
 foreign import sss :: forall a. a -> Aff Unit
+foreign import fromInt53 :: Int53 -> Json
+foreign import fromIMUser :: IMUser -> Json
+
+instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
+        encodeJson (PrimaryKey id) = fromInt53 id
 
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin {
@@ -36,7 +40,7 @@ newtype RegisterLogin = RegisterLogin {
 
 derive instance genericRegisterLogin :: Generic RegisterLogin _
 
--- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests, since I don't to make it a single page application
+-- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests, since PrimaryKey don't to make it a single page application
 newtype Token = Token {
         tokenGET :: String,
         tokenPOST :: String
@@ -75,42 +79,45 @@ instance showResponseError :: Show ResponseError where
         show = S.genericShow
 
 data By =
-        ID Int53 |
+        ID PrimaryKey |
         Email String
 
--- data By = ID PrimaryKey | Email String
+newtype PrimaryKey = PrimaryKey Int53
 
--- newtype PrimaryKey = PrimaryKey Int53
+instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
+        toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
--- instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
---         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
-
--- instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
---         fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
+instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
+        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
 
 type BasicUser fields = {
-        id :: Int53,
         name :: String,
         email :: String,
         headline :: String,
         description :: String,
         gender :: Maybe String,
         recentEmoji :: Maybe String,
-        country :: Maybe Int53,
         messageOnEnter :: Boolean |
         fields
 }
 
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
+        id :: PrimaryKey,
+        country :: Maybe PrimaryKey,
         birthday :: Maybe Int
 ))
 
 derive instance genericIMUser :: Generic IMUser _
 
+instance encodeJsonIMUser :: EncodeJson IMUser where
+        encodeJson  = fromIMUser
+
 newtype User = User (BasicUser (
+        id :: Int53,
         password :: String,
         joined :: Date,
+        country :: Maybe Int53,
         birthday :: Maybe Date
 ))
 

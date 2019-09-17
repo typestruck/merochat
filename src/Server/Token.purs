@@ -31,8 +31,8 @@ hashPassword password = do
 
 -- add tests after login is done
 
-createToken :: PrimaryKey -> ServerEffect Token
-createToken (PrimaryKey id) = do
+createToken :: Int53 -> ServerEffect Token
+createToken id = do
         { configuration : Configuration configuration } <- RR.ask
 
         Jwt tokenGET <- R.liftEffect <<< NSJ.encode configuration.tokenSecretGET NSJ.HS512 $ show id

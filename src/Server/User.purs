@@ -7,13 +7,13 @@ import Shared.Types
 import Data.Date as DD
 import Data.Enum as DE
 import Effect.Now as EN
-import Run as R
+import Effect (Effect)
 
-toIMUser :: User -> ServerEffect IMUser
+toIMUser :: User -> Effect IMUser
 toIMUser (User user) = do
-        now <- R.liftEffect EN.nowDate
+        now <- EN.nowDate
         pure $ IMUser {
-                id: user.id,
+                id: PrimaryKey user.id,
                 name: user.name,
                 email: user.email,
                 headline: user.headline,
@@ -21,6 +21,6 @@ toIMUser (User user) = do
                 birthday: map ((DE.fromEnum (DD.year now) - _) <<< DE.fromEnum <<< DD.year) user.birthday,
                 gender: user.gender,
                 recentEmoji: user.recentEmoji,
-                country: user.country,
+                country: map PrimaryKey user.country,
                 messageOnEnter: user.messageOnEnter
         }

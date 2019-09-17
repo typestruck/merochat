@@ -18,6 +18,7 @@ import Shared.IM.View as SIV
 
 template :: User -> Effect String
 template user = do
+        imUser <- SU.toIMUser user
         contents <- ST.template $ defaultParameters {
                 content = content,
                 javascript = javascript,
@@ -25,7 +26,7 @@ template user = do
         }
         F.preMount (QuerySelector "#im") {
                 view: SIV.view,
-                init: IMModel { user: SU.toIMUser user }
+                init: IMModel { user: imUser  }
         }
         where   javascript = [
                         HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"]

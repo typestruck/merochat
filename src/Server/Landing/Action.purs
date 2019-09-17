@@ -77,14 +77,14 @@ register remoteIP (RegisterLogin registerLogin) = do
                         headline <- SB.generateHeadline
                         description <- SB.generateDescription
                         password <- ST.hashPassword registerLogin.password
-                        primaryKey <- SLD.createUser {
+                        PrimaryKey id <- SLD.createUser {
                                 email: registerLogin.email,
                                 name,
                                 password,
                                 headline,
                                 description
                         }
-                        ST.createToken primaryKey
+                        ST.createToken id
 
                 finishWithCaptcha (CaptchaResponse {success})
                         | success = finish
