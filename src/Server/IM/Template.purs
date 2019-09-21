@@ -19,13 +19,12 @@ import Shared.IM.View as SIV
 template :: User -> Effect String
 template user = do
         imUser <- SU.toIMUser user
-        contents <- ST.template $ defaultParameters {
-                content = content,
+        parameters <- ST.extendParameters $ defaultParameters {
                 javascript = javascript,
                 css = css
         }
         F.preMount (QuerySelector "#im") {
-                view: SIV.view,
+                view: \model -> ST.templateWith $ parameters { content = [SIV.view model] },
                 init: IMModel { user: imUser  }
         }
         where   javascript = [
@@ -33,7 +32,4 @@ template user = do
                 ]
                 css = [
                         HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"]
-                ]
-                content = [
-                          HE.div' [HA.id "im", HA.class' "im"]
                 ]

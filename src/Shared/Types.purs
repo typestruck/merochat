@@ -104,6 +104,7 @@ type BasicUser fields = {
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
         id :: PrimaryKey,
+        avatar :: String,
         country :: Maybe PrimaryKey,
         birthday :: Maybe Int
 ))

@@ -2,6 +2,8 @@
 module Server.Template(
         template,
         externalFooter,
+        templateWith,
+        extendParameters,
         defaultParameters,
         externalDefaultParameters
 ) where
@@ -18,10 +20,15 @@ import Data.Enum as DE
 
 --TODO memoization, caching
 
-type Html' = Html Unit
-type Parameters = { javascript :: Array Html', css :: Array Html', content :: Array Html', footer :: Array Html', nightTheme :: Boolean}
+type Parameters a = {
+        javascript :: Array (Html a),
+        css :: Array (Html a),
+        content :: Array (Html a),
+        footer :: Array (Html a),
+        nightTheme :: Boolean
+}
 
-defaultParameters :: Parameters
+defaultParameters :: forall a. Parameters a
 defaultParameters = {
         javascript: [],
         css: [],
@@ -30,7 +37,7 @@ defaultParameters = {
         nightTheme: false
 }
 
-externalDefaultParameters :: Parameters
+externalDefaultParameters :: forall a. Parameters a
 externalDefaultParameters = {
         javascript: [],
         css: [
@@ -47,12 +54,17 @@ externalDefaultParameters = {
 }
 
 --inclusion of night theme should be a setting
-template :: Parameters -> Effect Html'
+template :: forall a. Parameters a -> Effect (Html a)
 template parameters = do
-        Time hour _ _ _ <- EN.nowTime
-        pure $ templateWith parameters {nightTheme = false}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
+        parameters' <- extendParameters parameters
+        pure $ templateWith parameters'
 
-templateWith :: Parameters -> Html'
+extendParameters :: forall a. Parameters a -> Effect (Parameters a)
+extendParameters parameters = do
+        Time hour _ _ _ <- EN.nowTime
+        pure $ parameters {nightTheme = true}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
+
+templateWith :: forall a. Parameters a -> Html a
 templateWith parameters =
         HE.html (HA.lang "en") [
                 HE.head_ ([
@@ -66,7 +78,7 @@ templateWith parameters =
         where defaultCss = [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]]
               styleSheets = if parameters.nightTheme then defaultCss <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/night.css"]] else defaultCss
 
-externalFooter :: Array Html'
+externalFooter :: forall a. Array (Html a)
 externalFooter = [
         HE.footer_ [
                 HE.a (HA.href "/") <<< HE.img' $ HA.src "/client/media/logo.png",

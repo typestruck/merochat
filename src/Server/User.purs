@@ -21,6 +21,7 @@ toIMUser (User user) = do
                 birthday: map ((DE.fromEnum (DD.year now) - _) <<< DE.fromEnum <<< DD.year) user.birthday,
                 gender: user.gender,
                 recentEmoji: user.recentEmoji,
+                avatar: "/client/media/avatar.png",
                 country: map PrimaryKey user.country,
                 messageOnEnter: user.messageOnEnter
         }
