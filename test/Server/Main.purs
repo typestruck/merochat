@@ -1,9 +1,18 @@
 module Test.Server.Main where
 
 import Prelude
+
 import Effect (Effect)
 import Test.Server.Landing.Action as TSLA
+import Test.Server.Login.Action as TSLIA
+import Test.Server.Token as TST
+import Test.Unit (TestSuite)
+import Test.Unit.Main as TUM
 
-main :: Effect Unit
-main = do
+tests :: TestSuite
+tests = do
         TSLA.tests
+        TST.tests
+        TSLIA.tests
+
+

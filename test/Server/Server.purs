@@ -14,6 +14,7 @@ import Run.Except as RE
 import Run.Reader as RR
 import Run.State as RS
 import Server.Database as SD
+import Test.Unit as TUA
 
 configuration :: Configuration
 configuration = Configuration {
@@ -27,6 +28,9 @@ configuration = Configuration {
         salt: "ghi"
 }
 
+session :: Session
+session = { userID : Nothing }
+
 newTestPool ∷ Aff Pool
 newTestPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchatTest") {
         user = Just "melanchat",
@@ -37,13 +41,11 @@ serverAction :: (Unit -> ServerEffect Unit) -> Aff Unit
 serverAction action = do
         pool <- newTestPool
         R.runBaseAff' <<<
-        RE.catch (const (pure unit)) <<<
-        RS.evalState {
-                session : { user : Nothing }
-        } <<<
+        RE.catch (\ex -> R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex) ) <<<
         RR.runReader {
                 configuration,
-                pool
+                pool,
+                session
         } $ do
                 truncateTables
                 action unit
@@ -53,12 +55,10 @@ serverActionCatch catch action  = do
         pool <- newTestPool
         R.runBaseAff' <<<
         RE.catch catch <<<
-        RS.evalState {
-                session : { user : Nothing }
-        } <<<
         RR.runReader {
                 configuration,
-                pool
+                pool,
+                session
         } $ do
                 truncateTables
                 action unit

@@ -1,8 +1,8 @@
 exports.grecaptchaExecute = function () {
-	grecaptcha.execute()
+        grecaptcha.execute()
 }
 
 exports.grecaptchaReset = function () {
-	if (typeof grecaptcha != undefined)
-		grecaptcha.reset();
+        if (typeof grecaptcha != undefined)
+                grecaptcha.reset();
 }

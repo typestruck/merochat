@@ -1,8 +1,9 @@
 module Test.Client.Main where
 
 import Prelude
-import Effect (Effect)
-import Effect.Console (log)
 
-main :: Effect Unit
-main = log "no tests yet"
+import Effect (Effect)
+import Test.Unit (TestSuite)
+
+tests :: TestSuite
+tests = pure unit

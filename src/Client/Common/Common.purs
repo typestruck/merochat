@@ -1,14 +1,14 @@
 module Client.Common(
-	setItem,
-	post,
-	post',
-	addEventListener,
-	querySelector,
-	value,
-	setLocation,
-	alert,
-	tokenKey,
-	search
+        setItem,
+        post,
+        post',
+        addEventListener,
+        querySelector,
+        value,
+        setLocation,
+        alert,
+        tokenKey,
+        search
 ) where
 
 import Prelude
@@ -52,6 +52,7 @@ import Web.HTML.HTMLInputElement as WHHI
 import Web.HTML.Location as WHL
 import Web.HTML.Window as WHW
 import Web.Storage.Storage as WSS
+import Shared.Header (xAccessToken)
 
 tokenKey :: String
 tokenKey = "token"
@@ -59,89 +60,89 @@ tokenKey = "token"
 -- | Adds an event to the given element.
 addEventListener :: forall a . Element -> EventType -> (Event -> Effect a) -> Effect Unit
 addEventListener element eventType handler = do
-	listener <- WET.eventListener handler
-	WET.addEventListener eventType listener false $ WDE.toEventTarget element
+        listener <- WET.eventListener handler
+        WET.addEventListener eventType listener false $ WDE.toEventTarget element
 
 -- | Selects a single element.
 querySelector :: String -> Effect Element
 querySelector selector = do
-	window <- WH.window
-	document <- WHHD.toDocument <$> WHW.document window
-	maybeElement <- WDP.querySelector (QuerySelector selector) $ WDD.toParentNode document
-	DM.maybe (EE.throwException $ EE.error $ "Selector returned no nodes:" <> selector) pure maybeElement
+        window <- WH.window
+        document <- WHHD.toDocument <$> WHW.document window
+        maybeElement <- WDP.querySelector (QuerySelector selector) $ WDD.toParentNode document
+        DM.maybe (EE.throwException $ EE.error $ "Selector returned no nodes:" <> selector) pure maybeElement
 
 value :: Element -> Effect String
 value element = DM.maybe inputException WHHI.value $ WHHI.fromElement element
-	where inputException = do
-		id <- WDE.id element
-		EE.throwException <<< EE.error $ "Element is not an input type" <> id
+        where inputException = do
+                id <- WDE.id element
+                EE.throwException <<< EE.error $ "Element is not an input type" <> id
 
 alert :: String -> Effect Unit
 alert message = do
-	window <- WH.window
-	WHW.alert message window
+        window <- WH.window
+        WHW.alert message window
 
 -- | A simplified version of post without the option to handle errors
 post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> contents -> Aff response
 post' url data' = do
-	response <- post url data'
-	case response of
-		Right right -> pure right
-		Left error -> alertResponseError $ A.printResponseFormatError error
+        response <- post url data'
+        case response of
+                Right right -> pure right
+                Left error -> alertResponseError $ A.printResponseFormatError error
 
 -- | Performs a POST request
 post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> contents -> Aff (Either ResponseFormatError response)
 post url data' = do
-	--see Token in shared/Types.purs
-	token <- liftEffect $ getItem tokenKey
-	request url POST [RequestHeader "x-access-token" token] data'
+        --see Token in shared/Types.purs
+        token <- liftEffect $ getItem tokenKey
+        request url POST [RequestHeader xAccessToken token] data'
 
 -- | Performs a HTTP request with a JSON payload
 request :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Method -> Array RequestHeader -> contents -> Aff (Either ResponseFormatError response)
 request url method extraHeaders data' = do
-	response <- A.request $ A.defaultRequest {
-			url = url,
-			method = Left method,
-			responseFormat = RF.json,
-			headers = [
-				Accept $ MediaType "application/json",
-				ContentType $ MediaType "application/json"
-			] <> extraHeaders,
-			content = Just <<< RB.json $ DAEGR.genericEncodeJson data'
-		}
-	case response.body of
-		Right payload ->
-			if response.status == StatusCode 200 then
-				DE.either alertResponseError (pure <<< Right) $ DADGR.genericDecodeJson payload
-			 else
-				alertResponseError <<< UP.unsafePartial $ DE.fromRight $ DAD.decodeJson payload
-		Left left -> pure $ Left left
+        response <- A.request $ A.defaultRequest {
+                        url = url,
+                        method = Left method,
+                        responseFormat = RF.json,
+                        headers = [
+                                Accept $ MediaType "application/json",
+                                ContentType $ MediaType "application/json"
+                        ] <> extraHeaders,
+                        content = Just <<< RB.json $ DAEGR.genericEncodeJson data'
+                }
+        case response.body of
+                Right payload ->
+                        if response.status == StatusCode 200 then
+                                DE.either alertResponseError (pure <<< Right) $ DADGR.genericDecodeJson payload
+                         else
+                                alertResponseError <<< UP.unsafePartial $ DE.fromRight $ DAD.decodeJson payload
+                Left left -> pure $ Left left
 
 --type this shit
 alertResponseError message = do
-	liftEffect $ alert message
-	CMEC.throwError <<< EE.error $ "Error: " <> message
+        liftEffect $ alert message
+        CMEC.throwError <<< EE.error $ "Error: " <> message
 
 setLocation :: String -> Effect Unit
 setLocation url = do
-	window <- WH.window
-	location <- WHW.location window
-	WHL.setHref url location
+        window <- WH.window
+        location <- WHW.location window
+        WHL.setHref url location
 
 setItem :: String -> String -> Effect Unit
 setItem key itemValue = do
-	window <- WH.window
-	localStorage <- WHW.localStorage window
-	WSS.setItem key itemValue localStorage
+        window <- WH.window
+        localStorage <- WHW.localStorage window
+        WSS.setItem key itemValue localStorage
 
 getItem :: String  -> Effect String
 getItem key = do
-	window <- WH.window
-	localStorage <- WHW.localStorage window
-	DM.fromMaybe "" <$> WSS.getItem key localStorage
+        window <- WH.window
+        localStorage <- WHW.localStorage window
+        DM.fromMaybe "" <$> WSS.getItem key localStorage
 
 search :: Effect String
 search = do
-	window <- WH.window
-	location <- WHW.location window
-	WHL.search location
+        window <- WH.window
+        location <- WHW.location window
+        WHL.search location

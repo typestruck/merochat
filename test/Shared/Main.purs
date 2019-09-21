@@ -1,8 +1,10 @@
 module Test.Shared.Main where
 
 import Prelude
+
 import Effect (Effect)
 import Test.Shared.Routing as TSR
+import Test.Unit (TestSuite)
 
-main :: Effect Unit
-main = TSR.tests
+tests :: TestSuite
+tests = TSR.tests

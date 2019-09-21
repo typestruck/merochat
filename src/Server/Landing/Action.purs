@@ -44,48 +44,48 @@ emailAlreadyRegisteredMessage = "Email already registered"
 
 register :: String -> RegisterLogin -> ServerEffect Token
 register remoteIP (RegisterLogin registerLogin) = do
-	when (DS.null registerLogin.email || DS.null registerLogin.password) $ SRR.throwBadRequest invalidUserEmailMessage
+        when (DS.null registerLogin.email || DS.null registerLogin.password) $ SRR.throwBadRequest invalidUserEmailMessage
 
-	user <- SDU.userBy $ Email registerLogin.email
+        user <- SDU.userBy $ Email registerLogin.email
 
-	when (DM.isJust user) $ SRR.throwBadRequest emailAlreadyRegisteredMessage
+        when (DM.isJust user) $ SRR.throwBadRequest emailAlreadyRegisteredMessage
 
-	{ configuration : Configuration configuration } <- RR.ask
+        { configuration : Configuration configuration } <- RR.ask
 
-	if not configuration.development then do
-		response <- R.liftAff <<< A.request $ A.defaultRequest {
-					url = "https://www.google.com/recaptcha/api/siteverify",
-					method = Left POST,
-					responseFormat = RF.json,
-					content = Just <<< RB.formURLEncoded $ DF.fromArray [
-						Tuple "secret" $ Just configuration.captchaSecret,
-						Tuple "response" registerLogin.captchaResponse
-					]
-				}
-		case response.body of
-			Right payload ->
-				if response.status == StatusCode 200 then
-					DE.either SRR.throwInternalError finishWithCaptcha $ DAD.decodeJson payload
-				else
-					SRR.throwBadRequest response.statusText
-			Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
-	 else
-	 	finish
-	where
-		finish = do
-			name <- SB.generateName
-			headline <- SB.generateHeadline
-			description <- SB.generateDescription
-			password <- ST.hashPassword registerLogin.password
-			PrimaryKey id <- SLD.createUser {
-				email: registerLogin.email,
-				name,
-				password,
-				headline,
-				description
-			}
-			ST.createToken id
+        if not configuration.development then do
+                response <- R.liftAff <<< A.request $ A.defaultRequest {
+                                        url = "https://www.google.com/recaptcha/api/siteverify",
+                                        method = Left POST,
+                                        responseFormat = RF.json,
+                                        content = Just <<< RB.formURLEncoded $ DF.fromArray [
+                                                Tuple "secret" $ Just configuration.captchaSecret,
+                                                Tuple "response" registerLogin.captchaResponse
+                                        ]
+                                }
+                case response.body of
+                        Right payload ->
+                                if response.status == StatusCode 200 then
+                                        DE.either SRR.throwInternalError finishWithCaptcha $ DAD.decodeJson payload
+                                else
+                                        SRR.throwBadRequest response.statusText
+                        Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
+         else
+                 finish
+        where
+                finish = do
+                        name <- SB.generateName
+                        headline <- SB.generateHeadline
+                        description <- SB.generateDescription
+                        password <- ST.hashPassword registerLogin.password
+                        PrimaryKey id <- SLD.createUser {
+                                email: registerLogin.email,
+                                name,
+                                password,
+                                headline,
+                                description
+                        }
+                        ST.createToken id
 
-		finishWithCaptcha (CaptchaResponse {success})
-			| success = finish
-			| otherwise = SRR.throwBadRequest "Incorrect captcha"
+                finishWithCaptcha (CaptchaResponse {success})
+                        | success = finish
+                        | otherwise = SRR.throwBadRequest "Incorrect captcha"
