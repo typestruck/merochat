@@ -505,10 +505,10 @@ create table histories
 
 INSERT INTO users
     (
-    name, password, joined, email, birthday, gender, headline,
+    id, name, password, joined, email, birthday, gender, headline,
     description)
 VALUES
-    ('bender', 'cant log in with it', clock_timestamp(), 'bender@melan.chat', clock_timestamp(), 'O', 'Here to help you with all your Melanchat queries', 'Shining shiner!');
+    (1, 'bender', 'cant log in with it', clock_timestamp(), 'bender@melan.chat', clock_timestamp(), 'O', 'Here to help you with all your Melanchat queries', 'Shining shiner!');
 
 
 CREATE OR REPLACE FUNCTION insertHistory
