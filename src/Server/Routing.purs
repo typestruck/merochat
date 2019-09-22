@@ -34,9 +34,11 @@ import Server.Landing.Template as SLT
 import Server.Login.Action as SLI
 import Server.Login.Template as SLIT
 import Server.Response as SRR
+import Server.IM.Database as SID
 import Server.Token as ST
 import Shared.Header (xAccessToken)
 import Shared.Routing as SRO
+import Server.IM.Action as SIA
 
 --TODO: logging
 
@@ -52,9 +54,11 @@ router { headers, path, method, body }
         | path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous (json body (SLA.register ""))
         | path == [ SRO.fromRoute IM ] = do
                 let im = do
-                        { session: { userID } } <- RR.ask
-                        user <- SDU.userBy <<< ID <<< PrimaryKey <<< PU.unsafePartial $ DM.fromJust userID
-                        serveTemplate <<< SIT.template <<< PU.unsafePartial $ DM.fromJust user
+                        { session: { userID: maybeUserID } } <- RR.ask
+                        let userID = PU.unsafePartial $ DM.fromJust maybeUserID
+                        user <- SID.presentUser userID
+                        suggestions <- SIA.suggest userID
+                        serveTemplate $ SIT.template suggestions user
                 ifLogged path im
         --TODO: type this route
         | otherwise = do

@@ -2,7 +2,11 @@ module Shared.IM.Model where
 
 import Shared.Types
 
-model :: IMUser -> IMModel
-model user = IMModel {
-        user
+import Data.Maybe (Maybe(..))
+
+model :: Array IMUser -> IMUser -> IMModel
+model suggestions user = IMModel {
+        user,
+        suggestions,
+        chatting: Nothing
 }
