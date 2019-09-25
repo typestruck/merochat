@@ -5,6 +5,7 @@ import Shared.Types
 
 import Data.Argonaut.Core (stringify)
 import Data.Argonaut.Encode.Generic.Rep (genericEncodeJson)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
@@ -13,7 +14,6 @@ import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.Model as SIM
-import Shared.IM.Model (model)
 import Shared.IM.View as SIV
 
 template :: Array IMUser -> IMUser -> Effect String
@@ -24,11 +24,16 @@ template suggestions user = do
         }
         F.preMount (QuerySelector "#im") {
                 view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
-                init: model suggestions user
+                init: IMModel {
+                        suggestions,
+                        user,
+                        chatting: Just 0
+                }
         }
         where   javascript = [
                         HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"]
                 ]
                 css = [
-                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"]
+                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"],
+                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/night.css"]
                 ]

@@ -11,7 +11,7 @@ create table users
     password char(128) not null,
     joined timestamp default clock_timestamp(),
     email varchar(50) not null,
-    birthday date,
+    birthday timestamp,
     gender char(1),
     headline varchar(200) not null,
     description varchar(10000) not null,

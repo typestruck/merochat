@@ -3,18 +3,20 @@ module Shared.IM.View where
 import Prelude
 import Shared.Types
 
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.String.Common as DSC
 import Effect (Effect)
 import Flame (QuerySelector(..), Html)
 import Flame as F
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Data.String.Common as DSC
 
 view :: IMModel -> Html IMMessage
-view model = HE.div (HA.class' "im") [
+view model@(IMModel { suggestions, chatting }) = HE.div (HA.class' "im") [
         userMenu model,
-        suggestion model
+        suggestion model $ DM.maybe Nothing (DA.index suggestions) chatting
 ]
 
 userMenu :: IMModel -> Html IMMessage
@@ -45,26 +47,44 @@ userMenu (IMModel {user: (IMUser user)}) =  HE.div [HA.id "settings", HA.class' 
         ]
 ]
 
-suggestion :: IMModel -> Html IMMessage
-suggestion (IMModel {chatting: Just (IMUser chatting)}) = HE.div (HA.class' "suggestion") [
-        HE.a [HA.class' "skip", HA.title "you need more karma for that"] [
-                HE.svg [HA.class' "i-start svg-50", HA.viewBox "0 0 32 32"] $
-                        HE.path' $ HA.d "M8 2 L8 16 22 2 22 30 8 16 8 30"
-        ],
-        HE.div (HA.class' "profile-info") [
-                HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src chatting.avatar],
-                HE.h1_ $ chatting.name,
-                HE.h3_ $ chatting.headline,
-                HE.div_ $ maybeString (map show chatting.age) <> maybeString chatting.gender <> maybeString chatting.country <> DSC.joinWith ", " chatting.languages,
-                HE.div_ $ DSC.joinWith " " chatting.tags
-        ],
-        HE.a [HA.class' "skip green", HA.title "See next profile"] [
-                HE.svg [HA.class' "i-end svg-50", HA.viewBox "0 0 32 32"] $
-                        HE.path' $ HA.d "M24 2 L24 16 10 2 10 30 24 16 24 30"
-        ]
-]
-suggestion _ = HE.div (HA.class' "suggestion") $ HE.div_ $ HE.img' $ HA.src "/client/media/logo.png"
+suggestion :: IMModel -> Maybe IMUser -> Html IMMessage
+suggestion model =
+        case _ of
+                (Just (IMUser chatting)) ->
+                        HE.div (HA.class' "suggestion") [
+                                HE.a [HA.class' "skip", HA.title "you need more karma for that"] [
+                                        HE.svg [HA.class' "i-start svg-50", HA.viewBox "0 0 32 32"] $
+                                                HE.path' $ HA.d "M8 2 L8 16 22 2 22 30 8 16 8 30"
+                                ],
+                                HE.div (HA.class' "profile-info") [
+                                        HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src chatting.avatar],
+                                        HE.h1_ $ chatting.name,
+                                        HE.h3_ $ chatting.headline,
+                                        HE.div_ $
+                                                toInfoSpan false (map ((_ <> ",") <<< show) chatting.age) <>
+                                                toInfoSpan true chatting.gender <>
+                                                toInfoSpan true chatting.country <>
+                                                --maybe include local time?
+                                                (toInfoSpan false <<< maybeLanguages $ DSC.joinWith ", " chatting.languages),
+                                        HE.div_ $ DSC.joinWith " " chatting.tags
+                                ],
+                                HE.a [HA.class' "skip green", HA.title "See next profile"] [
+                                        HE.svg [HA.class' "i-end svg-50", HA.viewBox "0 0 32 32"] $
+                                                HE.path' $ HA.d "M24 2 L24 16 10 2 10 30 24 16 24 30"
+                                ]
+                        ]
+                _ ->
+                        HE.div (HA.class' "suggestion") $ HE.div_ $ HE.img' $ HA.src "/client/media/logo.png"
+        where   toInfoSpan includeSepator =
+                        case _ of
+                                Just s ->
+                                        [HE.span_ $ s <> " "] <>
+                                        (if includeSepator then
+                                                [HE.span (HA.class' "smaller") "• "]
+                                         else [])
+                                _ -> [HE.createEmptyElement "span"]
 
-maybeString :: Maybe String -> String
-maybeString (Just s) = s
-maybeString _ = ""
+                maybeLanguages =
+                        case _ of
+                                "" -> Nothing
+                                l -> Just ("speaks " <> l)

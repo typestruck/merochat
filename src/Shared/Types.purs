@@ -3,16 +3,14 @@ module Shared.Types where
 import Prelude
 
 import Control.Monad.Except as CME
-import Control.Monad.Except as CME
 import Data.Argonaut.Core (Json)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Encode (class EncodeJson)
 import Data.Bifunctor as DB
 import Data.Date (Date)
 import Data.Date as DD
 import Data.Either (Either(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show as DGRS
 import Data.Generic.Rep.Show as S
 import Data.Int53 (Int53)
 import Data.Int53 as DI
@@ -22,15 +20,14 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
-import Database.PostgreSQL (class FromSQLRow)
-import Database.PostgreSQL (class ToSQLValue, Pool, class FromSQLValue)
-import Effect.Aff (Aff)
+import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
+import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
 
-foreign import sss :: forall a. a -> Aff Unit
+foreign import sss :: forall a. a -> Effect Unit
 foreign import fromInt53 :: Int53 -> Json
 foreign import fromIMUser :: IMUser -> Json
 
@@ -181,6 +178,7 @@ instance userFromSQLRow :: FromSQLRow User where
                 }
         fromSQLRow _ = Left "missing fields from users table"
 
+-- seems like parsing a postgresql date column fails with a js type error
 instance imUserFromSQLRow :: FromSQLRow IMUser where
         fromSQLRow [
                 foreignID,
@@ -206,11 +204,12 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 maybeLanguages <- F.readNull foreignLanguages
                 languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
                 maybeTags <- F.readNull foreignTags
-                tags <- DM.maybe (pure []) (map (DS.split (Pattern "\n")) <<< F.readString) maybeTags
+                tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
                 let now = EU.unsafePerformEffect $ EN.nowDate
                 pure $ IMUser {
                         id,
                         name,
+                        --this is a bug.......
                         age: map ((DE.fromEnum (DD.year now) - _) <<< DE.fromEnum <<< DD.year) birthday,
                         gender,
                         headline,
@@ -226,7 +225,7 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
 newtype IMModel = IMModel {
         user :: IMUser,
         suggestions :: Array IMUser,
-        chatting :: Maybe IMUser
+        chatting :: Maybe Int
 }
 
 derive instance genericIMModel :: Generic IMModel _
