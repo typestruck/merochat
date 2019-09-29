@@ -17,12 +17,14 @@
     "repl-li": "pulp repl --src-path src/Client/Login --include src/Shared:src/Client/Common",
     "watch-l": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common --to src/Client/javascript/landing.bundle.js --standalone Landing",
     "watch-li": "pulp --watch browserify -o output/Client/Login --src-path src/Client/Login --main Client.Login.Main --include src/Shared:src/Client/Common --to src/Client/javascript/login.bundle.js",
-    "watch-c": "npm run watch-l & npm run watch-li",
+    "watch-im": "pulp --watch browserify -o output/Client/IM --src-path src/Client/IM --main Client.IM.Main --include src/Shared:src/Client/Common --to src/Client/javascript/im.bundle.js",
+    "watch-c": "npm run watch-l & npm run watch-li & npm run watch-im",
+    "watch-sim": "npm run watch-im & npm run watch-s",
     "watch": "npm run watch-s & npm run watch-c",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "pulp test"
   },
   "author": "",
-  "license": "ISC",
+  "license": "CC-BY-4.0",
   "dependencies": {
     "decimal.js": "^10.2.0",
     "pg": "^7.11.0",

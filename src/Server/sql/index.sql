@@ -11,7 +11,7 @@ create table users
     password char(128) not null,
     joined timestamp default clock_timestamp(),
     email varchar(50) not null,
-    birthday date,
+    birthday timestamp,
     gender char(1),
     headline varchar(200) not null,
     description varchar(10000) not null,
@@ -505,10 +505,10 @@ create table histories
 
 INSERT INTO users
     (
-    name, password, joined, email, birthday, gender, headline,
+    id, name, password, joined, email, birthday, gender, headline,
     description)
 VALUES
-    ('bender', 'cant log in with it', clock_timestamp(), 'bender@melan.chat', clock_timestamp(), 'O', 'Here to help you with all your Melanchat queries', 'Shining shiner!');
+    (1, 'bender', 'cant log in with it', clock_timestamp(), 'bender@melan.chat', clock_timestamp(), 'O', 'Here to help you with all your Melanchat queries', 'Shining shiner!');
 
 
 CREATE OR REPLACE FUNCTION insertHistory

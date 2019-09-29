@@ -3,14 +3,17 @@ module Shared.Types where
 import Prelude
 
 import Control.Monad.Except as CME
-import Control.Monad.Except as CME
 import Data.Argonaut.Core (Json)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Argonaut.Decode (class DecodeJson)
+import Data.Argonaut.Decode.Generic.Rep as DADGR
+import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
 import Data.Date (Date)
+import Data.Date as DD
 import Data.Either (Either(..))
+import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show as DGRS
 import Data.Generic.Rep.Show as S
 import Data.Int53 (Int53)
 import Data.Int53 as DI
@@ -18,18 +21,18 @@ import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Database.PostgreSQL (class FromSQLRow)
-import Database.PostgreSQL (class ToSQLValue, Pool, class FromSQLValue)
-import Effect.Aff (Aff)
+import Data.String (Pattern(..))
+import Data.String as DS
+import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
+import Effect (Effect)
+import Effect.Now as EN
+import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
 
-foreign import sss :: forall a. a -> Aff Unit
+foreign import sss :: forall a. a -> Effect Unit
 foreign import fromInt53 :: Int53 -> Json
-foreign import fromIMUser :: IMUser -> Json
-
-instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
-        encodeJson (PrimaryKey id) = fromInt53 id
+foreign import toInt53 :: Json -> Int53
 
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin {
@@ -84,20 +87,25 @@ data By =
 
 newtype PrimaryKey = PrimaryKey Int53
 
+derive instance genericPrimaryKey :: Generic PrimaryKey _
+
 instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
         fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
 
+instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
+        encodeJson (PrimaryKey id) = fromInt53 id
+
+instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
+        decodeJson = Right <<< PrimaryKey <<< toInt53
+
 type BasicUser fields = {
         name :: String,
-        email :: String,
         headline :: String,
         description :: String,
-        gender :: Maybe String,
-        recentEmoji :: Maybe String,
-        messageOnEnter :: Boolean |
+        gender :: Maybe String |
         fields
 }
 
@@ -105,18 +113,26 @@ type BasicUser fields = {
 newtype IMUser = IMUser (BasicUser (
         id :: PrimaryKey,
         avatar :: String,
-        country :: Maybe PrimaryKey,
-        birthday :: Maybe Int
+        country :: Maybe String,
+        languages :: Array String,
+        tags :: Array String,
+        age :: Maybe Int
 ))
 
 derive instance genericIMUser :: Generic IMUser _
 
 instance encodeJsonIMUser :: EncodeJson IMUser where
-        encodeJson  = fromIMUser
+        encodeJson = DAEGR.genericEncodeJson
+
+instance decodeJsonIMUser :: DecodeJson IMUser where
+        decodeJson = DADGR.genericDecodeJson
 
 newtype User = User (BasicUser (
         id :: Int53,
+        email :: String,
         password :: String,
+        recentEmoji :: Maybe String,
+        messageOnEnter :: Boolean,
         joined :: Date,
         country :: Maybe Int53,
         birthday :: Maybe Date
@@ -124,37 +140,40 @@ newtype User = User (BasicUser (
 
 derive instance genericUser :: Generic User _
 
+--is there not an easier way to do this?
+--maybe a approach to select into Row instead of typeclasses for every query?
+
 instance userFromSQLRow :: FromSQLRow User where
         fromSQLRow [
-                foreignerID,
-                foreignerName,
-                foreignerPassword,
-                foreignerJoined,
-                foreignerEmail,
-                foreignerBirthday,
-                foreignerGender,
-                foreignerHeadline,
-                foreignerDescription,
-                foreignerRecentEmoji,
-                foreignerCountry,
-                foreignerMessageOnEnter
+                foreignID,
+                foreignName,
+                foreignPassword,
+                foreignJoined,
+                foreignEmail,
+                foreignBirthday,
+                foreignGender,
+                foreignHeadline,
+                foreignDescription,
+                foreignRecentEmoji,
+                foreignCountry,
+                foreignMessageOnEnter
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- DI.fromInt <$> F.readInt foreignerID
-                name <- F.readString foreignerName
-                password <- F.readString foreignerPassword
-                joined <- PU.unsafePartial (DM.fromJust <<< DJ.toDate) <$> DJ.readDate foreignerJoined
-                email <- F.readString foreignerEmail
-                maybeForeignerBirthday <- F.readNull foreignerBirthday
+                id <- DI.fromInt <$> F.readInt foreignID
+                name <- F.readString foreignName
+                password <- F.readString foreignPassword
+                joined <- PU.unsafePartial (DM.fromJust <<< DJ.toDate) <$> DJ.readDate foreignJoined
+                email <- F.readString foreignEmail
+                maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
-                maybeGender <- F.readNull foreignerGender
+                maybeGender <- F.readNull foreignGender
                 gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
-                headline <- F.readString foreignerHeadline
-                description <- F.readString foreignerDescription
-                maybeRecentEmoji <- F.readNull foreignerRecentEmoji
+                headline <- F.readString foreignHeadline
+                description <- F.readString foreignDescription
+                maybeRecentEmoji <- F.readNull foreignRecentEmoji
                 recentEmoji <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeRecentEmoji
-                maybeCountry <- F.readNull foreignerCountry
+                maybeCountry <- F.readNull foreignCountry
                 country <- DM.maybe (pure Nothing) (map (Just <<< DI.fromInt) <<< F.readInt) maybeCountry
-                messageOnEnter <- F.readBoolean foreignerMessageOnEnter
+                messageOnEnter <- F.readBoolean foreignMessageOnEnter
                 pure $ User {
                         id,
                         name,
@@ -171,10 +190,60 @@ instance userFromSQLRow :: FromSQLRow User where
                 }
         fromSQLRow _ = Left "missing fields from users table"
 
+-- seems like parsing a postgresql date column fails with a js type error
+instance imUserFromSQLRow :: FromSQLRow IMUser where
+        fromSQLRow [
+                foreignID,
+                foreignGender,
+                foreignBirthday,
+                foreignName,
+                foreignHeadline,
+                foreignDescription,
+                foreignCountry,
+                foreignLanguages,
+                foreignTags
+        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+                id <- PrimaryKey <<< DI.fromInt <$> F.readInt foreignID
+                name <- F.readString foreignName
+                maybeForeignerBirthday <- F.readNull foreignBirthday
+                birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
+                maybeGender <- F.readNull foreignGender
+                gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
+                headline <- F.readString foreignHeadline
+                description <- F.readString foreignDescription
+                maybeCountry <- F.readNull foreignCountry
+                country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
+                maybeLanguages <- F.readNull foreignLanguages
+                languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
+                maybeTags <- F.readNull foreignTags
+                tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
+                let now = EU.unsafePerformEffect $ EN.nowDate
+                pure $ IMUser {
+                        id,
+                        name,
+                        --this is a bug.......
+                        age: map ((DE.fromEnum (DD.year now) - _) <<< DE.fromEnum <<< DD.year) birthday,
+                        gender,
+                        headline,
+                        description,
+                        country,
+                        languages,
+                        tags,
+                        avatar:"/client/media/avatar.png"
+                }
+        fromSQLRow _ = Left "missing fields from users table"
+
+
 newtype IMModel = IMModel {
-        user :: IMUser
+        user :: IMUser,
+        suggestions :: Array IMUser,
+        chatting :: Maybe Int
 }
 
 derive instance genericIMModel :: Generic IMModel _
 
-data IMMessage
+data SuggestionMessage =
+        NextSuggestion
+
+data IMMessage =
+        SM SuggestionMessage

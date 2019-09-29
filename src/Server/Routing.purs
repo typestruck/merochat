@@ -14,7 +14,6 @@ import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Parser as DAP
 import Data.Array as DA
-import Data.Array as DS
 import Data.Either as DET
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
@@ -27,16 +26,17 @@ import Partial.Unsafe as PU
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
-import Server.Database.User as SDU
 import Server.IM.Template as SIT
 import Server.Landing.Action as SLA
 import Server.Landing.Template as SLT
 import Server.Login.Action as SLI
 import Server.Login.Template as SLIT
 import Server.Response as SRR
+import Server.IM.Database as SID
 import Server.Token as ST
 import Shared.Header (xAccessToken)
 import Shared.Routing as SRO
+import Server.IM.Action as SIA
 
 --TODO: logging
 
@@ -52,9 +52,11 @@ router { headers, path, method, body }
         | path == [ SRO.fromRoute Register ] && method == Post = ifAnonymous (json body (SLA.register ""))
         | path == [ SRO.fromRoute IM ] = do
                 let im = do
-                        { session: { userID } } <- RR.ask
-                        user <- SDU.userBy <<< ID <<< PrimaryKey <<< PU.unsafePartial $ DM.fromJust userID
-                        serveTemplate <<< SIT.template <<< PU.unsafePartial $ DM.fromJust user
+                        { session: { userID: maybeUserID } } <- RR.ask
+                        let userID = PU.unsafePartial $ DM.fromJust maybeUserID
+                        user <- SID.presentUser userID
+                        suggestions <- SIA.suggest userID
+                        serveTemplate $ SIT.template suggestions user
                 ifLogged path im
         --TODO: type this route
         | otherwise = do

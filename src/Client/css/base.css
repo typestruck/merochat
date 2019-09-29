@@ -126,3 +126,8 @@ textarea:focus, input:focus {
 .hidden{
     display: none;
 }
+
+.smaller {
+    font-size: smaller;
+
+}

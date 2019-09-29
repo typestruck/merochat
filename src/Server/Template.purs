@@ -72,7 +72,7 @@ templateWith parameters =
                         HE.meta [HA.name "viewport", HA.content "width=device-width, initial-scale=1.0"],
                         HE.link [HA.rel "shortcut icon", HA.type' "image/ico", HA.href "/client/media/favicon.ico"],
                         HE.title "MelanChat (friendly) random webchat"
-                ] <> styleSheets <> parameters.css),
+                ] <> parameters.css <> styleSheets),
                 HE.body_ (HE.div' [HA.id "loading", HA.class' "loading"] : parameters.content <> parameters.footer <> parameters.javascript)
         ]
         where defaultCss = [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]]
