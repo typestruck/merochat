@@ -14,7 +14,7 @@ import Data.Date as DD
 import Data.Either (Either(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show as S
+import Data.Generic.Rep.Show as DGRS
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.JSDate as DJ
@@ -52,7 +52,7 @@ newtype Token = Token {
 derive instance genericToken :: Generic Token _
 
 instance showToken :: Show Token where
-        show = S.genericShow
+        show = DGRS.genericShow
 
 -- | All available endpoints for melanchat
 data Route =
@@ -65,7 +65,7 @@ derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
 
 instance showRoute :: Show Route where
-        show = S.genericShow
+        show = DGRS.genericShow
 
 -- | Errors that should be reported back to the user
 data ResponseError =
@@ -79,7 +79,7 @@ data ResponseError =
 derive instance genericResponseError :: Generic ResponseError _
 
 instance showResponseError :: Show ResponseError where
-        show = S.genericShow
+        show = DGRS.genericShow
 
 data By =
         ID PrimaryKey |
@@ -88,6 +88,7 @@ data By =
 newtype PrimaryKey = PrimaryKey Int53
 
 derive instance genericPrimaryKey :: Generic PrimaryKey _
+derive instance eqPrimaryKey :: Eq PrimaryKey
 
 instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
@@ -100,6 +101,9 @@ instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
 
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
         decodeJson = Right <<< PrimaryKey <<< toInt53
+
+instance showPrimaryKey :: Show PrimaryKey where
+        show = DGRS.genericShow
 
 type BasicUser fields = {
         name :: String,
@@ -120,12 +124,16 @@ newtype IMUser = IMUser (BasicUser (
 ))
 
 derive instance genericIMUser :: Generic IMUser _
+derive instance eqIMUser :: Eq IMUser
 
 instance encodeJsonIMUser :: EncodeJson IMUser where
         encodeJson = DAEGR.genericEncodeJson
 
 instance decodeJsonIMUser :: DecodeJson IMUser where
         decodeJson = DADGR.genericDecodeJson
+
+instance showIMUser :: Show IMUser where
+        show = DGRS.genericShow
 
 newtype User = User (BasicUser (
         id :: Int53,
@@ -241,6 +249,10 @@ newtype IMModel = IMModel {
 }
 
 derive instance genericIMModel :: Generic IMModel _
+derive instance eqIMModel :: Eq IMModel
+
+instance showIMModel :: Show IMModel where
+        show = DGRS.genericShow
 
 data SuggestionMessage =
         NextSuggestion
