@@ -148,6 +148,10 @@ svg {
     flex-flow: column wrap;
 }
 
+.headline {
+    color: #333;
+}
+
 .suggestion {
     display: flex;
     justify-content: space-evenly
@@ -478,4 +482,14 @@ svg.toolbar-action {
 
 .inline-image {
     display: inline-block;
+}
+
+.tag {
+    display: inline-block;
+    margin: 20px 5px;
+    padding: 3px 6px;
+    background: green;
+    color: white;
+    font-weight: 500;
+    border-radius: 3px;
 }

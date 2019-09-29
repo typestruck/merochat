@@ -4,7 +4,10 @@ import Prelude
 
 import Control.Monad.Except as CME
 import Data.Argonaut.Core (Json)
+import Data.Argonaut.Decode (class DecodeJson)
+import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
 import Data.Date (Date)
 import Data.Date as DD
@@ -29,10 +32,7 @@ import Partial.Unsafe as PU
 
 foreign import sss :: forall a. a -> Effect Unit
 foreign import fromInt53 :: Int53 -> Json
-foreign import fromIMUser :: IMUser -> Json
-
-instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
-        encodeJson (PrimaryKey id) = fromInt53 id
+foreign import toInt53 :: Json -> Int53
 
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin {
@@ -87,11 +87,19 @@ data By =
 
 newtype PrimaryKey = PrimaryKey Int53
 
+derive instance genericPrimaryKey :: Generic PrimaryKey _
+
 instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
         fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
+
+instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
+        encodeJson (PrimaryKey id) = fromInt53 id
+
+instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
+        decodeJson = Right <<< PrimaryKey <<< toInt53
 
 type BasicUser fields = {
         name :: String,
@@ -114,7 +122,10 @@ newtype IMUser = IMUser (BasicUser (
 derive instance genericIMUser :: Generic IMUser _
 
 instance encodeJsonIMUser :: EncodeJson IMUser where
-        encodeJson  = fromIMUser
+        encodeJson = DAEGR.genericEncodeJson
+
+instance decodeJsonIMUser :: DecodeJson IMUser where
+        decodeJson = DADGR.genericDecodeJson
 
 newtype User = User (BasicUser (
         id :: Int53,
@@ -129,6 +140,7 @@ newtype User = User (BasicUser (
 
 derive instance genericUser :: Generic User _
 
+--is there not an easier way to do this?
 --maybe a approach to select into Row instead of typeclasses for every query?
 
 instance userFromSQLRow :: FromSQLRow User where
@@ -230,4 +242,8 @@ newtype IMModel = IMModel {
 
 derive instance genericIMModel :: Generic IMModel _
 
-data IMMessage
+data SuggestionMessage =
+        NextSuggestion
+
+data IMMessage =
+        SM SuggestionMessage

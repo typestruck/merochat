@@ -58,17 +58,19 @@ suggestion model =
                                 ],
                                 HE.div (HA.class' "profile-info") [
                                         HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src chatting.avatar],
-                                        HE.h1_ $ chatting.name,
-                                        HE.h3_ $ chatting.headline,
+                                        HE.div_ [
+                                                HE.h1_ chatting.name,
+                                                HE.h3 (HA.class' "headline") chatting.headline
+                                        ],
                                         HE.div_ $
                                                 toInfoSpan false (map ((_ <> ",") <<< show) chatting.age) <>
                                                 toInfoSpan true chatting.gender <>
                                                 toInfoSpan true chatting.country <>
                                                 --maybe include local time?
                                                 (toInfoSpan false <<< maybeLanguages $ DSC.joinWith ", " chatting.languages),
-                                        HE.div_ $ DSC.joinWith " " chatting.tags
+                                        HE.div_ $ map toTagSpan chatting.tags
                                 ],
-                                HE.a [HA.class' "skip green", HA.title "See next profile"] [
+                                HE.a [HA.class' "skip green", HA.title "See next profile", HA.onClick $ SM NextSuggestion] [
                                         HE.svg [HA.class' "i-end svg-50", HA.viewBox "0 0 32 32"] $
                                                 HE.path' $ HA.d "M24 2 L24 16 10 2 10 30 24 16 24 30"
                                 ]
@@ -88,3 +90,5 @@ suggestion model =
                         case _ of
                                 "" -> Nothing
                                 l -> Just ("speaks " <> l)
+
+                toTagSpan tag = HE.span (HA.class' "tag") tag
