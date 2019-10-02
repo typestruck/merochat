@@ -6,6 +6,7 @@ import Shared.Types
 import Client.IM.Suggestion as CIS
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
+import Data.Newtype as DN
 import Flame (World)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -39,10 +40,18 @@ tests :: TestSuite
 tests = do
         TU.suite "im suggestion update" $ do
                 TU.test "next suggestion" $ do
-                        let model = IMModel {
-                                user: imUser,
-                                suggestions: [],
-                                chatting: Nothing
-                        }
                         updatedModel <- CIS.update world model NextSuggestion
                         TUA.equal model updatedModel
+
+                        updatedModel <- CIS.update world (updateModel (\m -> m { suggestions = [imUser] })) NextSuggestion
+                        TUA.equal (updateModel (\m -> m { chatting = Just 0, suggestions = [imUser] })) updatedModel
+
+                        updatedModel <- CIS.update world (updateModel (\m -> m { suggestions = [imUser, imUser], chatting = Just 0 })) NextSuggestion
+                        TUA.equal (updateModel (\m -> m { chatting = Just 1, suggestions = [imUser, imUser] })) updatedModel
+        where   model = IMModel {
+                        user: imUser,
+                        suggestions: [],
+                        chatting: Nothing
+                }
+
+                updateModel f = DN.over IMModel f model

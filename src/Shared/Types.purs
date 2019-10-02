@@ -21,6 +21,7 @@ import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
@@ -250,6 +251,7 @@ newtype IMModel = IMModel {
 
 derive instance genericIMModel :: Generic IMModel _
 derive instance eqIMModel :: Eq IMModel
+derive instance newTypeIMModel :: Newtype IMModel _
 
 instance showIMModel :: Show IMModel where
         show = DGRS.genericShow
