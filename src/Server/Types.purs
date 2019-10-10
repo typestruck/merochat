@@ -47,10 +47,6 @@ type Session = {
         userID :: Maybe Int53
 }
 
--- type ServerState = {
-
--- }
-
 type ServerReader = {
         configuration :: Configuration,
         session :: Session,
@@ -61,7 +57,6 @@ type ServerReader = {
 
 type ServerEffect a = Run (
         reader :: READER ServerReader,
-        --state :: STATE ServerState,
         except :: EXCEPT ResponseError,
         aff :: AFF,
         effect :: EFFECT
@@ -75,4 +70,3 @@ data BenderAction = Name | Description
 instance benderActionShow :: Show BenderAction where
         show Name = "name"
         show Description = "description"
-
