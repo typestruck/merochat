@@ -4,6 +4,7 @@ import Prelude
 
 import Effect (Effect)
 import Test.Unit (TestSuite)
+import Test.Client.IM.Suggestion as TCIS
 
 tests :: TestSuite
-tests = pure unit
+tests = TCIS.tests

@@ -28,11 +28,15 @@
   "dependencies": {
     "decimal.js": "^10.2.0",
     "pg": "^7.11.0",
-    "snabbdom-to-html": "^5.1.1"
+    "snabbdom-to-html": "^5.1.1",
+    "ws": "^7.1.2"
   },
   "devDependencies": {
     "pg-native": "^3.0.0",
     "snabbdom": "^0.7.3",
     "xhr2": "^0.2.0"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.1"
   }
 }
