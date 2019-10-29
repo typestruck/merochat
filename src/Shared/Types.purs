@@ -30,6 +30,7 @@ import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
+import Web.Socket.WebSocket (WebSocket)
 
 foreign import sss :: forall a. a -> Effect Unit
 foreign import fromInt53 :: Int53 -> Json
@@ -246,7 +247,8 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
 newtype IMModel = IMModel {
         user :: IMUser,
         suggestions :: Array IMUser,
-        chatting :: Maybe Int
+        chatting :: Maybe Int,
+        webSocket :: Maybe WebSocket
 }
 
 derive instance genericIMModel :: Generic IMModel _
@@ -259,5 +261,9 @@ instance showIMModel :: Show IMModel where
 data SuggestionMessage =
         NextSuggestion
 
+data ChatMessage =
+        SetWebSocket WebSocket
+
 data IMMessage =
-        SM SuggestionMessage
+        SM SuggestionMessage |
+        CM ChatMessage

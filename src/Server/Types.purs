@@ -18,6 +18,7 @@ import HTTPure (Response)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
 import Run.Reader (READER)
+import Server.WS (WebSocketServer)
 --import Run.State (STATE)
 
 newtype Configuration = Configuration {
@@ -50,7 +51,8 @@ type Session = {
 type ServerReader = {
         configuration :: Configuration,
         session :: Session,
-        pool :: Pool
+        pool :: Pool,
+        webSocketServer :: WebSocketServer
 }
 
 --needs logging strategy
@@ -63,7 +65,6 @@ type ServerEffect a = Run (
 ) a
 
 type ResponseEffect = ServerEffect Response
-
 
 data BenderAction = Name | Description
 

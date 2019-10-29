@@ -28,6 +28,7 @@
   "dependencies": {
     "decimal.js": "^10.2.0",
     "pg": "^7.11.0",
+    "simplemde": "^1.11.2",
     "snabbdom-to-html": "^5.1.1",
     "ws": "^7.1.2"
   },

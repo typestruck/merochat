@@ -31,5 +31,6 @@ template suggestions user = do
                         HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"]
                 ]
                 css = [
-                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"]
+                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"],
+                        HE.link [HA.rel "stylesheet", HA.href "https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"]
                 ]

@@ -15,8 +15,16 @@ import Flame.HTML.Element as HE
 
 view :: IMModel -> Html IMMessage
 view model@(IMModel { suggestions, chatting }) = HE.div (HA.class' "im") [
-        userMenu model,
-        suggestion model $ DM.maybe Nothing (DA.index suggestions) chatting
+        HE.div_ [
+                userMenu model,
+                search model,
+                contacts model
+        ],
+        HE.div (HA.class' "chat-box") [
+                suggestion model $ DM.maybe Nothing (DA.index suggestions) chatting,
+                history model,
+                chat model
+        ]
 ]
 
 userMenu :: IMModel -> Html IMMessage
@@ -92,3 +100,16 @@ suggestion model =
                                 l -> Just ("speaks " <> l)
 
                 toTagSpan tag = HE.span (HA.class' "tag") tag
+
+history :: IMModel -> Html IMMessage
+history model = HE.div' (HA.class' "message-history")
+
+chat :: IMModel -> Html IMMessage
+chat model =
+        HE.div (HA.class' "send-box") $
+                HE.div (HA.class' "chat-input-textarea-options") $
+                        HE.textarea' [HA.class' "chat-input-textarea", HA.placeholder "Type a message or drag files here"]
+
+search model = HE.div' $ HA.class' "search"
+
+contacts model = HE.div' $ HA.class' "contact-list"

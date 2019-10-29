@@ -419,7 +419,7 @@ svg.toolbar-action {
 }
 
 .chat-input-textarea-options {
-    display: flex;
+    /* display: flex; */
     align-items: center;
 }
 
