@@ -51,6 +51,7 @@ tests = do
         where   model = IMModel {
                         user: imUser,
                         suggestions: [],
+                        webSocket: Nothing,
                         chatting: Nothing
                 }
 

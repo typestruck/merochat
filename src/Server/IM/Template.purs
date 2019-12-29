@@ -24,7 +24,10 @@ template suggestions user = do
                 init: IMModel {
                         suggestions,
                         user,
-                        chatting: Just 0
+                        chatting: Just 0,
+                        webSocket: Nothing,
+                        token: Nothing,
+                        temporaryID : 0
                 }
         }
         where   javascript = [

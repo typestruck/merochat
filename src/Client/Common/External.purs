@@ -47,5 +47,5 @@ login (Token { tokenGET, tokenPOST }) redirect =  do
                         path : Just "/"
                 }
         }
-        CC.setItem tokenKey tokenGET
+        CC.setItem tokenKey tokenPOST
         CC.setLocation redirect

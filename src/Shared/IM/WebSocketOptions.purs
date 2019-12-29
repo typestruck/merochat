@@ -3,4 +3,4 @@ module Shared.WebSocket.Options where
 import Prelude
 
 port :: Int
-port = 1337
+port = 1338

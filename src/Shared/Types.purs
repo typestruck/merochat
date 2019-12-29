@@ -32,9 +32,11 @@ import Foreign as F
 import Partial.Unsafe as PU
 import Web.Socket.WebSocket (WebSocket)
 
-foreign import sss :: forall a. a -> Effect Unit
 foreign import fromInt53 :: Int53 -> Json
+foreign import fromWS :: WebSocket -> Json
 foreign import toInt53 :: Json -> Int53
+foreign import toWS :: Json -> WS
+foreign import eqWS :: WebSocket -> WebSocket -> Boolean
 
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin {
@@ -101,6 +103,12 @@ instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
 
+instance encodeJsonWS :: EncodeJson WS where
+        encodeJson (WS ws) = fromWS ws
+
+instance decodeJsonWS :: DecodeJson WS where
+        decodeJson = Right <<< toWS
+
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
         decodeJson = Right <<< PrimaryKey <<< toInt53
 
@@ -115,6 +123,10 @@ type BasicUser fields = {
         fields
 }
 
+newtype History = History {
+        content :: String
+}
+
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
         id :: PrimaryKey,
@@ -122,17 +134,30 @@ newtype IMUser = IMUser (BasicUser (
         country :: Maybe String,
         languages :: Array String,
         tags :: Array String,
-        age :: Maybe Int
+        age :: Maybe Int,
+        message :: String,
+        history :: Array History
 ))
 
+derive instance genericHistory :: Generic History _
+derive instance eqHistory :: Eq History
 derive instance genericIMUser :: Generic IMUser _
 derive instance eqIMUser :: Eq IMUser
+
+instance encodeJsonHistory :: EncodeJson History where
+        encodeJson = DAEGR.genericEncodeJson
 
 instance encodeJsonIMUser :: EncodeJson IMUser where
         encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonHistory :: DecodeJson History where
+        decodeJson = DADGR.genericDecodeJson
+
 instance decodeJsonIMUser :: DecodeJson IMUser where
         decodeJson = DADGR.genericDecodeJson
+
+instance showHistory :: Show History where
+        show = DGRS.genericShow
 
 instance showIMUser :: Show IMUser where
         show = DGRS.genericShow
@@ -239,31 +264,68 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                         country,
                         languages,
                         tags,
-                        avatar:"/client/media/avatar.png"
+                        message: "",
+                        history: [],
+                        avatar: "/client/media/avatar.png"
                 }
         fromSQLRow _ = Left "missing fields from users table"
 
+newtype WS = WS WebSocket
 
 newtype IMModel = IMModel {
         user :: IMUser,
         suggestions :: Array IMUser,
         chatting :: Maybe Int,
-        webSocket :: Maybe WebSocket
+        webSocket :: Maybe WS,
+        temporaryID :: Int,
+        token :: Maybe String
 }
 
+derive instance genericWS :: Generic WS _
 derive instance genericIMModel :: Generic IMModel _
+
+instance eqWSW :: Eq WS where
+        eq (WS w) (WS s) = eqWS w s
+
 derive instance eqIMModel :: Eq IMModel
 derive instance newTypeIMModel :: Newtype IMModel _
 
+instance showWS :: Show WS where
+        show _ = "web socket"
+
 instance showIMModel :: Show IMModel where
+        show = DGRS.genericShow
+
+data WebSocketPayload =
+        Connect String |
+        Message {
+                id :: PrimaryKey,
+                user :: PrimaryKey,
+                token :: String,
+                content :: String
+        } |
+        Received {
+                previousId :: PrimaryKey,
+                id :: PrimaryKey
+        }
+
+derive instance genericWebSocketPayload :: Generic WebSocketPayload _
+
+instance showWebSocketPayload :: Show WebSocketPayload where
         show = DGRS.genericShow
 
 data SuggestionMessage =
         NextSuggestion
 
 data ChatMessage =
-        SetWebSocket WebSocket
+        SendMessage String
+
+data MainMessage =
+        SetWebSocket WebSocket |
+        SetToken String
 
 data IMMessage =
         SM SuggestionMessage |
-        CM ChatMessage
+        CM ChatMessage |
+        MM MainMessage
+

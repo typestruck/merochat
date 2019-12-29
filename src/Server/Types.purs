@@ -18,8 +18,6 @@ import HTTPure (Response)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
 import Run.Reader (READER)
-import Server.WS (WebSocketServer)
---import Run.State (STATE)
 
 newtype Configuration = Configuration {
         port :: Int,
@@ -51,8 +49,7 @@ type Session = {
 type ServerReader = {
         configuration :: Configuration,
         session :: Session,
-        pool :: Pool,
-        webSocketServer :: WebSocketServer
+        pool :: Pool
 }
 
 --needs logging strategy

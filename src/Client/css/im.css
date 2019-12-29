@@ -421,6 +421,7 @@ svg.toolbar-action {
 .chat-input-textarea-options {
     /* display: flex; */
     align-items: center;
+    height: 40px;
 }
 
 .chat-input-textarea {
@@ -492,4 +493,12 @@ svg.toolbar-action {
     color: white;
     font-weight: 500;
     border-radius: 3px;
+}
+
+.CodeMirror, .CodeMirror-scroll {
+	min-height: 20px !important;
+}
+
+.CodeMirror {
+    margin-bottom: 15px;
 }

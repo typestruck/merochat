@@ -11,9 +11,12 @@ import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String (Pattern(..), Replacement(..))
+import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSSU
+import Debug.Trace (spy, trace)
 import Debug.Trace as DT
 import Effect (Effect)
 import Effect.Class.Console as EC

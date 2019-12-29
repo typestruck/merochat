@@ -7,6 +7,7 @@ module Client.Common(
         value,
         setLocation,
         alert,
+        getItem,
         tokenKey,
         search
 ) where
