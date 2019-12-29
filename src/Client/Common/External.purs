@@ -29,7 +29,7 @@ validateEmailPassword = do
                         }
 
 login :: Token -> String -> Effect Unit
-login l@(Token { tokenGET, tokenPOST }) redirect =  do
+login (Token { tokenGET, tokenPOST }) redirect =  do
         BC.setCookie $ SetCookie {
                 cookie : Cookie {
                         key : "melanchat",

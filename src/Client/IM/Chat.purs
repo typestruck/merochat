@@ -26,9 +26,12 @@ update _ model =
 --needs to clean the editor
 sendMessage :: IMModel -> String -> Aff IMModel
 sendMessage (IMModel model@{webSocket: Just (WS webSocket), token: Just token, temporaryID, chatting: Just chatting, suggestions}) content = do
-        let (IMUser user) = PU.unsafePartial $ DM.fromJust (suggestions !! chatting)
-            newTemporaryID = temporaryID + 1
-            updatedChatting = IMUser $ user { history = DA.snoc user.history $ History { content } }
+        let     (IMUser user) = PU.unsafePartial $ DM.fromJust (suggestions !! chatting)
+                newTemporaryID = temporaryID + 1
+                updatedChatting = IMUser $ user {
+                        message = "",
+                        history = DA.snoc user.history $ History { content }
+                }
         liftEffect <<< WSW.sendString webSocket <<< DAC.stringify <<< DAEGR.genericEncodeJson $ Message {
                 id: PrimaryKey $ DI.fromInt newTemporaryID,
                 user: user.id,

@@ -5,21 +5,17 @@ import Server.Types
 import Shared.Types
 
 import Data.Array.NonEmpty as DAN
-import Data.Either (Either)
 import Data.Either as DE
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.String (Pattern(..), Replacement(..))
-import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSSU
 import Effect (Effect)
 import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
-import Node.Simple.Jwt (Jwt(..), JwtError)
+import Node.Simple.Jwt (Jwt(..))
 import Node.Simple.Jwt as NSJ
 import Run as R
 import Run.Reader as RR
@@ -28,8 +24,6 @@ hashPassword :: String -> ServerEffect String
 hashPassword password = do
         { configuration : Configuration configuration } <- RR.ask
         R.liftEffect $ NCH.hex NCHA.SHA512 configuration.salt password
-
--- add tests after login is done
 
 createToken :: Int53 -> ServerEffect Token
 createToken id = do
