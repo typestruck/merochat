@@ -22,6 +22,8 @@ imUser = IMUser {
         country: Nothing,
         languages: [],
         tags: [],
+        message: "",
+        history: [],
         headline: "",
         description: "",
         gender: Nothing
@@ -51,6 +53,8 @@ tests = do
         where   model = IMModel {
                         user: imUser,
                         suggestions: [],
+                        temporaryID : 0,
+                        token: Nothing,
                         webSocket: Nothing,
                         chatting: Nothing
                 }

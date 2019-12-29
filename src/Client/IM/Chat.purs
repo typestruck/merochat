@@ -23,6 +23,7 @@ update _ model =
         case _ of
                 SendMessage content -> sendMessage model content
 
+--needs to clean the editor
 sendMessage :: IMModel -> String -> Aff IMModel
 sendMessage (IMModel model@{webSocket: Just (WS webSocket), token: Just token, temporaryID, chatting: Just chatting, suggestions}) content = do
         let (IMUser user) = PU.unsafePartial $ DM.fromJust (suggestions !! chatting)

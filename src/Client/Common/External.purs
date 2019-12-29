@@ -9,8 +9,6 @@ import Client.Common as CC
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect (Effect)
-import Effect.Class.Console as EC
-import Run (liftEffect)
 import Shared.Types (RegisterLogin(..), Token(..))
 
 -- | Abstracts the validation common to register and login
@@ -31,7 +29,7 @@ validateEmailPassword = do
                         }
 
 login :: Token -> String -> Effect Unit
-login (Token { tokenGET, tokenPOST }) redirect =  do
+login l@(Token { tokenGET, tokenPOST }) redirect =  do
         BC.setCookie $ SetCookie {
                 cookie : Cookie {
                         key : "melanchat",

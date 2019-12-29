@@ -16,10 +16,7 @@ import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSSU
-import Debug.Trace (spy, trace)
-import Debug.Trace as DT
 import Effect (Effect)
-import Effect.Class.Console as EC
 import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
 import Node.Simple.Jwt (Jwt(..), JwtError)
@@ -44,10 +41,9 @@ createToken id = do
 
 userIDFromToken :: String -> String -> Effect (Maybe Int53)
 userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.decode secret <<< Jwt
-        where         parseInt53 input = do
+        where   parseInt53 input = do
                         --so glad we dont have to do if err != nil
                         matched <- DSR.match (DSSU.unsafeRegex "(Int53 (\\d+))" noFlags) input
                         position <- DAN.index matched 2
                         match <- position
                         DI.fromString match
-

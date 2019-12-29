@@ -11,10 +11,7 @@
     "test": "test"
   },
   "scripts": {
-    "repl-s": "pulp repl --src-path src/Server --include src/Shared/",
     "watch-s": "pulp --watch run -o output/Server --src-path src/Server --include src/Shared/ --main Server.Main ",
-    "repl-l": "pulp repl --src-path src/Client/Landing --include src/Shared:src/Client/Common",
-    "repl-li": "pulp repl --src-path src/Client/Login --include src/Shared:src/Client/Common",
     "watch-l": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common --to src/Client/javascript/landing.bundle.js --standalone Landing",
     "watch-li": "pulp --watch browserify -o output/Client/Login --src-path src/Client/Login --main Client.Login.Main --include src/Shared:src/Client/Common --to src/Client/javascript/login.bundle.js",
     "watch-im": "pulp --watch browserify -o output/Client/IM --src-path src/Client/IM --main Client.IM.Main --include src/Shared:src/Client/Common --to src/Client/javascript/im.bundle.js",

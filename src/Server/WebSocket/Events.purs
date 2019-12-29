@@ -10,7 +10,6 @@ import Data.Either (Either(..))
 import Data.Map (Map)
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Console as EC
 import Effect.Exception (Error)

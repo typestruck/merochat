@@ -109,10 +109,9 @@ session (Configuration configuration) { headers, method } = do
                 sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value
 
 --needs logging as well
-runRouter :: ServerReader {- -> ServerState  -} -> Request -> ResponseM
+runRouter :: ServerReader -> Request -> ResponseM
 runRouter reading {- stating -} =
         R.runBaseAff' <<<
         RE.catch SRR.requestError <<<
-        --RS.evalState stating <<<
         RR.runReader reading <<<
         router
