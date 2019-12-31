@@ -305,7 +305,7 @@ data WebSocketPayload =
                 content :: String
         } |
         Received {
-                previousId :: PrimaryKey,
+                previousID :: PrimaryKey,
                 id :: PrimaryKey
         }
 

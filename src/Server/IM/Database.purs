@@ -5,7 +5,8 @@ import Server.Types
 import Shared.Types
 
 import Data.Int53 (Int53)
-import Database.PostgreSQL (Query(..), Row1(..))
+import Data.Tuple.Nested ((/\))
+import Database.PostgreSQL (Query(..), Row1(..), Row3(..))
 import Server.Database as SD
 
 presentationFields :: String
@@ -26,3 +27,5 @@ presentUser id =
 suggest :: Int53 -> ServerEffect (Array IMUser)
 suggest id =
         SD.select (Query ("select " <> presentationFields <> " from users u where id not in (1, $1)")) <<< Row1 $ PrimaryKey id
+
+insertMessage sender recipient content = SD.insert (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") (Row3 sender recipient content)

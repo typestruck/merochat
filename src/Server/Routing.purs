@@ -21,7 +21,6 @@ import Data.Maybe as DM
 import Effect (Effect)
 import HTTPure (Method(..), Request, ResponseM, Path)
 import HTTPure.Lookup ((!@))
-import Partial.Unsafe (unsafePartial)
 import Partial.Unsafe as PU
 import Run as R
 import Run.Except as RE
@@ -91,7 +90,7 @@ serveTemplate template = do
 json :: forall a b c d. Generic a b => EncodeRep b => Generic c d => DecodeRep d => String -> (c -> ServerEffect a) -> ResponseEffect
 json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) runHandler $ DAP.jsonParser body
         where   runHandler arg = do
-                        response <- handler $ unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
+                        response <- handler $ PU.unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
                         SRR.json response
 
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header

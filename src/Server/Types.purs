@@ -11,13 +11,16 @@ import Data.Bifunctor as DB
 import Data.Generic.Rep (class Generic)
 import Data.Int53 (Int53)
 import Data.Int53 as DI
+import Data.Map (Map)
 import Data.Maybe (Maybe)
 import Database.PostgreSQL (class ToSQLValue, Pool, class FromSQLValue)
+import Effect.Ref (Ref)
 import Foreign as F
 import HTTPure (Response)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
 import Run.Reader (READER)
+import Server.WebSocket (WebSocketConnection)
 
 newtype Configuration = Configuration {
         port :: Int,
@@ -46,22 +49,34 @@ type Session = {
         userID :: Maybe Int53
 }
 
-type ServerReader = {
+type BaseReader extension = {
         configuration :: Configuration,
-        session :: Session,
-        pool :: Pool
+        pool :: Pool |
+        extension
 }
+
+type WebSocketReader = BaseReader (
+        allConnections:: Ref (Map Int53 WebSocketConnection)
+)
+
+type ServerReader = BaseReader (
+        session :: Session
+)
 
 --needs logging strategy
 
-type ServerEffect a = Run (
-        reader :: READER ServerReader,
+type BaseEffect r a = Run (
+        reader :: READER r,
         except :: EXCEPT ResponseError,
         aff :: AFF,
         effect :: EFFECT
 ) a
 
-type ResponseEffect = ServerEffect Response
+type ServerEffect a = BaseEffect ServerReader a
+
+type ResponseEffect = BaseEffect ServerReader Response
+
+type WebSocketEffect = BaseEffect WebSocketReader Unit
 
 data BenderAction = Name | Description
 
