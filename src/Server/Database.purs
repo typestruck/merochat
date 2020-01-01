@@ -11,6 +11,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow, Connection, Pool(..), Query(..), Row1(..))
 import Database.PostgreSQL as DP
+import Debug.Trace (spy)
 import Effect.Aff (Aff, Error)
 import Effect.Aff as EA
 import Partial.Unsafe as PU

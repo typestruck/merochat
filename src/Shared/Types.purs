@@ -25,6 +25,7 @@ import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
@@ -98,7 +99,8 @@ instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
-        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (PrimaryKey <<< DI.fromInt) <<< F.readInt
+        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map liftPrimaryKey <<< F.readString
+                where liftPrimaryKey data_ = PrimaryKey $ PU.unsafePartial $ DM.fromJust $ DI.fromString data_
 
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
@@ -318,7 +320,8 @@ data SuggestionMessage =
         NextSuggestion
 
 data ChatMessage =
-        SendMessage String
+        SendMessage String |
+        ReceiveMessage WebSocketPayload
 
 data MainMessage =
         SetWebSocket WebSocket |

@@ -13,6 +13,7 @@ import Data.Int53 (Int53)
 import Data.Map (Map)
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Console as EC
@@ -28,6 +29,7 @@ import Server.IM.Database as SID
 import Server.Token as ST
 import Server.WebSocket (WebSocketConnection, WebSocketMessage(..), CloseCode, CloseReason)
 import Server.WebSocket as SW
+import Shared.JSON as SJ
 
 handleError :: Error -> Effect Unit
 handleError = EC.log <<< show
@@ -39,25 +41,24 @@ handleClose (Configuration configuration) allConnections request _ _ = do
 
 handleMessage :: WebSocketConnection -> WebSocketMessage -> WebSocketEffect
 handleMessage connection (WebSocketMessage message) = do
-        possiblePayload <- pure parse
+        possiblePayload <- pure $ SJ.fromJSON message
         case possiblePayload of
                 Right payload -> do
                         { allConnections } <- RR.ask
                         case payload of
                                 Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
                                 Message {id, user: recipient@(PrimaryKey recipientID), token, content} -> withUser token $ \userID -> do
-                                        log content
-
                                         messageID <- SID.insertMessage (PrimaryKey userID) recipient content
-                                        sendMessage connection <<< toJSON $ Received {
+                                        sendMessage connection <<< SJ.toJSON $ Received {
                                                 previousID: id,
                                                 id: messageID
                                         }
 
                                         possibleRecipientConnection <- R.liftEffect (DM.lookup recipientID <$> ER.read allConnections)
+
                                         case possibleRecipientConnection of
                                                 Nothing -> pure unit
-                                                Just recipientConnection -> sendMessage recipientConnection <<< toJSON $ Message {
+                                                Just recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ Message {
                                                         id : messageID,
                                                         user: PrimaryKey userID,
                                                         token: "",
@@ -70,8 +71,6 @@ handleMessage connection (WebSocketMessage message) = do
         where   log = R.liftEffect <<< EC.log
                 sendMessage connection = R.liftEffect <<< SW.sendMessage connection <<< WebSocketMessage
 
-                toJSON = DAC.stringify <<< DAEGR.genericEncodeJson
-
                 withUser token f = do
                         {configuration: Configuration configuration} <- RR.ask
                         user <- R.liftEffect $ ST.userIDFromToken configuration.tokenSecretPOST token
@@ -81,13 +80,8 @@ handleMessage connection (WebSocketMessage message) = do
                                         log "closed due to auth error"
                                 Just userId -> f userId
 
-                parse = do
-                        json <- DAP.jsonParser message
-                        DADGR.genericDecodeJson json
-
 handleConnection :: WebSocketReader -> WebSocketConnection -> Request -> Effect Unit
 handleConnection reading connection request = do
-        EC.log "connecting"
         SW.onError connection handleError
         SW.onClose connection $ handleClose reading.configuration reading.allConnections request
         SW.onMessage connection

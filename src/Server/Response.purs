@@ -21,6 +21,7 @@ import Data.Argonaut.Parser as DAP
 import Data.Either as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Shared.JSON as SJ
 import Data.Maybe as DM
 import Data.String as DS
 import Data.String.Read (class Read)
@@ -71,7 +72,7 @@ html :: String -> ResponseEffect
 html contents = ok' (headerContentType $ show HTML) contents
 
 json :: forall response r. Generic response r => EncodeRep r => response -> ResponseEffect
-json value = ok' (headerContentType $ show JSON) <<< DAC.stringify $ DAEGR.genericEncodeJson value
+json = ok' (headerContentType $ show JSON) <<< SJ.toJSON
 
 serveDevelopmentFile :: String -> String -> ResponseEffect
 serveDevelopmentFile folder fileName = do

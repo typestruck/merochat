@@ -13,8 +13,10 @@ import Data.Maybe as DM
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
+import Effect.Console as EC
 import Flame (World)
 import Partial.Unsafe as PU
+import Shared.JSON as SJ
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
 
@@ -22,8 +24,16 @@ update :: World IMModel IMMessage -> IMModel -> ChatMessage -> Aff IMModel
 update _ model =
         case _ of
                 SendMessage content -> sendMessage model content
+                ReceiveMessage payload -> receiveMessage model payload
 
---needs to clean the editor
+receiveMessage :: IMModel -> WebSocketPayload -> Aff IMModel
+receiveMessage model payload = do
+        case payload of
+                Message { id, user, content } -> liftEffect $ EC.log content
+                Received { previousID, id } -> liftEffect $ EC.log "received id"
+                e -> liftEffect <<< EC.log $ "bogus payload " <> show e
+        pure model
+
 sendMessage :: IMModel -> String -> Aff IMModel
 sendMessage (IMModel model@{webSocket: Just (WS webSocket), token: Just token, temporaryID, chatting: Just chatting, suggestions}) content = do
         let     (IMUser user) = PU.unsafePartial $ DM.fromJust (suggestions !! chatting)
@@ -32,7 +42,7 @@ sendMessage (IMModel model@{webSocket: Just (WS webSocket), token: Just token, t
                         message = "",
                         history = DA.snoc user.history $ History { content }
                 }
-        liftEffect <<< WSW.sendString webSocket <<< DAC.stringify <<< DAEGR.genericEncodeJson $ Message {
+        liftEffect <<< WSW.sendString webSocket <<< SJ.toJSON $ Message {
                 id: PrimaryKey $ DI.fromInt newTemporaryID,
                 user: user.id,
                 token: token,
@@ -42,4 +52,6 @@ sendMessage (IMModel model@{webSocket: Just (WS webSocket), token: Just token, t
                 temporaryID = newTemporaryID,
                 suggestions = PU.unsafePartial (DM.fromJust $ DA.updateAt chatting updatedChatting suggestions)
         }
-sendMessage _ _ = EA.throwError $ EA.error "Invalid sendMessage state"
+sendMessage model _ = do
+        liftEffect $ EC.log "Invalid sendMessage state"
+        pure model
