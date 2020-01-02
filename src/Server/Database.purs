@@ -23,7 +23,7 @@ newPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {
         idleTimeoutMillis = Just 1000
 }
 
-insert :: forall query parameters value. ToSQLRow value => Query query parameters -> value -> ServerEffect PrimaryKey
+insert :: forall r query parameters value. ToSQLRow value => Query query parameters -> value -> BaseEffect { pool :: Pool | r } PrimaryKey
 insert query parameters = withConnection insertReturnID
         where   addReturnID (Query text) = Query $ text <> " returning id"
 
@@ -31,18 +31,18 @@ insert query parameters = withConnection insertReturnID
                         rows <- DP.scalar connection (addReturnID query) parameters
                         pure $ PU.unsafePartial (DM.fromJust rows)
 
-scalar :: forall query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> ServerEffect (Maybe value)
+scalar :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } (Maybe value)
 scalar query parameters = withConnection $ \connection -> DP.scalar connection query parameters
 
-scalar' :: forall query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> ServerEffect value
+scalar' :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } value
 scalar' query parameters = withConnection $ \connection -> do
         rows <- DP.scalar connection query parameters
         pure $ PU.unsafePartial (DM.fromJust rows)
 
-select :: forall query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> ServerEffect (Array row)
+select :: forall r query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> BaseEffect { pool :: Pool | r } (Array row)
 select query parameters = withConnection $ \connection -> DP.query connection query parameters
 
-single :: forall query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> ServerEffect (Maybe row)
+single :: forall r query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> BaseEffect { pool :: Pool | r }  (Maybe row)
 single query parameters = withConnection $ \connection -> do
         rows <- DP.query connection query parameters
         toMaybe rows
@@ -55,15 +55,15 @@ single query parameters = withConnection $ \connection -> do
                  else
                         EA.throwError $ EA.error "more than one row returned for single query"
 
-single' :: forall query row. ToSQLRow query ⇒ FromSQLRow row ⇒ Query query row → query → ServerEffect row
+single' :: forall r query row. ToSQLRow query ⇒ FromSQLRow row ⇒ Query query row → query → BaseEffect { pool :: Pool | r } row
 single' query parameters = withConnection $ \connection -> do
         rows <- DP.query connection query parameters
         pure $ PU.unsafePartial (DAA.head rows)
 
-execute :: forall query parameters. ToSQLRow parameters => Query parameters query -> parameters -> ServerEffect Unit
+execute :: forall r query parameters. ToSQLRow parameters => Query parameters query -> parameters -> BaseEffect { pool :: Pool | r } Unit
 execute query parameters = withConnection $ \connection -> DP.execute connection query parameters
 
-withConnection :: forall result. (Connection -> Aff result) -> ServerEffect result
+withConnection :: forall r result. (Connection -> Aff result) -> BaseEffect { pool :: Pool | r } result
 withConnection runner = do
         { pool } <- RR.ask
         R.liftAff $ DP.withConnection pool runner

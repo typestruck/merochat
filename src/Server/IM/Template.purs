@@ -24,12 +24,16 @@ template suggestions user = do
                 init: IMModel {
                         suggestions,
                         user,
-                        chatting: Just 0
+                        chatting: Just 0,
+                        webSocket: Nothing,
+                        token: Nothing,
+                        temporaryID : 0
                 }
         }
         where   javascript = [
                         HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"]
                 ]
                 css = [
-                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"]
+                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"],
+                        HE.link [HA.rel "stylesheet", HA.href "https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"]
                 ]

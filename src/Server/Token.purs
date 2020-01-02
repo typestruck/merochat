@@ -5,21 +5,17 @@ import Server.Types
 import Shared.Types
 
 import Data.Array.NonEmpty as DAN
-import Data.Either (Either)
 import Data.Either as DE
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSSU
-import Debug.Trace as DT
 import Effect (Effect)
-import Effect.Class.Console as EC
 import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
-import Node.Simple.Jwt (Jwt(..), JwtError)
+import Node.Simple.Jwt (Jwt(..))
 import Node.Simple.Jwt as NSJ
 import Run as R
 import Run.Reader as RR
@@ -28,8 +24,6 @@ hashPassword :: String -> ServerEffect String
 hashPassword password = do
         { configuration : Configuration configuration } <- RR.ask
         R.liftEffect $ NCH.hex NCHA.SHA512 configuration.salt password
-
--- add tests after login is done
 
 createToken :: Int53 -> ServerEffect Token
 createToken id = do
@@ -41,10 +35,9 @@ createToken id = do
 
 userIDFromToken :: String -> String -> Effect (Maybe Int53)
 userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.decode secret <<< Jwt
-        where         parseInt53 input = do
+        where   parseInt53 input = do
                         --so glad we dont have to do if err != nil
                         matched <- DSR.match (DSSU.unsafeRegex "(Int53 (\\d+))" noFlags) input
                         position <- DAN.index matched 2
                         match <- position
                         DI.fromString match
-

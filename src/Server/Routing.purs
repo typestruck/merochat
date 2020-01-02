@@ -21,22 +21,22 @@ import Data.Maybe as DM
 import Effect (Effect)
 import HTTPure (Method(..), Request, ResponseM, Path)
 import HTTPure.Lookup ((!@))
-import Partial.Unsafe (unsafePartial)
 import Partial.Unsafe as PU
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.IM.Action as SIA
+import Server.IM.Database as SID
 import Server.IM.Template as SIT
 import Server.Landing.Action as SLA
 import Server.Landing.Template as SLT
 import Server.Login.Action as SLI
 import Server.Login.Template as SLIT
 import Server.Response as SRR
-import Server.IM.Database as SID
 import Server.Token as ST
+import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Routing as SRO
-import Server.IM.Action as SIA
 
 --TODO: logging
 
@@ -91,7 +91,7 @@ serveTemplate template = do
 json :: forall a b c d. Generic a b => EncodeRep b => Generic c d => DecodeRep d => String -> (c -> ServerEffect a) -> ResponseEffect
 json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) runHandler $ DAP.jsonParser body
         where   runHandler arg = do
-                        response <- handler $ unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
+                        response <- handler $ PU.unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
                         SRR.json response
 
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
@@ -101,18 +101,17 @@ session (Configuration configuration) { headers, method } = do
                                 sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
                              else
                                 sessionFromXHeader (headers !@ xAccessToken)
-        where   sessionFromCookie =
-                        case _ of -- we might have other cookies later...
-                                [Cookie { value }] -> ST.userIDFromToken configuration.tokenSecretGET value
+        where   sessionFromCookie cookies =
+                        case DA.find (\(Cookie {key}) -> cookieName == key) cookies of
+                                Just (Cookie {value}) -> ST.userIDFromToken configuration.tokenSecretGET value
                                 _ -> pure Nothing
 
                 sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value
 
 --needs logging as well
-runRouter :: ServerReader {- -> ServerState  -} -> Request -> ResponseM
+runRouter :: ServerReader -> Request -> ResponseM
 runRouter reading {- stating -} =
         R.runBaseAff' <<<
         RE.catch SRR.requestError <<<
-        --RS.evalState stating <<<
         RR.runReader reading <<<
         router

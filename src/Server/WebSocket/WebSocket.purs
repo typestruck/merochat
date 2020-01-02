@@ -1,7 +1,7 @@
 --make it its own library?
 
 -- | WS node library bindings adapted from https://github.com/FruitieX/purescript-ws
-module Server.WS where
+module Server.WebSocket where
 import Prelude
 
 import Data.Newtype (class Newtype)

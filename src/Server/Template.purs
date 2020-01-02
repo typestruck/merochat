@@ -62,7 +62,7 @@ template parameters = do
 extendParameters :: forall a. Parameters a -> Effect (Parameters a)
 extendParameters parameters = do
         Time hour _ _ _ <- EN.nowTime
-        pure $ parameters {nightTheme = false}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
+        pure $ parameters {nightTheme = true}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
 
 templateWith :: forall a. Parameters a -> Html a
 templateWith parameters =

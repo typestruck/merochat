@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 
 /* Server methods */
-exports.createWebSocketServer_ = function (options, callback) {
+exports.createWebSocketServer_ = function(options, callback) {
         return new WebSocket.Server(options, callback);
 }
 

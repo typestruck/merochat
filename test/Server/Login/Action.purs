@@ -34,9 +34,7 @@ tests = do
                         let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
                                 catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
 
-                                expectExpection rl = do
-                                        _ <- SLIA.login rl
-                                        pure unit
+                                expectExpection rl = void $ SLIA.login rl
 
                         TS.serverActionCatch (catch invalidUserEmailMessage)
                                 $ \_ -> expectExpection $ RegisterLogin {
@@ -60,7 +58,7 @@ tests = do
                                 }
 
                         TS.serverActionCatch (catch invalidLogin)
-                                $ \_ -> do
+                                $ \_ -> void do
                                         _ <- SLD.createUser {
                                                 email,
                                                 password: "sf",
@@ -68,14 +66,14 @@ tests = do
                                                 headline: "sd",
                                                 description: "ss"
                                         }
-                                        _ <- SLIA.login $ RegisterLogin {
+                                        SLIA.login $ RegisterLogin {
                                                 email,
                                                 password: "sssss",
                                                 captchaResponse: Nothing
                                         }
-                                        pure unit
+
                 TU.test "login - token" $
-                        TS.serverAction $ \_ -> do
+                        TS.serverAction $ \_ -> void do
                                 let email2 = "email@email.com.jp"
                                 hashed <- ST.hashPassword password
                                 PrimaryKey id <- SLD.createUser {
@@ -86,9 +84,8 @@ tests = do
                                                 description: "ss"
                                 }
 
-                                _ <- SLIA.login $ RegisterLogin {
+                                SLIA.login $ RegisterLogin {
                                                 email: email2,
                                                 password ,
                                                 captchaResponse: Nothing
                                 }
-                                pure unit

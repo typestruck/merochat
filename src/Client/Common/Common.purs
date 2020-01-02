@@ -1,3 +1,6 @@
+
+-- SPLIT THIS INTO MODULES
+
 module Client.Common(
         setItem,
         post,
@@ -7,6 +10,7 @@ module Client.Common(
         value,
         setLocation,
         alert,
+        getItem,
         tokenKey,
         search
 ) where
