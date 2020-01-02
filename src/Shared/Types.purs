@@ -25,7 +25,6 @@ import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
@@ -99,8 +98,14 @@ instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
-        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map liftPrimaryKey <<< F.readString
-                where liftPrimaryKey data_ = PrimaryKey $ PU.unsafePartial $ DM.fromJust $ DI.fromString data_
+        fromSQLValue data_ =
+                DB.lmap show <<< CME.runExcept $
+                if F.typeOf data_ == "number" then
+                        map (PrimaryKey <<< DI.fromInt) $ F.readInt data_
+                 else
+                        map liftStringPrimaryKey $ F.readString data_
+
+                where   liftStringPrimaryKey data_ = PrimaryKey $ PU.unsafePartial $ DM.fromJust $ DI.fromString data_
 
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id

@@ -34,6 +34,7 @@ import Server.Login.Action as SLI
 import Server.Login.Template as SLIT
 import Server.Response as SRR
 import Server.Token as ST
+import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Routing as SRO
 
@@ -100,9 +101,9 @@ session (Configuration configuration) { headers, method } = do
                                 sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
                              else
                                 sessionFromXHeader (headers !@ xAccessToken)
-        where   sessionFromCookie =
-                        case _ of -- we might have other cookies later...
-                                [Cookie { value }] -> ST.userIDFromToken configuration.tokenSecretGET value
+        where   sessionFromCookie cookies =
+                        case DA.find (\(Cookie {key}) -> cookieName == key) cookies of
+                                Just (Cookie {value}) -> ST.userIDFromToken configuration.tokenSecretGET value
                                 _ -> pure Nothing
 
                 sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value

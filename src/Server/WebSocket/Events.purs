@@ -13,7 +13,6 @@ import Data.Int53 (Int53)
 import Data.Map (Map)
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Console as EC

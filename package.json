@@ -30,6 +30,7 @@
     "ws": "^7.1.2"
   },
   "devDependencies": {
+    "jsdom": "^15.2.1",
     "pg-native": "^3.0.0",
     "snabbdom": "^0.7.3",
     "xhr2": "^0.2.0"

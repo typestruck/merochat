@@ -1,3 +1,6 @@
+
+-- SPLIT THIS INTO MODULES
+
 module Client.Common(
         setItem,
         post,

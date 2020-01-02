@@ -10,6 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect (Effect)
 import Shared.Types (RegisterLogin(..), Token(..))
+import Shared.Cookies (cookieName)
 
 -- | Abstracts the validation common to register and login
 validateEmailPassword :: Effect (Maybe RegisterLogin)
@@ -32,7 +33,7 @@ login :: Token -> String -> Effect Unit
 login (Token { tokenGET, tokenPOST }) redirect =  do
         BC.setCookie $ SetCookie {
                 cookie : Cookie {
-                        key : "melanchat",
+                        key : cookieName,
                         value : tokenGET
                 },
                 opts : Just $ CookieOpts {

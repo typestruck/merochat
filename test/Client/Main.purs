@@ -5,6 +5,9 @@ import Prelude
 import Effect (Effect)
 import Test.Unit (TestSuite)
 import Test.Client.IM.Suggestion as TCIS
+import Test.Client.IM.Chat as TCIC
 
 tests :: TestSuite
-tests = TCIS.tests
+tests = do
+        TCIS.tests
+        TCIC.tests
