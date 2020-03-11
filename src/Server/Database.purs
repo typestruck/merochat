@@ -13,6 +13,7 @@ import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow
 import Database.PostgreSQL as DP
 import Effect.Aff (Aff, Error)
 import Effect.Aff as EA
+import Shared.Unsafe as SU
 import Partial.Unsafe as PU
 import Run as R
 import Run.Reader as RR
@@ -24,20 +25,25 @@ newPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {
 }
 
 insert :: forall r query parameters value. ToSQLRow value => Query query parameters -> value -> BaseEffect { pool :: Pool | r } PrimaryKey
-insert query parameters = withConnection insertReturnID
-        where   addReturnID (Query text) = Query $ text <> " returning id"
+insert query parameters = withConnection (insertReturnID query parameters)
 
-                insertReturnID connection = do
-                        rows <- DP.scalar connection (addReturnID query) parameters
-                        pure $ PU.unsafePartial (DM.fromJust rows)
+insertWith connection query parameters = insertReturnID query parameters connection
+
+insertReturnID query parameters connection = do
+        rows <- DP.scalar connection (addReturnID query) parameters
+        pure $ SU.unsafeFromJust rows
+
+        where addReturnID (Query text) = Query $ text <> " returning id"
 
 scalar :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } (Maybe value)
 scalar query parameters = withConnection $ \connection -> DP.scalar connection query parameters
 
 scalar' :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } value
-scalar' query parameters = withConnection $ \connection -> do
+scalar' query parameters = withConnection $ \connection -> scalarWith connection query parameters
+
+scalarWith connection query parameters = do
         rows <- DP.scalar connection query parameters
-        pure $ PU.unsafePartial (DM.fromJust rows)
+        pure $ SU.unsafeFromJust rows
 
 select :: forall r query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> BaseEffect { pool :: Pool | r } (Array row)
 select query parameters = withConnection $ \connection -> DP.query connection query parameters
@@ -56,7 +62,9 @@ single query parameters = withConnection $ \connection -> do
                         EA.throwError $ EA.error "more than one row returned for single query"
 
 single' :: forall r query row. ToSQLRow query ⇒ FromSQLRow row ⇒ Query query row → query → BaseEffect { pool :: Pool | r } row
-single' query parameters = withConnection $ \connection -> do
+single' query parameters = withConnection $ \connection -> singleWith connection query parameters
+
+singleWith connection query parameters = do
         rows <- DP.query connection query parameters
         pure $ PU.unsafePartial (DAA.head rows)
 
@@ -67,3 +75,5 @@ withConnection :: forall r result. (Connection -> Aff result) -> BaseEffect { po
 withConnection runner = do
         { pool } <- RR.ask
         R.liftAff $ DP.withConnection pool runner
+
+withTransaction runner = withConnection $ \connection -> DP.withTransaction connection (runner connection)

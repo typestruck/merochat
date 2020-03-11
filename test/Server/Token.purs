@@ -5,11 +5,10 @@ import Server.Types
 import Shared.Types
 
 import Data.Int53 as DI
-import Data.Maybe as DM
-import Partial.Unsafe as UP
 import Run as R
 import Run.Reader as RR
 import Server.Token as ST
+import Shared.Unsafe as SU
 import Test.Server as TS
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -24,8 +23,8 @@ tests = do
                                 { configuration : Configuration configuration } <- RR.ask
                                 Token { tokenGET, tokenPOST } <- ST.createToken id
 
-                                userIDGET <- UP.unsafePartial $ DM.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretGET tokenGET)
+                                userIDGET <- SU.unsafeFromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretGET tokenGET)
                                 R.liftAff $ TUA.equal id userIDGET
 
-                                userIDPOST <- UP.unsafePartial $ DM.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
+                                userIDPOST <- SU.unsafeFromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
                                 R.liftAff $ TUA.equal id userIDPOST

@@ -12,9 +12,9 @@ import Effect.Console as EC
 import Effect.Exception as EE
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
-import Partial.Unsafe (unsafePartial)
+import Partial.Unsafe as PU
 
 readConfiguration :: Effect Configuration
 readConfiguration = do
         contents <- NFS.readTextFile UTF8 "configuration.json"
-        DE.either (const $ EE.throw "Could not parse configuration") (pure <<< unsafePartial (DE.fromRight <<< DADGR.genericDecodeJson)) $ DAP.jsonParser contents
+        DE.either (const $ EE.throw "Could not parse configuration") (pure <<< PU.unsafePartial (DE.fromRight <<< DADGR.genericDecodeJson)) $ DAP.jsonParser contents

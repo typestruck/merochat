@@ -10,8 +10,8 @@
     "purescript-prelude": "^4.1.1",
     "purescript-console": "^4.2.0",
     "purescript-effect": "^2.0.1",
-    "purescript-httpure": "https://github.com/cprussin/purescript-httpure.git#0.8.3",
-    "purescript-argonaut-generic": "^4.0.0",
+    "purescript-httpure": "^0.9.0",
+    "purescript-argonaut-generic": "^5.0.0",
     "purescript-node-buffer": "^5.0.0",
     "purescript-exceptions": "^4.0.0",
     "purescript-node-fs": "^5.0.1",
@@ -22,7 +22,7 @@
     "purescript-int-53": "^4.0.0",
     "purescript-run": "^3.0.0",
     "purescript-read": "^1.0.1",
-    "purescript-flame": "^0.4.3",
+    "purescript-flame": "^0.4.4",
     "purescript-browser-cookies": "^0.0.1",
     "purescript-http-methods": "^4.0.2",
     "purescript-affjax": "^9.0.1",
@@ -48,7 +48,7 @@
     "purescript-foreign-object": "^2.0.3",
     "purescript-record": "^2.0.1",
     "purescript-web-events": "^2.0.0",
-    "purescript-argonaut-core": "^5.0.0",
+    "purescript-argonaut-core": "^5.0.1",
     "purescript-web-html": "^2.0.0"
   }
 }

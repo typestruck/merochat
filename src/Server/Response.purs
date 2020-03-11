@@ -20,6 +20,7 @@ import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Argonaut.Parser as DAP
 import Data.Either as DE
 import Data.Generic.Rep (class Generic)
+import Shared.Unsafe as SU
 import Data.Maybe (Maybe(..))
 import Shared.JSON as SJ
 import Data.Maybe as DM
@@ -82,7 +83,7 @@ serveDevelopmentFile folder fileName = do
 contentTypeFromExtension :: String -> Headers
 contentTypeFromExtension = headerContentType <<< show <<< read' <<< NP.extname
         where   read' :: String -> ContentType
-                read' = PU.unsafePartial DM.fromJust <<< DSR.read
+                read' = SU.unsafeFromJust <<< DSR.read
 
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"

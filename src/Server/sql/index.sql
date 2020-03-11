@@ -1,4 +1,4 @@
-create table countries
+﻿create table countries
 (
     id serial primary key,
     name varchar(100) not null
@@ -510,16 +510,16 @@ INSERT INTO users
 VALUES
     (1, 'bender', 'cant log in with it', clock_timestamp(), 'bender@melan.chat', clock_timestamp(), 'O', 'Here to help you with all your Melanchat queries', 'Shining shiner!');
 
-
 CREATE OR REPLACE FUNCTION insertHistory
 (senderID int, recipientID int)
-  RETURNS void AS
+  RETURNS boolean AS
 $BODY$
 begin
     if exists(select 1
     from histories
     where sender = recipientID and recipient = senderID) then
     update histories set senderArchived = false, recipientArchived = false where sender = recipientID and recipient = senderID;
+    return true;
     else
     insert into histories
         (sender, recipient)
@@ -527,8 +527,8 @@ begin
         (senderID, recipientID)
     on conflict
     (sender, recipient) do
-    update set senderArchived = false, recipientArchived = false
-;
+    update set senderArchived = false, recipientArchived = false;
+    return false;
 end
 if;
 end;

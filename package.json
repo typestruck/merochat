@@ -30,6 +30,7 @@
     "ws": "^7.1.2"
   },
   "devDependencies": {
+    "canvas": "^2.6.1",
     "jsdom": "^15.2.1",
     "pg-native": "^3.0.0",
     "snabbdom": "^0.7.3",

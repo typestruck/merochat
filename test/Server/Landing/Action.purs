@@ -5,7 +5,6 @@ import Shared.Types
 
 import Data.Maybe (Maybe(..))
 import Database.PostgreSQL (Query(..), Row0(..))
-import Effect (Effect)
 import Run as R
 import Server.Database as SD
 import Server.Database.User as SDU
@@ -18,7 +17,6 @@ import Test.Server as TS
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-import Test.Unit.Main as TUM
 
 userCount :: ServerEffect Int
 userCount = SD.scalar' (Query "select count(1) from users") Row0
@@ -29,15 +27,14 @@ email = "e@a.com"
 tests :: TestSuite
 tests = do
         TU.suite "landing actions" $ do
-                TU.test "register - validation" $ do
-                        let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
-                                catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
+                let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
+                        catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
 
-                                registerExceptionTest rl = do
-                                        _ <- SLA.register "" rl
-                                        users <- userCount
-                                        R.liftAff $ TUA.equal 0 users
-
+                        registerExceptionTest rl = do
+                                _ <- SLA.register "" rl
+                                users <- userCount
+                                R.liftAff $ TUA.equal 0 users
+                TU.test "register does not accept empty fields" $
                         TS.serverActionCatch (catch invalidUserEmailMessage)
                                 $ \_ -> registerExceptionTest $ RegisterLogin {
                                         email: "",
@@ -45,6 +42,7 @@ tests = do
                                         captchaResponse: Nothing
                                 }
 
+                TU.test "register does not accept empty password" $
                         TS.serverActionCatch (catch invalidUserEmailMessage)
                                 $ \_ -> registerExceptionTest $ RegisterLogin {
                                         email,
@@ -52,6 +50,8 @@ tests = do
                                         captchaResponse: Nothing
                                 }
 
+
+                TU.test "register does not accept existing email" $
                         TS.serverActionCatch (catch emailAlreadyRegisteredMessage)
                                 $ \_ -> do
                                         _ <- SLD.createUser {
@@ -66,7 +66,8 @@ tests = do
                                                 password: "ss",
                                                 captchaResponse: Nothing
                                         }
-                TU.test "register - user creation" $
+
+                TU.test "register creates user" $
                         TS.serverAction $ \_ -> do
                                 let password = "hunter12"
                                 _ <- SLA.register "" $ RegisterLogin {

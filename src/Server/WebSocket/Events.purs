@@ -4,10 +4,7 @@ import Prelude
 import Server.Types
 import Shared.Types
 
-import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep as DADGR
-import Data.Argonaut.Encode.Generic.Rep as DAEGR
-import Data.Argonaut.Parser as DAP
 import Data.Either (Either(..))
 import Data.Int53 (Int53)
 import Data.Map (Map)
@@ -20,8 +17,8 @@ import Effect.Exception (Error)
 import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Node.HTTP (Request)
-import Run (AFF, Run(..), EFFECT)
 import Run as R
+import Data.Tuple(Tuple(..))
 import Run.Except as RE
 import Run.Reader as RR
 import Server.IM.Database as SID
@@ -35,8 +32,7 @@ handleError = EC.log <<< show
 
 --here it seems like the only way is get the cookie token and transform into a post token
 handleClose :: Configuration -> Ref (Map Int53 WebSocketConnection) -> Request -> CloseCode -> CloseReason -> Effect Unit
-handleClose (Configuration configuration) allConnections request _ _ = do
-        EC.log "closed from event"
+handleClose (Configuration configuration) allConnections request _ _ = pure unit
 
 handleMessage :: WebSocketConnection -> WebSocketMessage -> WebSocketEffect
 handleMessage connection (WebSocketMessage message) = do
@@ -46,8 +42,8 @@ handleMessage connection (WebSocketMessage message) = do
                         { allConnections } <- RR.ask
                         case payload of
                                 Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
-                                Message {id, user: recipient@(PrimaryKey recipientID), token, content} -> withUser token $ \userID -> do
-                                        messageID <- SID.insertMessage (PrimaryKey userID) recipient content
+                                ServerMessage {id, user: recipient@(PrimaryKey recipientID), token, content} -> withUser token $ \userID -> do
+                                        Tuple messageID senderUser <- SID.insertMessage (PrimaryKey userID) recipient content
                                         sendMessage connection <<< SJ.toJSON $ Received {
                                                 previousID: id,
                                                 id: messageID
@@ -57,13 +53,11 @@ handleMessage connection (WebSocketMessage message) = do
 
                                         case possibleRecipientConnection of
                                                 Nothing -> pure unit
-                                                Just recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ Message {
+                                                Just recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
                                                         id : messageID,
-                                                        user: PrimaryKey userID,
-                                                        token: "",
+                                                        user: senderUser,
                                                         content
                                                 }
-                                e -> log $ "received bogus payload " <> show e
                 Left error -> do
                         log $ "received faulty payload " <> error
 

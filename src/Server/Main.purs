@@ -16,7 +16,7 @@ import Server.Routing as SR
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events as SWE
-import Shared.WebSocket.Options (port)
+import Shared.WebSocketOptions (port)
 
 main :: Effect Unit
 main = do
@@ -38,8 +38,8 @@ startHTTPServer :: Configuration -> Effect Unit
 startHTTPServer c@(Configuration configuration) = do
         EA.launchAff_ do
                 pool <- SD.newPool
-                liftEffect $ H.serve configuration.port (router c pool) $ EC.log ("Server now up on http://localhost:" <> show configuration.port)
+                liftEffect $ H.serve configuration.port (router pool) $ EC.log ("Server now up on http://localhost:" <> show configuration.port)
 
-        where   router configuration pool request@{ path } = do
-                        session <- liftEffect $ SR.session configuration request
-                        SR.runRouter { configuration, pool, session } request
+        where   router pool request@{ path } = do
+                        session <- liftEffect $ SR.session c request
+                        SR.runRouter { configuration: c, pool, session } request
