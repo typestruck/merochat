@@ -47,7 +47,7 @@ A new User starts off with the Karma earned by new User [trophies](#trophies).
 
 * Karma rank
 
-    * Position of an User in the relation to all others in number of Karma points; Users can see the Karma points of the 3 User above them and the 3 beneath 
+    * Position of an User in the relation to all others in number of Karma points; Users can see the Karma points of 3 users above them and all beneath
 
     * This is purely for show
 
