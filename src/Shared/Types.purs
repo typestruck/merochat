@@ -29,6 +29,7 @@ import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
+import Shared.Unsafe as SU
 import Partial.Unsafe as PU
 import Web.Socket.WebSocket (WebSocket)
 
@@ -105,7 +106,7 @@ instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
                  else
                         map liftStringPrimaryKey $ F.readString data_
 
-                where   liftStringPrimaryKey data_ = PrimaryKey $ PU.unsafePartial $ DM.fromJust $ DI.fromString data_
+                where   liftStringPrimaryKey data_ = PrimaryKey <<< SU.unsafeFromJust $ DI.fromString data_
 
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
@@ -131,8 +132,22 @@ type BasicUser fields = {
 }
 
 newtype History = History {
+        messageID :: PrimaryKey,
+        userID :: PrimaryKey,
         content :: String
 }
+
+derive instance genericHistory :: Generic History _
+derive instance eqHistory :: Eq History
+
+instance encodeJsonHistory :: EncodeJson History where
+        encodeJson = DAEGR.genericEncodeJson
+
+instance decodeJsonHistory :: DecodeJson History where
+        decodeJson = DADGR.genericDecodeJson
+
+instance showHistory :: Show History where
+        show = DGRS.genericShow
 
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
@@ -146,25 +161,15 @@ newtype IMUser = IMUser (BasicUser (
         history :: Array History
 ))
 
-derive instance genericHistory :: Generic History _
-derive instance eqHistory :: Eq History
+derive instance newTypeIMUser :: Newtype IMUser _
 derive instance genericIMUser :: Generic IMUser _
 derive instance eqIMUser :: Eq IMUser
-
-instance encodeJsonHistory :: EncodeJson History where
-        encodeJson = DAEGR.genericEncodeJson
 
 instance encodeJsonIMUser :: EncodeJson IMUser where
         encodeJson = DAEGR.genericEncodeJson
 
-instance decodeJsonHistory :: DecodeJson History where
-        decodeJson = DADGR.genericDecodeJson
-
 instance decodeJsonIMUser :: DecodeJson IMUser where
         decodeJson = DADGR.genericDecodeJson
-
-instance showHistory :: Show History where
-        show = DGRS.genericShow
 
 instance showIMUser :: Show IMUser where
         show = DGRS.genericShow
@@ -203,7 +208,7 @@ instance userFromSQLRow :: FromSQLRow User where
                 id <- DI.fromInt <$> F.readInt foreignID
                 name <- F.readString foreignName
                 password <- F.readString foreignPassword
-                joined <- PU.unsafePartial (DM.fromJust <<< DJ.toDate) <$> DJ.readDate foreignJoined
+                joined <- (SU.unsafeFromJust <<< DJ.toDate) <$> DJ.readDate foreignJoined
                 email <- F.readString foreignEmail
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
@@ -281,7 +286,10 @@ newtype WS = WS WebSocket
 
 newtype IMModel = IMModel {
         user :: IMUser,
+        --a few IMUser fields are not needed for suggestions - different type?
         suggestions :: Array IMUser,
+        suggesting :: Maybe Int,
+        contacts :: Array IMUser,
         chatting :: Maybe Int,
         webSocket :: Maybe WS,
         temporaryID :: Int,
@@ -303,22 +311,34 @@ instance showWS :: Show WS where
 instance showIMModel :: Show IMModel where
         show = DGRS.genericShow
 
-data WebSocketPayload =
+type BasicMessage fields = {
+        id :: PrimaryKey,
+        content :: String |
+        fields
+}
+
+data WebSocketPayloadServer =
         Connect String |
-        Message {
-                id :: PrimaryKey,
-                user :: PrimaryKey,
+        ServerMessage (BasicMessage (
                 token :: String,
-                content :: String
-        } |
+                user :: PrimaryKey
+        ))
+
+data WebSocketPayloadClient =
+        ClientMessage (BasicMessage (
+                user :: Either IMUser PrimaryKey
+        ))|
         Received {
                 previousID :: PrimaryKey,
                 id :: PrimaryKey
         }
 
-derive instance genericWebSocketPayload :: Generic WebSocketPayload _
+derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
+derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
 
-instance showWebSocketPayload :: Show WebSocketPayload where
+instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
+        show = DGRS.genericShow
+instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
         show = DGRS.genericShow
 
 data SuggestionMessage =
@@ -326,7 +346,7 @@ data SuggestionMessage =
 
 data ChatMessage =
         SendMessage String |
-        ReceiveMessage WebSocketPayload
+        ReceiveMessage WebSocketPayloadClient
 
 data MainMessage =
         SetWebSocket WebSocket |

@@ -10,11 +10,8 @@ import Client.IM.Suggestion as CIS
 import Control.Monad.Except as CME
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep as DADGR
-import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.String as DS
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Console as EC
@@ -25,7 +22,8 @@ import Flame as F
 import Foreign as FO
 import Partial.Unsafe as UP
 import Shared.IM.View as SIV
-import Shared.WebSocket.Options (port)
+import Shared.WebSocketOptions (port)
+import Shared.Unsafe as SU
 import Signal.Channel as SC
 import Web.Event.EventTarget as WET
 import Web.Socket.Event.EventTypes (onOpen, onMessage)
@@ -55,7 +53,7 @@ main = void do
         WET.addEventListener onOpen openListener false $ WSW.toEventTarget webSocket
 
         messageListener <- WET.eventListener $ \event -> do
-                let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ $ UP.unsafePartial (DM.fromJust $ WSEM.fromEvent event)
+                let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.unsafeFromJust $ WSEM.fromEvent event
                 case possiblePayload of
                         Left e -> EC.log ("bogus payload " <> show (map FO.renderForeignError e))
                         Right payload -> do

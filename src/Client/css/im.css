@@ -502,3 +502,8 @@ svg.toolbar-action {
 .CodeMirror {
     margin-bottom: 15px;
 }
+
+
+.hidden .editor-toolbar, .hidden .CodeMirror {
+    display: hidden;
+}

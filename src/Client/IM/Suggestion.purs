@@ -15,10 +15,10 @@ update _ model =
                 NextSuggestion -> nextSuggestion model
 
 nextSuggestion :: IMModel -> Aff IMModel
-nextSuggestion model@(IMModel m@{suggestions, chatting}) = do
+nextSuggestion model@(IMModel m@{suggestions, suggesting}) = do
         let suggestionsSize = DA.length suggestions
 
-        if suggestionsSize == 0 || DM.maybe 0 (_ + 1) chatting > suggestionsSize then
+        if suggestionsSize == 0 || DM.maybe 0 (_ + 1) suggesting > suggestionsSize then
                 -- fetch more
                 pure model
-         else pure <<< IMModel $ m { chatting = DM.maybe (Just 0) (Just <<< (_ + 1)) chatting }
+         else pure <<< IMModel $ m { suggesting = DM.maybe (Just 0) (Just <<< (_ + 1)) suggesting }

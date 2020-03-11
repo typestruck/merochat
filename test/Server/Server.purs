@@ -40,9 +40,7 @@ newTestPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchatTest") {
 serverAction :: (Unit -> ServerEffect Unit) -> Aff Unit
 serverAction action = do
         pool <- newTestPool
-        R.runBaseAff' <<<
-        RE.catch (\ex -> R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex) ) <<<
-        RR.runReader {
+        R.runBaseAff' <<< RE.catch (\ex -> R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex) ) <<< RR.runReader {
                 configuration,
                 pool,
                 session
@@ -53,9 +51,7 @@ serverAction action = do
 serverActionCatch :: (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> (Unit -> ServerEffect Unit) -> Aff Unit
 serverActionCatch catch action  = do
         pool <- newTestPool
-        R.runBaseAff' <<<
-        RE.catch catch <<<
-        RR.runReader {
+        R.runBaseAff' <<< RE.catch catch <<< RR.runReader { 
                 configuration,
                 pool,
                 session

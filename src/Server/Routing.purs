@@ -28,6 +28,7 @@ import Run.Reader as RR
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
+import Shared.Unsafe as SU
 import Server.Landing.Action as SLA
 import Server.Landing.Template as SLT
 import Server.Login.Action as SLI
@@ -53,7 +54,7 @@ router { headers, path, method, body }
         | path == [ SRO.fromRoute IM ] = do
                 let im = do
                         { session: { userID: maybeUserID } } <- RR.ask
-                        let userID = PU.unsafePartial $ DM.fromJust maybeUserID
+                        let userID = PrimaryKey $ SU.unsafeFromJust maybeUserID
                         user <- SID.presentUser userID
                         suggestions <- SIA.suggest userID
                         serveTemplate $ SIT.template suggestions user

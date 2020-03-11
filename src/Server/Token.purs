@@ -23,7 +23,7 @@ import Run.Reader as RR
 hashPassword :: String -> ServerEffect String
 hashPassword password = do
         { configuration : Configuration configuration } <- RR.ask
-        R.liftEffect $ NCH.hex NCHA.SHA512 configuration.salt password
+        R.liftEffect $ NCH.hex NCHA.SHA512 configuration.salt password 
 
 createToken :: Int53 -> ServerEffect Token
 createToken id = do

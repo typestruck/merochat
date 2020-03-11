@@ -7,25 +7,35 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.Common as DSC
+import Shared.Unsafe((!@))
 import Effect (Effect)
 import Flame (QuerySelector(..), Html)
 import Flame as F
+import Data.Tuple(Tuple(..))
 import Flame.HTML.Attribute as HA
+import Shared.PrimaryKey as SP
+import Data.Int53 as DI
+import Debug.Trace (spy)
 import Flame.HTML.Element as HE
 
 view :: IMModel -> Html IMMessage
-view model@(IMModel { suggestions, chatting }) = HE.div (HA.class' "im") [
+view model@(IMModel { suggestions, suggesting, chatting, contacts }) = HE.div (HA.class' "im") [
         HE.div_ [
                 userMenu model,
                 search model,
-                contacts model
+                contactList model
         ],
         HE.div (HA.class' "chat-box") [
-                suggestion model $ DM.maybe Nothing (DA.index suggestions) chatting,
-                history model,
+                profile model chattingOrSuggesting,
+                history model chattingOrSuggesting,
                 chat model
         ]
 ]
+        where chattingOrSuggesting = 
+                case Tuple chatting suggesting of
+                        Tuple Nothing (Just index) -> Just (suggestions !@ index)
+                        Tuple (Just index) _ -> Just (contacts !@ index)
+                        _ -> Nothing
 
 userMenu :: IMModel -> Html IMMessage
 userMenu (IMModel {user: (IMUser user)}) =  HE.div [HA.id "settings", HA.class' "settings"][
@@ -55,28 +65,28 @@ userMenu (IMModel {user: (IMUser user)}) =  HE.div [HA.id "settings", HA.class' 
         ]
 ]
 
-suggestion :: IMModel -> Maybe IMUser -> Html IMMessage
-suggestion model =
+profile :: IMModel -> Maybe IMUser -> Html IMMessage
+profile model =
         case _ of
-                (Just (IMUser chatting)) ->
+                (Just (IMUser user)) ->
                         HE.div (HA.class' "suggestion") [
                                 HE.a [HA.class' "skip", HA.title "you need more karma for that"] [
                                         HE.svg [HA.class' "i-start svg-50", HA.viewBox "0 0 32 32"] $
                                                 HE.path' $ HA.d "M8 2 L8 16 22 2 22 30 8 16 8 30"
                                 ],
                                 HE.div (HA.class' "profile-info") [
-                                        HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src chatting.avatar],
+                                        HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar],
                                         HE.div_ [
-                                                HE.h1_ chatting.name,
-                                                HE.h3 (HA.class' "headline") chatting.headline
+                                                HE.h1_ user.name,
+                                                HE.h3 (HA.class' "headline") user.headline
                                         ],
                                         HE.div_ $
-                                                toInfoSpan false (map ((_ <> ",") <<< show) chatting.age) <>
-                                                toInfoSpan true chatting.gender <>
-                                                toInfoSpan true chatting.country <>
+                                                toInfoSpan false (map ((_ <> ",") <<< show) user.age) <>
+                                                toInfoSpan true user.gender <>
+                                                toInfoSpan true user.country <>
                                                 --maybe include local time?
-                                                (toInfoSpan false <<< maybeLanguages $ DSC.joinWith ", " chatting.languages),
-                                        HE.div_ $ map toTagSpan chatting.tags
+                                                (toInfoSpan false <<< maybeLanguages $ DSC.joinWith ", " user.languages),
+                                        HE.div_ $ map toTagSpan user.tags
                                 ],
                                 HE.a [HA.class' "skip green", HA.title "See next profile", HA.onClick $ SM NextSuggestion] [
                                         HE.svg [HA.class' "i-end svg-50", HA.viewBox "0 0 32 32"] $
@@ -101,15 +111,39 @@ suggestion model =
 
                 toTagSpan tag = HE.span (HA.class' "tag") tag
 
-history :: IMModel -> Html IMMessage
-history model = HE.div' (HA.class' "message-history")
+history :: IMModel -> Maybe IMUser -> Html IMMessage
+history (IMModel {user: sender}) chattingSuggestion = HE.div (HA.class' "message-history") $
+        case chattingSuggestion of 
+                Nothing -> [HE.createEmptyElement "div"]
+                Just recipient -> display recipient
+
+        where   entry (IMUser {id: senderID, avatar: senderAvatar}) {avatar: recipientAvatar} (History {userID, content}) =
+                        let Tuple className avatar = 
+                                if senderID == userID then Tuple "sender-message" senderAvatar
+                                 else Tuple "recipient-message" recipientAvatar
+                        in HE.div (HA.class' $ "message " <> className) [
+                                HE.div_ $ HE.img' [HA.src avatar, HA.class' "avatar-message"],
+                                HE.text content
+                        ]
+
+                display (IMUser recipient@{history, description}) =
+                        map (entry sender recipient) $ 
+                                if DA.null history then 
+                                        [History {
+                                                messageID: SP.fromInt (-1),
+                                                userID: recipient.id,
+                                                content : description
+                                        }] 
+                                 else 
+                                        history
 
 chat :: IMModel -> Html IMMessage
-chat model =
+chat (IMModel {chatting, suggesting}) =
         HE.div (HA.class' "send-box") $
-                HE.div (HA.class' "chat-input-textarea-options") $
+                let classes = "chat-input-textarea-options" <> if DM.isNothing chatting && DM.isNothing suggesting then " hidden" else "" 
+                 in HE.div (HA.class' classes) $
                         HE.textarea' [HA.class' "chat-input-textarea", HA.placeholder "Type a message or drag files here"]
 
 search model = HE.div' $ HA.class' "search"
 
-contacts model = HE.div' $ HA.class' "contact-list"
+contactList model = HE.div' $ HA.class' "contact-list"
