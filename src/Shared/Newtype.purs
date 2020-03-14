@@ -1,4 +1,4 @@
-module Test.Shared.Update where 
+module Shared.Newtype where
 
 import Data.Newtype as DN
 import Shared.Types

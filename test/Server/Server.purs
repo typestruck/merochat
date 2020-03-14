@@ -11,8 +11,10 @@ import Effect.Aff (Aff)
 import Run (Run, AFF, EFFECT)
 import Run as R
 import Run.Except as RE
+import Effect.Class(liftEffect)
 import Run.Reader as RR
 import Run.State as RS
+import Effect(Effect)
 import Server.Database as SD
 import Test.Unit as TUA
 
@@ -31,7 +33,7 @@ configuration = Configuration {
 session :: Session
 session = { userID : Nothing }
 
-newTestPool ∷ Aff Pool
+newTestPool ∷ Effect Pool
 newTestPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchatTest") {
         user = Just "melanchat",
         idleTimeoutMillis = Just 1000
@@ -39,7 +41,7 @@ newTestPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchatTest") {
 
 serverAction :: (Unit -> ServerEffect Unit) -> Aff Unit
 serverAction action = do
-        pool <- newTestPool
+        pool <- liftEffect $ newTestPool
         R.runBaseAff' <<< RE.catch (\ex -> R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex) ) <<< RR.runReader {
                 configuration,
                 pool,
@@ -50,8 +52,8 @@ serverAction action = do
 
 serverActionCatch :: (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> (Unit -> ServerEffect Unit) -> Aff Unit
 serverActionCatch catch action  = do
-        pool <- newTestPool
-        R.runBaseAff' <<< RE.catch catch <<< RR.runReader { 
+        pool <- liftEffect $ newTestPool
+        R.runBaseAff' <<< RE.catch catch <<< RR.runReader {
                 configuration,
                 pool,
                 session

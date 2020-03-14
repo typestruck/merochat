@@ -11,9 +11,9 @@ import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Flame (World)
 import Partial.Unsafe as PU
-import Shared.Unsafe as SU
+import Shared.Unsafe as SN
 import Test.Unit (TestSuite)
-import Test.Shared.Update as TSU
+import Shared.Newtype as SN
 import Data.Either(Either(..))
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -35,15 +35,15 @@ tests = do
 
                 TU.test "sendMessage adds message to history" $ do
                         IMModel {contacts, chatting} <- CIC.sendMessage webSocketHandler model content
-                        let index = SU.unsafeFromJust chatting
-                            IMUser user = SU.unsafeFromJust (contacts !! index)
+                        let index = SN.unsafeFromJust "test" chatting
+                            IMUser user = SN.unsafeFromJust "test" (contacts !! index)
 
-                        TUA.equal [History {messageID: SP.fromInt 1, content, userID : user.id}] user.history
+                        TUA.equal [History {status:Unread, messageID: SP.fromInt 1, content, userID : user.id}] user.history
 
                 let IMModel { suggestions : modelSuggestions } = model
 
                 TU.test "startChat adds new contact from suggestion" $ do
-                        IMModel {contacts} <- CIC.startChat <<< TSU.updateModel model $ _ {
+                        IMModel {contacts} <- CIC.startChat <<< SN.updateModel model $ _ {
                                 suggestions = anotherIMUser : modelSuggestions,
                                 chatting = Nothing,
                                 suggesting = Just 0
@@ -51,7 +51,7 @@ tests = do
                         TUA.equal (DA.head contacts) $ Just anotherIMUser
 
                 TU.test "startChat resets suggesting" $ do
-                        IMModel {suggesting} <- CIC.startChat <<< TSU.updateModel model $ _ {
+                        IMModel {suggesting} <- CIC.startChat <<< SN.updateModel model $ _ {
                                 suggestions = anotherIMUser : modelSuggestions,
                                 chatting = Nothing,
                                 suggesting = Just 0
@@ -59,7 +59,7 @@ tests = do
                         TUA.equal Nothing suggesting
 
                 TU.test "startChat sets chatting to 0" $ do
-                        IMModel {chatting} <- CIC.startChat <<< TSU.updateModel model $ _ {
+                        IMModel {chatting} <- CIC.startChat <<< SN.updateModel model $ _ {
                                 suggestions = anotherIMUser : modelSuggestions,
                                 chatting = Nothing,
                                 suggesting = Just 0
@@ -71,10 +71,10 @@ tests = do
                         newMessageID = SP.fromInt 101
 
                 TU.test "receiveMessage substitutes temporary id" $ do
-                        IMModel {contacts} <- CIC.receiveMessage (TSU.updateModel model $ _ {
-                                contacts = [TSU.updateUser anotherIMUser $ _ {
+                        IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
+                                contacts = [SN.updateUser anotherIMUser $ _ {
                                         history = [History {
-                                                messageID, userID, content
+                                                status:Unread, messageID, userID, content
                                         }]
                                 }]
                         }) $ Received {
@@ -84,7 +84,7 @@ tests = do
                         TUA.equal (getMessageID contacts) $ Just newMessageID
 
                 TU.test "receiveMessage adds message to history" $ do
-                        IMModel {contacts} <- CIC.receiveMessage (TSU.updateModel model $ _ {
+                        IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [anotherIMUser]
                         }) $ ClientMessage {
                                 id: newMessageID,
@@ -92,23 +92,24 @@ tests = do
                                 user: Right userID
                         }
                         TUA.equal (getHistory contacts) <<< Just $ History {
+                                status: Unread,
                                 messageID: newMessageID,
                                 content,
                                 userID
                         }
 
                 TU.test "receiveMessage adds contact if new" $ do
-                        IMModel {contacts} <- CIC.receiveMessage (TSU.updateModel model $ _ {
+                        IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = []
                         }) $ ClientMessage {
                                 id: newMessageID,
                                 content,
                                 user: Left anotherIMUser
                         }
-                        TUA.equal (DA.head contacts) <<< Just $ TSU.updateUser anotherIMUser $ _ { history = [History { messageID : newMessageID, content, userID }]}
+                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [History { status:Unread, messageID : newMessageID, content, userID }]}
 
                 TU.test "receiveMessage set chatting if message comes from current suggestion" $ do
-                        IMModel {contacts, chatting} <- CIC.receiveMessage (TSU.updateModel model $ _ {
+                        IMModel {contacts, chatting} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [],
                                 chatting = Nothing,
                                 suggesting = Just 0,
@@ -118,7 +119,7 @@ tests = do
                                 content,
                                 user: Left anotherIMUser
                         }
-                        TUA.equal (DA.head contacts) <<< Just $ TSU.updateUser anotherIMUser $ _ { history = [History { messageID : newMessageID, content, userID }]}
+                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [History { status:Unread, messageID : newMessageID, content, userID }]}
                         TUA.equal chatting $ Just 0
 
         where   getHistory contacts = do
@@ -157,7 +158,7 @@ imUser = IMUser {
 }
 
 anotherIMUser :: IMUser
-anotherIMUser = TSU.updateUser imUser $ _ { id = SP.fromInt 90 }
+anotherIMUser = SN.updateUser imUser $ _ { id = SP.fromInt 90 }
 
 world :: World _ _
 world = {

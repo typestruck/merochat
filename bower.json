@@ -18,7 +18,7 @@
     "purescript-now": "^4.0.0",
     "purescript-enums": "^4.0.1",
     "purescript-routing-duplex": "^0.4.0",
-    "purescript-postgresql-client": "^2.4.4",
+    "purescript-postgresql-client": "^3.0.2",
     "purescript-int-53": "^4.0.0",
     "purescript-run": "^3.0.0",
     "purescript-read": "^1.0.1",
@@ -28,7 +28,8 @@
     "purescript-affjax": "^9.0.1",
     "purescript-web-uievents": "^2.0.0",
     "purescript-web-storage": "^3.0.0",
-    "purescript-web-socket": "^2.0.0"
+    "purescript-web-socket": "^2.0.0",
+    "purescript-unordered-collections": "^1.8.3"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",

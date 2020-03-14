@@ -83,14 +83,14 @@ serveDevelopmentFile folder fileName = do
 contentTypeFromExtension :: String -> Headers
 contentTypeFromExtension = headerContentType <<< show <<< read' <<< NP.extname
         where   read' :: String -> ContentType
-                read' = SU.unsafeFromJust <<< DSR.read
+                read' = SU.unsafeFromJust "contentTypeFromExtension" <<< DSR.read
 
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"
 
 requestError :: ResponseError -> Run (aff :: AFF, effect :: EFFECT) Response
 requestError ohno = do
-        R.liftEffect <<< EC.log $ show ohno
+        R.liftEffect <<< EC.log $ "internal server error " <> show ohno
         case ohno of
                 baddie@(BadRequest { reason }) -> liftedJSONResponse H.badRequest' reason
                 err@(InternalError { reason }) -> liftedJSONResponse H.internalServerError' reason

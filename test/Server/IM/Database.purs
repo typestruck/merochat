@@ -44,11 +44,13 @@ tests = do
                                 }
                                 (response :: Tuple PrimaryKey (Either IMUser PrimaryKey) ) <- SID.insertMessage userID anotherUserID "oi"
                                 case response of
-                                        Tuple _ (Right sender) -> do
-                                                R.liftAff $ TUA.equal userID sender
-                                                count <- SD.scalar' (Query """select count(1) from histories where sender = $1 and recipient = $2""") $ Row2 userID anotherUserID
+                                        Tuple _ (Right _) ->
+                                                R.liftAff $ TU.failure "expected history creation"
+                                        Tuple _ (Left (IMUser {id})) -> do
+                                                R.liftAff $ TUA.equal userID id
+                                                --for some reason Database.PostgreSql gets the count as a string
+                                                count <- SD.scalar' (Query """select cast(count(1) as integer) as c from histories where sender = $1 and recipient = $2""") $ Row2  userID anotherUserID
                                                 R.liftAff $ TUA.equal 1 count
-                                        Tuple _ (Left _) -> R.liftAff $ TU.failure "expected history creation"
                 TU.test "insertMessage returns user if history exists" $
                         TS.serverAction $ \_ -> do
                                 userID <- SLD.createUser {
@@ -65,12 +67,14 @@ tests = do
                                         headline: "sd",
                                         description: "ss"
                                 }
-                                (response :: Tuple PrimaryKey (Either IMUser PrimaryKey) ) <- SID.insertMessage userID anotherUserID "oi"
-                                (response :: Tuple PrimaryKey (Either IMUser PrimaryKey) ) <- SID.insertMessage anotherUserID userID "oi"
+                                (_ :: Tuple PrimaryKey (Either IMUser PrimaryKey)) <- SID.insertMessage userID anotherUserID "oi"
+                                (response :: Tuple PrimaryKey (Either IMUser PrimaryKey)) <- SID.insertMessage anotherUserID userID "ola"
                                 case response of
                                         Tuple _ (Right sender) -> do
+                                                R.liftAff $ TUA.equal anotherUserID sender
+                                                count <- SD.scalar' (Query """select cast(count(1) as integer) as c from histories where sender = $1 and recipient = $2""") $ Row2 anotherUserID userID
+                                                --zero as anotherUserID was already inserted as recipient
+                                                R.liftAff $ TUA.equal 0 count
+                                        Tuple _ (Left _) -> do
                                                 R.liftAff $ TU.failure "expected history creation"
-                                        Tuple _ (Left (IMUser {id})) -> do
-                                                R.liftAff $ TUA.equal anotherUserID id
-                                                count <- SD.scalar' (Query """select count(1) from histories where sender = $1 and recipient = $2""") $ Row2 anotherUserID userID
-                                                R.liftAff $ TUA.equal 1 count
+
