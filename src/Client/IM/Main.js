@@ -10,7 +10,7 @@ exports.loadEditor = function() {
 
 exports.keyHandled_ = function(editor, handler) {
         editor.codemirror.on('keyHandled', function(_, name, __) {
-                if (name == 'Enter') {
+                if (name == 'Enter' && editor.value()) {
                         handler(editor.value());
                         editor.value("");
                 }

@@ -6,6 +6,7 @@ import Shared.Types
 import Client.Common (tokenKey)
 import Client.Common as CC
 import Client.IM.Chat as CIC
+import Client.IM.Contacts as CICN
 import Client.IM.Suggestion as CIS
 import Control.Monad.Except as CME
 import Data.Argonaut.Core as DAC
@@ -53,7 +54,7 @@ main = void do
         WET.addEventListener onOpen openListener false $ WSW.toEventTarget webSocket
 
         messageListener <- WET.eventListener $ \event -> do
-                let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.unsafeFromJust $ WSEM.fromEvent event
+                let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.unsafeFromJust "client.im.main" $ WSEM.fromEvent event
                 case possiblePayload of
                         Left e -> EC.log ("bogus payload " <> show (map FO.renderForeignError e))
                         Right payload -> do
@@ -71,6 +72,7 @@ update world model =
         case _ of
                 SM message -> CIS.update world model message
                 CM message -> CIC.update world model message
+                CNM message -> CICN.update world model message
                 MM message -> set model message
         where set model =
                 case _ of

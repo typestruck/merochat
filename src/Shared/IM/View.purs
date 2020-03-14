@@ -16,6 +16,8 @@ import Flame.HTML.Attribute as HA
 import Shared.PrimaryKey as SP
 import Data.Int53 as DI
 import Debug.Trace (spy)
+import Data.Enum as DE
+import Data.Foldable as DF
 import Flame.HTML.Element as HE
 
 view :: IMModel -> Html IMMessage
@@ -31,7 +33,7 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts }) = HE.div (H
                 chat model
         ]
 ]
-        where chattingOrSuggesting = 
+        where chattingOrSuggesting =
                 case Tuple chatting suggesting of
                         Tuple Nothing (Just index) -> Just (suggestions !@ index)
                         Tuple (Just index) _ -> Just (contacts !@ index)
@@ -113,37 +115,58 @@ profile model =
 
 history :: IMModel -> Maybe IMUser -> Html IMMessage
 history (IMModel {user: sender}) chattingSuggestion = HE.div (HA.class' "message-history") $
-        case chattingSuggestion of 
+        case chattingSuggestion of
                 Nothing -> [HE.createEmptyElement "div"]
                 Just recipient -> display recipient
 
         where   entry (IMUser {id: senderID, avatar: senderAvatar}) {avatar: recipientAvatar} (History {userID, content}) =
-                        let Tuple className avatar = 
+                        let Tuple class' avatar =
                                 if senderID == userID then Tuple "sender-message" senderAvatar
                                  else Tuple "recipient-message" recipientAvatar
-                        in HE.div (HA.class' $ "message " <> className) [
+                        in HE.div (HA.class' $ "message " <> class') [
                                 HE.div_ $ HE.img' [HA.src avatar, HA.class' "avatar-message"],
                                 HE.text content
                         ]
 
                 display (IMUser recipient@{history, description}) =
-                        map (entry sender recipient) $ 
-                                if DA.null history then 
+                        map (entry sender recipient) $
+                                if DA.null history then
                                         [History {
+                                                status: Read,
                                                 messageID: SP.fromInt (-1),
                                                 userID: recipient.id,
                                                 content : description
-                                        }] 
-                                 else 
+                                        }]
+                                 else
                                         history
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel {chatting, suggesting}) =
         HE.div (HA.class' "send-box") $
-                let classes = "chat-input-textarea-options" <> if DM.isNothing chatting && DM.isNothing suggesting then " hidden" else "" 
+                let classes = "chat-input-textarea-options" <> if DM.isNothing chatting && DM.isNothing suggesting then " hidden" else ""
                  in HE.div (HA.class' classes) $
                         HE.textarea' [HA.class' "chat-input-textarea", HA.placeholder "Type a message or drag files here"]
 
 search model = HE.div' $ HA.class' "search"
 
-contactList model = HE.div' $ HA.class' "contact-list"
+contactList :: IMModel -> Html IMMessage
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") $ DA.mapWithIndex contactEntry contacts
+        where   countUnread total (History {status, userID: sender}) = total + DE.fromEnum (sender /= userID && status == Unread)
+
+                contactEntry index (IMUser { name, avatar, headline, history }) =
+                        HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat index] [
+                                HE.img' [HA.class' "avatar-contact-list", HA.src avatar],
+                                HE.div (HA.class' "contact-profile") [
+                                        HE.strong_ name,
+                                        HE.br,
+                                        --maybe the last sent message?
+                                        HE.i (HA.class' "contact-list-description") headline
+                                ],
+                                HE.div (HA.class' "menu-button chat-options") [
+                                        HE.text <<< show $ DF.foldl countUnread 0 history,
+                                        HE.a (HA.class' "menu-button") $
+                                                HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $
+                                                        HE.path' (HA.d "M30 12 L16 24 2 12"),
+                                        HE.div' (HA.class' "drop-menu fade-in effect")
+                                ]
+                        ]

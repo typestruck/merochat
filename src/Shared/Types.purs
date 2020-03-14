@@ -10,11 +10,17 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
 import Data.Date (Date)
+import Data.Array as DA
 import Data.Date as DD
+import Data.DateTime (DateTime(..))
 import Data.Either (Either(..))
+import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
+import Data.Enum as DE
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
+import Data.Hashable (class Hashable)
+import Data.Hashable as DH
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.JSDate as DJ
@@ -22,15 +28,18 @@ import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
+import Data.Ord (class Ord)
+import Data.Ordering (Ordering(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
+import Database.PostgreSQL as DP
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
-import Shared.Unsafe as SU
 import Partial.Unsafe as PU
+import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
 foreign import fromInt53 :: Int53 -> Json
@@ -92,6 +101,9 @@ data By =
 
 newtype PrimaryKey = PrimaryKey Int53
 
+instance hashablePrimaryKey :: Hashable PrimaryKey where
+        hash (PrimaryKey key) = DH.hash $ DI.toNumber key
+
 derive instance genericPrimaryKey :: Generic PrimaryKey _
 derive instance eqPrimaryKey :: Eq PrimaryKey
 
@@ -99,14 +111,11 @@ instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
 
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
-        fromSQLValue data_ =
-                DB.lmap show <<< CME.runExcept $
-                if F.typeOf data_ == "number" then
-                        map (PrimaryKey <<< DI.fromInt) $ F.readInt data_
-                 else
-                        map liftStringPrimaryKey $ F.readString data_
+        fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
 
-                where   liftStringPrimaryKey data_ = PrimaryKey <<< SU.unsafeFromJust $ DI.fromString data_
+parsePrimaryKey data_
+        | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
+        | otherwise = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString) $ F.readString data_
 
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
@@ -124,6 +133,7 @@ instance showPrimaryKey :: Show PrimaryKey where
         show = DGRS.genericShow
 
 type BasicUser fields = {
+        id :: PrimaryKey,
         name :: String,
         headline :: String,
         description :: String,
@@ -134,7 +144,8 @@ type BasicUser fields = {
 newtype History = History {
         messageID :: PrimaryKey,
         userID :: PrimaryKey,
-        content :: String
+        content :: String,
+        status :: MessageStatus
 }
 
 derive instance genericHistory :: Generic History _
@@ -151,7 +162,6 @@ instance showHistory :: Show History where
 
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
-        id :: PrimaryKey,
         avatar :: String,
         country :: Maybe String,
         languages :: Array String,
@@ -175,7 +185,6 @@ instance showIMUser :: Show IMUser where
         show = DGRS.genericShow
 
 newtype User = User (BasicUser (
-        id :: Int53,
         email :: String,
         password :: String,
         recentEmoji :: Maybe String,
@@ -193,7 +202,7 @@ derive instance genericUser :: Generic User _
 instance userFromSQLRow :: FromSQLRow User where
         fromSQLRow [
                 foreignID,
-                foreignName,
+                foreignUnread,
                 foreignPassword,
                 foreignJoined,
                 foreignEmail,
@@ -205,10 +214,10 @@ instance userFromSQLRow :: FromSQLRow User where
                 foreignCountry,
                 foreignMessageOnEnter
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- DI.fromInt <$> F.readInt foreignID
-                name <- F.readString foreignName
+                id <- parsePrimaryKey foreignID
+                name <- F.readString foreignUnread
                 password <- F.readString foreignPassword
-                joined <- (SU.unsafeFromJust <<< DJ.toDate) <$> DJ.readDate foreignJoined
+                joined <- SU.unsafeFromJust "userFromSQLRow" <<< DJ.toDate <$> DJ.readDate foreignJoined
                 email <- F.readString foreignEmail
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
@@ -243,15 +252,15 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 foreignID,
                 foreignGender,
                 foreignBirthday,
-                foreignName,
+                foreignUnread,
                 foreignHeadline,
                 foreignDescription,
                 foreignCountry,
                 foreignLanguages,
                 foreignTags
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- PrimaryKey <<< DI.fromInt <$> F.readInt foreignID
-                name <- F.readString foreignName
+                id <- parsePrimaryKey foreignID
+                name <- F.readString foreignUnread
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
                 maybeGender <- F.readNull foreignGender
@@ -280,7 +289,91 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                         history: [],
                         avatar: "/client/media/avatar.png"
                 }
-        fromSQLRow _ = Left "missing fields from users table"
+        --this is surely not ideal
+        fromSQLRow list@[
+                foreignDate, -- there is an extra field needed by the distinct when select imusers for the contact list
+                foreignID,
+                foreignGender,
+                foreignBirthday,
+                foreignUnread,
+                foreignHeadline,
+                foreignDescription,
+                foreignCountry,
+                foreignLanguages,
+                foreignTags
+        ] = DP.fromSQLRow <<< SU.unsafeFromJust  "fromSQLRow" $ DA.tail list :: Either String IMUser
+        fromSQLRow _ = Left "missing or extra fields from users table"
+
+data MessageStatus = Unread | Read
+
+derive instance eqMessageStatus :: Eq MessageStatus
+derive instance genericMessageStatus :: Generic MessageStatus _
+
+instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
+        encodeJson = DAEGR.genericEncodeJson
+
+instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
+        decodeJson = DADGR.genericDecodeJson
+
+instance showMessageStatus :: Show MessageStatus where
+        show = DGRS.genericShow
+
+--thats a lot of work...
+instance ordMessageStatus :: Ord MessageStatus where
+        compare Unread Read = LT
+        compare Read Unread = GT
+        compare _ _ = EQ
+
+instance boundedMessageStatus :: Bounded MessageStatus where
+        bottom = Unread
+        top = Read
+
+instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
+        cardinality = Cardinality 1
+
+        fromEnum Unread = 0
+        fromEnum Read = 1
+
+        toEnum 0 = Just Unread
+        toEnum 1 = Just Read
+        toEnum _ = Nothing
+
+instance enumMessageStatus :: Enum MessageStatus where
+        succ Unread = Just Read
+        succ Read = Nothing
+
+        pred Unread = Nothing
+        pred Read = Just Unread
+
+newtype MessageRow = MessageRow {
+        id :: PrimaryKey,
+        sender :: PrimaryKey,
+        date :: DateTime,
+        content :: String,
+        status :: MessageStatus
+}
+
+instance messageRowFromSQLRow :: FromSQLRow MessageRow where
+        fromSQLRow [
+                foreignID,
+                foreignSender,
+                foreignDate,
+                foreignContent,
+                foreignStatus
+        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+                id <- parsePrimaryKey foreignID
+                sender <- parsePrimaryKey foreignSender
+                date <- SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
+                content <- F.readString foreignContent
+                status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
+                pure $ MessageRow {
+                        id,
+                        sender,
+                        date,
+                        content,
+                        status
+                }
+        fromSQLRow _ = Left "missing or extra fields from users table"
 
 newtype WS = WS WebSocket
 
@@ -341,6 +434,9 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
         show = DGRS.genericShow
 
+data ContactMessage =
+        ResumeChat Int
+
 data SuggestionMessage =
         NextSuggestion
 
@@ -355,5 +451,6 @@ data MainMessage =
 data IMMessage =
         SM SuggestionMessage |
         CM ChatMessage |
-        MM MainMessage
+        MM MainMessage |
+        CNM ContactMessage
 

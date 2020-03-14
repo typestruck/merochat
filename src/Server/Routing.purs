@@ -54,10 +54,11 @@ router { headers, path, method, body }
         | path == [ SRO.fromRoute IM ] = do
                 let im = do
                         { session: { userID: maybeUserID } } <- RR.ask
-                        let userID = PrimaryKey $ SU.unsafeFromJust maybeUserID
+                        let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
                         user <- SID.presentUser userID
                         suggestions <- SIA.suggest userID
-                        serveTemplate $ SIT.template suggestions user
+                        contacts <- SIA.contactList userID
+                        serveTemplate $ SIT.template contacts suggestions user
                 ifLogged path im
         --TODO: type this route
         | otherwise = do

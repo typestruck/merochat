@@ -30,16 +30,15 @@ startWebSocketServer configuration = do
 
         webSocketServer <- SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "WebSocket now up on ws://localhost:" <> show port)
         SW.onServerError webSocketServer SWE.handleError
-        EA.launchAff_ do
-                pool <- SD.newPool
-                liftEffect <<< SW.onConnection webSocketServer $ SWE.handleConnection { configuration, pool, allConnections }
+        pool <- SD.newPool
+        SW.onConnection webSocketServer $ SWE.handleConnection { configuration, pool, allConnections }
 
 startHTTPServer :: Configuration -> Effect Unit
 startHTTPServer c@(Configuration configuration) = do
-        EA.launchAff_ do
-                pool <- SD.newPool
-                liftEffect $ H.serve configuration.port (router pool) $ EC.log ("Server now up on http://localhost:" <> show configuration.port)
+        pool <- SD.newPool
+        void $ H.serve configuration.port (router pool) $ EC.log ("Server now up on http://localhost:" <> show configuration.port)
 
         where   router pool request@{ path } = do
                         session <- liftEffect $ SR.session c request
                         SR.runRouter { configuration: c, pool, session } request
+

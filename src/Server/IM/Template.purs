@@ -14,8 +14,8 @@ import Data.Array as DA
 import Server.Template as ST
 import Shared.IM.View as SIV
 
-template :: Array IMUser -> IMUser -> Effect String
-template suggestions user = do
+template :: Array IMUser -> Array IMUser -> IMUser -> Effect String
+template contacts suggestions user = do
         parameters <- ST.extendParameters $ defaultParameters {
                 javascript = javascript,
                 css = css
@@ -23,7 +23,7 @@ template suggestions user = do
         F.preMount (QuerySelector ".im") {
                 view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
                 init: IMModel {
-                        contacts: [],
+                        contacts,
                         suggestions,
                         user,
                         chatting: Nothing,

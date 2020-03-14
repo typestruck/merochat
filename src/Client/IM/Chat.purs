@@ -53,11 +53,12 @@ startChat immodel@(IMModel model@{chatting, contacts, suggesting, suggestions}) 
 
 sendMessage :: WebSocketHandler -> IMModel -> String -> Aff IMModel
 sendMessage webSocketHandler (IMModel model@{user: IMUser {id: senderID}, webSocket: Just (WS webSocket), token: Just token, temporaryID, chatting: Just chatting, contacts}) content = do
-        let     (IMUser user) = SU.unsafeFromJust $ contacts !! chatting
+        let     (IMUser user) = SU.unsafeFromJust "sendMessage" $ contacts !! chatting
                 newTemporaryID = temporaryID + 1
                 updatedChatting = IMUser $ user {
                         message = "",
                         history = DA.snoc user.history $ History {
+                                status: Unread,
                                 messageID: SP.fromInt newTemporaryID,
                                 userID: senderID,
                                 content
@@ -71,7 +72,7 @@ sendMessage webSocketHandler (IMModel model@{user: IMUser {id: senderID}, webSoc
         }
         pure <<< IMModel $ model {
                 temporaryID = newTemporaryID,
-                contacts = SU.unsafeFromJust $ DA.updateAt chatting updatedChatting contacts
+                contacts = SU.unsafeFromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
         }
 sendMessage _ model _ = do
         liftEffect $ EC.log "Invalid sendMessage state"
@@ -81,23 +82,23 @@ receiveMessage :: IMModel -> WebSocketPayloadClient -> Aff IMModel
 receiveMessage m@(IMModel model@{contacts, suggesting, suggestions}) payload = do
         case payload of
                 ClientMessage m@{ id, user, content } -> do
-                        let contacts = SU.unsafeFromJust $ findUpdateContent m
-                        case contacts of 
-                                New contacts' -> do 
+                        let contacts = SU.unsafeFromJust "receiveMessage" $ findUpdateContent m
+                        case contacts of
+                                New contacts' -> do
                                         --new messages bubble the contact to the top
                                         let added = DA.head contacts'
                                         --edge case of recieving a message from the current suggestion
-                                        pure $ if getUserID added == getUserID suggestingContact then 
+                                        pure $ if getUserID added == getUserID suggestingContact then
                                                         IMModel $ model {
                                                                 contacts = contacts',
                                                                 suggesting = Nothing,
                                                                 chatting = Just 0
                                                         }
-                                                else  
+                                                else
                                                         IMModel $ model {
                                                                 contacts = contacts'
                                                         }
-                                Existing contacts' -> do 
+                                Existing contacts' -> do
                                         pure <<< IMModel $ model {
                                                 contacts = contacts'
                                         }
@@ -112,27 +113,26 @@ receiveMessage m@(IMModel model@{contacts, suggesting, suggestions}) payload = d
                 findTemporary previousID (History { messageID }) = messageID == previousID
                 findUserByMessage previousID (IMUser {history}) = DA.any (findTemporary previousID) history
                 updateTemporary index newID (IMUser user@{history}) = IMUser $ user {
-                        history = SU.unsafeFromJust $ DA.modifyAt index (\(History history) -> History $ history {
+                        history = SU.unsafeFromJust "receiveMessage" $ DA.modifyAt index (\(History history) -> History $ history {
                                 messageID = newID
                         }) history
                 }
-                findUpdateTemporaryID previousID id = do                                
+                findUpdateTemporaryID previousID id = do
                         index <- DA.findIndex (findUserByMessage previousID) contacts
                         IMUser {history} <- contacts !! index
-                        innerIndex <- DA.findIndex (findTemporary previousID) history                        
+                        innerIndex <- DA.findIndex (findTemporary previousID) history
 
                         DA.modifyAt index (updateTemporary innerIndex id) contacts
 
                 findUserByID userID (IMUser {id}) = userID == id
                 updateContent { messageID, userID, content } (IMUser user@{history}) = IMUser $ user {
-                        history = DA.snoc history $ History { messageID, userID, content }
+                        history = DA.snoc history $ History { status: Unread, messageID, userID, content }
                 }
-                findUpdateContent { id, user, content } = do                                
-                        case user of 
+                findUpdateContent { id, user, content } = do
+                        case user of
                                 Right userID@(PrimaryKey _) -> do
                                         index <- DA.findIndex (findUserByID userID) contacts
                                         IMUser {history} <- contacts !! index
 
                                         map Existing $ DA.modifyAt index (updateContent { userID, content, messageID : id }) contacts
                                 Left user@(IMUser{ id: userID }) -> Just <<< New $ updateContent ({ userID, content, messageID : id }) user : contacts
-                                

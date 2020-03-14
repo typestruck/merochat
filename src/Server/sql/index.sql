@@ -492,6 +492,7 @@ create table histories
     id serial primary key,
     sender integer not null,
     recipient integer not null,
+    firstMessageDate timestamp not null default clock_timestamp(),
     date timestamp not null default clock_timestamp(),
     senderArchived boolean not null default false,
     recipientArchived boolean not null default false,
@@ -518,7 +519,7 @@ begin
     if exists(select 1
     from histories
     where sender = recipientID and recipient = senderID) then
-    update histories set senderArchived = false, recipientArchived = false where sender = recipientID and recipient = senderID;
+    update histories set senderArchived = false, recipientArchived = false, date = clock_timestamp() where sender = recipientID and recipient = senderID;
     return true;
     else
     insert into histories

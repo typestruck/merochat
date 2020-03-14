@@ -1,35 +1,36 @@
-module Test.Client.IM.Suggestion where
+module Test.Client.IM.Contacts where
 
 import Prelude
 import Shared.Types
 
-import Client.IM.Suggestion as CIS
+import Client.IM.Contacts as CICN
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
-import Shared.Newtype as TSU
 import Flame (World)
+import Shared.Newtype as SN
+import Shared.PrimaryKey as SP
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-import Shared.PrimaryKey as SP
 import Test.Unit.Main as TUM
 
 tests :: TestSuite
 tests = do
-        TU.suite "im suggestion update" $ do
-                TU.test "nextSuggestion sets suggesting to zero if Nothing" $ do
-                        IMModel { suggesting } <- CIS.nextSuggestion <<< TSU.updateModel model $ _ {
-                                suggestions = [imUser],
-                                suggesting = Nothing
-                        }
-                        TUA.equal (Just 0) suggesting
+        TU.suite "im contacts update" $ do
+                TU.test "resumeChat resets suggesting" $ do
+                        IMModel { suggesting } <- CICN.resumeChat (SN.updateModel model $ _ {
+                                suggesting = Just 4455
+                        }) 23
+                        TUA.equal Nothing suggesting
 
-                TU.test "nextSuggestion bumps suggesting" $ do
-                        IMModel { suggesting } <- CIS.nextSuggestion <<< TSU.updateModel model $ _ {
-                                suggestions = [imUser, imUser],
-                                suggesting = Just 0
-                        }
-                        TUA.equal (Just 1) suggesting
+                TU.test "resumeChat sets chatting" $ do
+                        m@(IMModel { chatting }) <- CICN.resumeChat (SN.updateModel model $ _ {
+                                chatting = Nothing
+                        }) 23
+                        TUA.equal (Just 23) chatting
+
+                        IMModel { chatting } <- CICN.resumeChat m 0
+                        TUA.equal (Just 0) chatting
 
 model :: IMModel
 model = IMModel {
