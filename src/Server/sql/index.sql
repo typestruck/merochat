@@ -486,7 +486,6 @@ create table recoveries
     constraint recoverer foreign key (recoverer) references users(id)
 );
 
-
 create table histories
 (
     id serial primary key,
@@ -502,7 +501,14 @@ create table histories
 
     unique(sender, recipient)
 );
-
+	
+create table karmas (
+    id serial primary key,
+    target integer not null,
+    current integer not null,
+    
+    constraint targetKarma foreign key (target) references users(id)
+);
 
 INSERT INTO users
     (
