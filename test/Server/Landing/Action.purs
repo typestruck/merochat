@@ -1,10 +1,11 @@
 module Test.Server.Landing.Action where
 
 import Prelude
+import Server.Types
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Query(..), Row0(..))
+import Database.PostgreSQL (Query(..), Row0(..), Row1(..))
 import Run as R
 import Server.Database as SD
 import Server.Database.User as SDU
@@ -12,7 +13,7 @@ import Server.Landing.Action (invalidUserEmailMessage, emailAlreadyRegisteredMes
 import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
 import Server.Token as ST
-import Server.Types
+import Shared.Unsafe as SU
 import Test.Server as TS
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -71,13 +72,28 @@ tests = do
                         TS.serverAction $ \_ -> do
                                 let password = "hunter12"
                                 _ <- SLA.register "" $ RegisterLogin {
-                                                email,
-                                                password,
-                                                captchaResponse: Nothing
-                                        }
+                                        email,
+                                        password,
+                                        captchaResponse: Nothing
+                                }
                                 maybeUser <- SDU.userBy (Email email)
                                 case maybeUser of
                                         Nothing -> R.liftAff $ TU.failure "user not created!"
                                         Just (User user) -> do
                                                 hashed <- ST.hashPassword password
                                                 R.liftAff $ TUA.equal hashed user.password
+
+                TU.test "register creates karma" $
+                        TS.serverAction $ \_ -> do
+                                let password = "hunter12"
+                                _ <- SLA.register "" $ RegisterLogin {
+                                        email,
+                                        password,
+                                        captchaResponse: Nothing
+                                }
+                                User {id} <- SU.unsafeFromJust "test" <$> (SDU.userBy $ Email email)
+                                count <- SD.scalar' (Query "select cast(count(1) as integer) from karmas where target = $1 and current = 5") $ Row1 id
+                                R.liftAff $ TUA.equal 1 count
+
+
+
