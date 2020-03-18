@@ -153,6 +153,7 @@ search model = HE.div' $ HA.class' "search"
 contactList :: IMModel -> Html IMMessage
 contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") $ DA.mapWithIndex contactEntry contacts
         where   countUnread total (History {status, userID: sender}) = total + DE.fromEnum (sender /= userID && status == Unread)
+                showUnreadCount history = let count = DF.foldl countUnread 0 history in if count == 0 then "" else show count
 
                 contactEntry index (IMUser { name, avatar, headline, history }) =
                         HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat index] [
@@ -164,7 +165,7 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
                                         HE.i (HA.class' "contact-list-description") headline
                                 ],
                                 HE.div (HA.class' "menu-button chat-options") [
-                                        HE.text <<< show $ DF.foldl countUnread 0 history,
+                                        HE.text $ showUnreadCount history,
                                         HE.a (HA.class' "menu-button") $
                                                 HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $
                                                         HE.path' (HA.d "M30 12 L16 24 2 12"),

@@ -22,6 +22,7 @@ import Data.Tuple(Tuple(..))
 import Run.Except as RE
 import Run.Reader as RR
 import Server.IM.Database as SID
+import Debug.Trace(spy)
 import Server.Token as ST
 import Server.WebSocket (WebSocketConnection, WebSocketMessage(..), CloseCode, CloseReason)
 import Server.WebSocket as SW

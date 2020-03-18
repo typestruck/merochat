@@ -348,6 +348,7 @@ instance enumMessageStatus :: Enum MessageStatus where
 newtype MessageRow = MessageRow {
         id :: PrimaryKey,
         sender :: PrimaryKey,
+        recipient :: PrimaryKey,
         date :: DateTime,
         content :: String,
         status :: MessageStatus
@@ -357,18 +358,21 @@ instance messageRowFromSQLRow :: FromSQLRow MessageRow where
         fromSQLRow [
                 foreignID,
                 foreignSender,
+                foreignRecipient,
                 foreignDate,
                 foreignContent,
                 foreignStatus
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 id <- parsePrimaryKey foreignID
                 sender <- parsePrimaryKey foreignSender
+                recipient <- parsePrimaryKey foreignRecipient
                 date <- SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
                 content <- F.readString foreignContent
                 status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
                 pure $ MessageRow {
                         id,
                         sender,
+                        recipient,
                         date,
                         content,
                         status

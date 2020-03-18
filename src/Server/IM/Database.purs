@@ -23,7 +23,7 @@ description,
 (select string_agg(name, '\n' order by name) from tags l join tagsUsers tu on l.id = tu.tag and tu.creator = u.id ) tags """
 
 messagePresentationFields :: String
-messagePresentationFields = " id, sender, date, content, status "
+messagePresentationFields = " id, sender, recipient, date, content, status "
 
 presentUserQuery = Query ("select" <> userPresentationFields <> "from users u where id = $1")
 presentUserParameters = Row1
