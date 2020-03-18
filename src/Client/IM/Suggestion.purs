@@ -16,9 +16,8 @@ update _ model =
 
 nextSuggestion :: IMModel -> Aff IMModel
 nextSuggestion model@(IMModel m@{suggestions, suggesting}) = do
-        let suggestionsSize = DA.length suggestions
-
-        if suggestionsSize == 0 || DM.maybe 0 (_ + 1) suggesting > suggestionsSize then
+        let nextSuggestion = DM.maybe 0 (_ + 1) suggesting
+        if nextSuggestion == DA.length suggestions then
                 -- fetch more
                 pure model
-         else pure <<< IMModel $ m { suggesting = DM.maybe (Just 0) (Just <<< (_ + 1)) suggesting }
+         else pure <<< IMModel $ m { suggesting = Just nextSuggestion }

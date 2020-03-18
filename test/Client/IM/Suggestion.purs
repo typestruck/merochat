@@ -31,6 +31,14 @@ tests = do
                         }
                         TUA.equal (Just 1) suggesting
 
+                TU.test "nextSuggestion does not go over suggestions length" $ do
+                        IMModel { suggesting } <- CIS.nextSuggestion <<< TSU.updateModel model $ _ {
+                                suggestions = [imUser, imUser, imUser],
+                                suggesting = Just 2
+                        }
+                        TUA.equal (Just 2) suggesting
+
+
 model :: IMModel
 model = IMModel {
         contacts: [],

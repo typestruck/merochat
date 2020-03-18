@@ -18,6 +18,7 @@ import Data.Int53 as DI
 import Debug.Trace (spy)
 import Data.Enum as DE
 import Data.Foldable as DF
+import Debug.Trace(spy)
 import Flame.HTML.Element as HE
 
 view :: IMModel -> Html IMMessage

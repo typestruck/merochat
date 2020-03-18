@@ -8,6 +8,8 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Aff as EA
+import Effect.Console as EC
+import Affjax as A
 import Effect.Class (liftEffect)
 import Data.Either (Either(..))
 import Shared.Routing as SR
@@ -30,7 +32,10 @@ register captchaResponse = do
                                         response <- CC.post (SR.fromRouteAbsolute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse })
                                         case response of
                                                 Right token -> enter token
-                                                _ -> liftEffect grecaptchaReset
+                                                Left left -> liftEffect $ do
+                                                        grecaptchaReset
+                                                        EC.log $ A.printResponseFormatError left
+                                                        CC.alert "Could not register. Please try again."
         where   enter token = liftEffect <<< CCE.login token $ SR.fromRouteAbsolute IM
 
 -- | Callback for grecaptcha
