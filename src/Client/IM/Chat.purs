@@ -131,8 +131,8 @@ receiveMessage m@(IMModel model@{contacts, suggesting, suggestions}) payload = d
                 findUpdateContent { id, user, content } = do
                         case user of
                                 Right userID@(PrimaryKey _) -> do
-                                        index <- DA.findIndex (findUserByID userID) contacts
+                                        index <- spy "right index" (DA.findIndex (findUserByID userID) contacts)
                                         IMUser {history} <- contacts !! index
 
                                         map Existing $ DA.modifyAt index (updateContent { userID, content, messageID : id }) contacts
-                                Left user@(IMUser{ id: userID }) -> Just <<< New $ updateContent ({ userID, content, messageID : id }) user : contacts
+                                Left user@(IMUser{ id: userID }) -> spy "left index" (Just <<< New $ updateContent ({ userID, content, messageID : id }) user : contacts)

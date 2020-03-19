@@ -6,6 +6,7 @@ import Shared.Types
 import Data.Tuple (Tuple(..))
 import Data.Either(Either(..))
 import Data.Int53 (Int53)
+import Debug.Trace(spy)
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Query(..), Row1(..), Row2(..), Row3(..))
 import Database.PostgreSQL as DP

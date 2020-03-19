@@ -31,5 +31,5 @@ contactList id = do
                 }
 
                 intoContacts userHistory user@(IMUser { id }) = SN.updateUser user $ _ {
-                        history = intoHistory <$> (SU.unsafeFromJust "contactList" $ DH.lookup id userHistory
+                        history = intoHistory <$> (SU.unsafeFromJust "contactList" $ DH.lookup id userHistory)
                 }

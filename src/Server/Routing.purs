@@ -66,6 +66,8 @@ router { headers, path, method, body }
 
                 if configuration.development && path !@ 0 == "client" then
                         SRR.serveDevelopmentFile (path !@ 1) (path !@ 2)
+                 else if configuration.development && path !@ 0 == "favicon.ico" then
+                        SRR.serveDevelopmentFile "media" "favicon.ico"
                  else
                         RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
 
