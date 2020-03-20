@@ -16,7 +16,7 @@ body {
 .send-box {
     display: flex;
     flex-flow: column;
-    padding: 10px;
+    padding: 10px 30px;
 }
 
 .im {
@@ -189,13 +189,19 @@ svg {
 }
 
 .message {
-    margin: 5px 25px;
     display: flex;
+    margin: 5px 0px;
+    align-items: center;
 }
 
 .recipient-message {
-    flex-flow: row wrap;
+    flex-flow: row;
     margin-right: auto;
+    align-self: flex-start;
+}
+
+.recipient-message .avatar-message {
+    margin-right: 10px;
 }
 
 .text {
@@ -210,10 +216,16 @@ svg {
 }
 
 .sender-message {
-    flex-flow: row-reverse wrap;
+    flex-flow: row-reverse;
     margin-left: auto;
     align-self: flex-end;
 }
+
+
+.sender-message .avatar-message {
+    margin-left: 10px;
+}
+
 
 .sender-message .text {
     background: #dcf8c6;

@@ -126,7 +126,7 @@ history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class'
                                 if senderID == sender then Tuple "sender-message" senderAvatar
                                  else Tuple "recipient-message" recipientAvatar
                         in HE.div (HA.class' $ "message " <> class') [
-                                HE.div_ $ HE.img' [HA.src avatar, HA.class' "avatar-message"],
+                                HE.img' [HA.src avatar, HA.class' "avatar-message"],
                                 HE.text content
                         ]
 
