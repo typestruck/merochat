@@ -15,6 +15,7 @@ import Effect.Aff as EA
 import Effect.Console as EC
 import Effect.Exception (Error)
 import Effect.Ref (Ref)
+import Effect.Now as EN
 import Effect.Ref as ER
 import Node.HTTP (Request)
 import Run as R
@@ -22,6 +23,7 @@ import Data.Tuple(Tuple(..))
 import Run.Except as RE
 import Run.Reader as RR
 import Server.IM.Database as SID
+import Debug.Trace(spy)
 import Server.Token as ST
 import Server.WebSocket (WebSocketConnection, WebSocketMessage(..), CloseCode, CloseReason)
 import Server.WebSocket as SW
@@ -43,6 +45,7 @@ handleMessage connection (WebSocketMessage message) = do
                         case payload of
                                 Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
                                 ServerMessage {id, user: recipient@(PrimaryKey recipientID), token, content} -> withUser token $ \userID -> do
+                                        date <- map MDateTime $ R.liftEffect EN.nowDateTime
                                         Tuple messageID senderUser <- SID.insertMessage (PrimaryKey userID) recipient content
                                         sendMessage connection <<< SJ.toJSON $ Received {
                                                 previousID: id,
@@ -56,7 +59,8 @@ handleMessage connection (WebSocketMessage message) = do
                                                 Just recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
                                                         id : messageID,
                                                         user: senderUser,
-                                                        content
+                                                        content,
+                                                        date
                                                 }
                 Left error -> do
                         log $ "received faulty payload " <> error

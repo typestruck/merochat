@@ -15,6 +15,7 @@ import Data.Maybe (Maybe(..))
 import Debug.Trace
 import Data.Maybe as DM
 import Effect.Aff (Aff)
+import Effect.Now as EN
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Shared.Unsafe((!@))
@@ -53,15 +54,18 @@ startChat immodel@(IMModel model@{chatting, contacts, suggesting, suggestions}) 
 
 sendMessage :: WebSocketHandler -> IMModel -> String -> Aff IMModel
 sendMessage webSocketHandler (IMModel model@{user: IMUser {id: senderID}, webSocket: Just (WS webSocket), token: Just token, temporaryID, chatting: Just chatting, contacts}) content = do
-        let     (IMUser user) = SU.unsafeFromJust "sendMessage" $ contacts !! chatting
+        now <- liftEffect EN.nowDateTime
+        let     IMUser user = SU.unsafeFromJust "sendMessage" $ contacts !! chatting
                 newTemporaryID = temporaryID + 1
                 updatedChatting = IMUser $ user {
                         message = "",
-                        history = DA.snoc user.history $ History {
+                        history = DA.snoc user.history $ HistoryMessage {
                                 status: Unread,
-                                messageID: SP.fromInt newTemporaryID,
-                                userID: senderID,
-                                content
+                                id: SP.fromInt newTemporaryID,
+                                sender: senderID,
+                                recipient: user.id,
+                                content,
+                                date : Just $ MDateTime now
                         }
                 }
         liftEffect <<< webSocketHandler.sendString webSocket <<< SJ.toJSON $ ServerMessage {
@@ -79,10 +83,10 @@ sendMessage _ model _ = do
         pure model
 
 receiveMessage :: IMModel -> WebSocketPayloadClient -> Aff IMModel
-receiveMessage m@(IMModel model@{contacts, suggesting, suggestions}) payload = do
+receiveMessage m@(IMModel model@{user: IMUser recipient, contacts, suggesting, suggestions}) payload = do
         case payload of
-                ClientMessage m@{ id, user, content } -> do
-                        let contacts = SU.unsafeFromJust "receiveMessage" $ findUpdateContent m
+                ClientMessage m@{ id, user, content, date } -> do
+                        let contacts = SU.unsafeFromJust "receiveMessage" <<< findUpdateContent $ m { date = Just date }
                         case contacts of
                                 New contacts' -> do
                                         --new messages bubble the contact to the top
@@ -110,11 +114,11 @@ receiveMessage m@(IMModel model@{contacts, suggesting, suggestions}) payload = d
                         index <- suggesting
                         suggestions !! index
 
-                findTemporary previousID (History { messageID }) = messageID == previousID
+                findTemporary previousID (HistoryMessage { id }) = id == previousID
                 findUserByMessage previousID (IMUser {history}) = DA.any (findTemporary previousID) history
                 updateTemporary index newID (IMUser user@{history}) = IMUser $ user {
-                        history = SU.unsafeFromJust "receiveMessage" $ DA.modifyAt index (\(History history) -> History $ history {
-                                messageID = newID
+                        history = SU.unsafeFromJust "receiveMessage" $ DA.modifyAt index (\(HistoryMessage history) -> HistoryMessage $ history {
+                                id = newID
                         }) history
                 }
                 findUpdateTemporaryID previousID id = do
@@ -125,14 +129,14 @@ receiveMessage m@(IMModel model@{contacts, suggesting, suggestions}) payload = d
                         DA.modifyAt index (updateTemporary innerIndex id) contacts
 
                 findUserByID userID (IMUser {id}) = userID == id
-                updateContent { messageID, userID, content } (IMUser user@{history}) = IMUser $ user {
-                        history = DA.snoc history $ History { status: Unread, messageID, userID, content }
+                updateContent { messageID, userID, content, date } (IMUser user@{history}) = IMUser $ user {
+                        history = DA.snoc history $ HistoryMessage { status: Unread, id: messageID, sender: userID, recipient: recipient.id, content, date }
                 }
-                findUpdateContent { id, user, content } = do
+                findUpdateContent { id, user, date, content } = do
                         case user of
                                 Right userID@(PrimaryKey _) -> do
                                         index <- DA.findIndex (findUserByID userID) contacts
                                         IMUser {history} <- contacts !! index
 
-                                        map Existing $ DA.modifyAt index (updateContent { userID, content, messageID : id }) contacts
-                                Left user@(IMUser{ id: userID }) -> Just <<< New $ updateContent ({ userID, content, messageID : id }) user : contacts
+                                        map Existing $ DA.modifyAt index (updateContent { userID, content, messageID : id, date }) contacts
+                                Left user@(IMUser{ id: userID }) -> Just <<< New $ updateContent ({ userID, content, messageID : id, date }) user : contacts

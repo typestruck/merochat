@@ -38,7 +38,7 @@ tests = do
                         let index = SN.unsafeFromJust "test" chatting
                             IMUser user = SN.unsafeFromJust "test" (contacts !! index)
 
-                        TUA.equal [History {status:Unread, messageID: SP.fromInt 1, content, userID : user.id}] user.history
+                        TUA.equal [HistoryMessage {status:Unread, id: SP.fromInt 1, content, sender : user.id}] user.history
 
                 let IMModel { suggestions : modelSuggestions } = model
 
@@ -73,7 +73,7 @@ tests = do
                 TU.test "receiveMessage substitutes temporary id" $ do
                         IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [SN.updateUser anotherIMUser $ _ {
-                                        history = [History {
+                                        history = [HistoryMessage {
                                                 status:Unread, messageID, userID, content
                                         }]
                                 }]
@@ -91,7 +91,7 @@ tests = do
                                 content,
                                 user: Right userID
                         }
-                        TUA.equal (getHistory contacts) <<< Just $ History {
+                        TUA.equal (getHistory contacts) <<< Just $ HistoryMessage {
                                 status: Unread,
                                 messageID: newMessageID,
                                 content,
@@ -106,7 +106,7 @@ tests = do
                                 content,
                                 user: Left anotherIMUser
                         }
-                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [History { status:Unread, messageID : newMessageID, content, userID }]}
+                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [HistoryMessage { status:Unread, messageID : newMessageID, content, userID }]}
 
                 TU.test "receiveMessage set chatting if message comes from current suggestion" $ do
                         IMModel {contacts, chatting} <- CIC.receiveMessage (SN.updateModel model $ _ {
@@ -119,15 +119,15 @@ tests = do
                                 content,
                                 user: Left anotherIMUser
                         }
-                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [History { status:Unread, messageID : newMessageID, content, userID }]}
+                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [HistoryMessage { status:Unread, messageID : newMessageID, content, userID }]}
                         TUA.equal chatting $ Just 0
 
         where   getHistory contacts = do
                         IMUser {history} <- DA.head contacts
                         DA.head history
                 getMessageID contacts = do
-                        History { messageID } <- getHistory contacts
-                        pure messageID
+                        HistoryMessage { id } <- getHistory contacts
+                        pure id
 
 model :: IMModel
 model = IMModel {

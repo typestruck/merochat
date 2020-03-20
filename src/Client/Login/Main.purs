@@ -9,6 +9,7 @@ import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff as EA
+import Debug.Trace(spy)
 import Effect.Class (liftEffect)
 import Shared.Routing as SR
 import Web.UIEvent.MouseEvent.EventTypes (click)

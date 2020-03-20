@@ -8,7 +8,9 @@ import Client.Common (tokenKey)
 import Client.Common as CC
 import Data.Maybe (Maybe(..))
 import Data.String as DS
+import Effect.Console as EC
 import Effect (Effect)
+import Debug.Trace(spy)
 import Shared.Types (RegisterLogin(..), Token(..))
 import Shared.Cookies (cookieName)
 
@@ -31,6 +33,7 @@ validateEmailPassword = do
 
 login :: Token -> String -> Effect Unit
 login (Token { tokenGET, tokenPOST }) redirect =  do
+        EC.log "in login"
         BC.setCookie $ SetCookie {
                 cookie : Cookie {
                         key : cookieName,
