@@ -43,6 +43,7 @@ input, textarea {
         border-radius: 3px;
         border: 1px solid #ccc;
         color: white;
+        background: transparent;
 }
 
 input[type="submit"], input[type="button"] {
