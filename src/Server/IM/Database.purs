@@ -41,7 +41,7 @@ presentContacts id = SD.select (Query ("select distinct date," <> userPresentati
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
                                           order by date desc""")) $ Row1 id
 
-chatHistory :: PrimaryKey -> ServerEffect (Array MessageRow)
+chatHistory :: PrimaryKey -> ServerEffect (Array HistoryMessage)
 chatHistory id = SD.select (Query ("select" <> messagePresentationFields <> "from messages where sender = $1 or recipient = $1 order by date, sender, recipient")) $ Row1 id
 
 insertMessage sender recipient content = SD.withTransaction $ \connection -> do

@@ -2,7 +2,7 @@ module Shared.IM.View where
 
 import Prelude
 import Shared.Types
-
+import Effect.Now as EN
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -11,6 +11,7 @@ import Shared.Unsafe((!@))
 import Effect (Effect)
 import Flame (QuerySelector(..), Html)
 import Flame as F
+import Effect.Unsafe as EU
 import Data.Tuple(Tuple(..))
 import Flame.HTML.Attribute as HA
 import Shared.PrimaryKey as SP
@@ -115,14 +116,14 @@ profile model =
                 toTagSpan tag = HE.span (HA.class' "tag") tag
 
 history :: IMModel -> Maybe IMUser -> Html IMMessage
-history (IMModel {user: sender}) chattingSuggestion = HE.div (HA.class' "message-history") $
+history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class' "message-history") $
         case chattingSuggestion of
                 Nothing -> [HE.createEmptyElement "div"]
                 Just recipient -> display recipient
 
-        where   entry (IMUser {id: senderID, avatar: senderAvatar}) {avatar: recipientAvatar} (History {userID, content}) =
+        where   entry ({id: senderID, avatar: senderAvatar}) {avatar: recipientAvatar} (HistoryMessage {sender, content}) =
                         let Tuple class' avatar =
-                                if senderID == userID then Tuple "sender-message" senderAvatar
+                                if senderID == sender then Tuple "sender-message" senderAvatar
                                  else Tuple "recipient-message" recipientAvatar
                         in HE.div (HA.class' $ "message " <> class') [
                                 HE.div_ $ HE.img' [HA.src avatar, HA.class' "avatar-message"],
@@ -132,10 +133,12 @@ history (IMModel {user: sender}) chattingSuggestion = HE.div (HA.class' "message
                 display (IMUser recipient@{history, description}) =
                         map (entry sender recipient) $
                                 if DA.null history then
-                                        [History {
+                                        [HistoryMessage {
                                                 status: Read,
-                                                messageID: SP.fromInt (-1),
-                                                userID: recipient.id,
+                                                id: SP.fromInt (-1),
+                                                sender: recipient.id,
+                                                date: Nothing,
+                                                recipient: sender.id,
                                                 content : description
                                         }]
                                  else
@@ -151,8 +154,14 @@ chat (IMModel {chatting, suggesting}) =
 search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") $ DA.mapWithIndex contactEntry contacts
-        where   countUnread total (History {status, userID: sender}) = total + DE.fromEnum (sender /= userID && status == Unread)
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+        where   getDate history = do
+                        HistoryMessage {date} <- DA.last history
+                        MDateTime md <- date
+                        pure md
+                compareDates (IMUser user) (IMUser anotherUser) = compare (getDate anotherUser.history) (getDate user.history)
+
+                countUnread total (HistoryMessage {status, sender}) = total + DE.fromEnum (sender /= userID && status == Unread)
                 showUnreadCount history = let count = DF.foldl countUnread 0 history in if count == 0 then "" else show count
 
                 contactEntry index (IMUser { name, avatar, headline, history }) =

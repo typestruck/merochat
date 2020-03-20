@@ -29,10 +29,10 @@ create table messages
     recipient integer not null,
     date timestamp not null default clock_timestamp(),
     content varchar(10000) not null,
-    status smallint not null default 1,
+    status smallint not null default 0,
     visualized timestamp,
 
-    constraint statusCheck check (status in (1,2)),
+    constraint statusCheck check (status in (0, 1)),
     constraint fromUserMessage foreign key (sender) references users(id),
     constraint toUserMessage foreign key (recipient) references users(id)
 );
@@ -490,7 +490,7 @@ create table karmas (
     id serial primary key,
     target integer not null,
     current integer not null,
-    
+
     constraint targetKarma foreign key (target) references users(id)
 );
 
@@ -520,7 +520,10 @@ VALUES
 CREATE OR REPLACE FUNCTION insertHistory
 (senderID int, recipientID int)
   RETURNS boolean AS
-$BODY$
+$$
+declare alreadyExists boolean := (exists(select 1
+    from histories
+    where sender = senderID and recipient = recipientID or sender = recipientID and recipient = senderID ));
 begin
     if exists(select 1
     from histories
@@ -534,11 +537,11 @@ begin
     on conflict
     (sender, recipient) do
     update set senderArchived = false, recipientArchived = false, date = clock_timestamp();
-    return alreadyExists;
 end
 if;
+return alreadyExists;
 end;
-  $BODY$
+  $$
   LANGUAGE plpgsql;
 
 -- CREATE OR REPLACE FUNCTION truncatetables()

@@ -24,11 +24,13 @@ import Data.Hashable as DH
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.JSDate as DJ
+import Data.JSDate (JSDate)
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Ord (class Ord)
+import Unsafe.Coerce as UC
 import Data.Ordering (Ordering(..))
 import Data.String (Pattern(..))
 import Data.String as DS
@@ -43,6 +45,7 @@ import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
 foreign import fromInt53 :: Int53 -> Json
+foreign import fromJSDate :: JSDate -> Json
 foreign import fromWS :: WebSocket -> Json
 foreign import toInt53 :: Json -> Int53
 foreign import toWS :: Json -> WS
@@ -141,25 +144,6 @@ type BasicUser fields = {
         fields
 }
 
-newtype History = History {
-        messageID :: PrimaryKey,
-        userID :: PrimaryKey,
-        content :: String,
-        status :: MessageStatus
-}
-
-derive instance genericHistory :: Generic History _
-derive instance eqHistory :: Eq History
-
-instance encodeJsonHistory :: EncodeJson History where
-        encodeJson = DAEGR.genericEncodeJson
-
-instance decodeJsonHistory :: DecodeJson History where
-        decodeJson = DADGR.genericDecodeJson
-
-instance showHistory :: Show History where
-        show = DGRS.genericShow
-
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
         avatar :: String,
@@ -168,7 +152,7 @@ newtype IMUser = IMUser (BasicUser (
         tags :: Array String,
         age :: Maybe Int,
         message :: String,
-        history :: Array History
+        history :: Array HistoryMessage
 ))
 
 derive instance newTypeIMUser :: Newtype IMUser _
@@ -345,16 +329,44 @@ instance enumMessageStatus :: Enum MessageStatus where
         pred Unread = Nothing
         pred Read = Just Unread
 
-newtype MessageRow = MessageRow {
+newtype MDateTime = MDateTime DateTime
+
+instance showMDateTime :: Show MDateTime where
+        show = DGRS.genericShow
+
+instance encodeJsonMDateTime :: EncodeJson MDateTime where
+        encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
+
+instance edecodeJsonMDateTime :: DecodeJson MDateTime where
+        decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
+                where   jsonString :: String
+                        jsonString = UC.unsafeCoerce json
+
+derive instance genericMDateTime :: Generic MDateTime _
+derive instance eqMDateTime :: Eq MDateTime
+
+newtype HistoryMessage = HistoryMessage {
         id :: PrimaryKey,
         sender :: PrimaryKey,
         recipient :: PrimaryKey,
-        date :: DateTime,
+        date :: Maybe MDateTime,
         content :: String,
         status :: MessageStatus
 }
 
-instance messageRowFromSQLRow :: FromSQLRow MessageRow where
+instance showHistoryMessage :: Show HistoryMessage where
+        show = DGRS.genericShow
+
+instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
+        encodeJson = DAEGR.genericEncodeJson
+
+instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
+        decodeJson = DADGR.genericDecodeJson
+
+derive instance genericHistoryMessage :: Generic HistoryMessage _
+derive instance eqHistoryMessage :: Eq HistoryMessage
+
+instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
         fromSQLRow [
                 foreignID,
                 foreignSender,
@@ -366,10 +378,10 @@ instance messageRowFromSQLRow :: FromSQLRow MessageRow where
                 id <- parsePrimaryKey foreignID
                 sender <- parsePrimaryKey foreignSender
                 recipient <- parsePrimaryKey foreignRecipient
-                date <- SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
+                date <- Just <<< MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
                 content <- F.readString foreignContent
                 status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
-                pure $ MessageRow {
+                pure $ HistoryMessage {
                         id,
                         sender,
                         recipient,
@@ -423,7 +435,8 @@ data WebSocketPayloadServer =
 
 data WebSocketPayloadClient =
         ClientMessage (BasicMessage (
-                user :: Either IMUser PrimaryKey
+                user :: Either IMUser PrimaryKey,
+                date :: MDateTime
         ))|
         Received {
                 previousID :: PrimaryKey,

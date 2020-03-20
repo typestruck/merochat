@@ -20,16 +20,9 @@ contactList id = do
         let userHistory = DF.foldl (intoHashMap id) DH.empty history
         pure $ intoContacts userHistory <$> contacts
 
-        where   intoHashMap userID hashMap m@(MessageRow {sender, recipient}) =
+        where   intoHashMap userID hashMap m@(HistoryMessage {sender, recipient}) =
                         DH.insertWith (<>) (if sender == userID then recipient else sender) [m] hashMap
 
-                intoHistory (MessageRow { id, sender, content, status }) = History {
-                        messageID: id,
-                        userID: sender,
-                        content,
-                        status
-                }
-
                 intoContacts userHistory user@(IMUser { id }) = SN.updateUser user $ _ {
-                        history = intoHistory <$> (SU.unsafeFromJust "contactList" $ DH.lookup id userHistory)
+                        history = SU.unsafeFromJust "contactList" $ DH.lookup id userHistory
                 }
