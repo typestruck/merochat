@@ -2,7 +2,7 @@ module Client.IM.Suggestion where
 
 import Prelude
 import Shared.Types
-
+import Shared.Newtype as SN
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -15,9 +15,12 @@ update _ model =
                 NextSuggestion -> nextSuggestion model
 
 nextSuggestion :: IMModel -> Aff IMModel
-nextSuggestion model@(IMModel m@{suggestions, suggesting}) = do
+nextSuggestion model@(IMModel {suggestions, suggesting}) = do
         let nextSuggestion = DM.maybe 0 (_ + 1) suggesting
         if nextSuggestion == DA.length suggestions then
                 -- fetch more
                 pure model
-         else pure <<< IMModel $ m { suggesting = Just nextSuggestion }
+         else pure <<< SN.updateModel model $ _ {
+                 suggesting = Just nextSuggestion,
+                 chatting = Nothing
+        }

@@ -15,6 +15,7 @@ import Data.Maybe (Maybe(..))
 import Debug.Trace
 import Data.Maybe as DM
 import Effect.Aff (Aff)
+import Effect.Now as EN
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Shared.Unsafe((!@))
@@ -53,7 +54,8 @@ startChat immodel@(IMModel model@{chatting, contacts, suggesting, suggestions}) 
 
 sendMessage :: WebSocketHandler -> IMModel -> String -> Aff IMModel
 sendMessage webSocketHandler (IMModel model@{user: IMUser {id: senderID}, webSocket: Just (WS webSocket), token: Just token, temporaryID, chatting: Just chatting, contacts}) content = do
-        let     (IMUser user) = SU.unsafeFromJust "sendMessage" $ contacts !! chatting
+        now <- liftEffect EN.nowDateTime
+        let     IMUser user = SU.unsafeFromJust "sendMessage" $ contacts !! chatting
                 newTemporaryID = temporaryID + 1
                 updatedChatting = IMUser $ user {
                         message = "",
@@ -63,7 +65,7 @@ sendMessage webSocketHandler (IMModel model@{user: IMUser {id: senderID}, webSoc
                                 sender: senderID,
                                 recipient: user.id,
                                 content,
-                                date : Nothing
+                                date : Just $ MDateTime now
                         }
                 }
         liftEffect <<< webSocketHandler.sendString webSocket <<< SJ.toJSON $ ServerMessage {

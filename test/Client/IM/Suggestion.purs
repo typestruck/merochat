@@ -38,6 +38,13 @@ tests = do
                         }
                         TUA.equal (Just 2) suggesting
 
+                TU.test "nextSuggestion clears chatting" $ do
+                        IMModel { chatting } <- CIS.nextSuggestion <<< TSU.updateModel model $ _ {
+                                chatting = Just 2,
+                                suggestions = [imUser, imUser]
+                        }
+                        TUA.equal Nothing chatting
+
 
 model :: IMModel
 model = IMModel {
