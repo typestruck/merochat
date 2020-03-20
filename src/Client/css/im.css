@@ -3,20 +3,19 @@ body {
     font-family: "Open sans", "sans serif";
     font-size: 17px;
     line-height: 1.42857143;
-    color: #3f414e;
-    background: #fff;
     height: 100%;
 }
 
 .chat-box {
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr 120px;
+
 }
 
 .send-box {
-    grid-row-start: 3;
-    grid-row-end: 4;
+    display: flex;
+    flex-flow: column;
     padding: 10px;
 }
 
