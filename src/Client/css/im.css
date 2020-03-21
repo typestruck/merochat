@@ -9,7 +9,7 @@ body {
 .chat-box {
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr 120px;
+    grid-template-rows: auto 1fr 130px;
 
 }
 

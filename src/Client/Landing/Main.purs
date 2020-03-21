@@ -11,10 +11,13 @@ import Effect.Aff as EA
 import Effect.Console as EC
 import Affjax as A
 import Effect.Class (liftEffect)
+import Shared.Unsafe as SU
 import Data.Either (Either(..))
 import Shared.Routing as SR
 import Shared.Types
 import Web.UIEvent.MouseEvent.EventTypes (click)
+import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
+import Web.UIEvent.KeyboardEvent as WUK
 
 foreign import grecaptchaExecute :: Effect Unit
 foreign import grecaptchaReset :: Effect Unit
@@ -42,7 +45,13 @@ register captchaResponse = do
 completeRegistration :: String -> Effect Unit
 completeRegistration captchaResponse = register $ Just captchaResponse
 
+registerOnEnter event = do
+        let pressed = WUK.key <<< SU.unsafeFromJust "registerOnEnter" $ WUK.fromEvent event
+        when (pressed == "Enter") $ register Nothing
+
 main :: Effect Unit
 main = do
         registerButton <- CC.querySelector "#register"
+        signUpDiv <- CC.querySelector ".sign-up"
+        CC.addEventListener signUpDiv keyup registerOnEnter
         CC.addEventListener registerButton click (const (register Nothing))

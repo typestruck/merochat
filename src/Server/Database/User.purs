@@ -9,6 +9,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Query(..), Row1(..))
 import Server.Database as SD
+import Debug.Trace(spy)
 
 userBy :: By -> ServerEffect (Maybe User)
 userBy by =

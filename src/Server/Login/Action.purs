@@ -8,8 +8,11 @@ import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Run.Except as RE
 import Server.Database.User as SDU
+import Effect.Console as EC
 import Server.Token as ST
+import Run as R
 import Server.Response as SRR
+import Debug.Trace(spy)
 
 invalidUserEmailMessage :: String
 invalidUserEmailMessage = "Invalid email or password"
