@@ -12,7 +12,10 @@ import Effect.Aff as EA
 import Debug.Trace(spy)
 import Effect.Class (liftEffect)
 import Shared.Routing as SR
+import Shared.Unsafe as SU
 import Web.UIEvent.MouseEvent.EventTypes (click)
+import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
+import Web.UIEvent.KeyboardEvent as WUK
 
 login :: Effect Unit
 login = do
@@ -27,7 +30,14 @@ login = do
                                 CCE.login token $ DE.either (const defaultNext) SR.fromRouteAbsolute redirect
         where   defaultNext = SR.fromRouteAbsolute IM
 
+
+loginOnEnter event = do
+        let pressed = WUK.key <<< SU.unsafeFromJust "registerOnEnter" $ WUK.fromEvent event
+        when (pressed == "Enter") login
+
 main :: Effect Unit
 main = do
         loginButton <- CC.querySelector "#login"
+        signUpDiv <- CC.querySelector ".box-action"
+        CC.addEventListener signUpDiv keyup loginOnEnter
         CC.addEventListener loginButton click (const login)

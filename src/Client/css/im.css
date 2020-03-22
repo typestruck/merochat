@@ -3,21 +3,20 @@ body {
     font-family: "Open sans", "sans serif";
     font-size: 17px;
     line-height: 1.42857143;
-    color: #3f414e;
-    background: #fff;
     height: 100%;
 }
 
 .chat-box {
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr 130px;
+
 }
 
 .send-box {
-    grid-row-start: 3;
-    grid-row-end: 4;
-    padding: 10px;
+    display: flex;
+    flex-flow: column;
+    padding: 10px 30px;
 }
 
 .im {
@@ -190,13 +189,19 @@ svg {
 }
 
 .message {
-    margin: 5px 25px;
     display: flex;
+    margin: 5px 0px;
+    align-items: center;
 }
 
 .recipient-message {
-    flex-flow: row wrap;
+    flex-flow: row;
     margin-right: auto;
+    align-self: flex-start;
+}
+
+.recipient-message .avatar-message {
+    margin-right: 10px;
 }
 
 .text {
@@ -211,10 +216,16 @@ svg {
 }
 
 .sender-message {
-    flex-flow: row-reverse wrap;
+    flex-flow: row-reverse;
     margin-left: auto;
     align-self: flex-end;
 }
+
+
+.sender-message .avatar-message {
+    margin-left: 10px;
+}
+
 
 .sender-message .text {
     background: #dcf8c6;

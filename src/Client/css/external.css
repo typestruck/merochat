@@ -1,7 +1,16 @@
+body {
+        grid-template-rows: auto 1fr;
+}
+
 .center-box {
-        display: grid;
-        grid-gap: 10px;
-        justify-items: center;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-box h1, .center-box input[type="button"] {
+        margin: 20px 0px;
 }
 
 .center-box h1,

@@ -33,7 +33,6 @@ validateEmailPassword = do
 
 login :: Token -> String -> Effect Unit
 login (Token { tokenGET, tokenPOST }) redirect =  do
-        EC.log "in login"
         BC.setCookie $ SetCookie {
                 cookie : Cookie {
                         key : cookieName,

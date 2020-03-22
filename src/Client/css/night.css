@@ -22,7 +22,7 @@ h1, h2 {
 }
 
 h3, h4 {
-        color: white;
+        color: white !important;
         font-weight: bold
 }
 
@@ -43,6 +43,7 @@ input, textarea {
         border-radius: 3px;
         border: 1px solid #ccc;
         color: white;
+        background: transparent;
 }
 
 input[type="submit"], input[type="button"] {
@@ -95,12 +96,12 @@ svg.toolbar-action {
 }
 
 .CodeMirror{
-        background-color: rgb(38, 38, 38);
-                color: white;
+        background-color: rgb(38, 38, 38) !important;
+        color: white !important;
 }
 
 .CodeMirror-cursor {
-        border-left:1px solid white
+        border-left:1px solid white !important
 }
 
  .message-options {

@@ -35,6 +35,7 @@ import Server.Login.Action as SLI
 import Server.Login.Template as SLIT
 import Server.Response as SRR
 import Server.Token as ST
+import Effect.Console as EC
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Routing as SRO
@@ -45,7 +46,7 @@ import Shared.Routing as SRO
 router :: Request -> ResponseEffect
 router { headers, path, method, body }
         | DA.null path = ifAnonymous (serveTemplate SLT.template)
-        | path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) =
+        | path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) = do
                 ifAnonymous $ if method == Get then
                                         serveTemplate SLIT.template
                                 else
@@ -76,7 +77,8 @@ ifAnonymous handler = do
         { session : { userID } } <- RR.ask
         if DM.isNothing userID then
                 handler
-         else
+         else do
+                R.liftEffect $ EC.log $ show userID
                 SRR.redirect $ SRO.fromRouteAbsolute IM
 
 ifLogged :: Path -> ResponseEffect -> ResponseEffect
