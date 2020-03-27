@@ -527,7 +527,7 @@ declare alreadyExists boolean := (exists(select 1
 begin
     if exists(select 1
     from histories
-    where sender = senderID or sender = recipientID and recipient = senderID) then
+    where sender = recipientID and recipient = senderID) then
     update histories set senderArchived = false, recipientArchived = false, date = clock_timestamp() where sender = recipientID and recipient = senderID;
     else
     insert into histories

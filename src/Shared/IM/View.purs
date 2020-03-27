@@ -115,8 +115,9 @@ profile model =
 
                 toTagSpan tag = HE.span (HA.class' "tag") tag
 
+-- need this https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver to enable scroll to bottom
 history :: IMModel -> Maybe IMUser -> Html IMMessage
-history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class' "message-history") $
+history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class' "message-history") <<< HE.div (HA.class' "message-history-wrapper") $
         case chattingSuggestion of
                 Nothing -> [HE.createEmptyElement "div"]
                 Just recipient -> display recipient
@@ -130,19 +131,9 @@ history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class'
                                 HE.text content
                         ]
 
-                display (IMUser recipient@{history, description}) =
-                        map (entry sender recipient) $
-                                if DA.null history then
-                                        [HistoryMessage {
-                                                status: Read,
-                                                id: SP.fromInt (-1),
-                                                sender: recipient.id,
-                                                date: Nothing,
-                                                recipient: sender.id,
-                                                content : description
-                                        }]
-                                 else
-                                        history
+                display (IMUser recipient@{history, description})
+                        | DA.null history = [HE.div (HA.class' "message description-message") description]
+                        | otherwise = map (entry sender recipient) history
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel {chatting, suggesting}) =

@@ -3,17 +3,19 @@ module Client.IM.Contacts where
 import Prelude
 import Shared.Types
 
+import Client.IM.Scroll as CIS
+import Effect.Class (liftEffect)
 import Data.Array ((:), (!!))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.Int53 as DI
-import Data.Maybe(Maybe(..))
+import Data.Maybe (Maybe(..))
+import Effect.Aff (Aff)
 import Flame (World)
-import Effect.Aff(Aff)
 import Shared.Newtype as SN
 
 update :: World IMModel IMMessage -> IMModel -> ContactMessage -> Aff IMModel
-update _ model =
+update re model =
         case _ of
                 ResumeChat index -> resumeChat model index
 

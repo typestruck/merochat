@@ -12,7 +12,8 @@ module Client.Common(
         alert,
         getItem,
         tokenKey,
-        search
+        search,
+        scrollDown
 ) where
 
 import Prelude
@@ -74,6 +75,12 @@ querySelector selector = do
         document <- WHHD.toDocument <$> WHW.document window
         maybeElement <- WDP.querySelector (QuerySelector selector) $ WDD.toParentNode document
         DM.maybe (EE.throwException $ EE.error $ "Selector returned no nodes:" <> selector) pure maybeElement
+
+scrollDown :: String -> Effect Unit
+scrollDown selector = do
+        element <- querySelector selector
+        height <- WDE.scrollHeight element
+        WDE.setAttribute "scrollTop" (show height) element
 
 value :: Element -> Effect String
 value element = DM.maybe inputException WHHI.value $ WHHI.fromElement element
