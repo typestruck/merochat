@@ -77,9 +77,7 @@ ifAnonymous handler = do
         { session : { userID } } <- RR.ask
         if DM.isNothing userID then
                 handler
-         else do
-                R.liftEffect $ EC.log $ show userID
-                SRR.redirect $ SRO.fromRouteAbsolute IM
+         else SRR.redirect $ SRO.fromRouteAbsolute IM
 
 ifLogged :: Path -> ResponseEffect -> ResponseEffect
 ifLogged path handler = do

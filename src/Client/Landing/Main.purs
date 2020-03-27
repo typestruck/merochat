@@ -37,7 +37,6 @@ register captchaResponse = do
                                                 Right token -> enter token
                                                 Left left -> liftEffect $ do
                                                         grecaptchaReset
-                                                        EC.log $ A.printResponseFormatError left
                                                         CC.alert "Could not register. Please try again."
         where   enter token = liftEffect <<< CCE.login token $ SR.fromRouteAbsolute IM
 
