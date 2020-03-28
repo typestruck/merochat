@@ -22,7 +22,6 @@ import Effect.Class (liftEffect)
 import Unsafe.Coerce as UC
 import Web.Socket.WebSocket (WebSocket)
 
-
 tests :: TestSuite
 tests = do
         TU.suite "im chat update" $ do

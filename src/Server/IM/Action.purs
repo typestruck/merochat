@@ -7,7 +7,6 @@ import Data.Foldable as DF
 import Data.HashMap as DH
 import Server.IM.Database as SID
 import Shared.Unsafe as SU
-import Debug.Trace(spy)
 import Shared.Newtype as SN
 
 suggest :: PrimaryKey -> ServerEffect (Array IMUser)
