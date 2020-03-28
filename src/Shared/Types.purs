@@ -60,7 +60,7 @@ newtype RegisterLogin = RegisterLogin {
 
 derive instance genericRegisterLogin :: Generic RegisterLogin _
 
--- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests, since PrimaryKey don't to make it a single page application
+-- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests
 newtype Token = Token {
         tokenGET :: String,
         tokenPOST :: String
@@ -103,6 +103,12 @@ data By =
         Email String
 
 newtype PrimaryKey = PrimaryKey Int53
+
+instance primaryKeySemiring :: Semiring PrimaryKey where
+        add (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a + b)
+        zero = PrimaryKey $ DI.fromInt 0
+        mul (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a * b)
+        one = PrimaryKey $ DI.fromInt 1
 
 instance hashablePrimaryKey :: Hashable PrimaryKey where
         hash (PrimaryKey key) = DH.hash $ DI.toNumber key
@@ -365,6 +371,7 @@ instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
 
 derive instance genericHistoryMessage :: Generic HistoryMessage _
 derive instance eqHistoryMessage :: Eq HistoryMessage
+derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
 
 instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
         fromSQLRow [
@@ -401,7 +408,7 @@ newtype IMModel = IMModel {
         contacts :: Array IMUser,
         chatting :: Maybe Int,
         webSocket :: Maybe WS,
-        temporaryID :: Int,
+        temporaryID :: PrimaryKey,
         token :: Maybe String
 }
 

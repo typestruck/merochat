@@ -1,3 +1,4 @@
+-- | The entry point for routing. Controller logic is in the particular Router files.
 module Server.Router (
         runRouter,
         session

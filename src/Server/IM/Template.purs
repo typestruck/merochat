@@ -8,6 +8,7 @@ import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.HTML.Attribute as HA
+import Shared.PrimaryKey as SP
 import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
 import Data.Array as DA
@@ -27,14 +28,14 @@ template {contacts, suggestions, user} = do
         F.preMount (QuerySelector ".im") {
                 view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
                 init: IMModel {
-                        contacts,
-                        suggestions,
-                        user,
                         chatting: Nothing,
                         webSocket: Nothing,
                         token: Nothing,
-                        temporaryID: 0,
-                        suggesting: if DA.null suggestions then Nothing else Just 0
+                        temporaryID: SP.fromInt 0,
+                        suggesting: if DA.null suggestions then Nothing else Just 0,
+                        contacts,
+                        suggestions,
+                        user
                 }
         }
         where   javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"] ]
