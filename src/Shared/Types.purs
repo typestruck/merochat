@@ -452,7 +452,7 @@ instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
         show = DGRS.genericShow
 
 data ContactMessage =
-        ResumeChat Int
+        ResumeChat PrimaryKey
 
 data SuggestionMessage =
         NextSuggestion

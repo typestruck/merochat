@@ -23,6 +23,7 @@ import Flame as F
 import Foreign as FO
 import Partial.Unsafe as UP
 import Shared.IM.View as SIV
+import Client.IM.Scroll as CISR
 import Shared.WebSocketOptions (port)
 import Shared.Unsafe as SU
 import Signal.Channel as SC
@@ -66,6 +67,8 @@ main = void do
 
         editor <- loadEditor
         EU.runEffectFn2 keyHandled_ editor $ EU.mkEffectFn1 (SC.send channel <<< Just <<< CM <<< SendMessage)
+
+        CISR.scrollLastMessage
 
 update :: World IMModel IMMessage -> IMModel -> IMMessage -> Aff IMModel
 update world model =

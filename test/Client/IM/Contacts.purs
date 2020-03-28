@@ -20,16 +20,16 @@ tests = do
                 TU.test "resumeChat resets suggesting" $ do
                         IMModel { suggesting } <- CICN.resumeChat (SN.updateModel model $ _ {
                                 suggesting = Just 4455
-                        }) 23
+                        }) $ SP.fromInt 23
                         TUA.equal Nothing suggesting
 
                 TU.test "resumeChat sets chatting" $ do
                         m@(IMModel { chatting }) <- CICN.resumeChat (SN.updateModel model $ _ {
                                 chatting = Nothing
-                        }) 23
+                        }) $ SP.fromInt 23
                         TUA.equal (Just 23) chatting
 
-                        IMModel { chatting } <- CICN.resumeChat m 0
+                        IMModel { chatting } <- CICN.resumeChat m $ SP.fromInt 23
                         TUA.equal (Just 0) chatting
 
 model :: IMModel

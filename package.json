@@ -16,7 +16,7 @@
     "watch-li": "pulp --watch browserify -o output/Client/Login --src-path src/Client/Login --main Client.Login.Main --include src/Shared:src/Client/Common --to src/Client/javascript/login.bundle.js",
     "watch-im": "pulp --watch browserify -o output/Client/IM --src-path src/Client/IM --main Client.IM.Main --include src/Shared:src/Client/Common --to src/Client/javascript/im.bundle.js",
     "watch-c": "npm run watch-l & npm run watch-li & npm run watch-im",
-    "watch-sim": "npm run watch-im & npm run watch-s",
+    "watch-sim": "npm run watch-s & npm run watch-im",
     "watch": "npm run watch-s & npm run watch-c",
     "test": "pulp test"
   },

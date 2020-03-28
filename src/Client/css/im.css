@@ -181,22 +181,37 @@ svg {
 }
 
 .message-history {
-    padding: 10px 30px;
+    /* padding: 10px 30px; */
     display: flex;
-    flex-flow: column wrap;
-    overflow-y: auto;
+    flex-flow: column;
     justify-content: flex-end;
+    position: relative;
+}
+
+.message-history-wrapper {
+    overflow-y: auto;
+    top: 10px;
+    bottom: 10px;
+    left: 30px;
+    right: 0px;
+    position: absolute;
+    display: flex;
+    flex-flow: column;
+}
+
+.message-history-wrapper > :first-child:not(.description-message) {
+    margin-top: auto !important;
 }
 
 .message {
     display: flex;
-    margin: 5px 0px;
+    margin: 10px;
     align-items: center;
 }
 
 .recipient-message {
     flex-flow: row;
-    margin-right: auto;
+    /* margin-right: auto; */
     align-self: flex-start;
 }
 
@@ -217,7 +232,7 @@ svg {
 
 .sender-message {
     flex-flow: row-reverse;
-    margin-left: auto;
+    /* margin-left: auto; */
     align-self: flex-end;
 }
 

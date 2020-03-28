@@ -29,27 +29,16 @@
     "purescript-web-uievents": "^2.0.0",
     "purescript-web-storage": "^3.0.0",
     "purescript-web-socket": "^2.0.0",
-    "purescript-unordered-collections": "^1.8.3"
+    "purescript-unordered-collections": "^1.8.3",
+    "purescript-web-dom" :"^4.0.1",
+    "purescript-crypto": "^2.0.1",
+    "purescript-simple-jwt": "^1.0.2",
+    "purescript-js-date": "^6.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",
     "purescript-routing": "^8.0.0",
     "purescript-test-unit": "^14.0.0",
-    "purescript-debug": "^4.0.0",
-    "purescript-crypto": "^2.0.1",
-    "purescript-simple-jwt": "^1.0.2",
-    "purescript-js-date": "^6.0.0"
-  },
-  "resolutions": {
-    "purescript-web-dom": "2 - 4",
-    "purescript-web-storage": "^3.0.0",
-    "purescript-typelevel-prelude": "^5.0.0",
-    "purescript-node-buffer": "^6.0.0",
-    "purescript-web-file": "^2.0.0",
-    "purescript-foreign-object": "^2.0.3",
-    "purescript-record": "^2.0.1",
-    "purescript-web-events": "^2.0.0",
-    "purescript-argonaut-core": "^5.0.1",
-    "purescript-web-html": "^2.0.0"
+    "purescript-debug": "^4.0.0"
   }
 }

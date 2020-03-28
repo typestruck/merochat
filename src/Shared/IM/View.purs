@@ -2,25 +2,21 @@ module Shared.IM.View where
 
 import Prelude
 import Shared.Types
-import Effect.Now as EN
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.Common as DSC
 import Shared.Unsafe((!@))
-import Effect (Effect)
-import Flame (QuerySelector(..), Html)
-import Flame as F
-import Effect.Unsafe as EU
+import Flame (Html)
 import Data.Tuple(Tuple(..))
 import Flame.HTML.Attribute as HA
-import Shared.PrimaryKey as SP
 import Data.Int53 as DI
 import Debug.Trace (spy)
 import Data.Enum as DE
 import Data.Foldable as DF
 import Debug.Trace(spy)
 import Flame.HTML.Element as HE
+import Data.Array as DA
 
 view :: IMModel -> Html IMMessage
 view model@(IMModel { suggestions, suggesting, chatting, contacts }) = HE.div (HA.class' "im") [
@@ -116,7 +112,7 @@ profile model =
                 toTagSpan tag = HE.span (HA.class' "tag") tag
 
 history :: IMModel -> Maybe IMUser -> Html IMMessage
-history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class' "message-history") $
+history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class' "message-history") <<< HE.div (HA.class' "message-history-wrapper") $
         case chattingSuggestion of
                 Nothing -> [HE.createEmptyElement "div"]
                 Just recipient -> display recipient
@@ -130,19 +126,9 @@ history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class'
                                 HE.text content
                         ]
 
-                display (IMUser recipient@{history, description}) =
-                        map (entry sender recipient) $
-                                if DA.null history then
-                                        [HistoryMessage {
-                                                status: Read,
-                                                id: SP.fromInt (-1),
-                                                sender: recipient.id,
-                                                date: Nothing,
-                                                recipient: sender.id,
-                                                content : description
-                                        }]
-                                 else
-                                        history
+                display (IMUser recipient@{history, description})
+                        | DA.null history = [HE.div (HA.class' "message description-message") description]
+                        | otherwise = map (entry sender recipient) history
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel {chatting, suggesting}) =
@@ -154,7 +140,7 @@ chat (IMModel {chatting, suggesting}) =
 search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< map contactEntry $ DA.sortBy compareDates contacts
         where   getDate history = do
                         HistoryMessage {date} <- DA.last history
                         MDateTime md <- date
@@ -164,8 +150,8 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
                 countUnread total (HistoryMessage {status, sender}) = total + DE.fromEnum (sender /= userID && status == Unread)
                 showUnreadCount history = let count = DF.foldl countUnread 0 history in if count == 0 then "" else show count
 
-                contactEntry index (IMUser { name, avatar, headline, history }) =
-                        HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat index] [
+                contactEntry (IMUser { id, name, avatar, headline, history }) =
+                        HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
                                 HE.img' [HA.class' "avatar-contact-list", HA.src avatar],
                                 HE.div (HA.class' "contact-profile") [
                                         HE.strong_ name,
