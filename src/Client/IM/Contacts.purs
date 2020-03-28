@@ -2,26 +2,21 @@ module Client.IM.Contacts where
 
 import Prelude
 import Shared.Types
-
-import Client.IM.Scroll as CIS
-import Effect.Class (liftEffect)
-import Data.Array ((:), (!!))
-import Data.Array as DA
-import Data.Array.NonEmpty as DAN
-import Data.Int53 as DI
+import Debug.Trace
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Flame (World)
 import Shared.Newtype as SN
+import Data.Array as DA
 
 update :: World IMModel IMMessage -> IMModel -> ContactMessage -> Aff IMModel
-update re model =
+update _ model =
         case _ of
-                ResumeChat index -> resumeChat model index
+                ResumeChat id -> resumeChat model id
 
-resumeChat :: IMModel -> Int -> Aff IMModel
-resumeChat model index =
+resumeChat :: IMModel -> PrimaryKey -> Aff IMModel
+resumeChat model@(IMModel {contacts}) searchID =
         pure <<< SN.updateModel model $ _ {
                 suggesting = Nothing,
-                chatting = Just index
+                chatting = DA.findIndex (\(IMUser {id}) -> searchID == id) contacts
         }

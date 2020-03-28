@@ -111,7 +111,6 @@ profile model =
 
                 toTagSpan tag = HE.span (HA.class' "tag") tag
 
--- need this https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver to enable scroll to bottom
 history :: IMModel -> Maybe IMUser -> Html IMMessage
 history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class' "message-history") <<< HE.div (HA.class' "message-history-wrapper") $
         case chattingSuggestion of
@@ -141,7 +140,7 @@ chat (IMModel {chatting, suggesting}) =
 search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< map contactEntry $ DA.sortBy compareDates contacts
         where   getDate history = do
                         HistoryMessage {date} <- DA.last history
                         MDateTime md <- date
@@ -151,8 +150,8 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
                 countUnread total (HistoryMessage {status, sender}) = total + DE.fromEnum (sender /= userID && status == Unread)
                 showUnreadCount history = let count = DF.foldl countUnread 0 history in if count == 0 then "" else show count
 
-                contactEntry index (IMUser { name, avatar, headline, history }) =
-                        HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat index] [
+                contactEntry (IMUser { id, name, avatar, headline, history }) =
+                        HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
                                 HE.img' [HA.class' "avatar-contact-list", HA.src avatar],
                                 HE.div (HA.class' "contact-profile") [
                                         HE.strong_ name,
