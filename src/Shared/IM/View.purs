@@ -2,25 +2,21 @@ module Shared.IM.View where
 
 import Prelude
 import Shared.Types
-import Effect.Now as EN
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.Common as DSC
 import Shared.Unsafe((!@))
-import Effect (Effect)
-import Flame (QuerySelector(..), Html)
-import Flame as F
-import Effect.Unsafe as EU
+import Flame (Html)
 import Data.Tuple(Tuple(..))
 import Flame.HTML.Attribute as HA
-import Shared.PrimaryKey as SP
 import Data.Int53 as DI
 import Debug.Trace (spy)
 import Data.Enum as DE
 import Data.Foldable as DF
 import Debug.Trace(spy)
 import Flame.HTML.Element as HE
+import Data.Array as DA
 
 view :: IMModel -> Html IMMessage
 view model@(IMModel { suggestions, suggesting, chatting, contacts }) = HE.div (HA.class' "im") [
