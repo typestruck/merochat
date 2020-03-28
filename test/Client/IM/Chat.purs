@@ -11,12 +11,14 @@ import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Flame (World)
 import Partial.Unsafe as PU
+import Effect.Now as EN
 import Shared.Unsafe as SN
 import Test.Unit (TestSuite)
 import Shared.Newtype as SN
 import Data.Either(Either(..))
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
+import Effect.Class (liftEffect)
 import Unsafe.Coerce as UC
 import Web.Socket.WebSocket (WebSocket)
 
@@ -38,7 +40,7 @@ tests = do
                         let index = SN.unsafeFromJust "test" chatting
                             IMUser user = SN.unsafeFromJust "test" (contacts !! index)
 
-                        TUA.equal [HistoryMessage {status:Unread, id: SP.fromInt 1, content, sender : user.id}] user.history
+                        TUA.equal [HistoryMessage {date: Nothing, recipient: user.id, status:Unread, id: SP.fromInt 1, content, sender : user.id}] user.history
 
                 let IMModel { suggestions : modelSuggestions } = model
 
@@ -74,7 +76,12 @@ tests = do
                         IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [SN.updateUser anotherIMUser $ _ {
                                         history = [HistoryMessage {
-                                                status:Unread, messageID, userID, content
+                                                status: Unread,
+                                                date: Nothing,
+                                                id: messageID,
+                                                recipient: userID,
+                                                sender: userID,
+                                                content
                                         }]
                                 }]
                         }) $ Received {
@@ -83,25 +90,32 @@ tests = do
                         }
                         TUA.equal (getMessageID contacts) $ Just newMessageID
 
+                date <- map MDateTime (liftEffect $ EN.nowDateTime)
+
                 TU.test "receiveMessage adds message to history" $ do
+
                         IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [anotherIMUser]
                         }) $ ClientMessage {
+                                date,
                                 id: newMessageID,
                                 content,
                                 user: Right userID
                         }
                         TUA.equal (getHistory contacts) <<< Just $ HistoryMessage {
                                 status: Unread,
-                                messageID: newMessageID,
+                                id: newMessageID,
                                 content,
-                                userID
+                                sender: userID,
+                                recipient: userID,
+                                date: Just date
                         }
 
                 TU.test "receiveMessage adds contact if new" $ do
                         IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = []
                         }) $ ClientMessage {
+                                date,
                                 id: newMessageID,
                                 content,
                                 user: Left anotherIMUser
