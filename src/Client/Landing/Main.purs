@@ -2,18 +2,19 @@ module Client.Landing.Main where
 
 import Prelude
 
-import Client.Common as CC
+import Client.Common.DOM as CCD
 import Client.Common.External as CCE
+import Client.Common.Notification as CCN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
+import Web.Event.Internal.Types (Event)
 import Effect.Aff as EA
-import Effect.Console as EC
-import Affjax as A
 import Effect.Class (liftEffect)
 import Shared.Unsafe as SU
 import Data.Either (Either(..))
 import Shared.Routing as SR
+import Client.Common.Network as CCNT
 import Shared.Types
 import Web.UIEvent.MouseEvent.EventTypes (click)
 import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
@@ -32,25 +33,26 @@ register captchaResponse = do
                                 grecaptchaExecute
                          else
                                 EA.launchAff_ $ do
-                                        response <- CC.post (SR.fromRouteAbsolute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse })
+                                        response <- CCNT.post (SR.fromRouteAbsolute Register) (RegisterLogin $ rl { captchaResponse = captchaResponse })
                                         case response of
                                                 Right token -> enter token
                                                 Left left -> liftEffect $ do
                                                         grecaptchaReset
-                                                        CC.alert "Could not register. Please try again."
+                                                        CCN.alert "Could not register. Please try again."
         where   enter token = liftEffect <<< CCE.login token $ SR.fromRouteAbsolute IM
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit
 completeRegistration captchaResponse = register $ Just captchaResponse
 
+registerOnEnter :: Event -> Effect Unit
 registerOnEnter event = do
         let pressed = WUK.key <<< SU.unsafeFromJust "registerOnEnter" $ WUK.fromEvent event
         when (pressed == "Enter") $ register Nothing
 
 main :: Effect Unit
 main = do
-        registerButton <- CC.querySelector "#register"
-        signUpDiv <- CC.querySelector ".sign-up"
-        CC.addEventListener signUpDiv keyup registerOnEnter
-        CC.addEventListener registerButton click (const (register Nothing))
+        registerButton <- CCD.querySelector "#register"
+        signUpDiv <- CCD.querySelector ".sign-up"
+        CCD.addEventListener signUpDiv keyup registerOnEnter
+        CCD.addEventListener registerButton click (const (register Nothing))

@@ -3,10 +3,11 @@ module Client.IM.Main where
 import Prelude
 import Shared.Types
 
-import Client.Common (tokenKey)
-import Client.Common as CC
+import Client.Common.Storage (tokenKey)
+import Client.Common.Storage as CCS
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
+import Client.IM.Scroll as CISR
 import Client.IM.Suggestion as CIS
 import Control.Monad.Except as CME
 import Data.Argonaut.Core as DAC
@@ -23,16 +24,15 @@ import Flame as F
 import Foreign as FO
 import Partial.Unsafe as UP
 import Shared.IM.View as SIV
-import Client.IM.Scroll as CISR
-import Shared.WebSocketOptions (port)
+import Shared.JSON as SJ
 import Shared.Unsafe as SU
+import Shared.WebSocketOptions (port)
 import Signal.Channel as SC
 import Web.Event.EventTarget as WET
 import Web.Socket.Event.EventTypes (onOpen, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
-import Shared.JSON as SJ
 
 foreign import data Editor :: Type
 foreign import loadEditor :: Effect Editor
@@ -46,7 +46,7 @@ main = void do
                 update
         }
 
-        token <- CC.getItem tokenKey
+        token <- CCS.getItem tokenKey
         webSocket <- WSW.create ("ws://localhost:" <> show port) []
         SC.send channel <<< Just <<< MM $ SetWebSocket webSocket
         SC.send channel <<< Just <<< MM $ SetToken token

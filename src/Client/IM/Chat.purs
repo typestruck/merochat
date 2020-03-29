@@ -7,7 +7,6 @@ module Client.IM.Chat(
         receiveMessage
 ) where
 
-import Client.Common
 import Client.Common.Types
 import Debug.Trace
 import Prelude
