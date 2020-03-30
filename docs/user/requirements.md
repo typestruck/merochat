@@ -10,7 +10,7 @@ User is an individual account on the application.
 
 3. [Login](#login)
 
-4. [Logout](#logout)
+4. [Logout](#logout) ([#39](https://github.com/easafe/melanchat/issues/39))
 
 5. [Recover Password](#recover-password)
 
@@ -266,7 +266,7 @@ Mockup of settings page:
 
     d) Update message status(see [IM](../im/requirements.md#chat-history)); unchecked by default
 
-    e) Display last message for each User in the contact list(see [IM](../im/requirements.md#contact-list)); unchecked by default, meaning headlines are displayed instead
+    e) Display headlines for each User in the contact list(see [IM](../im/requirements.md#contact-list)); unchecked by default, meaning last messages are displayed by default
 
     f) Update message date(see [IM](../im/requirements.md#chat-history)); unchecked by default
 

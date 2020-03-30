@@ -108,7 +108,7 @@ Mockup of contact list component ([#9](https://github.com/easafe/melanchat/issue
 
 2. Contact name
 
-3. Contact headline or last message message sent(see [Settings](../user/requirements.md#update-settings))
+3. Contact headline or last message message sent ([#44](https://github.com/easafe/melanchat/issues/44)) (see [Settings](../user/requirements.md#update-settings))
 
 4. Number of unread messages(if contact is not muted)
 
