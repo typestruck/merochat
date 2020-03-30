@@ -72,7 +72,7 @@ sendMessage webSocketHandler content =
                         temporaryID,
                         contacts
                 }) -> do
-                        now <- liftEffect EN.nowDateTime
+                        date <- liftEffect $ map MDateTime EN.nowDateTime
                         let     recipient@(IMUser { id: recipientID, history }) = contacts !@ chatting
                                 newTemporaryID = temporaryID + SP.fromInt 1
                                 updatedChatting = SN.updateUser recipient $ _ {
@@ -82,7 +82,7 @@ sendMessage webSocketHandler content =
                                                 status: Unread,
                                                 sender: senderID,
                                                 recipient: recipientID,
-                                                date: Just $ MDateTime now,
+                                                date,
                                                 content
                                         }
                                 }
@@ -109,7 +109,7 @@ receiveMessage model@(IMModel {
 }) =
         case _ of
                 ClientMessage m@{ id, user, content, date } ->
-                        case SU.unsafeFromJust "receiveMessage" <<< updateHistoryMessage contacts recipientID $ m { date = Just date } of
+                        case SU.unsafeFromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
                                 New contacts' -> do
                                         --new messages bubble the contact to the top
                                         let added = DA.head contacts'
@@ -139,7 +139,7 @@ receiveMessage model@(IMModel {
 updateHistoryMessage :: Array IMUser -> PrimaryKey -> {
         id :: PrimaryKey,
         user :: Either IMUser PrimaryKey,
-        date :: Maybe MDateTime,
+        date :: MDateTime,
         content :: String
 } -> Maybe (ReceivedUser (Array IMUser))
 updateHistoryMessage contacts recipientID { id, user, date, content } =

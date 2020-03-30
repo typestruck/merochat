@@ -14,6 +14,7 @@ import Partial.Unsafe as PU
 import Effect.Now as EN
 import Shared.Unsafe as SN
 import Test.Unit (TestSuite)
+import Shared.IM.Types
 import Shared.Newtype as SN
 import Data.Either(Either(..))
 import Test.Unit as TU
@@ -28,18 +29,26 @@ tests = do
                 let content = "test"
 
                 TU.test "sendMessage bumps temporary id" $ do
-                        m@(IMModel {temporaryID}) <- CIC.sendMessage webSocketHandler model content
-                        TUA.equal 1 temporaryID
+                        m@(IMModel {temporaryID}) <- CIC.sendMessage webSocketHandler content model
+                        TUA.equal (SP.fromInt 1) temporaryID
 
-                        IMModel {temporaryID} <- CIC.sendMessage webSocketHandler m content
-                        TUA.equal 2 temporaryID
+                        IMModel {temporaryID} <- CIC.sendMessage webSocketHandler content m
+                        TUA.equal (SP.fromInt 2) temporaryID
 
                 TU.test "sendMessage adds message to history" $ do
-                        IMModel {contacts, chatting} <- CIC.sendMessage webSocketHandler model content
+                        date <- liftEffect $ map MDateTime EN.nowDateTime
+                        IMModel {contacts, chatting} <- CIC.sendMessage webSocketHandler content model
                         let index = SN.unsafeFromJust "test" chatting
                             IMUser user = SN.unsafeFromJust "test" (contacts !! index)
 
-                        TUA.equal [HistoryMessage {date: Nothing, recipient: user.id, status:Unread, id: SP.fromInt 1, content, sender : user.id}] user.history
+                        TUA.equal [HistoryMessage {
+                                date,
+                                recipient: user.id,
+                                status:Unread,
+                                id: SP.fromInt 1,
+                                content,
+                                sender: user.id
+                        }] user.history
 
                 let IMModel { suggestions : modelSuggestions } = model
 
@@ -67,19 +76,21 @@ tests = do
                         }
                         TUA.equal (Just 0) chatting
 
-                let     IMUser { id: userID } = anotherIMUser
+                let     IMUser { id: senderID } = anotherIMUser
+                        IMUser { id: recipientID } = imUser
                         messageID = SP.fromInt 1
                         newMessageID = SP.fromInt 101
 
                 TU.test "receiveMessage substitutes temporary id" $ do
+                        date <- liftEffect $ map MDateTime EN.nowDateTime
                         IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [SN.updateUser anotherIMUser $ _ {
                                         history = [HistoryMessage {
                                                 status: Unread,
-                                                date: Nothing,
+                                                date,
                                                 id: messageID,
-                                                recipient: userID,
-                                                sender: userID,
+                                                recipient: recipientID,
+                                                sender: senderID,
                                                 content
                                         }]
                                 }]
@@ -89,28 +100,27 @@ tests = do
                         }
                         TUA.equal (getMessageID contacts) $ Just newMessageID
 
-                date <- map MDateTime (liftEffect $ EN.nowDateTime)
-
                 TU.test "receiveMessage adds message to history" $ do
-
+                        date <- liftEffect $ map MDateTime EN.nowDateTime
                         IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [anotherIMUser]
                         }) $ ClientMessage {
                                 date,
                                 id: newMessageID,
                                 content,
-                                user: Right userID
+                                user: Right senderID
                         }
                         TUA.equal (getHistory contacts) <<< Just $ HistoryMessage {
                                 status: Unread,
                                 id: newMessageID,
                                 content,
-                                sender: userID,
-                                recipient: userID,
-                                date: Just date
+                                sender: senderID,
+                                recipient: recipientID,
+                                date
                         }
 
                 TU.test "receiveMessage adds contact if new" $ do
+                        date <- liftEffect $ map MDateTime EN.nowDateTime
                         IMModel {contacts} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = []
                         }) $ ClientMessage {
@@ -119,9 +129,19 @@ tests = do
                                 content,
                                 user: Left anotherIMUser
                         }
-                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [HistoryMessage { status:Unread, messageID : newMessageID, content, userID }]}
+                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [
+                                HistoryMessage {
+                                        status:Unread,
+                                        id: newMessageID,
+                                        sender: senderID,
+                                        recipient: recipientID,
+                                        content,
+                                        date
+                                }
+                        ]}
 
                 TU.test "receiveMessage set chatting if message comes from current suggestion" $ do
+                        date <- liftEffect $ map MDateTime EN.nowDateTime
                         IMModel {contacts, chatting} <- CIC.receiveMessage (SN.updateModel model $ _ {
                                 contacts = [],
                                 chatting = Nothing,
@@ -129,14 +149,24 @@ tests = do
                                 suggestions = [anotherIMUser]
                         }) $ ClientMessage {
                                 id: newMessageID,
+                                user: Left anotherIMUser,
                                 content,
-                                user: Left anotherIMUser
+                                date
                         }
-                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [HistoryMessage { status:Unread, messageID : newMessageID, content, userID }]}
+                        TUA.equal (DA.head contacts) <<< Just $ SN.updateUser anotherIMUser $ _ { history = [HistoryMessage
+                                {
+                                        status:Unread,
+                                        id: newMessageID,
+                                        sender: senderID,
+                                        recipient: recipientID,
+                                        date,
+                                        content
+                                }]
+                        }
                         TUA.equal chatting $ Just 0
 
         where   getHistory contacts = do
-                        IMUser {history} <- DA.head contacts
+                        IMUser { history } <- DA.head contacts
                         DA.head history
                 getMessageID contacts = do
                         HistoryMessage { id } <- getHistory contacts
@@ -146,7 +176,7 @@ model :: IMModel
 model = IMModel {
         user: imUser,
         suggestions: [imUser],
-        temporaryID : 0,
+        temporaryID : SP.fromInt 0,
         suggesting: Just 0,
         token: Just "",
         contacts: [imUser],

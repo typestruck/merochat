@@ -79,7 +79,7 @@ tests = do
                                 maybeUser <- SDU.userBy (Email email)
                                 case maybeUser of
                                         Nothing -> R.liftAff $ TU.failure "user not created!"
-                                        Just (User user) -> do
+                                        Just (RegisterLoginUser user) -> do
                                                 hashed <- ST.hashPassword password
                                                 R.liftAff $ TUA.equal hashed user.password
 
@@ -91,7 +91,7 @@ tests = do
                                         password,
                                         captchaResponse: Nothing
                                 }
-                                User {id} <- SU.unsafeFromJust "test" <$> (SDU.userBy $ Email email)
+                                RegisterLoginUser {id} <- SU.unsafeFromJust "test" <$> (SDU.userBy $ Email email)
                                 count <- SD.scalar' (Query "select cast(count(1) as integer) from karmas where target = $1 and current = 5") $ Row1 id
                                 R.liftAff $ TUA.equal 1 count
 

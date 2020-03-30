@@ -91,7 +91,7 @@ newtype HistoryMessage = HistoryMessage {
         id :: PrimaryKey,
         sender :: PrimaryKey,
         recipient :: PrimaryKey,
-        date :: Maybe MDateTime,
+        date :: MDateTime,
         content :: String,
         status :: MessageStatus
 }
@@ -271,17 +271,10 @@ instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
                 id <- parsePrimaryKey foreignID
                 sender <- parsePrimaryKey foreignSender
                 recipient <- parsePrimaryKey foreignRecipient
-                date <- Just <<< MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
+                date <- MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
                 content <- F.readString foreignContent
                 status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
-                pure $ HistoryMessage {
-                        id,
-                        sender,
-                        recipient,
-                        date,
-                        content,
-                        status
-                }
+                pure $ HistoryMessage { id, sender, recipient, date, content, status }
         fromSQLRow _ = Left "missing or extra fields from users table"
 
 --thats a lot of work...
