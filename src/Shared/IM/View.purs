@@ -7,10 +7,12 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.Common as DSC
 import Shared.Unsafe((!@))
+import Shared.Unsafe as SU
 import Flame (Html)
 import Data.Tuple(Tuple(..))
 import Flame.HTML.Attribute as HA
 import Data.Int53 as DI
+import Data.Newtype as DN
 import Debug.Trace (spy)
 import Data.Enum as DE
 import Data.Foldable as DF
@@ -146,8 +148,10 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
                         pure md
                 compareDates (IMUser user) (IMUser anotherUser) = compare (getDate anotherUser.history) (getDate user.history)
 
-                countUnread total (HistoryMessage {status, sender}) = total + DE.fromEnum (sender /= userID && status == Unread)
+                countUnread total (HistoryMessage { status, sender }) = total + DE.fromEnum (sender /= userID && status == Unread)
                 showUnreadCount history = let count = DF.foldl countUnread 0 history in if count == 0 then "" else show count
+                --only works for text messages!
+                lastMessage = _.content <<< DN.unwrap <<< SU.unsafeFromJust "lastMessage" <<< DA.last
 
                 contactEntry (IMUser { id, name, avatar, headline, history }) =
                         HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
@@ -156,7 +160,7 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
                                         HE.strong_ name,
                                         HE.br,
                                         --maybe the last sent message?
-                                        HE.i (HA.class' "contact-list-description") headline
+                                        HE.i (HA.class' "contact-list-description") $ lastMessage history
                                 ],
                                 HE.div (HA.class' "menu-button chat-options") [
                                         HE.text $ showUnreadCount history,
