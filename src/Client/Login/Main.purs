@@ -3,7 +3,9 @@ module Client.Login.Main where
 import Prelude
 import Shared.Types
 
-import Client.Common as CC
+import Client.Common.Network as CCNT
+import Client.Common.Location as CCL
+import Client.Common.DOM as CCD
 import Client.Common.External as CCE
 import Data.Either as DE
 import Data.Maybe (Maybe(..))
@@ -23,10 +25,10 @@ login = do
         case maybeRegisterLogin of
                 Nothing -> pure unit
                 Just registerLogin -> EA.launchAff_ $ do
-                        token <- CC.post' (SR.fromRouteAbsolute $ Login { next: Nothing }) registerLogin
+                        token <- CCNT.post' (SR.fromRouteAbsolute $ Login { next: Nothing }) registerLogin
                         liftEffect $ do
                                 -- the location to go after login is either the query parameter next or /im
-                                redirect <- SR.toRoute <$> CC.search
+                                redirect <- SR.toRoute <$> CCL.search
                                 CCE.login token $ DE.either (const defaultNext) SR.fromRouteAbsolute redirect
         where   defaultNext = SR.fromRouteAbsolute IM
 
@@ -37,7 +39,7 @@ loginOnEnter event = do
 
 main :: Effect Unit
 main = do
-        loginButton <- CC.querySelector "#login"
-        signUpDiv <- CC.querySelector ".box-action"
-        CC.addEventListener signUpDiv keyup loginOnEnter
-        CC.addEventListener loginButton click (const login)
+        loginButton <- CCD.querySelector "#login"
+        signUpDiv <- CCD.querySelector ".box-action"
+        CCD.addEventListener signUpDiv keyup loginOnEnter
+        CCD.addEventListener loginButton click (const login)

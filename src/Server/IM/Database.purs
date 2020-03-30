@@ -3,6 +3,7 @@ module Server.IM.Database where
 import Prelude
 import Server.Types
 import Shared.Types
+import Shared.IM.Types
 import Data.Tuple (Tuple(..))
 import Data.Either(Either(..))
 import Data.Int53 (Int53)

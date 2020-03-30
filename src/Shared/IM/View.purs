@@ -1,7 +1,7 @@
 module Shared.IM.View where
 
 import Prelude
-import Shared.Types
+import Shared.IM.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -142,8 +142,7 @@ search model = HE.div' $ HA.class' "search"
 contactList :: IMModel -> Html IMMessage
 contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< map contactEntry $ DA.sortBy compareDates contacts
         where   getDate history = do
-                        HistoryMessage {date} <- DA.last history
-                        MDateTime md <- date
+                        HistoryMessage {date: MDateTime md} <- DA.last history
                         pure md
                 compareDates (IMUser user) (IMUser anotherUser) = compare (getDate anotherUser.history) (getDate user.history)
 

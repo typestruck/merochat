@@ -5,14 +5,13 @@ import Server.Types
 
 import Data.Map as DM
 import Effect (Effect)
-import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Ref as ER
 import HTTPure as H
 import Server.Configuration as CF
 import Server.Database as SD
-import Server.Routing as SR
+import Server.Router as SR
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events as SWE

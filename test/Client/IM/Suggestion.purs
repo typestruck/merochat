@@ -12,6 +12,7 @@ import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 import Shared.PrimaryKey as SP
+import Shared.IM.Types
 import Test.Unit.Main as TUM
 
 tests :: TestSuite
@@ -45,13 +46,12 @@ tests = do
                         }
                         TUA.equal Nothing chatting
 
-
 model :: IMModel
 model = IMModel {
         contacts: [],
         user: imUser,
         suggestions: [],
-        temporaryID : 0,
+        temporaryID : SP.fromInt 0,
         token: Nothing,
         webSocket: Nothing,
         suggesting: Just 0,

@@ -2,9 +2,9 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Types
+import Shared.IM.Types
 import Shared.Types
 
-import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Either (Either(..))
 import Data.Int53 (Int53)
 import Data.Map (Map)
@@ -23,7 +23,6 @@ import Data.Tuple(Tuple(..))
 import Run.Except as RE
 import Run.Reader as RR
 import Server.IM.Database as SID
-import Debug.Trace(spy)
 import Server.Token as ST
 import Server.WebSocket (WebSocketConnection, WebSocketMessage(..), CloseCode, CloseReason)
 import Server.WebSocket as SW

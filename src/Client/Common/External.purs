@@ -4,26 +4,27 @@ import Prelude
 
 import Browser.Cookie as BC
 import Browser.Cookies.Data (CookieOpts(..), SetCookie(..), Cookie(..))
-import Client.Common (tokenKey)
-import Client.Common as CC
+import Client.Common.Storage (tokenKey)
+import Client.Common.Storage as CCS
+import Client.Common.DOM as CCD
+import Client.Common.Location as CCL
+import Client.Common.Notification as CCN
 import Data.Maybe (Maybe(..))
 import Data.String as DS
-import Effect.Console as EC
 import Effect (Effect)
-import Debug.Trace(spy)
 import Shared.Types (RegisterLogin(..), Token(..))
 import Shared.Cookies (cookieName)
 
 -- | Abstracts the validation common to register and login
 validateEmailPassword :: Effect (Maybe RegisterLogin)
 validateEmailPassword = do
-        emailElement <- CC.querySelector "#email"
-        passwordElement <- CC.querySelector "#password"
-        email <- CC.value emailElement
-        password <- CC.value passwordElement
+        emailElement <- CCD.querySelector "#email"
+        passwordElement <- CCD.querySelector "#password"
+        email <- CCD.value emailElement
+        password <- CCD.value passwordElement
 
         if DS.null email || DS.null password then do
-                CC.alert "Email and password are mandatory"
+                CCN.alert "Email and password are mandatory"
                 pure Nothing
          else pure <<< Just $ RegisterLogin {
                                 email: email,
@@ -48,5 +49,5 @@ login (Token { tokenGET, tokenPOST }) redirect =  do
                         path : Just "/"
                 }
         }
-        CC.setItem tokenKey tokenPOST
-        CC.setLocation redirect
+        CCS.setItem tokenKey tokenPOST
+        CCL.setLocation redirect

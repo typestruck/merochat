@@ -1,7 +1,7 @@
 module Client.IM.Suggestion where
 
 import Prelude
-import Shared.Types
+import Shared.IM.Types
 import Shared.Newtype as SN
 import Data.Array as DA
 import Data.Maybe (Maybe(..))

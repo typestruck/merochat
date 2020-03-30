@@ -1,6 +1,7 @@
 module Client.IM.Contacts where
 
 import Prelude
+import Shared.IM.Types
 import Shared.Types
 import Debug.Trace
 import Data.Maybe (Maybe(..))

@@ -13,6 +13,7 @@ import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 import Test.Unit.Main as TUM
+import Shared.IM.Types
 
 tests :: TestSuite
 tests = do
@@ -26,18 +27,18 @@ tests = do
                 TU.test "resumeChat sets chatting" $ do
                         m@(IMModel { chatting }) <- CICN.resumeChat (SN.updateModel model $ _ {
                                 chatting = Nothing
-                        }) $ SP.fromInt 23
-                        TUA.equal (Just 23) chatting
+                        }) $ SP.fromInt 32
+                        TUA.equal (Just 1) chatting
 
                         IMModel { chatting } <- CICN.resumeChat m $ SP.fromInt 23
                         TUA.equal (Just 0) chatting
 
 model :: IMModel
 model = IMModel {
-        contacts: [],
+        contacts: [imUser, SN.updateUser imUser $ _ { id = SP.fromInt 32 }],
         user: imUser,
         suggestions: [],
-        temporaryID : 0,
+        temporaryID : SP.fromInt 0,
         token: Nothing,
         webSocket: Nothing,
         suggesting: Just 0,
