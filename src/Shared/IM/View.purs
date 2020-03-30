@@ -7,6 +7,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.Common as DSC
 import Shared.Unsafe((!@))
+import Shared.Unsafe as SU
 import Flame (Html)
 import Data.Tuple(Tuple(..))
 import Flame.HTML.Attribute as HA
