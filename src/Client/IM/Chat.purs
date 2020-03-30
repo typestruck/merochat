@@ -11,6 +11,7 @@ import Client.Common.Types
 import Debug.Trace
 import Prelude
 import Shared.Types
+import Shared.IM.Types
 
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Encode.Generic.Rep as DAEGR

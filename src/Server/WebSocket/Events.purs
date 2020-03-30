@@ -2,6 +2,7 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Either (Either(..))

@@ -1,7 +1,7 @@
 module Client.IM.Main where
 
 import Prelude
-import Shared.Types
+import Shared.IM.Types
 
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS

@@ -1,7 +1,7 @@
 module Shared.IM.View where
 
 import Prelude
-import Shared.Types
+import Shared.IM.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM

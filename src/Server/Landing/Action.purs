@@ -59,7 +59,7 @@ register remoteIP (RegisterLogin registerLogin) = do
                                         SRR.throwBadRequest response.statusText
                         Left left -> SRR.throwInternalError $ RF.printResponseFormatError left
          else
-                 finish
+                finish
         where
                 finish = do
                         name <- SB.generateName

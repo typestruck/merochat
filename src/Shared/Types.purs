@@ -41,11 +41,7 @@ import Partial.Unsafe as PU
 import Web.Socket.WebSocket (WebSocket)
 
 foreign import fromInt53 :: Int53 -> Json
-foreign import fromJSDate :: JSDate -> Json
-foreign import fromWS :: WebSocket -> Json
 foreign import toInt53 :: Json -> Int53
-foreign import toWS :: Json -> WS
-foreign import eqWS :: WebSocket -> WebSocket -> Boolean
 
 type BasicUser fields = {
         id :: PrimaryKey,
@@ -55,16 +51,6 @@ type BasicUser fields = {
         gender :: Maybe String |
         fields
 }
-
-type BasicMessage fields = {
-        id :: PrimaryKey,
-        content :: String |
-        fields
-}
-
-newtype PrimaryKey = PrimaryKey Int53
-
-newtype WS = WS WebSocket
 
 newtype User = User (BasicUser (
         email :: String,
@@ -76,28 +62,7 @@ newtype User = User (BasicUser (
         birthday :: Maybe Date
 ))
 
---fields needed by the IM page
-newtype IMUser = IMUser (BasicUser (
-        avatar :: String,
-        country :: Maybe String,
-        languages :: Array String,
-        tags :: Array String,
-        age :: Maybe Int,
-        message :: String,
-        history :: Array HistoryMessage
-))
-
-newtype IMModel = IMModel {
-        user :: IMUser,
-        --a few IMUser fields are not needed for suggestions - different type?
-        suggestions :: Array IMUser,
-        suggesting :: Maybe Int,
-        contacts :: Array IMUser,
-        chatting :: Maybe Int,
-        webSocket :: Maybe WS,
-        temporaryID :: PrimaryKey,
-        token :: Maybe String
-}
+newtype PrimaryKey = PrimaryKey Int53
 
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin {
@@ -112,17 +77,6 @@ newtype Token = Token {
         tokenPOST :: String
 }
 
-newtype HistoryMessage = HistoryMessage {
-        id :: PrimaryKey,
-        sender :: PrimaryKey,
-        recipient :: PrimaryKey,
-        date :: Maybe MDateTime,
-        content :: String,
-        status :: MessageStatus
-}
-
-data MessageStatus = Unread | Read
-
 -- | All available endpoints for melanchat
 data Route =
         Landing |
@@ -134,8 +88,6 @@ data By =
         ID PrimaryKey |
         Email String
 
-newtype MDateTime = MDateTime DateTime
-
 -- | Errors that should be reported back to the user
 data ResponseError =
         NotFound {
@@ -145,74 +97,16 @@ data ResponseError =
         BadRequest { reason :: String } |
         InternalError { reason :: String }
 
-data ContactMessage =
-        ResumeChat PrimaryKey
-
-data SuggestionMessage =
-        NextSuggestion
-
-data ChatMessage =
-        SendMessage String |
-        ReceiveMessage WebSocketPayloadClient
-
-data MainMessage =
-        SetWebSocket WebSocket |
-        SetToken String
-
-data IMMessage =
-        SM SuggestionMessage |
-        CM ChatMessage |
-        MM MainMessage |
-        CNM ContactMessage
-
-data WebSocketPayloadServer =
-        Connect String |
-        ServerMessage (BasicMessage (
-                token :: String,
-                user :: PrimaryKey
-        ))
-
-data WebSocketPayloadClient =
-        ClientMessage (BasicMessage (
-                user :: Either IMUser PrimaryKey,
-                date :: MDateTime
-        ))|
-        Received {
-                previousID :: PrimaryKey,
-                id :: PrimaryKey
-        }
-
 derive instance genericRegisterLogin :: Generic RegisterLogin _
 derive instance genericRoute :: Generic Route _
 derive instance genericToken :: Generic Token _
 derive instance genericResponseError :: Generic ResponseError _
 derive instance genericPrimaryKey :: Generic PrimaryKey _
-derive instance genericIMUser :: Generic IMUser _
 derive instance genericUser :: Generic User _
-derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
-derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericWS :: Generic WS _
-derive instance genericIMModel :: Generic IMModel _
-derive instance genericHistoryMessage :: Generic HistoryMessage _
-derive instance genericMessageStatus :: Generic MessageStatus _
-derive instance genericMDateTime :: Generic MDateTime _
 
-derive instance newTypeIMUser :: Newtype IMUser _
-derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
-derive instance newTypeIMModel :: Newtype IMModel _
-
-derive instance eqMDateTime :: Eq MDateTime
-derive instance eqHistoryMessage :: Eq HistoryMessage
 derive instance eqRoute :: Eq Route
-derive instance eqIMModel :: Eq IMModel
 derive instance eqPrimaryKey :: Eq PrimaryKey
-derive instance eqIMUser :: Eq IMUser
-derive instance eqMessageStatus :: Eq MessageStatus
-instance eqWSW :: Eq WS where
-        eq (WS w) (WS s) = eqWS w s
 
-instance showHistoryMessage :: Show HistoryMessage where
-        show = DGRS.genericShow
 instance showToken :: Show Token where
         show = DGRS.genericShow
 instance showRoute :: Show Route where
@@ -220,18 +114,6 @@ instance showRoute :: Show Route where
 instance showResponseError :: Show ResponseError where
         show = DGRS.genericShow
 instance showPrimaryKey :: Show PrimaryKey where
-        show = DGRS.genericShow
-instance showIMUser :: Show IMUser where
-        show = DGRS.genericShow
-instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
-        show = DGRS.genericShow
-instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
-        show = DGRS.genericShow
-instance showWS :: Show WS where
-        show _ = "web socket"
-instance showIMModel :: Show IMModel where
-        show = DGRS.genericShow
-instance showMessageStatus :: Show MessageStatus where
         show = DGRS.genericShow
 
 instance primaryKeySemiring :: Semiring PrimaryKey where
@@ -249,42 +131,19 @@ instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
         fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
 
+parsePrimaryKey :: _ -> _
 parsePrimaryKey data_
         | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
         | otherwise = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString) $ F.readString data_
 
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
-instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
-        encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonWS :: EncodeJson WS where
-        encodeJson (WS ws) = fromWS ws
-instance encodeJsonIMUser :: EncodeJson IMUser where
-        encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
-        encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonMDateTime :: EncodeJson MDateTime where
-        encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
 
-instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
-        decodeJson = DADGR.genericDecodeJson
-instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
-        decodeJson = DADGR.genericDecodeJson
-instance decodeJsonWS :: DecodeJson WS where
-        decodeJson = Right <<< toWS
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
         decodeJson = Right <<< PrimaryKey <<< toInt53
-instance decodeJsonIMUser :: DecodeJson IMUser where
-        decodeJson = DADGR.genericDecodeJson
-instance showMDateTime :: Show MDateTime where
-        show = DGRS.genericShow
-instance edecodeJsonMDateTime :: DecodeJson MDateTime where
-        decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
-                where   jsonString :: String
-                        jsonString = UC.unsafeCoerce json
 
---is there not an easier way to do this?
---maybe a approach to select into Row instead of typeclasses for every query?
+--as it is right now, every query must have a FromSQLRow instance
+-- is there not an easier way to do this?
 
 instance userFromSQLRow :: FromSQLRow User where
         fromSQLRow [
@@ -332,113 +191,3 @@ instance userFromSQLRow :: FromSQLRow User where
                         messageOnEnter
                 }
         fromSQLRow _ = Left "missing fields from users table"
-
--- seems like parsing a postgresql date column fails with a js type error
-instance imUserFromSQLRow :: FromSQLRow IMUser where
-        fromSQLRow [
-                foreignID,
-                foreignGender,
-                foreignBirthday,
-                foreignUnread,
-                foreignHeadline,
-                foreignDescription,
-                foreignCountry,
-                foreignLanguages,
-                foreignTags
-        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- parsePrimaryKey foreignID
-                name <- F.readString foreignUnread
-                maybeForeignerBirthday <- F.readNull foreignBirthday
-                birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
-                maybeGender <- F.readNull foreignGender
-                gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
-                headline <- F.readString foreignHeadline
-                description <- F.readString foreignDescription
-                maybeCountry <- F.readNull foreignCountry
-                country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
-                maybeLanguages <- F.readNull foreignLanguages
-                languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
-                maybeTags <- F.readNull foreignTags
-                tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
-                let now = EU.unsafePerformEffect $ EN.nowDate
-                pure $ IMUser {
-                        id,
-                        name,
-                        --this is a bug.......
-                        age: map ((DE.fromEnum (DD.year now) - _) <<< DE.fromEnum <<< DD.year) birthday,
-                        gender,
-                        headline,
-                        description,
-                        country,
-                        languages,
-                        tags,
-                        message: "",
-                        history: [],
-                        avatar: "/client/media/avatar.png"
-                }
-        --this is surely not ideal
-        fromSQLRow list@[
-                foreignDate, -- there is an extra field needed by the distinct when select imusers for the contact list
-                foreignID,
-                foreignGender,
-                foreignBirthday,
-                foreignUnread,
-                foreignHeadline,
-                foreignDescription,
-                foreignCountry,
-                foreignLanguages,
-                foreignTags
-        ] = DP.fromSQLRow <<< SU.unsafeFromJust  "fromSQLRow" $ DA.tail list :: Either String IMUser
-        fromSQLRow _ = Left "missing or extra fields from users table"
-
-instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
-        fromSQLRow [
-                foreignID,
-                foreignSender,
-                foreignRecipient,
-                foreignDate,
-                foreignContent,
-                foreignStatus
-        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- parsePrimaryKey foreignID
-                sender <- parsePrimaryKey foreignSender
-                recipient <- parsePrimaryKey foreignRecipient
-                date <- Just <<< MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
-                content <- F.readString foreignContent
-                status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
-                pure $ HistoryMessage {
-                        id,
-                        sender,
-                        recipient,
-                        date,
-                        content,
-                        status
-                }
-        fromSQLRow _ = Left "missing or extra fields from users table"
-
---thats a lot of work...
-instance ordMessageStatus :: Ord MessageStatus where
-        compare Unread Read = LT
-        compare Read Unread = GT
-        compare _ _ = EQ
-
-instance boundedMessageStatus :: Bounded MessageStatus where
-        bottom = Unread
-        top = Read
-
-instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
-        cardinality = Cardinality 1
-
-        fromEnum Unread = 0
-        fromEnum Read = 1
-
-        toEnum 0 = Just Unread
-        toEnum 1 = Just Read
-        toEnum _ = Nothing
-
-instance enumMessageStatus :: Enum MessageStatus where
-        succ Unread = Just Read
-        succ Read = Nothing
-
-        pred Unread = Nothing
-        pred Read = Just Unread

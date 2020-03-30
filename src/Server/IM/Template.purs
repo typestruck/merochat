@@ -1,7 +1,7 @@
 module Server.IM.Template where
 
 import Prelude
-import Shared.Types
+import Shared.IM.Types
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)

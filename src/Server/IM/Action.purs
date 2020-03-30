@@ -3,6 +3,7 @@ module Server.IM.Action where
 import Prelude
 import Server.Types
 import Shared.Types
+import Shared.IM.Types
 import Data.Foldable as DF
 import Data.HashMap as DH
 import Server.IM.Database as SID

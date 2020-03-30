@@ -1,7 +1,7 @@
 module Shared.Newtype where
 
 import Data.Newtype as DN
-import Shared.Types
+import Shared.IM.Types
 
 updateModel model f = DN.over IMModel f model
 
