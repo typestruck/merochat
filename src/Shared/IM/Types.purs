@@ -234,7 +234,7 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 pure $ IMUser {
                         id,
                         name,
-                        --this is a bug.......
+                        --REFACTOR: this is a bug.......
                         age: map ((DE.fromEnum (DD.year now) - _) <<< DE.fromEnum <<< DD.year) birthday,
                         gender,
                         headline,

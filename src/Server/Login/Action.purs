@@ -23,7 +23,7 @@ login (RegisterLogin registerLogin) = do
         maybeUser <- SDU.userBy $ Email registerLogin.email
         case maybeUser of
                 Nothing -> SRR.throwBadRequest invalidLogin
-                Just (User {id: PrimaryKey userID, password}) -> do
+                Just (RegisterLoginUser {id: PrimaryKey userID, password}) -> do
                         hashed <- ST.hashPassword registerLogin.password
 
                         when (hashed /= password) $ SRR.throwBadRequest invalidLogin

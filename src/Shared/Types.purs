@@ -52,15 +52,12 @@ type BasicUser fields = {
         fields
 }
 
-newtype User = User (BasicUser (
+--REFACTOR: this is only used for login/landing, split into new type
+newtype RegisterLoginUser = RegisterLoginUser {
+        id :: PrimaryKey,
         email :: String,
-        password :: String,
-        recentEmoji :: Maybe String,
-        messageOnEnter :: Boolean,
-        joined :: Date,
-        country :: Maybe Int53,
-        birthday :: Maybe Date
-))
+        password :: String
+}
 
 newtype PrimaryKey = PrimaryKey Int53
 
@@ -102,7 +99,7 @@ derive instance genericRoute :: Generic Route _
 derive instance genericToken :: Generic Token _
 derive instance genericResponseError :: Generic ResponseError _
 derive instance genericPrimaryKey :: Generic PrimaryKey _
-derive instance genericUser :: Generic User _
+derive instance genericUser :: Generic RegisterLoginUser _
 
 derive instance eqRoute :: Eq Route
 derive instance eqPrimaryKey :: Eq PrimaryKey
@@ -145,49 +142,10 @@ instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
 
-instance userFromSQLRow :: FromSQLRow User where
-        fromSQLRow [
-                foreignID,
-                foreignUnread,
-                foreignPassword,
-                foreignJoined,
-                foreignEmail,
-                foreignBirthday,
-                foreignGender,
-                foreignHeadline,
-                foreignDescription,
-                foreignRecentEmoji,
-                foreignCountry,
-                foreignMessageOnEnter
-        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+instance userFromSQLRow :: FromSQLRow RegisterLoginUser where
+        fromSQLRow [foreignID, foreignEmail, foreignPassword] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 id <- parsePrimaryKey foreignID
-                name <- F.readString foreignUnread
-                password <- F.readString foreignPassword
-                joined <- SU.unsafeFromJust "userFromSQLRow" <<< DJ.toDate <$> DJ.readDate foreignJoined
                 email <- F.readString foreignEmail
-                maybeForeignerBirthday <- F.readNull foreignBirthday
-                birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
-                maybeGender <- F.readNull foreignGender
-                gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
-                headline <- F.readString foreignHeadline
-                description <- F.readString foreignDescription
-                maybeRecentEmoji <- F.readNull foreignRecentEmoji
-                recentEmoji <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeRecentEmoji
-                maybeCountry <- F.readNull foreignCountry
-                country <- DM.maybe (pure Nothing) (map (Just <<< DI.fromInt) <<< F.readInt) maybeCountry
-                messageOnEnter <- F.readBoolean foreignMessageOnEnter
-                pure $ User {
-                        id,
-                        name,
-                        password,
-                        joined,
-                        email,
-                        birthday,
-                        gender,
-                        headline,
-                        description,
-                        recentEmoji,
-                        country,
-                        messageOnEnter
-                }
-        fromSQLRow _ = Left "missing fields from users table"
+                password <- F.readString foreignPassword
+                pure $ RegisterLoginUser { id, email, password }
+        fromSQLRow _ = Left "missing/extra fields from users table"
