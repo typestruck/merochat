@@ -5,14 +5,16 @@ import Prelude
 import Effect (Effect)
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
-import Server.Template (defaultParameters, externalFooter)
+import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Flame.HTML.Attribute as HA
 
 template :: Effect String
 template = do
-        contents <- ST.template defaultParameters {
-                footer = externalFooter,
-                content = content
-        }
+        contents <- ST.template externalDefaultParameters { content = externalDefaultParameters.content <> content }
         FRS.render contents
-        where   content = [ HE.text "Page not found" ]
+        where   content = [
+                        HE.div (HA.class' "center-box") [
+                                HE.h1_ "Not found!"
+                        ]
+                ]
