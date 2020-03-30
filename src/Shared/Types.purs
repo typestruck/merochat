@@ -10,12 +10,12 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
 import Data.Date (Date)
+import Shared.Unsafe as SU
 import Data.Array as DA
 import Data.Date as DD
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
-import Data.Enum as DE
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
@@ -29,19 +29,15 @@ import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Ord (class Ord)
 import Unsafe.Coerce as UC
-import Data.Ordering (Ordering(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
 import Database.PostgreSQL as DP
-import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
-import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
 foreign import fromInt53 :: Int53 -> Json
@@ -51,6 +47,58 @@ foreign import toInt53 :: Json -> Int53
 foreign import toWS :: Json -> WS
 foreign import eqWS :: WebSocket -> WebSocket -> Boolean
 
+type BasicUser fields = {
+        id :: PrimaryKey,
+        name :: String,
+        headline :: String,
+        description :: String,
+        gender :: Maybe String |
+        fields
+}
+
+type BasicMessage fields = {
+        id :: PrimaryKey,
+        content :: String |
+        fields
+}
+
+newtype PrimaryKey = PrimaryKey Int53
+
+newtype WS = WS WebSocket
+
+newtype User = User (BasicUser (
+        email :: String,
+        password :: String,
+        recentEmoji :: Maybe String,
+        messageOnEnter :: Boolean,
+        joined :: Date,
+        country :: Maybe Int53,
+        birthday :: Maybe Date
+))
+
+--fields needed by the IM page
+newtype IMUser = IMUser (BasicUser (
+        avatar :: String,
+        country :: Maybe String,
+        languages :: Array String,
+        tags :: Array String,
+        age :: Maybe Int,
+        message :: String,
+        history :: Array HistoryMessage
+))
+
+newtype IMModel = IMModel {
+        user :: IMUser,
+        --a few IMUser fields are not needed for suggestions - different type?
+        suggestions :: Array IMUser,
+        suggesting :: Maybe Int,
+        contacts :: Array IMUser,
+        chatting :: Maybe Int,
+        webSocket :: Maybe WS,
+        temporaryID :: PrimaryKey,
+        token :: Maybe String
+}
+
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin {
         email:: String,
@@ -58,18 +106,22 @@ newtype RegisterLogin = RegisterLogin {
         captchaResponse:: Maybe String
 }
 
-derive instance genericRegisterLogin :: Generic RegisterLogin _
-
 -- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests
 newtype Token = Token {
         tokenGET :: String,
         tokenPOST :: String
 }
 
-derive instance genericToken :: Generic Token _
+newtype HistoryMessage = HistoryMessage {
+        id :: PrimaryKey,
+        sender :: PrimaryKey,
+        recipient :: PrimaryKey,
+        date :: Maybe MDateTime,
+        content :: String,
+        status :: MessageStatus
+}
 
-instance showToken :: Show Token where
-        show = DGRS.genericShow
+data MessageStatus = Unread | Read
 
 -- | All available endpoints for melanchat
 data Route =
@@ -78,11 +130,11 @@ data Route =
         Login { next :: Maybe String } |
         IM
 
-derive instance genericRoute :: Generic Route _
-derive instance eqRoute :: Eq Route
+data By =
+        ID PrimaryKey |
+        Email String
 
-instance showRoute :: Show Route where
-        show = DGRS.genericShow
+newtype MDateTime = MDateTime DateTime
 
 -- | Errors that should be reported back to the user
 data ResponseError =
@@ -93,16 +145,94 @@ data ResponseError =
         BadRequest { reason :: String } |
         InternalError { reason :: String }
 
-derive instance genericResponseError :: Generic ResponseError _
+data ContactMessage =
+        ResumeChat PrimaryKey
 
+data SuggestionMessage =
+        NextSuggestion
+
+data ChatMessage =
+        SendMessage String |
+        ReceiveMessage WebSocketPayloadClient
+
+data MainMessage =
+        SetWebSocket WebSocket |
+        SetToken String
+
+data IMMessage =
+        SM SuggestionMessage |
+        CM ChatMessage |
+        MM MainMessage |
+        CNM ContactMessage
+
+data WebSocketPayloadServer =
+        Connect String |
+        ServerMessage (BasicMessage (
+                token :: String,
+                user :: PrimaryKey
+        ))
+
+data WebSocketPayloadClient =
+        ClientMessage (BasicMessage (
+                user :: Either IMUser PrimaryKey,
+                date :: MDateTime
+        ))|
+        Received {
+                previousID :: PrimaryKey,
+                id :: PrimaryKey
+        }
+
+derive instance genericRegisterLogin :: Generic RegisterLogin _
+derive instance genericRoute :: Generic Route _
+derive instance genericToken :: Generic Token _
+derive instance genericResponseError :: Generic ResponseError _
+derive instance genericPrimaryKey :: Generic PrimaryKey _
+derive instance genericIMUser :: Generic IMUser _
+derive instance genericUser :: Generic User _
+derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
+derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
+derive instance genericWS :: Generic WS _
+derive instance genericIMModel :: Generic IMModel _
+derive instance genericHistoryMessage :: Generic HistoryMessage _
+derive instance genericMessageStatus :: Generic MessageStatus _
+derive instance genericMDateTime :: Generic MDateTime _
+
+derive instance newTypeIMUser :: Newtype IMUser _
+derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
+derive instance newTypeIMModel :: Newtype IMModel _
+
+derive instance eqMDateTime :: Eq MDateTime
+derive instance eqHistoryMessage :: Eq HistoryMessage
+derive instance eqRoute :: Eq Route
+derive instance eqIMModel :: Eq IMModel
+derive instance eqPrimaryKey :: Eq PrimaryKey
+derive instance eqIMUser :: Eq IMUser
+derive instance eqMessageStatus :: Eq MessageStatus
+instance eqWSW :: Eq WS where
+        eq (WS w) (WS s) = eqWS w s
+
+instance showHistoryMessage :: Show HistoryMessage where
+        show = DGRS.genericShow
+instance showToken :: Show Token where
+        show = DGRS.genericShow
+instance showRoute :: Show Route where
+        show = DGRS.genericShow
 instance showResponseError :: Show ResponseError where
         show = DGRS.genericShow
-
-data By =
-        ID PrimaryKey |
-        Email String
-
-newtype PrimaryKey = PrimaryKey Int53
+instance showPrimaryKey :: Show PrimaryKey where
+        show = DGRS.genericShow
+instance showIMUser :: Show IMUser where
+        show = DGRS.genericShow
+instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
+        show = DGRS.genericShow
+instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
+        show = DGRS.genericShow
+instance showWS :: Show WS where
+        show _ = "web socket"
+instance showIMModel :: Show IMModel where
+        show = DGRS.genericShow
+instance showMessageStatus :: Show MessageStatus where
+        show = DGRS.genericShow
 
 instance primaryKeySemiring :: Semiring PrimaryKey where
         add (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a + b)
@@ -112,9 +242,6 @@ instance primaryKeySemiring :: Semiring PrimaryKey where
 
 instance hashablePrimaryKey :: Hashable PrimaryKey where
         hash (PrimaryKey key) = DH.hash $ DI.toNumber key
-
-derive instance genericPrimaryKey :: Generic PrimaryKey _
-derive instance eqPrimaryKey :: Eq PrimaryKey
 
 instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
@@ -128,63 +255,33 @@ parsePrimaryKey data_
 
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
-
+instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
+        encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonWS :: EncodeJson WS where
         encodeJson (WS ws) = fromWS ws
-
-instance decodeJsonWS :: DecodeJson WS where
-        decodeJson = Right <<< toWS
-
-instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
-        decodeJson = Right <<< PrimaryKey <<< toInt53
-
-instance showPrimaryKey :: Show PrimaryKey where
-        show = DGRS.genericShow
-
-type BasicUser fields = {
-        id :: PrimaryKey,
-        name :: String,
-        headline :: String,
-        description :: String,
-        gender :: Maybe String |
-        fields
-}
-
---fields needed by the IM page
-newtype IMUser = IMUser (BasicUser (
-        avatar :: String,
-        country :: Maybe String,
-        languages :: Array String,
-        tags :: Array String,
-        age :: Maybe Int,
-        message :: String,
-        history :: Array HistoryMessage
-))
-
-derive instance newTypeIMUser :: Newtype IMUser _
-derive instance genericIMUser :: Generic IMUser _
-derive instance eqIMUser :: Eq IMUser
-
 instance encodeJsonIMUser :: EncodeJson IMUser where
         encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
+        encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonMDateTime :: EncodeJson MDateTime where
+        encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
 
+instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
+        decodeJson = DADGR.genericDecodeJson
+instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
+        decodeJson = DADGR.genericDecodeJson
+instance decodeJsonWS :: DecodeJson WS where
+        decodeJson = Right <<< toWS
+instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
+        decodeJson = Right <<< PrimaryKey <<< toInt53
 instance decodeJsonIMUser :: DecodeJson IMUser where
         decodeJson = DADGR.genericDecodeJson
-
-instance showIMUser :: Show IMUser where
+instance showMDateTime :: Show MDateTime where
         show = DGRS.genericShow
-
-newtype User = User (BasicUser (
-        email :: String,
-        password :: String,
-        recentEmoji :: Maybe String,
-        messageOnEnter :: Boolean,
-        joined :: Date,
-        country :: Maybe Int53,
-        birthday :: Maybe Date
-))
-
-derive instance genericUser :: Generic User _
+instance edecodeJsonMDateTime :: DecodeJson MDateTime where
+        decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
+                where   jsonString :: String
+                        jsonString = UC.unsafeCoerce json
 
 --is there not an easier way to do this?
 --maybe a approach to select into Row instead of typeclasses for every query?
@@ -294,19 +391,30 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
         ] = DP.fromSQLRow <<< SU.unsafeFromJust  "fromSQLRow" $ DA.tail list :: Either String IMUser
         fromSQLRow _ = Left "missing or extra fields from users table"
 
-data MessageStatus = Unread | Read
-
-derive instance eqMessageStatus :: Eq MessageStatus
-derive instance genericMessageStatus :: Generic MessageStatus _
-
-instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
-        encodeJson = DAEGR.genericEncodeJson
-
-instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
-        decodeJson = DADGR.genericDecodeJson
-
-instance showMessageStatus :: Show MessageStatus where
-        show = DGRS.genericShow
+instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
+        fromSQLRow [
+                foreignID,
+                foreignSender,
+                foreignRecipient,
+                foreignDate,
+                foreignContent,
+                foreignStatus
+        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+                id <- parsePrimaryKey foreignID
+                sender <- parsePrimaryKey foreignSender
+                recipient <- parsePrimaryKey foreignRecipient
+                date <- Just <<< MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
+                content <- F.readString foreignContent
+                status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
+                pure $ HistoryMessage {
+                        id,
+                        sender,
+                        recipient,
+                        date,
+                        content,
+                        status
+                }
+        fromSQLRow _ = Left "missing or extra fields from users table"
 
 --thats a lot of work...
 instance ordMessageStatus :: Ord MessageStatus where
@@ -334,147 +442,3 @@ instance enumMessageStatus :: Enum MessageStatus where
 
         pred Unread = Nothing
         pred Read = Just Unread
-
-newtype MDateTime = MDateTime DateTime
-
-instance showMDateTime :: Show MDateTime where
-        show = DGRS.genericShow
-
-instance encodeJsonMDateTime :: EncodeJson MDateTime where
-        encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
-
-instance edecodeJsonMDateTime :: DecodeJson MDateTime where
-        decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
-                where   jsonString :: String
-                        jsonString = UC.unsafeCoerce json
-
-derive instance genericMDateTime :: Generic MDateTime _
-derive instance eqMDateTime :: Eq MDateTime
-
-newtype HistoryMessage = HistoryMessage {
-        id :: PrimaryKey,
-        sender :: PrimaryKey,
-        recipient :: PrimaryKey,
-        date :: Maybe MDateTime,
-        content :: String,
-        status :: MessageStatus
-}
-
-instance showHistoryMessage :: Show HistoryMessage where
-        show = DGRS.genericShow
-
-instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
-        encodeJson = DAEGR.genericEncodeJson
-
-instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
-        decodeJson = DADGR.genericDecodeJson
-
-derive instance genericHistoryMessage :: Generic HistoryMessage _
-derive instance eqHistoryMessage :: Eq HistoryMessage
-derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
-
-instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
-        fromSQLRow [
-                foreignID,
-                foreignSender,
-                foreignRecipient,
-                foreignDate,
-                foreignContent,
-                foreignStatus
-        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- parsePrimaryKey foreignID
-                sender <- parsePrimaryKey foreignSender
-                recipient <- parsePrimaryKey foreignRecipient
-                date <- Just <<< MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
-                content <- F.readString foreignContent
-                status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
-                pure $ HistoryMessage {
-                        id,
-                        sender,
-                        recipient,
-                        date,
-                        content,
-                        status
-                }
-        fromSQLRow _ = Left "missing or extra fields from users table"
-
-newtype WS = WS WebSocket
-
-newtype IMModel = IMModel {
-        user :: IMUser,
-        --a few IMUser fields are not needed for suggestions - different type?
-        suggestions :: Array IMUser,
-        suggesting :: Maybe Int,
-        contacts :: Array IMUser,
-        chatting :: Maybe Int,
-        webSocket :: Maybe WS,
-        temporaryID :: PrimaryKey,
-        token :: Maybe String
-}
-
-derive instance genericWS :: Generic WS _
-derive instance genericIMModel :: Generic IMModel _
-
-instance eqWSW :: Eq WS where
-        eq (WS w) (WS s) = eqWS w s
-
-derive instance eqIMModel :: Eq IMModel
-derive instance newTypeIMModel :: Newtype IMModel _
-
-instance showWS :: Show WS where
-        show _ = "web socket"
-
-instance showIMModel :: Show IMModel where
-        show = DGRS.genericShow
-
-type BasicMessage fields = {
-        id :: PrimaryKey,
-        content :: String |
-        fields
-}
-
-data WebSocketPayloadServer =
-        Connect String |
-        ServerMessage (BasicMessage (
-                token :: String,
-                user :: PrimaryKey
-        ))
-
-data WebSocketPayloadClient =
-        ClientMessage (BasicMessage (
-                user :: Either IMUser PrimaryKey,
-                date :: MDateTime
-        ))|
-        Received {
-                previousID :: PrimaryKey,
-                id :: PrimaryKey
-        }
-
-derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
-derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-
-instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
-        show = DGRS.genericShow
-instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
-        show = DGRS.genericShow
-
-data ContactMessage =
-        ResumeChat PrimaryKey
-
-data SuggestionMessage =
-        NextSuggestion
-
-data ChatMessage =
-        SendMessage String |
-        ReceiveMessage WebSocketPayloadClient
-
-data MainMessage =
-        SetWebSocket WebSocket |
-        SetToken String
-
-data IMMessage =
-        SM SuggestionMessage |
-        CM ChatMessage |
-        MM MainMessage |
-        CNM ContactMessage
-
