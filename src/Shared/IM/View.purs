@@ -20,6 +20,8 @@ import Debug.Trace(spy)
 import Flame.HTML.Element as HE
 import Data.Array as DA
 
+--REFACTOR: split this into modules
+
 view :: IMModel -> Html IMMessage
 view model@(IMModel { suggestions, suggesting, chatting, contacts }) = HE.div (HA.class' "im") [
         HE.div_ [

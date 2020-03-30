@@ -53,3 +53,5 @@ insertMessage sender recipient content = SD.withTransaction $ \connection -> do
          else do
                 senderUser <- SD.singleWith connection presentUserQuery $ presentUserParameters sender
                 pure <<< Tuple messageID $ Left senderUser
+
+markRead recipient ids =

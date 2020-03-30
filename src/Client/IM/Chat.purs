@@ -1,6 +1,5 @@
 -- | This module takes care of websocket plus chat editor events.
 module Client.IM.Chat(
-        webSocketHandler,
         update,
         startChat,
         sendMessage,
@@ -36,10 +35,7 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
-import Web.Socket.WebSocket as WSW
-
-webSocketHandler :: WebSocketHandler
-webSocketHandler = { sendString: WSW.sendString }
+import Client.IM.WebSocketHandler (webSocketHandler)
 
 update :: World IMModel IMMessage -> IMModel -> ChatMessage -> Aff IMModel
 update _ model =
@@ -65,7 +61,7 @@ sendMessage :: WebSocketHandler -> String -> IMModel -> Aff IMModel
 sendMessage webSocketHandler content =
         case _ of
                 model@(IMModel {
-                        user: IMUser {id: senderID},
+                        user: IMUser { id: senderID },
                         webSocket: Just (WS webSocket),
                         token: Just token,
                         chatting: Just chatting,
@@ -86,7 +82,7 @@ sendMessage webSocketHandler content =
                                                 content
                                         }
                                 }
-                        liftEffect <<< webSocketHandler.sendString webSocket <<< SJ.toJSON $ ServerMessage {
+                        liftEffect <<< webSocketHandler.sendPayload webSocket $ ServerMessage {
                                 id: newTemporaryID,
                                 user: recipientID,
                                 token: token,
