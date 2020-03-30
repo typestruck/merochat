@@ -52,7 +52,6 @@ type BasicUser fields = {
         fields
 }
 
---REFACTOR: this is only used for login/landing, split into new type
 newtype RegisterLoginUser = RegisterLoginUser {
         id :: PrimaryKey,
         email :: String,

@@ -22,7 +22,7 @@ import Data.Generic.Rep.Show as DGRS
 import Data.Hashable (class Hashable)
 import Data.Hashable as DH
 import Data.Int53 (Int53)
-import Data.Int53 as DI
+import Data.Int as DIN
 import Data.JSDate as DJ
 import Data.JSDate (JSDate)
 import Data.List.NonEmpty as DLN
@@ -39,7 +39,9 @@ import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
 import Web.Socket.WebSocket (WebSocket)
+import Data.Date as DD
 import Shared.Types(parsePrimaryKey, PrimaryKey(..))
+import Data.Time.Duration(Days(..))
 
 foreign import fromJSDate :: JSDate -> Json
 foreign import fromWS :: WebSocket -> Json
@@ -76,7 +78,6 @@ newtype IMUser = IMUser (BasicUser (
 
 newtype IMModel = IMModel {
         user :: IMUser,
-        --REFACTOR: a few IMUser fields are not needed for suggestions - different type?
         suggestions :: Array IMUser,
         suggesting :: Maybe Int,
         contacts :: Array IMUser,
@@ -94,8 +95,6 @@ newtype HistoryMessage = HistoryMessage {
         content :: String,
         status :: MessageStatus
 }
-
---REFACTOR: many of these types are only needed client-side
 
 data MessageStatus = Unread | Read
 
@@ -203,7 +202,6 @@ instance edecodeJsonMDateTime :: DecodeJson MDateTime where
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
 
--- seems like parsing a postgresql date column fails with a js type error
 instance imUserFromSQLRow :: FromSQLRow IMUser where
         fromSQLRow [
                 foreignID,
@@ -230,12 +228,12 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
                 maybeTags <- F.readNull foreignTags
                 tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
-                let now = EU.unsafePerformEffect $ EN.nowDate
+                let     now = EU.unsafePerformEffect EN.nowDate
                 pure $ IMUser {
                         id,
                         name,
-                        --REFACTOR: this is a bug.......
-                        age: map ((DE.fromEnum (DD.year now) - _) <<< DE.fromEnum <<< DD.year) birthday,
+                        --this will yield a wrong result in some cases, but I guess it is fair for a ASL field
+                        age: (\(Days d) -> DIN.ceil (d / 365.0)) <<< DD.diff now <$> birthday,
                         gender,
                         headline,
                         description,
