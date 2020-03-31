@@ -127,6 +127,7 @@ data WebSocketPayloadServer =
                 user :: PrimaryKey
         )) |
         ReadMessages {
+                token :: String,
                 --alternatively, update by user?
                 ids :: Array PrimaryKey
         }

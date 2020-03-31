@@ -213,4 +213,4 @@ world = {
 }
 
 webSocketHandler :: WebSocketHandler
-webSocketHandler = { sendString: \_ _ -> pure unit }
+webSocketHandler = { sendPayload: \_ _ -> pure unit }

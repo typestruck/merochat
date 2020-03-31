@@ -10,7 +10,7 @@ import Server.Router.Session as SRS
 import Run.Reader as RR
 import Server.Response as SRR
 import Shared.Unsafe as SU
-import HTTPure (Method(..), Request, ResponseM, Path)
+import HTTPure (Request)
 
 im :: Request -> ResponseEffect
 im { path } = do

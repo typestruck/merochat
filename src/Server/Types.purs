@@ -58,7 +58,7 @@ type BaseReader extension = {
 }
 
 type WebSocketReader = BaseReader (
-        allConnections:: Ref (Map Int53 WebSocketConnection)
+        allConnections:: Ref (Map PrimaryKey WebSocketConnection)
 )
 
 type ServerReader = BaseReader (

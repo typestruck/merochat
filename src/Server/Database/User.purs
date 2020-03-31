@@ -1,6 +1,5 @@
 module Server.Database.User where
 
-import Data.Int53
 import Server.Types
 import Shared.Types
 import Prelude

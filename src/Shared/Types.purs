@@ -5,40 +5,22 @@ import Prelude
 import Control.Monad.Except as CME
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
-import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
-import Data.Date (Date)
-import Shared.Unsafe as SU
-import Data.Array as DA
-import Data.Date as DD
-import Data.DateTime (DateTime)
 import Data.Either (Either(..))
-import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
-import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
 import Data.Hashable (class Hashable)
 import Data.Hashable as DH
 import Data.Int53 (Int53)
 import Data.Int53 as DI
-import Data.JSDate as DJ
-import Data.JSDate (JSDate)
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.Newtype (class Newtype)
-import Unsafe.Coerce as UC
-import Data.String (Pattern(..))
-import Data.String as DS
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
 import Database.PostgreSQL as DP
-import Effect.Now as EN
-import Effect.Unsafe as EU
+import Foreign (Foreign, F)
 import Foreign as F
-import Partial.Unsafe as PU
-import Web.Socket.WebSocket (WebSocket)
+import Shared.Unsafe as SU
 
 foreign import fromInt53 :: Int53 -> Json
 foreign import toInt53 :: Json -> Int53
@@ -122,12 +104,12 @@ instance hashablePrimaryKey :: Hashable PrimaryKey where
         hash (PrimaryKey key) = DH.hash $ DI.toNumber key
 
 instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
-        toSQLValue (PrimaryKey integer) = F.unsafeToForeign integer
+        toSQLValue (PrimaryKey int53) = F.unsafeToForeign $ DI.toNumber int53
 
 instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
         fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
 
-parsePrimaryKey :: _ -> _
+parsePrimaryKey :: Foreign -> F PrimaryKey
 parsePrimaryKey data_
         | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
         | otherwise = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString) $ F.readString data_
@@ -148,3 +130,6 @@ instance userFromSQLRow :: FromSQLRow RegisterLoginUser where
                 password <- F.readString foreignPassword
                 pure $ RegisterLoginUser { id, email, password }
         fromSQLRow _ = Left "missing/extra fields from users table"
+
+instance ordPrimaryKey :: Ord PrimaryKey where
+        compare (PrimaryKey pk) (PrimaryKey anotherPK) = compare pk anotherPK

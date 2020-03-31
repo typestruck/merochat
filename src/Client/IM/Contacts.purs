@@ -22,27 +22,30 @@ update _ model =
         case _ of
                 ResumeChat id -> do
                         model' <- resumeChat id model
-                        markRead webSocketHandler id model'
+                        markRead webSocketHandler  model'
 
-markRead :: WebSocketHandler -> PrimaryKey -> IMModel -> Aff IMModel
-markRead websocketHandler searchID =
+markRead :: WebSocketHandler -> IMModel -> Aff IMModel
+markRead wsHandler =
         case _ of
-                model@(IMModel { webSocket: Just (WS ws), contacts, chatting: Just index }) -> do
+                model@(IMModel { token: Just tk, user: IMUser { id: userID },  webSocket: Just (WS ws), contacts, chatting: Just index }) -> do
                         let readContact@(IMUser { history }) = contacts !@ index
-                        liftEffect <<< webSocketHandler.sendPayload ws $ ReadMessages { ids: DA.mapMaybe unreadID <<< _.history $ DN.unwrap readContact }
+                        liftEffect <<< wsHandler.sendPayload ws $ ReadMessages {
+                                ids: DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap readContact,
+                                token: tk
+                        }
                         pure <<< SN.updateModel model $ _ {
-                                contacts = SU.unsafeFromJust "markRead" $ DA.updateAt index (SN.updateUser readContact $ _ { history = map read history }) contacts
+                                contacts = SU.unsafeFromJust "markRead" $ DA.updateAt index (SN.updateUser readContact $ _ { history = map (read userID) history }) contacts
                         }
                 model -> do
                         liftEffect $ EC.log "invalid markRead state"
                         pure model
 
-        where   unreadID (HistoryMessage { id, status })
-                        | status == Unread = Just id
+        where   unreadID userID  (HistoryMessage { recipient, id, status })
+                        | status == Unread && recipient == userID = Just id
                         | otherwise = Nothing
 
-                read historyEntry@(HistoryMessage { id, status })
-                        | status == Unread = SN.updateHistoryMessage historyEntry $ _ { status = Read }
+                read userID historyEntry@(HistoryMessage { recipient, id, status })
+                        | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
                         | otherwise = historyEntry
 
 resumeChat :: PrimaryKey -> IMModel -> Aff IMModel

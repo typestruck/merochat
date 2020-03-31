@@ -32,7 +32,7 @@ handleError :: Error -> Effect Unit
 handleError = EC.log <<< show
 
 --here it seems like the only way is get the cookie token and transform into a post token
-handleClose :: Configuration -> Ref (Map Int53 WebSocketConnection) -> Request -> CloseCode -> CloseReason -> Effect Unit
+handleClose :: Configuration -> Ref (Map PrimaryKey WebSocketConnection) -> Request -> CloseCode -> CloseReason -> Effect Unit
 handleClose (Configuration configuration) allConnections request _ _ = pure unit
 
 handleMessage :: WebSocketConnection -> WebSocketMessage -> WebSocketEffect
@@ -43,16 +43,16 @@ handleMessage connection (WebSocketMessage message) = do
                         { allConnections } <- RR.ask
                         case payload of
                                 Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
-                                ReadMessages { ids } -> withUser token $ \userID -> SID.markRead userID ids
-                                ServerMessage {id, user: recipient@(PrimaryKey recipientID), token, content} -> withUser token $ \userID -> do
+                                ReadMessages { token, ids } -> withUser token $ \userID -> SID.markRead userID ids
+                                ServerMessage {id, user: recipient, token, content} -> withUser token $ \userID -> do
                                         date <- R.liftEffect $ map MDateTime EN.nowDateTime
-                                        Tuple messageID senderUser <- SID.insertMessage (PrimaryKey userID) recipient content
+                                        Tuple messageID senderUser <- SID.insertMessage userID recipient content
                                         sendMessage connection <<< SJ.toJSON $ Received {
                                                 previousID: id,
                                                 id: messageID
                                         }
 
-                                        possibleRecipientConnection <- R.liftEffect (DM.lookup recipientID <$> ER.read allConnections)
+                                        possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
 
                                         case possibleRecipientConnection of
                                                 Nothing -> pure unit
@@ -75,7 +75,7 @@ handleMessage connection (WebSocketMessage message) = do
                                 Nothing -> do
                                         R.liftEffect $ SW.close connection
                                         log "closed due to auth error"
-                                Just userId -> f userId
+                                Just userId -> f $ PrimaryKey userId
 
 handleConnection :: WebSocketReader -> WebSocketConnection -> Request -> Effect Unit
 handleConnection reading connection request = do
