@@ -9,25 +9,28 @@ module Client.IM.Chat(
 import Client.Common.Types
 import Debug.Trace
 import Prelude
-import Shared.Types
 import Shared.IM.Types
+import Shared.Types
 
+import Client.IM.Contacts as CICN
+import Client.IM.WebSocketHandler (webSocketHandler)
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Array ((:), (!!))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.Either (Either(..))
+import Data.Either as DET
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Now as EN
-import Data.Newtype as DN
 import Flame (World)
 import Partial.Unsafe as PU
 import Shared.JSON as SJ
@@ -35,7 +38,6 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
-import Client.IM.WebSocketHandler (webSocketHandler)
 
 update :: World IMModel IMMessage -> IMModel -> ChatMessage -> Aff IMModel
 update _ model =
@@ -43,7 +45,7 @@ update _ model =
                 SendMessage content -> do
                         model' <- startChat model
                         sendMessage webSocketHandler content model'
-                ReceiveMessage payload -> receiveMessage model payload
+                ReceiveMessage payload -> receiveMessage webSocketHandler model payload
 
 startChat :: IMModel -> Aff IMModel
 startChat model@(IMModel {chatting, contacts, suggesting, suggestions}) =
@@ -96,33 +98,54 @@ sendMessage webSocketHandler content =
                         liftEffect $ EC.log "Invalid sendMessage state"
                         pure model
 
-receiveMessage :: IMModel -> WebSocketPayloadClient -> Aff IMModel
-receiveMessage model@(IMModel {
+receiveMessage :: WebSocketHandler -> IMModel -> WebSocketPayloadClient -> Aff IMModel
+receiveMessage wsHandler model@(IMModel {
         user: IMUser { id: recipientID },
         contacts,
         suggesting,
+        chatting,
         suggestions
 }) =
         case _ of
-                ClientMessage m@{ id, user, content, date } ->
-                        case SU.unsafeFromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
-                                New contacts' -> do
+                ClientMessage m@{ id, user, content, date } -> do
+                        let updatedModel = case SU.unsafeFromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
+                                New contacts' ->
                                         --new messages bubble the contact to the top
-                                        let added = DA.head contacts'
+                                        let added = DA.head contacts' in
                                         --edge case of recieving a message from the current suggestion
-                                        pure $ if getUserID added == getUserID suggestingContact then
-                                                        SN.updateModel model $ _ {
-                                                                contacts = contacts',
-                                                                suggesting = Nothing,
-                                                                chatting = Just 0
-                                                        }
-                                                else
-                                                        SN.updateModel model $ _ {
-                                                                contacts = contacts'
-                                                        }
-                                Existing contacts' -> pure <<< SN.updateModel model $ _ {
+                                         if getUserID added == getUserID suggestingContact then
+                                                SN.updateModel model $ _ {
+                                                        contacts = contacts',
+                                                        suggesting = Nothing,
+                                                        chatting = Just 0
+                                                }
+                                          else
+                                                SN.updateModel model $ _ {
+                                                        contacts = contacts'
+                                                }
+                                Existing contacts' -> SN.updateModel model $ _ {
                                         contacts = contacts'
                                 }
+                        case updatedModel of
+                                IMModel {
+                                        token: Just tk,
+                                        webSocket: Just (WS ws),
+                                        chatting: Just index,
+                                        contacts
+                                } -> do
+                                        --mark it as read if we received a message from the current chat
+                                        let fields = {
+                                                token: tk,
+                                                webSocket: ws,
+                                                chatting: index,
+                                                userID: recipientID,
+                                                contacts
+                                        }
+                                        if isChatting user fields then
+                                                CICN.updateReadHistory wsHandler updatedModel fields
+                                         else
+                                                pure updatedModel
+                                _ -> pure updatedModel
                 Received { previousID, id } -> pure <<< SN.updateModel model $ _ {
                         contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
                 }
@@ -131,6 +154,9 @@ receiveMessage model@(IMModel {
                 suggestingContact = do
                         index <- suggesting
                         suggestions !! index
+
+                isChatting sender {contacts, chatting} =
+                        let IMUser {id: recipientID} = contacts !@ chatting in recipientID ==  DET.either (_.id <<< DN.unwrap) identity sender
 
 updateHistoryMessage :: Array IMUser -> PrimaryKey -> {
         id :: PrimaryKey,
