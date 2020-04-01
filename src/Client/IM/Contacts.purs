@@ -1,23 +1,80 @@
 module Client.IM.Contacts where
 
+import Client.Common.Types
+import Debug.Trace
 import Prelude
 import Shared.IM.Types
 import Shared.Types
-import Debug.Trace
+
+import Client.IM.WebSocketHandler (webSocketHandler)
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.Newtype as DN
 import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
+import Effect.Console as EC
 import Flame (World)
 import Shared.Newtype as SN
-import Data.Array as DA
+import Shared.Unsafe ((!@))
+import Shared.Unsafe as SU
+import Web.Socket.WebSocket (WebSocket)
 
 update :: World IMModel IMMessage -> IMModel -> ContactMessage -> Aff IMModel
 update _ model =
         case _ of
-                ResumeChat id -> resumeChat model id
+                ResumeChat id -> do
+                        model' <- resumeChat id model
+                        markRead webSocketHandler  model'
 
-resumeChat :: IMModel -> PrimaryKey -> Aff IMModel
-resumeChat model@(IMModel {contacts}) searchID =
+markRead :: WebSocketHandler -> IMModel -> Aff IMModel
+markRead wsHandler =
+        case _ of
+                model@(IMModel {
+                        token: Just tk,
+                        user: IMUser { id: userID },
+                        webSocket: Just (WS ws),
+                        contacts,
+                        chatting: Just index
+                }) -> updateReadHistory wsHandler model {
+                        token: tk,
+                        webSocket: ws,
+                        chatting: index,
+                        userID,
+                        contacts
+                }
+                model -> do
+                        liftEffect $ EC.log "invalid markRead state"
+                        pure model
+
+updateReadHistory :: WebSocketHandler -> IMModel -> {
+        token :: String,
+        userID :: PrimaryKey,
+        webSocket :: WebSocket,
+        contacts :: Array IMUser,
+        chatting :: Int
+} -> Aff IMModel
+updateReadHistory wsHandler model { token, webSocket, chatting, userID, contacts } = do
+        let readContact@(IMUser { history }) = contacts !@ chatting
+        liftEffect <<< wsHandler.sendPayload webSocket $ ReadMessages {
+                ids: DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap readContact,
+                token
+        }
+        pure <<< SN.updateModel model $ _ {
+                contacts = SU.unsafeFromJust "markRead" $ DA.updateAt chatting (SN.updateUser readContact $ _ { history = map (read userID) history }) contacts
+        }
+        where   unreadID userID  (HistoryMessage { recipient, id, status })
+                        | status == Unread && recipient == userID = Just id
+                        | otherwise = Nothing
+
+                read userID historyEntry@(HistoryMessage { recipient, id, status })
+                        | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
+                        | otherwise = historyEntry
+
+resumeChat :: PrimaryKey -> IMModel -> Aff IMModel
+resumeChat searchID model@(IMModel { contacts }) =
         pure <<< SN.updateModel model $ _ {
                 suggesting = Nothing,
                 chatting = DA.findIndex (\(IMUser {id}) -> searchID == id) contacts
         }
+
+

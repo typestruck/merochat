@@ -1,17 +1,13 @@
 module Server.IM.Database where
 
-import Prelude
-import Server.Types
-import Shared.Types
-import Shared.IM.Types
+import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
-import Data.Either(Either(..))
-import Data.Int53 (Int53)
-import Debug.Trace(spy)
-import Data.Tuple.Nested ((/\))
-import Database.PostgreSQL (Query(..), Row1(..), Row2(..), Row3(..))
-import Database.PostgreSQL as DP
+import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, Pool, Query(..), Row1(..), Row2(..), Row3(..))
+import Prelude (Unit, bind, pure, ($), (<<<), (<>))
 import Server.Database as SD
+import Server.Types (ServerEffect, BaseEffect)
+import Shared.IM.Types (HistoryMessage, IMUser)
+import Shared.Types (PrimaryKey)
 
 userPresentationFields :: String
 userPresentationFields = """ u.id,
@@ -27,7 +23,10 @@ description,
 messagePresentationFields :: String
 messagePresentationFields = " id, sender, recipient, date, content, status "
 
+presentUserQuery :: forall p v. Query p v
 presentUserQuery = Query ("select" <> userPresentationFields <> "from users u where id = $1")
+
+presentUserParameters :: forall t. t -> Row1 t
 presentUserParameters = Row1
 
 presentUser :: PrimaryKey -> ServerEffect IMUser
@@ -45,11 +44,16 @@ presentContacts id = SD.select (Query ("select distinct date," <> userPresentati
 chatHistory :: PrimaryKey -> ServerEffect (Array HistoryMessage)
 chatHistory id = SD.select (Query ("select" <> messagePresentationFields <> "from messages where sender = $1 or recipient = $1 order by date, sender, recipient")) $ Row1 id
 
+insertMessage :: forall r. PrimaryKey -> PrimaryKey -> String -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey (Either IMUser PrimaryKey))
 insertMessage sender recipient content = SD.withTransaction $ \connection -> do
-        priorExistingHistory <- SD.scalarWith connection (Query """select insertHistory($1, $2)""") (Row2 sender recipient)
-        messageID <- SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") (Row3 sender recipient content)
+        priorExistingHistory <- SD.scalarWith connection (Query """select insertHistory($1, $2)""") $ Row2 sender recipient
+        messageID <- SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") $ Row3 sender recipient content
         if priorExistingHistory then
                 pure <<< Tuple messageID $ Right sender
          else do
                 senderUser <- SD.singleWith connection presentUserQuery $ presentUserParameters sender
                 pure <<< Tuple messageID $ Left senderUser
+
+--when using an array parameter, any must be used instead of in
+markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit
+markRead recipient ids = SD.execute (Query "update messages set status = 1 where recipient = $1 and id = any($2)") $ Row2 recipient ids

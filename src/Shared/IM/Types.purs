@@ -125,7 +125,12 @@ data WebSocketPayloadServer =
         ServerMessage (BasicMessage (
                 token :: String,
                 user :: PrimaryKey
-        ))
+        )) |
+        ReadMessages {
+                token :: String,
+                --alternatively, update by user?
+                ids :: Array PrimaryKey
+        }
 
 data WebSocketPayloadClient =
         ClientMessage (BasicMessage (
