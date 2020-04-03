@@ -33,6 +33,7 @@ template {contacts, suggestions, user} = do
                         token: Nothing,
                         temporaryID: SP.fromInt 0,
                         suggesting: if DA.null suggestions then Nothing else Just 0,
+                        userContextMenuVisible: false,
                         contacts,
                         suggestions,
                         user

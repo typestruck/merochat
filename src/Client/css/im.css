@@ -268,20 +268,20 @@ svg {
 
 .outer-drop-menu {
     width: 20%;
-    text-align: right
+    text-align: right;
+    position: relative;
 }
 
 .dropdown-wrapper-visible .drop-menu {
-    max-height: 500px;
+    max-height: 100%;
     opacity: 1;
     position: absolute;
     z-index: 2;
     width: auto;
-    background: white;
     border: 1px solid lightgray;
     border-radius: 3px;
     padding: 10px;
-    text-align: left;
+    right:0;
 }
 
 .dropdown-wrapper-visible>.drop-menu .menu-button {

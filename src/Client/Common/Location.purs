@@ -2,16 +2,6 @@ module Client.Common.Location where
 
 import Prelude
 
-import Control.Monad.Error.Class as CMEC
-import Data.Argonaut.Decode as DAD
-import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Argonaut.Decode.Generic.Rep as DADGR
-import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
-import Data.Argonaut.Encode.Generic.Rep as DAEGR
-import Data.Either (Either(..))
-import Data.Either as DE
-import Data.Generic.Rep (class Generic)
-import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.MediaType (MediaType(..))
