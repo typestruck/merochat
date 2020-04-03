@@ -8,10 +8,10 @@ import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
+import Data.Array as DA
 import Data.Bifunctor as DB
 import Data.Date (Date)
-import Shared.Unsafe as SU
-import Data.Array as DA
+import Data.Date as DD
 import Data.Date as DD
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
@@ -21,27 +21,28 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
 import Data.Hashable (class Hashable)
 import Data.Hashable as DH
-import Data.Int53 (Int53)
 import Data.Int as DIN
-import Data.JSDate as DJ
+import Data.Int53 (Int53)
 import Data.JSDate (JSDate)
+import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Unsafe.Coerce as UC
 import Data.String (Pattern(..))
 import Data.String as DS
+import Data.Time.Duration (Days(..))
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
 import Database.PostgreSQL as DP
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
+import Shared.Types (parsePrimaryKey, PrimaryKey(..))
+import Shared.Unsafe as SU
+import Unsafe.Coerce as UC
+import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
-import Data.Date as DD
-import Shared.Types(parsePrimaryKey, PrimaryKey(..))
-import Data.Time.Duration(Days(..))
 
 foreign import fromJSDate :: JSDate -> Json
 foreign import fromWS :: WebSocket -> Json
@@ -84,7 +85,8 @@ newtype IMModel = IMModel {
         chatting :: Maybe Int,
         webSocket :: Maybe WS,
         temporaryID :: PrimaryKey,
-        token :: Maybe String
+        token :: Maybe String,
+        userContextMenuVisible :: Boolean
 }
 
 newtype HistoryMessage = HistoryMessage {
@@ -99,6 +101,10 @@ newtype HistoryMessage = HistoryMessage {
 data MessageStatus = Unread | Read
 
 newtype MDateTime = MDateTime DateTime
+
+data UserMenuMessage =
+        ShowUserContextMenu Event |
+        Logout
 
 data ContactMessage =
         ResumeChat PrimaryKey
@@ -115,6 +121,7 @@ data MainMessage =
         SetToken String
 
 data IMMessage =
+        UMM UserMenuMessage |
         SM SuggestionMessage |
         CM ChatMessage |
         MM MainMessage |

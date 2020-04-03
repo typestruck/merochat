@@ -18,8 +18,14 @@ setItem key itemValue = do
         localStorage <- WHW.localStorage window
         WSS.setItem key itemValue localStorage
 
-getItem :: String  -> Effect String
+getItem :: String -> Effect String
 getItem key = do
         window <- WH.window
         localStorage <- WHW.localStorage window
         DM.fromMaybe "" <$> WSS.getItem key localStorage
+
+removeItem :: String -> Effect Unit
+removeItem key = do
+        window <- WH.window
+        localStorage <- WHW.localStorage window
+        WSS.removeItem key localStorage

@@ -3,16 +3,15 @@ module Client.IM.Main where
 import Prelude
 import Shared.IM.Types
 
-import Client.Common.Notification as CC
+import Client.Common.Notification as CCN
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
 import Client.IM.Scroll as CISR
 import Client.IM.Suggestion as CIS
+import Client.IM.UserMenu as CIU
 import Control.Monad.Except as CME
-import Data.Argonaut.Core as DAC
-import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -26,6 +25,7 @@ import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
 import Flame (QuerySelector(..), World)
 import Flame as F
+import Flame.External as FE
 import Foreign as FO
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
@@ -61,6 +61,8 @@ main = do
 
         CISR.scrollLastMessage
 
+        FE.send [FE.onClick' (Just (UMM <<< ShowUserContextMenu))] channel
+
 setUpWebSocket :: Channel (Maybe IMMessage) -> String -> Effect Unit
 setUpWebSocket channel token = do
         webSocket <- WSW.create ("ws://localhost:" <> show port) []
@@ -87,7 +89,7 @@ setUpWebSocket channel token = do
         closeListener <- WET.eventListener $ \_ -> do
                 maybeID <- ER.read timerID
                 when (DM.isNothing maybeID) $ do
-                        CC.alert "Connection to the server lost. Retrying..."
+                        CCN.alert "Connection to the server lost. Retrying..."
                         milliseconds <- ERD.randomInt 2000 7000
                         id <- ET.setTimeout milliseconds <<< void $ setUpWebSocket channel token
                         ER.write (Just id) timerID
@@ -97,13 +99,14 @@ setUpWebSocket channel token = do
         WET.addEventListener onClose closeListener false webSocketTarget
 
 update :: World IMModel IMMessage -> IMModel -> IMMessage -> Aff IMModel
-update world model =
+update world model = do
         case _ of
                 SM message -> CIS.update world model message
                 CM message -> CIC.update world model message
                 CNM message -> CICN.update world model message
-                MM message -> set model message
-        where set model =
+                UMM message -> CIU.update world model message
+                MM message -> set message
+        where set =
                 case _ of
                         SetWebSocket webSocket -> setWebSocket model webSocket
                         SetToken token -> setToken model token
