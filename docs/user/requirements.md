@@ -10,7 +10,7 @@ User is an individual account on the application.
 
 3. [Login](#login)
 
-4. [Logout](#logout) ([#39](https://github.com/easafe/melanchat/issues/39))
+4. [Logout](#logout)
 
 5. [Recover Password](#recover-password)
 
@@ -158,7 +158,7 @@ Mockup of login page ([#4](https://github.com/easafe/melanchat/issues/4)):
 
 Users can manually end their session at any time.
 
-* A regular logged in User is redirected to the landing page after logging out
+* A regular logged in User is redirected to the landing page after logging out ([#39](https://github.com/easafe/melanchat/issues/39))
 
 * A temporary logged in User is forever deleted from the application after logging out
 
