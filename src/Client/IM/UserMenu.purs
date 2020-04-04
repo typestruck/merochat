@@ -20,10 +20,20 @@ import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 
 update :: World IMModel IMMessage -> IMModel -> UserMenuMessage -> Aff IMModel
-update _ model =
+update world model =
         case _ of
                 Logout -> logout model
                 ShowUserContextMenu event -> showUserContextMenu model event
+                ShowProfile -> showProfile world model
+
+showProfile :: World IMModel IMMessage -> IMModel -> Aff IMModel
+showProfile world model = do
+        let updatedModel = SN.updateModel model $ _ {
+                profileEditionVisible = true
+        }
+        world.view updatedModel
+        pure updatedModel
+
 
 showUserContextMenu :: IMModel -> Event -> Aff IMModel
 showUserContextMenu model@(IMModel { userContextMenuVisible }) event = do

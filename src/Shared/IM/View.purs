@@ -2,32 +2,35 @@ module Shared.IM.View where
 
 import Prelude
 import Shared.IM.Types
+
 import Data.Array as DA
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.String.Common as DSC
-import Shared.Unsafe((!@))
-import Shared.Unsafe as SU
-import Flame (Html)
-import Data.Tuple(Tuple(..))
-import Flame.HTML.Attribute as HA
-import Data.Int53 as DI
-import Data.Newtype as DN
-import Debug.Trace (spy)
+import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
-import Debug.Trace(spy)
+import Data.Int53 as DI
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.Newtype as DN
+import Data.String.Common as DSC
+import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
+import Debug.Trace (spy)
+import Flame (Html)
+import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Data.Array as DA
+import Shared.Unsafe ((!@))
+import Shared.Unsafe as SU
 
 --REFACTOR: split this into modules
 
 view :: IMModel -> Html IMMessage
-view model@(IMModel { suggestions, suggesting, chatting, contacts }) = HE.div (HA.class' "im") [
+view model@(IMModel { suggestions, suggesting, chatting, contacts, profileEditionVisible }) = HE.div (HA.class' "im") [
         HE.div_ [
                 userMenu model,
                 search model,
-                contactList model
+                contactList model,
+
+                profileEditionRoot profileEditionVisible
         ],
         HE.div (HA.class' "chat-box") [
                 profile model chattingOrSuggesting,
@@ -40,6 +43,9 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts }) = HE.div (H
                         Tuple Nothing (Just index) -> Just (suggestions !@ index)
                         Tuple (Just index) _ -> Just (contacts !@ index)
                         _ -> Nothing
+
+profileEditionRoot :: Boolean -> Html IMMessage
+profileEditionRoot isVisible = HE.div (HA.class' $ "profile-edition" <> if isVisible then "" else " hidden") "Loading..."
 
 userMenu :: IMModel -> Html IMMessage
 userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA.id "settings", HA.class' "settings"][
@@ -58,7 +64,7 @@ userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA
                         ]
                 ],
                 HE.div [HA.class' "drop-menu fade-in effect"][
-                       -- HE.a [HA.class' "menu-button", HA.href "/settings/profile"] "Profile",
+                       HE.a [HA.class' "menu-button", HA.onClick (UMM ShowProfile)] "Profile",
                        -- HE.a [HA.class' "menu-button", HA.href "/settings"] "Settings",
                        -- HE.i_ "🍉",
                        -- HE.a (HA.href "#") "Help",

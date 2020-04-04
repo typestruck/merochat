@@ -247,7 +247,7 @@ svg {
 }
 
 .dropdown-wrapper-visible {
-    z-index: 23455;
+    z-index: 3;
 }
 
 .drop-menu {
@@ -270,6 +270,16 @@ svg {
     width: 20%;
     text-align: right;
     position: relative;
+}
+
+.profile-edition {
+    position: absolute;
+    top:50px;
+    bottom:50px;
+    left:50px;
+    right:50px;
+    z-index: 4;
+    text-align: center;
 }
 
 .dropdown-wrapper-visible .drop-menu {
@@ -459,7 +469,7 @@ svg.toolbar-action {
 }
 
 .message-options {
-    z-index: 23;
+    z-index: 3;
     padding: 10px;
     margin-top: -100%;
     margin-right: -7%;
@@ -489,7 +499,7 @@ svg.toolbar-action {
 .loading-melon {
     animation: rotation 2s infinite linear;
     width:100px;
-    z-index: 34;
+    z-index: 5;
     position:absolute;
     bottom:50%;
     left:50%;

@@ -78,15 +78,20 @@ newtype IMUser = IMUser (BasicUser (
 ))
 
 newtype IMModel = IMModel {
-        user :: IMUser,
         suggestions :: Array IMUser,
-        suggesting :: Maybe Int,
         contacts :: Array IMUser,
-        chatting :: Maybe Int,
         webSocket :: Maybe WS,
         temporaryID :: PrimaryKey,
+        --used to authenticate web socket messages
         token :: Maybe String,
-        userContextMenuVisible :: Boolean
+        --the current logged in user
+        user :: IMUser,
+        --indexes
+        suggesting :: Maybe Int,
+        chatting :: Maybe Int,
+        --visibility switches
+        userContextMenuVisible :: Boolean,
+        profileEditionVisible :: Boolean
 }
 
 newtype HistoryMessage = HistoryMessage {
@@ -104,7 +109,8 @@ newtype MDateTime = MDateTime DateTime
 
 data UserMenuMessage =
         ShowUserContextMenu Event |
-        Logout
+        Logout |
+        ShowProfile
 
 data ContactMessage =
         ResumeChat PrimaryKey
