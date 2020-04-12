@@ -13,15 +13,15 @@ import Data.Newtype as DN
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Flame (World)
+import Flame.Application.Effectful (Environment)
 import Shared.Newtype as SN
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
-update :: World IMModel IMMessage -> IMModel -> ContactMessage -> Aff IMModel
-update _ model =
-        case _ of
+update :: Environment IMModel ContactMessage -> Aff IMModel
+update { model, message } =
+        case message of
                 ResumeChat id -> do
                         model' <- resumeChat id model
                         markRead webSocketHandler  model'

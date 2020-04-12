@@ -7,7 +7,7 @@ import Client.IM.Suggestion as CIS
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Shared.Newtype as TSU
-import Flame (World)
+
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -74,7 +74,7 @@ imUser = IMUser {
         gender: Nothing
 }
 
-world :: World _ _
+world :: Environment _ _
 world = {
         update: \a _ -> pure a,
         view: \_ -> pure unit,

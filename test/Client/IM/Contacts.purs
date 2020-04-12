@@ -12,7 +12,7 @@ import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Flame (World)
+
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
@@ -105,7 +105,7 @@ anotherIMUser = SN.updateUser imUser $ _ {
         ]
 }
 
-world :: World _ _
+world :: Environment _ _
 world = {
         update: \a _ -> pure a,
         view: \_ -> pure unit,

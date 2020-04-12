@@ -16,7 +16,7 @@ import Data.Tuple (Tuple(..))
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Unsafe ((!@))
-import Flame (World)
+
 import Partial.Unsafe as PU
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
@@ -224,7 +224,7 @@ imUser = IMUser {
 anotherIMUser :: IMUser
 anotherIMUser = SN.updateUser imUser $ _ { id = SP.fromInt 90 }
 
-world :: World _ _
+world :: Environment _ _
 world = {
         update: \a _ -> pure a,
         view: \_ -> pure unit,

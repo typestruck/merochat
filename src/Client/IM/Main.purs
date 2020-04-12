@@ -23,8 +23,9 @@ import Effect.Ref as ER
 import Effect.Timer as ET
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
-import Flame (QuerySelector(..), World)
-import Flame as F
+import Flame (QuerySelector(..))
+import Flame.Application.Effectful as FAE
+import Flame.Application.Effectful (AffUpdate)
 import Flame.External as FE
 import Foreign as FO
 import Shared.IM.View as SIV
@@ -45,7 +46,7 @@ foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
 
 main :: Effect Unit
 main = do
-        channel <- F.resumeMount (QuerySelector ".im") {
+        channel <- FAE.resumeMount (QuerySelector ".im") {
                 view: SIV.view,
                 init: Nothing,
                 update
@@ -98,16 +99,16 @@ setUpWebSocket channel token = do
         WET.addEventListener onOpen openListener false webSocketTarget
         WET.addEventListener onClose closeListener false webSocketTarget
 
-update :: World IMModel IMMessage -> IMModel -> IMMessage -> Aff IMModel
-update world model = do
-        case _ of
-                SM message -> CIS.update world model message
-                CM message -> CIC.update world model message
-                CNM message -> CICN.update world model message
-                UMM message -> CIU.update world model message
-                MM message -> set message
-        where set =
-                case _ of
+update :: AffUpdate IMModel IMMessage
+update environment@{ message, model, display } =
+        case message of
+                CM msg -> const <$> CIC.update (environment { message = msg })
+                SM msg -> const <$> CIS.update (environment { message = msg })
+                CNM msg -> const <$> CICN.update (environment { message = msg })
+                UMM msg -> CIU.update $ environment { message = msg }
+                MM msg -> const <$> set msg
+
+        where   set = case _ of
                         SetWebSocket webSocket -> setWebSocket model webSocket
                         SetToken token -> setToken model token
 
