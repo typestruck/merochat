@@ -1,17 +1,14 @@
-module Serve.Profile.Template where
+module Server.Profile.Template where
 
 import Prelude
 import Shared.Profile.Types
 
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.HTML.Attribute as HA
-import Shared.PrimaryKey as SP
 import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
-import Data.Array as DA
 import Server.Template as ST
 import Shared.Profile.View as SPV
 

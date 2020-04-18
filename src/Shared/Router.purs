@@ -1,4 +1,4 @@
-module Shared.Routing (fromRoute, fromRouteAbsolute, toRoute) where
+module Shared.Router (fromRoute, fromRouteAbsolute, toRoute) where
 
 import Data.Either (Either)
 import Data.Symbol (SProxy(..))
@@ -18,7 +18,8 @@ routes = RD.root $ RDG.sum {
         "Register" : "register" / RDG.noArgs,
         --the type level voodoo on the examples doesn't typecheck
         "Login": RD.path "login" (RD.record # _next := RD.optional (RD.param "next")),
-        "IM": "im" / RDG.noArgs
+        "IM": "im" / RDG.noArgs,
+        "Profile": "profile" / RDG.noArgs
 }
         where     _next = SProxy :: SProxy "next"
 

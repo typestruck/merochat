@@ -11,6 +11,8 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Exception as EE
+import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried as EU
 import Partial.Unsafe as UP
 import Shared.Header (xAccessToken)
 import Web.DOM.Document as WDD
@@ -26,6 +28,8 @@ import Web.HTML.HTMLDocument as WHHD
 import Web.HTML.HTMLInputElement as WHHI
 import Web.HTML.Window as HWH
 import Web.HTML.Window as WHW
+
+foreign import innerHTML :: EffectFn2 Element String Unit
 
 confirm :: String -> Effect Boolean
 confirm message = do
@@ -57,3 +61,5 @@ value element = DM.maybe inputException WHHI.value $ WHHI.fromElement element
                 id <- WDE.id element
                 EE.throwException <<< EE.error $ "Element is not an input type" <> id
 
+setInnerHTML :: Element -> String -> Effect Unit
+setInnerHTML element = EU.runEffectFn2 innerHTML element

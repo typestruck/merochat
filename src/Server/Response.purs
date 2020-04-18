@@ -2,6 +2,7 @@
 module Server.Response(
         html,
         json,
+        json',
         serveDevelopmentFile,
         requestError,
         throwInternalError,

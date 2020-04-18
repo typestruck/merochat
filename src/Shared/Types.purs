@@ -15,9 +15,8 @@ import Data.Hashable as DH
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.List.NonEmpty as DLN
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
-import Database.PostgreSQL as DP
 import Foreign (Foreign, F)
 import Foreign as F
 import Shared.Unsafe as SU
@@ -55,12 +54,16 @@ newtype Token = Token {
         tokenPOST :: String
 }
 
+-- | A newtype for pure string JSON payloads so we can use the same `Generic` functions
+newtype JSONString = JSONString String
+
 -- | All available endpoints for melanchat
 data Route =
         Landing |
         Register |
         Login { next :: Maybe String } |
-        IM
+        IM |
+        Profile
 
 data By =
         ID PrimaryKey |
@@ -81,6 +84,7 @@ derive instance genericToken :: Generic Token _
 derive instance genericResponseError :: Generic ResponseError _
 derive instance genericPrimaryKey :: Generic PrimaryKey _
 derive instance genericUser :: Generic RegisterLoginUser _
+derive instance genericJSONString :: Generic JSONString _
 
 derive instance eqRoute :: Eq Route
 derive instance eqPrimaryKey :: Eq PrimaryKey

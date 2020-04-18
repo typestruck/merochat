@@ -26,7 +26,8 @@ import Server.Response as SRR
 import Server.Token as ST
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
-import Shared.Routing as SRO
+import Shared.Router as SRO
+import Server.Router.Profile as SRP
 
 --needs logging as well
 runRouter :: ServerReader -> Request -> ResponseM
@@ -41,11 +42,13 @@ router :: Request -> ResponseEffect
 router request@{ headers, path, method }
         --landing
         | DA.null path = SLR.landing
-        | path == [ SRO.fromRoute Register ] && method == Post = SLR.register request
+        | path == [SRO.fromRoute Register] && method == Post = SLR.register request
         --login
         | path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) = SLIR.login request
         --im
-        | path == [ SRO.fromRoute IM ] = SIR.im request
+        | path == [SRO.fromRoute IM] = SIR.im request
+        --profile
+        | path == [SRO.fromRoute Profile] = SRP.profile
         --local files and 404 for development
         | otherwise = do
                 { configuration : Configuration configuration } <- RR.ask
