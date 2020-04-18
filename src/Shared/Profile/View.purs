@@ -29,4 +29,35 @@ view profileUser = HE.div (HA.class' "im") [
 ]
 
 profile :: ProfileUser -> Html ProfileMessage
-profile model = HE.text "OI"
+profile (ProfileUser user) =
+        HE.div (HA.class' "suggestion") [
+                HE.div (HA.class' "profile-info") [
+                        HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar],
+                        HE.div_ [
+                                HE.h1_ user.name,
+                                HE.h3 (HA.class' "headline") user.headline
+                        ],
+                        HE.div_ $
+                                toInfoSpan false (map ((_ <> ",") <<< show) user.age) <>
+                                toInfoSpan true user.gender <>
+                                toInfoSpan true user.country <>
+                                --maybe include local time?
+                                (toInfoSpan false <<< maybeLanguages $ DSC.joinWith ", " user.languages),
+                        HE.div_ $ map toTagSpan user.tags
+                ]
+        ]
+         where  toInfoSpan includeSepator =
+                        case _ of
+                                Just s ->
+                                        [HE.span_ $ s <> " "] <>
+                                        (if includeSepator then
+                                                [HE.span (HA.class' "smaller") "• "]
+                                         else [])
+                                _ -> [HE.createEmptyElement "span"]
+
+                maybeLanguages =
+                        case _ of
+                                "" -> Nothing
+                                l -> Just ("speaks " <> l)
+
+                toTagSpan tag = HE.span (HA.class' "tag") tag

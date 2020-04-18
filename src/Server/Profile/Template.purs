@@ -13,15 +13,14 @@ import Server.Template as ST
 import Shared.Profile.View as SPV
 
 template :: ProfileUser -> Effect String
-template (ProfileUser {}) = do
+template user = do
         parameters <- ST.extendParameters $ defaultParameters {
                 javascript = javascript,
                 css = css
         }
         F.preMount (QuerySelector ".im") {
                 view: \model' -> ST.templateWith $ parameters { content = [SPV.view model'] },
-                init: ProfileUser {
-                }
+                init: user
         }
         where   javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/profile.bundle.js"] ]
                 css = [

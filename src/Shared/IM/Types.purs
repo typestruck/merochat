@@ -12,8 +12,8 @@ import Data.Array as DA
 import Data.Bifunctor as DB
 import Data.Date (Date)
 import Data.Date as DD
-import Data.Date as DD
-import Data.DateTime (DateTime)
+import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime, Time(..))
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
 import Data.Enum as DE
@@ -103,9 +103,11 @@ newtype HistoryMessage = HistoryMessage {
         status :: MessageStatus
 }
 
-data MessageStatus = Unread | Read
-
 newtype MDateTime = MDateTime DateTime
+
+newtype MDate = MDate Date
+
+data MessageStatus = Unread | Read
 
 data UserMenuMessage =
         ShowUserContextMenu Event |
@@ -163,12 +165,14 @@ derive instance genericIMModel :: Generic IMModel _
 derive instance genericHistoryMessage :: Generic HistoryMessage _
 derive instance genericMessageStatus :: Generic MessageStatus _
 derive instance genericMDateTime :: Generic MDateTime _
+derive instance genericMDate :: Generic MDate _
 
 derive instance newTypeIMUser :: Newtype IMUser _
 derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
 derive instance newTypeIMModel :: Newtype IMModel _
 
 derive instance eqMDateTime :: Eq MDateTime
+derive instance eqMDate :: Eq MDate
 derive instance eqHistoryMessage :: Eq HistoryMessage
 derive instance eqIMModel :: Eq IMModel
 derive instance eqIMUser :: Eq IMUser
@@ -190,6 +194,10 @@ instance showIMModel :: Show IMModel where
         show = DGRS.genericShow
 instance showMessageStatus :: Show MessageStatus where
         show = DGRS.genericShow
+instance showMDateTime :: Show MDateTime where
+        show = DGRS.genericShow
+instance showMDate :: Show MDate where
+        show = DGRS.genericShow
 
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
         encodeJson = DAEGR.genericEncodeJson
@@ -201,6 +209,8 @@ instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMDateTime :: EncodeJson MDateTime where
         encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
+instance encodeJsonMDate :: EncodeJson MDate where
+        encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0)
 
 instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
         decodeJson = DADGR.genericDecodeJson
@@ -210,10 +220,12 @@ instance decodeJsonWS :: DecodeJson WS where
         decodeJson = Right <<< toWS
 instance decodeJsonIMUser :: DecodeJson IMUser where
         decodeJson = DADGR.genericDecodeJson
-instance showMDateTime :: Show MDateTime where
-        show = DGRS.genericShow
-instance edecodeJsonMDateTime :: DecodeJson MDateTime where
+instance decodeJsonMDateTime :: DecodeJson MDateTime where
         decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
+                where   jsonString :: String
+                        jsonString = UC.unsafeCoerce json
+instance decodeJsonMDate :: DecodeJson MDate where
+        decodeJson json = Right <<< MDate <<< SU.unsafeFromJust "decodeJson mdate" <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
                 where   jsonString :: String
                         jsonString = UC.unsafeCoerce json
 

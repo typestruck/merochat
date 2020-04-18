@@ -16,7 +16,7 @@ im :: Request -> ResponseEffect
 im { path } = do
         let handler = do
                 { session: { userID: maybeUserID } } <- RR.ask
-                let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
+                let userID = PrimaryKey $ SU.unsafeFromJust "im" maybeUserID
                 user <- SID.presentUser userID
                 suggestions <- SIA.suggest userID
                 contacts <- SIA.contactList userID

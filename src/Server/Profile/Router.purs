@@ -8,10 +8,15 @@ import Server.Profile.Template as SPT
 import Server.Response as SRR
 import Server.Types (ResponseEffect)
 import Shared.Profile.Types (ProfileUser(..))
-import Shared.Types (JSONString(..))
+import Shared.Unsafe as SU
+import Server.Profile.Database as SPD
+import Shared.Types (JSONString(..), PrimaryKey(..))
+import Run.Reader as RR
 
 profile :: ResponseEffect
 profile = do
-        profileUser <- pure $ ProfileUser {}
+        { session: { userID: maybeUserID } } <- RR.ask
+        let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
+        profileUser <- SPD.presentUser userID
         contents <- R.liftEffect $ SPT.template profileUser
         SRR.json' $ JSONString contents
