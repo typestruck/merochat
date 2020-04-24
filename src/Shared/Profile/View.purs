@@ -3,26 +3,27 @@ module Shared.Profile.View where
 import Prelude
 import Shared.IM.Types
 import Shared.Profile.Types
+
 import Data.Array as DA
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.String.Common as DSC
-import Shared.Unsafe((!@))
-import Shared.Unsafe as SU
-import Flame (Html)
-import Data.Tuple(Tuple(..))
-import Flame.HTML.Attribute as HA
-import Data.Int53 as DI
-import Data.Newtype as DN
-import Debug.Trace (spy)
+import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
-import Debug.Trace(spy)
+import Data.Int53 as DI
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.Newtype as DN
+import Data.String.Common as DSC
+import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
+import Debug.Trace (spy)
+import Flame (Html)
+import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Data.Array as DA
+import Shared.Unsafe ((!@))
+import Shared.Unsafe as SU
 
 view :: ProfileUser -> Html ProfileMessage
-view profileUser = HE.div (HA.class' "im") [
+view profileUser = HE.div (HA.class' "profile-edition") [
         HE.div (HA.class' "chat-box") [
                 profile profileUser
         ]
@@ -44,7 +45,9 @@ profile (ProfileUser user) =
                                 --maybe include local time?
                                 (toInfoSpan false <<< maybeLanguages $ DSC.joinWith ", " user.languages),
                         HE.div_ $ map toTagSpan user.tags
-                ]
+                ] ,
+                HE.br,
+                HE.span' user.description
         ]
          where  toInfoSpan includeSepator =
                         case _ of

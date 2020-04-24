@@ -36,7 +36,7 @@ showProfile { display, model } = do
         display $ F.diff' { profileEditionVisible: true }
         JSONString html <- CCN.get' $ SR.fromRouteAbsolute Profile
         liftEffect do
-                element <- CCD.querySelector ".profile-edition"
+                element <- CCD.querySelector ".profile-edition-placeholder"
                 CCD.setInnerHTML element html
         FAE.noChanges
 

@@ -45,7 +45,7 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileEditio
                         _ -> Nothing
 
 profileEditionRoot :: Boolean -> Html IMMessage
-profileEditionRoot isVisible = HE.div (HA.class' $ "profile-edition" <> if isVisible then "" else " hidden") "Loading..."
+profileEditionRoot isVisible = HE.div (HA.class' $ "profile-edition-placeholder" <> if isVisible then "" else " hidden") "Loading..."
 
 userMenu :: IMModel -> Html IMMessage
 userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA.id "settings", HA.class' "settings"][
