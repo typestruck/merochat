@@ -45,7 +45,10 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileEditio
                         _ -> Nothing
 
 profileEditionRoot :: Boolean -> Html IMMessage
-profileEditionRoot isVisible = HE.div (HA.class' $ "profile-edition-placeholder" <> if isVisible then "" else " hidden") "Loading..."
+profileEditionRoot isVisible = HE.div (HA.class' $ "profile-edition-placeholder" <> if isVisible then "" else " hidden") [
+        HE.span [HA.onClick (UMM $ ToggleProfile false), HA.class' "profile-edition-exit"] $ "Profile edition changes are saved automatically. Click here to go back.",
+        HE.div "profile-edition-root" $ "Loading..."
+]
 
 userMenu :: IMModel -> Html IMMessage
 userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA.id "settings", HA.class' "settings"][
@@ -64,7 +67,7 @@ userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA
                         ]
                 ],
                 HE.div [HA.class' "drop-menu fade-in effect"][
-                       HE.a [HA.class' "menu-button", HA.onClick (UMM ShowProfile)] "Profile",
+                       HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfile true)] "Profile",
                        -- HE.a [HA.class' "menu-button", HA.href "/settings"] "Settings",
                        -- HE.i_ "🍉",
                        -- HE.a (HA.href "#") "Help",

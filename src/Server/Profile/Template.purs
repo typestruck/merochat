@@ -12,7 +12,7 @@ import Shared.Profile.View as SPV
 
 template :: ProfileUser -> Effect String
 template user = do
-        F.preMount (QuerySelector ".profile-edition") {
+        F.preMount (QuerySelector ".profile-info-edition") {
                 view: \model' ->
                         HE.div_ [
                                 javascript,

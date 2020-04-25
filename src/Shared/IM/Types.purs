@@ -112,7 +112,7 @@ data MessageStatus = Unread | Read
 data UserMenuMessage =
         ShowUserContextMenu Event |
         Logout |
-        ShowProfile
+        ToggleProfile Boolean
 
 data ContactMessage =
         ResumeChat PrimaryKey

@@ -10,7 +10,6 @@ body {
     height: 100%;
     display: grid;
     grid-template-rows: auto 1fr 130px;
-
 }
 
 .send-box {
@@ -140,7 +139,7 @@ svg {
     flex-flow: column wrap;
 }
 
-.profile-info {
+.profile-info, .profile-info-edition {
     display: flex;
     text-align: center;
     flex-basis: 70%;
@@ -199,7 +198,7 @@ svg {
     flex-flow: column;
 }
 
-.message-history-wrapper > :first-child:not(.description-message) {
+.message-history-wrapper> :first-child:not(.description-message) {
     margin-top: auto !important;
 }
 
@@ -236,11 +235,9 @@ svg {
     align-self: flex-end;
 }
 
-
 .sender-message .avatar-message {
     margin-left: 10px;
 }
-
 
 .sender-message .text {
     background: #dcf8c6;
@@ -272,13 +269,22 @@ svg {
     position: relative;
 }
 
-.profile-edition {
+.profile-edition-placeholder {
     position: absolute;
-    top:10px;
-    bottom:10px;
-    left:10px;
-    right:10px;
+    top: 20px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
     z-index: 4;
+}
+
+.profile-info-edition {
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.profile-info-edition span, .profile-info-edition img, .profile-info-edition h1, .profile-info-edition h3 {
+    cursor: pointer;
 }
 
 .dropdown-wrapper-visible .drop-menu {
@@ -290,7 +296,7 @@ svg {
     border: 1px solid lightgray;
     border-radius: 3px;
     padding: 10px;
-    right:0;
+    right: 0;
 }
 
 .dropdown-wrapper-visible>.drop-menu .menu-button {
@@ -497,13 +503,13 @@ svg.toolbar-action {
 
 .loading-melon {
     animation: rotation 2s infinite linear;
-    width:100px;
+    width: 100px;
     z-index: 5;
-    position:absolute;
-    bottom:50%;
-    left:50%;
-    margin-bottom:-50px;
-    margin-left:-50px;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    margin-bottom: -50px;
+    margin-left: -50px;
 }
 
 @keyframes rotation {
@@ -513,7 +519,6 @@ svg.toolbar-action {
     to {
         transform: rotate(359deg);
     }
-
 }
 
 .inline-image {
@@ -531,14 +536,27 @@ svg.toolbar-action {
 }
 
 .CodeMirror, .CodeMirror-scroll {
-	min-height: 20px !important;
+    min-height: 20px !important;
 }
 
 .CodeMirror {
     margin-bottom: 15px;
 }
 
-
 .hidden .editor-toolbar, .hidden .CodeMirror {
     display: hidden;
+}
+
+.profile-info-description {
+    text-align: justify;
+    margin: 10px 0px;
+}
+
+.profile-info-add {
+    font-style: italic;
+}
+
+.profile-edition-exit {
+    font-weight: bold;
+    cursor: pointer;
 }

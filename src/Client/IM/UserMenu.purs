@@ -3,6 +3,7 @@ module Client.IM.UserMenu where
 import Prelude
 import Shared.IM.Types
 
+import Client.Common.Cookies as CCC
 import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network as CCN
@@ -11,10 +12,8 @@ import Client.Common.Storage as CCS
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Flame.Application.Effectful (AffUpdate)
-import Flame.Application.Effectful as F
+import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
-import Client.Common.Cookies as CCC
 import Shared.Router as SR
 import Shared.Types (JSONString(..), Route(..))
 import Shared.Unsafe as SU
@@ -28,17 +27,24 @@ update environment@{ model, message } =
                 Logout -> do
                         liftEffect logout
                         FAE.noChanges
-                ShowUserContextMenu event -> F.diff' <$> showUserContextMenu model event
-                ShowProfile -> showProfile environment
+                ShowUserContextMenu event -> FAE.diff' <$> showUserContextMenu model event
+                ToggleProfile isVisible -> showProfile environment isVisible
 
-showProfile :: AffUpdate IMModel UserMenuMessage
-showProfile { display, model } = do
-        display $ F.diff' { profileEditionVisible: true }
-        JSONString html <- CCN.get' $ SR.fromRouteAbsolute Profile
-        liftEffect do
-                element <- CCD.querySelector ".profile-edition-placeholder"
-                CCD.setInnerHTML element html
-        FAE.noChanges
+showProfile :: Environment IMModel UserMenuMessage -> Boolean -> Aff (IMModel -> IMModel)
+showProfile { display, model } =
+        case _ of
+                true -> do
+                        display $ FAE.diff' { profileEditionVisible: true }
+                        JSONString html <- CCN.get' $ SR.fromRouteAbsolute Profile
+                        setRootHTML html
+                        FAE.noChanges
+                false -> do
+                        setRootHTML "Loading..."
+                        FAE.diff { profileEditionVisible: false }
+
+        where   setRootHTML html = liftEffect do
+                        element <- CCD.querySelector "#profile-edition-root"
+                        CCD.setInnerHTML element html
 
 showUserContextMenu :: IMModel -> Event -> Aff { userContextMenuVisible :: Boolean }
 showUserContextMenu model@(IMModel { userContextMenuVisible }) event = do

@@ -15,48 +15,38 @@ import Data.Newtype as DN
 import Data.String.Common as DSC
 import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
-import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Shared.Unsafe ((!@))
-import Shared.Unsafe as SU
 
 view :: ProfileUser -> Html ProfileMessage
-view profileUser = HE.div (HA.class' "profile-edition") [
-        HE.div (HA.class' "chat-box") [
-                profile profileUser
-        ]
-]
-
-profile :: ProfileUser -> Html ProfileMessage
-profile (ProfileUser user) =
-        HE.div (HA.class' "suggestion") [
-                HE.div (HA.class' "profile-info") [
-                        HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar],
-                        HE.div_ [
-                                HE.h1_ user.name,
-                                HE.h3 (HA.class' "headline") user.headline
-                        ],
-                        HE.div_ $
-                                toInfoSpan false (map ((_ <> ",") <<< show) user.age) <>
-                                toInfoSpan true user.gender <>
-                                toInfoSpan true user.country <>
-                                --maybe include local time?
-                                (toInfoSpan false <<< maybeLanguages $ DSC.joinWith ", " user.languages),
-                        HE.div_ $ map toTagSpan user.tags
-                ] ,
+view (ProfileUser user) =
+        HE.div (HA.class' "profile-info-edition") [
+                HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar, title "avatar"],
+                HE.div_ [
+                        HE.h1 (title "name") user.name,
+                        HE.h3 [HA.class' "headline", title "headline"] user.headline
+                ],
+                HE.div_ [
+                        toInfoSpan "age"  (map ((_ <> ",") <<< show) user.age),
+                        HE.span (HA.class' "smaller") " • ",
+                        toInfoSpan "gender"  user.gender,
+                        HE.span (HA.class' "smaller") " • ",
+                        toInfoSpan "country"  user.country,
+                        HE.span (HA.class' "smaller") " • ",
+                        (toInfoSpan "languages"  <<< maybeLanguages $ DSC.joinWith ", " user.languages)
+                ],
+                HE.div_ $ map toTagSpan user.tags,
                 HE.br,
-                HE.span' user.description
+                HE.span [HA.class' "profile-info-description", title "description"] user.description
         ]
-         where  toInfoSpan includeSepator =
+
+        where   title name = HA.title $ "Click to edit your " <> name
+
+                toInfoSpan itemName =
                         case _ of
-                                Just s ->
-                                        [HE.span_ $ s <> " "] <>
-                                        (if includeSepator then
-                                                [HE.span (HA.class' "smaller") "• "]
-                                         else [])
-                                _ -> [HE.createEmptyElement "span"]
+                                Just s -> HE.span (title itemName) $ s <> " "
+                                _ -> HE.span (HA.class' "profile-info-add") $ "Click here to add your " <> itemName <> " "
 
                 maybeLanguages =
                         case _ of
