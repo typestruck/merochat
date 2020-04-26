@@ -21,7 +21,7 @@ template :: {
         user :: IMUser
 } -> Effect String
 template {contacts, suggestions, user} = do
-        parameters <- ST.extendParameters $ defaultParameters {
+        let parameters = defaultParameters {
                 javascript = javascript,
                 css = css
         }

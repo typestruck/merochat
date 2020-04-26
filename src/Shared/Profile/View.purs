@@ -13,7 +13,6 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String.Common as DSC
-import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
@@ -22,6 +21,7 @@ import Flame.HTML.Element as HE
 view :: ProfileUser -> Html ProfileMessage
 view (ProfileUser user) =
         HE.div (HA.class' "profile-info-edition") [
+                HE.div (HA.class' "profile-info-alert") "Profile edition changes are saved automatically.",
                 HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar, title "avatar"],
                 HE.div_ [
                         HE.h1 (title "name") user.name,

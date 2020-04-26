@@ -30,6 +30,7 @@
     "ws": "^7.1.2"
   },
   "devDependencies": {
+    "@coreui/icons": "^1.0.1",
     "canvas": "^2.6.1",
     "jsdom": "^15.2.1",
     "pg-native": "^3.0.0",

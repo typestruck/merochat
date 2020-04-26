@@ -30,7 +30,7 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileEditio
                 search model,
                 contactList model,
 
-                profileEditionRoot profileEditionVisible
+                profileSettings profileEditionVisible
         ],
         HE.div (HA.class' "chat-box") [
                 profile model chattingOrSuggesting,
@@ -44,9 +44,18 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileEditio
                         Tuple (Just index) _ -> Just (contacts !@ index)
                         _ -> Nothing
 
-profileEditionRoot :: Boolean -> Html IMMessage
-profileEditionRoot isVisible = HE.div (HA.class' $ "profile-edition-placeholder" <> if isVisible then "" else " hidden") [
-        HE.span [HA.onClick (UMM $ ToggleProfile false), HA.class' "profile-edition-exit"] $ "Profile edition changes are saved automatically. Click here to go back.",
+profileSettings :: Boolean -> Html IMMessage
+profileSettings isVisible = HE.div (HA.class' $ "profile-settings-placeholder" <> if isVisible then "" else " hidden") [
+        HE.div (HA.class' "profile-settings-menu") [
+                HE.div [HA.onClick (UMM $ ToggleProfile false)] [
+                        HE.svg [HA.class' "svg-16", HA.id "cil-arrow-thick-to-left", HA.viewBox "0 0 24 24"] [
+                                HE.path' $ HA.d "M15.75 8.25v-5.625h-1.81l-9.375 9.366 9.375 9.384h1.811v-5.625h7.5v-7.5zM21.75 14.25h-7.5v5.314l-7.564-7.572 7.564-7.557v5.315h7.5z",
+                                HE.path' $ HA.d "M0.75 2.625h1.5v18.75h-1.5v-18.75z"
+                        ],
+                        HE.text "Back to chats"
+                ],
+                HE.span_ "Your profile"
+        ],
         HE.div "profile-edition-root" $ "Loading..."
 ]
 

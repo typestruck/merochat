@@ -21,3 +21,4 @@ template user = do
                 init: user
         }
         where   javascript =  HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/profile.bundle.js"]
+

@@ -3,7 +3,6 @@ module Server.Template(
         template,
         externalFooter,
         templateWith,
-        extendParameters,
         defaultParameters,
         externalDefaultParameters
 ) where
@@ -24,8 +23,7 @@ type Parameters a = {
         javascript :: Array (Html a),
         css :: Array (Html a),
         content :: Array (Html a),
-        footer :: Array (Html a),
-        nightTheme :: Boolean
+        footer :: Array (Html a)
 }
 
 defaultParameters :: forall a. Parameters a
@@ -33,8 +31,7 @@ defaultParameters = {
         javascript: [],
         css: [],
         content: [],
-        footer: [],
-        nightTheme: false
+        footer: []
 }
 
 externalDefaultParameters :: forall a. Parameters a
@@ -49,20 +46,12 @@ externalDefaultParameters = {
                         HE.div (HA.class' "login") $ HE.a (HA.href "/login") "Login"
                 ]
         ],
-        footer: externalFooter,
-        nightTheme: false
+        footer: externalFooter
 }
 
 --inclusion of night theme should be a setting
 template :: forall a. Parameters a -> Effect (Html a)
-template parameters = do
-        parameters' <- extendParameters parameters
-        pure $ templateWith parameters'
-
-extendParameters :: forall a. Parameters a -> Effect (Parameters a)
-extendParameters parameters = do
-        Time hour _ _ _ <- EN.nowTime
-        pure $ parameters {nightTheme = true}-- (DE.fromEnum hour) >= 17 && (DE.fromEnum hour) <= 7}
+template = pure <<< templateWith
 
 templateWith :: forall a. Parameters a -> Html a
 templateWith parameters =
@@ -75,8 +64,10 @@ templateWith parameters =
                 ] <> styleSheets <> parameters.css),
                 HE.body_ (HE.div' [HA.id "loading", HA.class' "loading"] : parameters.content <> parameters.footer <> parameters.javascript)
         ]
-        where defaultCss = [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]]
-              styleSheets = if parameters.nightTheme then defaultCss <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/night.css"]] else defaultCss
+        where styleSheets = [
+                HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"],
+                HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/night.css"]
+        ]
 
 externalFooter :: forall a. Array (Html a)
 externalFooter = [
@@ -84,7 +75,7 @@ externalFooter = [
                 HE.a (HA.href "/") <<< HE.img' $ HA.src "/client/media/logo.png",
                 HE.ul_ [
                         HE.li_ $ HE.a (HA.href "#") "Help",
-                        HE.li_ $ HE.a (HA.href "https://github.com/azafeh/melanchat") "Source code",
+                        HE.li_ $ HE.a (HA.href "https://github.com/easafe/melanchat") "Source code",
                             HE.li_ $ HE.a (HA.href "#") "Become a backer",
                             HE.li_ $ HE.a (HA.href "/login") "Login"
                 ]

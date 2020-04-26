@@ -1,3 +1,5 @@
+/* svg icons come from https://coreui.io/icons */
+
 body {
     margin: 0;
     font-family: "Open sans", "sans serif";
@@ -90,7 +92,7 @@ svg {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .settings, .contact {
@@ -165,9 +167,6 @@ svg {
 
 .message-box {
     margin: 20px 0px;
-    /* display: flex;
-    justify-content: end;
-    align-items: end */
 }
 
 .text-message {
@@ -269,17 +268,21 @@ svg {
     position: relative;
 }
 
-.profile-edition-placeholder {
+.profile-settings-placeholder {
     position: absolute;
-    top: 20px;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    display:flex;
+    flex-flow: row;
+    padding: 30px;
     z-index: 4;
 }
 
 .profile-info-edition {
     max-width: 1300px;
+    padding-left:10px ;
     margin: 0 auto;
 }
 
@@ -556,7 +559,19 @@ svg.toolbar-action {
     font-style: italic;
 }
 
-.profile-edition-exit {
-    font-weight: bold;
-    cursor: pointer;
+#profile-edition-root{
+    text-align: center;
+    flex-grow: 1;
+}
+
+.profile-info-alert {
+    padding: 5px;
+    border: 1px dashed yellow;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.profile-settings-menu {
+    display: flex;
+    flex-flow: column;
 }
