@@ -28,19 +28,19 @@ update environment@{ model, message } =
                         liftEffect logout
                         FAE.noChanges
                 ShowUserContextMenu event -> FAE.diff' <$> showUserContextMenu model event
-                ToggleProfile isVisible -> showProfile environment isVisible
+                ToggleProfileSettings toggle -> showProfile environment toggle
 
-showProfile :: Environment IMModel UserMenuMessage -> Boolean -> Aff (IMModel -> IMModel)
+showProfile :: Environment IMModel UserMenuMessage -> ProfileSettingsToggle -> Aff (IMModel -> IMModel)
 showProfile { display, model } =
         case _ of
-                true -> do
-                        display $ FAE.diff' { profileEditionVisible: true }
+                ShowProfile -> do
+                        display $ FAE.diff' { profileSettingsToggle: ShowProfile }
                         JSONString html <- CCN.get' $ SR.fromRouteAbsolute Profile
                         setRootHTML html
                         FAE.noChanges
-                false -> do
+                _ -> do
                         setRootHTML "Loading..."
-                        FAE.diff { profileEditionVisible: false }
+                        FAE.diff { profileSettingsToggle: Hidden }
 
         where   setRootHTML html = liftEffect do
                         element <- CCD.querySelector "#profile-edition-root"

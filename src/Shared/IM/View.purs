@@ -24,13 +24,13 @@ import Shared.Unsafe as SU
 --REFACTOR: split this into modules
 
 view :: IMModel -> Html IMMessage
-view model@(IMModel { suggestions, suggesting, chatting, contacts, profileEditionVisible }) = HE.div (HA.class' "im") [
+view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettingsToggle }) = HE.div (HA.class' "im") [
         HE.div_ [
                 userMenu model,
                 search model,
                 contactList model,
 
-                profileSettings profileEditionVisible
+                profileSettings profileSettingsToggle
         ],
         HE.div (HA.class' "chat-box") [
                 profile model chattingOrSuggesting,
@@ -44,17 +44,17 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileEditio
                         Tuple (Just index) _ -> Just (contacts !@ index)
                         _ -> Nothing
 
-profileSettings :: Boolean -> Html IMMessage
-profileSettings isVisible = HE.div (HA.class' $ "profile-settings-placeholder" <> if isVisible then "" else " hidden") [
+profileSettings :: ProfileSettingsToggle -> Html IMMessage
+profileSettings toggle = HE.div (HA.class' $ "profile-settings-placeholder" <> if toggle /= Hidden then "" else " hidden") [
         HE.div (HA.class' "profile-settings-menu") [
-                HE.div [HA.onClick (UMM $ ToggleProfile false)] [
-                        HE.svg [HA.class' "svg-16", HA.id "cil-arrow-thick-to-left", HA.viewBox "0 0 24 24"] [
+                HE.div [HA.onClick (UMM $ ToggleProfileSettings Hidden)] [
+                        HE.svg [HA.class' "svg-32 back-arrow", HA.id "cil-arrow-thick-to-left", HA.viewBox "0 0 24 24"] [
                                 HE.path' $ HA.d "M15.75 8.25v-5.625h-1.81l-9.375 9.366 9.375 9.384h1.811v-5.625h7.5v-7.5zM21.75 14.25h-7.5v5.314l-7.564-7.572 7.564-7.557v5.315h7.5z",
                                 HE.path' $ HA.d "M0.75 2.625h1.5v18.75h-1.5v-18.75z"
                         ],
                         HE.text "Back to chats"
                 ],
-                HE.span_ "Your profile"
+                HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowProfile), HA.class' { green: toggle == ShowProfile }] "Your profile"
         ],
         HE.div "profile-edition-root" $ "Loading..."
 ]
@@ -76,7 +76,7 @@ userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA
                         ]
                 ],
                 HE.div [HA.class' "drop-menu fade-in effect"][
-                       HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfile true)] "Profile",
+                       HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowProfile)] "Profile",
                        -- HE.a [HA.class' "menu-button", HA.href "/settings"] "Settings",
                        -- HE.i_ "🍉",
                        -- HE.a (HA.href "#") "Help",
@@ -93,8 +93,10 @@ profile model =
                 (Just (IMUser user)) ->
                         HE.div (HA.class' "suggestion") [
                                 HE.a [HA.class' "skip", HA.title "you need more karma for that"] [
-                                        HE.svg [HA.class' "i-start svg-50", HA.viewBox "0 0 32 32"] $
-                                                HE.path' $ HA.d "M8 2 L8 16 22 2 22 30 8 16 8 30"
+                                        HE.svg [HA.id "cil-arrow-thick-from-right", HA.viewBox "0 0 24 24", HA.class' "svg-50"] [
+                                                HE.path' $ HA.d "M11.936 2.625h-1.811l-9.375 9.384 9.375 9.366h1.81v-5.625h6.75v-7.5h-6.75zM17.186 9.75v4.5h-6.75v5.315l-7.564-7.557 7.564-7.572v5.314z",
+                                                HE.path' $ HA.d "M21.686 2.625h1.5v18.75h-1.5v-18.75z"
+                                        ]
                                 ],
                                 HE.div (HA.class' "profile-info") [
                                         HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar],
@@ -111,8 +113,10 @@ profile model =
                                         HE.div_ $ map toTagSpan user.tags
                                 ],
                                 HE.a [HA.class' "skip green", HA.title "See next profile", HA.onClick $ SM NextSuggestion] [
-                                        HE.svg [HA.class' "i-end svg-50", HA.viewBox "0 0 32 32"] $
-                                                HE.path' $ HA.d "M24 2 L24 16 10 2 10 30 24 16 24 30"
+                                        HE.svg [HA.id "cil-arrow-thick-from-left", HA.class' "svg-50", HA.viewBox "0 0 24 24"] [
+                                                HE.path' $ HA.d "M13.875 2.625h-1.811v5.625h-6.75v7.5h6.75v5.625h1.81l9.375-9.366zM13.564 19.565v-5.315h-6.75v-4.5h6.75v-5.314l7.564 7.572z",
+                                                HE.path' $ HA.d "M0.814 2.625h1.5v18.75h-1.5v-18.75z"
+                                        ]
                                 ]
                         ]
                 _ ->

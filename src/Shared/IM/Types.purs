@@ -91,7 +91,7 @@ newtype IMModel = IMModel {
         chatting :: Maybe Int,
         --visibility switches
         userContextMenuVisible :: Boolean,
-        profileEditionVisible :: Boolean
+        profileSettingsToggle :: ProfileSettingsToggle
 }
 
 newtype HistoryMessage = HistoryMessage {
@@ -107,12 +107,14 @@ newtype MDateTime = MDateTime DateTime
 
 newtype MDate = MDate Date
 
+data ProfileSettingsToggle = Hidden | ShowProfile | ShowSettings
+
 data MessageStatus = Unread | Read
 
 data UserMenuMessage =
         ShowUserContextMenu Event |
         Logout |
-        ToggleProfile Boolean
+        ToggleProfileSettings ProfileSettingsToggle
 
 data ContactMessage =
         ResumeChat PrimaryKey
@@ -166,6 +168,7 @@ derive instance genericHistoryMessage :: Generic HistoryMessage _
 derive instance genericMessageStatus :: Generic MessageStatus _
 derive instance genericMDateTime :: Generic MDateTime _
 derive instance genericMDate :: Generic MDate _
+derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newTypeIMUser :: Newtype IMUser _
 derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
@@ -177,6 +180,7 @@ derive instance eqHistoryMessage :: Eq HistoryMessage
 derive instance eqIMModel :: Eq IMModel
 derive instance eqIMUser :: Eq IMUser
 derive instance eqMessageStatus :: Eq MessageStatus
+derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 instance eqWSW :: Eq WS where
         eq (WS w) (WS s) = eqWS w s
 
@@ -198,7 +202,11 @@ instance showMDateTime :: Show MDateTime where
         show = DGRS.genericShow
 instance showMDate :: Show MDate where
         show = DGRS.genericShow
+instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
+        show = DGRS.genericShow
 
+instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
+        encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonWS :: EncodeJson WS where
@@ -212,6 +220,8 @@ instance encodeJsonMDateTime :: EncodeJson MDateTime where
 instance encodeJsonMDate :: EncodeJson MDate where
         encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0)
 
+instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
+        decodeJson = DADGR.genericDecodeJson
 instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
         decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
