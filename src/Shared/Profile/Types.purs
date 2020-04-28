@@ -4,19 +4,26 @@ import Prelude
 import Shared.Types
 
 import Control.Monad.Except as CME
+import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Argonaut.Decode.Generic.Rep as DADGR
+import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
-import Data.DateTime (Date)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
 import Database.PostgreSQL (class FromSQLRow)
 import Foreign as F
 import Shared.IM.Types (MDate(..))
+
+newtype ProfileModel = ProfileModel {
+        user :: ProfileUser
+}
 
 newtype ProfileUser = ProfileUser (BasicUser (
         avatar :: String,
@@ -26,11 +33,24 @@ newtype ProfileUser = ProfileUser (BasicUser (
         age :: Maybe MDate
 ))
 
-data ProfileMessage = ProfileMessage
+data ProfileMessage =
+        SelectAvatar |
+        SetAvatar String |
+        SaveProfile
 
+derive instance genericProfileModel :: Generic ProfileModel _
 derive instance genericProfileUser :: Generic ProfileUser _
 
-instance profileUserFromSQLRow :: FromSQLRow ProfileUser where
+derive instance newtypeProfileModel :: Newtype ProfileModel _
+derive instance newtypeProfileUser :: Newtype ProfileUser _
+
+instance encodeJsonProfileUser :: EncodeJson ProfileUser where
+        encodeJson = DAEGR.genericEncodeJson
+
+instance decodeJsonProfileUser :: DecodeJson ProfileUser where
+        decodeJson = DADGR.genericDecodeJson
+
+instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
         fromSQLRow [
                 foreignID,
                 foreignGender,

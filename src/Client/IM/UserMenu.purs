@@ -37,6 +37,8 @@ showProfile { display, model } =
                         display $ FAE.diff' { profileSettingsToggle: ShowProfile }
                         JSONString html <- CCN.get' $ SR.fromRouteAbsolute Profile
                         setRootHTML html
+                        --scripts don't load when inserted via innerHTML
+                        liftEffect $ CCD.loadScript "profile.bundle.js"
                         FAE.noChanges
                 _ -> do
                         setRootHTML "Loading..."

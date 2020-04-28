@@ -45,6 +45,7 @@ import Server.NotFound.Template as SNT
 html :: String -> ResponseEffect
 html contents = ok' (headerContentType $ show HTML) contents
 
+-- | Parses the request body as JSON, feeds it to a handler and serializes the return as a JSON response
 json :: forall a b c d. Generic a b => EncodeRep b => Generic c d => DecodeRep d => String -> (c -> ServerEffect a) -> ResponseEffect
 json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) runHandler $ DAP.jsonParser body
         where   runHandler arg = do

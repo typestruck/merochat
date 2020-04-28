@@ -1,23 +1,18 @@
 module Client.Common.DOM where
 
-import Debug.Trace
 import Prelude
 
-import Data.Either (Either(..))
-import Data.Either as DE
-import Data.Generic.Rep (class Generic)
-import Data.HTTP.Method (Method(..))
-import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Partial.Unsafe as UP
-import Shared.Header (xAccessToken)
+import Shared.Unsafe as SU
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
+import Web.DOM.Element as WHE
+import Web.DOM.Node as WDN
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as WDP
 import Web.Event.Event (EventType)
@@ -25,7 +20,9 @@ import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WHHD
+import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLInputElement as WHHI
+import Web.HTML.HTMLScriptElement as WHS
 import Web.HTML.Window as HWH
 import Web.HTML.Window as WHW
 
@@ -63,3 +60,12 @@ value element = DM.maybe inputException WHHI.value $ WHHI.fromElement element
 
 setInnerHTML :: Element -> String -> Effect Unit
 setInnerHTML element = EU.runEffectFn2 innerHTML element
+
+loadScript :: String -> Effect Unit
+loadScript name = do
+        window <- WH.window
+        document <- WHW.document window
+        script <- WDD.createElement "script" $ WHHD.toDocument document
+        WHS.setSrc ("/client/javascript/"<>name) <<< SU.unsafeFromJust "loadScript" $ WHS.fromElement script
+        body <- SU.unsafeFromJust "loadScript" <$> WHHD.body document
+        void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body

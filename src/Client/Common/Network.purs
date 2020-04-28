@@ -34,6 +34,7 @@ import Effect.Class (liftEffect)
 import Effect.Exception as EE
 import Partial.Unsafe as PU
 import Shared.Header (xAccessToken)
+import Web.XHR.FormData (FormData)
 
 -- | A simplified version of post without the option to handle errors
 post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> contents -> Aff response
@@ -65,8 +66,6 @@ get url = do
         token <- liftEffect CCC.getMelanchatCookie
         response <- A.request $ defaultRequest url GET token
         parseBody response
-
---type this shit
 
 defaultRequest url method token =
         A.defaultRequest {

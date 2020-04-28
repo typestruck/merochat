@@ -48,7 +48,7 @@ router request@{ headers, path, method }
         --im
         | path == [SRO.fromRoute IM] = SIR.im request
         --profile
-        | path == [SRO.fromRoute Profile] = SRP.profile
+        | path == [SRO.fromRoute Profile] = SRP.profile request
         --local files and 404 for development
         | otherwise = do
                 { configuration : Configuration configuration } <- RR.ask

@@ -5,7 +5,9 @@ import Prelude
 import Control.Monad.Except as CME
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Decode (class DecodeJson)
+import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
@@ -57,6 +59,9 @@ newtype Token = Token {
 -- | A newtype for pure string JSON payloads so we can use the same `Generic` functions
 newtype JSONString = JSONString String
 
+-- | Used by requests which don't meaningfully respond anything
+data Ok = Ok
+
 -- | All available endpoints for melanchat
 data Route =
         Landing |
@@ -78,6 +83,7 @@ data ResponseError =
         BadRequest { reason :: String } |
         InternalError { reason :: String }
 
+derive instance genericOk :: Generic Ok _
 derive instance genericRegisterLogin :: Generic RegisterLogin _
 derive instance genericRoute :: Generic Route _
 derive instance genericToken :: Generic Token _
@@ -86,6 +92,7 @@ derive instance genericPrimaryKey :: Generic PrimaryKey _
 derive instance genericUser :: Generic RegisterLoginUser _
 derive instance genericJSONString :: Generic JSONString _
 
+derive instance eqOk :: Eq Ok
 derive instance eqRoute :: Eq Route
 derive instance eqPrimaryKey :: Eq PrimaryKey
 
@@ -96,6 +103,8 @@ instance showRoute :: Show Route where
 instance showResponseError :: Show ResponseError where
         show = DGRS.genericShow
 instance showPrimaryKey :: Show PrimaryKey where
+        show = DGRS.genericShow
+instance showOk :: Show Ok where
         show = DGRS.genericShow
 
 instance primaryKeySemiring :: Semiring PrimaryKey where
@@ -118,16 +127,20 @@ parsePrimaryKey data_
         | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
         | otherwise = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString) $ F.readString data_
 
+instance encodeJsonOk :: EncodeJson Ok where
+        encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
 
+instance decodeJsonOk :: DecodeJson Ok where
+        decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
         decodeJson = Right <<< PrimaryKey <<< toInt53
 
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
 
-instance userFromSQLRow :: FromSQLRow RegisterLoginUser where
+instance fromSQLRowResiterLoginUser :: FromSQLRow RegisterLoginUser where
         fromSQLRow [foreignID, foreignEmail, foreignPassword] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 id <- parsePrimaryKey foreignID
                 email <- F.readString foreignEmail
