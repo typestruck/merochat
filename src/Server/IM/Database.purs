@@ -11,6 +11,7 @@ import Shared.Types (PrimaryKey)
 
 userPresentationFields :: String
 userPresentationFields = """ u.id,
+avatar,
 gender,
 birthday,
 name,

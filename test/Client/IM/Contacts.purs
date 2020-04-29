@@ -48,6 +48,8 @@ tests = do
 
 model :: IMModel
 model = IMModel {
+        userContextMenuVisible: false,
+        profileSettingsToggle: Hidden,
         contacts: [imUser, anotherIMUser],
         user: imUser,
         suggestions: [],
@@ -103,15 +105,6 @@ anotherIMUser = SN.updateUser imUser $ _ {
                        date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
                 }
         ]
-}
-
-world :: Environment _ _
-world = {
-        update: \a _ -> pure a,
-        view: \_ -> pure unit,
-        previousModel: Nothing,
-        previousMessage: Nothing,
-        event: Nothing
 }
 
 webSocketHandler :: WebSocketHandler

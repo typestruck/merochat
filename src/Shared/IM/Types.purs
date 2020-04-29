@@ -242,12 +242,13 @@ instance decodeJsonMDate :: DecodeJson MDate where
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
 
-instance imUserFromSQLRow :: FromSQLRow IMUser where
+instance fromSQLRowIMUser :: FromSQLRow IMUser where
         fromSQLRow [
                 foreignID,
+                foreignAvatar,
                 foreignGender,
                 foreignBirthday,
-                foreignUnread,
+                foreignName,
                 foreignHeadline,
                 foreignDescription,
                 foreignCountry,
@@ -255,7 +256,10 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 foreignTags
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 id <- parsePrimaryKey foreignID
-                name <- F.readString foreignUnread
+                maybeForeignerAvatar <- F.readNull foreignAvatar
+                --REFACTOR: all image paths
+                avatar <- DM.maybe (pure "/client/media/avatar.png") (map ("/client/media/upload/" <> _ ) <<< F.readString) maybeForeignerAvatar
+                name <- F.readString foreignName
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
                 maybeGender <- F.readNull foreignGender
@@ -271,6 +275,7 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 let     now = EU.unsafePerformEffect EN.nowDate
                 pure $ IMUser {
                         id,
+                        avatar,
                         name,
                         --this will yield a wrong result in some cases, but I guess it is fair for a ASL field
                         age: (\(Days d) -> DIN.ceil (d / 365.0)) <<< DD.diff now <$> birthday,
@@ -281,16 +286,16 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                         languages,
                         tags,
                         message: "",
-                        history: [],
-                        avatar: "/client/media/avatar.png"
+                        history: []
                 }
         --this is surely not ideal
         fromSQLRow list@[
                 foreignDate, -- there is an extra field needed by the distinct when select imusers for the contact list
                 foreignID,
+                foreignAvatar,
                 foreignGender,
                 foreignBirthday,
-                foreignUnread,
+                foreignName,
                 foreignHeadline,
                 foreignDescription,
                 foreignCountry,

@@ -31,7 +31,7 @@ body {
 svg {
     margin: 0.4em;
     overflow: visible;
-    stroke:lightgray;
+    stroke: lightgray;
     fill: lightgray;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -274,11 +274,11 @@ svg {
 
 .profile-settings-placeholder {
     position: absolute;
-    top:0;
-    bottom:0;
-    left:0;
-    right:0;
-    display:flex;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
     flex-flow: row;
     padding: 30px;
     z-index: 4;
@@ -286,7 +286,7 @@ svg {
 
 .profile-info-edition {
     max-width: 1300px;
-    padding-left:10px ;
+    padding-left: 10px;
     margin: 0 auto;
 }
 
@@ -562,7 +562,7 @@ svg.toolbar-action {
     font-style: italic;
 }
 
-#profile-edition-root{
+#profile-edition-root {
     text-align: center;
     flex-grow: 1;
 }
@@ -583,4 +583,17 @@ svg.toolbar-action {
 
 .back-arrow {
     vertical-align: middle;
+}
+
+.action-button {
+    background: red !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px;
+    border-radius: 3px;
+    width: max-content;
+}
+
+.end {
+    align-self: end;
 }

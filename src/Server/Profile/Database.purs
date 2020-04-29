@@ -12,5 +12,11 @@ import Shared.IM.Types (HistoryMessage, IMUser)
 import Shared.Profile.Types (ProfileUser(..))
 import Shared.Types (PrimaryKey)
 
-presentUser :: PrimaryKey -> ServerEffect ProfileUser
-presentUser id = SD.single' presentUserQuery $ SIM.presentUserParameters id
+presentProfile :: PrimaryKey -> ServerEffect ProfileUser
+presentProfile id = SD.single' presentUserQuery $ SIM.presentUserParameters id
+
+saveProfile :: ProfileUser -> ServerEffect Unit
+saveProfile (ProfileUser { id, avatar }) =
+        SD.execute (Query """update users
+                             set avatar = $2
+                             where id = $1""") (Row2 id avatar)

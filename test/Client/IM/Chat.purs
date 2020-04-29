@@ -195,6 +195,8 @@ tests = do
 
 model :: IMModel
 model = IMModel {
+        userContextMenuVisible: false,
+        profileSettingsToggle: Hidden,
         user: imUser,
         suggestions: [imUser],
         temporaryID : SP.fromInt 0,
@@ -223,15 +225,6 @@ imUser = IMUser {
 
 anotherIMUser :: IMUser
 anotherIMUser = SN.updateUser imUser $ _ { id = SP.fromInt 90 }
-
-world :: Environment _ _
-world = {
-        update: \a _ -> pure a,
-        view: \_ -> pure unit,
-        previousModel: Nothing,
-        previousMessage: Nothing,
-        event: Nothing
-}
 
 webSocketHandler :: WebSocketHandler
 webSocketHandler = { sendPayload: \_ _ -> pure unit }

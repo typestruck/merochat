@@ -53,6 +53,7 @@ instance decodeJsonProfileUser :: DecodeJson ProfileUser where
 instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
         fromSQLRow [
                 foreignID,
+                foreignAvatar,
                 foreignGender,
                 foreignBirthday,
                 foreignUnread,
@@ -63,6 +64,9 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 foreignTags
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 id <- parsePrimaryKey foreignID
+                maybeForeignerAvatar <- F.readNull foreignAvatar
+                --REFACTOR: all image paths
+                avatar <- DM.maybe (pure "/client/media/avatar.png") (map ("/client/media/upload/" <> _ ) <<< F.readString) maybeForeignerAvatar
                 name <- F.readString foreignUnread
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
@@ -78,6 +82,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
                 pure $ ProfileUser {
                         id,
+                        avatar,
                         name,
                         age: MDate <$> birthday,
                         gender,
@@ -85,7 +90,6 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                         description,
                         country,
                         languages,
-                        tags,
-                        avatar: "/client/media/avatar.png"
+                        tags
                 }
         fromSQLRow _ = Left "missing or extra fields from users table"

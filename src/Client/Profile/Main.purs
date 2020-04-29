@@ -3,6 +3,7 @@ module Client.Profile.Main where
 import Prelude
 
 import Client.Common.DOM as CCD
+import Client.Common.Notification as CCN
 import Client.Profile.Update as CPU
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -44,4 +45,7 @@ setUpAvatarChange channel = do
                 fileList <- SU.unsafeFromJust "client.profile.main" <$> WHI.files (SU.unsafeFromJust "client.profile.main" $ WHI.fromElement input)
                 let file = SU.unsafeFromJust "client.profile.main" $ WFL.item 0 fileList
 
-                WFR.readAsDataURL (WFF.toBlob file) fileReader
+                if WFF.size file > 500.0 * 1024.0 then
+                        CCN.alert "Max allowed size for avatar is 500kb"
+                 else
+                        WFR.readAsDataURL (WFF.toBlob file) fileReader

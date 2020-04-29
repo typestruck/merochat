@@ -21,7 +21,7 @@ view :: ProfileModel -> Html ProfileMessage
 view (ProfileModel {user: ProfileUser user}) =
         HE.div (HA.class' "profile-info-edition") [
                 HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar, title "avatar", HA.onClick SelectAvatar],
-                HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg"],
+                HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
                 HE.div_ [
                         HE.h1 (title "name") user.name,
                         HE.h3 [HA.class' "headline", title "headline"] user.headline
@@ -37,7 +37,9 @@ view (ProfileModel {user: ProfileUser user}) =
                 ],
                 HE.div_ $ map toTagSpan user.tags,
                 HE.br,
-                HE.span [HA.class' "profile-info-description", title "description"] user.description
+                HE.span [HA.class' "profile-info-description", title "description"] user.description,
+                HE.br,
+                HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "action-button end"]
         ]
 
         where   title name = HA.title $ "Click to edit your " <> name

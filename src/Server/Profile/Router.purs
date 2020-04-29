@@ -17,12 +17,12 @@ import Shared.Unsafe as SU
 
 profile :: Request -> ResponseEffect
 profile { method, path, body } = SRS.ifLogged path do
+        { session: { userID: maybeUserID } } <- RR.ask
+        let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
         if method == Get then do
-                { session: { userID: maybeUserID } } <- RR.ask
-                let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
-                profileUser <- SPD.presentUser userID
+                profileUser <- SPD.presentProfile userID
                 contents <- R.liftEffect $ SPT.template profileUser
                 SRR.json' $ JSONString contents
          else do
-                SRR.json body SPA.saveProfile
+                SRR.json body (SPA.saveProfile userID)
 

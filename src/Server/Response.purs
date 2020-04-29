@@ -17,30 +17,32 @@ import Shared.Types
 
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
+import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode as DAE
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Argonaut.Parser as DAP
 import Data.Either as DE
+import Data.Either as DET
 import Data.Generic.Rep (class Generic)
-import Shared.Unsafe as SU
-import Shared.JSON as SJ
 import Data.Maybe as DM
 import Data.String.Read as DSR
+import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
+import Effect (Effect)
 import Effect.Console as EC
 import HTTPure (Headers, Response, ResponseM, Path)
 import HTTPure as H
 import HTTPure.Body (class Body)
-import Data.Either as DET
 import Node.FS.Aff as NFA
 import Node.Path as NP
 import Partial.Unsafe as PU
-import Data.Argonaut.Decode.Generic.Rep as DADGR
-import Effect(Effect)
 import Run (Run, AFF, EFFECT)
 import Run as R
 import Run.Except as RE
 import Server.NotFound.Template as SNT
+import Shared.JSON as SJ
+import Shared.Unsafe as SU
 
 html :: String -> ResponseEffect
 html contents = ok' (headerContentType $ show HTML) contents
@@ -55,10 +57,15 @@ json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) r
 json' :: forall response r. Generic response r => EncodeRep r => response -> ResponseEffect
 json' = ok' (headerContentType $ show JSON) <<< SJ.toJSON
 
-serveDevelopmentFile :: String -> String -> ResponseEffect
-serveDevelopmentFile folder fileName = do
-              contents <- R.liftAff <<< NFA.readFile $ "src/Client/" <> folder <> "/" <> fileName
-              ok' (contentTypeFromExtension fileName) contents
+serveDevelopmentFile :: Array String -> ResponseEffect
+serveDevelopmentFile path = do
+        let Tuple folder fileName = case path of
+                ["client", "media", file] -> Tuple "media" file
+                ["client", "media", "upload", file] -> Tuple "media/upload" file
+                ["client", folder, file] -> Tuple folder file
+                _ -> Tuple "invalidFolder" "invalidFile"
+        contents <- R.liftAff <<< NFA.readFile $ "src/Client/" <> folder <> "/" <> fileName
+        ok' (contentTypeFromExtension fileName) contents
 
 contentTypeFromExtension :: String -> Headers
 contentTypeFromExtension = headerContentType <<< show <<< read <<< NP.extname

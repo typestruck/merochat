@@ -54,9 +54,9 @@ router request@{ headers, path, method }
                 { configuration : Configuration configuration } <- RR.ask
 
                 if configuration.development && path !@ 0 == "client" then
-                        SRR.serveDevelopmentFile (path !@ 1) (path !@ 2)
+                        SRR.serveDevelopmentFile path
                  else if configuration.development && path !@ 0 == "favicon.ico" then
-                        SRR.serveDevelopmentFile "media" "favicon.ico"
+                        SRR.serveDevelopmentFile ["media", "favicon.ico"]
                  else
                         RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
 

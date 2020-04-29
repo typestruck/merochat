@@ -10,12 +10,12 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
+import Shared.Newtype as SN
 import Shared.Router as SR
-import Shared.Types (Route(..))
+import Shared.Types (Ok(..), Route(..))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.HTML.HTMLElement as WHH
-import Shared.Newtype as SN
 
 getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#avatar-file-input"
@@ -44,6 +44,6 @@ setAvatar base64 =
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile (ProfileModel { user }) = do
+        Ok <- CCN.post' (SR.fromRouteAbsolute Profile) user
         FAE.noChanges
-        --CCN.post' (SR.fromRouteAbsolute Profile) user
 

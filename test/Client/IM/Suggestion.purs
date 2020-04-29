@@ -48,6 +48,8 @@ tests = do
 
 model :: IMModel
 model = IMModel {
+        userContextMenuVisible: false,
+        profileSettingsToggle: Hidden,
         contacts: [],
         user: imUser,
         suggestions: [],
@@ -74,11 +76,3 @@ imUser = IMUser {
         gender: Nothing
 }
 
-world :: Environment _ _
-world = {
-        update: \a _ -> pure a,
-        view: \_ -> pure unit,
-        previousModel: Nothing,
-        previousMessage: Nothing,
-        event: Nothing
-}

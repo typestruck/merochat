@@ -30,10 +30,11 @@
     "purescript-web-storage": "^3.0.0",
     "purescript-web-socket": "^2.0.0",
     "purescript-unordered-collections": "^1.8.3",
-    "purescript-web-dom" :"^4.0.1",
+    "purescript-web-dom": "^4.0.1",
     "purescript-crypto": "^2.0.1",
     "purescript-simple-jwt": "^1.0.2",
-    "purescript-js-date": "^6.0.0"
+    "purescript-js-date": "^6.0.0",
+    "purescript-uuid": "^6.1.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",

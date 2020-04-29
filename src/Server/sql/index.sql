@@ -14,6 +14,7 @@ create table users
     birthday timestamp,
     gender char(1),
     headline varchar(200) not null,
+    avatar varchar(41),
     description varchar(10000) not null,
     recentEmoji varchar(60),
     country integer,

@@ -29,6 +29,8 @@
     "pg": "^8.0.0",
     "simplemde": "^1.11.2",
     "snabbdom-to-html": "^5.1.1",
+    "uuid": "^7.0.3",
+    "uuid-validate": "0.0.3",
     "ws": "^7.1.2"
   },
   "devDependencies": {
