@@ -5,6 +5,7 @@ import Server.Types
 import Shared.Profile.Types
 import Shared.Types
 
+import Data.Array as DA
 import Data.Foldable as FD
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
@@ -18,9 +19,9 @@ import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
+import Server.Profile.Database as SPD
 import Server.Response as SR
 import Shared.Newtype as SN
-import Server.Profile.Database as SPD
 import Shared.Unsafe as SU
 
 invalidImageMessage :: String
@@ -34,14 +35,11 @@ allowedMediaTypes = DH.fromFoldable [Tuple "data:image/png;base64" ".png", Tuple
 
 saveProfile :: PrimaryKey -> ProfileUser -> ServerEffect Ok
 saveProfile id profileUser@(ProfileUser { avatar }) = do
-        Tuple buffer mediaType <- base64From $ DS.split (Pattern ",") avatar
-        uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
-        let fileName = uuid <> SU.unsafeFromJust "base64From" (DH.lookup mediaType allowedMediaTypes)
-        R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
+        updatedAvatar <- base64From $ DS.split (Pattern ",") avatar
 
         SPD.saveProfile $ SN.updateProfile profileUser $ _ {
                 id = id,
-                avatar = fileName
+                avatar = updatedAvatar
         }
 
         pure Ok
@@ -54,8 +52,12 @@ saveProfile id profileUser@(ProfileUser { avatar }) = do
                                                 bufferSize <- R.liftEffect $ NB.size buffer
                                                 if bufferSize > 500 * 1024 then
                                                         SR.throwBadRequest imageTooBigMessage
-                                                 else
-                                                        pure $ Tuple buffer mediaType
+                                                 else do
+                                                        uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
+                                                        let fileName = uuid <> SU.unsafeFromJust "base64From" (DH.lookup mediaType allowedMediaTypes)
+                                                        R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
+
+                                                        pure fileName
                                          else
                                                 SR.throwBadRequest invalidImageMessage
-                                _ -> SR.throwBadRequest invalidImageMessage
+                                _ -> pure <<< SU.unsafeFromJust "base64from" <<< DA.last $ DS.split (Pattern "/") avatar

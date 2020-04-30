@@ -5,9 +5,11 @@ import Shared.Profile.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Flame (Key)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Shared.Newtype as SN
@@ -25,7 +27,16 @@ update { model, message } =
         case message of
                 SelectAvatar -> selectAvatar
                 SetAvatar base64 -> setAvatar base64
+                SetName name -> setName name
+                NameEnter (Tuple key _) -> blurOnEnter key "#profile-edition-name"
                 SaveProfile -> saveProfile model
+
+blurOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
+blurOnEnter key id = do
+        when (key == "Enter") $ liftEffect do
+                element <- CCD.querySelector id
+                WHH.blur <<< SU.unsafeFromJust "blurOnEnter" $ WHH.fromElement element
+        FAE.noChanges
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
 selectAvatar = do
@@ -39,6 +50,14 @@ setAvatar base64 =
         pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
                 user = SN.updateProfile user $ _ {
                         avatar = base64
+                }
+        }
+
+setName :: String -> Aff (ProfileModel -> ProfileModel)
+setName name =
+        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
+                user = SN.updateProfile user $ _ {
+                        name = name
                 }
         }
 

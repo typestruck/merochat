@@ -13,9 +13,11 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String.Common as DSC
+import Data.Symbol (SProxy(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Record as R
 
 view :: ProfileModel -> Html ProfileMessage
 view (ProfileModel {user: ProfileUser user}) =
@@ -23,7 +25,7 @@ view (ProfileModel {user: ProfileUser user}) =
                 HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar, title "avatar", HA.onClick SelectAvatar],
                 HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
                 HE.div_ [
-                        HE.h1 (title "name") user.name,
+                        HE.h1 [HA.id "profile-edition-name", title "name", HA.contentEditable true, HA.onInput SetName, HA.onKeydown NameEnter ] user.name,
                         HE.h3 [HA.class' "headline", title "headline"] user.headline
                 ],
                 HE.div_ [

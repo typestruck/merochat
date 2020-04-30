@@ -16,7 +16,8 @@ presentProfile :: PrimaryKey -> ServerEffect ProfileUser
 presentProfile id = SD.single' presentUserQuery $ SIM.presentUserParameters id
 
 saveProfile :: ProfileUser -> ServerEffect Unit
-saveProfile (ProfileUser { id, avatar }) =
+saveProfile (ProfileUser { id, avatar, name }) =
         SD.execute (Query """update users
-                             set avatar = $2
-                             where id = $1""") (Row2 id avatar)
+                             set avatar = $2,
+                                 name = $3
+                             where id = $1""") (Row3 id avatar name)

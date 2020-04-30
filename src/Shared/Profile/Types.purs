@@ -17,15 +17,20 @@ import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
+import Data.Symbol (SProxy(..))
+import Data.Symbol (class IsSymbol)
+import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (class FromSQLRow)
+import Flame (Key)
 import Foreign as F
+import Prim.Row (class Cons)
 import Shared.IM.Types (MDate(..))
 
 newtype ProfileModel = ProfileModel {
         user :: ProfileUser
 }
 
-newtype ProfileUser = ProfileUser (BasicUser (
+type A = (BasicUser (
         avatar :: String,
         country :: Maybe String,
         languages :: Array String,
@@ -33,9 +38,15 @@ newtype ProfileUser = ProfileUser (BasicUser (
         age :: Maybe MDate
 ))
 
+newtype ProfileUser = ProfileUser A
+
+--REFACTOR: write a generic SetField message
+--REFACTOR: write a generic Enter message
 data ProfileMessage =
         SelectAvatar |
         SetAvatar String |
+        SetName String |
+        NameEnter (Tuple Key String) |
         SaveProfile
 
 derive instance genericProfileModel :: Generic ProfileModel _
