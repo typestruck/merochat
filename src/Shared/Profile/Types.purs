@@ -47,6 +47,8 @@ data ProfileMessage =
         SetAvatar String |
         SetName String |
         NameEnter (Tuple Key String) |
+        SetHeadline String |
+        HeadlineEnter (Tuple Key String) |
         SaveProfile
 
 derive instance genericProfileModel :: Generic ProfileModel _

@@ -41,7 +41,6 @@ saveProfile id profileUser@(ProfileUser { avatar }) = do
                 id = id,
                 avatar = updatedAvatar
         }
-
         pure Ok
 
         where   base64From =

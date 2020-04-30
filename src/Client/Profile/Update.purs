@@ -5,6 +5,8 @@ import Shared.Profile.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
+import Client.Common.Notification as CCNO
+import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -12,6 +14,7 @@ import Effect.Class (liftEffect)
 import Flame (Key)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
+import Record as R
 import Shared.Newtype as SN
 import Shared.Router as SR
 import Shared.Types (Ok(..), Route(..))
@@ -26,9 +29,11 @@ update :: AffUpdate ProfileModel ProfileMessage
 update { model, message } =
         case message of
                 SelectAvatar -> selectAvatar
-                SetAvatar base64 -> setAvatar base64
-                SetName name -> setName name
+                SetAvatar base64 -> setField (SProxy :: SProxy "avatar") base64
+                SetName name -> setField (SProxy :: SProxy "name") name
+                SetHeadline headline -> setField (SProxy :: SProxy "headline") headline
                 NameEnter (Tuple key _) -> blurOnEnter key "#profile-edition-name"
+                HeadlineEnter (Tuple key _) -> blurOnEnter key "#profile-edition-headline"
                 SaveProfile -> saveProfile model
 
 blurOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
@@ -45,24 +50,14 @@ selectAvatar = do
                 WHH.click <<< SU.unsafeFromJust "selectAvatar" $ WHH.fromElement input
         FAE.noChanges
 
-setAvatar :: String -> Aff (ProfileModel -> ProfileModel)
-setAvatar base64 =
+setField field value =
         pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
-                user = SN.updateProfile user $ _ {
-                        avatar = base64
-                }
-        }
-
-setName :: String -> Aff (ProfileModel -> ProfileModel)
-setName name =
-        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
-                user = SN.updateProfile user $ _ {
-                        name = name
-                }
+                user = SN.updateProfile user $ \record -> R.set field value record
         }
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile (ProfileModel { user }) = do
         Ok <- CCN.post' (SR.fromRouteAbsolute Profile) user
+        liftEffect $ CCNO.alert "Profile updated"
         FAE.noChanges
 

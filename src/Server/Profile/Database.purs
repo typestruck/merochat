@@ -2,9 +2,10 @@ module Server.Profile.Database where
 
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
-import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, Pool, Query(..), Row1(..), Row2(..), Row3(..))
+import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, Pool, Query(..))
 import Prelude (Unit, bind, pure, ($), (<<<), (<>))
 import Server.Database as SD
+import Data.Tuple.Nested((/\))
 import Server.IM.Database (presentUserQuery)
 import Server.IM.Database as SIM
 import Server.Types (ServerEffect, BaseEffect)
@@ -16,8 +17,9 @@ presentProfile :: PrimaryKey -> ServerEffect ProfileUser
 presentProfile id = SD.single' presentUserQuery $ SIM.presentUserParameters id
 
 saveProfile :: ProfileUser -> ServerEffect Unit
-saveProfile (ProfileUser { id, avatar, name }) =
+saveProfile (ProfileUser { id, avatar, name, headline }) =
         SD.execute (Query """update users
                              set avatar = $2,
-                                 name = $3
-                             where id = $1""") (Row3 id avatar name)
+                                 name = $3,
+                                 headline = $4
+                             where id = $1""") (id /\ avatar /\ name /\ headline)

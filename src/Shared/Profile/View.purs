@@ -26,7 +26,7 @@ view (ProfileModel {user: ProfileUser user}) =
                 HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
                 HE.div_ [
                         HE.h1 [HA.id "profile-edition-name", title "name", HA.contentEditable true, HA.onInput SetName, HA.onKeydown NameEnter ] user.name,
-                        HE.h3 [HA.class' "headline", title "headline"] user.headline
+                        HE.h3 [HA.id "profile-edition-headline", HA.class' "headline", title "headline", HA.contentEditable true, HA.onInput SetHeadline, HA.onKeydown HeadlineEnter] user.headline
                 ],
                 HE.div_ [
                         toInfoSpan "age"  (map ((_ <> ",") <<< show) user.age),
