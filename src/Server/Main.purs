@@ -1,7 +1,7 @@
 module Server.Main where
 
-import Prelude
-import Server.Types
+import Prelude (Unit, bind, const, discard, show, void, ($), (<>))
+import Server.Types (Configuration(..))
 
 import Data.Map as DM
 import Effect (Effect)

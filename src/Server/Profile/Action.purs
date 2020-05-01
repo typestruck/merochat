@@ -19,6 +19,7 @@ import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
+import Server.Bender as SB
 import Server.Profile.Database as SPD
 import Server.Response as SR
 import Shared.Newtype as SN
@@ -34,12 +35,18 @@ allowedMediaTypes :: HashMap String String
 allowedMediaTypes = DH.fromFoldable [Tuple "data:image/png;base64" ".png", Tuple "data:image/jpeg;base64" ".jpg", Tuple "data:image/tiff;base64" ".tiff", Tuple "data:image/bmp;base64" ".bmp" ]
 
 saveProfile :: PrimaryKey -> ProfileUser -> ServerEffect Ok
-saveProfile id profileUser@(ProfileUser { avatar }) = do
+saveProfile id profileUser@(ProfileUser { name, headline, description, avatar }) = do
         updatedAvatar <- base64From $ DS.split (Pattern ",") avatar
+        updatedName <- nameOrGenerated name
+        updatedHeadline <- headlineOrGenerated headline
+        updatedDescription <- descriptionOrGenerated description
 
         SPD.saveProfile $ SN.updateProfile profileUser $ _ {
                 id = id,
-                avatar = updatedAvatar
+                avatar =  updatedAvatar,
+                name = updatedName,
+                headline = updatedHeadline,
+                description = updatedDescription
         }
         pure Ok
 
@@ -60,3 +67,12 @@ saveProfile id profileUser@(ProfileUser { avatar }) = do
                                          else
                                                 SR.throwBadRequest invalidImageMessage
                                 _ -> pure <<< SU.unsafeFromJust "base64from" <<< DA.last $ DS.split (Pattern "/") avatar
+
+                textOrGenerated gen text  =
+                        case text of
+                                "" -> gen
+                                _ -> pure $ DS.trim text
+                nameOrGenerated = textOrGenerated SB.generateName
+                headlineOrGenerated = textOrGenerated SB.generateHeadline
+                descriptionOrGenerated = textOrGenerated SB.generateDescription
+

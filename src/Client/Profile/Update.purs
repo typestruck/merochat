@@ -6,8 +6,10 @@ import Shared.Profile.Types
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
 import Client.Common.Notification as CCNO
+import Data.Int as DI
 import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -29,11 +31,16 @@ update :: AffUpdate ProfileModel ProfileMessage
 update { model, message } =
         case message of
                 SelectAvatar -> selectAvatar
-                SetAvatar base64 -> setField (SProxy :: SProxy "avatar") base64
-                SetName name -> setField (SProxy :: SProxy "name") name
-                SetHeadline headline -> setField (SProxy :: SProxy "headline") headline
+                SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") base64
+                SetName name -> setProfileField (SProxy :: SProxy "name") name
+                SetHeadline headline -> setProfileField (SProxy :: SProxy "headline") headline
+                SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString (spy "country is" country)
                 NameEnter (Tuple key _) -> blurOnEnter key "#profile-edition-name"
                 HeadlineEnter (Tuple key _) -> blurOnEnter key "#profile-edition-headline"
+                ToggleCountry visible -> setModelField (SProxy :: SProxy "isCountryVisible") visible
+                ToggleGender visible -> setModelField (SProxy :: SProxy "isGenderVisible") visible
+                ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") visible
+                ToggleAge visible -> setModelField (SProxy :: SProxy "isAgeVisible") visible
                 SaveProfile -> saveProfile model
 
 blurOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
@@ -50,10 +57,18 @@ selectAvatar = do
                 WHH.click <<< SU.unsafeFromJust "selectAvatar" $ WHH.fromElement input
         FAE.noChanges
 
-setField field value =
+setModelField field value = pure $ \model -> SN.updateProfileModel model (R.set field value)
+
+setProfileField field value =
         pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
-                user = SN.updateProfile user $ \record -> R.set field value record
+                user = SN.updateProfile user (R.set field value)
         }
+
+setHideProfileField visibilityField field value =
+        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ \record ->
+                R.set visibilityField true $ record {
+                        user = SN.updateProfile user (R.set field value)
+                }
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile (ProfileModel { user }) = do

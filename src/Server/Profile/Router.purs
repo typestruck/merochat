@@ -10,7 +10,6 @@ import Server.Profile.Template as SPT
 import Server.Response as SRR
 import Server.Router.Session as SRS
 import Server.Types (ResponseEffect)
-import Shared.Profile.Types (ProfileUser(..))
 import Shared.Types (JSONString(..), PrimaryKey(..))
 import Server.Profile.Action as SPA
 import Shared.Unsafe as SU
@@ -21,7 +20,8 @@ profile { method, path, body } = SRS.ifLogged path do
         let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
         if method == Get then do
                 profileUser <- SPD.presentProfile userID
-                contents <- R.liftEffect $ SPT.template profileUser
+                countries <- SPD.presentCountries
+                contents <- R.liftEffect $ SPT.template profileUser countries
                 SRR.json' $ JSONString contents
          else do
                 SRR.json body (SPA.saveProfile userID)

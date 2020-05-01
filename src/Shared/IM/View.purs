@@ -61,7 +61,7 @@ profileSettings toggle = HE.div (HA.class' $ "profile-settings-placeholder" <> i
 
 userMenu :: IMModel -> Html IMMessage
 userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA.id "settings", HA.class' "settings"][
-        HE.a (HA.href "/settings/profile") $ HE.img' [HA.class' "avatar-settings", HA.src user.avatar],
+        HE.a (HA.onClick (UMM $ ToggleProfileSettings ShowProfile)) $ HE.img [HA.class' "avatar-settings", HA.src user.avatar],
         HE.div (HA.class' "settings-name") [
                 HE.strong_ user.name,
                 HE.br,
@@ -99,7 +99,7 @@ profile model =
                                         ]
                                 ],
                                 HE.div (HA.class' "profile-info") [
-                                        HE.div_ $ HE.img' [HA.class' "avatar-profile", HA.src user.avatar],
+                                        HE.div_ $ HE.img [HA.class' "avatar-profile", HA.src user.avatar],
                                         HE.div_ [
                                                 HE.h1_ user.name,
                                                 HE.h3 (HA.class' "headline") user.headline
@@ -120,7 +120,7 @@ profile model =
                                 ]
                         ]
                 _ ->
-                        HE.div (HA.class' "suggestion") $ HE.div_ $ HE.img' $ HA.src "/client/media/logo.png"
+                        HE.div (HA.class' "suggestion") $ HE.div_ $ HE.img $ HA.src "/client/media/logo.png"
         where   toInfoSpan includeSepator =
                         case _ of
                                 Just s ->
@@ -148,7 +148,7 @@ history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class'
                                 if senderID == sender then Tuple "sender-message" senderAvatar
                                  else Tuple "recipient-message" recipientAvatar
                         in HE.div (HA.class' $ "message " <> class') [
-                                HE.img' [HA.src avatar, HA.class' "avatar-message"],
+                                HE.img [HA.src avatar, HA.class' "avatar-message"],
                                 HE.text content
                         ]
 
@@ -179,7 +179,7 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
 
                 contactEntry (IMUser { id, name, avatar, headline, history }) =
                         HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
-                                HE.img' [HA.class' "avatar-contact-list", HA.src avatar],
+                                HE.img [HA.class' "avatar-contact-list", HA.src avatar],
                                 HE.div (HA.class' "contact-profile") [
                                         HE.strong_ name,
                                         HE.br,

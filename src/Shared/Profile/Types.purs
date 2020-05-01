@@ -17,31 +17,33 @@ import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Symbol (SProxy(..))
-import Data.Symbol (class IsSymbol)
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (class FromSQLRow)
 import Flame (Key)
 import Foreign as F
-import Prim.Row (class Cons)
 import Shared.IM.Types (MDate(..))
 
+--REFACTOR: write a generic isVisible field
 newtype ProfileModel = ProfileModel {
-        user :: ProfileUser
+        user :: ProfileUser,
+        isCountryVisible :: Boolean,
+        isGenderVisible :: Boolean,
+        isLanguagesVisible :: Boolean,
+        isAgeVisible :: Boolean,
+        countries :: Array (Tuple Int String)
 }
 
-type A = (BasicUser (
+newtype ProfileUser = ProfileUser (BasicUser (
         avatar :: String,
-        country :: Maybe String,
+        country :: Maybe Int,
         languages :: Array String,
         tags :: Array String,
-        age :: Maybe MDate
+        birthday :: Maybe MDate
 ))
-
-newtype ProfileUser = ProfileUser A
 
 --REFACTOR: write a generic SetField message
 --REFACTOR: write a generic Enter message
+--REFACTOR: write a generic Toggle message
 data ProfileMessage =
         SelectAvatar |
         SetAvatar String |
@@ -49,6 +51,12 @@ data ProfileMessage =
         NameEnter (Tuple Key String) |
         SetHeadline String |
         HeadlineEnter (Tuple Key String) |
+        --SetGender String |
+        SetCountry String |
+        ToggleCountry Boolean |
+        ToggleAge Boolean |
+        ToggleGender Boolean | --egg_irl
+        ToggleLanguages Boolean |
         SaveProfile
 
 derive instance genericProfileModel :: Generic ProfileModel _
@@ -88,7 +96,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 headline <- F.readString foreignHeadline
                 description <- F.readString foreignDescription
                 maybeCountry <- F.readNull foreignCountry
-                country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
+                country <- DM.maybe (pure Nothing) (map Just <<< F.readInt) maybeCountry
                 maybeLanguages <- F.readNull foreignLanguages
                 languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
                 maybeTags <- F.readNull foreignTags
@@ -97,7 +105,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                         id,
                         avatar,
                         name,
-                        age: MDate <$> birthday,
+                        birthday: MDate <$> birthday,
                         gender,
                         headline,
                         description,

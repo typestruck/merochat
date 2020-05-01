@@ -364,8 +364,6 @@ values
     ('Kazakhstan'),
     ('Kenya'),
     ('Kiribati'),
-    ('Korea, orth'),
-    ('Korea, outh'),
     ('Kosovo'),
     ('Kuwait'),
     ('Kyrgyzstan'),

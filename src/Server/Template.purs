@@ -72,7 +72,7 @@ templateWith parameters =
 externalFooter :: forall a. Array (Html a)
 externalFooter = [
         HE.footer_ [
-                HE.a (HA.href "/") <<< HE.img' $ HA.src "/client/media/logo.png",
+                HE.a (HA.href "/") <<< HE.img $ HA.src "/client/media/logo.png",
                 HE.ul_ [
                         HE.li_ $ HE.a (HA.href "#") "Help",
                         HE.li_ $ HE.a (HA.href "https://github.com/easafe/melanchat") "Source code",

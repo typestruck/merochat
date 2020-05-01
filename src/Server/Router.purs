@@ -4,9 +4,9 @@ module Server.Router (
         session
 ) where
 
-import Prelude
-import Server.Types
-import Shared.Types
+import Prelude (bind, map, otherwise, pure, show, ($), (&&), (<<<), (<>), (==))
+import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
+import Shared.Types (ResponseError(..), Route(..))
 
 import Browser.Cookies.Data (Cookie(..))
 import Browser.Cookies.Internal as BCI
