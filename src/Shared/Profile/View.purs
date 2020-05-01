@@ -3,12 +3,13 @@ module Shared.Profile.View where
 import Prelude
 import Shared.IM.Types
 import Shared.Profile.Types
+import Shared.Types
 
+import Data.Array ((:))
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.String.Common as DSC
 import Data.Tuple (Tuple(..))
-import Data.Array((:))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -18,7 +19,8 @@ view :: ProfileModel -> Html ProfileMessage
 view (ProfileModel {
         user: ProfileUser user,
         countries,
-        isCountryVisible
+        isCountryVisible,
+        isGenderVisible
 }) =
         HE.div (HA.class' "profile-info-edition") [
                 HE.div_ $ HE.img [HA.class' "avatar-profile", HA.src user.avatar, title "avatar", HA.onClick SelectAvatar],
@@ -30,7 +32,7 @@ view (ProfileModel {
                 HE.div_ [
                         displayAge,
                         separator,
-                        displayGender,
+                        if isGenderVisible then displayGender else editGender,
                         separator,
                         if isCountryVisible then displayCountry else editCountry,
                         separator,
@@ -56,7 +58,7 @@ view (ProfileModel {
                 separator = HE.span (HA.class' "smaller") " • "
 
                 displayAge = display "age" ToggleAge (map ((_ <> ",") <<< show) user.birthday)
-                displayGender = display "gender" ToggleGender user.gender
+                displayGender = display "gender" ToggleGender $ map show user.gender
                 displayCountry = display "country" ToggleCountry do
                         country <- user.country
                         Tuple _ name <- DF.find (\(Tuple id _) -> id == country) countries
@@ -67,6 +69,8 @@ view (ProfileModel {
                                 l -> Just ("speaks " <> l)
                 displayTags = HE.div_ $ (HE.text "TAGS" : map toTagSpan user.tags)
 
-                displayOptions = (HE.option [HA.value ""] "Don't show" : _) <<< map (\(Tuple id value) -> HE.option [HA.value $ show id] value)
+                displayOptions :: forall id. Show id => Eq id => Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
+                displayOptions current = (HE.option [HA.value ""] "Don't show" : _) <<< map (\(Tuple id value) -> HE.option [HA.value $ show id, HA.selected $ Just id == current] value)
 
-                editCountry = HE.select [HA.onInput SetCountry] $ displayOptions countries
+                editCountry = HE.select [HA.onInput SetCountry] $ displayOptions user.country countries
+                editGender = HE.select [HA.onInput SetGender] $ displayOptions user.gender [Tuple Female $ show Female, Tuple Male $ show Male, Tuple NonBinary $ show NonBinary, Tuple Other $ show Other]

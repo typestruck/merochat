@@ -2,11 +2,13 @@ module Client.Profile.Update where
 
 import Prelude
 import Shared.Profile.Types
-
+import Shared.Types
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
 import Client.Common.Notification as CCNO
 import Data.Int as DI
+import Data.Maybe (Maybe)
+import Data.String.Read as DSR
 import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
@@ -35,6 +37,7 @@ update { model, message } =
                 SetName name -> setProfileField (SProxy :: SProxy "name") name
                 SetHeadline headline -> setProfileField (SProxy :: SProxy "headline") headline
                 SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString (spy "country is" country)
+                SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
                 NameEnter (Tuple key _) -> blurOnEnter key "#profile-edition-name"
                 HeadlineEnter (Tuple key _) -> blurOnEnter key "#profile-edition-headline"
                 ToggleCountry visible -> setModelField (SProxy :: SProxy "isCountryVisible") visible

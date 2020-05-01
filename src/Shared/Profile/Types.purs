@@ -17,6 +17,7 @@ import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
+import Data.String.Read as DSR
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (class FromSQLRow)
 import Flame (Key)
@@ -35,6 +36,7 @@ newtype ProfileModel = ProfileModel {
 
 newtype ProfileUser = ProfileUser (BasicUser (
         avatar :: String,
+        gender :: Maybe Gender,
         country :: Maybe Int,
         languages :: Array String,
         tags :: Array String,
@@ -51,7 +53,7 @@ data ProfileMessage =
         NameEnter (Tuple Key String) |
         SetHeadline String |
         HeadlineEnter (Tuple Key String) |
-        --SetGender String |
+        SetGender String |
         SetCountry String |
         ToggleCountry Boolean |
         ToggleAge Boolean |
@@ -92,7 +94,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
                 maybeGender <- F.readNull foreignGender
-                gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
+                gender <- DM.maybe (pure Nothing) (map DSR.read <<< F.readString) maybeGender
                 headline <- F.readString foreignHeadline
                 description <- F.readString foreignDescription
                 maybeCountry <- F.readNull foreignCountry

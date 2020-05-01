@@ -53,8 +53,7 @@ type BasicUser fields = {
         id :: PrimaryKey,
         name :: String,
         headline :: String,
-        description :: String,
-        gender :: Maybe String |
+        description :: String |
         fields
 }
 
@@ -69,6 +68,7 @@ newtype WS = WS WebSocket
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
         avatar :: String,
+        gender :: Maybe String,
         country :: Maybe String,
         languages :: Array String,
         tags :: Array String,

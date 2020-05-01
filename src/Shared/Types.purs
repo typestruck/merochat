@@ -17,7 +17,10 @@ import Data.Hashable as DH
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.List.NonEmpty as DLN
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
+import Data.String as DS
+import Data.String.Read (class Read)
+import Data.String.Read as DSR
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
 import Foreign (Foreign, F)
 import Foreign as F
@@ -30,8 +33,7 @@ type BasicUser fields = {
         id :: PrimaryKey,
         name :: String,
         headline :: String,
-        description :: String,
-        gender :: Maybe String |
+        description :: String |
         fields
 }
 
@@ -62,6 +64,8 @@ newtype JSONString = JSONString String
 -- | Used by requests which don't meaningfully respond anything
 data Ok = Ok
 
+data Gender = Female | Male | NonBinary | Other
+
 -- | All available endpoints for melanchat
 data Route =
         Landing |
@@ -84,6 +88,7 @@ data ResponseError =
         InternalError { reason :: String }
 
 derive instance genericOk :: Generic Ok _
+derive instance genericGender :: Generic Gender _
 derive instance genericRegisterLogin :: Generic RegisterLogin _
 derive instance genericRoute :: Generic Route _
 derive instance genericToken :: Generic Token _
@@ -93,6 +98,7 @@ derive instance genericUser :: Generic RegisterLoginUser _
 derive instance genericJSONString :: Generic JSONString _
 
 derive instance eqOk :: Eq Ok
+derive instance eqGender :: Eq Gender
 derive instance eqRoute :: Eq Route
 derive instance eqPrimaryKey :: Eq PrimaryKey
 
@@ -106,6 +112,11 @@ instance showPrimaryKey :: Show PrimaryKey where
         show = DGRS.genericShow
 instance showOk :: Show Ok where
         show = DGRS.genericShow
+instance showGender :: Show Gender where
+        show Female = "Female"
+        show Male = "Male"
+        show NonBinary = "Non binary"
+        show Other = "Other"
 
 instance primaryKeySemiring :: Semiring PrimaryKey where
         add (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a + b)
@@ -116,22 +127,30 @@ instance primaryKeySemiring :: Semiring PrimaryKey where
 instance hashablePrimaryKey :: Hashable PrimaryKey where
         hash (PrimaryKey key) = DH.hash $ DI.toNumber key
 
-instance primaryKeyToSQLValue :: ToSQLValue PrimaryKey where
+instance toSQLValuePrimaryKey :: ToSQLValue PrimaryKey where
         toSQLValue (PrimaryKey int53) = F.unsafeToForeign $ DI.toNumber int53
+instance toSQLValueGender :: ToSQLValue Gender where
+        toSQLValue = F.unsafeToForeign <<< show
 
-instance primaryKeyFromSQLValue :: FromSQLValue PrimaryKey where
+instance fromSQLValuePrimaryKey :: FromSQLValue PrimaryKey where
         fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
+instance fromSQLValueGender :: FromSQLValue Gender where
+        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.unsafeFromJust "fromSQLValueGender" <<< DSR.read) <<< F.readString
 
 parsePrimaryKey :: Foreign -> F PrimaryKey
 parsePrimaryKey data_
         | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
         | otherwise = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString) $ F.readString data_
 
+instance encodeJsonGender :: EncodeJson Gender where
+        encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonOk :: EncodeJson Ok where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
         encodeJson (PrimaryKey id) = fromInt53 id
 
+instance decodeJsonGender :: DecodeJson Gender where
+        decodeJson = DADGR.genericDecodeJson
 instance decodeJsonOk :: DecodeJson Ok where
         decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
@@ -150,3 +169,12 @@ instance fromSQLRowResiterLoginUser :: FromSQLRow RegisterLoginUser where
 
 instance ordPrimaryKey :: Ord PrimaryKey where
         compare (PrimaryKey pk) (PrimaryKey anotherPK) = compare pk anotherPK
+
+instance readGender :: Read Gender where
+        read input =
+                case DS.toLower $ DS.trim input of
+                        "female" -> Just Female
+                        "male" -> Just Male
+                        "non binary" -> Just NonBinary
+                        "other" -> Just Other
+                        _ -> Nothing

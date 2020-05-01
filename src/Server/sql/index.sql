@@ -12,14 +12,13 @@ create table users
     joined timestamp default clock_timestamp(),
     email varchar(50) not null,
     birthday timestamp,
-    gender char(1),
+    gender varchar(9),
     headline varchar(200) not null,
     avatar varchar(41),
     description varchar(10000) not null,
     recentEmoji varchar(60),
     country integer,
     messageOnEnter boolean not null default true,
-    constraint genderCheck check (gender in  ('F', 'M', 'O')),
     constraint countryUser foreign key (country) references countries(id)
 );
 
