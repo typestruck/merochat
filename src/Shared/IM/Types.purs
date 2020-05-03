@@ -24,6 +24,7 @@ import Data.Hashable as DH
 import Data.Int as DIN
 import Data.Int53 (Int53)
 import Data.JSDate (JSDate)
+import Shared.DateTime as SDT
 import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
@@ -38,13 +39,11 @@ import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
-import Shared.Types (parsePrimaryKey, PrimaryKey(..))
+import Shared.Types (parsePrimaryKey, PrimaryKey(..), MDate(..), MDateTime(..))
 import Shared.Unsafe as SU
-import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
 
-foreign import fromJSDate :: JSDate -> Json
 foreign import fromWS :: WebSocket -> Json
 foreign import toWS :: Json -> WS
 foreign import eqWS :: WebSocket -> WebSocket -> Boolean
@@ -103,13 +102,14 @@ newtype HistoryMessage = HistoryMessage {
         status :: MessageStatus
 }
 
-newtype MDateTime = MDateTime DateTime
+data ProfileSettingsToggle =
+        Hidden |
+        ShowProfile |
+        ShowSettings
 
-newtype MDate = MDate Date
-
-data ProfileSettingsToggle = Hidden | ShowProfile | ShowSettings
-
-data MessageStatus = Unread | Read
+data MessageStatus =
+        Unread |
+        Read
 
 data UserMenuMessage =
         ShowUserContextMenu Event |
@@ -166,16 +166,12 @@ derive instance genericWS :: Generic WS _
 derive instance genericIMModel :: Generic IMModel _
 derive instance genericHistoryMessage :: Generic HistoryMessage _
 derive instance genericMessageStatus :: Generic MessageStatus _
-derive instance genericMDateTime :: Generic MDateTime _
-derive instance genericMDate :: Generic MDate _
 derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newTypeIMUser :: Newtype IMUser _
 derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
 derive instance newTypeIMModel :: Newtype IMModel _
 
-derive instance eqMDateTime :: Eq MDateTime
-derive instance eqMDate :: Eq MDate
 derive instance eqHistoryMessage :: Eq HistoryMessage
 derive instance eqIMModel :: Eq IMModel
 derive instance eqIMUser :: Eq IMUser
@@ -198,10 +194,6 @@ instance showIMModel :: Show IMModel where
         show = DGRS.genericShow
 instance showMessageStatus :: Show MessageStatus where
         show = DGRS.genericShow
-instance showMDateTime :: Show MDateTime where
-        show = DGRS.genericShow
-instance showMDate :: Show MDate where
-        show = DGRS.genericShow
 instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
         show = DGRS.genericShow
 
@@ -215,10 +207,6 @@ instance encodeJsonIMUser :: EncodeJson IMUser where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
         encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonMDateTime :: EncodeJson MDateTime where
-        encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
-instance encodeJsonMDate :: EncodeJson MDate where
-        encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0)
 
 instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
         decodeJson = DADGR.genericDecodeJson
@@ -230,14 +218,6 @@ instance decodeJsonWS :: DecodeJson WS where
         decodeJson = Right <<< toWS
 instance decodeJsonIMUser :: DecodeJson IMUser where
         decodeJson = DADGR.genericDecodeJson
-instance decodeJsonMDateTime :: DecodeJson MDateTime where
-        decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
-                where   jsonString :: String
-                        jsonString = UC.unsafeCoerce json
-instance decodeJsonMDate :: DecodeJson MDate where
-        decodeJson json = Right <<< MDate <<< SU.unsafeFromJust "decodeJson mdate" <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
-                where   jsonString :: String
-                        jsonString = UC.unsafeCoerce json
 
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
@@ -272,13 +252,11 @@ instance fromSQLRowIMUser :: FromSQLRow IMUser where
                 languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
                 maybeTags <- F.readNull foreignTags
                 tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
-                let     now = EU.unsafePerformEffect EN.nowDate
                 pure $ IMUser {
                         id,
                         avatar,
                         name,
-                        --this will yield a wrong result in some cases, but I guess it is fair for a ASL field
-                        age: (\(Days d) -> DIN.ceil (d / 365.0)) <<< DD.diff now <$> birthday,
+                        age: SDT.ageFrom birthday,
                         gender,
                         headline,
                         description,

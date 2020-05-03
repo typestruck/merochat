@@ -597,3 +597,8 @@ svg.toolbar-action {
 .end {
     align-self: end;
 }
+
+.remove-tag {
+    color:red;
+    padding: 0 3px;
+}

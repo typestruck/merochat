@@ -1,3 +1,4 @@
+-- REFACTOR: this is a mess
 module Shared.Profile.View where
 
 import Prelude
@@ -5,22 +6,35 @@ import Shared.IM.Types
 import Shared.Profile.Types
 import Shared.Types
 
-import Data.Array ((:))
+import Data.Array ((:), (..))
+import Data.Date (Month(..), Year)
+import Data.Date as DD
+import Data.Enum (class BoundedEnum)
+import Data.Enum as DE
 import Data.Foldable as DF
+import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.String.Common as DSC
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Shared.DateTime as SDT
+import Shared.Unsafe as SU
 
 --REFACTOR: get field names (like for display) from the record, not hardcoded strings
-view :: ProfileModel -> Html ProfileMessage
-view (ProfileModel {
+view :: Int -> ProfileModel -> Html ProfileMessage
+view minimumYear (ProfileModel {
         user: ProfileUser user,
         countries,
+        languages,
+        birthday,
+        isAgeVisible,
         isCountryVisible,
-        isGenderVisible
+        isGenderVisible,
+        isLanguagesVisible
 }) =
         HE.div (HA.class' "profile-info-edition") [
                 HE.div_ $ HE.img [HA.class' "avatar-profile", HA.src user.avatar, title "avatar", HA.onClick SelectAvatar],
@@ -30,13 +44,13 @@ view (ProfileModel {
                         HE.h3 [HA.id "profile-edition-headline", HA.spellcheck false, HA.class' "headline", titleWithGenerated "headline", HA.contentEditable true, HA.onInput SetHeadline, HA.onKeydown HeadlineEnter] user.headline
                 ],
                 HE.div_ [
-                        displayAge,
+                        if isAgeVisible then displayAge else editBirthday,
                         separator,
                         if isGenderVisible then displayGender else editGender,
                         separator,
                         if isCountryVisible then displayCountry else editCountry,
                         separator,
-                        displayLanguages
+                        if isLanguagesVisible then displayLanguages else editLanguages
                 ],
                 displayTags,
                 HE.br,
@@ -57,20 +71,55 @@ view (ProfileModel {
 
                 separator = HE.span (HA.class' "smaller") " • "
 
-                displayAge = display "age" ToggleAge (map ((_ <> ",") <<< show) user.birthday)
+                ageFromM = do
+                        MDate d <- user.birthday
+                        SDT.ageFrom $ Just d
+
+                languageHM = DH.fromArray languages
+                getLanguage = SU.unsafeFromJust "displayLanguages" <<< flip DH.lookup languageHM
+                languageTag (Tuple id language) = HE.span [HA.onClick (RemoveLanguage id), HA.title "Click to remove language", HA.class' "tag"] [
+                        HE.text language,
+                        HE.a (HA.class' "remove-tag") "x"
+                ]
+
+                displayAge = display "age" ToggleAge $ map show ageFromM
                 displayGender = display "gender" ToggleGender $ map show user.gender
                 displayCountry = display "country" ToggleCountry do
                         country <- user.country
                         Tuple _ name <- DF.find (\(Tuple id _) -> id == country) countries
                         pure name
                 displayLanguages =
-                        display "languages" ToggleLanguages $ case DSC.joinWith ", " user.languages of
+                        display "languages" ToggleLanguages $ case DSC.joinWith ", " $ map getLanguage user.languages of
                                 "" -> Nothing
                                 l -> Just ("speaks " <> l)
                 displayTags = HE.div_ $ (HE.text "TAGS" : map toTagSpan user.tags)
 
+                displayOptionsWith :: forall id. Show id => Eq id => String -> Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
+                displayOptionsWith unselectedText current = (HE.option [HA.value "", HA.selected true] unselectedText : _) <<< map (\(Tuple id value) -> HE.option [HA.value $ show id, HA.selected $ Just id == current] value)
                 displayOptions :: forall id. Show id => Eq id => Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
-                displayOptions current = (HE.option [HA.value ""] "Don't show" : _) <<< map (\(Tuple id value) -> HE.option [HA.value $ show id, HA.selected $ Just id == current] value)
+                displayOptions = displayOptionsWith "Don't show"
+
+                canSelectDay =
+                        case _ of
+                                Tuple (Just _) (Tuple (Just _) _ ) -> true
+                                _ -> false
+                toDateComponent :: forall d. BoundedEnum d => Int -> d
+                toDateComponent = SU.unsafeFromJust "profile.view" <<< DE.toEnum
+                lastDayMonth =
+                        case _ of
+                                Tuple (Just year) (Tuple (Just month) _) -> DE.fromEnum $ DD.lastDayOfMonth (toDateComponent year) (toDateComponent month)
+                                _ -> 0
 
                 editCountry = HE.select [HA.onInput SetCountry] $ displayOptions user.country countries
                 editGender = HE.select [HA.onInput SetGender] $ displayOptions user.gender [Tuple Female $ show Female, Tuple Male $ show Male, Tuple NonBinary $ show NonBinary, Tuple Other $ show Other]
+                editBirthday = HE.span_ [
+                        HE.span_ "Year ",
+                        HE.select [HA.onInput SetYear] $ displayOptions (SDT.getYear <$> user.birthday) $ map (\n -> Tuple n $ show n) (minimumYear .. 1900),
+                        HE.span_ " Month ",
+                        HE.select [HA.onInput SetMonth] $ displayOptionsWith "Select" (SDT.getMonth <$> user.birthday) $ map (\n -> Tuple (DE.fromEnum n) $ show n) [January, February, March, April, May, June, July, August, September, October, November, December],
+                        HE.span_ " Day ",
+                        HE.select [HA.onInput SetDay] $ displayOptionsWith "Select" (SDT.getDay <$> user.birthday) $ map (\n -> Tuple n $ show n) $ if canSelectDay birthday then (1 ..  lastDayMonth birthday) else []
+                ]
+                editLanguages = HE.span_ ([
+                        HE.select [HA.onInput AddLanguage] $ displayOptionsWith "Select" Nothing languages
+                ] <> map (\id -> languageTag <<< Tuple id $ getLanguage id) user.languages)

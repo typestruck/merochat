@@ -10,6 +10,7 @@ import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
+import Data.Int as DIN
 import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
@@ -19,10 +20,12 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read as DSR
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested (Tuple3)
 import Database.PostgreSQL (class FromSQLRow)
 import Flame (Key)
 import Foreign as F
-import Shared.IM.Types (MDate(..))
+import Shared.Types (MDate(..))
+import Shared.Unsafe as SU
 
 --REFACTOR: write a generic isVisible field
 newtype ProfileModel = ProfileModel {
@@ -31,14 +34,16 @@ newtype ProfileModel = ProfileModel {
         isGenderVisible :: Boolean,
         isLanguagesVisible :: Boolean,
         isAgeVisible :: Boolean,
-        countries :: Array (Tuple Int String)
+        countries :: Array (Tuple Int String),
+        languages :: Array (Tuple Int String),
+        birthday :: Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))
 }
 
 newtype ProfileUser = ProfileUser (BasicUser (
         avatar :: String,
         gender :: Maybe Gender,
         country :: Maybe Int,
-        languages :: Array String,
+        languages :: Array Int,
         tags :: Array String,
         birthday :: Maybe MDate
 ))
@@ -55,6 +60,11 @@ data ProfileMessage =
         HeadlineEnter (Tuple Key String) |
         SetGender String |
         SetCountry String |
+        SetYear String |
+        SetMonth String |
+        SetDay String |
+        AddLanguage String |
+        RemoveLanguage Int |
         ToggleCountry Boolean |
         ToggleAge Boolean |
         ToggleGender Boolean | --egg_irl
@@ -112,7 +122,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                         headline,
                         description,
                         country,
-                        languages,
+                        languages: SU.unsafeFromJust "languages" <<< DIN.fromString <$> languages,
                         tags
                 }
         fromSQLRow _ = Left "missing or extra fields from users table"

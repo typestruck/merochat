@@ -2,6 +2,7 @@ module Shared.IM.View where
 
 import Prelude
 import Shared.IM.Types
+import Shared.Types (MDateTime(..))
 
 import Data.Array as DA
 import Data.Array as DA

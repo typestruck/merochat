@@ -17,6 +17,7 @@ import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.EventTarget as WET
 import Web.File.File as WFF
+import Shared.DateTime as SDT
 import Web.File.FileList as WFL
 import Web.File.FileReader as WFR
 import Web.HTML.Event.EventTypes (change, load)
@@ -24,8 +25,9 @@ import Web.HTML.HTMLInputElement as WHI
 
 main :: Effect Unit
 main = do
+        minimumYear <- SDT.getMinimumYear
         channel <- FAE.resumeMount (QuerySelector ".profile-info-edition") {
-                view: SPV.view,
+                view: SPV.view minimumYear,
                 init: Nothing,
                 update: CPU.update
         }

@@ -21,7 +21,12 @@ profile { method, path, body } = SRS.ifLogged path do
         if method == Get then do
                 profileUser <- SPD.presentProfile userID
                 countries <- SPD.presentCountries
-                contents <- R.liftEffect $ SPT.template profileUser countries
+                languages <- SPD.presentLanguages
+                contents <- R.liftEffect $ SPT.template {
+                        user: profileUser,
+                        countries,
+                        languages
+                }
                 SRR.json' $ JSONString contents
          else do
                 SRR.json body (SPA.saveProfile userID)
