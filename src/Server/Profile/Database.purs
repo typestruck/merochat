@@ -31,8 +31,11 @@ presentCountries = SD.select (Query "select id, name from countries order by nam
 presentLanguages :: ServerEffect (Array (Tuple Int String))
 presentLanguages = SD.select (Query "select id, name from languages order by name") Row0
 
-saveProfile :: ProfileUser -> ServerEffect Unit
-saveProfile (ProfileUser { id, avatar, name, headline, description, country, gender, birthday }) =
+saveProfile :: { user :: ProfileUser, languages :: Array Int } -> ServerEffect Unit
+saveProfile {
+    user: ProfileUser { id, avatar, name, headline, description, country, gender, birthday },
+    languages
+} =
         SD.execute (Query """update users
                              set avatar = $2,
                                  name = $3,

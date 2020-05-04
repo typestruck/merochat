@@ -26,6 +26,7 @@ import Flame (Key)
 import Foreign as F
 import Shared.Types (MDate(..))
 import Shared.Unsafe as SU
+import Web.Event.Internal.Types (Event)
 
 --REFACTOR: write a generic isVisible field
 newtype ProfileModel = ProfileModel {
@@ -64,7 +65,7 @@ data ProfileMessage =
         SetMonth String |
         SetDay String |
         AddLanguage String |
-        RemoveLanguage Int |
+        RemoveLanguage Int Event |
         ToggleCountry Boolean |
         ToggleAge Boolean |
         ToggleGender Boolean | --egg_irl

@@ -32,6 +32,7 @@ import Shared.Router as SR
 import Shared.Types (Ok(..), Route(..))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
+import Web.Event.Event as WEE
 import Web.HTML.HTMLElement as WHH
 
 getFileInput :: Effect Element
@@ -47,7 +48,7 @@ update { model, message } =
                 SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
                 SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
                 AddLanguage language -> addLanguage <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language
-                RemoveLanguage language -> removeLanguage language
+                RemoveLanguage language event -> removeLanguage language event
                 SetYear year -> setYear $ DI.fromString year
                 SetMonth month -> setMonth $ DI.fromString month
                 SetDay day -> setDay $ DI.fromString day
@@ -56,7 +57,7 @@ update { model, message } =
                 HeadlineEnter (Tuple key _) -> blurOnEnter key "#profile-edition-headline"
                 ToggleCountry visible -> setModelField (SProxy :: SProxy "isCountryVisible") visible
                 ToggleGender visible -> setModelField (SProxy :: SProxy "isGenderVisible") visible
-                ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") visible
+                ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") (spy "called toggle" visible)
                 SaveProfile -> saveProfile model
 
 blurOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
@@ -129,14 +130,17 @@ addLanguage language =
                         }
                 }
 
-removeLanguage language =
-        pure $ \model@(ProfileModel { user: user@(ProfileUser userRecord) }) -> SN.updateProfileModel model $ _
+removeLanguage language event = do
+        --I am not sure if this is correct behavior: the span which the event bubbles to is removed from the dom
+        -- should the event still occur?
+        liftEffect $ WEE.stopPropagation event
+        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
                 {
                         isLanguagesVisible = true,
-                        user = SN.updateProfile user $ _ {
+                        user = SN.updateProfile user $ \record -> record {
                                 languages = SU.unsafeFromJust "remove language" do
-                                        index <- DA.findIndex ( _ == language) userRecord.languages
-                                        DA.deleteAt index userRecord.languages
+                                        index <- DA.findIndex ( _ == language) record.languages
+                                        DA.deleteAt index record.languages
                         }
                 }
 

@@ -76,8 +76,8 @@ view minimumYear (ProfileModel {
                         SDT.ageFrom $ Just d
 
                 languageHM = DH.fromArray languages
-                getLanguage = SU.unsafeFromJust "displayLanguages" <<< flip DH.lookup languageHM
-                languageTag (Tuple id language) = HE.span [HA.onClick (RemoveLanguage id), HA.title "Click to remove language", HA.class' "tag"] [
+                getLanguage = SU.unsafeFromJust "getLangauge" <<< flip DH.lookup languageHM
+                languageTag (Tuple id language) = HE.span [HA.onClick' (RemoveLanguage id), HA.title "Click to remove language", HA.class' "tag"] [
                         HE.text language,
                         HE.a (HA.class' "remove-tag") "x"
                 ]
