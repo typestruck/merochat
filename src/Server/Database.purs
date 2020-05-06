@@ -85,7 +85,9 @@ singleWith connection query parameters = do
         pure $ PU.unsafePartial (DAA.head rows')
 
 execute :: forall r query parameters. ToSQLRow parameters => Query parameters query -> parameters -> BaseEffect { pool :: Pool | r } Unit
-execute query parameters = withConnection $ \connection -> do
+execute query parameters = withConnection $ \connection -> executeWith connection query parameters
+
+executeWith connection query parameters = do
         result <- DP.execute connection query parameters
         runLogMaybe result
 

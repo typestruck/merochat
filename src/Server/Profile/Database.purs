@@ -1,10 +1,11 @@
 module Server.Profile.Database where
 
-import Data.Newtype as DN
+import Prelude
+
+import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, Pool, Query(..), Row0(..), Row1(..))
-import Prelude (Unit, bind, map, pure, ($), (<<<), (<>))
 import Server.Database as SD
 import Server.Types (ServerEffect)
 import Shared.Profile.Types (ProfileUser(..))
@@ -35,8 +36,8 @@ saveProfile :: { user :: ProfileUser, languages :: Array Int } -> ServerEffect U
 saveProfile {
     user: ProfileUser { id, avatar, name, headline, description, country, gender, birthday },
     languages
-} =
-        SD.execute (Query """update users
+} = SD.withTransaction $ \connection -> void do
+        SD.executeWith connection (Query """update users
                              set avatar = $2,
                                  name = $3,
                                  headline = $4,
@@ -45,3 +46,6 @@ saveProfile {
                                  gender = $7,
                                  birthday = $8
                              where id = $1""") (id /\ avatar /\ name /\ headline /\ description /\ country /\ gender /\ (map (\(MDate d) -> d) birthday))
+        SD.executeWith connection (Query """delete from languagesUsers where speaker = $1""") $ Row1 id
+        DT.traverse (\lang -> SD.executeWith connection (Query """insert into languagesUsers (speaker, language) values ($1, $2) on conflict on constraint uniqueUserLanguage do nothing""") (id /\ lang)) languages
+

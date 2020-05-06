@@ -35,18 +35,21 @@ allowedMediaTypes :: HashMap String String
 allowedMediaTypes = DH.fromFoldable [Tuple "data:image/png;base64" ".png", Tuple "data:image/jpeg;base64" ".jpg", Tuple "data:image/tiff;base64" ".tiff", Tuple "data:image/bmp;base64" ".bmp" ]
 
 saveProfile :: PrimaryKey -> ProfileUser -> ServerEffect Ok
-saveProfile id profileUser@(ProfileUser { name, headline, description, avatar }) = do
+saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, languages }) = do
         updatedAvatar <- base64From $ DS.split (Pattern ",") avatar
         updatedName <- nameOrGenerated name
         updatedHeadline <- headlineOrGenerated headline
         updatedDescription <- descriptionOrGenerated description
 
-        SPD.saveProfile $ SN.updateProfile profileUser $ _ {
-                id = id,
-                avatar =  updatedAvatar,
-                name = updatedName,
-                headline = updatedHeadline,
-                description = updatedDescription
+        SPD.saveProfile {
+                user: SN.updateProfile profileUser $ _ {
+                        id = id,
+                        avatar =  updatedAvatar,
+                        name = updatedName,
+                        headline = updatedHeadline,
+                        description = updatedDescription
+                },
+                languages
         }
         pure Ok
 

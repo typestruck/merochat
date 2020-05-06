@@ -118,7 +118,8 @@ create table languagesUsers
     speaker integer not null,
     language integer not null,
     constraint languageUserUser foreign key (speaker) references users(id),
-    constraint languageUserLanguage foreign key (language) references languages(id)
+    constraint languageUserLanguage foreign key (language) references languages(id),
+    constraint uniqueUserLanguage unique(speaker, language)
 );
 
 create table badgesUsers
