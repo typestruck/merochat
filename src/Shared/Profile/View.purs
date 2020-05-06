@@ -23,6 +23,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.DateTime as SDT
 import Shared.Unsafe as SU
+import Web.Event.Internal.Types (Event)
 
 --REFACTOR: get field names (like for display) from the record, not hardcoded strings
 view :: Int -> ProfileModel -> Html ProfileMessage
@@ -34,7 +35,8 @@ view minimumYear (ProfileModel {
         isAgeVisible,
         isCountryVisible,
         isGenderVisible,
-        isLanguagesVisible
+        isLanguagesVisible,
+        isTagsVisible
 }) =
         HE.div (HA.class' "profile-info-edition") [
                 HE.div_ $ HE.img [HA.class' "avatar-profile", HA.src user.avatar, title "avatar", HA.onClick SelectAvatar],
@@ -43,7 +45,7 @@ view minimumYear (ProfileModel {
                         HE.h1 [HA.id "profile-edition-name", HA.spellcheck false, titleWithGenerated "name", HA.contentEditable true, HA.onInput SetName, HA.onKeydown NameEnter ] user.name,
                         HE.h3 [HA.id "profile-edition-headline", HA.spellcheck false, HA.class' "headline", titleWithGenerated "headline", HA.contentEditable true, HA.onInput SetHeadline, HA.onKeydown HeadlineEnter] user.headline
                 ],
-                HE.div_ [
+                HE.div (HA.class' "profile-stats") [
                         if isAgeVisible then displayAge else editBirthday,
                         separator,
                         if isGenderVisible then displayGender else editGender,
@@ -52,7 +54,7 @@ view minimumYear (ProfileModel {
                         separator,
                         if isLanguagesVisible then displayLanguages else editLanguages
                 ],
-                displayTags,
+                if isTagsVisible then displayTags else editTags,
                 HE.br,
                 HE.span [HA.class' "profile-info-description", titleWithGenerated "description"] user.description,
                 HE.br,
@@ -67,8 +69,6 @@ view minimumYear (ProfileModel {
                                 Just s -> HE.span [title itemName, HA.onClick $ toggleMessage false] $ s <> " "
                                 _ -> HE.span [HA.class' "profile-info-add", HA.onClick $ toggleMessage false] $ "Click here to add your " <> itemName <> " "
 
-                toTagSpan tag = HE.span (HA.class' "tag") tag
-
                 separator = HE.span (HA.class' "smaller") " • "
 
                 ageFromM = do
@@ -77,8 +77,9 @@ view minimumYear (ProfileModel {
 
                 languageHM = DH.fromArray languages
                 getLanguage = SU.unsafeFromJust "getLangauge" <<< flip DH.lookup languageHM
-                languageTag (Tuple id language) = HE.span [HA.onClick' (RemoveLanguage id), HA.title "Click to remove language", HA.class' "tag"] [
-                        HE.text language,
+                tagEdition :: forall a. String -> (a -> Event -> ProfileMessage) -> Tuple a String -> Html ProfileMessage
+                tagEdition title message (Tuple id text) = HE.span [HA.onClick' (message id), HA.title $ "Click to remove " <> title, HA.class' "tag"] [
+                        HE.text text,
                         HE.a (HA.class' "remove-tag") "x"
                 ]
 
@@ -92,7 +93,10 @@ view minimumYear (ProfileModel {
                         display "languages" ToggleLanguages $ case DSC.joinWith ", " $ map getLanguage user.languages of
                                 "" -> Nothing
                                 l -> Just ("speaks " <> l)
-                displayTags = HE.div_ $ (HE.text "TAGS" : map toTagSpan user.tags)
+                displayTags =
+                        case user.tags of
+                                [] -> display "tags" ToggleTags Nothing
+                                tags -> HE.div_ $ map (HE.span [HA.class' "tag", HA.onClick $ ToggleTags false, HA.title "Click to edit tags"]) tags
 
                 displayOptionsWith :: forall id. Show id => Eq id => String -> Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
                 displayOptionsWith unselectedText current = (HE.option [HA.value "", HA.selected true] unselectedText : _) <<< map (\(Tuple id value) -> HE.option [HA.value $ show id, HA.selected $ Just id == current] value)
@@ -122,4 +126,8 @@ view minimumYear (ProfileModel {
                 ]
                 editLanguages = HE.span_ ([
                         HE.select [HA.onInput AddLanguage] $ displayOptionsWith "Select" Nothing languages
-                ] <> map (\id -> languageTag <<< Tuple id $ getLanguage id) user.languages)
+                ] <> map (\id -> tagEdition "language" RemoveLanguage <<< Tuple id $ getLanguage id) user.languages)
+                editTags = HE.span_ ([
+                        HE.span_ "Add tags to show your interests, hobbies, etc ",
+                        HE.input [HA.type' "text", HA.onKeydown TagEnter, HA.placeholder "Press enter to add"]
+                ] <> map (\tag -> tagEdition "tag" RemoveTag $ Tuple tag tag) user.tags)

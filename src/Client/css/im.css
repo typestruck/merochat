@@ -602,3 +602,7 @@ svg.toolbar-action {
     color:red;
     padding: 0 3px;
 }
+
+.profile-stats {
+    margin-bottom: 10px;
+}

@@ -19,10 +19,12 @@ import Data.Newtype (class Newtype)
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read as DSR
+import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (Tuple3)
 import Database.PostgreSQL (class FromSQLRow)
 import Flame (Key)
+import Foreign (Foreign)
 import Foreign as F
 import Shared.Types (MDate(..))
 import Shared.Unsafe as SU
@@ -35,16 +37,17 @@ newtype ProfileModel = ProfileModel {
         isGenderVisible :: Boolean,
         isLanguagesVisible :: Boolean,
         isAgeVisible :: Boolean,
-        countries :: Array (Tuple Int String),
-        languages :: Array (Tuple Int String),
+        isTagsVisible :: Boolean,
+        countries :: Array (Tuple PrimaryKey String),
+        languages :: Array (Tuple PrimaryKey String),
         birthday :: Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))
 }
 
 newtype ProfileUser = ProfileUser (BasicUser (
         avatar :: String,
         gender :: Maybe Gender,
-        country :: Maybe Int,
-        languages :: Array Int,
+        country :: Maybe PrimaryKey,
+        languages :: Array PrimaryKey,
         tags :: Array String,
         birthday :: Maybe MDate
 ))
@@ -57,6 +60,7 @@ data ProfileMessage =
         SetAvatar String |
         SetName String |
         NameEnter (Tuple Key String) |
+        TagEnter (Tuple Key String) |
         SetHeadline String |
         HeadlineEnter (Tuple Key String) |
         SetGender String |
@@ -65,10 +69,12 @@ data ProfileMessage =
         SetMonth String |
         SetDay String |
         AddLanguage String |
-        RemoveLanguage Int Event |
+        RemoveLanguage PrimaryKey Event |
+        RemoveTag String Event |
         ToggleCountry Boolean |
         ToggleAge Boolean |
         ToggleGender Boolean | --egg_irl
+        ToggleTags Boolean |
         ToggleLanguages Boolean |
         SaveProfile
 
@@ -109,9 +115,10 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 headline <- F.readString foreignHeadline
                 description <- F.readString foreignDescription
                 maybeCountry <- F.readNull foreignCountry
-                country <- DM.maybe (pure Nothing) (map Just <<< F.readInt) maybeCountry
-                maybeLanguages <- F.readNull foreignLanguages
-                languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
+                country <- DM.maybe (pure Nothing) (map Just <<< parsePrimaryKey) maybeCountry
+                maybeLanguages :: Maybe Foreign <- F.readNull foreignLanguages
+                foreignIDLanguages :: Array Foreign <- DM.maybe (pure []) F.readArray maybeLanguages
+                languages <- DT.traverse parsePrimaryKey foreignIDLanguages
                 maybeTags <- F.readNull foreignTags
                 tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
                 pure $ ProfileUser {
@@ -123,7 +130,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                         headline,
                         description,
                         country,
-                        languages: SU.unsafeFromJust "languages" <<< DIN.fromString <$> languages,
+                        languages,
                         tags
                 }
         fromSQLRow _ = Left "missing or extra fields from users table"

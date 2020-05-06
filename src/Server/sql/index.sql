@@ -49,7 +49,7 @@ create table tags
 (
     id serial primary key,
     name varchar(30) not null,
-    unique(name)
+    constraint uniqueTag unique(name)
 );
 
 create table languages

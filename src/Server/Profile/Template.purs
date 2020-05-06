@@ -14,8 +14,9 @@ import Flame (QuerySelector(..))
 import Flame as F
 import Shared.DateTime as SDT
 import Shared.Profile.View as SPV
+import Shared.Types (PrimaryKey(..))
 
-template :: { user :: ProfileUser, countries :: Array (Tuple Int String), languages :: Array (Tuple Int String) } -> Effect String
+template :: { user :: ProfileUser, countries :: Array (Tuple PrimaryKey String), languages :: Array (Tuple PrimaryKey String) } -> Effect String
 template {user: user@(ProfileUser { birthday }), countries, languages } = do
         minimumYear <- SDT.getMinimumYear
         F.preMount (QuerySelector ".profile-info-edition") {
@@ -25,6 +26,7 @@ template {user: user@(ProfileUser { birthday }), countries, languages } = do
                         isGenderVisible: true,
                         isAgeVisible: true,
                         isLanguagesVisible: true,
+                        isTagsVisible: true,
                         birthday: Tuple (SDT.getYear <$> birthday) (Tuple (SDT.getMonth <$> birthday) (SDT.getDay <$> birthday)),
                         user,
                         countries,

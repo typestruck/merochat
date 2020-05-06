@@ -28,6 +28,7 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Record as R
 import Shared.Newtype as SN
+import Shared.PrimaryKey as SP
 import Shared.Router as SR
 import Shared.Types (Ok(..), Route(..))
 import Shared.Unsafe as SU
@@ -47,17 +48,20 @@ update { model, message } =
                 SetHeadline headline -> setProfileField (SProxy :: SProxy "headline") headline
                 SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
                 SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
-                AddLanguage language -> addLanguage <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language
+                AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language
                 RemoveLanguage language event -> removeLanguage language event
+                RemoveTag tag event -> removeTag tag event
                 SetYear year -> setYear $ DI.fromString year
                 SetMonth month -> setMonth $ DI.fromString month
                 SetDay day -> setDay $ DI.fromString day
                 ToggleAge visible -> setModelField (SProxy :: SProxy "isAgeVisible") visible
                 NameEnter (Tuple key _) -> blurOnEnter key "#profile-edition-name"
+                TagEnter (Tuple key tag) -> addTag key tag
                 HeadlineEnter (Tuple key _) -> blurOnEnter key "#profile-edition-headline"
                 ToggleCountry visible -> setModelField (SProxy :: SProxy "isCountryVisible") visible
                 ToggleGender visible -> setModelField (SProxy :: SProxy "isGenderVisible") visible
-                ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") (spy "called toggle" visible)
+                ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") visible
+                ToggleTags visible -> setModelField (SProxy :: SProxy "isTagsVisible") visible
                 SaveProfile -> saveProfile model
 
 blurOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
@@ -120,7 +124,7 @@ setHideProfileField visibilityField field value =
                 R.set visibilityField true $ record {
                         user = SN.updateProfile user (R.set field value)
                 }
-
+--REFACTOR: abstract with the tag functions bellow
 addLanguage language =
         pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
                 {
@@ -129,7 +133,6 @@ addLanguage language =
                                 languages = DA.snoc record.languages language
                         }
                 }
-
 removeLanguage language event = do
         --I am not sure if this is correct behavior: the span which the event bubbles to is removed from the dom
         -- should the event still occur?
@@ -141,6 +144,29 @@ removeLanguage language event = do
                                 languages = SU.unsafeFromJust "remove language" do
                                         index <- DA.findIndex ( _ == language) record.languages
                                         DA.deleteAt index record.languages
+                        }
+                }
+
+addTag key tag =
+        case key of
+                "Enter" ->
+                        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+                                {
+                                        isTagsVisible = true,
+                                        user = SN.updateProfile user $ \record -> record {
+                                                tags = DA.snoc record.tags tag
+                                        }
+                                }
+                _ -> FAE.noChanges
+removeTag tag event = do
+        liftEffect $ WEE.stopPropagation event
+        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+                {
+                        isTagsVisible = true,
+                        user = SN.updateProfile user $ \record -> record {
+                                tags = SU.unsafeFromJust "remove tag" do
+                                        index <- DA.findIndex ( _ == tag) record.tags
+                                        DA.deleteAt index record.tags
                         }
                 }
 
