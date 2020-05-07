@@ -15,6 +15,7 @@ import Data.Enum as DE
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.String.Read as DSR
 import Data.String.Read as DST
 import Data.Symbol (SProxy(..))
@@ -45,7 +46,7 @@ update { model, message } =
                 SelectAvatar -> selectAvatar
                 SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") base64
                 SetName name -> setProfileField (SProxy :: SProxy "name") name
-                SetHeadline headline -> setProfileField (SProxy :: SProxy "headline") headline
+                SetHeadline headline -> setProfileField (SProxy :: SProxy "headline") $ DS.take 200 headline
                 SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
                 SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
                 AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language

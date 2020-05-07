@@ -10,19 +10,20 @@ import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Array.Partial as DAA
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Effect.Exception as EE
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow, Connection, Pool(..), Query(..), Row1(..))
 import Database.PostgreSQL as DP
+import Debug.Trace (spy)
+import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect(Effect)
-import Data.Either(Either(..))
 import Effect.Aff as EA
-import Partial.Unsafe as PU
-import Run as R
 import Effect.Class (liftEffect)
 import Effect.Console as EC
+import Effect.Exception as EE
+import Partial.Unsafe as PU
+import Run as R
 import Run.Reader as RR
 import Shared.Unsafe as SU
 
@@ -38,11 +39,11 @@ insert query parameters = withConnection (insertReturnID query parameters)
 insertWith connection query parameters = insertReturnID query parameters connection
 
 insertReturnID query parameters connection = do
-        rows <- DP.scalar connection (addReturnID query) parameters
-        rows' <- runLogEither "insertReturnID" rows
-        pure $ SU.unsafeFromJust "insertReturnID" rows'
+        rows <- DP.scalar connection (addReturnID query) (spy "params" parameters)
+        rows' <- runLogEither "insertReturnID" (spy "rows" rows)
+        pure $ SU.unsafeFromJust "insertReturnID" (spy "rows'" rows')
 
-        where addReturnID (Query text) = Query $ text <> " returning id"
+        where addReturnID (Query text) = Query $ (spy "ccc" (text <> " returning id"))
 
 scalar :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } (Maybe value)
 scalar query parameters = withConnection $ \connection -> do

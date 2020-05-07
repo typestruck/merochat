@@ -49,7 +49,9 @@ saveProfile {
                              where id = $1""") (id /\ avatar /\ name /\ headline /\ description /\ country /\ gender /\ (map (\(MDate d) -> d) birthday))
         SD.executeWith connection (Query """delete from languagesUsers where speaker = $1""") $ Row1 id
         void $ DT.traverse (SD.executeWith connection (Query """insert into languagesUsers (speaker, language) values ($1, $2)""") <<< Row2 id) languages
-        SD.executeWith connection (Query """delete from tagsUsers where speaker = $1""") $ Row1 id
-        tagIDs :: Array PrimaryKey <- DT.traverse (SD.insertWith connection (Query """insert into tags (name) values ($1) on conflict on constraing uniqueTag do nothing""") <<< Row1) tags
-        DT.traverse (SD.executeWith connection (Query """insert into tagUsers (speaker, language) values ($1, $2)""") <<< Row2 id) tagIDs
+        SD.executeWith connection (Query """delete from tagsUsers where creator = $1""") $ Row1 id
+        tagIDs :: Array PrimaryKey <- DT.traverse (SD.scalarWith connection (Query """
+            with ins as (insert into tags (name) values ($1) on conflict on constraint uniqueTag do nothing returning id)
+            select coalesce ((select id from ins), (select id from tags where name = $1))""") <<< Row1) tags
+        DT.traverse (SD.executeWith connection (Query """insert into tagsUsers (creator, tag) values ($1, $2)""") <<< Row2 id) tagIDs
 

@@ -13,6 +13,7 @@ import Data.Enum (class BoundedEnum)
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.HashMap as DH
+import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String.Common as DSC
@@ -75,6 +76,9 @@ view minimumYear (ProfileModel {
                         MDate d <- user.birthday
                         SDT.ageFrom $ Just d
 
+                --safe for language and countries since these have a small fixed amonut of entries
+                toInt (Tuple (PrimaryKey pk) value) = Tuple (DI.toInt pk) value
+
                 languageHM = DH.fromArray languages
                 getLanguage = SU.unsafeFromJust "getLangauge" <<< flip DH.lookup languageHM
                 tagEdition :: forall a. String -> (a -> Event -> ProfileMessage) -> Tuple a String -> Html ProfileMessage
@@ -114,7 +118,7 @@ view minimumYear (ProfileModel {
                                 Tuple (Just year) (Tuple (Just month) _) -> DE.fromEnum $ DD.lastDayOfMonth (toDateComponent year) (toDateComponent month)
                                 _ -> 0
 
-                editCountry = HE.select [HA.onInput SetCountry] $ displayOptions user.country countries
+                editCountry = HE.select [HA.onInput SetCountry] <<< displayOptions (map (\(PrimaryKey pk )-> DI.toInt pk) user.country) $ map toInt countries
                 editGender = HE.select [HA.onInput SetGender] $ displayOptions user.gender [Tuple Female $ show Female, Tuple Male $ show Male, Tuple NonBinary $ show NonBinary, Tuple Other $ show Other]
                 editBirthday = HE.span_ [
                         HE.span_ "Year ",
@@ -125,9 +129,9 @@ view minimumYear (ProfileModel {
                         HE.select [HA.onInput SetDay] $ displayOptionsWith "Select" (SDT.getDay <$> user.birthday) $ map (\n -> Tuple n $ show n) $ if canSelectDay birthday then (1 ..  lastDayMonth birthday) else []
                 ]
                 editLanguages = HE.span_ ([
-                        HE.select [HA.onInput AddLanguage] $ displayOptionsWith "Select" Nothing languages
+                        HE.select [HA.onInput AddLanguage] <<< displayOptionsWith "Select" Nothing $ map toInt languages
                 ] <> map (\id -> tagEdition "language" RemoveLanguage <<< Tuple id $ getLanguage id) user.languages)
                 editTags = HE.span_ ([
                         HE.span_ "Add tags to show your interests, hobbies, etc ",
-                        HE.input [HA.type' "text", HA.onKeydown TagEnter, HA.placeholder "Press enter to add"]
+                        HE.input [HA.type' "text", HA.onKeydown TagEnter, HA.placeholder "Press enter to add", HA.maxlength 30]
                 ] <> map (\tag -> tagEdition "tag" RemoveTag $ Tuple tag tag) user.tags)

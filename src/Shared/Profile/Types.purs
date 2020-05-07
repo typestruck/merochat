@@ -23,6 +23,7 @@ import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (Tuple3)
 import Database.PostgreSQL (class FromSQLRow)
+import Debug.Trace (spy)
 import Flame (Key)
 import Foreign (Foreign)
 import Foreign as F
@@ -117,8 +118,8 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 maybeCountry <- F.readNull foreignCountry
                 country <- DM.maybe (pure Nothing) (map Just <<< parsePrimaryKey) maybeCountry
                 maybeLanguages :: Maybe Foreign <- F.readNull foreignLanguages
-                foreignIDLanguages :: Array Foreign <- DM.maybe (pure []) F.readArray maybeLanguages
-                languages <- DT.traverse parsePrimaryKey foreignIDLanguages
+                foreignIDLanguages <- DM.maybe (pure []) F.readArray maybeLanguages
+                languages <- DT.traverse parsePrimaryKey  foreignIDLanguages
                 maybeTags <- F.readNull foreignTags
                 tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
                 pure $ ProfileUser {
