@@ -43,8 +43,10 @@ view minimumYear (ProfileModel {
                 HE.div_ $ HE.img [HA.class' "avatar-profile", HA.src user.avatar, title "avatar", HA.onClick SelectAvatar],
                 HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
                 HE.div_ [
-                        HE.h1 [HA.id "profile-edition-name", HA.spellcheck false, titleWithGenerated "name", HA.contentEditable true, HA.onInput SetName, HA.onKeydown NameEnter ] user.name,
-                        HE.h3 [HA.id "profile-edition-headline", HA.spellcheck false, HA.class' "headline", titleWithGenerated "headline", HA.contentEditable true, HA.onInput SetHeadline, HA.onKeydown HeadlineEnter] user.headline
+                        --using input event with contentEditable causes the cursor to shift position
+                        -- might be something we d want to look into
+                        HE.h1 [HA.id "profile-edition-name", HA.onBlur' SetName, HA.spellcheck false, titleWithGenerated "name", HA.contentEditable true, HA.onKeydown ToggleName] user.name,
+                        HE.h3 [HA.id "profile-edition-headline", HA.onBlur' SetHeadline,  HA.spellcheck false, HA.class' "headline", titleWithGenerated "headline", HA.contentEditable true, HA.onKeydown ToggleHeadline] user.headline
                 ],
                 HE.div (HA.class' "profile-stats") [
                         if isAgeVisible then displayAge else editBirthday,
@@ -57,7 +59,7 @@ view minimumYear (ProfileModel {
                 ],
                 if isTagsVisible then displayTags else editTags,
                 HE.br,
-                HE.span [HA.class' "profile-info-description", titleWithGenerated "description"] user.description,
+                HE.textarea [HA.id "profile-edition-description", HA.class' "profile-info-description"] user.description,
                 HE.br,
                 HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "action-button end"]
         ]
@@ -133,5 +135,5 @@ view minimumYear (ProfileModel {
                 ] <> map (\id -> tagEdition "language" RemoveLanguage <<< Tuple id $ getLanguage id) user.languages)
                 editTags = HE.span_ ([
                         HE.span_ "Add tags to show your interests, hobbies, etc ",
-                        HE.input [HA.type' "text", HA.onKeydown TagEnter, HA.placeholder "Press enter to add", HA.maxlength 30]
+                        HE.input [HA.type' "text", HA.onKeydown SetTagEnter, HA.autofocus true, HA.placeholder "Press enter to add", HA.maxlength 30]
                 ] <> map (\tag -> tagEdition "tag" RemoveTag $ Tuple tag tag) user.tags)

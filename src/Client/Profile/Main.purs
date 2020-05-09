@@ -7,21 +7,27 @@ import Client.Common.Notification as CCN
 import Client.Profile.Update as CPU
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Uncurried (EffectFn1, EffectFn2)
+import Effect.Uncurried as EU
 import Flame.Application.Effectful as FAE
 import Foreign as F
+import Shared.DateTime as SDT
 import Shared.Profile.Types (ProfileMessage(..))
 import Shared.Profile.View as SPV
+import Shared.Types (Editor)
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.EventTarget as WET
 import Web.File.File as WFF
-import Shared.DateTime as SDT
 import Web.File.FileList as WFL
 import Web.File.FileReader as WFR
 import Web.HTML.Event.EventTypes (change, load)
 import Web.HTML.HTMLInputElement as WHI
+
+foreign import loadEditor :: Effect Editor
+foreign import blur_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
 
 main :: Effect Unit
 main = do
@@ -31,7 +37,9 @@ main = do
                 init: Nothing,
                 update: CPU.update
         }
-
+        editor <- loadEditor
+        EU.runEffectFn2 blur_ editor $ EU.mkEffectFn1 (SC.send channel <<< Just <<< SetDescription)
+        SC.send channel <<< Just $ SetInitialDescription editor
         setUpAvatarChange channel
 
 setUpAvatarChange :: Channel (Maybe ProfileMessage) -> Effect Unit

@@ -39,8 +39,8 @@ import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
+import Shared.Types (Editor)
 
-foreign import data Editor :: Type
 foreign import loadEditor :: Effect Editor
 foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
 

@@ -25,6 +25,7 @@ template {user: user@(ProfileUser { birthday }), countries, languages } = do
                         isCountryVisible: true,
                         isGenderVisible: true,
                         isAgeVisible: true,
+                        isDescriptionVisible: true,
                         isLanguagesVisible: true,
                         isTagsVisible: true,
                         birthday: Tuple (SDT.getYear <$> birthday) (Tuple (SDT.getMonth <$> birthday) (SDT.getDay <$> birthday)),

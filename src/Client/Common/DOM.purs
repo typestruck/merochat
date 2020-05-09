@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Exception as EE
-import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
 import Shared.Unsafe as SU
 import Web.DOM.Document as WDD
@@ -16,6 +16,7 @@ import Web.DOM.Node as WDN
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as WDP
 import Web.Event.Event (EventType)
+import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
@@ -26,7 +27,8 @@ import Web.HTML.HTMLScriptElement as WHS
 import Web.HTML.Window as HWH
 import Web.HTML.Window as WHW
 
-foreign import innerHTML :: EffectFn2 Element String Unit
+foreign import innerHTML_ :: EffectFn2 Element String Unit
+foreign import innerText_ :: EffectFn1 Element String
 
 confirm :: String -> Effect Boolean
 confirm message = do
@@ -59,7 +61,12 @@ value element = DM.maybe inputException WHHI.value $ WHHI.fromElement element
                 EE.throwException <<< EE.error $ "Element is not an input type" <> id
 
 setInnerHTML :: Element -> String -> Effect Unit
-setInnerHTML element = EU.runEffectFn2 innerHTML element
+setInnerHTML element = EU.runEffectFn2 innerHTML_ element
+
+innerTextFromTarget :: Event -> Effect String
+innerTextFromTarget event = EU.runEffectFn1 innerText_ $ SU.unsafeFromJust "innerTextFromTarget" do
+        target <- WEE.target event
+        WDE.fromEventTarget target
 
 loadScript :: String -> Effect Unit
 loadScript name = do

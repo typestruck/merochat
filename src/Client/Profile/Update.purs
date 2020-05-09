@@ -24,6 +24,8 @@ import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried as EU
 import Flame (Key)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
@@ -37,6 +39,8 @@ import Web.DOM (Element)
 import Web.Event.Event as WEE
 import Web.HTML.HTMLElement as WHH
 
+foreign import setEditorContents_ :: EffectFn2 Editor String Unit
+
 getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#avatar-file-input"
 
@@ -45,31 +49,46 @@ update { model, message } =
         case message of
                 SelectAvatar -> selectAvatar
                 SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") base64
-                SetName name -> setProfileField (SProxy :: SProxy "name") name
-                SetHeadline headline -> setProfileField (SProxy :: SProxy "headline") $ DS.take 200 headline
                 SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
                 SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
-                AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language
-                RemoveLanguage language event -> removeLanguage language event
-                RemoveTag tag event -> removeTag tag event
                 SetYear year -> setYear $ DI.fromString year
                 SetMonth month -> setMonth $ DI.fromString month
                 SetDay day -> setDay $ DI.fromString day
+                SetName event -> setFieldFromInnerText event (SProxy :: SProxy "name") 50
+                SetHeadline event -> setFieldFromInnerText event (SProxy :: SProxy "headline") 200
+                SetDescription description -> setProfileField (SProxy :: SProxy "description") $ DS.take 10000 description
+                SetInitialDescription editor -> setEditorContents editor model
+
+                ToggleName (Tuple key _) -> blurEditionOnEnter key "#profile-edition-name"
+                ToggleHeadline (Tuple key _) -> blurEditionOnEnter key "#profile-edition-headline"
+                SetTagEnter (Tuple key tag) -> addTag key tag
+
+                AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language
+
+                RemoveLanguage language event -> removeLanguage language event
+                RemoveTag tag event -> removeTag tag event
+
                 ToggleAge visible -> setModelField (SProxy :: SProxy "isAgeVisible") visible
-                NameEnter (Tuple key _) -> blurOnEnter key "#profile-edition-name"
-                TagEnter (Tuple key tag) -> addTag key tag
-                HeadlineEnter (Tuple key _) -> blurOnEnter key "#profile-edition-headline"
                 ToggleCountry visible -> setModelField (SProxy :: SProxy "isCountryVisible") visible
                 ToggleGender visible -> setModelField (SProxy :: SProxy "isGenderVisible") visible
                 ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") visible
                 ToggleTags visible -> setModelField (SProxy :: SProxy "isTagsVisible") visible
+
                 SaveProfile -> saveProfile model
 
-blurOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
-blurOnEnter key id = do
+setEditorContents editor (ProfileModel { user: ProfileUser { description } }) = do
+        liftEffect $ EU.runEffectFn2 setEditorContents_ editor description
+        FAE.noChanges
+
+setFieldFromInnerText event field characters = do
+        value <- liftEffect $ CCD.innerTextFromTarget event
+        setProfileField field $ DS.take characters value
+
+blurEditionOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
+blurEditionOnEnter key id = do
         when (key == "Enter") $ liftEffect do
                 element <- CCD.querySelector id
-                WHH.blur <<< SU.unsafeFromJust "blurOnEnter" $ WHH.fromElement element
+                WHH.blur <<< SU.unsafeFromJust "blurEditionOnEnter" $ WHH.fromElement element
         FAE.noChanges
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
@@ -173,7 +192,8 @@ removeTag tag event = do
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile (ProfileModel { user }) = do
-        Ok <- CCN.post' (SR.fromRouteAbsolute Profile) user
+        --displays back auto generated fields
+        updatedUser <- CCN.post' (SR.fromRouteAbsolute Profile) user
         liftEffect $ CCNO.alert "Profile updated"
-        FAE.noChanges
+        FAE.diff { user : updatedUser }
 

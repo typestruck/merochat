@@ -555,7 +555,10 @@ svg.toolbar-action {
 
 .profile-info-description {
     text-align: justify;
+    border: none;
+    cursor: pointer;
     margin: 10px 0px;
+    font:inherit
 }
 
 .profile-info-add {
@@ -605,4 +608,15 @@ svg.toolbar-action {
 
 .profile-stats {
     margin-bottom: 10px;
+}
+
+.profile-info-edition .CodeMirror {
+    margin: 10px 0px;
+    padding: 0;
+    border: none;
+    text-align: justify;
+}
+
+.profile-info-edition .CodeMirror-focused {
+    border:1px dotted white;
 }

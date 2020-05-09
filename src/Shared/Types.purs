@@ -32,6 +32,8 @@ import Shared.Unsafe as SU
 import Unsafe.Coerce as UC
 import Data.JSDate (JSDate)
 
+foreign import data Editor :: Type
+
 foreign import fromJSDate :: JSDate -> Json
 foreign import fromInt53 :: Int53 -> Json
 foreign import toInt53 :: Json -> Int53

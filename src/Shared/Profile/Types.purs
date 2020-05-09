@@ -27,7 +27,7 @@ import Debug.Trace (spy)
 import Flame (Key)
 import Foreign (Foreign)
 import Foreign as F
-import Shared.Types (MDate(..))
+import Shared.Types (MDate(..), Editor)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 
@@ -37,6 +37,7 @@ newtype ProfileModel = ProfileModel {
         isCountryVisible :: Boolean,
         isGenderVisible :: Boolean,
         isLanguagesVisible :: Boolean,
+        isDescriptionVisible :: Boolean,
         isAgeVisible :: Boolean,
         isTagsVisible :: Boolean,
         countries :: Array (Tuple PrimaryKey String),
@@ -59,11 +60,13 @@ newtype ProfileUser = ProfileUser (BasicUser (
 data ProfileMessage =
         SelectAvatar |
         SetAvatar String |
-        SetName String |
-        NameEnter (Tuple Key String) |
-        TagEnter (Tuple Key String) |
-        SetHeadline String |
-        HeadlineEnter (Tuple Key String) |
+        SetName Event |
+        SetHeadline Event |
+        SetDescription String |
+        SetInitialDescription Editor |
+        ToggleName (Tuple Key String) |
+        SetTagEnter (Tuple Key String) |
+        ToggleHeadline (Tuple Key String) |
         SetGender String |
         SetCountry String |
         SetYear String |
