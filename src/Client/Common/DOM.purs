@@ -2,6 +2,8 @@ module Client.Common.DOM where
 
 import Prelude
 
+import Data.Function.Uncurried (Fn2, Fn1)
+import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Exception as EE
@@ -15,7 +17,9 @@ import Web.DOM.Element as WHE
 import Web.DOM.Node as WDN
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as WDP
-import Web.Event.Event (EventType)
+import Web.Event.CustomEvent (CustomEvent)
+import Web.Event.CustomEvent as WEC
+import Web.Event.Event (EventType(..))
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
@@ -29,6 +33,28 @@ import Web.HTML.Window as WHW
 
 foreign import innerHTML_ :: EffectFn2 Element String Unit
 foreign import innerText_ :: EffectFn1 Element String
+
+foreign import createCustomEvent_ :: Fn2 String String CustomEvent
+foreign import customEventDetail_ :: Fn1 CustomEvent String
+
+nameChanged :: EventType
+nameChanged = EventType "nameChanged"
+
+dispatchCustomEvent :: CustomEvent -> Effect Unit
+dispatchCustomEvent event = do
+        window <- WH.window
+        document <- WHHD.toDocument <$> WHW.document window
+        void $ WET.dispatchEvent (WEC.toEvent event) $ WDD.toEventTarget document
+
+createCustomEvent :: EventType -> String -> CustomEvent
+createCustomEvent (EventType name) = DFU.runFn2 createCustomEvent_ name
+
+addCustomEventListener :: EventType -> (String -> Effect Unit) -> Effect Unit
+addCustomEventListener eventType handler = do
+        window <- WH.window
+        document <- WHHD.toDocument <$> WHW.document window
+        listener <- WET.eventListener (handler <<< DFU.runFn1 customEventDetail_ <<< SU.unsafeFromJust "addCustomEventListener" <<< WEC.fromEvent)
+        WET.addEventListener eventType listener false $ WDD.toEventTarget document
 
 confirm :: String -> Effect Boolean
 confirm message = do

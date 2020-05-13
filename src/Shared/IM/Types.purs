@@ -128,7 +128,8 @@ data ChatMessage =
 
 data MainMessage =
         SetWebSocket WebSocket |
-        SetToken String
+        SetToken String |
+        SetName String
 
 data IMMessage =
         UMM UserMenuMessage |

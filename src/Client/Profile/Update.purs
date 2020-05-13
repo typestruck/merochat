@@ -41,6 +41,7 @@ import Web.DOM (Element)
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
+import Client.Common.DOM (nameChanged)
 import Web.HTML.HTMLElement as WHH
 
 foreign import setEditorContent_ :: EffectFn2 Editor String Unit
@@ -203,8 +204,11 @@ removeTag tag event = do
                 }
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
-saveProfile model@(ProfileModel { user }) = do
+saveProfile model@(ProfileModel { user: user@(ProfileUser { name }) }) = do
         Ok <- CCN.post' (SR.fromRouteAbsolute Profile) user
-        liftEffect $ CCNO.alert "Profile updated"
+        liftEffect $ do
+                CCNO.alert "Profile updated"
+                --let im know that the name has changed
+                CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
         FAE.noChanges
 

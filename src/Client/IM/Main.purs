@@ -3,6 +3,8 @@ module Client.IM.Main where
 import Prelude
 import Shared.IM.Types
 
+import Client.Common.DOM (nameChanged)
+import Client.Common.DOM as CCD
 import Client.Common.Notification as CCN
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
@@ -24,12 +26,14 @@ import Effect.Timer as ET
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
 import Flame (QuerySelector(..))
-import Flame.Application.Effectful as FAE
 import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Flame.External as FE
 import Foreign as FO
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
+import Shared.Newtype as SN
+import Shared.Types (Editor)
 import Shared.Unsafe as SU
 import Shared.WebSocketOptions (port)
 import Signal.Channel (Channel)
@@ -39,7 +43,6 @@ import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
-import Shared.Types (Editor)
 
 foreign import loadEditor :: Effect Editor
 foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
@@ -61,6 +64,8 @@ main = do
         EU.runEffectFn2 keyHandled_ editor $ EU.mkEffectFn1 (SC.send channel <<< Just <<< CM <<< SendMessage)
 
         CISR.scrollLastMessage
+        --receive profile edition changes
+        CCD.addCustomEventListener nameChanged (SC.send channel <<< Just <<< MM <<< SetName)
 
         FE.send [FE.onClick' (Just (UMM <<< ShowUserContextMenu))] channel
 
@@ -106,14 +111,22 @@ update environment@{ message, model, display } =
                 SM msg -> const <$> CIS.update (environment { message = msg })
                 CNM msg -> const <$> CICN.update (environment { message = msg })
                 UMM msg -> CIU.update $ environment { message = msg }
-                MM msg -> const <$> set msg
+                MM msg -> set msg
 
         where   set = case _ of
-                        SetWebSocket webSocket -> setWebSocket model webSocket
-                        SetToken token -> setToken model token
+                        SetWebSocket webSocket -> setWebSocket webSocket
+                        SetToken token -> setToken token
+                        SetName name -> setName name
 
-setWebSocket :: IMModel -> WebSocket -> Aff IMModel
-setWebSocket (IMModel model) ws = pure <<< IMModel $ model { webSocket = Just $ WS ws }
+setWebSocket :: WebSocket -> Aff (IMModel -> IMModel)
+setWebSocket ws = FAE.diff { webSocket: Just $ WS ws }
 
-setToken :: IMModel -> String -> Aff IMModel
-setToken (IMModel model) token = pure <<< IMModel $ model { token = Just token }
+setToken :: String -> Aff (IMModel -> IMModel)
+setToken token = FAE.diff { token: Just token }
+
+setName :: String -> Aff (IMModel -> IMModel)
+setName name = pure $ \model@(IMModel { user }) -> SN.updateModel model $ _ {
+        user = SN.updateUser user $ _ {
+                name = name
+        }
+}
