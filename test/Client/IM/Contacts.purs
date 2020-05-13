@@ -12,7 +12,7 @@ import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Flame (World)
+
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
@@ -48,6 +48,8 @@ tests = do
 
 model :: IMModel
 model = IMModel {
+        userContextMenuVisible: false,
+        profileSettingsToggle: Hidden,
         contacts: [imUser, anotherIMUser],
         user: imUser,
         suggestions: [],
@@ -103,15 +105,6 @@ anotherIMUser = SN.updateUser imUser $ _ {
                        date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
                 }
         ]
-}
-
-world :: World _ _
-world = {
-        update: \a _ -> pure a,
-        view: \_ -> pure unit,
-        previousModel: Nothing,
-        previousMessage: Nothing,
-        event: Nothing
 }
 
 webSocketHandler :: WebSocketHandler

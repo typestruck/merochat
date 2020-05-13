@@ -26,15 +26,15 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Now as EN
-import Flame (World)
+import Flame.Application.Effectful (Environment)
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 
-update :: World IMModel IMMessage -> IMModel -> ChatMessage -> Aff IMModel
-update _ model =
-        case _ of
+update :: Environment IMModel ChatMessage -> Aff IMModel
+update { model, message } =
+        case message of
                 SendMessage content -> do
                         model' <- startChat model
                         sendMessage webSocketHandler content model'

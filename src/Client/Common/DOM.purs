@@ -1,31 +1,60 @@
 module Client.Common.DOM where
 
-import Debug.Trace
 import Prelude
 
-import Data.Either (Either(..))
-import Data.Either as DE
-import Data.Generic.Rep (class Generic)
-import Data.HTTP.Method (Method(..))
-import Data.Maybe (Maybe(..))
+import Data.Function.Uncurried (Fn2, Fn1)
+import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Exception as EE
-import Partial.Unsafe as UP
-import Shared.Header (xAccessToken)
+import Effect.Uncurried (EffectFn1, EffectFn2)
+import Effect.Uncurried as EU
+import Shared.Unsafe as SU
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
+import Web.DOM.Element as WHE
+import Web.DOM.Node as WDN
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as WDP
-import Web.Event.Event (EventType)
+import Web.Event.CustomEvent (CustomEvent)
+import Web.Event.CustomEvent as WEC
+import Web.Event.Event (EventType(..))
+import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WHHD
+import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLInputElement as WHHI
+import Web.HTML.HTMLScriptElement as WHS
 import Web.HTML.Window as HWH
 import Web.HTML.Window as WHW
+
+foreign import innerHTML_ :: EffectFn2 Element String Unit
+foreign import innerText_ :: EffectFn1 Element String
+
+foreign import createCustomEvent_ :: Fn2 String String CustomEvent
+foreign import customEventDetail_ :: Fn1 CustomEvent String
+
+nameChanged :: EventType
+nameChanged = EventType "nameChanged"
+
+dispatchCustomEvent :: CustomEvent -> Effect Unit
+dispatchCustomEvent event = do
+        window <- WH.window
+        document <- WHHD.toDocument <$> WHW.document window
+        void $ WET.dispatchEvent (WEC.toEvent event) $ WDD.toEventTarget document
+
+createCustomEvent :: EventType -> String -> CustomEvent
+createCustomEvent (EventType name) = DFU.runFn2 createCustomEvent_ name
+
+addCustomEventListener :: EventType -> (String -> Effect Unit) -> Effect Unit
+addCustomEventListener eventType handler = do
+        window <- WH.window
+        document <- WHHD.toDocument <$> WHW.document window
+        listener <- WET.eventListener (handler <<< DFU.runFn1 customEventDetail_ <<< SU.unsafeFromJust "addCustomEventListener" <<< WEC.fromEvent)
+        WET.addEventListener eventType listener false $ WDD.toEventTarget document
 
 confirm :: String -> Effect Boolean
 confirm message = do
@@ -57,3 +86,19 @@ value element = DM.maybe inputException WHHI.value $ WHHI.fromElement element
                 id <- WDE.id element
                 EE.throwException <<< EE.error $ "Element is not an input type" <> id
 
+setInnerHTML :: Element -> String -> Effect Unit
+setInnerHTML element = EU.runEffectFn2 innerHTML_ element
+
+innerTextFromTarget :: Event -> Effect String
+innerTextFromTarget event = EU.runEffectFn1 innerText_ $ SU.unsafeFromJust "innerTextFromTarget" do
+        target <- WEE.target event
+        WDE.fromEventTarget target
+
+loadScript :: String -> Effect Unit
+loadScript name = do
+        window <- WH.window
+        document <- WHW.document window
+        script <- WDD.createElement "script" $ WHHD.toDocument document
+        WHS.setSrc ("/client/javascript/"<>name) <<< SU.unsafeFromJust "loadScript" $ WHS.fromElement script
+        body <- SU.unsafeFromJust "loadScript" <$> WHHD.body document
+        void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body

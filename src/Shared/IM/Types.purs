@@ -12,8 +12,8 @@ import Data.Array as DA
 import Data.Bifunctor as DB
 import Data.Date (Date)
 import Data.Date as DD
-import Data.Date as DD
-import Data.DateTime (DateTime)
+import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime, Time(..))
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
 import Data.Enum as DE
@@ -24,6 +24,7 @@ import Data.Hashable as DH
 import Data.Int as DIN
 import Data.Int53 (Int53)
 import Data.JSDate (JSDate)
+import Shared.DateTime as SDT
 import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
@@ -38,13 +39,11 @@ import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign as F
 import Partial.Unsafe as PU
-import Shared.Types (parsePrimaryKey, PrimaryKey(..))
+import Shared.Types (parsePrimaryKey, PrimaryKey(..), MDate(..), MDateTime(..))
 import Shared.Unsafe as SU
-import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
 
-foreign import fromJSDate :: JSDate -> Json
 foreign import fromWS :: WebSocket -> Json
 foreign import toWS :: Json -> WS
 foreign import eqWS :: WebSocket -> WebSocket -> Boolean
@@ -53,8 +52,7 @@ type BasicUser fields = {
         id :: PrimaryKey,
         name :: String,
         headline :: String,
-        description :: String,
-        gender :: Maybe String |
+        description :: String |
         fields
 }
 
@@ -69,6 +67,7 @@ newtype WS = WS WebSocket
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
         avatar :: String,
+        gender :: Maybe String,
         country :: Maybe String,
         languages :: Array String,
         tags :: Array String,
@@ -78,15 +77,20 @@ newtype IMUser = IMUser (BasicUser (
 ))
 
 newtype IMModel = IMModel {
-        user :: IMUser,
         suggestions :: Array IMUser,
-        suggesting :: Maybe Int,
         contacts :: Array IMUser,
-        chatting :: Maybe Int,
         webSocket :: Maybe WS,
         temporaryID :: PrimaryKey,
+        --used to authenticate web socket messages
         token :: Maybe String,
-        userContextMenuVisible :: Boolean
+        --the current logged in user
+        user :: IMUser,
+        --indexes
+        suggesting :: Maybe Int,
+        chatting :: Maybe Int,
+        --visibility switches
+        userContextMenuVisible :: Boolean,
+        profileSettingsToggle :: ProfileSettingsToggle
 }
 
 newtype HistoryMessage = HistoryMessage {
@@ -98,13 +102,19 @@ newtype HistoryMessage = HistoryMessage {
         status :: MessageStatus
 }
 
-data MessageStatus = Unread | Read
+data ProfileSettingsToggle =
+        Hidden |
+        ShowProfile |
+        ShowSettings
 
-newtype MDateTime = MDateTime DateTime
+data MessageStatus =
+        Unread |
+        Read
 
 data UserMenuMessage =
         ShowUserContextMenu Event |
-        Logout
+        Logout |
+        ToggleProfileSettings ProfileSettingsToggle
 
 data ContactMessage =
         ResumeChat PrimaryKey
@@ -118,7 +128,8 @@ data ChatMessage =
 
 data MainMessage =
         SetWebSocket WebSocket |
-        SetToken String
+        SetToken String |
+        SetName String
 
 data IMMessage =
         UMM UserMenuMessage |
@@ -156,17 +167,17 @@ derive instance genericWS :: Generic WS _
 derive instance genericIMModel :: Generic IMModel _
 derive instance genericHistoryMessage :: Generic HistoryMessage _
 derive instance genericMessageStatus :: Generic MessageStatus _
-derive instance genericMDateTime :: Generic MDateTime _
+derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newTypeIMUser :: Newtype IMUser _
 derive instance newTypeHistoryMessage :: Newtype HistoryMessage _
 derive instance newTypeIMModel :: Newtype IMModel _
 
-derive instance eqMDateTime :: Eq MDateTime
 derive instance eqHistoryMessage :: Eq HistoryMessage
 derive instance eqIMModel :: Eq IMModel
 derive instance eqIMUser :: Eq IMUser
 derive instance eqMessageStatus :: Eq MessageStatus
+derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 instance eqWSW :: Eq WS where
         eq (WS w) (WS s) = eqWS w s
 
@@ -184,7 +195,11 @@ instance showIMModel :: Show IMModel where
         show = DGRS.genericShow
 instance showMessageStatus :: Show MessageStatus where
         show = DGRS.genericShow
+instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
+        show = DGRS.genericShow
 
+instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
+        encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonWS :: EncodeJson WS where
@@ -193,9 +208,9 @@ instance encodeJsonIMUser :: EncodeJson IMUser where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
         encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonMDateTime :: EncodeJson MDateTime where
-        encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
 
+instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
+        decodeJson = DADGR.genericDecodeJson
 instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
         decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
@@ -204,22 +219,17 @@ instance decodeJsonWS :: DecodeJson WS where
         decodeJson = Right <<< toWS
 instance decodeJsonIMUser :: DecodeJson IMUser where
         decodeJson = DADGR.genericDecodeJson
-instance showMDateTime :: Show MDateTime where
-        show = DGRS.genericShow
-instance edecodeJsonMDateTime :: DecodeJson MDateTime where
-        decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
-                where   jsonString :: String
-                        jsonString = UC.unsafeCoerce json
 
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
 
-instance imUserFromSQLRow :: FromSQLRow IMUser where
+instance fromSQLRowIMUser :: FromSQLRow IMUser where
         fromSQLRow [
                 foreignID,
+                foreignAvatar,
                 foreignGender,
                 foreignBirthday,
-                foreignUnread,
+                foreignName,
                 foreignHeadline,
                 foreignDescription,
                 foreignCountry,
@@ -227,7 +237,10 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 foreignTags
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 id <- parsePrimaryKey foreignID
-                name <- F.readString foreignUnread
+                maybeForeignerAvatar <- F.readNull foreignAvatar
+                --REFACTOR: all image paths
+                avatar <- DM.maybe (pure "/client/media/avatar.png") (map ("/client/media/upload/" <> _ ) <<< F.readString) maybeForeignerAvatar
+                name <- F.readString foreignName
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
                 maybeGender <- F.readNull foreignGender
@@ -240,12 +253,11 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                 languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
                 maybeTags <- F.readNull foreignTags
                 tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
-                let     now = EU.unsafePerformEffect EN.nowDate
                 pure $ IMUser {
                         id,
+                        avatar,
                         name,
-                        --this will yield a wrong result in some cases, but I guess it is fair for a ASL field
-                        age: (\(Days d) -> DIN.ceil (d / 365.0)) <<< DD.diff now <$> birthday,
+                        age: SDT.ageFrom birthday,
                         gender,
                         headline,
                         description,
@@ -253,16 +265,16 @@ instance imUserFromSQLRow :: FromSQLRow IMUser where
                         languages,
                         tags,
                         message: "",
-                        history: [],
-                        avatar: "/client/media/avatar.png"
+                        history: []
                 }
         --this is surely not ideal
         fromSQLRow list@[
                 foreignDate, -- there is an extra field needed by the distinct when select imusers for the contact list
                 foreignID,
+                foreignAvatar,
                 foreignGender,
                 foreignBirthday,
-                foreignUnread,
+                foreignName,
                 foreignHeadline,
                 foreignDescription,
                 foreignCountry,

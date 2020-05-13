@@ -47,6 +47,7 @@ instance decodeCaptchaResponse :: DecodeJson CaptchaResponse where
                 success <- DAD.getField object "success"
                 pure $ CaptchaResponse { success }
 
+--REFACTOR: could be just userID :: PrimaryKey?
 type Session = {
         userID :: Maybe Int53
 }

@@ -1,3 +1,5 @@
+/* svg icons come from https://coreui.io/icons */
+
 body {
     margin: 0;
     font-family: "Open sans", "sans serif";
@@ -10,7 +12,6 @@ body {
     height: 100%;
     display: grid;
     grid-template-rows: auto 1fr 130px;
-
 }
 
 .send-box {
@@ -30,8 +31,8 @@ body {
 svg {
     margin: 0.4em;
     overflow: visible;
-    stroke: #3f414e;
-    fill: none;
+    stroke: lightgray;
+    fill: lightgray;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 2;
@@ -68,7 +69,6 @@ svg {
 }
 
 .svg-more {
-    fill: #3f414e;
     cursor: pointer;
 }
 
@@ -91,7 +91,7 @@ svg {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .settings, .contact {
@@ -140,7 +140,7 @@ svg {
     flex-flow: column wrap;
 }
 
-.profile-info {
+.profile-info, .profile-info-edition {
     display: flex;
     text-align: center;
     flex-basis: 70%;
@@ -160,15 +160,17 @@ svg {
     align-self: center;
 }
 
+.green {
+    color: green;
+}
+
 .green svg {
     stroke: green;
+    fill: green;
 }
 
 .message-box {
     margin: 20px 0px;
-    /* display: flex;
-    justify-content: end;
-    align-items: end */
 }
 
 .text-message {
@@ -199,7 +201,7 @@ svg {
     flex-flow: column;
 }
 
-.message-history-wrapper > :first-child:not(.description-message) {
+.message-history-wrapper> :first-child:not(.description-message) {
     margin-top: auto !important;
 }
 
@@ -236,18 +238,16 @@ svg {
     align-self: flex-end;
 }
 
-
 .sender-message .avatar-message {
     margin-left: 10px;
 }
-
 
 .sender-message .text {
     background: #dcf8c6;
 }
 
 .dropdown-wrapper-visible {
-    z-index: 23455;
+    z-index: 3;
 }
 
 .drop-menu {
@@ -272,6 +272,28 @@ svg {
     position: relative;
 }
 
+.profile-settings-placeholder {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-flow: row;
+    padding: 30px;
+    z-index: 4;
+}
+
+.profile-info-edition {
+    max-width: 1300px;
+    padding-left: 10px;
+    margin: 0 auto;
+}
+
+.profile-info-edition span, .profile-info-edition img, .profile-info-edition h1, .profile-info-edition h3 {
+    cursor: pointer;
+}
+
 .dropdown-wrapper-visible .drop-menu {
     max-height: 100%;
     opacity: 1;
@@ -281,7 +303,7 @@ svg {
     border: 1px solid lightgray;
     border-radius: 3px;
     padding: 10px;
-    right:0;
+    right: 0;
 }
 
 .dropdown-wrapper-visible>.drop-menu .menu-button {
@@ -437,7 +459,6 @@ svg.toolbar-action {
     height: 18px;
     cursor: pointer;
     margin: 5px;
-    fill: #3f414e;
 }
 
 .svg-no-margin {
@@ -459,7 +480,7 @@ svg.toolbar-action {
 }
 
 .message-options {
-    z-index: 23;
+    z-index: 3;
     padding: 10px;
     margin-top: -100%;
     margin-right: -7%;
@@ -488,13 +509,13 @@ svg.toolbar-action {
 
 .loading-melon {
     animation: rotation 2s infinite linear;
-    width:100px;
-    z-index: 34;
-    position:absolute;
-    bottom:50%;
-    left:50%;
-    margin-bottom:-50px;
-    margin-left:-50px;
+    width: 100px;
+    z-index: 5;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    margin-bottom: -50px;
+    margin-left: -50px;
 }
 
 @keyframes rotation {
@@ -504,7 +525,6 @@ svg.toolbar-action {
     to {
         transform: rotate(359deg);
     }
-
 }
 
 .inline-image {
@@ -522,14 +542,120 @@ svg.toolbar-action {
 }
 
 .CodeMirror, .CodeMirror-scroll {
-	min-height: 20px !important;
+    min-height: 20px !important;
 }
 
 .CodeMirror {
     margin-bottom: 15px;
 }
 
-
 .hidden .editor-toolbar, .hidden .CodeMirror {
     display: hidden;
+}
+
+.profile-edition-description {
+    text-align: justify;
+    border: none;
+    cursor: pointer;
+    margin: 10px 0px;
+    font:inherit
+}
+
+.profile-info-add {
+    font-style: italic;
+}
+
+#profile-edition-root {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.profile-info-alert {
+    padding: 5px;
+    border: 1px dashed yellow;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.profile-settings-menu {
+    display: flex;
+    flex-flow: column;
+    font-size: 1.3em;
+    cursor: pointer;
+}
+
+.back-arrow {
+    vertical-align: middle;
+}
+
+.action-button {
+    background: red !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px;
+    border-radius: 3px;
+    width: max-content;
+}
+
+.end {
+    align-self: end;
+}
+
+.remove-tag {
+    color:red;
+    padding: 0 3px;
+}
+
+.profile-stats {
+    margin: 10px 0px;
+}
+
+.profile-info-edition .CodeMirror {
+    border: none;
+}
+
+.profile-edition-description .CodeMirror {
+    margin: 10px 0px;
+    padding: 0;
+    text-align: justify;
+}
+
+.profile-edition-headline .CodeMirror-focused .CodeMirror-code, .profile-edition-name .CodeMirror-focused .CodeMirror-code, .profile-edition-description .CodeMirror-focused {
+    border:1px dotted white;
+}
+
+.profile-edition-name {
+    font-weight: bold;
+    font-family: "Flamenco";
+    font-size: 2em;
+    margin-top: 10px;
+}
+
+.profile-info-edition textarea {
+    border:0;
+}
+
+.profile-edition-headline .CodeMirror, .profile-edition-name .CodeMirror {
+    padding: 0;
+    margin: 3px 0;
+    height: 100%;
+}
+
+.profile-edition-name .CodeMirror-scroll {
+    overflow: hidden !important;
+}
+
+.profile-edition-name .CodeMirror-line {
+    color: green;
+    text-align: center;
+}
+
+.profile-edition-headline {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.profile-edition-headline .CodeMirror-line{
+    color: white !important;
+    text-align: center;
 }

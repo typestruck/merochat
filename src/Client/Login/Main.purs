@@ -13,7 +13,7 @@ import Effect (Effect)
 import Effect.Aff as EA
 import Debug.Trace(spy)
 import Effect.Class (liftEffect)
-import Shared.Routing as SR
+import Shared.Router as SR
 import Shared.Unsafe as SU
 import Web.UIEvent.MouseEvent.EventTypes (click)
 import Web.UIEvent.KeyboardEvent.EventTypes (keyup)

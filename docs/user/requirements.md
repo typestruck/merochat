@@ -204,11 +204,9 @@ Mockup of profile edition page:
 
 ![profile](images/account_profile.png)
 
-* For Temporary Users inputs are disable and there is a link to Settings' user registration
+* For Temporary Users inputs are disabled and there is a link to Settings' user registration
 
-* User clicks on fields to toggle edition
-
-* Edition is in instant(i.e., fields are changed as edited, no "save" button)
+* For registered users ([#40](https://github.com/easafe/melanchat/issues/40)): click on fields to toggle instantenous edition (i.e., fields are changed as edited, no "save" button)
 
 1. Avatar
 

@@ -13,7 +13,7 @@ import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Shared.Unsafe as SU
 import Data.Either (Either(..))
-import Shared.Routing as SR
+import Shared.Router as SR
 import Client.Common.Network as CCNT
 import Shared.Types
 import Web.UIEvent.MouseEvent.EventTypes (click)

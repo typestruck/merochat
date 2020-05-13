@@ -21,7 +21,7 @@ template :: {
         user :: IMUser
 } -> Effect String
 template {contacts, suggestions, user} = do
-        parameters <- ST.extendParameters $ defaultParameters {
+        let parameters = defaultParameters {
                 javascript = javascript,
                 css = css
         }
@@ -34,6 +34,7 @@ template {contacts, suggestions, user} = do
                         temporaryID: SP.fromInt 0,
                         suggesting: if DA.null suggestions then Nothing else Just 0,
                         userContextMenuVisible: false,
+                        profileSettingsToggle: Hidden,
                         contacts,
                         suggestions,
                         user

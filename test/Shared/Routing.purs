@@ -1,4 +1,4 @@
-module Test.Shared.Routing where
+module Test.Shared.Router where
 
 import Prelude
 import Shared.Types
@@ -7,7 +7,7 @@ import Data.Either (Either(..))
 import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Shared.Routing as SR
+import Shared.Router as SR
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA

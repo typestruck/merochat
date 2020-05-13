@@ -12,13 +12,13 @@ create table users
     joined timestamp default clock_timestamp(),
     email varchar(50) not null,
     birthday timestamp,
-    gender char(1),
+    gender varchar(9),
     headline varchar(200) not null,
+    avatar varchar(41),
     description varchar(10000) not null,
     recentEmoji varchar(60),
     country integer,
     messageOnEnter boolean not null default true,
-    constraint genderCheck check (gender in  ('F', 'M', 'O')),
     constraint countryUser foreign key (country) references countries(id)
 );
 
@@ -49,7 +49,7 @@ create table tags
 (
     id serial primary key,
     name varchar(30) not null,
-    unique(name)
+    constraint uniqueTag unique(name)
 );
 
 create table languages
@@ -118,7 +118,8 @@ create table languagesUsers
     speaker integer not null,
     language integer not null,
     constraint languageUserUser foreign key (speaker) references users(id),
-    constraint languageUserLanguage foreign key (language) references languages(id)
+    constraint languageUserLanguage foreign key (language) references languages(id),
+    constraint uniqueUserLanguage unique(speaker, language)
 );
 
 create table badgesUsers
@@ -363,8 +364,6 @@ values
     ('Kazakhstan'),
     ('Kenya'),
     ('Kiribati'),
-    ('Korea, orth'),
-    ('Korea, outh'),
     ('Kosovo'),
     ('Kuwait'),
     ('Kyrgyzstan'),

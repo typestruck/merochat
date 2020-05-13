@@ -2,7 +2,7 @@ module Server.Router.Session where
 
 import Server.Types
 import Data.Maybe as DM
-import Shared.Routing as SRO
+import Shared.Router as SRO
 import HTTPure (Headers, Response, ResponseM, Path)
 import Server.Response as SRR
 import Prelude

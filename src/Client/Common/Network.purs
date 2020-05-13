@@ -1,6 +1,8 @@
 module Client.Common.Network(
         post,
-        post'
+        post',
+        get,
+        get'
 ) where
 
 import Prelude
@@ -11,6 +13,7 @@ import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat (ResponseFormatError)
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
+import Client.Common.Cookies as CCC
 import Client.Common.Notification as CCN
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
@@ -26,11 +29,13 @@ import Data.Generic.Rep (class Generic)
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
+import Debug.Trace (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception as EE
 import Partial.Unsafe as PU
 import Shared.Header (xAccessToken)
+import Web.XHR.FormData (FormData)
 
 -- | A simplified version of post without the option to handle errors
 post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> contents -> Aff response
@@ -45,21 +50,37 @@ post :: forall contents c response r. Generic contents c => EncodeRep c => Gener
 post url data' = do
         --see Token in shared/Types.purs
         token <- liftEffect $ CCS.getItem tokenKey
-        request url POST [RequestHeader xAccessToken token] data'
+        response <- A.request $ (defaultRequest url POST token) {
+                content = Just <<< RB.json $ DAEGR.genericEncodeJson data'
+        }
+        parseBody response
 
--- | Performs a HTTP request with a JSON payload
-request :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Method -> Array RequestHeader -> contents -> Aff (Either ResponseFormatError response)
-request url method extraHeaders data' = do
-        response <- A.request $ A.defaultRequest {
-                        url = url,
-                        method = Left method,
-                        responseFormat = RF.json,
-                        headers = [
-                                Accept $ MediaType "application/json",
-                                ContentType $ MediaType "application/json"
-                        ] <> extraHeaders,
-                        content = Just <<< RB.json $ DAEGR.genericEncodeJson data'
-                }
+get' :: forall response r. Generic response r => DecodeRep r => String -> Aff response
+get' url = do
+        response <- get url
+        case response of
+                Right right -> pure right
+                Left error -> alertResponseError $ A.printResponseFormatError error
+
+get :: forall response r. Generic response r => DecodeRep r => String -> Aff (Either ResponseFormatError response)
+get url = do
+        token <- liftEffect CCC.getMelanchatCookie
+        response <- A.request $ defaultRequest url GET token
+        parseBody response
+
+defaultRequest url method token =
+        A.defaultRequest {
+                url = url,
+                method = Left method,
+                responseFormat = RF.json,
+                headers = [
+                        Accept $ MediaType "application/json",
+                        ContentType $ MediaType "application/json",
+                        RequestHeader xAccessToken token
+                ]
+        }
+
+parseBody response =
         case response.body of
                 Right payload ->
                         if response.status == StatusCode 200 then
@@ -68,7 +89,6 @@ request url method extraHeaders data' = do
                                 alertResponseError <<< PU.unsafePartial $ DE.fromRight $ DAD.decodeJson payload
                 Left left -> pure $ Left left
 
---type this shit
 alertResponseError message = do
         liftEffect $ CCN.alert message
         CMEC.throwError <<< EE.error $ "Error: " <> message
