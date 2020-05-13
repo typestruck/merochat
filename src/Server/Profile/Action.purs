@@ -1,7 +1,7 @@
 module Server.Profile.Action where
 
 import Prelude
-import Server.Types
+import Server.Types hiding (BenderAction(..))
 import Shared.Profile.Types
 import Shared.Types
 
@@ -22,6 +22,7 @@ import Run as R
 import Server.Bender as SB
 import Server.Profile.Database as SPD
 import Server.Response as SR
+import Server.Response as SRR
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
 
@@ -34,27 +35,33 @@ imageTooBigMessage = "Max allowed size for avatar is 500kb"
 allowedMediaTypes :: HashMap String String
 allowedMediaTypes = DH.fromFoldable [Tuple "data:image/png;base64" ".png", Tuple "data:image/jpeg;base64" ".jpg", Tuple "data:image/tiff;base64" ".tiff", Tuple "data:image/bmp;base64" ".bmp" ]
 
+generate :: Generate -> ServerEffect JSONString
+generate =
+        map JSONString <<< case _ of
+                Name -> SB.generateName
+                Headline -> SB.generateHeadline
+                Description -> SB.generateDescription
+
 saveProfile :: PrimaryKey -> ProfileUser -> ServerEffect Ok
 saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, languages, tags }) = do
-        updatedAvatar <- base64From $ DS.split (Pattern ",") avatar
-        updatedName <- nameOrGenerated name
-        updatedHeadline <- headlineOrGenerated headline
-        updatedDescription <- descriptionOrGenerated description
+        when (isNull name || isNull headline || isNull description) $ SRR.throwBadRequest "Missing required info fields"
 
-        SPD.saveProfile {
-                user: SN.updateProfile profileUser $ _ {
+        updatedAvatar <- base64From $ DS.split (Pattern ",") avatar
+        let updatedUser =
+                SN.updateProfile profileUser $ _ {
                         id = id,
-                        avatar =  updatedAvatar,
-                        name = updatedName,
-                        headline = updatedHeadline,
-                        description = updatedDescription
-                },
+                        avatar = updatedAvatar
+                }
+        SPD.saveProfile {
+                user: updatedUser,
                 languages,
                 tags
         }
         pure Ok
 
-        where   base64From =
+        where   isNull = DS.null <<< DS.trim
+
+                base64From =
                         case _ of
                                 [mediaType, base64] -> do
                                         if FD.any (_ == mediaType) $ DH.keys allowedMediaTypes then do
@@ -71,12 +78,3 @@ saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, l
                                          else
                                                 SR.throwBadRequest invalidImageMessage
                                 _ -> pure <<< SU.unsafeFromJust "base64from" <<< DA.last $ DS.split (Pattern "/") avatar
-
-                textOrGenerated gen text  =
-                        case text of
-                                "" -> gen
-                                _ -> pure $ DS.trim text
-                nameOrGenerated = textOrGenerated SB.generateName
-                headlineOrGenerated = textOrGenerated SB.generateHeadline
-                descriptionOrGenerated = textOrGenerated SB.generateDescription
-

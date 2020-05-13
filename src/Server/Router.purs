@@ -4,30 +4,29 @@ module Server.Router (
         session
 ) where
 
-import Prelude (bind, map, otherwise, pure, show, ($), (&&), (<<<), (<>), (==))
-import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
-import Shared.Types (ResponseError(..), Route(..))
-
 import Browser.Cookies.Data (Cookie(..))
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import HTTPure (Method(..), Request, ResponseM)
+import HTTPure as H
 import HTTPure.Lookup ((!@))
+import Prelude (bind, map, otherwise, pure, show, ($), (&&), (<<<), (<>), (==))
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
-
+import Server.IM.Router as SIR
 import Server.Landing.Router as SLR
 import Server.Login.Router as SLIR
-import Server.IM.Router as SIR
 import Server.Response as SRR
+import Server.Router.Profile as SRP
 import Server.Token as ST
+import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Router as SRO
-import Server.Router.Profile as SRP
+import Shared.Types (Generate(..), ResponseError(..), Route(..))
 
 --needs logging as well
 runRouter :: ServerReader -> Request -> ResponseM
@@ -44,11 +43,14 @@ router request@{ headers, path, method }
         | DA.null path = SLR.landing
         | path == [SRO.fromRoute Register] && method == Post = SLR.register request
         --login
-        | path !@ 0 == (SRO.fromRoute $ Login { next: Nothing }) = SLIR.login request
+        | path !@ 0 == SRO.fromRoute (Login { next: Nothing }) = SLIR.login request
         --im
         | path == [SRO.fromRoute IM] = SIR.im request
         --profile
         | path == [SRO.fromRoute Profile] = SRP.profile request
+        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Name }) = SRP.generate Name
+        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Headline }) = SRP.generate Headline
+        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Description }) = SRP.generate Description
         --local files and 404 for development
         | otherwise = do
                 { configuration : Configuration configuration } <- RR.ask
@@ -58,7 +60,7 @@ router request@{ headers, path, method }
                  else if configuration.development && path !@ 0 == "favicon.ico" then
                         SRR.serveDevelopmentFile ["media", "favicon.ico"]
                  else
-                        RE.throw $ NotFound { reason: "Could not find resource: " <> show path, isPost: method == Post}
+                        RE.throw $ NotFound { reason: "Could not find resource: " <> H.fullPath request, isPost: method == Post}
 
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
 session :: Configuration -> Request -> Effect Session

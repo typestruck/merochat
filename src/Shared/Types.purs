@@ -34,8 +34,10 @@ import Data.JSDate (JSDate)
 
 foreign import data Editor :: Type
 
+foreign import fromEditor :: Editor -> Json
 foreign import fromJSDate :: JSDate -> Json
 foreign import fromInt53 :: Int53 -> Json
+foreign import toEditor :: Json -> Editor
 foreign import toInt53 :: Json -> Int53
 
 type BasicUser fields = {
@@ -85,7 +87,10 @@ data Route =
         Register |
         Login { next :: Maybe String } |
         IM |
-        Profile
+        Profile |
+        Generate { what :: Generate}
+
+data Generate = Name | Headline | Description
 
 data By =
         ID PrimaryKey |
@@ -101,6 +106,7 @@ data ResponseError =
         InternalError { reason :: String }
 
 derive instance genericOk :: Generic Ok _
+derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
 derive instance genericRegisterLogin :: Generic RegisterLogin _
 derive instance genericRoute :: Generic Route _
@@ -112,6 +118,7 @@ derive instance genericJSONString :: Generic JSONString _
 derive instance genericMDateTime :: Generic MDateTime _
 derive instance genericMDate :: Generic MDate _
 
+derive instance eqGenerate :: Eq Generate
 derive instance eqMDateTime :: Eq MDateTime
 derive instance eqMDate :: Eq MDate
 derive instance eqOk :: Eq Ok
@@ -119,6 +126,8 @@ derive instance eqGender :: Eq Gender
 derive instance eqRoute :: Eq Route
 derive instance eqPrimaryKey :: Eq PrimaryKey
 
+instance showGenerate :: Show Generate where
+        show = DGRS.genericShow
 instance showToken :: Show Token where
         show = DGRS.genericShow
 instance showRoute :: Show Route where
@@ -163,6 +172,8 @@ parsePrimaryKey data_
         | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
         | otherwise = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString) $ F.readString data_
 
+instance encodeJsonEditor :: EncodeJson Editor where
+        encodeJson editor = fromEditor editor
 instance encodeJsonGender :: EncodeJson Gender where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonOk :: EncodeJson Ok where
@@ -174,6 +185,8 @@ instance encodeJsonMDateTime :: EncodeJson MDateTime where
 instance encodeJsonMDate :: EncodeJson MDate where
         encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0)
 
+instance decodeJsonEditor :: DecodeJson Editor where
+        decodeJson = Right <<< toEditor
 instance decodeJsonGender :: DecodeJson Gender where
         decodeJson = DADGR.genericDecodeJson
 instance decodeJsonOk :: DecodeJson Ok where
@@ -210,4 +223,12 @@ instance readGender :: Read Gender where
                         "male" -> Just Male
                         "non binary" -> Just NonBinary
                         "other" -> Just Other
+                        _ -> Nothing
+
+instance readGenerate :: Read Generate where
+        read input =
+                 case DS.toLower $ DS.trim input of
+                        "name" -> Just Name
+                        "headline" -> Just Headline
+                        "description" -> Just Description
                         _ -> Nothing

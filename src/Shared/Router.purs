@@ -1,14 +1,16 @@
 module Shared.Router (fromRoute, fromRouteAbsolute, toRoute) where
 
-import Data.Either (Either)
-import Data.Symbol (SProxy(..))
 import Prelude
+
+import Data.Either (Either(..))
+import Data.Maybe as DM
+import Data.String as DS
+import Data.String.Read as DSR
+import Data.Symbol (SProxy(..))
 import Routing.Duplex (RouteDuplex', (:=))
 import Routing.Duplex as RD
 import Routing.Duplex.Generic as RDG
-import Routing.Duplex.Generic.Syntax ((/))
-import Data.Maybe as DM
-import Data.String as DS
+import Routing.Duplex.Generic.Syntax ((/), (?))
 import Routing.Duplex.Parser (RouteError)
 import Shared.Types (Route)
 
@@ -16,12 +18,12 @@ routes :: RouteDuplex' Route
 routes = RD.root $ RDG.sum {
         "Landing" : RDG.noArgs,
         "Register" : "register" / RDG.noArgs,
-        --the type level voodoo on the examples doesn't typecheck
-        "Login": RD.path "login" (RD.record # _next := RD.optional (RD.param "next")),
+        "Login": "login" ? { next: RD.optional <<< RD.string },
         "IM": "im" / RDG.noArgs,
-        "Profile": "profile" / RDG.noArgs
+        "Profile": "profile" / RDG.noArgs,
+        "Generate":  "profile" / "generate" ? { what: parseWhat }
 }
-        where     _next = SProxy :: SProxy "next"
+        where parseWhat = RD.as show (DM.maybe (Left "error parsing what") Right <<< DSR.read)
 
 toRoute :: String -> Either RouteError Route
 toRoute = RD.parse routes

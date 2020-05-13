@@ -10,6 +10,7 @@ import Client.Common.Notification as CCNO
 import Data.Array as DA
 import Data.Date (Month)
 import Data.Date as DD
+import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum)
 import Data.Enum as DE
 import Data.Int as DI
@@ -29,6 +30,7 @@ import Effect.Uncurried as EU
 import Flame (Key)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
+import Flame.Types (NodeData(..))
 import Record as R
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
@@ -36,31 +38,31 @@ import Shared.Router as SR
 import Shared.Types (Ok(..), Route(..))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
+import Web.DOM.Element as WDE
+import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 import Web.HTML.HTMLElement as WHH
 
-foreign import setEditorContents_ :: EffectFn2 Editor String Unit
+foreign import setEditorContent_ :: EffectFn2 Editor String Unit
 
 getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#avatar-file-input"
 
 update :: AffUpdate ProfileModel ProfileMessage
-update { model, message } =
+update { model: model@(ProfileModel { editors }), message } =
         case message of
                 SelectAvatar -> selectAvatar
+
                 SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") base64
                 SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
                 SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
                 SetYear year -> setYear $ DI.fromString year
                 SetMonth month -> setMonth $ DI.fromString month
                 SetDay day -> setDay $ DI.fromString day
-                SetName event -> setFieldFromInnerText event (SProxy :: SProxy "name") 50
-                SetHeadline event -> setFieldFromInnerText event (SProxy :: SProxy "headline") 200
-                SetDescription description -> setProfileField (SProxy :: SProxy "description") $ DS.take 10000 description
-                SetInitialDescription editor -> setEditorContents editor model
-
-                ToggleName (Tuple key _) -> blurEditionOnEnter key "#profile-edition-name"
-                ToggleHeadline (Tuple key _) -> blurEditionOnEnter key "#profile-edition-headline"
+                SetName name -> setEditorFieldOrGenerate Name (SProxy :: SProxy "name") 50 name editors.name
+                SetHeadline headline -> setEditorFieldOrGenerate Headline (SProxy :: SProxy "headline") 200 headline editors.headline
+                SetDescription description -> setEditorFieldOrGenerate Description (SProxy :: SProxy "description") 10000 description editors.description
+                SetEditors editor -> setEditors editor model
                 SetTagEnter (Tuple key tag) -> addTag key tag
 
                 AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language
@@ -76,20 +78,30 @@ update { model, message } =
 
                 SaveProfile -> saveProfile model
 
-setEditorContents editor (ProfileModel { user: ProfileUser { description } }) = do
-        liftEffect $ EU.runEffectFn2 setEditorContents_ editor description
-        FAE.noChanges
+setEditorContent :: Editor -> String -> Aff Unit
+setEditorContent editor = liftEffect <<< EU.runEffectFn2 setEditorContent_ editor
 
-setFieldFromInnerText event field characters = do
-        value <- liftEffect $ CCD.innerTextFromTarget event
-        setProfileField field $ DS.take characters value
+setEditors :: Editors Editor Editor Editor -> ProfileModel -> Aff (ProfileModel -> ProfileModel)
+setEditors editor (ProfileModel { user: ProfileUser { name, headline, description } }) = do
+        setEditorContent editor.name name
+        setEditorContent editor.headline headline
+        setEditorContent editor.description description
+        FAE.diff {
+                editors: {
+                        name: Just editor.name,
+                        headline: Just editor.headline,
+                        description: Just editor.description
+                }
+        }
 
-blurEditionOnEnter :: Key -> String -> Aff (ProfileModel -> ProfileModel)
-blurEditionOnEnter key id = do
-        when (key == "Enter") $ liftEffect do
-                element <- CCD.querySelector id
-                WHH.blur <<< SU.unsafeFromJust "blurEditionOnEnter" $ WHH.fromElement element
-        FAE.noChanges
+setEditorFieldOrGenerate what field characters value editor = do
+        let trimmed = DS.trim value
+        toSet <- if DS.null trimmed then do
+                        JSONString name <- CCN.get' <<< SR.fromRouteAbsolute $ Generate { what }
+                        pure name
+                  else pure trimmed
+        setEditorContent (SU.unsafeFromJust "setEditorFieldOrGenerate" editor) toSet
+        setProfileField field $ DS.take characters toSet
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
 selectAvatar = do
@@ -191,9 +203,8 @@ removeTag tag event = do
                 }
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
-saveProfile (ProfileModel { user }) = do
-        --displays back auto generated fields
-        updatedUser <- CCN.post' (SR.fromRouteAbsolute Profile) user
+saveProfile model@(ProfileModel { user }) = do
+        Ok <- CCN.post' (SR.fromRouteAbsolute Profile) user
         liftEffect $ CCNO.alert "Profile updated"
-        FAE.diff { user : updatedUser }
+        FAE.noChanges
 

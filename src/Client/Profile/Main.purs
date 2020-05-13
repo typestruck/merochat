@@ -12,7 +12,7 @@ import Effect.Uncurried as EU
 import Flame.Application.Effectful as FAE
 import Foreign as F
 import Shared.DateTime as SDT
-import Shared.Profile.Types (ProfileMessage(..))
+import Shared.Profile.Types (Editors, ProfileMessage(..))
 import Shared.Profile.View as SPV
 import Shared.Types (Editor)
 import Shared.Unsafe as SU
@@ -26,7 +26,9 @@ import Web.File.FileReader as WFR
 import Web.HTML.Event.EventTypes (change, load)
 import Web.HTML.HTMLInputElement as WHI
 
-foreign import loadEditor :: Effect Editor
+--loads the simplemde editors that are used for in place editing because content editable sucks balls
+-- the editor for name and headline does not accept new lines
+foreign import loadEditors :: Effect (Editors Editor Editor Editor)
 foreign import blur_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
 
 main :: Effect Unit
@@ -37,9 +39,13 @@ main = do
                 init: Nothing,
                 update: CPU.update
         }
-        editor <- loadEditor
-        EU.runEffectFn2 blur_ editor $ EU.mkEffectFn1 (SC.send channel <<< Just <<< SetDescription)
-        SC.send channel <<< Just $ SetInitialDescription editor
+
+        editors <- loadEditors
+        EU.runEffectFn2 blur_ editors.name $ EU.mkEffectFn1 (SC.send channel <<< Just <<< SetName)
+        EU.runEffectFn2 blur_ editors.headline $ EU.mkEffectFn1 (SC.send channel <<< Just <<< SetHeadline)
+        EU.runEffectFn2 blur_ editors.description $ EU.mkEffectFn1 (SC.send channel <<< Just <<< SetDescription)
+        SC.send channel <<< Just $ SetEditors editors
+
         setUpAvatarChange channel
 
 setUpAvatarChange :: Channel (Maybe ProfileMessage) -> Effect Unit

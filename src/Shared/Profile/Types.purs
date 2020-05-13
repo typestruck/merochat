@@ -31,14 +31,20 @@ import Shared.Types (MDate(..), Editor)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 
+type Editors e e2 e3 = {
+        name :: e,
+        headline :: e2,
+        description :: e3
+}
+
 --REFACTOR: write a generic isVisible field
 newtype ProfileModel = ProfileModel {
         user :: ProfileUser,
         isCountryVisible :: Boolean,
         isGenderVisible :: Boolean,
         isLanguagesVisible :: Boolean,
-        isDescriptionVisible :: Boolean,
         isAgeVisible :: Boolean,
+        editors :: Editors (Maybe Editor) (Maybe Editor) (Maybe Editor),
         isTagsVisible :: Boolean,
         countries :: Array (Tuple PrimaryKey String),
         languages :: Array (Tuple PrimaryKey String),
@@ -60,13 +66,11 @@ newtype ProfileUser = ProfileUser (BasicUser (
 data ProfileMessage =
         SelectAvatar |
         SetAvatar String |
-        SetName Event |
-        SetHeadline Event |
+        SetName String |
+        SetHeadline String |
         SetDescription String |
-        SetInitialDescription Editor |
-        ToggleName (Tuple Key String) |
+        SetEditors (Editors Editor Editor Editor)  |
         SetTagEnter (Tuple Key String) |
-        ToggleHeadline (Tuple Key String) |
         SetGender String |
         SetCountry String |
         SetYear String |

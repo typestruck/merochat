@@ -29,6 +29,7 @@ import Data.Generic.Rep (class Generic)
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
+import Debug.Trace (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception as EE

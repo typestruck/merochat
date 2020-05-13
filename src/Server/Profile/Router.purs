@@ -10,7 +10,7 @@ import Server.Profile.Template as SPT
 import Server.Response as SRR
 import Server.Router.Session as SRS
 import Server.Types (ResponseEffect)
-import Shared.Types (JSONString(..), PrimaryKey(..))
+import Shared.Types (JSONString(..), PrimaryKey(..), Generate)
 import Server.Profile.Action as SPA
 import Shared.Unsafe as SU
 
@@ -31,3 +31,7 @@ profile { method, path, body } = SRS.ifLogged path do
          else do
                 SRR.json body (SPA.saveProfile userID)
 
+generate :: Generate -> ResponseEffect
+generate what = do
+        generated <- SPA.generate what
+        SRR.json' generated

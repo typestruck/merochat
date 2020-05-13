@@ -553,7 +553,7 @@ svg.toolbar-action {
     display: hidden;
 }
 
-.profile-info-description {
+.profile-edition-description {
     text-align: justify;
     border: none;
     cursor: pointer;
@@ -607,16 +607,55 @@ svg.toolbar-action {
 }
 
 .profile-stats {
-    margin-bottom: 10px;
+    margin: 10px 0px;
 }
 
 .profile-info-edition .CodeMirror {
+    border: none;
+}
+
+.profile-edition-description .CodeMirror {
     margin: 10px 0px;
     padding: 0;
-    border: none;
     text-align: justify;
 }
 
-.profile-info-edition .CodeMirror-focused {
+.profile-edition-headline .CodeMirror-focused .CodeMirror-code, .profile-edition-name .CodeMirror-focused .CodeMirror-code, .profile-edition-description .CodeMirror-focused {
     border:1px dotted white;
+}
+
+.profile-edition-name {
+    font-weight: bold;
+    font-family: "Flamenco";
+    font-size: 2em;
+    margin-top: 10px;
+}
+
+.profile-info-edition textarea {
+    border:0;
+}
+
+.profile-edition-headline .CodeMirror, .profile-edition-name .CodeMirror {
+    padding: 0;
+    margin: 3px 0;
+    height: 100%;
+}
+
+.profile-edition-name .CodeMirror-scroll {
+    overflow: hidden !important;
+}
+
+.profile-edition-name .CodeMirror-line {
+    color: green;
+    text-align: center;
+}
+
+.profile-edition-headline {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.profile-edition-headline .CodeMirror-line{
+    color: white !important;
+    text-align: center;
 }
