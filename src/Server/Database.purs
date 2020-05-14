@@ -39,11 +39,11 @@ insert query parameters = withConnection (insertReturnID query parameters)
 insertWith connection query parameters = insertReturnID query parameters connection
 
 insertReturnID query parameters connection = do
-        rows <- DP.scalar connection (addReturnID query) (spy "params" parameters)
-        rows' <- runLogEither "insertReturnID" (spy "rows" rows)
-        pure $ SU.unsafeFromJust "insertReturnID" (spy "rows'" rows')
+        rows <- DP.scalar connection (addReturnID query) parameters
+        rows' <- runLogEither "insertReturnID" rows
+        pure $ SU.unsafeFromJust "insertReturnID" rows'
 
-        where addReturnID (Query text) = Query $ (spy "ccc" (text <> " returning id"))
+        where addReturnID (Query text) = Query $ text <> " returning id"
 
 scalar :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } (Maybe value)
 scalar query parameters = withConnection $ \connection -> do

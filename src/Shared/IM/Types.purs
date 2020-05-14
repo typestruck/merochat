@@ -120,6 +120,7 @@ data ContactMessage =
         ResumeChat PrimaryKey
 
 data SuggestionMessage =
+        PreviousSuggestion |
         NextSuggestion
 
 data ChatMessage =
