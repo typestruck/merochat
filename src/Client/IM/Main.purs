@@ -108,7 +108,7 @@ update :: AffUpdate IMModel IMMessage
 update environment@{ message, model, display } =
         case message of
                 CM msg -> const <$> CIC.update (environment { message = msg })
-                SM msg -> const <$> CIS.update (environment { message = msg })
+                SM msg -> CIS.update $ environment { message = msg }
                 CNM msg -> const <$> CICN.update (environment { message = msg })
                 UMM msg -> CIU.update $ environment { message = msg }
                 MM msg -> set msg

@@ -7,21 +7,34 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect.Aff (Aff)
-import Flame.Application.Effectful (Environment)
+import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Shared.Newtype as SN
 
-update :: Environment IMModel SuggestionMessage -> Aff IMModel
+update :: AffUpdate IMModel SuggestionMessage
 update { model, message } =
         case message of
+                PreviousSuggestion -> previousSuggestion model
                 NextSuggestion -> nextSuggestion model
 
-nextSuggestion :: IMModel -> Aff IMModel
-nextSuggestion model@(IMModel {suggestions, suggesting}) = do
+nextSuggestion :: IMModel -> Aff (IMModel -> IMModel)
+nextSuggestion model@(IMModel { suggestions, suggesting }) = do
         let next = DM.maybe 0 (_ + 1) suggesting
         if next == DA.length suggestions then
                 -- fetch more
-                pure model
-         else pure <<< SN.updateModel model $ _ {
-                 suggesting = Just next,
-                 chatting = Nothing
+                FAE.noChanges
+         else FAE.diff {
+                 suggesting: Just next,
+                 chatting : Nothing
         }
+
+previousSuggestion :: IMModel -> Aff (IMModel -> IMModel)
+previousSuggestion model@(IMModel { suggestions, suggesting }) = do
+        let previous = DM.maybe 0 (_ - 1) suggesting
+        if previous < 0 then
+                FAE.noChanges
+         else FAE.diff {
+                 suggesting: Just previous,
+                 chatting : Nothing
+        }
+

@@ -23,7 +23,6 @@ import Shared.PrimaryKey as SP
 import Shared.Unsafe as SN
 import Test.Unit (TestSuite)
 import Test.Unit as TU
-import Shared.Unsafe((!@))
 import Test.Unit.Assert as TUA
 import Unsafe.Coerce as UC
 import Web.Socket.WebSocket (WebSocket)

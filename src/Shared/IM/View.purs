@@ -93,7 +93,7 @@ profile model =
         case _ of
                 (Just (IMUser user)) ->
                         HE.div (HA.class' "suggestion") [
-                                HE.a [HA.class' "skip", HA.title "you need more karma for that"] [
+                                HE.a [HA.class' "skip", HA.title "See previous profile again", HA.onClick $ SM PreviousSuggestion] [
                                         HE.svg [HA.id "cil-arrow-thick-from-right", HA.viewBox "0 0 24 24", HA.class' "svg-50"] [
                                                 HE.path' $ HA.d "M11.936 2.625h-1.811l-9.375 9.384 9.375 9.366h1.81v-5.625h6.75v-7.5h-6.75zM17.186 9.75v4.5h-6.75v5.315l-7.564-7.557 7.564-7.572v5.314z",
                                                 HE.path' $ HA.d "M21.686 2.625h1.5v18.75h-1.5v-18.75z"
