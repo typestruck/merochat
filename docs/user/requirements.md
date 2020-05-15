@@ -246,7 +246,7 @@ Mockup of settings page:
 
 * For Temporary Users display a [register form](#user-creation) instead
 
-1. Basic account settings
+1. Basic account settings ([#46](https://github.com/easafe/melanchat/issues/46))
 
     a) Update email
 

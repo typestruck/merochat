@@ -28,23 +28,27 @@ update environment@{ model, message } =
                         liftEffect logout
                         FAE.noChanges
                 ShowUserContextMenu event -> FAE.diff' <$> showUserContextMenu model event
-                ToggleProfileSettings toggle -> showProfile environment toggle
+                ToggleProfileSettings toggle -> toggleProfileSettings environment toggle
 
-showProfile :: Environment IMModel UserMenuMessage -> ProfileSettingsToggle -> Aff (IMModel -> IMModel)
-showProfile { display, model } =
+--PERFORMANCE: load bundles only once
+toggleProfileSettings :: Environment IMModel UserMenuMessage -> ProfileSettingsToggle -> Aff (IMModel -> IMModel)
+toggleProfileSettings { display } =
         case _ of
-                ShowProfile -> do
-                        display $ FAE.diff' { profileSettingsToggle: ShowProfile }
-                        JSONString html <- CCN.get' $ SR.fromRouteAbsolute Profile
-                        setRootHTML html
-                        --scripts don't load when inserted via innerHTML
-                        liftEffect $ CCD.loadScript "profile.bundle.js"
-                        FAE.noChanges
-                _ -> do
+                ShowProfile -> showTab Profile ShowProfile "profile.bundle.js"
+                ShowSettings -> showTab Settings ShowSettings "settings.bundle.js"
+                Hidden -> do
                         setRootHTML "Loading..."
                         FAE.diff { profileSettingsToggle: Hidden }
 
-        where   setRootHTML html = liftEffect do
+        where   showTab route toggle file = do
+                        display $ FAE.diff' { profileSettingsToggle: toggle }
+                        JSONString html <- CCN.get' $ SR.fromRouteAbsolute route
+                        setRootHTML html
+                        --scripts don't load when inserted via innerHTML
+                        liftEffect $ CCD.loadScript file
+                        FAE.noChanges
+
+                setRootHTML html = liftEffect do
                         element <- CCD.querySelector "#profile-edition-root"
                         CCD.setInnerHTML element html
 

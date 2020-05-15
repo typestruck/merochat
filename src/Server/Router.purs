@@ -20,7 +20,8 @@ import Server.IM.Router as SIR
 import Server.Landing.Router as SLR
 import Server.Login.Router as SLIR
 import Server.Response as SRR
-import Server.Router.Profile as SRP
+import Server.Profile.Router as SPR
+import Server.Setting.Router as SSR
 import Server.Token as ST
 import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
@@ -47,10 +48,12 @@ router request@{ headers, path, method }
         --im
         | path == [SRO.fromRoute IM] = SIR.im request
         --profile
-        | path == [SRO.fromRoute Profile] = SRP.profile request
-        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Name }) = SRP.generate Name
-        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Headline }) = SRP.generate Headline
-        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Description }) = SRP.generate Description
+        | path == [SRO.fromRoute Profile] = SPR.profile request
+        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Name }) = SPR.generate Name
+        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Headline }) = SPR.generate Headline
+        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Description }) = SPR.generate Description
+        --settings
+        | path == [SRO.fromRoute Settings] = SSR.settings request
         --local files and 404 for development
         | otherwise = do
                 { configuration : Configuration configuration } <- RR.ask

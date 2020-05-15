@@ -1,4 +1,4 @@
-module Server.Router.Profile where
+module Server.Profile.Router where
 
 import Prelude
 

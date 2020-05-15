@@ -6,8 +6,7 @@ import Data.Either (Either(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Data.String.Read as DSR
-import Data.Symbol (SProxy(..))
-import Routing.Duplex (RouteDuplex', (:=))
+import Routing.Duplex (RouteDuplex')
 import Routing.Duplex as RD
 import Routing.Duplex.Generic as RDG
 import Routing.Duplex.Generic.Syntax ((/), (?))
@@ -21,6 +20,7 @@ routes = RD.root $ RDG.sum {
         "Login": "login" ? { next: RD.optional <<< RD.string },
         "IM": "im" / RDG.noArgs,
         "Profile": "profile" / RDG.noArgs,
+        "Settings": "settings" / RDG.noArgs,
         "Generate":  "profile" / "generate" ? { what: parseWhat }
 }
         where parseWhat = RD.as show (DM.maybe (Left "error parsing what") Right <<< DSR.read)
