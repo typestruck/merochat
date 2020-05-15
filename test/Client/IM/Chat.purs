@@ -13,14 +13,15 @@ import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
-import Shared.Unsafe ((!@))
-
 import Partial.Unsafe as PU
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
+import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
+import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -33,20 +34,20 @@ tests = do
                 let content = "test"
 
                 TU.test "sendMessage bumps temporary id" $ do
-                        m@(IMModel {temporaryID}) <- CIC.sendMessage webSocketHandler content model
+                        m@(IMModel {temporaryID}) <- TCM.run model $ CIC.sendMessage webSocketHandler content model
                         TUA.equal (SP.fromInt 1) temporaryID
 
-                        IMModel {temporaryID} <- CIC.sendMessage webSocketHandler content m
+                        IMModel {temporaryID} <- TCM.run model $ CIC.sendMessage webSocketHandler content m
                         TUA.equal (SP.fromInt 2) temporaryID
 
                 TU.test "sendMessage adds message to history" $ do
-                        date <- liftEffect $ map MDateTime EN.nowDateTime
-                        IMModel {contacts, chatting} <- CIC.sendMessage webSocketHandler content model
-                        let index = SN.unsafeFromJust "test" chatting
-                            IMUser user = SN.unsafeFromJust "test" (contacts !! index)
+                        IMModel { contacts, chatting } <- TCM.run model $ CIC.sendMessage webSocketHandler content model
+                        let IMUser user = SN.unsafeFromJust "test" do
+                                index <- chatting
+                                contacts !! index
 
                         TUA.equal [HistoryMessage {
-                                date,
+                                date: _.date $ DN.unwrap (user.history !@ 0),
                                 recipient: user.id,
                                 status: Unread,
                                 id: SP.fromInt 1,
@@ -87,7 +88,7 @@ tests = do
 
                 TU.test "receiveMessage substitutes temporary id" $ do
                         date <- liftEffect $ map MDateTime EN.nowDateTime
-                        IMModel {contacts} <- CIC.receiveMessage webSocketHandler (SN.updateModel model $ _ {
+                        IMModel {contacts} <- TCM.run model <<< CIC.receiveMessage true webSocketHandler (SN.updateModel model $ _ {
                                 contacts = [SN.updateUser anotherIMUser $ _ {
                                         history = [HistoryMessage {
                                                 status: Unread,
@@ -106,7 +107,7 @@ tests = do
 
                 TU.test "receiveMessage adds message to history" $ do
                         date <- liftEffect $ map MDateTime EN.nowDateTime
-                        IMModel {contacts} <- CIC.receiveMessage webSocketHandler (SN.updateModel model $ _ {
+                        IMModel {contacts} <- TCM.run model <<< CIC.receiveMessage true webSocketHandler (SN.updateModel model $ _ {
                                 contacts = [anotherIMUser],
                                 chatting = Nothing
                         }) $ ClientMessage {
@@ -126,7 +127,7 @@ tests = do
 
                 TU.test "receiveMessage adds contact if new" $ do
                         date <- liftEffect $ map MDateTime EN.nowDateTime
-                        IMModel { contacts } <- CIC.receiveMessage webSocketHandler (SN.updateModel model $ _ {
+                        IMModel { contacts } <- TCM.run model <<< CIC.receiveMessage true webSocketHandler (SN.updateModel model $ _ {
                                 contacts = [],
                                 chatting = Nothing
                         }) $ ClientMessage {
@@ -148,7 +149,7 @@ tests = do
 
                 TU.test "receiveMessage set chatting if message comes from current suggestion" $ do
                         date <- liftEffect $ map MDateTime EN.nowDateTime
-                        IMModel {contacts, chatting} <- CIC.receiveMessage webSocketHandler (SN.updateModel model $ _ {
+                        IMModel {contacts, chatting} <- TCM.run model <<< CIC.receiveMessage true webSocketHandler (SN.updateModel model $ _ {
                                 contacts = [],
                                 chatting = Nothing,
                                 suggesting = Just 0,
@@ -173,7 +174,7 @@ tests = do
 
                 TU.test "receiveMessage mark messages as read if coming from current chat" $ do
                         date <- liftEffect $ map MDateTime EN.nowDateTime
-                        IMModel { contacts } <- CIC.receiveMessage webSocketHandler (SN.updateModel model $ _ {
+                        IMModel { contacts } <- TCM.run model <<< CIC.receiveMessage true webSocketHandler (SN.updateModel model $ _ {
                                 contacts = [anotherIMUser],
                                 chatting = Just 0,
                                 suggesting = Nothing
@@ -184,6 +185,20 @@ tests = do
                                 date
                         }
                         TUA.equal [Tuple newMessageID Read] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
+
+                TU.test "receiveMessage does mark messages as read if window is not focused" $ do
+                        date <- liftEffect $ map MDateTime EN.nowDateTime
+                        IMModel { contacts } <- TCM.run model <<< CIC.receiveMessage false webSocketHandler (SN.updateModel model $ _ {
+                                contacts = [anotherIMUser],
+                                chatting = Just 0,
+                                suggesting = Nothing
+                        }) $ ClientMessage {
+                                id: newMessageID,
+                                user: Left anotherIMUser,
+                                content,
+                                date
+                        }
+                        TUA.equal [Tuple newMessageID Unread] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
 
         where   getHistory contacts = do
                         IMUser { history } <- DA.head contacts

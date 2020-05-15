@@ -13,20 +13,24 @@ import Data.Newtype as DN
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Flame.Application.Effectful (Environment)
+import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Shared.Newtype as SN
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
-update :: Environment IMModel ContactMessage -> Aff IMModel
-update { model, message } =
+update :: AffUpdate IMModel ContactMessage
+update { model, message, display } =
         case message of
                 ResumeChat id -> do
                         model' <- resumeChat id model
-                        markRead webSocketHandler  model'
+                        display (const model')
+                        markRead webSocketHandler model'
+                --when the window is focused updated the read status of current chat
+                UpdateReadCount -> markRead webSocketHandler model
 
-markRead :: WebSocketHandler -> IMModel -> Aff IMModel
+markRead :: WebSocketHandler -> IMModel -> Aff (IMModel -> IMModel)
 markRead wsHandler =
         case _ of
                 model@(IMModel {
@@ -44,7 +48,7 @@ markRead wsHandler =
                 }
                 model -> do
                         liftEffect $ EC.log "invalid markRead state"
-                        pure model
+                        FAE.noChanges
 
 updateReadHistory :: WebSocketHandler -> IMModel -> {
         token :: String,
@@ -52,17 +56,22 @@ updateReadHistory :: WebSocketHandler -> IMModel -> {
         webSocket :: WebSocket,
         contacts :: Array IMUser,
         chatting :: Int
-} -> Aff IMModel
+} -> Aff (IMModel -> IMModel)
 updateReadHistory wsHandler model { token, webSocket, chatting, userID, contacts } = do
-        let readContact@(IMUser { history }) = contacts !@ chatting
-        liftEffect <<< wsHandler.sendPayload webSocket $ ReadMessages {
-                ids: DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap readContact,
-                token
-        }
-        pure <<< SN.updateModel model $ _ {
-                contacts = SU.unsafeFromJust "markRead" $ DA.updateAt chatting (SN.updateUser readContact $ _ { history = map (read userID) history }) contacts
-        }
-        where   unreadID userID  (HistoryMessage { recipient, id, status })
+        let     contactRead@(IMUser { history }) = contacts !@ chatting
+                messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
+
+        if DA.null messagesRead then
+                FAE.noChanges
+         else do
+                liftEffect <<< wsHandler.sendPayload webSocket $ ReadMessages {
+                        ids: messagesRead,
+                        token
+                }
+                FAE.diff {
+                        contacts: SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateUser contactRead $ _ { history = map (read userID) history }) contacts
+                }
+        where   unreadID userID (HistoryMessage { recipient, id, status })
                         | status == Unread && recipient == userID = Just id
                         | otherwise = Nothing
 
@@ -74,7 +83,7 @@ resumeChat :: PrimaryKey -> IMModel -> Aff IMModel
 resumeChat searchID model@(IMModel { contacts }) =
         pure <<< SN.updateModel model $ _ {
                 suggesting = Nothing,
-                chatting = DA.findIndex (\(IMUser {id}) -> searchID == id) contacts
+                chatting = DA.findIndex (\(IMUser { id }) -> searchID == id) contacts
         }
 
 

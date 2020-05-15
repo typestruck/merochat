@@ -20,25 +20,32 @@ import Data.Either (Either(..))
 import Data.Either as DET
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Client.Common.DOM as CCD
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Now as EN
-import Flame.Application.Effectful (Environment)
+import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful as FAE
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 
-update :: Environment IMModel ChatMessage -> Aff IMModel
-update { model, message } =
+--this module needs to be tested for race conditions
+
+update :: AffUpdate IMModel ChatMessage
+update { model, message, display } =
         case message of
                 SendMessage content -> do
                         model' <- startChat model
+                        display (const model')
                         sendMessage webSocketHandler content model'
-                ReceiveMessage payload -> receiveMessage webSocketHandler model payload
+                ReceiveMessage payload -> do
+                        isFocused <- liftEffect CCD.documentHasFocus
+                        receiveMessage isFocused webSocketHandler model payload
 
 startChat :: IMModel -> Aff IMModel
 startChat model@(IMModel {chatting, contacts, suggesting, suggestions}) =
@@ -52,7 +59,7 @@ startChat model@(IMModel {chatting, contacts, suggesting, suggestions}) =
                                 }
                         _ -> model
 
-sendMessage :: WebSocketHandler -> String -> IMModel -> Aff IMModel
+sendMessage :: WebSocketHandler -> String -> IMModel -> Aff (IMModel -> IMModel)
 sendMessage webSocketHandler content =
         case _ of
                 model@(IMModel {
@@ -83,16 +90,16 @@ sendMessage webSocketHandler content =
                                 token: token,
                                 content
                         }
-                        pure <<< SN.updateModel model $ _ {
-                                temporaryID = newTemporaryID,
-                                contacts = SU.unsafeFromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
+                        FAE.diff {
+                                temporaryID: newTemporaryID,
+                                contacts: SU.unsafeFromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
                         }
                 model -> do
                         liftEffect $ EC.log "Invalid sendMessage state"
-                        pure model
+                        FAE.noChanges
 
-receiveMessage :: WebSocketHandler -> IMModel -> WebSocketPayloadClient -> Aff IMModel
-receiveMessage wsHandler model@(IMModel {
+receiveMessage :: Boolean -> WebSocketHandler -> IMModel -> WebSocketPayloadClient -> Aff (IMModel -> IMModel)
+receiveMessage isFocused wsHandler model@(IMModel {
         user: IMUser { id: recipientID },
         contacts,
         suggesting,
@@ -134,13 +141,13 @@ receiveMessage wsHandler model@(IMModel {
                                                 userID: recipientID,
                                                 contacts
                                         }
-                                        if isChatting user fields then
-                                                CICN.updateReadHistory wsHandler updatedModel fields
+                                        if isFocused && isChatting user fields then
+                                               CICN.updateReadHistory wsHandler updatedModel fields
                                          else
-                                                pure updatedModel
-                                _ -> pure updatedModel
-                Received { previousID, id } -> pure <<< SN.updateModel model $ _ {
-                        contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
+                                                pure (const updatedModel)
+                                _ -> pure (const updatedModel)
+                Received { previousID, id } -> FAE.diff {
+                        contacts: DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
                 }
 
         where   getUserID = map (_.id <<< DN.unwrap)
@@ -149,7 +156,7 @@ receiveMessage wsHandler model@(IMModel {
                         suggestions !! index
 
                 isChatting sender {contacts, chatting} =
-                        let IMUser {id: recipientID} = contacts !@ chatting in recipientID ==  DET.either (_.id <<< DN.unwrap) identity sender
+                        let IMUser {id: recipientID} = contacts !@ chatting in recipientID == DET.either (_.id <<< DN.unwrap) identity sender
 
 updateHistoryMessage :: Array IMUser -> PrimaryKey -> {
         id :: PrimaryKey,
