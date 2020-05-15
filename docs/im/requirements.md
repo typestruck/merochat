@@ -286,7 +286,7 @@ Mockup of chat input component:
 
     ![chat input options](images/chat_input_options_drop_down_menu.png)
 
-    a) Whether to send messages with enter or pressing a button
+    a) Whether to send messages with enter or pressing a button ([#12](https://github.com/easafe/melanchat/issues/12))
 
     b) Image/video upload
 
