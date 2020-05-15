@@ -37,6 +37,8 @@ foreign import innerText_ :: EffectFn1 Element String
 foreign import createCustomEvent_ :: Fn2 String String CustomEvent
 foreign import customEventDetail_ :: Fn1 CustomEvent String
 
+foreign import documentHasFocus :: Effect Boolean
+
 nameChanged :: EventType
 nameChanged = EventType "nameChanged"
 

@@ -17,3 +17,7 @@ exports.createCustomEvent_ = function(name, stringDetail) {
 exports.customEventDetail_ = function(event) {
         return event.detail.value;
 }
+
+exports.documentHasFocus = function() {
+        return document.hasFocus();
+}

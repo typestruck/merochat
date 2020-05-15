@@ -49,14 +49,12 @@ foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
 
 main :: Effect Unit
 main = do
+        token <- CCS.getItem tokenKey
         channel <- FAE.resumeMount (QuerySelector ".im") {
                 view: SIV.view,
-                init: Nothing,
+                init: Just <<< MM $ SetToken token,
                 update
         }
-
-        token <- CCS.getItem tokenKey
-        SC.send channel <<< Just <<< MM $ SetToken token
 
         setUpWebSocket channel token
 
@@ -66,8 +64,8 @@ main = do
         CISR.scrollLastMessage
         --receive profile edition changes
         CCD.addCustomEventListener nameChanged (SC.send channel <<< Just <<< MM <<< SetName)
-
-        FE.send [FE.onClick' (Just (UMM <<< ShowUserContextMenu))] channel
+        --display settings/profile page
+        FE.send [FE.onClick' (Just (UMM <<< ShowUserContextMenu)), FE.onFocus (Just (CNM UpdateReadCount)) ] channel
 
 setUpWebSocket :: Channel (Maybe IMMessage) -> String -> Effect Unit
 setUpWebSocket channel token = do
@@ -107,9 +105,9 @@ setUpWebSocket channel token = do
 update :: AffUpdate IMModel IMMessage
 update environment@{ message, model, display } =
         case message of
-                CM msg -> const <$> CIC.update (environment { message = msg })
+                CM msg -> CIC.update $ environment { message = msg }
                 SM msg -> CIS.update $ environment { message = msg }
-                CNM msg -> const <$> CICN.update (environment { message = msg })
+                CNM msg -> CICN.update $ environment { message = msg }
                 UMM msg -> CIU.update $ environment { message = msg }
                 MM msg -> set msg
 

@@ -117,7 +117,8 @@ data UserMenuMessage =
         ToggleProfileSettings ProfileSettingsToggle
 
 data ContactMessage =
-        ResumeChat PrimaryKey
+        ResumeChat PrimaryKey |
+        UpdateReadCount
 
 data SuggestionMessage =
         PreviousSuggestion |
@@ -132,6 +133,7 @@ data MainMessage =
         SetToken String |
         SetName String
 
+--REFACTOR: give these descriptive names
 data IMMessage =
         UMM UserMenuMessage |
         SM SuggestionMessage |
