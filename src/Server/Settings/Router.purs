@@ -21,7 +21,10 @@ settings { path } = SRS.ifLogged path do
 
 changeEmail :: Request -> ResponseEffect
 changeEmail { path, body } = SRS.ifLogged path do
-        { session: { userID: maybeUserID } } <- RR.ask
-        let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
-        contents <- R.liftEffect SST.template
+        userID <- SRS.loggedUserID
         SRR.json body (SSA.changeEmail userID)
+
+changePassword :: Request -> ResponseEffect
+changePassword { path, body } = SRS.ifLogged path do
+        userID <- SRS.loggedUserID
+        SRR.json body (SSA.changePassword userID)

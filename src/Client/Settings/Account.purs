@@ -2,6 +2,7 @@ module Client.Settings.Account where
 
 import Prelude
 
+import Client.Common.Logout as CCL
 import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Data.String as DS
@@ -24,7 +25,7 @@ update { model, message } =
                 SetPassword password -> setField (SProxy :: SProxy "password") password
                 SetPasswordConfirmation passwordConfirmation -> setField (SProxy :: SProxy "passwordConfirmation") passwordConfirmation
                 ChangeEmail -> changeEmail model
-                ChangePassword -> FAE.noChanges
+                ChangePassword -> changePassword model
                 TerminateAccount -> FAE.noChanges
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
@@ -35,7 +36,20 @@ changeEmail model@(SettingsModel { email, emailConfirmation }) = do
                 liftEffect $ CCN.alert "Email and confirmation do not match"
          else do
                 Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountEmail) model
-                liftEffect $ CCN.alert "Email updated"
+                liftEffect $ CCN.alert "Email changed"
+        FAE.noChanges
+
+changePassword :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
+changePassword model@(SettingsModel { password, passwordConfirmation }) = do
+        if DS.null password || DS.null passwordConfirmation then
+                liftEffect $ CCN.alert "Fill in password and confirmation"
+         else if password /= passwordConfirmation then
+                liftEffect $ CCN.alert "Password and confirmation do not match"
+         else do
+                Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountPassword) model
+                liftEffect $ do
+                        CCN.alert "Password changed, you will be logged out"
+                        CCL.logout
         FAE.noChanges
 
 setField field value = pure $ \model -> SN.updateSettingsModel model (R.set field value)

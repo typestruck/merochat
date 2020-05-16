@@ -1,7 +1,6 @@
 module Client.Settings.Main where
 
 import Prelude
-import Shared.Settings.Types
 
 import Client.Settings.Account as CSA
 import Data.Maybe (Maybe(..))

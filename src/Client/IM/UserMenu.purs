@@ -7,6 +7,7 @@ import Client.Common.Cookies as CCC
 import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network as CCN
+import Client.Common.Logout as CCLO
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
 import Effect (Effect)
@@ -68,7 +69,4 @@ showUserContextMenu model@(IMModel { userContextMenuVisible }) event = do
 logout :: Effect Unit
 logout = do
         confirmed <- CCD.confirm "Really log out?"
-        when confirmed $ void do
-                CCS.removeItem tokenKey
-                CCC.removeMelanchatCookie
-                CCL.setLocation "/"
+        when confirmed CCLO.logout

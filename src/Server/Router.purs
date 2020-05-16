@@ -56,6 +56,7 @@ router request@{ headers, path, method }
         --settings
         | path == [SRO.fromRoute Settings] = SSR.settings request
         | H.fullPath request == SRO.fromRouteAbsolute AccountEmail && method == Post = SSR.changeEmail request
+        | H.fullPath request == SRO.fromRouteAbsolute AccountPassword && method == Post = SSR.changePassword request
         --local files and 404 for development
         | otherwise = do
                 { configuration : Configuration configuration } <- RR.ask
