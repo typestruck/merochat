@@ -19,9 +19,9 @@ import Run.Reader as RR
 import Server.IM.Router as SIR
 import Server.Landing.Router as SLR
 import Server.Login.Router as SLIR
-import Server.Response as SRR
 import Server.Profile.Router as SPR
-import Server.Setting.Router as SSR
+import Server.Response as SRR
+import Server.Settings.Router as SSR
 import Server.Token as ST
 import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
@@ -38,6 +38,7 @@ runRouter reading =
         router
 
 --move path matching to individual folders?
+--REFACTOR: single way to match path (fullPath)
 router :: Request -> ResponseEffect
 router request@{ headers, path, method }
         --landing
@@ -54,6 +55,7 @@ router request@{ headers, path, method }
         | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Description }) = SPR.generate Description
         --settings
         | path == [SRO.fromRoute Settings] = SSR.settings request
+        | H.fullPath request == SRO.fromRouteAbsolute AccountEmail && method == Post = SSR.changeEmail request
         --local files and 404 for development
         | otherwise = do
                 { configuration : Configuration configuration } <- RR.ask

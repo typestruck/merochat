@@ -58,8 +58,8 @@ profileSettings toggle = HE.div (HA.class' $ "profile-settings-placeholder" <> i
                 HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowProfile), HA.class' { green: toggle == ShowProfile }] "Your profile",
                 HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowSettings), HA.class' { green: toggle == ShowSettings }] "Your settings"
         ],
-        HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle <> ShowProfile }] $ "Loading...",
-        HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle <> ShowSettings }] $ "Loading..."
+        HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ "Loading...",
+        HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ "Loading..."
 ]
 
 userMenu :: IMModel -> Html IMMessage

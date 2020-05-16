@@ -12,7 +12,7 @@ import Effect (Effect)
 import Effect.Now as EN
 import Flame (QuerySelector(..))
 import Flame as F
-import Shared.Settings.View as SPV
+import Shared.Settings.View as SSV
 import Shared.Types (PrimaryKey(..))
 
 template :: Effect String

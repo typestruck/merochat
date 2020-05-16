@@ -39,7 +39,14 @@ newtype SettingsModel = SettingsModel {
         passwordConfirmation :: String
 }
 
-data SettingsMessage
+data SettingsMessage =
+        SetEmail String |
+        SetEmailConfirmation String |
+        SetPassword String |
+        SetPasswordConfirmation String |
+        ChangeEmail |
+        ChangePassword |
+        TerminateAccount --very bad
 
 derive instance genericSettingsModel :: Generic SettingsModel _
 

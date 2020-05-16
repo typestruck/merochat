@@ -34,22 +34,22 @@ update environment@{ model, message } =
 toggleProfileSettings :: Environment IMModel UserMenuMessage -> ProfileSettingsToggle -> Aff (IMModel -> IMModel)
 toggleProfileSettings { display } =
         case _ of
-                ShowProfile -> showTab Profile ShowProfile "profile.bundle.js"
-                ShowSettings -> showTab Settings ShowSettings "settings.bundle.js"
+                ShowProfile -> showTab Profile ShowProfile "profile.bundle.js" "#profile-edition-root"
+                ShowSettings -> showTab Settings ShowSettings "settings.bundle.js" "#settings-edition-root"
                 Hidden -> do
-                        setRootHTML "Loading..."
+                        setRootHTML "Loading..." "#profile-edition-root"
                         FAE.diff { profileSettingsToggle: Hidden }
 
-        where   showTab route toggle file = do
+        where   showTab route toggle file root = do
                         display $ FAE.diff' { profileSettingsToggle: toggle }
                         JSONString html <- CCN.get' $ SR.fromRouteAbsolute route
-                        setRootHTML html
+                        setRootHTML html root
                         --scripts don't load when inserted via innerHTML
                         liftEffect $ CCD.loadScript file
                         FAE.noChanges
 
-                setRootHTML html = liftEffect do
-                        element <- CCD.querySelector "#profile-edition-root"
+                setRootHTML html root = liftEffect do
+                        element <- CCD.querySelector root
                         CCD.setInnerHTML element html
 
 showUserContextMenu :: IMModel -> Event -> Aff { userContextMenuVisible :: Boolean }

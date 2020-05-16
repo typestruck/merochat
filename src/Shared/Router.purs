@@ -20,8 +20,11 @@ routes = RD.root $ RDG.sum {
         "Login": "login" ? { next: RD.optional <<< RD.string },
         "IM": "im" / RDG.noArgs,
         "Profile": "profile" / RDG.noArgs,
+        "Generate":  "profile" / "generate" ? { what: parseWhat },
         "Settings": "settings" / RDG.noArgs,
-        "Generate":  "profile" / "generate" ? { what: parseWhat }
+        "AccountEmail": "settings" / "email" / RDG.noArgs,
+        "AccountPassword": "settings" / "password" / RDG.noArgs,
+        "Terminate": "settings" / "close" / RDG.noArgs
 }
         where parseWhat = RD.as show (DM.maybe (Left "error parsing what") Right <<< DSR.read)
 
