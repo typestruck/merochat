@@ -55,9 +55,11 @@ profileSettings toggle = HE.div (HA.class' $ "profile-settings-placeholder" <> i
                         ],
                         HE.text "Back to chats"
                 ],
-                HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowProfile), HA.class' { green: toggle == ShowProfile }] "Your profile"
+                HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowProfile), HA.class' { green: toggle == ShowProfile }] "Your profile",
+                HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowSettings), HA.class' { green: toggle == ShowSettings }] "Your settings"
         ],
-        HE.div "profile-edition-root" $ "Loading..."
+        HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ "Loading...",
+        HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ "Loading..."
 ]
 
 userMenu :: IMModel -> Html IMMessage
@@ -78,7 +80,7 @@ userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA
                 ],
                 HE.div [HA.class' "drop-menu fade-in effect"][
                        HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowProfile)] "Profile",
-                       -- HE.a [HA.class' "menu-button", HA.href "/settings"] "Settings",
+                       HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowSettings)] "Settings",
                        -- HE.i_ "🍉",
                        -- HE.a (HA.href "#") "Help",
                       --  HE.a [HA.class' "menu-button", HA.href "#"] "Become a backer",

@@ -570,6 +570,19 @@ svg.toolbar-action {
     flex-grow: 1;
 }
 
+#settings-edition-root {
+    margin: 0px 30px;
+}
+
+.settings-edition fieldset {
+    padding: 15px;
+    padding-top: 0;
+}
+
+.settings-edition fieldset div {
+    margin: 15px 0;
+}
+
 .profile-info-alert {
     padding: 5px;
     border: 1px dashed yellow;

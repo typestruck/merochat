@@ -33,8 +33,8 @@ create table messages
     visualized timestamp,
 
     constraint statusCheck check (status in (0, 1)),
-    constraint fromUserMessage foreign key (sender) references users(id),
-    constraint toUserMessage foreign key (recipient) references users(id)
+    constraint fromUserMessage foreign key (sender) references users(id) on delete cascade,
+    constraint toUserMessage foreign key (recipient) references users(id) on delete cascade
 );
 
 create table privileges
@@ -78,8 +78,8 @@ create table blocked
     id serial primary key,
     blocker integer not null,
     blocked integer not null,
-    constraint blockerUser foreign key (blocker) references users(id),
-    constraint blockedUser foreign key (blocked) references users(id)
+    constraint blockerUser foreign key (blocker) references users(id) on delete cascade,
+    constraint blockedUser foreign key (blocked) references users(id) on delete cascade
 );
 
 create table reports
@@ -89,9 +89,9 @@ create table reports
     offense integer not null,
     reporter integer not null,
     reported integer not null,
-    constraint offenseReaction foreign key (offense) references reactions(id),
-    constraint reporterUser foreign key (reporter) references users(id),
-    constraint reportedUser foreign key (reported) references users(id)
+    constraint offenseReaction foreign key (offense) references reactions(id) on delete cascade,
+    constraint reporterUser foreign key (reporter) references users(id) on delete cascade,
+    constraint reportedUser foreign key (reported) references users(id) on delete cascade
 );
 
 create table privilegesUsers
@@ -99,8 +99,8 @@ create table privilegesUsers
     id serial primary key,
     privilege integer not null,
     receiver integer not null,
-    constraint privilegeUserUser foreign key (receiver) references users(id),
-    constraint privilegeUserPrivilege foreign key (privilege) references privileges(id)
+    constraint privilegeUserUser foreign key (receiver) references users(id) on delete cascade,
+    constraint privilegeUserPrivilege foreign key (privilege) references privileges(id) on delete cascade
 );
 
 create table tagsUsers
@@ -108,7 +108,7 @@ create table tagsUsers
     id serial primary key,
     creator integer not null,
     tag integer not null,
-    constraint tagUserUser foreign key (creator) references users(id),
+    constraint tagUserUser foreign key (creator) references users(id) on delete cascade,
     constraint tagUserTag foreign key (tag) references tags(id)
 );
 
@@ -117,7 +117,7 @@ create table languagesUsers
     id serial primary key,
     speaker integer not null,
     language integer not null,
-    constraint languageUserUser foreign key (speaker) references users(id),
+    constraint languageUserUser foreign key (speaker) references users(id) on delete cascade,
     constraint languageUserLanguage foreign key (language) references languages(id),
     constraint uniqueUserLanguage unique(speaker, language)
 );
@@ -127,7 +127,7 @@ create table badgesUsers
     id serial primary key,
     receiver integer not null,
     badge integer not null,
-    constraint badgeUserUser foreign key (receiver) references users(id),
+    constraint badgeUserUser foreign key (receiver) references users(id) on delete cascade,
     constraint badgeUserBadge foreign key (badge) references badges(id)
 );
 
@@ -136,8 +136,8 @@ create table reactionsMessages
     id bigserial primary key,
     reaction integer not null,
     message bigint not null,
-    constraint reactionMessageMessage foreign key (message) references messages(id),
-    constraint reactionMessageReaction foreign key (reaction) references reactions(id)
+    constraint reactionMessageMessage foreign key (message) references messages(id) on delete cascade,
+    constraint reactionMessageReaction foreign key (reaction) references reactions(id) on delete cascade
 );
 
 create table reactionsUsers
@@ -145,8 +145,8 @@ create table reactionsUsers
     id bigserial primary key,
     bearer integer not null,
     reaction integer not null,
-    constraint reactionUserUser foreign key (bearer) references users(id),
-    constraint reactionUserReaction foreign key (reaction) references reactions(id)
+    constraint reactionUserUser foreign key (bearer) references users(id) on delete cascade,
+    constraint reactionUserReaction foreign key (reaction) references reactions(id) on delete cascade
 );
 
 insert into languages
@@ -482,7 +482,7 @@ create table recoveries
     created timestamp default clock_timestamp(),
     active boolean default true,
     recoverer integer not null,
-    constraint recoverer foreign key (recoverer) references users(id)
+    constraint recoverer foreign key (recoverer) references users(id) on delete cascade
 );
 
 create table karmas (
@@ -490,7 +490,7 @@ create table karmas (
     target integer not null,
     current integer not null,
 
-    constraint targetKarma foreign key (target) references users(id)
+    constraint targetKarma foreign key (target) references users(id) on delete cascade
 );
 
 create table histories
@@ -503,18 +503,11 @@ create table histories
     senderArchived boolean not null default false,
     recipientArchived boolean not null default false,
 
-    constraint fromUserMessage foreign key (sender) references users(id),
-    constraint toUserMessage foreign key (recipient) references users(id),
+    constraint fromUserMessage foreign key (sender) references users(id) on delete cascade,
+    constraint toUserMessage foreign key (recipient) references users(id) on delete cascade,
 
     unique(sender, recipient)
 );
-
-INSERT INTO users
-    (
-    id, name, password, joined, email, birthday, gender, headline,
-    description)
-VALUES
-    (1, 'bender', 'cant log in with it', clock_timestamp(), 'bender@melan.chat', clock_timestamp(), 'O', 'Here to help you with all your Melanchat queries', 'Shining shiner!');
 
 CREATE OR REPLACE FUNCTION insertHistory
 (senderID int, recipientID int)
@@ -543,13 +536,13 @@ end;
   $$
   LANGUAGE plpgsql;
 
--- CREATE OR REPLACE FUNCTION truncatetables()
---   RETURNS void AS
--- $BODY$
--- begin
---         truncate table users  RESTART IDENTITY cascade;
---         truncate table messages RESTART IDENTITY cascade ;
---         truncate table tags RESTART IDENTITY cascade ;
--- end;
---   $BODY$
---   LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION truncatetables()
+  RETURNS void AS
+$BODY$
+begin
+        truncate table users  RESTART IDENTITY cascade;
+        truncate table messages RESTART IDENTITY cascade ;
+        truncate table tags RESTART IDENTITY cascade ;
+end;
+  $BODY$
+  LANGUAGE plpgsql;

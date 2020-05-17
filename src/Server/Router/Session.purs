@@ -1,15 +1,17 @@
 module Server.Router.Session where
 
-import Server.Types
-import Data.Maybe as DM
-import Shared.Router as SRO
-import HTTPure (Headers, Response, ResponseM, Path)
-import Server.Response as SRR
 import Prelude
-import Run.Reader as RR
-import Data.Maybe(Maybe(..))
-import HTTPure.Lookup ((!@))
+import Server.Types
 import Shared.Types
+
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import HTTPure (Headers, Response, ResponseM, Path)
+import HTTPure.Lookup ((!@))
+import Run.Reader as RR
+import Server.Response as SRR
+import Shared.Router as SRO
+import Shared.Unsafe as SU
 
 ifAnonymous :: ResponseEffect -> ResponseEffect
 ifAnonymous handler = do
@@ -26,3 +28,8 @@ ifLogged path handler = do
                 handler
          else
                 SRR.redirect <<< SRO.fromRouteAbsolute $ Login { next: Just (path !@ 0) }
+
+loggedUserID :: ServerEffect PrimaryKey
+loggedUserID = do
+        { session: { userID: maybeUserID } } <- RR.ask
+        pure <<< PrimaryKey $ SU.unsafeFromJust "loggedUserId" maybeUserID

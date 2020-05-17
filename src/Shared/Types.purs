@@ -88,7 +88,11 @@ data Route =
         Login { next :: Maybe String } |
         IM |
         Profile |
-        Generate { what :: Generate}
+        Generate { what :: Generate} |
+        Settings |
+        AccountEmail |
+        AccountPassword |
+        Terminate
 
 data Generate = Name | Headline | Description
 
