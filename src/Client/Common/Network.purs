@@ -38,7 +38,7 @@ import Shared.Header (xAccessToken)
 import Web.XHR.FormData (FormData)
 
 -- | A simplified version of post without the option to handle errors
-post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> contents -> Aff response
+post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Maybe contents -> Aff response
 post' url data' = do
         response <- post url data'
         case response of
@@ -46,12 +46,12 @@ post' url data' = do
                 Left error -> alertResponseError $ A.printResponseFormatError error
 
 -- | Performs a POST request
-post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> contents -> Aff (Either ResponseFormatError response)
+post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Maybe contents -> Aff (Either ResponseFormatError response)
 post url data' = do
         --see Token in shared/Types.purs
         token <- liftEffect $ CCS.getItem tokenKey
         response <- A.request $ (defaultRequest url POST token) {
-                content = Just <<< RB.json $ DAEGR.genericEncodeJson data'
+                content = map (RB.json <<< DAEGR.genericEncodeJson) data'
         }
         parseBody response
 

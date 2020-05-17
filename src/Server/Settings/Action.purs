@@ -41,3 +41,8 @@ changePassword userID (SettingsModel { password, passwordConfirmation }) = do
         SSD.changePassword userID hash
         pure Ok
 
+terminateAccount :: PrimaryKey -> ServerEffect Ok
+terminateAccount userID = do
+        SSD.terminateAccount userID
+        pure Ok
+

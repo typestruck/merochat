@@ -24,7 +24,15 @@ changeEmail { path, body } = SRS.ifLogged path do
         userID <- SRS.loggedUserID
         SRR.json body (SSA.changeEmail userID)
 
+--REFACTOR: abstract this workflow of doing a json action after getting the logged id
 changePassword :: Request -> ResponseEffect
 changePassword { path, body } = SRS.ifLogged path do
         userID <- SRS.loggedUserID
         SRR.json body (SSA.changePassword userID)
+
+terminateAccount :: Request -> ResponseEffect
+terminateAccount { path } = SRS.ifLogged path do
+        userID <- SRS.loggedUserID
+        ok <- SSA.terminateAccount userID
+        SRR.json' ok
+

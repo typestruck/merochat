@@ -205,7 +205,7 @@ removeTag tag event = do
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile model@(ProfileModel { user: user@(ProfileUser { name }) }) = do
-        Ok <- CCN.post' (SR.fromRouteAbsolute Profile) user
+        Ok <- CCN.post' (SR.fromRouteAbsolute Profile) $ Just user
         liftEffect $ do
                 CCNO.alert "Profile updated"
                 --let im know that the name has changed

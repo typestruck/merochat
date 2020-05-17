@@ -15,4 +15,4 @@ logout :: Effect Unit
 logout = do
         CCS.removeItem tokenKey
         CCC.removeMelanchatCookie
-        CCL.setLocation <<< SRO.fromRouteAbsolute  $ Login { next: Nothing }
+        CCL.setLocation $ SRO.fromRouteAbsolute Landing

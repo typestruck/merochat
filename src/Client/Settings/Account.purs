@@ -2,9 +2,11 @@ module Client.Settings.Account where
 
 import Prelude
 
+import Client.Common.DOM as CCD
 import Client.Common.Logout as CCL
 import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
+import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Data.Symbol (SProxy(..))
 import Effect.Aff (Aff)
@@ -26,7 +28,7 @@ update { model, message } =
                 SetPasswordConfirmation passwordConfirmation -> setField (SProxy :: SProxy "passwordConfirmation") passwordConfirmation
                 ChangeEmail -> changeEmail model
                 ChangePassword -> changePassword model
-                TerminateAccount -> FAE.noChanges
+                TerminateAccount -> terminateAccount
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
 changeEmail model@(SettingsModel { email, emailConfirmation }) = do
@@ -35,7 +37,7 @@ changeEmail model@(SettingsModel { email, emailConfirmation }) = do
          else if email /= emailConfirmation then
                 liftEffect $ CCN.alert "Email and confirmation do not match"
          else do
-                Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountEmail) model
+                Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountEmail) $ Just model
                 liftEffect $ CCN.alert "Email changed"
         FAE.noChanges
 
@@ -46,10 +48,18 @@ changePassword model@(SettingsModel { password, passwordConfirmation }) = do
          else if password /= passwordConfirmation then
                 liftEffect $ CCN.alert "Password and confirmation do not match"
          else do
-                Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountPassword) model
+                Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountPassword) $ Just model
                 liftEffect $ do
                         CCN.alert "Password changed, you will be logged out"
                         CCL.logout
+        FAE.noChanges
+
+terminateAccount :: Aff (SettingsModel -> SettingsModel)
+terminateAccount = do
+        confirmed <- liftEffect $ CCD.confirm "This action cannot be undone! Are you sure you want to terminate your account?"
+        when confirmed $ do
+                Ok <- CCNT.post' (SRO.fromRouteAbsolute Terminate) (Nothing :: Maybe SettingsModel)
+                liftEffect CCL.logout
         FAE.noChanges
 
 setField field value = pure $ \model -> SN.updateSettingsModel model (R.set field value)
