@@ -24,6 +24,18 @@ import Run.Except (EXCEPT)
 import Run.Reader (READER)
 import Server.WebSocket (WebSocketConnection)
 
+type ProfileUserEdition = {
+        id :: String,
+        avatar :: Maybe String,
+        name :: String,
+        headline :: String,
+        description :: String,
+        gender :: Maybe Gender,
+        country :: Maybe PrimaryKey,
+        tags :: Array String,
+        birthday :: Maybe MDate
+}
+
 newtype Configuration = Configuration {
         port :: Int,
         development :: Boolean,

@@ -672,3 +672,11 @@ svg.toolbar-action {
     color: white !important;
     text-align: center;
 }
+
+.message ul {
+    list-style-type: disc;
+}
+
+.message li {
+    display: list-item;
+}

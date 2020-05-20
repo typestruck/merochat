@@ -2,12 +2,13 @@ module Server.Profile.Database where
 
 import Prelude
 
+import Data.Maybe (Maybe)
 import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, Pool, Query(..), Row0(..), Row1(..), Row2(..))
 import Server.Database as SD
-import Server.Types (ServerEffect)
+import Server.Types (ProfileUserEdition, ServerEffect)
 import Shared.Profile.Types (ProfileUser(..))
 import Shared.Types (MDate(..), PrimaryKey)
 
@@ -32,9 +33,10 @@ presentCountries = SD.select (Query "select id, name from countries order by nam
 presentLanguages :: ServerEffect (Array (Tuple PrimaryKey String))
 presentLanguages = SD.select (Query "select id, name from languages order by name") Row0
 
-saveProfile :: { user :: ProfileUser, languages :: Array PrimaryKey, tags :: Array String } -> ServerEffect Unit
+saveProfile :: { user :: ProfileUser, avatar :: Maybe String, languages :: Array PrimaryKey, tags :: Array String } -> ServerEffect Unit
 saveProfile {
-    user: ProfileUser { id, avatar, name, headline, description, country, gender, birthday },
+    user: ProfileUser { id, name, headline, description, country, gender, birthday },
+    avatar,
     languages,
     tags
 } = SD.withTransaction $ \connection -> void do

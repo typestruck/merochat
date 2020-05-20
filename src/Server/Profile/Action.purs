@@ -9,6 +9,8 @@ import Data.Array as DA
 import Data.Foldable as FD
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
+import Data.Maybe (Maybe(..))
+import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Tuple (Tuple(..))
@@ -46,13 +48,9 @@ saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, l
         when (isNull name || isNull headline || isNull description) $ SRR.throwBadRequest "Missing required info fields"
 
         updatedAvatar <- base64From $ DS.split (Pattern ",") avatar
-        let updatedUser =
-                SN.updateProfile profileUser $ _ {
-                        id = id,
-                        avatar = updatedAvatar
-                }
         SPD.saveProfile {
-                user: updatedUser,
+                user: SN.updateProfile profileUser $ _ { id = id },
+                avatar: if updatedAvatar == "avatar.png" then Nothing else Just updatedAvatar,
                 languages,
                 tags
         }
