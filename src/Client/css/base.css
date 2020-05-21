@@ -80,26 +80,9 @@ input[type="submit"], input[type="button"] {
     font-weight: bold;
 }
 
-ul {
-    -moz-padding-start: 0;
-    -webkit-padding-start: 0;
-}
 
 ul li {
     display: inline;
-}
-
-i.watermelon, .ul li::after, ul:not(.ul-vertical) li:first-child::before {
-    content: "";
-    font-size: 0.5em;
-    margin: 0 10px;
-    display: inline-flex;
-    vertical-align: middle;
-}
-
-ul li::after {
-    content: "🍉";
-    color: red;
 }
 
 ul li:hover::after, ul li.selected::after {
@@ -130,4 +113,8 @@ textarea:focus, input:focus {
 .smaller {
     font-size: smaller;
 
+}
+
+strong {
+    font-weight: bold;
 }

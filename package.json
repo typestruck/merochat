@@ -28,6 +28,8 @@
   "license": "CC-BY-4.0",
   "dependencies": {
     "decimal.js": "^10.2.0",
+    "insane": "^2.6.2",
+    "marked": "^1.1.0",
     "pg": "^8.0.0",
     "simplemde": "^1.11.2",
     "snabbdom-to-html": "^5.1.1",

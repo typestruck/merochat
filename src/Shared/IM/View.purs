@@ -5,17 +5,16 @@ import Shared.IM.Types
 import Shared.Types (MDateTime(..))
 
 import Data.Array as DA
-import Data.Array as DA
+import Data.Array ((:))
 import Data.Enum as DE
 import Data.Foldable as DF
-import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String.Common as DSC
+import Debug.Trace
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
-import Debug.Trace (spy)
+import Shared.Markdown as SM
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -146,18 +145,18 @@ history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class'
                 Nothing -> [HE.createEmptyElement "div"]
                 Just recipient -> display recipient
 
-        where   entry ({id: senderID, avatar: senderAvatar}) {avatar: recipientAvatar} (HistoryMessage {sender, content}) =
+        where   entry ({ id: senderID, avatar: senderAvatar }) { avatar: recipientAvatar } (HistoryMessage { sender, content }) =
                         let Tuple class' avatar =
                                 if senderID == sender then Tuple "sender-message" senderAvatar
                                  else Tuple "recipient-message" recipientAvatar
                         in HE.div (HA.class' $ "message " <> class') [
                                 HE.img [HA.src avatar, HA.class' "avatar-message"],
-                                HE.text content
+                                HE.div' [HA.innerHTML $ SM.toHTML content]
                         ]
 
-                display (IMUser recipient@{history, description})
-                        | DA.null history = [HE.div (HA.class' "message description-message") description]
-                        | otherwise = map (entry sender recipient) history
+                display (IMUser recipient@{history, description}) =
+                        --having the description node always present avoids snabbdom choking on the use of innerHTML
+                        HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry sender recipient) history
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel {chatting, suggesting}) =
@@ -177,8 +176,8 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
 
                 countUnread total (HistoryMessage { status, sender }) = total + DE.fromEnum (sender /= userID && status == Unread)
                 showUnreadCount history = let count = DF.foldl countUnread 0 history in if count == 0 then "" else show count
-                --only works for text messages!
-                lastMessage = _.content <<< DN.unwrap <<< SU.unsafeFromJust "lastMessage" <<< DA.last
+                --should only work for text messages!
+                lastMessage = DM.maybe "" (SM.toHTML <<< _.content <<< DN.unwrap) <<< DA.last
 
                 contactEntry (IMUser { id, name, avatar, headline, history }) =
                         HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
@@ -186,8 +185,7 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.cla
                                 HE.div (HA.class' "contact-profile") [
                                         HE.strong_ name,
                                         HE.br,
-                                        --maybe the last sent message?
-                                        HE.i (HA.class' "contact-list-description") $ lastMessage history
+                                        HE.span' [HA.class' "contact-list-description", HA.innerHTML $ lastMessage history]
                                 ],
                                 HE.div (HA.class' "menu-button chat-options") [
                                         HE.text $ showUnreadCount history,

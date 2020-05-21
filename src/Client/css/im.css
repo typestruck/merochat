@@ -199,6 +199,7 @@ svg {
     position: absolute;
     display: flex;
     flex-flow: column;
+    justify-content: end;
 }
 
 .message-history-wrapper> :first-child:not(.description-message) {
@@ -671,4 +672,12 @@ svg.toolbar-action {
 .profile-edition-headline .CodeMirror-line{
     color: white !important;
     text-align: center;
+}
+
+.message ul {
+    list-style-type: disc;
+}
+
+.message li {
+    display: list-item;
 }
