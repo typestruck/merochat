@@ -5,12 +5,14 @@ import Shared.IM.Types
 import Shared.Types (MDateTime(..))
 
 import Data.Array as DA
+import Data.Array ((:))
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String.Common as DSC
+import Debug.Trace
 import Data.Tuple (Tuple(..))
 import Shared.Markdown as SM
 import Flame (Html)
@@ -152,9 +154,9 @@ history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class'
                                 HE.div' [HA.innerHTML $ SM.toHTML content]
                         ]
 
-                display (IMUser recipient@{history, description})
-                        | DA.null history = [HE.div' [HA.class' "message description-message", HA.innerHTML $ SM.toHTML description]]
-                        | otherwise = map (entry sender recipient) history
+                display (IMUser recipient@{history, description}) =
+                        --having the description node always present avoids snabbdom choking on the use of innerHTML
+                        HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry sender recipient) history
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel {chatting, suggesting}) =
