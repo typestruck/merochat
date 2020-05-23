@@ -21,6 +21,7 @@
     "watch-sim": "npm run watch-s & npm run watch-im",
     "watch-spf": "npm run watch-s & npm run watch-pf",
     "watch-sst": "npm run watch-s & npm run watch-st",
+    "watch-sl": "npm run watch-s & npm run watch-l",
     "watch": "npm run watch-s & npm run watch-c",
     "test": "pulp test"
   },

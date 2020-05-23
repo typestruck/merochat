@@ -1,11 +1,5 @@
 -- | Basic functions to compose templates.
-module Server.Template(
-        template,
-        externalFooter,
-        templateWith,
-        defaultParameters,
-        externalDefaultParameters
-) where
+module Server.Template where
 
 import Data.Array ((:))
 import Effect (Effect)
@@ -13,9 +7,6 @@ import Flame (Html)
 import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
 import Prelude
-import Effect.Now as EN
-import Data.Time(Time(..))
-import Data.Enum as DE
 
 --TODO memoization, caching
 
@@ -49,7 +40,6 @@ externalDefaultParameters = {
         footer: externalFooter
 }
 
---inclusion of night theme should be a setting
 template :: forall a. Parameters a -> Effect (Html a)
 template = pure <<< templateWith
 
@@ -65,19 +55,20 @@ templateWith parameters =
                 HE.body_ (HE.div' [HA.id "loading", HA.class' "loading"] : parameters.content <> parameters.footer <> parameters.javascript)
         ]
         where styleSheets = [
-                HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"],
-                HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/night.css"]
+                HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]
         ]
 
 externalFooter :: forall a. Array (Html a)
-externalFooter = [
-        HE.footer_ [
-                HE.a (HA.href "/") <<< HE.img $ HA.src "/client/media/logo.png",
-                HE.ul_ [
+externalFooter = [externalFooter']
+
+externalFooter' :: forall a. Html a
+externalFooter' =
+        HE.div (HA.class' "footer") [
+                HE.a (HA.href "/") <<< HE.img $ HA.src "/client/media/logo-small.png",
+                HE.ul (HA.class' "footer-menu") [
                         HE.li_ $ HE.a (HA.href "#") "Help",
                         HE.li_ $ HE.a (HA.href "https://github.com/easafe/melanchat") "Source code",
                             HE.li_ $ HE.a (HA.href "#") "Become a backer",
                             HE.li_ $ HE.a (HA.href "/login") "Login"
                 ]
         ]
-]

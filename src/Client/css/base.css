@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
 @import url('https://fonts.googleapis.com/css?family=Flamenco');
+@import url('https://fonts.googleapis.com/css?family=Signika');
 html {
     height: 100%;
     box-sizing: border-box;
@@ -8,11 +8,11 @@ html {
 body {
     margin: 0;
     min-height: 100%;
-    font-family: "Open sans", "sans serif";
+    font-family: "Verdana", "sans serif";
     font-size: 18px;
+    background-color: #262626;
+    color:white;
     line-height: 1.51857143;
-    color: #3f414e;
-    background: #fff;
     display: grid;
     grid-template-rows: 1fr auto;
 }
@@ -21,11 +21,14 @@ label {
     display: block
 }
 
-h1, h2, h3, h4 {
-    -webkit-margin-before: 0.0em;
-    -webkit-margin-after: 0.0em;
-    font-weight: normal;
-    color: green;
+
+h1, h2 {
+    font-weight: bold;
+}
+
+h3, h4 {
+    color: white;
+    font-weight: bold
 }
 
 img {
@@ -48,8 +51,9 @@ h3 {
     font-size: 1.1em;
 }
 
+
 a {
-    color: green;
+    color: orange;
     text-decoration: none;
     cursor: pointer;
 }
@@ -66,17 +70,31 @@ a:hover {
 
 input{
     border-radius: 3px;
-    background-color: white;
-    color:#3f414e;
-    border: 1px solid #ccc;
 }
 
 input[type="submit"], input[type="button"] {
-    border: 1px solid green;
-    color: green;
     cursor: pointer;
-    background: MintCream;
 
+    font-weight: bold;
+}
+
+
+input, textarea {
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    color: white;
+    background: transparent;
+}
+
+.selected a, a:hover, a:focus {
+    color: white;
+    text-decoration: none;
+}
+
+
+input[type="submit"], input[type="button"] {
+    border: 1px solid orange;
+    color: orange;
     font-weight: bold;
 }
 
@@ -118,3 +136,27 @@ textarea:focus, input:focus {
 strong {
     font-weight: bold;
 }
+
+
+svg {
+    margin: 0.4em;
+    overflow: visible;
+    stroke: white;
+}
+
+.footer {
+    text-align: center;
+    padding: 10px;
+}
+
+.footer-menu li {
+    margin: 0 30px;
+}
+
+.footer-menu a {
+    font-family: Verdana, sans-serif;
+    color: #b5b7b6 ;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
