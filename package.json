@@ -24,7 +24,7 @@
     "watch-sl": "npm run watch-s & npm run watch-l",
     "watch": "npm run watch-s & npm run watch-c",
     "test": "pulp test",
-    "deploy" : "npm install purescript@0.13.6 pulp@13.0.0 bower && npm install && bower install --force &&  pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to src/client/server.js "
+    "deploy": "npm install && bower install --force && pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to app.js"
   },
   "author": "",
   "license": "CC-BY-4.0",
@@ -37,15 +37,15 @@
     "snabbdom-to-html": "^5.1.1",
     "uuid": "^7.0.3",
     "uuid-validate": "0.0.3",
-    "ws": "^7.1.2"
+    "ws": "^7.1.2",
+    "pg-native": "^3.0.0",
+    "snabbdom": "^0.7.3",
+    "xhr2": "^0.2.0"
   },
   "devDependencies": {
     "@coreui/icons": "^1.0.1",
     "canvas": "^2.6.1",
-    "jsdom": "^15.2.1",
-    "pg-native": "^3.0.0",
-    "snabbdom": "^0.7.3",
-    "xhr2": "^0.2.0"
+    "jsdom": "^15.2.1"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1"
