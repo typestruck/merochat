@@ -23,7 +23,8 @@
     "watch-sst": "npm run watch-s & npm run watch-st",
     "watch-sl": "npm run watch-s & npm run watch-l",
     "watch": "npm run watch-s & npm run watch-c",
-    "test": "pulp test"
+    "test": "pulp test",
+    "deploy" : "npm install purescript@0.13.6 pulp@13.0.0 bower && npm install && bower install --force &&  pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to src/client/server.js "
   },
   "author": "",
   "license": "CC-BY-4.0",
