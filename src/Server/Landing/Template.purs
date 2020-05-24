@@ -6,13 +6,12 @@ import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
-import Server.Template (defaultParameters, externalFooter)
+import Server.Template (defaultParameters, externalFooter')
 import Server.Template as ST
 
 template :: Effect String
 template = do
         contents <- ST.template defaultParameters {
-                footer = externalFooter,
                 content = content,
                 javascript = javascript,
                 css = css
@@ -29,82 +28,157 @@ template = do
                 ]
                 content = [
                         HE.div (HA.class' "landing") [
+                                HE.div (HA.class' "header") [
+                                        HE.a [HA.href "/", HA.class' "logo"] $ HE.img [
+                                                        HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
+                                                        HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
+                                                        HA.src "/client/media/logo.png"],
+                                        HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href "/login"] "Login"
+                                ],
                                 HE.div (HA.class' "green-area") [
-                                        HE.div (HA.class' "header") [
-                                                HE.a [HA.href "/", HA.class' "logo"] "MelanChat",
-                                                HE.div (HA.class' "login") $ HE.a (HA.href "/login") "Login"
-                                        ],
-                                        HE.div [HA.class' "heading", HA.id "headline"] [
-                                                HE.h1_ "Friendly. Random. Chat. #melanchat",
-                                                HE.h4_ [
-                                                        HE.text "Create an account and chat right away with",
-                                                        HE.i_ " interesting ",
-                                                        HE.text "people"
-                                                ]
+                                        HE.h1 (HA.id "headline") "Friendly. Random. Chat.",
+                                        HE.h4 (HA.class' "subheadline") [
+                                                HE.text "Create an account and chat right away with",
+                                                HE.i_ " interesting ",
+                                                HE.text "people"
                                         ],
                                         HE.div (HA.class' "sign-up") [
                                                 HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
-                                                HE.input [HA.type' "password", HA.id "password", HA.placeholder "Password"] ,
+                                                HE.input [HA.type' "password", HA.autocomplete false, HA.id "password", HA.placeholder "Password"] ,
                                                 HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
                                                 HE.input [HA.type' "button", HA.id "register", HA.value "Create account"]
                                         ]
-                                ]
-                        ],
-                        HE.h2 (HA.class' "bold") "Looking to meet people online but all you get are creeps or bots? Look no further.",
-                        HE.div (HA.class' "blurb") [
-                                HE.div_ [
-                                        HE.h2_ "Melanchat is different from other chat websites:",
-                                        HE.ul (HA.class' "ul-vertical") [
-                                                HE.li_ "No seedy people! Talk to folks who want to have meaningful conversations",
-                                                HE.li_ "Safe, anonymous and viruses free",
-                                                HE.li_ "Community driven: features are available based on how trusted an user is",
-                                                HE.li_ "Random, but in a interesting way: matchs made by ultra fancy algorithms",
-                                                HE.li_ "Full of watermelons"
-                                        ]
                                 ],
-                                HE.div_ [
-                                        HE.h2_ "This is how it works:",
-                                        HE.p_ [
-                                                HE.text "New users get a randomized account which needs",
-                                                HE.b_ " karma ",
-                                                HE.text "to access features and tools. Karma is earned by making great conversations, and being a good user. Meaning: creeps and unhelpful people are weeded out; interesting folks get more visibility.",
-                                                HE.br,
-                                                HE.text "Whenever you feel like chatting, the system matches you with a random user- and vice versa, ensuring no one gets ignored.",
-                                                HE.br,
-                                                HE.text "You decide what to share, who to share it with- want to take a break or delete your account forever? No worries. Your personal data will never be used for spam, harvesting or any shady dealings."
-                                        ]
-                                ]
-                        ],
-                                HE.div (HA.class' "orange-blurb") [
-                                        HE.h2 (HA.class' "bold padding-gap") "Did you find other chat apps too simple or too quiet? MelanChat makes it so you will never be bored.",
-                                        HE.div (HA.class' "blurb") [
-                                                HE.div_ [
-                                                        HE.h2_ "MelanChat is feature rich:",
-                                                        HE.ul (HA.class' "ul-vertical") [
-                                                                HE.li_ "Send text, image and audio messages",
-                                                                HE.li_ "Set the level of privacy you are comfortable with",
-                                                                HE.li_ "Feeling uninspired? Let the app create your profile, or suggest what to say",
-                                                                HE.li_ "Get matched with people who actually reply",
-                                                                HE.li_ "Choose to take part in novel chat experiments"
-                                                        ]
+                                HE.h2_ [
+                                        HE.text "MelanChat is made with human connection and",
+                                        HE.br,
+                                        HE.text "conversation in mind"
+                                ],
+                                HE.div (HA.class' "first-points") [
+                                        HE.div (HA.class' "point-column") [
+                                                HE.div (HA.class' "point") [
+                                                        HE.img [HA.class' "point-melon", HA.src "/client/media/point1.png"],
+                                                        HE.br,
+                                                        HE.text "No seedy people!",
+                                                        HE.br,
+                                                        HE.text "Talk to folks who want to",
+                                                        HE.br,
+                                                        HE.text "have meaningful conversations"
                                                 ],
-                                                HE.div_ [
-                                                        HE.h2_ "...while still feeling cozy and private",
-                                                        HE.p_ [
-                                                                HE.text "From the source code, MelanChat is done with ",
-                                                                HE.a (HA.href "https://en.wikipedia.org/wiki/Smalltalk") "conversation",
-                                                                HE.text " in mind. Talk to people, have actual interactions and make real friendships without fearing the dreaded ASL questions or getting stalked.",
-                                                                HE.br,
-                                                                HE.text "MelanChat is not affiliated with Google, Facebook, Twitter; nor does it track or spy on you. It is also not a dating website- why upload duck face pictures when you can talk about the ",
-                                                                HE.a (HA.href "https://en.wikipedia.org/wiki/Dancing_plague_of_1518") "dancing plagues in the 16th century?",
-                                                                HE.br,
-                                                                HE.text "Did I mention watermelons are everywhere? It can't get better(or healthier) than that. 🍉🍉🍉"
-                                                        ]
+                                                HE.div (HA.class' "point") [
+                                                        HE.img [HA.class' "point-melon", HA.src "/client/media/point4.png"],
+                                                        HE.br,
+                                                        HE.text "Community driven:",
+                                                        HE.br,
+                                                        HE.text "feature available based on",
+                                                        HE.br,
+                                                        HE.text "how trusted an user is"
+                                                ]
+                                        ],
+                                        HE.div (HA.class' "point-column") [
+                                                HE.div (HA.class' "point") [
+                                                        HE.img [HA.class' "point-melon", HA.src "/client/media/point2.png"],
+                                                        HE.br,
+                                                        HE.text "Set the privacy level you",
+                                                        HE.br,
+                                                        HE.text "feel confortable with.",
+                                                        HE.br,
+                                                        HE.text "Safe, anonymous and ad free"
+                                                ],
+                                                HE.div (HA.class' "point") [
+                                                        HE.img [HA.class' "point-melon", HA.src "/client/media/point5.png"],
+                                                        HE.br,
+                                                        HE.text "Ultra fancy algorithms",
+                                                        HE.br,
+                                                        HE.text "make the chat matches.",
+                                                        HE.br,
+                                                        HE.text "Random, but in an interesting way"
+                                                ]
+                                        ],
+                                        HE.div (HA.class' "point-column") [
+                                                HE.div (HA.class' "point") [
+                                                        HE.img [HA.class' "point-melon", HA.src "/client/media/point3.png"],
+                                                        HE.br,
+                                                        HE.text "Feeling uninspired?",
+                                                        HE.br,
+                                                        HE.text "Let the app create your profile,",
+                                                        HE.br,
+                                                        HE.text "or suggest what to say"
+                                                ],
+                                                HE.div (HA.class' "point") [
+                                                        HE.img [HA.class' "point-melon", HA.src "/client/media/point6.png"],
+                                                        HE.br,
+                                                        HE.text "Send text, image & audio messages.",
+                                                        HE.br,
+                                                        HE.text "Choose to take part in ",
+                                                        HE.br,
+                                                        HE.text "novel chat experiments"
                                                 ]
                                         ]
                                 ],
+                                HE.div (HA.class' "second-point") [
+                                        HE.div (HA.class' "point") [
+                                                HE.img [HA.class' "point-melon", HA.src "/client/media/point7.png"],
+                                                HE.br,
+                                                HE.text "Full of watermelons!"
+                                        ]
+                                ],
+                                HE.h2_ [
+                                        HE.text "This is how it works:"
+                                ],
+                                HE.div (HA.class' "third-points") [
+                                        HE.div (HA.class' "point") [
+                                                HE.text "New users randomized account needs Karma to access",
+                                                HE.br,
+                                                HE.text "features and tools. Karma is earned by making",
+                                                HE.br,
+                                                HE.text "great conversations, and being a good user.",
+                                                HE.br,
+                                                HE.br,
+                                                HE.text "Creeps get weeded out; interesting folks get more visibility"
+                                        ],
+                                        HE.div (HA.class' "point") [
+                                                HE.text "Whenever you feel like chatting, the system matches",
+                                                HE.br,
+                                                HE.text "you with a random user- and vice versa,",
+                                                HE.br,
+                                                HE.text "ensuring no one gets ignored.",
+                                                HE.br,
+                                                HE.br,
+                                                HE.text "You decide what to share and who to share it with"
+                                        ],
+                                        HE.div (HA.class' "point")  [
+                                                HE.text "Want to take a break, or delete your account forever?",
+                                                HE.br,
+                                                HE.text "No worries, your personal data will never be used",
+                                                HE.br,
+                                                HE.text "for spam, harvesting or any shady dealings.",
+                                                HE.br,
+                                                HE.br,
+                                                HE.text "Reactivate your account whenever you want"
+                                        ]
+                                ],
+                                HE.div (HA.class' "second-green-box") [
+                                        HE.div (HA.class' "point-2") [
+                                                HE.text "MelanChat helps you talk, interact with people and form real friendships -- ",
+                                                HE.br,
+                                                HE.text "without fear of the dreaded ASL questions or getting stalked"
+                                        ],
+                                        HE.div (HA.class' "point-2") [
+                                                HE.text "MelanChat is not affiliated with Google, Facebook, etc; nor does it track or spy on you.",
+                                                HE.br,
+                                                HE.text "It is also not a dating website either. Why upload duck-face pictures when you can talk about",
+                                                HE.br,
+                                                HE.text "dancing plagues of the 16th century?"
+                                        ],
+                                        HE.div (HA.class' "point-2") [
+                                                HE.text "Lastly, did I mention that watermelons are everywhere?",
+                                                HE.br,
+                                                HE.text "It can't get better (or healthier) than this"
+                                        ],
+                                        HE.a [HA.class' "sign-up-call", HA.href "#headline"] $ "... and it is free! Click here to create an account and chat right away #melanchat"
+                                ],
+                                externalFooter'
 
-                        HE.div (HA.class' "red-call") [
-                                HE.a (HA.href "#headline") $ HE.h1_ "It is free! Click here to create an account and chat right away #melanchat"
                         ]
                 ]

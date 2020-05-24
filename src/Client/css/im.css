@@ -681,3 +681,72 @@ svg.toolbar-action {
 .message li {
     display: list-item;
 }
+
+
+
+.svg-more {
+    fill: white;
+}
+
+
+
+
+
+.recipient-message .text {
+    border-bottom: 2px solid orange;
+    border-right: 1px solid orange;
+
+    background: initial;
+    border-radius: 0;
+    border-bottom-right-radius: 6px;
+}
+
+.sender-message .text {
+    background: initial;
+    border-left: 1px solid green;
+    border-bottom: 2px solid green;
+    border-radius: 0;
+    border-bottom-left-radius: 6px;
+}
+
+.orange-blurb a {
+    color: green;
+}
+
+.chatting {
+    border: 1px solid orange;
+    background: initial;
+}
+
+.dropdown-wrapper-visible .drop-menu{
+    background:  rgb(38, 38, 38);
+    border-color: white
+}
+
+svg.toolbar-action {
+    fill: white;
+}
+
+.CodeMirror{
+    background-color: rgb(38, 38, 38) !important;
+    color: white !important;
+}
+
+.CodeMirror-cursor {
+    border-left:1px solid white !important
+}
+
+.message-options {
+    background: rgb(38, 38, 38);
+
+    border-color: white;
+
+}
+
+.headline {
+    color: white;
+}
+
+select {
+     color: white;
+}
