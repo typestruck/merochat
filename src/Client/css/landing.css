@@ -245,6 +245,11 @@ h2 {
 }
 
 @media (min-width:1600px) {
+        body {
+                background: url('/client/media/landing-big.png') no-repeat fixed;
+                background-size: cover;
+        }
+
         .landing {
                 grid-template-columns: 90%;
         }

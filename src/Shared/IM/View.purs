@@ -1,23 +1,23 @@
 module Shared.IM.View where
 
+import Debug.Trace
 import Prelude
 import Shared.IM.Types
-import Shared.Types (MDateTime(..))
 
-import Data.Array as DA
 import Data.Array ((:))
+import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String.Common as DSC
-import Debug.Trace
 import Data.Tuple (Tuple(..))
-import Shared.Markdown as SM
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Shared.Markdown as SM
+import Shared.Types (MDateTime(..))
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 
@@ -25,7 +25,7 @@ import Shared.Unsafe as SU
 
 view :: IMModel -> Html IMMessage
 view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettingsToggle }) = HE.div (HA.class' "im") [
-        HE.div_ [
+        HE.div (HA.class' "left-box") [
                 userMenu model,
                 search model,
                 contactList model,
@@ -80,11 +80,7 @@ userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA
                 HE.div [HA.class' "drop-menu fade-in effect"][
                        HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowProfile)] "Profile",
                        HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowSettings)] "Settings",
-                       -- HE.i_ "🍉",
-                       -- HE.a (HA.href "#") "Help",
-                      --  HE.a [HA.class' "menu-button", HA.href "#"] "Become a backer",
-                       -- HE.i_ "🍉",
-                        HE.a [HA.class' "menu-button", HA.onClick (UMM Logout)] "Logout"
+                       HE.a [HA.class' "menu-button", HA.onClick (UMM Logout)] "Logout"
                 ]
         ]
 ]
@@ -169,26 +165,26 @@ search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
 contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< map contactEntry $ DA.sortBy compareDates contacts
-        where   getDate history = do
-                        HistoryMessage {date: MDateTime md} <- DA.last history
+        where   getDate history' = do
+                        HistoryMessage { date: MDateTime md } <- DA.last history'
                         pure md
                 compareDates (IMUser user) (IMUser anotherUser) = compare (getDate anotherUser.history) (getDate user.history)
 
                 countUnread total (HistoryMessage { status, sender }) = total + DE.fromEnum (sender /= userID && status == Unread)
-                showUnreadCount history = let count = DF.foldl countUnread 0 history in if count == 0 then "" else show count
+                showUnreadCount history' = let count = DF.foldl countUnread 0 history' in if count == 0 then "" else show count
                 --should only work for text messages!
-                lastMessage = DM.maybe "" (SM.toHTML <<< _.content <<< DN.unwrap) <<< DA.last
+                lastMessage = DM.maybe "" (SM.toRestrictedHTML <<< _.content <<< DN.unwrap) <<< DA.last
 
-                contactEntry (IMUser { id, name, avatar, headline, history }) =
+                contactEntry (IMUser { id, name, avatar, headline, history: history' }) =
                         HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
                                 HE.img [HA.class' "avatar-contact-list", HA.src avatar],
-                                HE.div (HA.class' "contact-profile") [
+                                HE.div [HA.class' "contact-profile"] [
                                         HE.strong_ name,
                                         HE.br,
-                                        HE.span' [HA.class' "contact-list-description", HA.innerHTML $ lastMessage history]
+                                        HE.div' [HA.class' "contact-list-last-message", HA.innerHTML $ lastMessage history']
                                 ],
                                 HE.div (HA.class' "menu-button chat-options") [
-                                        HE.text $ showUnreadCount history,
+                                        HE.text $ showUnreadCount history',
                                         HE.a (HA.class' "menu-button") $
                                                 HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $
                                                         HE.path' (HA.d "M30 12 L16 24 2 12"),

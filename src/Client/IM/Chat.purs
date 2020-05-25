@@ -12,6 +12,7 @@ import Prelude
 import Shared.IM.Types
 import Shared.Types
 
+import Client.Common.DOM as CCD
 import Client.IM.Contacts as CICN
 import Client.IM.WebSocketHandler (webSocketHandler)
 import Data.Array ((:), (!!))
@@ -20,7 +21,6 @@ import Data.Either (Either(..))
 import Data.Either as DET
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Client.Common.DOM as CCD
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
@@ -55,7 +55,8 @@ startChat model@(IMModel {chatting, contacts, suggesting, suggestions}) =
                                 in SN.updateModel model $ _ {
                                         chatting = Just 0,
                                         suggesting = Nothing,
-                                        contacts = DA.cons chatted contacts
+                                        contacts = DA.cons chatted contacts,
+                                        suggestions = SU.unsafeFromJust "startChat" $ DA.deleteAt index suggestions
                                 }
                         _ -> model
 
@@ -112,11 +113,14 @@ receiveMessage isFocused wsHandler model@(IMModel {
                                 New contacts' ->
                                         --new messages bubble the contact to the top
                                         let added = DA.head contacts' in
-                                        --edge case of recieving a message from the current suggestion
+                                        --edge case of recieving a message from a suggestion
                                          if getUserID added == getUserID suggestingContact then
                                                 SN.updateModel model $ _ {
                                                         contacts = contacts',
                                                         suggesting = Nothing,
+                                                        suggestions = SU.unsafeFromJust "delete receiveMesage" do
+                                                                index <- suggesting
+                                                                DA.deleteAt index suggestions,
                                                         chatting = Just 0
                                                 }
                                           else

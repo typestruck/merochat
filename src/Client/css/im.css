@@ -8,6 +8,10 @@ body {
     height: 100%;
 }
 
+.left-box {
+    overflow-x: hidden;
+}
+
 .chat-box {
     height: 100%;
     display: grid;
@@ -130,8 +134,17 @@ svg {
     padding: 5px 20px;
 }
 
-.contact-list-description {
+.contact-list-last-message {
     font-size: 0.9em;
+}
+
+.contact-list-last-message p {
+
+    text-overflow: ellipsis;
+}
+
+.contact-list-last-message a {
+    color:white;
 }
 
 .profile {
@@ -207,9 +220,10 @@ svg {
 }
 
 .message {
+    flex-direction: column;
     display: flex;
     margin: 10px;
-    align-items: center;
+    /* align-items: center; */
 }
 
 .recipient-message {
@@ -283,6 +297,7 @@ svg {
     flex-flow: row;
     padding: 30px;
     z-index: 4;
+    background: #262626;
 }
 
 .profile-info-edition {
@@ -296,7 +311,7 @@ svg {
 }
 
 .dropdown-wrapper-visible .drop-menu {
-    max-height: 100%;
+    max-height: max-content;
     opacity: 1;
     position: absolute;
     z-index: 2;
@@ -559,7 +574,7 @@ svg.toolbar-action {
     border: none;
     cursor: pointer;
     margin: 10px 0px;
-    font:inherit
+    font: inherit
 }
 
 .profile-info-add {
@@ -595,6 +610,9 @@ svg.toolbar-action {
     display: flex;
     flex-flow: column;
     font-size: 1.3em;
+}
+
+.profile-settings-menu div {
     cursor: pointer;
 }
 
@@ -616,7 +634,7 @@ svg.toolbar-action {
 }
 
 .remove-tag {
-    color:red;
+    color: red;
     padding: 0 3px;
 }
 
@@ -635,7 +653,7 @@ svg.toolbar-action {
 }
 
 .profile-edition-headline .CodeMirror-focused .CodeMirror-code, .profile-edition-name .CodeMirror-focused .CodeMirror-code, .profile-edition-description .CodeMirror-focused {
-    border:1px dotted white;
+    border: 1px dotted white;
 }
 
 .profile-edition-name {
@@ -646,7 +664,7 @@ svg.toolbar-action {
 }
 
 .profile-info-edition textarea {
-    border:0;
+    border: 0;
 }
 
 .profile-edition-headline .CodeMirror, .profile-edition-name .CodeMirror {
@@ -669,7 +687,7 @@ svg.toolbar-action {
     font-size: 1.1em;
 }
 
-.profile-edition-headline .CodeMirror-line{
+.profile-edition-headline .CodeMirror-line {
     color: white !important;
     text-align: center;
 }
@@ -682,20 +700,24 @@ svg.toolbar-action {
     display: list-item;
 }
 
+.message p {
+    display: flex;
+    flex-direction: column;
+}
+
+.message p img {
+    width: fit-content;
+    margin: 10px 0;
+}
 
 
 .svg-more {
     fill: white;
 }
 
-
-
-
-
 .recipient-message .text {
     border-bottom: 2px solid orange;
     border-right: 1px solid orange;
-
     background: initial;
     border-radius: 0;
     border-bottom-right-radius: 6px;
@@ -718,8 +740,8 @@ svg.toolbar-action {
     background: initial;
 }
 
-.dropdown-wrapper-visible .drop-menu{
-    background:  rgb(38, 38, 38);
+.dropdown-wrapper-visible .drop-menu {
+    background: rgb(38, 38, 38);
     border-color: white
 }
 
@@ -727,20 +749,18 @@ svg.toolbar-action {
     fill: white;
 }
 
-.CodeMirror{
+.CodeMirror {
     background-color: rgb(38, 38, 38) !important;
     color: white !important;
 }
 
 .CodeMirror-cursor {
-    border-left:1px solid white !important
+    border-left: 1px solid white !important
 }
 
 .message-options {
     background: rgb(38, 38, 38);
-
     border-color: white;
-
 }
 
 .headline {
@@ -748,5 +768,5 @@ svg.toolbar-action {
 }
 
 select {
-     color: white;
+    color: white;
 }

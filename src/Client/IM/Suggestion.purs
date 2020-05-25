@@ -6,6 +6,7 @@ import Shared.IM.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect.Aff (Aff)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
@@ -24,8 +25,8 @@ nextSuggestion model@(IMModel { suggestions, suggesting }) = do
                 -- fetch more
                 FAE.noChanges
          else FAE.diff {
-                 suggesting: Just next,
-                 chatting : Nothing
+                suggesting: Just next,
+                chatting : Nothing
         }
 
 previousSuggestion :: IMModel -> Aff (IMModel -> IMModel)
@@ -34,7 +35,7 @@ previousSuggestion model@(IMModel { suggestions, suggesting }) = do
         if previous < 0 then
                 FAE.noChanges
          else FAE.diff {
-                 suggesting: Just previous,
-                 chatting : Nothing
+                suggesting: Just previous,
+                chatting : Nothing
         }
 

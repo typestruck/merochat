@@ -3,7 +3,7 @@ const SimpleMDE = require('simplemde');
 exports.loadEditor = function() {
         return new SimpleMDE({
                 autofocus: true,
-                hideIcons: ['fullscreen', 'guide'],
+                hideIcons: ['image', 'side-by-side', 'fullscreen', 'guide'],
                 status: false
         });
 }

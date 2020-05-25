@@ -12,7 +12,7 @@ create table users
     joined timestamp default clock_timestamp(),
     email varchar(50) not null,
     birthday timestamp,
-    gender varchar(9),
+    gender varchar(10),
     headline varchar(200) not null,
     avatar varchar(41),
     description varchar(10000) not null,
