@@ -5,6 +5,9 @@ exports.parse = function (input) {
         marked.use({
                 renderer: {
                         link(href, title, text) {
+                                if (!href.includes('://'))
+                                        href = 'http://' + href;
+
                                 return `<a href="${href}" title="${title || ""}" target="blank">${text}</a>`;
                         }
                 }
