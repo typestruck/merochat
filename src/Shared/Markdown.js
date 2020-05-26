@@ -19,6 +19,13 @@ exports.parseRestricted = function(input) {
                 renderer: {
                         link(href, title, text) {
                                 return `<a title="${title || ""}">${text}</a>`;
+                        },
+                        image(_, title) {
+                                var tag = '<br/>You sent an image';
+                                if (title)
+                                        tag = `${tag}: ${title}`;
+
+                                        return tag;
                         }
                 }
         });
