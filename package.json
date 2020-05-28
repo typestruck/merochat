@@ -24,6 +24,8 @@
     "watch-sl": "npm run watch-s & npm run watch-l",
     "watch": "npm run watch-s & npm run watch-c",
     "test": "pulp test",
+    "deploy-server": "pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to server.js",
+    "start": "node server.js",
     "deploy": "npm install && bower install --force && pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to app.js"
   },
   "author": "",
