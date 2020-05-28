@@ -26,7 +26,7 @@
     "test": "pulp test",
     "deploy-server": "pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to server.js",
     "start": "node server.js",
-    "deploy": "npm install && bower install --force && pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to app.js"
+    "deploy": "npm install && bower install --force && npm run deploy-server"
   },
   "author": "",
   "license": "CC-BY-4.0",
