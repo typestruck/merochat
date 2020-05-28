@@ -4,9 +4,9 @@ MelanChat is a friendly random chat.
 
 ## Random
 
-* User profiles start off as auto generated, i.e., name, bio, avatar, etc are picked by [bender](https://github.com/easafe/bender) 
+* User profiles start off as auto generated, i.e., name, bio, avatar, etc are picked by [bender](https://github.com/easafe/bender)
 
-* Users to chat with are suggested by the app - besides skipping suggestions, it is not possible to search or filter potential new chats 
+* Users to chat with are suggested by the app - besides skipping suggestions, it is not possible to search or filter potential new chats
 
 * Users may be invited to participate in novel chat experiments or features, similarly to April's Fool Reddit gimmicks
 
@@ -24,6 +24,6 @@ A note on naming: melan is short for _melancia_, the Portuguese word for waterme
 
 ## Contributing
 
-Pull requests are welcome! MelanChat is still in early stages of development, but we do have a [spec](docs/README.md). Issues correspond to spec items, but feel free to contact me (or just fork the thing) if you wish to help.  
+Pull requests are welcome! MelanChat is still in early stages of development, but we do have a [spec](docs/README.md). Issues correspond to spec items, but feel free to contact me (or just fork the thing) if you wish to help.
 
 See [CONTRIBUTING](CONTRIBUTING.md) for how to get started.

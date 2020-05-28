@@ -18,6 +18,10 @@ import Data.Maybe (Maybe)
 import Database.PostgreSQL (class ToSQLValue, Pool, class FromSQLValue)
 import Effect.Ref (Ref)
 import Foreign as F
+import Data.Maybe(Maybe(..))
+import Data.Enum(class BoundedEnum, Cardinality(..), class Enum)
+import Data.Ord (class Ord)
+import Data.Ordering (Ordering(..))
 import HTTPure (Response)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
@@ -40,8 +44,6 @@ newtype Configuration = Configuration {
         port :: Int,
         development :: Boolean,
         captchaSecret :: String,
-        benderURL :: String,
-        useBender :: Boolean,
         tokenSecretGET :: String,
         tokenSecretPOST :: String,
         salt :: String
@@ -124,3 +126,32 @@ instance contentTypeRead :: Read ContentType where
                          else if value == ".html" || value == show HTML then HTML
                          else OctetStream
                 where value = DS.trim $ DS.toLower v
+
+derive instance eqBenderAction :: Eq BenderAction
+
+--thats a lot of work...
+instance ordBenderAction :: Ord BenderAction where
+        compare Name Description = LT
+        compare Description Name = GT
+        compare _ _ = EQ
+
+instance boundedBenderAction :: Bounded BenderAction where
+        bottom = Name
+        top = Description
+
+instance boundedEnumBenderAction :: BoundedEnum BenderAction where
+        cardinality = Cardinality 1
+
+        fromEnum Name = 0
+        fromEnum Description = 1
+
+        toEnum 0 = Just Name
+        toEnum 1 = Just Description
+        toEnum _ = Nothing
+
+instance enumBenderAction :: Enum BenderAction where
+        succ Name = Just Description
+        succ Description = Nothing
+
+        pred Name = Nothing
+        pred Description = Just Name
