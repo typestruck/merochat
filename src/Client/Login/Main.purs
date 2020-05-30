@@ -25,12 +25,12 @@ login = do
         case maybeRegisterLogin of
                 Nothing -> pure unit
                 Just registerLogin -> EA.launchAff_ $ do
-                        token <- CCNT.post' (SR.fromRouteAbsolute $ Login { next: Nothing }) $ Just registerLogin
+                        token <- CCNT.post' (SR.fromRoute $ Login { next: Nothing }) $ Just registerLogin
                         liftEffect $ do
                                 -- the location to go after login is either the query parameter next or /im
                                 redirect <- SR.toRoute <$> CCL.search
-                                CCE.login token $ DE.either (const defaultNext) SR.fromRouteAbsolute redirect
-        where   defaultNext = SR.fromRouteAbsolute IM
+                                CCE.login token $ DE.either (const defaultNext) SR.fromRoute redirect
+        where   defaultNext = SR.fromRoute IM
 
 
 loginOnEnter event = do

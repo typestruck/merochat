@@ -2,21 +2,23 @@ module Server.IM.Action where
 
 import Prelude
 import Server.Types
-import Shared.Types
 import Shared.IM.Types
+import Shared.Types
+
 import Data.Foldable as DF
 import Data.HashMap as DH
+import Data.Newtype as DN
 import Server.IM.Database as SID
-import Shared.Unsafe as SU
 import Shared.Newtype as SN
+import Shared.Unsafe as SU
 
 suggest :: PrimaryKey -> ServerEffect (Array IMUser)
 suggest id = SID.suggest id
 
-contactList :: PrimaryKey -> ServerEffect (Array IMUser)
-contactList id = do
-        contacts <- SID.presentContacts id
-        history <- SID.chatHistory id
+contactList :: PrimaryKey -> Int -> ServerEffect (Array IMUser)
+contactList id page = do
+        contacts <- SID.presentContacts id page
+        history <- SID.chatHistory id $ map (_.id <<< DN.unwrap) contacts
         let userHistory = DF.foldl (intoHashMap id) DH.empty history
         pure $ intoContacts userHistory <$> contacts
 

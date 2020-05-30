@@ -15,6 +15,7 @@ import Data.String.Common as DSC
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
+import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.Markdown as SM
 import Shared.Types (MDateTime(..))
@@ -164,7 +165,7 @@ chat (IMModel {chatting, suggesting}) =
 search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div (HA.class' "contact-list") <<< map contactEntry $ DA.sortBy compareDates contacts
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onWheel' (CNM <<< MoreContacts),  HA.class' "contact-list"] <<< map contactEntry $ DA.sortBy compareDates contacts
         where   getDate history' = do
                         HistoryMessage { date: MDateTime md } <- DA.last history'
                         pure md

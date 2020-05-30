@@ -35,6 +35,7 @@ template {contacts, suggestions, user} = do
                         suggesting: if DA.null suggestions then Nothing else Just 0,
                         userContextMenuVisible: false,
                         profileSettingsToggle: Hidden,
+                        contactsPage: 0,
                         contacts,
                         suggestions,
                         user

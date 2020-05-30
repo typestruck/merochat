@@ -27,6 +27,7 @@ import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Router as SRO
+import Shared.Router as SRO
 import Shared.Types (Generate(..), ResponseError(..), Route(..))
 
 --needs logging as well
@@ -38,28 +39,28 @@ runRouter reading =
         router
 
 --move path matching to individual folders?
---REFACTOR: single way to match path (fullPath)
 router :: Request -> ResponseEffect
-router request@{ headers, path, method }
+router request@{ headers, path, method } =
         --landing
-        | DA.null path = SLR.landing
-        | path == [SRO.fromRoute Register] && method == Post = SLR.register request
+        if paths == SRO.fromRoute Landing then  SLR.landing
+         else if paths == SRO.fromRoute Register && method == Post then SLR.register request
         --login
-        | path !@ 0 == SRO.fromRoute (Login { next: Nothing }) = SLIR.login request
+         else if paths == SRO.fromRouteToPath (Login { next: Nothing }) then SLIR.login request
         --im
-        | path == [SRO.fromRoute IM] = SIR.im request
+         else if paths == SRO.fromRoute IM then SIR.im request
+         else if paths == SRO.fromRoute (Contacts { page: 0 }) then SIR.contacts request
         --profile
-        | path == [SRO.fromRoute Profile] = SPR.profile request
-        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Name }) = SPR.generate Name
-        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Headline }) = SPR.generate Headline
-        | H.fullPath request == SRO.fromRouteAbsolute (Generate { what: Description }) = SPR.generate Description
+         else if paths == SRO.fromRoute Profile then SPR.profile request
+         else if paths == SRO.fromRoute (Generate { what: Name }) then SPR.generate Name
+         else if paths == SRO.fromRoute (Generate { what: Headline }) then SPR.generate Headline
+         else if paths == SRO.fromRoute (Generate { what: Description }) then SPR.generate Description
         --settings
-        | path == [SRO.fromRoute Settings] = SSR.settings request
-        | H.fullPath request == SRO.fromRouteAbsolute AccountEmail && method == Post = SSR.changeEmail request
-        | H.fullPath request == SRO.fromRouteAbsolute AccountPassword && method == Post = SSR.changePassword request
-        | H.fullPath request == SRO.fromRouteAbsolute Terminate && method == Post = SSR.terminateAccount request
+         else if paths == [SRO.fromRoute Settings] then SSR.settings request
+         else if paths == SRO.fromRoute AccountEmail && method == Post then SSR.changeEmail request
+         else if paths == SRO.fromRoute AccountPassword && method == Post then SSR.changePassword request
+         else if paths == SRO.fromRoute Terminate && method == Post then SSR.terminateAccount request
         --local files and 404 for development
-        | otherwise = do
+         else do
                 { configuration : Configuration configuration } <- RR.ask
 
                 if configuration.development && path !@ 0 == "client" then
@@ -68,7 +69,7 @@ router request@{ headers, path, method }
                         SRR.serveDevelopmentFile ["media", "favicon.ico"]
                  else
                         RE.throw $ NotFound { reason: "Could not find resource: " <> H.fullPath request, isPost: method == Post}
-
+        where paths = "/" <> path
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
 session :: Configuration -> Request -> Effect Session
 session (Configuration configuration) { headers, method } = do

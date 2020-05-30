@@ -1,4 +1,4 @@
-module Shared.Router (fromRoute, fromRouteAbsolute, toRoute) where
+module Shared.Router (fromRoute, fromRoute, toRoute) where
 
 import Prelude
 
@@ -19,6 +19,7 @@ routes = RD.root $ RDG.sum {
         "Register" : "register" / RDG.noArgs,
         "Login": "login" ? { next: RD.optional <<< RD.string },
         "IM": "im" / RDG.noArgs,
+        "Contacts" : "im" / "contacts" ? { page: RD.int },
         "Profile": "profile" / RDG.noArgs,
         "Generate":  "profile" / "generate" ? { what: parseWhat },
         "Settings": "settings" / RDG.noArgs,
@@ -31,10 +32,10 @@ routes = RD.root $ RDG.sum {
 toRoute :: String -> Either RouteError Route
 toRoute = RD.parse routes
 
--- | Print a route including the initial /
-fromRouteAbsolute :: Route -> String
-fromRouteAbsolute = RD.print routes
-
--- | Print a route withouth /
+-- | Print a route
 fromRoute :: Route -> String
-fromRoute = DM.maybe "" (_.tail) <<< DS.uncons <<< RD.print routes
+fromRoute = RD.print routes
+
+-- | Print a route without query string
+fromRouteToPath :: Route -> String
+fromRouteToPath = <<< RD.print routes

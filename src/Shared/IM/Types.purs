@@ -88,6 +88,8 @@ newtype IMModel = IMModel {
         --indexes
         suggesting :: Maybe Int,
         chatting :: Maybe Int,
+        --offsets
+        contactsPage :: Int,
         --visibility switches
         userContextMenuVisible :: Boolean,
         profileSettingsToggle :: ProfileSettingsToggle
@@ -118,7 +120,8 @@ data UserMenuMessage =
 
 data ContactMessage =
         ResumeChat PrimaryKey |
-        UpdateReadCount
+        UpdateReadCount |
+        MoreContacts Event
 
 data SuggestionMessage =
         PreviousSuggestion |

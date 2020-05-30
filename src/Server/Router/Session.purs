@@ -19,7 +19,7 @@ ifAnonymous handler = do
         if DM.isNothing userID then
                 handler
          else
-                SRR.redirect $ SRO.fromRouteAbsolute IM
+                SRR.redirect $ SRO.fromRoute IM
 
 ifLogged :: Path -> ResponseEffect -> ResponseEffect
 ifLogged path handler = do
@@ -27,7 +27,7 @@ ifLogged path handler = do
         if DM.isJust userID then
                 handler
          else
-                SRR.redirect <<< SRO.fromRouteAbsolute $ Login { next: Just (path !@ 0) }
+                SRR.redirect <<< SRO.fromRoute $ Login { next: Just (path !@ 0) }
 
 loggedUserID :: ServerEffect PrimaryKey
 loggedUserID = do

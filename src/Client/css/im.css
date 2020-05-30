@@ -714,7 +714,7 @@ svg.toolbar-action {
 }
 
 .message p img {
-    width: fit-content;
+    width: max-content;
     margin: 10px 0;
 }
 

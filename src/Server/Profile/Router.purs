@@ -10,7 +10,7 @@ import Server.Profile.Template as SPT
 import Server.Response as SRR
 import Server.Router.Session as SRS
 import Server.Types (ResponseEffect)
-import Shared.Types (JSONString(..), PrimaryKey(..), Generate)
+import Shared.Types (JSONResponse(..), PrimaryKey(..), Generate)
 import Server.Profile.Action as SPA
 import Shared.Unsafe as SU
 
@@ -27,7 +27,7 @@ profile { method, path, body } = SRS.ifLogged path do
                         countries,
                         languages
                 }
-                SRR.json' $ JSONString contents
+                SRR.json' $ JSONResponse contents
          else do
                 SRR.json body (SPA.saveProfile userID)
 

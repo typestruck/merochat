@@ -73,8 +73,7 @@ newtype Token = Token {
         tokenPOST :: String
 }
 
--- | A newtype for pure string JSON payloads so we can use the same `Generic` functions
-newtype JSONString = JSONString String
+newtype JSONResponse p = JSONResponse p
 
 -- | Used by requests which don't meaningfully respond anything
 data Ok = Ok
@@ -92,7 +91,8 @@ data Route =
         Settings |
         AccountEmail |
         AccountPassword |
-        Terminate
+        Terminate |
+        Contacts { page :: Int }
 
 data Generate = Name | Headline | Description
 
@@ -118,7 +118,7 @@ derive instance genericToken :: Generic Token _
 derive instance genericResponseError :: Generic ResponseError _
 derive instance genericPrimaryKey :: Generic PrimaryKey _
 derive instance genericUser :: Generic RegisterLoginUser _
-derive instance genericJSONString :: Generic JSONString _
+derive instance genericJSONString :: Generic (JSONResponse p) _
 derive instance genericMDateTime :: Generic MDateTime _
 derive instance genericMDate :: Generic MDate _
 
