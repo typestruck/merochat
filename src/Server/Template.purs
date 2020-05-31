@@ -8,7 +8,7 @@ import Flame.HTML.Element as HE
 import Flame.HTML.Attribute as HA
 import Prelude
 
---TODO memoization, caching
+--TODO memoization, caching -- it would be nice to serve this as static files?
 
 type Parameters a = {
         javascript :: Array (Html a),
@@ -33,11 +33,13 @@ externalDefaultParameters = {
         ],
         content: [
                 HE.div (HA.class' "header") [
-                        HE.a [HA.href "/", HA.class' "logo"] "MelanChat",
-                        HE.div (HA.class' "login") $ HE.a (HA.href "/login") "Login"
+                        HE.a [HA.href "/", HA.class' "logo"] $ HE.img [
+                                        HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
+                                        HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
+                                        HA.src "/client/media/logo.png"]
                 ]
         ],
-        footer: externalFooter
+        footer: [externalFooter]
 }
 
 template :: forall a. Parameters a -> Effect (Html a)
@@ -58,11 +60,8 @@ templateWith parameters =
                 HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]
         ]
 
-externalFooter :: forall a. Array (Html a)
-externalFooter = [externalFooter']
-
-externalFooter' :: forall a. Html a
-externalFooter' =
+externalFooter :: forall a. Html a
+externalFooter =
         HE.div (HA.class' "footer") [
                 HE.a (HA.href "/") <<< HE.img $ HA.src "/client/media/logo-small.png",
                 HE.ul (HA.class' "footer-menu") [

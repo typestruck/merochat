@@ -40,6 +40,6 @@ loginOnEnter event = do
 main :: Effect Unit
 main = do
         loginButton <- CCD.querySelector "#login"
-        signUpDiv <- CCD.querySelector ".box-action"
+        signUpDiv <- CCD.querySelector ".sign-up"
         CCD.addEventListener signUpDiv keyup loginOnEnter
         CCD.addEventListener loginButton click (const login)

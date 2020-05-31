@@ -28,7 +28,6 @@ import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Router as SRO
-import Shared.Router as SRO
 import Shared.Types (Generate(..), ResponseError(..), Route(..))
 
 --needs logging as well

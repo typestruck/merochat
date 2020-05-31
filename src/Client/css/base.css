@@ -11,7 +11,7 @@ body {
     font-family: "Verdana", "sans serif";
     font-size: 18px;
     background-color: #262626;
-    color:white;
+    color: white;
     line-height: 1.51857143;
     display: grid;
     grid-template-rows: 1fr auto;
@@ -20,7 +20,6 @@ body {
 label {
     display: block
 }
-
 
 h1, h2 {
     font-weight: bold;
@@ -51,7 +50,6 @@ h3 {
     font-size: 1.1em;
 }
 
-
 a {
     color: orange;
     text-decoration: none;
@@ -68,16 +66,14 @@ a:hover {
     font-weight: bold;
 }
 
-input{
+input {
     border-radius: 3px;
 }
 
 input[type="submit"], input[type="button"] {
     cursor: pointer;
-
     font-weight: bold;
 }
-
 
 input, textarea {
     border-radius: 3px;
@@ -91,13 +87,11 @@ input, textarea {
     text-decoration: none;
 }
 
-
 input[type="submit"], input[type="button"] {
     border: 1px solid orange;
     color: orange;
     font-weight: bold;
 }
-
 
 ul li {
     display: inline;
@@ -115,7 +109,7 @@ textarea:focus, input:focus {
     border: orange 1px solid;
 }
 
-.loading{
+.loading {
     display: none;
     z-index: 200;
     position: fixed;
@@ -124,19 +118,17 @@ textarea:focus, input:focus {
     width: 100%;
 }
 
-.hidden{
+.hidden {
     display: none;
 }
 
 .smaller {
     font-size: smaller;
-
 }
 
 strong {
     font-weight: bold;
 }
-
 
 svg {
     margin: 0.4em;
@@ -153,10 +145,17 @@ svg {
     margin: 0 30px;
 }
 
-.footer-menu a {
-    font-family: Verdana, sans-serif;
-    color: #b5b7b6 ;
-    font-size: 1em;
-    font-weight: bold;
+@media (max-width:1199px) {
+    .footer-menu {
+        margin-left: 0px;
+        padding-left: 0;
+    }
 }
 
+.footer-menu a {
+    font-family: Verdana, sans-serif;
+    color: #b5b7b6;
+    font-size: 1em;
+    font-weight: bold;
+    flex-shrink: 0;
+}

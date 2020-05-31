@@ -14,7 +14,7 @@ template = do
         contents <- ST.template externalDefaultParameters { content = externalDefaultParameters.content <> content }
         FRS.render contents
         where   content = [
-                        HE.div (HA.class' "center-box") [
-                                HE.h1_ "Not found!"
+                        HE.div (HA.class' "green-box") [
+                                HE.h2_ "404! Not found!"
                         ]
                 ]

@@ -6,7 +6,7 @@ import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
-import Server.Template (defaultParameters, externalFooter')
+import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
 
 template :: Effect String
@@ -24,6 +24,7 @@ template = do
                         HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
                 ]
                 css = [
+                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/external.css"],
                         HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/landing.css"]
                 ]
                 content = [
@@ -33,6 +34,7 @@ template = do
                                                         HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
                                                         HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
                                                         HA.src "/client/media/logo.png"],
+                                                        --REFACTOR: use Shared.Router in view too
                                         HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href "/login"] "Login"
                                 ],
                                 HE.div (HA.class' "green-area") [
@@ -178,7 +180,6 @@ template = do
                                         ],
                                         HE.a [HA.class' "sign-up-call", HA.href "#headline"] $ "... and it is free! Click here to create an account and chat right away #melanchat"
                                 ],
-                                externalFooter'
-
+                                externalFooter
                         ]
                 ]

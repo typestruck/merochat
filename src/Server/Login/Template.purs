@@ -20,16 +20,20 @@ template = do
                         HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/login.bundle.js"]
                 ]
                 content = [
-                        HE.div (HA.class' "center-box") [
-                                HE.h1_ "Login to MelanChat",
-                                HE.div (HA.class' "box-action") [
-                                        HE.input [HA.id "email", HA.type' "text", HA.placeholder "Email"],
-                                        HE.input [HA.id "password", HA.type' "password", HA.placeholder "Password"],
-                                        HE.input [HA.id "login", HA.type' "button", HA.value "Login"]
+                        HE.div (HA.class' "green-area green-box") [
+                                HE.h2_ "Login to MelanChat",
+                                HE.div (HA.class' "sign-up") [
+                                        HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
+                                        HE.input [HA.type' "password", HA.autocomplete false, HA.id "password", HA.placeholder "Password"],
+                                        HE.input [HA.type' "button", HA.id "login", HA.value "Login"]
                                 ],
-                                HE.ul_ [
-                                        HE.li_ $ HE.a [HA.href "/"] "Don't have an account? Register",
-                                        HE.li_ $ HE.a [HA.href "/recover"] "Forgot your password? Recover"
-                                ]
+                                HE.a [HA.href "/recover", HA.class' "question-link forgot"] "Forgot your password?",
+                                HE.div [HA.class' "question-or"] [
+                                        HE.hr' $ HA.class' "hr-or",
+                                        HE.text "or",
+                                        HE.hr' $ HA.class' "hr-or"
+                                ],
+                                HE.a [HA.href "/", HA.class' "question-link"] "Don't have an account?"
+
                         ]
                 ]
