@@ -6,6 +6,7 @@ import Prelude
 import Shared.IM.Types
 import Shared.Types
 
+import Client.Common.Network as CCN
 import Client.IM.WebSocketHandler (webSocketHandler)
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -16,9 +17,13 @@ import Effect.Console as EC
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Shared.Newtype as SN
+import Shared.Router as SR
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
+import Web.UIEvent.WheelEvent (WheelEvent)
+import Web.UIEvent.WheelEvent as WUW
 
 update :: AffUpdate IMModel ContactMessage
 update { model, message, display } =
@@ -29,6 +34,20 @@ update { model, message, display } =
                         markRead webSocketHandler model'
                 --when the window is focused updated the read status of current chat
                 UpdateReadCount -> markRead webSocketHandler model
+                MoreContacts event -> fetchContacts (SU.unsafeFromJust "contacts.update" $ WUW.fromEvent event) model
+
+fetchContacts :: WheelEvent -> IMModel -> Aff (IMModel -> IMModel)
+fetchContacts event (IMModel { contactsPage, contacts }) = do
+        if WUW.deltaY event < 1.0 then
+                FAE.noChanges
+         else do
+                --needs from kind of throttling/loading
+                let nextPage = contactsPage + 1
+                JSONResponse newContatcs <- CCN.get' <<< SR.fromRoute $ Contacts { page: nextPage }
+                if DA.null newContatcs then
+                        FAE.noChanges
+                 else
+                        FAE.diff { contactsPage : nextPage, contacts: contacts <> newContatcs }
 
 markRead :: WebSocketHandler -> IMModel -> Aff (IMModel -> IMModel)
 markRead wsHandler =

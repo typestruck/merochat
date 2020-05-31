@@ -16,7 +16,7 @@ import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
 import Shared.Router as SR
-import Shared.Types (JSONString(..), Route(..))
+import Shared.Types (JSONResponse(..), Route(..))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
@@ -43,7 +43,7 @@ toggleProfileSettings { display } =
 
         where   showTab route toggle file root = do
                         display $ FAE.diff' { profileSettingsToggle: toggle }
-                        JSONString html <- CCN.get' $ SR.fromRouteAbsolute route
+                        JSONResponse html <- CCN.get' $ SR.fromRoute route
                         setRootHTML html root
                         --scripts don't load when inserted via innerHTML
                         liftEffect $ CCD.loadScript file

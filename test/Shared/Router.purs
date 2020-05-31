@@ -16,12 +16,12 @@ import Test.Unit.Main as TUM
 tests :: TestSuite
 tests = do
         TU.suite "routing" $ do
-                TU.test "fromRouteAbsolute" $ do
-                        TUA.equal (SR.fromRouteAbsolute Landing) "/"
-                        TUA.equal (SR.fromRouteAbsolute Register) "/register"
-                        TUA.equal (SR.fromRouteAbsolute $ Login {next :Nothing}) "/login"
+                TU.test "fromRoute" $ do
+                        TUA.equal (SR.fromRoute Landing) "/"
+                        TUA.equal (SR.fromRoute Register) "/register"
+                        TUA.equal (SR.fromRoute $ Login {next :Nothing}) "/login"
                         --routing duplex automaticaly encodes url
-                        TUA.equal (SR.fromRouteAbsolute $ Login {next : Just "/im"}) "/login?next=%2Fim"
+                        TUA.equal (SR.fromRoute $ Login {next : Just "/im"}) "/login?next=%2Fim"
                 TU.test "toRoute" $ do
                         TUA.equal (SR.toRoute "/") $ Right Landing
                         TUA.equal (SR.toRoute "/register") $ Right Register

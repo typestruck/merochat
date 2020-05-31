@@ -37,6 +37,8 @@ import Partial.Unsafe as PU
 import Shared.Header (xAccessToken)
 import Web.XHR.FormData (FormData)
 
+--REFACTOR: urls should be Route not String
+
 -- | A simplified version of post without the option to handle errors
 post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Maybe contents -> Aff response
 post' url data' = do

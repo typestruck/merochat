@@ -37,7 +37,7 @@ changeEmail model@(SettingsModel { email, emailConfirmation }) = do
          else if email /= emailConfirmation then
                 liftEffect $ CCN.alert "Email and confirmation do not match"
          else do
-                Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountEmail) $ Just model
+                Ok <- CCNT.post' (SRO.fromRoute AccountEmail) $ Just model
                 liftEffect $ CCN.alert "Email changed"
         FAE.noChanges
 
@@ -48,7 +48,7 @@ changePassword model@(SettingsModel { password, passwordConfirmation }) = do
          else if password /= passwordConfirmation then
                 liftEffect $ CCN.alert "Password and confirmation do not match"
          else do
-                Ok <- CCNT.post' (SRO.fromRouteAbsolute AccountPassword) $ Just model
+                Ok <- CCNT.post' (SRO.fromRoute AccountPassword) $ Just model
                 liftEffect $ do
                         CCN.alert "Password changed, you will be logged out"
                         CCL.logout
@@ -58,7 +58,7 @@ terminateAccount :: Aff (SettingsModel -> SettingsModel)
 terminateAccount = do
         confirmed <- liftEffect $ CCD.confirm "This action cannot be undone! Are you sure you want to terminate your account?"
         when confirmed $ do
-                Ok <- CCNT.post' (SRO.fromRouteAbsolute Terminate) (Nothing :: Maybe SettingsModel)
+                Ok <- CCNT.post' (SRO.fromRoute Terminate) (Nothing :: Maybe SettingsModel)
                 liftEffect CCL.logout
         FAE.noChanges
 

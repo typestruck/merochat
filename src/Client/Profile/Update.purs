@@ -98,7 +98,7 @@ setEditors editor (ProfileModel { user: ProfileUser { name, headline, descriptio
 setEditorFieldOrGenerate what field characters value editor = do
         let trimmed = DS.trim value
         toSet <- if DS.null trimmed then do
-                        JSONString name <- CCN.get' <<< SR.fromRouteAbsolute $ Generate { what }
+                        JSONResponse name <- CCN.get' <<< SR.fromRoute $ Generate { what }
                         pure name
                   else pure trimmed
         setEditorContent (SU.unsafeFromJust "setEditorFieldOrGenerate" editor) toSet
@@ -205,7 +205,7 @@ removeTag tag event = do
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile model@(ProfileModel { user: user@(ProfileUser { name }) }) = do
-        Ok <- CCN.post' (SR.fromRouteAbsolute Profile) $ Just user
+        Ok <- CCN.post' (SR.fromRoute Profile) $ Just user
         liftEffect $ do
                 CCNO.alert "Profile updated"
                 --let im know that the name has changed
