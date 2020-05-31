@@ -1,9 +1,11 @@
-module Shared.Router (fromRoute, fromRoute, toRoute) where
+module Shared.Router (fromRoute, fromRouteToPath , toRoute) where
 
 import Prelude
 
+import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe as DM
+import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read as DSR
 import Routing.Duplex (RouteDuplex')
@@ -12,6 +14,7 @@ import Routing.Duplex.Generic as RDG
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import Routing.Duplex.Parser (RouteError)
 import Shared.Types (Route)
+import Shared.Unsafe as SU
 
 routes :: RouteDuplex' Route
 routes = RD.root $ RDG.sum {
@@ -38,4 +41,4 @@ fromRoute = RD.print routes
 
 -- | Print a route without query string
 fromRouteToPath :: Route -> String
-fromRouteToPath = <<< RD.print routes
+fromRouteToPath = SU.unsafeFromJust "fromRouteToPath" <<< DA.head <<< DS.split (Pattern "?") <<< RD.print routes

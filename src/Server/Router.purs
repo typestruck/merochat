@@ -8,6 +8,7 @@ import Browser.Cookies.Data (Cookie(..))
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.String as DS
 import Effect (Effect)
 import HTTPure (Method(..), Request, ResponseM)
 import HTTPure as H
@@ -42,34 +43,44 @@ runRouter reading =
 router :: Request -> ResponseEffect
 router request@{ headers, path, method } =
         --landing
-        if paths == SRO.fromRoute Landing then  SLR.landing
-         else if paths == SRO.fromRoute Register && method == Post then SLR.register request
+       if paths == SRO.fromRoute Landing then
+              SLR.landing
+        else if paths == SRO.fromRoute Register && method == Post then
+              SLR.register request
         --login
-         else if paths == SRO.fromRouteToPath (Login { next: Nothing }) then SLIR.login request
+        else if paths == SRO.fromRouteToPath (Login { next: Nothing }) then
+              SLIR.login request
         --im
-         else if paths == SRO.fromRoute IM then SIR.im request
-         else if paths == SRO.fromRoute (Contacts { page: 0 }) then SIR.contacts request
+        else if paths == SRO.fromRoute IM then
+              SIR.im request
+        else if paths == SRO.fromRouteToPath (Contacts { page: 0 }) then
+              SIR.contacts request
         --profile
-         else if paths == SRO.fromRoute Profile then SPR.profile request
-         else if paths == SRO.fromRoute (Generate { what: Name }) then SPR.generate Name
-         else if paths == SRO.fromRoute (Generate { what: Headline }) then SPR.generate Headline
-         else if paths == SRO.fromRoute (Generate { what: Description }) then SPR.generate Description
+        else if paths == SRO.fromRoute Profile then
+              SPR.profile request
+        else if paths == SRO.fromRouteToPath (Generate { what: Name }) then
+              SPR.generate request
         --settings
-         else if paths == [SRO.fromRoute Settings] then SSR.settings request
-         else if paths == SRO.fromRoute AccountEmail && method == Post then SSR.changeEmail request
-         else if paths == SRO.fromRoute AccountPassword && method == Post then SSR.changePassword request
-         else if paths == SRO.fromRoute Terminate && method == Post then SSR.terminateAccount request
+        else if paths == SRO.fromRoute Settings then
+              SSR.settings request
+        else if paths == SRO.fromRoute AccountEmail && method == Post then
+              SSR.changeEmail request
+        else if paths == SRO.fromRoute AccountPassword && method == Post then
+              SSR.changePassword request
+        else if paths == SRO.fromRoute Terminate && method == Post then
+              SSR.terminateAccount request
         --local files and 404 for development
-         else do
-                { configuration : Configuration configuration } <- RR.ask
+        else do
+              { configuration : Configuration configuration } <- RR.ask
 
-                if configuration.development && path !@ 0 == "client" then
-                        SRR.serveDevelopmentFile path
-                 else if configuration.development && path !@ 0 == "favicon.ico" then
-                        SRR.serveDevelopmentFile ["media", "favicon.ico"]
-                 else
-                        RE.throw $ NotFound { reason: "Could not find resource: " <> H.fullPath request, isPost: method == Post}
-        where paths = "/" <> path
+              if configuration.development && path !@ 0 == "client" then
+                     SRR.serveDevelopmentFile path
+               else if configuration.development && path !@ 0 == "favicon.ico" then
+                     SRR.serveDevelopmentFile ["media", "favicon.ico"]
+               else
+                     RE.throw $ NotFound { reason: "Could not find resource: " <> H.fullPath request, isPost: method == Post}
+       where paths = "/" <> DS.joinWith "/" path
+
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
 session :: Configuration -> Request -> Effect Session
 session (Configuration configuration) { headers, method } = do

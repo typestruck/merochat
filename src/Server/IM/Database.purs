@@ -41,7 +41,7 @@ suggest id =
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array IMUser)
 presentContacts id page = SD.select (Query ("select distinct date," <> userPresentationFields <>
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
-                                          order by date desc limit 2 offset $2""")) (id /\ page * 2)
+                                          order by date desc limit 10 offset $2""")) (id /\ page * 10)
 
 chatHistory :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array HistoryMessage)
 chatHistory id otherIDs = SD.select (Query ("select" <> messagePresentationFields <> "from messages where (sender = $1 or recipient = $1) and (sender = any($2) or recipient = any($2)) order by date, sender, recipient")) (id /\ otherIDs)

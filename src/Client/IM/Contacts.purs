@@ -36,15 +36,18 @@ update { model, message, display } =
                 UpdateReadCount -> markRead webSocketHandler model
                 MoreContacts event -> fetchContacts (SU.unsafeFromJust "contacts.update" $ WUW.fromEvent event) model
 
---will need throttling or a loading screen
 fetchContacts :: WheelEvent -> IMModel -> Aff (IMModel -> IMModel)
 fetchContacts event (IMModel { contactsPage, contacts }) = do
         if WUW.deltaY event < 1.0 then
                 FAE.noChanges
          else do
+                --needs from kind of throttling/loading
                 let nextPage = contactsPage + 1
-                JSONResponse newContatcs <- CCN.get' (SR.fromRoute $ Contacts { page: nextPage })
-                FAE.diff { contactsPage : nextPage, contacts: contacts <> newContatcs }
+                JSONResponse newContatcs <- CCN.get' <<< SR.fromRoute $ Contacts { page: nextPage }
+                if DA.null newContatcs then
+                        FAE.noChanges
+                 else
+                        FAE.diff { contactsPage : nextPage, contacts: contacts <> newContatcs }
 
 markRead :: WebSocketHandler -> IMModel -> Aff (IMModel -> IMModel)
 markRead wsHandler =
