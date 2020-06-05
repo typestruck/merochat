@@ -34,8 +34,8 @@ externalDefaultParameters = {
         content: [
                 HE.div (HA.class' "header") [
                         HE.a [HA.href "/", HA.class' "logo"] $ HE.img [
-                                        HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
-                                        HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
+                                        HA.createAttribute "srcset" "/client/media/logo-2.png 350w, /client/media/logo.png 250w",
+                                        HA.createAttribute "sizes" "(min-width: 1299px) 350px, 250px",
                                         HA.src "/client/media/logo.png"]
                 ]
         ],
