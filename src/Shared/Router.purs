@@ -23,6 +23,7 @@ routes = RD.root $ RDG.sum {
         "Login": "login" ? { next: RD.optional <<< RD.string },
         "IM": "im" / RDG.noArgs,
         "Contacts" : "im" / "contacts" ? { page: RD.int },
+        "Suggestions" : "im" / "suggestions" / RDG.noArgs,
         "Profile": "profile" / RDG.noArgs,
         "Generate":  "profile" / "generate" ? { what: parseWhat },
         "Settings": "settings" / RDG.noArgs,
@@ -30,7 +31,7 @@ routes = RD.root $ RDG.sum {
         "AccountPassword": "settings" / "password" / RDG.noArgs,
         "Terminate": "settings" / "close" / RDG.noArgs
 }
-        where parseWhat = RD.as show (DM.maybe (Left "error parsing what") Right <<< DSR.read)
+        where parseWhat = RD.as show (DM.maybe (Left "error parsing what parameter") Right <<< DSR.read)
 
 toRoute :: String -> Either RouteError Route
 toRoute = RD.parse routes

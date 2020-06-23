@@ -12,10 +12,10 @@ import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Effect.Now as EN
 import Effect.Unsafe as EU
-
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
+import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -41,7 +41,7 @@ tests = do
                         IMModel { chatting } <- CICN.resumeChat (SP.fromInt 23) m
                         TUA.equal (Just 0) chatting
                 TU.test "markRead sets recieved messages as read" $ do
-                        IMModel { contacts } <- CICN.markRead webSocketHandler $ SN.updateModel model $ _ {
+                        IMModel { contacts } <- TCM.run model <<< CICN.markRead webSocketHandler $ SN.updateModel model $ _ {
                                 chatting = Just 1
                         }
                         TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 1)
@@ -53,6 +53,7 @@ model = IMModel {
         contacts: [imUser, anotherIMUser],
         user: imUser,
         suggestions: [],
+        contactsPage: 0,
         temporaryID : SP.fromInt 0,
         token: Just "oi",
         webSocket: Just $ WS (unsafeCoerce 23 :: WebSocket),

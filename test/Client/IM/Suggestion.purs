@@ -76,6 +76,7 @@ model = IMModel {
         profileSettingsToggle: Hidden,
         contacts: [],
         user: imUser,
+        contactsPage: 0,
         suggestions: [],
         temporaryID : SP.fromInt 0,
         token: Nothing,

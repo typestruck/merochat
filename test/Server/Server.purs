@@ -23,8 +23,6 @@ configuration = Configuration {
         port: 8000,
         development: true,
         captchaSecret: "",
-        benderURL: "",
-        useBender: false,
         tokenSecretGET: "abc",
         tokenSecretPOST: "def",
         salt: "ghi"

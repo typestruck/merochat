@@ -41,9 +41,9 @@ fetchContacts event (IMModel { contactsPage, contacts }) = do
         if WUW.deltaY event < 1.0 then
                 FAE.noChanges
          else do
-                --needs from kind of throttling/loading
+                --needs some kind of throttling/loading
                 let nextPage = contactsPage + 1
-                JSONResponse newContatcs <- CCN.get' <<< SR.fromRoute $ Contacts { page: nextPage }
+                JSONResponse newContatcs <- CCN.get' $ Contacts { page: nextPage }
                 if DA.null newContatcs then
                         FAE.noChanges
                  else

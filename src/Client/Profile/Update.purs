@@ -98,7 +98,7 @@ setEditors editor (ProfileModel { user: ProfileUser { name, headline, descriptio
 setEditorFieldOrGenerate what field characters value editor = do
         let trimmed = DS.trim value
         toSet <- if DS.null trimmed then do
-                        JSONResponse name <- CCN.get' <<< SR.fromRoute $ Generate { what }
+                        JSONResponse name <- CCN.get' $ Generate { what }
                         pure name
                   else pure trimmed
         setEditorContent (SU.unsafeFromJust "setEditorFieldOrGenerate" editor) toSet
