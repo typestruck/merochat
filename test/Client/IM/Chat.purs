@@ -215,6 +215,7 @@ model = IMModel {
         suggestions: [imUser],
         temporaryID : SP.fromInt 0,
         suggesting: Just 0,
+        contactsPage: 0,
         token: Just "",
         contacts: [imUser],
         webSocket: Just $ WS (UC.unsafeCoerce 23 :: WebSocket),

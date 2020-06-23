@@ -34,9 +34,10 @@ presentUserParameters = Row1
 presentUser :: PrimaryKey -> ServerEffect IMUser
 presentUser id = SD.single' presentUserQuery $ presentUserParameters id
 
+--another thing to think is ordering by online status
 suggest :: PrimaryKey -> ServerEffect (Array IMUser)
 suggest id =
-        SD.select (Query ("select" <> userPresentationFields <> "from users u where id not in (1, $1) and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id))")) $ Row1 id
+        SD.select (Query ("select" <> userPresentationFields <> "from users u where id not in (1, $1) and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) order by random() limit 20")) $ Row1 id
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array IMUser)
 presentContacts id page = SD.select (Query ("select distinct date," <> userPresentationFields <>

@@ -73,6 +73,7 @@ newtype Token = Token {
         tokenPOST :: String
 }
 
+--REFACTOR:the usage of JSONResponse could be swapped for more apt types
 newtype JSONResponse p = JSONResponse p
 
 -- | Used by requests which don't meaningfully respond anything
@@ -92,6 +93,7 @@ data Route =
         AccountEmail |
         AccountPassword |
         Terminate |
+        Suggestions |
         Contacts { page :: Int }
 
 data Generate = Name | Headline | Description

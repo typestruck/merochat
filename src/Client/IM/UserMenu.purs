@@ -43,7 +43,7 @@ toggleProfileSettings { display } =
 
         where   showTab route toggle file root = do
                         display $ FAE.diff' { profileSettingsToggle: toggle }
-                        JSONResponse html <- CCN.get' $ SR.fromRoute route
+                        JSONResponse html <- CCN.get'  route
                         setRootHTML html root
                         --scripts don't load when inserted via innerHTML
                         liftEffect $ CCD.loadScript file

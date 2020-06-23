@@ -35,6 +35,8 @@ import Effect.Class (liftEffect)
 import Effect.Exception as EE
 import Partial.Unsafe as PU
 import Shared.Header (xAccessToken)
+import Shared.Router as SR
+import Shared.Types (Route)
 import Web.XHR.FormData (FormData)
 
 --REFACTOR: urls should be Route not String
@@ -57,17 +59,17 @@ post url data' = do
         }
         parseBody response
 
-get' :: forall response r. Generic response r => DecodeRep r => String -> Aff response
-get' url = do
-        response <- get url
+get' :: forall response r. Generic response r => DecodeRep r => Route -> Aff response
+get' route = do
+        response <- get route
         case response of
                 Right right -> pure right
                 Left error -> alertResponseError $ A.printResponseFormatError error
 
-get :: forall response r. Generic response r => DecodeRep r => String -> Aff (Either ResponseFormatError response)
-get url = do
+get :: forall response r. Generic response r => DecodeRep r => Route -> Aff (Either ResponseFormatError response)
+get route = do
         token <- liftEffect CCC.getMelanchatCookie
-        response <- A.request $ defaultRequest url GET token
+        response <- A.request $ defaultRequest (SR.fromRoute route) GET token
         parseBody response
 
 defaultRequest url method token =

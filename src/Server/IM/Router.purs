@@ -6,7 +6,6 @@ import Shared.Types
 
 import Data.Int as DI
 import HTTPure (Request, (!@))
-import Run.Reader as RR
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
@@ -28,4 +27,10 @@ contacts :: Request -> ResponseEffect
 contacts { query } = do
         userID <- SRS.loggedUserID
         list <- SIA.contactList userID <<< SU.unsafeFromJust "contacts" $ DI.fromString (query !@ "page")
+        SRR.json' $ JSONResponse list
+
+suggestions :: ResponseEffect
+suggestions = do
+        userID <- SRS.loggedUserID
+        list <- SIA.suggest userID
         SRR.json' $ JSONResponse list

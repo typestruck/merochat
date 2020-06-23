@@ -54,6 +54,8 @@ router request@{ headers, path, method } =
               SIR.im request
         else if paths == SRO.fromRouteToPath (Contacts { page: 0 }) then
               SIR.contacts request
+        else if paths == SRO.fromRoute Suggestions then
+              SIR.suggestions
         --profile
         else if paths == SRO.fromRoute Profile then
               SPR.profile request
