@@ -89,8 +89,9 @@ svg {
 }
 
 .avatar-profile {
-    width: 100px;
-    height: 100px;
+    width: 200px;
+    height: 200px;
+    background:#db5d5d;
     border-radius: 100%;
 }
 
