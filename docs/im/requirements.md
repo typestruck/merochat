@@ -32,19 +32,19 @@ Mockup of user menu component ([#6](https://github.com/easafe/melanchat/issues/6
 
 2. Name
 
-3. Karma and Karma Rank(see [Karma](../gamification/requirements.md#karma))
+3. Karma and Karma Rank (see [Karma](../gamification/requirements.md#karma))
 
     * Displays how much Karma this User has and their Karma Rank- clicking opens popup with karma stats and a link to the Karma help page.
 
-4. Trophies(see [Trophies](../gamification/requirements.md#trophies))
+4. Trophies (see [Trophies](../gamification/requirements.md#trophies))
 
     *  Icon followed by the number of Trophies this User has- clicking opens popup with trophies stats and a linking to the Trophies help page
 
-5. Badges(see [Badges](../gamification/requirements.md#badges))
+5. Badges (see [Badges](../gamification/requirements.md#badges))
 
     * Icon followed by the number of Badges this User has- clicking opens popup with trophies stats and a linking to the Badges help page
 
-6. Reactions(see [Reactions](../gamification/requirements.md#reactions)) to this User
+6. Reactions (see [Reactions](../gamification/requirements.md#reactions)) to this User
 
     * Icon followed by the number of Reactions this User has- clicking opens popup with trophies stats and a linking to the Reactions help page
 
@@ -110,7 +110,7 @@ Mockup of contact list component ([#9](https://github.com/easafe/melanchat/issue
 
 3. Contact headline or last message message sent ([#44](https://github.com/easafe/melanchat/issues/44)) (see [Settings](../user/requirements.md#update-settings))
 
-4. Number of unread messages(if contact is not muted)
+4. Number of unread messages (if contact is not muted)
 
 5. [Message date](#chat-history)
 
@@ -130,13 +130,13 @@ Mockup of contact list component ([#9](https://github.com/easafe/melanchat/issue
 
     d) Block this contact
 
-8. Online status(see [User](../user/requirements.md#user-information))
+8. Online status (see [User](../user/requirements.md#user-information))
 
-9. Private notes left for this contact(see [User](../user/requirements.md#user-information))
+9. Private notes left for this contact (see [User](../user/requirements.md#user-information))
 
 ## Suggestions
 
-A suggestion is a new(or from the contact list) User picked by the application for the current User to chat with.
+A suggestion is a new (or from the contact list) User picked by the application for the current User to chat with.
 
 * Users can skip ahead suggestions and also see the previous ones again
 
@@ -178,7 +178,7 @@ Suggestion component mockup ([#10](https://github.com/easafe/melanchat/issues/10
 
 5. Suggestion age, gender, country, langagues
 
-6. Suggestion online status(see [User](../user/requirements.md)), Karma and Karma Rank(see [Karma](../gamification/requirements.md#karma)), trophies(see [Trophies](../gamification/requirements.md#trophies)), badges(see [Badges](../gamification/requirements.md#badges)) and reactions(see [Reactions](../gamification/requirements.md#reactions))
+6. Suggestion online status (see [User](../user/requirements.md)), Karma and Karma Rank (see [Karma](../gamification/requirements.md#karma)), trophies (see [Trophies](../gamification/requirements.md#trophies)), badges (see [Badges](../gamification/requirements.md#badges)) and reactions (see [Reactions](../gamification/requirements.md#reactions))
 
 7. Suggestion list of tags
 
@@ -192,15 +192,15 @@ Suggestion component mockup ([#10](https://github.com/easafe/melanchat/issues/10
 
     a) Edit private notes
 
-    b) React to this User(see [Reactions](../gamification/requirements.md#reactions))
+    b) React to this User (see [Reactions](../gamification/requirements.md#reactions))
 
     c) Mute/Unmute for contacts, ignore for suggestions
 
-    d) Block this User(see [User](../user/requirements.md#user-information))
+    d) Block this User (see [User](../user/requirements.md#user-information))
 
-    e) Report this User(TBD)
+    e) Report this User (TBD)
 
-    f) Visible only when the component is shrunk. Displays more information about this user(their description and TBD)
+    f) Visible only when the component is shrunk. Displays more information about this user (their description and TBD)
 
 ## Chat History
 
@@ -208,17 +208,17 @@ Chat history is the collections of messages between Users on a given chat. A mes
 
 * Content
 
-    * Text(markdown able), image or audio
+    * Text (markdown able), image or audio
 
 * Message Date
 
-    * Datetime(in the format of elapsed time,e.g., 10 minutes ago, yesterday etc) of when the message was sent
+    * Datetime (in the format of elapsed time,e.g., 10 minutes ago, yesterday etc) of when the message was sent
 
 * Message status
 
-    * Sent(server received message), delivered(message sent to User), read(messaged visualized by User)
+    * Sent (server received message), delivered (message sent to User), read (messaged visualized by User)
 
-* Reactions(se [Reactions](../gamification/requirements.md#reactions))
+* Reactions (se [Reactions](../gamification/requirements.md#reactions))
 
 Mockup of chat history component ([#11](https://github.com/easafe/melanchat/issues/11)):
 
@@ -228,7 +228,7 @@ Mockup of chat history component ([#11](https://github.com/easafe/melanchat/issu
 
 * Chat flows downward, i.e. last message is at the bottom
 
-* Infinite scroll(upwards) for pagination
+* Infinite scroll (upwards) for pagination
 
 1. User being chatted with's avatar
 
@@ -242,9 +242,9 @@ Drop down menu mockup:
 
 ![incoming options](images/chat_history_incoming_message_options_drop_down_menu.png)
 
-a) Quote this message(markdown syntax)
+a) Quote this message (markdown syntax)
 
-b) React to this message(see [Reactions](../gamification/requirements.md#reactions))
+b) React to this message (see [Reactions](../gamification/requirements.md#reactions))
 
 c) See message date and message status
 
@@ -256,7 +256,7 @@ c) See message date and message status
 
     ![outgoing options](images/chat_history_outgoing_message_options_drop_down_menu.png)
 
-    a) Quote this message(markdown syntax)
+    a) Quote this message (markdown syntax)
 
     b) Edit this message
 
@@ -266,7 +266,7 @@ c) See message date and message status
 
 ## Chat Input
 
-Component to enter [messages](#chat-history), and display Typing Status(notification about chat partner being currently typing).
+Component to enter [messages](#chat-history), and display Typing Status (notification about chat partner being currently typing).
 
 Mockup of chat input component:
 
@@ -278,7 +278,7 @@ Mockup of chat input component:
 
     * Markdown able ([#12](https://github.com/easafe/melanchat/issues/12))
 
-    * Image/video able(both inline markdown and drag drop)
+    * Image/video able (both inline markdown and drag drop)
 
 3.  Chat input options
 

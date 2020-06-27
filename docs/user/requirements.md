@@ -66,7 +66,7 @@ The following data about an User is visible to other Users on the application:
 
 * Online status
 
-    * Online, Away(not active for 10 minutes), Last seen _time since last login_(for logged out Users)
+    * Online, Away (not active for 10 minutes), Last seen _time since last login_(for logged out Users)
 
 Conversely, the following information is private:
 
@@ -118,7 +118,7 @@ Mockup of landing page with call to action for registering a new account ([#3](h
 
     b) Browser is redirected to /im
 
-    c) User taken through a tutorial(TBD)
+    c) User taken through a tutorial (TBD)
 
 4. Temporary User creation
 
@@ -130,7 +130,7 @@ Mockup of landing page with call to action for registering a new account ([#3](h
 
 ## Login
 
-Login works as traditional by supplying account details. Third party login strategies(i.e., Facebook or Google) are out of scope.
+Login works as traditional by supplying account details. Third party login strategies (i.e., Facebook or Google) are out of scope.
 
 Mockup of login page ([#4](https://github.com/easafe/melanchat/issues/4)):
 
@@ -260,13 +260,13 @@ Mockup of settings page:
 
     b) Update [online status](#user-information); unchecked by default
 
-    c) Update typing status(see [IM](../im/requirements.md#chat-input)); unchecked by default
+    c) Update typing status (see [IM](../im/requirements.md#chat-input)); unchecked by default
 
-    d) Update message status(see [IM](../im/requirements.md#chat-history)); unchecked by default
+    d) Update message status (see [IM](../im/requirements.md#chat-history)); unchecked by default
 
-    e) Display headlines for each User in the contact list(see [IM](../im/requirements.md#contact-list)); unchecked by default, meaning last messages are displayed by default
+    e) Display headlines for each User in the contact list (see [IM](../im/requirements.md#contact-list)); unchecked by default, meaning last messages are displayed by default
 
-    f) Update message date(see [IM](../im/requirements.md#chat-history)); unchecked by default
+    f) Update message date (see [IM](../im/requirements.md#chat-history)); unchecked by default
 
 3. TBD
 

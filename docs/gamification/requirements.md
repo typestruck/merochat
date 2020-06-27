@@ -16,34 +16,15 @@ Game like features of the application.
 
 ## Karma
 
-Karma is ~fake internet points~ a score of how much MelanChat trust an User. Higher numbers are better. Karma is primary gained by chatting, and also by collecting [trophies](#trophies) or [reactions](#reactions). 
+Karma is ~fake internet points~ a score of how much MelanChat trust an User. Higher numbers are better. Karma is primary gained by chatting, and also by collecting [trophies](#trophies) or [reactions](#reactions).
 
 A new User starts off with the Karma earned by new User [trophies](#trophies).
 
 **CONSTANT** _in this document is equal to 10_
 
-* Karma algorithm ([#7](https://github.com/easafe/melanchat/issues/7))
+* Karma algorithm ([wheel](https://github.com/easafe/wheel))
 
-    To compute Karma from chats, the following algorithm is used:
-
-        characters = each individual letter in a text message or each 0.5 seconds in an audio message or each minute in a video message
-        sender = user who started the chat
-        recipient = other user on the chat
-        for each turn(i.e. all messages from sender, replies from recipient until sender messages again): 
-            characters1 = sum of all characters in the turn from sender
-            characters2 = sum of all characters in the turn from recipient
-            interest = (min characters1 characters2 / max characters1 characters2)
-            days = number of days since the first message ever in the chat was vizualized
-            chat age = max 0 ((100 - days) / 100)
-            seconds = number of seconds between message being visualized and answered
-            time reply = max 0 ((100 - seconds - characters / 190 / 60) / 100)
-            bonus = 0.5 for sender, 0 for recipient
-            constant = CONSTANT  
-            gross = constant + 
-                    constant * interest +
-                    constant * chat age +
-                    constant * time reply
-            total karma = (gross + gross * bonus) / (constant / 2)
+    See wheel project
 
 * Karma rank
 
@@ -63,27 +44,27 @@ A new User starts off with the Karma earned by new User [trophies](#trophies).
 
         * CONSTANT Karma * 2
 
-    3. Update user typing(see [Settings](../user/requirements.md#update-settings) and [Chat Input](../im/requirements.md#chat-input))
+    3. Update user typing (see [Settings](../user/requirements.md#update-settings) and [Chat Input](../im/requirements.md#chat-input))
 
         * CONSTANT Karma * 2
 
-    4. Update message time(see [Settings](../user/requirements.md#update-settings) and [Chat History](../im/requirements.md#chat-history))
+    4. Update message time (see [Settings](../user/requirements.md#update-settings) and [Chat History](../im/requirements.md#chat-history))
 
-        * CONSTANT Karma * 3 
+        * CONSTANT Karma * 3
 
-    5. Participate in chat gimmicks    
+    5. Participate in chat gimmicks
 
-        * CONSTANT Karma * 4       
+        * CONSTANT Karma * 4
 
-    6. Update last message for contact(see [Settings](../user/requirements.md#update-settings) and [Contact List](../im/requirements.md#contact-list))
+    6. Update last message for contact (see [Settings](../user/requirements.md#update-settings) and [Contact List](../im/requirements.md#contact-list))
 
         * CONSTANT Karma * 5
 
-    7. Update messages status(see [Settings](../user/requirements.md#update-settings) and [Chat History]7(../im/requirements.md#chat-history))
+    7. Update messages status (see [Settings](../user/requirements.md#update-settings) and [Chat History]7(../im/requirements.md#chat-history))
 
         * CONSTANT Karma * 6
 
-    8. Update online status(see [Settings](../user/requirements.md#update-settings) and [Chat History](../im/requirements.md#chat-history))
+    8. Update online status (see [Settings](../user/requirements.md#update-settings) and [Chat History](../im/requirements.md#chat-history))
 
         * CONSTANT Karma * 7
 
@@ -92,10 +73,10 @@ A new User starts off with the Karma earned by new User [trophies](#trophies).
         * CONSTANT Karma * 10
 
     10. Go back in suggestions
-    
+
     11. Send audio messages
 
-        * CONSTANT Karma * 20    
+        * CONSTANT Karma * 20
 
     12. Send pictures
 
@@ -128,32 +109,32 @@ Reactions are emoji like avaliations left for Users or individual messages.
 * Angry
 
     * Only available for individual messages reactions
-    
-    * Angry face emoji    
+
+    * Angry face emoji
 
 * Surprised
 
     * Surprised face emoji
 
-    * CONSTANT / 2 Karma for User reaction or 1 Karma for individual message reaction    
+    * CONSTANT / 2 Karma for User reaction or 1 Karma for individual message reaction
 
-* Sad 
+* Sad
 
     * Only available for individual messages reactions
 
-    * Sad face emoji    
+    * Sad face emoji
 
 * Amused
 
-    * Happy face emoji    
+    * Happy face emoji
 
     * CONSTANT Karma for User reaction or 1 Karma for individual message reaction
 
-* Smirking    
+* Smirking
 
     * Only available for individual messages reactions
 
-    * Happy face emoji    
+    * Happy face emoji
 
 ## Trophies
 
@@ -183,25 +164,25 @@ Trophies are achievements excluding Karma milestones. Different from badges, tro
 
 * Anniversary
 
-    * Counted yearly(duh)
+    * Counted yearly (duh)
 
     * CONSTANT Karma per month on the site with 1 replied chat in that year
 
 * Number of messages
 
-    * Counted at 50, 100, 300, 500 and then by thousands of messages visualized(i.e. a trophy at 1000 messages, another at 2000 etc)
+    * Counted at 50, 100, 300, 500 and then by thousands of messages visualized (i.e. a trophy at 1000 messages, another at 2000 etc)
 
     * CONSTANT * (messages visualized / 1000) Karma
 
 * Number of chats started
 
-    * Counted at 10, 30, 50 and then by hundreds of chats replied(i.e. a trophy at 100 chats, another at 200 etc)
+    * Counted at 10, 30, 50 and then by hundreds of chats replied (i.e. a trophy at 100 chats, another at 200 etc)
 
     * CONSTANT * (chats replied / 100) Karma
 
 * Number of chats received
 
-    * Counted at 10, 30, 50 and then by hundreds of chats received(i.e. a trophy at 100 chats, another at 200 etc)
+    * Counted at 10, 30, 50 and then by hundreds of chats received (i.e. a trophy at 100 chats, another at 200 etc)
 
     * CONSTANT * (chats received / 100) Karma
 
@@ -215,13 +196,13 @@ Badges are Karma milestone achievements. Different from trophies, badges do not 
 
 * Rookie
 
-    * CONSTANT * 10 Karma 
+    * CONSTANT * 10 Karma
 
 * Learning
 
     * CONSTANT * 25 Karma
 
-* Professional 
+* Professional
 
     * CONSTANT * 75 Karma
 
@@ -234,10 +215,10 @@ Badges are Karma milestone achievements. Different from trophies, badges do not 
     * CONSTANT * 300 Karma
 
 * Master
-    
+
     * CONSTANT * 450 Karma
 
-* Grandmaster    
+* Grandmaster
 
     * CONSTANT * 550 Karma
 
@@ -251,15 +232,15 @@ Badges are Karma milestone achievements. Different from trophies, badges do not 
 
 * Demigod
 
-    * CONSTANT * 5000 Karma        
+    * CONSTANT * 5000 Karma
 
 * God
 
-    * CONSTANT * 25000 Karma            
+    * CONSTANT * 25000 Karma
 
-* Galaxy Brain    
+* Galaxy Brain
 
-    * CONSTANT * 100000 Karma            
+    * CONSTANT * 100000 Karma
 
 ## Chat Gimmicks
 
