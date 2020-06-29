@@ -102,7 +102,7 @@ resumeChat :: PrimaryKey -> IMModel -> Aff IMModel
 resumeChat searchID model@(IMModel { contacts }) =
         pure <<< SN.updateModel model $ _ {
                 suggesting = Nothing,
-                chatting = DA.findIndex (\(IMUser { id }) -> searchID == id) contacts
+                chatting = DA.findIndex ((searchID == _) <<< _.id  <<< DN.unwrap) contacts
         }
 
 

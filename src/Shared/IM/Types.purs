@@ -270,7 +270,7 @@ instance fromSQLRowIMUser :: FromSQLRow IMUser where
                         country,
                         languages,
                         tags,
-                        message: "",
+                 --       message: "",
                         history: []
                 }
         --this is surely not ideal

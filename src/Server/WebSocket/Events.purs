@@ -35,6 +35,7 @@ handleError = EC.log <<< show
 handleClose :: Configuration -> Ref (Map PrimaryKey WebSocketConnection) -> Request -> CloseCode -> CloseReason -> Effect Unit
 handleClose (Configuration configuration) allConnections request _ _ = pure unit
 
+--REFACTOR: untangle the im logic from the websocket logic
 handleMessage :: WebSocketConnection -> WebSocketMessage -> WebSocketEffect
 handleMessage connection (WebSocketMessage message) = do
         possiblePayload <- pure $ SJ.fromJSON message
