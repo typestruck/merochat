@@ -73,11 +73,11 @@ updateReadHistory :: WebSocketHandler -> IMModel -> {
         token :: String,
         userID :: PrimaryKey,
         webSocket :: WebSocket,
-        contacts :: Array IMUser,
+        contacts :: Array Contact,
         chatting :: Int
 } -> Aff (IMModel -> IMModel)
 updateReadHistory wsHandler model { token, webSocket, chatting, userID, contacts } = do
-        let     contactRead@(IMUser { history }) = contacts !@ chatting
+        let     contactRead@(Contact { history }) = contacts !@ chatting
                 messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
 
         if DA.null messagesRead then
@@ -88,7 +88,7 @@ updateReadHistory wsHandler model { token, webSocket, chatting, userID, contacts
                         token
                 }
                 FAE.diff {
-                        contacts: SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateUser contactRead $ _ { history = map (read userID) history }) contacts
+                        contacts: SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
                 }
         where   unreadID userID (HistoryMessage { recipient, id, status })
                         | status == Unread && recipient == userID = Just id
@@ -102,7 +102,7 @@ resumeChat :: PrimaryKey -> IMModel -> Aff IMModel
 resumeChat searchID model@(IMModel { contacts }) =
         pure <<< SN.updateModel model $ _ {
                 suggesting = Nothing,
-                chatting = DA.findIndex ((searchID == _) <<< _.id  <<< DN.unwrap) contacts
+                chatting = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
         }
 
 

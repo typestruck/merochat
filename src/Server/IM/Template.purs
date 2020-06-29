@@ -16,8 +16,8 @@ import Server.Template as ST
 import Shared.IM.View as SIV
 
 template :: {
-        contacts :: Array IMUser,
-        suggestions :: Array IMUser,
+        contacts :: Array Contact,
+        suggestions :: Array Suggestion,
         user :: IMUser
 } -> Effect String
 template {contacts, suggestions, user} = do

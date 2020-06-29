@@ -1,13 +1,14 @@
 module Server.IM.Database where
 
+import Prelude
+
 import Data.Either (Either(..))
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (class FromSQLRow, Pool, Query(..), Row1(..), Row2(..), Row3(..))
-import Prelude
 import Server.Database as SD
 import Server.Types (ServerEffect, BaseEffect)
-import Shared.IM.Types (HistoryMessage, IMUser)
-import Data.Tuple.Nested((/\))
+import Shared.IM.Types (Contact(..), HistoryMessage, IMUser)
 import Shared.Types (PrimaryKey)
 
 userPresentationFields :: String
@@ -39,8 +40,8 @@ suggest :: PrimaryKey -> ServerEffect (Array IMUser)
 suggest id =
         SD.select (Query ("select" <> userPresentationFields <> "from users u where id not in (1, $1) and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) order by random() limit 20")) $ Row1 id
 
-presentContacts :: PrimaryKey -> Int -> ServerEffect (Array IMUser)
-presentContacts id page = SD.select (Query ("select distinct date," <> userPresentationFields <>
+presentContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
+presentContacts id page = SD.select (Query ("select distinct date, sender," <> userPresentationFields <>
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
                                           order by date desc limit 10 offset $2""")) (id /\ page * 10)
 

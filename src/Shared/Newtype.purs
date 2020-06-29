@@ -12,6 +12,8 @@ updateUser user f = DN.over IMUser f user
 
 updateHistoryMessage historyMessage f = DN.over HistoryMessage f historyMessage
 
+updateContact contact f = DN.over Contact f contact
+
 updateProfileModel model f = DN.over ProfileModel f model
 
 updateProfile profileUser f = DN.over ProfileUser f profileUser

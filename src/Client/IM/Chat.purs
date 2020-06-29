@@ -75,7 +75,6 @@ sendMessage webSocketHandler content =
                         let     recipient@(IMUser { id: recipientID, history }) = contacts !@ chatting
                                 newTemporaryID = temporaryID + SP.fromInt 1
                                 updatedChatting = SN.updateUser recipient $ _ {
-                                        message = "",
                                         history = DA.snoc history $ HistoryMessage {
                                                 id: newTemporaryID,
                                                 status: Unread,
@@ -172,14 +171,14 @@ updateHistoryMessage contacts recipientID { id, user, date, content } =
         case user of
                 Right userID@(PrimaryKey _) -> do
                         index <- DA.findIndex (findUser userID) contacts
-                        IMUser {history} <- contacts !! index
+                        Contact { history } <- contacts !! index
 
                         map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
                 Left user@(IMUser{ id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } user : contacts
 
         where   findUser userID (IMUser { id }) = userID == id
 
-                updateHistory { id, userID, content, date } user@(IMUser {history}) = SN.updateUser user $ _ {
+                updateHistory { id, userID, content, date } user@(Contact {history}) = SN.updateContact user $ _ {
                         history = DA.snoc history $ HistoryMessage {
                                 status: Unread,
                                 sender: userID,
@@ -190,17 +189,17 @@ updateHistoryMessage contacts recipientID { id, user, date, content } =
                         }
                 }
 
-updateTemporaryID :: Array IMUser -> PrimaryKey -> PrimaryKey -> Maybe (Array IMUser)
+updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> Maybe (Array Contact)
 updateTemporaryID contacts previousID id = do
         index <- DA.findIndex (findUser previousID) contacts
-        IMUser { history } <- contacts !! index
+        Contact { history } <- contacts !! index
         innerIndex <- DA.findIndex (findTemporary previousID) history
 
         DA.modifyAt index (updateTemporary innerIndex id) contacts
 
         where   findTemporary previousID (HistoryMessage { id }) = id == previousID
-                findUser previousID (IMUser { history }) = DA.any (findTemporary previousID) history
+                findUser previousID (Contact { history }) = DA.any (findTemporary previousID) history
 
-                updateTemporary index newID user@(IMUser { history }) = SN.updateUser user $ _ {
+                updateTemporary index newID user@(Contact { history }) = SN.updateContact user $ _ {
                         history = SU.unsafeFromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
                 }

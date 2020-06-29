@@ -34,16 +34,20 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettin
                 profileSettings profileSettingsToggle
         ],
         HE.div (HA.class' "chat-box") [
-                profile model chattingOrSuggesting,
-                history model chattingOrSuggesting,
+                profile model profileUser,
+                history model historyContact,
                 chat model
         ]
 ]
-        where chattingOrSuggesting =
-                case Tuple chatting suggesting of
-                        Tuple Nothing (Just index) -> Just (suggestions !@ index)
-                        Tuple (Just index) _ -> Just (contacts !@ index)
-                        _ -> Nothing
+        where Tuple profileUser historyContact =
+                case Tuple suggesting chatting of
+                        Tuple Nothing (Just index) ->
+                                let contact@(Contact { user }) = contacts !@ index
+                                 in Tuple (Just user) $ Just contact
+                        Tuple (Just index) _ ->
+                                let user@(IMUser { id }) = suggestions !@ index
+                                 in Tuple (Just user) <<< Just $ Contact { user, history : [], chatStarter: id }
+                        _ -> Tuple Nothing Nothing
 
 profileSettings :: ProfileSettingsToggle -> Html IMMessage
 profileSettings toggle = HE.div (HA.class' $ "profile-settings-placeholder" <> if toggle /= Hidden then "" else " hidden") [
@@ -136,13 +140,13 @@ profile model =
 
                 toTagSpan tag = HE.span (HA.class' "tag") tag
 
-history :: IMModel -> Maybe IMUser -> Html IMMessage
+history :: IMModel -> Maybe Contact -> Html IMMessage
 history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class' "message-history") <<< HE.div (HA.class' "message-history-wrapper") $
         case chattingSuggestion of
                 Nothing -> [HE.createEmptyElement "div"]
                 Just recipient -> display recipient
 
-        where   entry ({ id: senderID, avatar: senderAvatar }) { avatar: recipientAvatar } (HistoryMessage { sender, content }) =
+        where   entry ({ id: senderID, avatar: senderAvatar }) recipientAvatar (HistoryMessage { sender, content }) =
                         let Tuple class' avatar =
                                 if senderID == sender then Tuple "sender-message" senderAvatar
                                  else Tuple "recipient-message" recipientAvatar
@@ -151,9 +155,9 @@ history (IMModel {user: (IMUser sender)}) chattingSuggestion = HE.div (HA.class'
                                 HE.div' [HA.innerHTML $ SM.toHTML content]
                         ]
 
-                display (IMUser recipient@{history, description}) =
+                display (Contact recipient@{history, user: IMUser { description, avatar }}) =
                         --having the description node always present avoids snabbdom choking on the use of innerHTML
-                        HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry sender recipient) history
+                        HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry sender avatar) history
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel {chatting, suggesting}) =
@@ -166,26 +170,26 @@ search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
 contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onWheel' (CNM <<< MoreContacts),  HA.class' "contact-list"] <<< map contactEntry $ DA.sortBy compareDates contacts
-        where   getDate history' = do
-                        HistoryMessage { date: MDateTime md } <- DA.last history'
+        where   getDate history = do
+                        HistoryMessage { date: MDateTime md } <- DA.last history
                         pure md
-                compareDates (IMUser user) (IMUser anotherUser) = compare (getDate anotherUser.history) (getDate user.history)
+                compareDates (Contact contact) (Contact anotherContact) = compare (getDate anotherContact.history) (getDate contact.history)
 
                 countUnread total (HistoryMessage { status, sender }) = total + DE.fromEnum (sender /= userID && status == Unread)
                 showUnreadCount history' = let count = DF.foldl countUnread 0 history' in if count == 0 then "" else show count
                 --should only work for text messages!
                 lastMessage = DM.maybe "" (SM.toRestrictedHTML <<< _.content <<< DN.unwrap) <<< DA.last
 
-                contactEntry (IMUser { id, name, avatar, headline, history: history' }) =
+                contactEntry (Contact { history, user: IMUser { id, name, avatar, headline }}) =
                         HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
                                 HE.img [HA.class' "avatar-contact-list", HA.src avatar],
                                 HE.div [HA.class' "contact-profile"] [
                                         HE.strong_ name,
                                         HE.br,
-                                        HE.div' [HA.class' "contact-list-last-message", HA.innerHTML $ lastMessage history']
+                                        HE.div' [HA.class' "contact-list-last-message", HA.innerHTML $ lastMessage history]
                                 ],
                                 HE.div (HA.class' "menu-button chat-options") [
-                                        HE.text $ showUnreadCount history',
+                                        HE.text $ showUnreadCount history,
                                         HE.a (HA.class' "menu-button") $
                                                 HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $
                                                         HE.path' (HA.d "M30 12 L16 24 2 12"),
