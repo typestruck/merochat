@@ -85,7 +85,7 @@ userMenu (IMModel { user: (IMUser user), userContextMenuVisible }) =  HE.div [HA
                 HE.div [HA.class' "drop-menu fade-in effect"][
                        HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowProfile)] "Profile",
                        HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowSettings)] "Settings",
-                       HE.a [HA.class' "menu-button", HA.onClick (UMM Logout)] "Logout"
+                       HE.a [HA.class' "menu-button", HA.onClick (UMM ConfirmLogout)] "Logout"
                 ]
         ]
 ]
@@ -169,7 +169,7 @@ chat (IMModel {chatting, suggesting}) =
 search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onWheel' (CNM <<< MoreContacts),  HA.class' "contact-list"] <<< map contactEntry $ DA.sortBy compareDates contacts
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onWheel' (CNM <<< FetchContacts),  HA.class' "contact-list"] <<< map contactEntry $ DA.sortBy compareDates contacts
         where   getDate history = do
                         HistoryMessage { date: MDateTime md } <- DA.last history
                         pure md

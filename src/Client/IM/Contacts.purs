@@ -7,15 +7,18 @@ import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.Network as CCN
-import Client.IM.WebSocketHandler (webSocketHandler)
+import Client.IM.Flame (NoMessages, MoreMessages)
+import Client.IM.Flame as CIF
+import Client.IM.WebSocket as CIM
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Effect.Aff (Aff)
+import Client.IM.WebSocket as CIW
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Flame.Application.Effectful (AffUpdate)
-import Flame.Application.Effectful as FAE
+import Flame (ListUpdate)
+import Flame as F
 import Shared.Newtype as SN
 import Shared.Router as SR
 import Shared.Unsafe ((!@))
@@ -25,32 +28,25 @@ import Web.Socket.WebSocket (WebSocket)
 import Web.UIEvent.WheelEvent (WheelEvent)
 import Web.UIEvent.WheelEvent as WUW
 
-update :: AffUpdate IMModel ContactMessage
-update { model, message, display } =
-        case message of
-                ResumeChat id -> do
-                        model' <- resumeChat id model
-                        display (const model')
-                        markRead webSocketHandler model'
+update :: IMModel -> ContactMessage -> MoreMessages
+update model  =
+        case _ of
+                ResumeChat id -> resumeChat id model
+                MarkAsRead -> markRead model
                 --when the window is focused updated the read status of current chat
-                UpdateReadCount -> markRead webSocketHandler model
-                MoreContacts event -> fetchContacts (SU.unsafeFromJust "contacts.update" $ WUW.fromEvent event) model
+                UpdateReadCount -> markRead model
+                FetchContacts event -> fetchContacts (SU.unsafeFromJust "contacts.update" $ WUW.fromEvent event) model
+                DisplayContacts (JSONResponse contacts) -> displayContacts contacts model
 
-fetchContacts :: WheelEvent -> IMModel -> Aff (IMModel -> IMModel)
-fetchContacts event (IMModel { contactsPage, contacts }) = do
-        if WUW.deltaY event < 1.0 then
-                FAE.noChanges
-         else do
-                --needs some kind of throttling/loading
-                let nextPage = contactsPage + 1
-                JSONResponse newContatcs <- CCN.get' $ Contacts { page: nextPage }
-                if DA.null newContatcs then
-                        FAE.noChanges
-                 else
-                        FAE.diff { contactsPage : nextPage, contacts: contacts <> newContatcs }
+resumeChat :: PrimaryKey -> IMModel -> NoMessages
+resumeChat searchID model@(IMModel { contacts }) =
+        F.noMessages <<< SN.updateModel model $ _ {
+                suggesting = Nothing,
+                chatting = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
+        }
 
-markRead :: WebSocketHandler -> IMModel -> Aff (IMModel -> IMModel)
-markRead wsHandler =
+markRead :: IMModel -> MoreMessages
+markRead =
         case _ of
                 model@(IMModel {
                         token: Just tk,
@@ -58,38 +54,30 @@ markRead wsHandler =
                         webSocket: Just (WS ws),
                         contacts,
                         chatting: Just index
-                }) -> updateReadHistory wsHandler model {
+                }) -> updateReadHistory model {
                         token: tk,
                         webSocket: ws,
                         chatting: index,
                         userID,
                         contacts
                 }
-                model -> do
-                        liftEffect $ EC.log "invalid markRead state"
-                        FAE.noChanges
+                model -> CIF.nothingNext model <<< liftEffect $ EC.log "invalid markRead state"
 
-updateReadHistory :: WebSocketHandler -> IMModel -> {
+updateReadHistory :: IMModel -> {
         token :: String,
         userID :: PrimaryKey,
         webSocket :: WebSocket,
         contacts :: Array Contact,
         chatting :: Int
-} -> Aff (IMModel -> IMModel)
-updateReadHistory wsHandler model { token, webSocket, chatting, userID, contacts } = do
+} -> MoreMessages
+updateReadHistory model { token, webSocket, chatting, userID, contacts } =
         let     contactRead@(Contact { history }) = contacts !@ chatting
                 messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
 
-        if DA.null messagesRead then
-                FAE.noChanges
-         else do
-                liftEffect <<< wsHandler.sendPayload webSocket $ ReadMessages {
-                        ids: messagesRead,
-                        token
-                }
-                FAE.diff {
-                        contacts: SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
-                }
+        in      if DA.null messagesRead then
+                        F.noMessages model
+                 else
+                        CIF.nothingNext (updateContacts contactRead) $ confirmRead messagesRead
         where   unreadID userID (HistoryMessage { recipient, id, status })
                         | status == Unread && recipient == userID = Just id
                         | otherwise = Nothing
@@ -98,11 +86,27 @@ updateReadHistory wsHandler model { token, webSocket, chatting, userID, contacts
                         | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
                         | otherwise = historyEntry
 
-resumeChat :: PrimaryKey -> IMModel -> Aff IMModel
-resumeChat searchID model@(IMModel { contacts }) =
-        pure <<< SN.updateModel model $ _ {
-                suggesting = Nothing,
-                chatting = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
-        }
+                updateContacts contactRead@(Contact { history }) = SN.updateModel model $ _ {
+                        contacts = SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
+                }
 
+                confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages {
+                        ids: messages,
+                        token
+                }
 
+fetchContacts :: WheelEvent -> IMModel -> MoreMessages
+fetchContacts event model@(IMModel { contactsPage })
+        | WUW.deltaY event < 1.0 =
+                F.noMessages model
+        | otherwise =   --needs some kind of throttling/loading
+                CIF.nextMessage (CNM <<< DisplayContacts) (CCN.get' $ Contacts { page: contactsPage + 1 }) model
+
+displayContacts newContacts model@(IMModel { contactsPage, contacts })
+        | DA.null newContacts =
+                F.noMessages model
+        | otherwise =
+                SN.updateModel model $ _ {
+                        contactsPage = contactsPage + 1,
+                        contacts = contacts <> newContacts
+                }

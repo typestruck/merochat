@@ -42,7 +42,7 @@ import Foreign (Foreign, ForeignError(..))
 import Foreign as F
 import Partial.Unsafe as PU
 import Shared.DateTime as SDT
-import Shared.Types (parsePrimaryKey, PrimaryKey(..), MDate(..), MDateTime(..))
+import Shared.Types (JSONResponse(..), MDate(..), MDateTime(..), PrimaryKey(..), parsePrimaryKey)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
@@ -123,21 +123,26 @@ data MessageStatus =
         Read
 
 data UserMenuMessage =
+        ConfirmLogout |
         ShowUserContextMenu Event |
-        Logout |
+        Logout Boolean |
         ToggleProfileSettings ProfileSettingsToggle
 
 data ContactMessage =
+        MarkAsRead |
         ResumeChat PrimaryKey |
         UpdateReadCount |
-        MoreContacts Event
+        DisplayContacts (JSONResponse (Array Contact)) |
+        FetchContacts Event
 
 data SuggestionMessage =
         PreviousSuggestion |
-        NextSuggestion
+        NextSuggestion |
+        DisplayMoreSuggestions (JSONResponse (Array Suggestion))
 
 data ChatMessage =
-        SendMessage String |
+        BeforeSendMessage String |
+        SendMessage String MDateTime |
         ReceiveMessage WebSocketPayloadClient
 
 data MainMessage =
