@@ -129,7 +129,7 @@ setToken token = CIF.diff { token: Just token }
 
 --REFACTOR: pick between CIF.diff and SN.update*
 setName :: String -> IMModel -> NoMessages
-setName name model@(IMModel { user }) = SN.updateModel model $ _ {
+setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
         user = SN.updateUser user $ _ {
                 name = name
         }
