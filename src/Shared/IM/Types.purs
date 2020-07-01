@@ -126,7 +126,9 @@ data UserMenuMessage =
         ConfirmLogout |
         ShowUserContextMenu Event |
         Logout Boolean |
-        ToggleProfileSettings ProfileSettingsToggle
+        ToggleProfileSettings ProfileSettingsToggle |
+        SetUserContentMenuVisible Boolean |
+        SetModalContents (Maybe String) String (JSONResponse String)
 
 data ContactMessage =
         MarkAsRead |
@@ -143,7 +145,7 @@ data SuggestionMessage =
 data ChatMessage =
         BeforeSendMessage String |
         SendMessage String MDateTime |
-        ReceiveMessage WebSocketPayloadClient
+        ReceiveMessage WebSocketPayloadClient Boolean
 
 data MainMessage =
         SetWebSocket WebSocket |

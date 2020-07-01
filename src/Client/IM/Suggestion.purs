@@ -12,7 +12,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Debug.Trace (spy)
 import Effect.Aff (Aff)
-import Flame (ListUpdate)
+import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
 import Shared.Types (Route(..), JSONResponse(..))
@@ -47,7 +47,7 @@ previousSuggestion model@(IMModel { suggesting }) =
                         }
 
 fetchMoreSuggestions :: IMModel -> NextMessage
-fetchMoreSuggestions = CIF.nextMessage (SM <<< DisplayMoreSuggestions) (CCN.get' Suggestions)
+fetchMoreSuggestions = (_ :> [Just <<< SM <<< DisplayMoreSuggestions <$> CCN.get' Suggestions])
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> NoMessages
 displayMoreSuggestions suggestions =

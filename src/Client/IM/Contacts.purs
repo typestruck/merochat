@@ -17,7 +17,7 @@ import Effect.Aff (Aff)
 import Client.IM.WebSocket as CIW
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Flame (ListUpdate)
+import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
 import Shared.Router as SR
@@ -77,7 +77,7 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
         in      if DA.null messagesRead then
                         F.noMessages model
                  else
-                        CIF.nothingNext (updateContacts contactRead) $ confirmRead messagesRead
+                        CIF.nothingNext (updateContacts contactRead) (confirmRead messagesRead)
         where   unreadID userID (HistoryMessage { recipient, id, status })
                         | status == Unread && recipient == userID = Just id
                         | otherwise = Nothing
@@ -100,13 +100,14 @@ fetchContacts event model@(IMModel { contactsPage })
         | WUW.deltaY event < 1.0 =
                 F.noMessages model
         | otherwise =   --needs some kind of throttling/loading
-                CIF.nextMessage (CNM <<< DisplayContacts) (CCN.get' $ Contacts { page: contactsPage + 1 }) model
+                model :> [Just <<< CNM <<< DisplayContacts <$> CCN.get' (Contacts { page: contactsPage + 1 })]
 
+displayContacts :: Array Contact -> IMModel -> NoMessages
 displayContacts newContacts model@(IMModel { contactsPage, contacts })
         | DA.null newContacts =
                 F.noMessages model
         | otherwise =
-                SN.updateModel model $ _ {
+                F.noMessages <<< SN.updateModel model $ _ {
                         contactsPage = contactsPage + 1,
                         contacts = contacts <> newContacts
                 }

@@ -10,6 +10,7 @@ import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
+import Client.IM.Flame (NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CISR
 import Client.IM.Suggestion as CIS
@@ -84,12 +85,15 @@ setUpWebSocket channel token = do
                         ER.write Nothing timerID) maybeID
 
                 let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.unsafeFromJust "client.im.main" $ WSEM.fromEvent event
+                --REFACTOR: clean this up
                 case possiblePayload of
                         Left e -> EC.log ("bogus payload " <> show (map FO.renderForeignError e))
                         Right payload -> do
                                 case SJ.fromJSON payload of
                                         Left e -> EC.log $ "bogus payload " <> show e
-                                        Right r -> SC.send channel <<< DA.singleton <<< CM $ ReceiveMessage r
+                                        Right r -> do
+                                                isFocused <- CCD.documentHasFocus
+                                                SC.send channel <<< DA.singleton <<< CM $ ReceiveMessage r isFocused
 
         closeListener <- WET.eventListener $ \_ -> do
                 maybeID <- ER.read timerID

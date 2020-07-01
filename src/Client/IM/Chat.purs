@@ -25,12 +25,12 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
-import Data.Tuple (Tuple(..), (:>))
+import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Now as EN
-import Flame (ListUpdate)
+import Flame (ListUpdate, (:>))
 import Flame as F
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
@@ -41,13 +41,10 @@ update :: IMModel -> ChatMessage -> MoreMessages
 update model =
         case _ of
                 BeforeSendMessage content -> startChat model content
-                SendMessage content -> do
-                        sendMessage model
-                ReceiveMessage payload -> do
-                        isFocused <- liftEffect CCD.documentHasFocus
-                        receiveMessage isFocused model payload
+                SendMessage content date -> sendMessage content date model
+                ReceiveMessage payload isFocused -> receiveMessage isFocused model payload
 
-startChat :: IMModel -> String -> NextMessage IMMessage
+startChat :: IMModel -> String -> NextMessage
 startChat model@(IMModel {
         chatting,
         user: IMUser { id },

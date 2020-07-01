@@ -12,11 +12,13 @@ import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
 import Client.IM.Flame (MoreMessages, NoMessages)
 import Client.IM.Flame as CIF
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Flame.Application.Effectful (AffUpdate, Environment)
-import Flame.Application.Effectful as FAE
+import Flame ((:>))
+import Flame as F
+import Shared.Newtype as SN
 import Shared.Router as SR
 import Shared.Types (JSONResponse(..), Route(..))
 import Shared.Unsafe as SU
@@ -29,46 +31,46 @@ update model =
         case _ of
                 ConfirmLogout -> confirmLogout model
                 Logout confirmed -> logout model confirmed
-                ShowUserContextMenu event -> FAE.diff' <$> showUserContextMenu model event
-                ToggleProfileSettings toggle -> toggleProfileSettings environment toggle
+                ShowUserContextMenu event -> showUserContextMenu model event
+                ToggleProfileSettings toggle -> toggleProfileSettings model toggle
+                SetModalContents file root (JSONResponse html) -> CIF.nothingNext model $ loadScript file
+                SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
 
-logout :: Boolean -> IMModel -> MoreMessages
-logout confirmed model = CIF.nothingNext model <<< liftEffect $ when confirmed CCLO.logout
+logout :: IMModel -> Boolean -> MoreMessages
+logout model confirmed = CIF.nothingNext model <<< liftEffect $ when confirmed CCLO.logout
 
 confirmLogout :: IMModel -> NoMessages
-confirmLogout = CIF.nextMessage (UMM <<< Logout) (CCD.confirm "Really log out?")
+confirmLogout = (_ :> [Just <<< UMM <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
 
 --PERFORMANCE: load bundles only once
-toggleProfileSettings :: Environment IMModel UserMenuMessage -> ProfileSettingsToggle -> Aff (IMModel -> IMModel)
-toggleProfileSettings { display } =
+toggleProfileSettings :: IMModel -> ProfileSettingsToggle -> MoreMessages
+toggleProfileSettings model =
         case _ of
                 ShowProfile -> showTab Profile ShowProfile "profile.bundle.js" "#profile-edition-root"
                 ShowSettings -> showTab Settings ShowSettings "settings.bundle.js" "#settings-edition-root"
-                Hidden -> do
-                        setRootHTML "Loading..." "#profile-edition-root"
-                        FAE.diff { profileSettingsToggle: Hidden }
+                Hidden -> CIF.justNext (SN.updateModel model $ _ { profileSettingsToggle = Hidden }) <<< UMM <<< SetModalContents Nothing "#profile-edition-root" $ JSONResponse "Loading..."
+        where   showTab route toggle file root =
+                        (SN.updateModel model $ _ { profileSettingsToggle = toggle }) :> [
+                                Just <<< UMM <<< SetModalContents (Just file) root <$> CCN.get' route
+                        ]
 
-        where   showTab route toggle file root = do
-                        display $ FAE.diff' { profileSettingsToggle: toggle }
-                        JSONResponse html <- CCN.get'  route
-                        setRootHTML html root
-                        --scripts don't load when inserted via innerHTML
-                        liftEffect $ CCD.loadScript file
-                        FAE.noChanges
+setRootHTML root html  = liftEffect do
+        element <- CCD.querySelector root
+        CCD.setInnerHTML element html
 
-                setRootHTML html root = liftEffect do
-                        element <- CCD.querySelector root
-                        CCD.setInnerHTML element html
+--scripts don't load when inserted via innerHTML
+loadScript =
+        case _ of
+                Just file -> liftEffect $ CCD.loadScript file
+                Nothing -> pure unit
 
-showUserContextMenu :: IMModel -> Event -> Aff { userContextMenuVisible :: Boolean }
-showUserContextMenu model@(IMModel { userContextMenuVisible }) event = do
-        shouldBeVisible <-
-                if userContextMenuVisible then
-                        pure false
-                 else
-                        liftEffect <<< map ( _ == "user-context-menu") $ WDE.id <<< SU.unsafeFromJust "usermenu.update" $ do
-                                target <- WEE.target event
-                                WDE.fromEventTarget target
-        pure {
-                userContextMenuVisible: shouldBeVisible
-        }
+showUserContextMenu :: IMModel -> Event -> MoreMessages
+showUserContextMenu model@(IMModel { userContextMenuVisible }) event
+        | userContextMenuVisible =
+                F.noMessages <<< SN.updateModel model $ _ { userContextMenuVisible = false }
+        | otherwise =
+                model :> [
+                        liftEffect <<< map (Just <<< UMM <<< SetUserContentMenuVisible <<< (_ == "user-context-menu")) $ WDE.id <<< SU.unsafeFromJust "usermenu.update" $ do
+                        target <- WEE.target event
+                        WDE.fromEventTarget target
+                ]
