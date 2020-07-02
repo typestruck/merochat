@@ -3,23 +3,17 @@ module Client.IM.UserMenu where
 import Prelude
 import Shared.IM.Types
 
-import Client.Common.Cookies as CCC
 import Client.Common.DOM as CCD
-import Client.Common.Location as CCL
 import Client.Common.Logout as CCLO
 import Client.Common.Network as CCN
-import Client.Common.Storage (tokenKey)
-import Client.Common.Storage as CCS
 import Client.IM.Flame (MoreMessages, NoMessages)
 import Client.IM.Flame as CIF
 import Data.Maybe (Maybe(..))
-import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
-import Shared.Router as SR
 import Shared.Types (JSONResponse(..), Route(..))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
@@ -33,7 +27,7 @@ update model =
                 Logout confirmed -> logout model confirmed
                 ShowUserContextMenu event -> showUserContextMenu model event
                 ToggleProfileSettings toggle -> toggleProfileSettings model toggle
-                SetModalContents file root (JSONResponse html) -> CIF.nothingNext model $ loadScript file
+                SetModalContents file root (JSONResponse html) -> CIF.nothingNext model $ loadModal root html file
                 SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
 
 logout :: IMModel -> Boolean -> MoreMessages
@@ -53,15 +47,13 @@ toggleProfileSettings model =
                         (SN.updateModel model $ _ { profileSettingsToggle = toggle }) :> [
                                 Just <<< UMM <<< SetModalContents (Just file) root <$> CCN.get' route
                         ]
-
-setRootHTML root html  = liftEffect do
+loadModal :: String -> String -> Maybe String -> Aff Unit
+loadModal root html file = liftEffect do
         element <- CCD.querySelector root
         CCD.setInnerHTML element html
-
---scripts don't load when inserted via innerHTML
-loadScript =
-        case _ of
-                Just file -> liftEffect $ CCD.loadScript file
+        --scripts don't load when inserted via innerHTML
+        case file of
+                Just name -> CCD.loadScript name
                 Nothing -> pure unit
 
 showUserContextMenu :: IMModel -> Event -> MoreMessages
