@@ -113,6 +113,17 @@ newtype HistoryMessage = HistoryMessage {
         status :: MessageStatus
 }
 
+newtype Stats = Stats {
+    characters :: Number,
+    interest :: Number
+}
+
+newtype Turn = Turn {
+    senderStats :: Stats,
+    recipientStats:: Stats,
+    replayDelay :: Number --seconds
+}
+
 data ProfileSettingsToggle =
         Hidden |
         ShowProfile |
@@ -164,7 +175,8 @@ data WebSocketPayloadServer =
         Connect String |
         ServerMessage (BasicMessage (
                 token :: String,
-                user :: PrimaryKey
+                user :: PrimaryKey,
+                turn :: Maybe Turn
         )) |
         ReadMessages {
                 token :: String,
@@ -182,6 +194,8 @@ data WebSocketPayloadClient =
                 id :: PrimaryKey
         }
 
+derive instance genericStats :: Generic Stats _
+derive instance genericTurn :: Generic Turn _
 derive instance genericContact :: Generic Contact _
 derive instance genericIMUser :: Generic IMUser _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
@@ -206,6 +220,10 @@ derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 instance eqWSW :: Eq WS where
         eq (WS w) (WS s) = eqWS w s
 
+instance showStats :: Show Stats where
+        show = DGRS.genericShow
+instance showTurn :: Show Turn where
+        show = DGRS.genericShow
 instance showContact :: Show Contact where
         show = DGRS.genericShow
 instance showHistoryMessage :: Show HistoryMessage where
@@ -237,6 +255,10 @@ instance encodeJsonIMUser :: EncodeJson IMUser where
         encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
         encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonTurn :: EncodeJson Turn where
+        encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonStats :: EncodeJson Stats where
+        encodeJson = DAEGR.genericEncodeJson
 
 instance decodeJsonContact :: DecodeJson Contact where
         decodeJson = DADGR.genericDecodeJson
@@ -249,6 +271,10 @@ instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
 instance decodeJsonWS :: DecodeJson WS where
         decodeJson = Right <<< toWS
 instance decodeJsonIMUser :: DecodeJson IMUser where
+        decodeJson = DADGR.genericDecodeJson
+instance decodeJsonTurn :: DecodeJson Turn where
+        decodeJson = DADGR.genericDecodeJson
+instance decodeJsonStats :: DecodeJson Stats where
         decodeJson = DADGR.genericDecodeJson
 
 --as it is right now, every query must have a FromSQLRow instance

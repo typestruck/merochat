@@ -1,0 +1,1 @@
+var open = require('amqplib').connect('amqp://localhost');

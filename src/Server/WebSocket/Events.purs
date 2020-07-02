@@ -38,53 +38,54 @@ handleClose (Configuration configuration) allConnections request _ _ = pure unit
 --REFACTOR: untangle the im logic from the websocket logic
 handleMessage :: WebSocketConnection -> WebSocketMessage -> WebSocketEffect
 handleMessage connection (WebSocketMessage message) = do
-        possiblePayload <- pure $ SJ.fromJSON message
-        case possiblePayload of
-                Right payload -> do
-                        { allConnections } <- RR.ask
-                        case payload of
-                                Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
-                                ReadMessages { token, ids } -> withUser token $ \userID -> SID.markRead userID ids
-                                ServerMessage {id, user: recipient, token, content} -> withUser token $ \userID -> do
-                                        date <- R.liftEffect $ map MDateTime EN.nowDateTime
-                                        Tuple messageID senderUser <- SID.insertMessage userID recipient content
-                                        sendMessage connection <<< SJ.toJSON $ Received {
-                                                previousID: id,
-                                                id: messageID
-                                        }
+      possiblePayload <- pure $ SJ.fromJSON message
+      case possiblePayload of
+            Right payload -> do
+                  { allConnections } <- RR.ask
+                  case payload of
+                        Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
+                        ReadMessages { token, ids } -> withUser token $ \userID -> SID.markRead userID ids
+                        ServerMessage {id, user: recipient, token, content, turn} -> withUser token $ \userID -> do
+                              date <- R.liftEffect $ map MDateTime EN.nowDateTime
+                              Tuple messageID senderUser <- SID.insertMessage userID recipient content
+                              sendMessage connection <<< SJ.toJSON $ Received {
+                                    previousID: id,
+                                    id: messageID
+                              }
 
-                                        possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
+                              possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
 
-                                        case possibleRecipientConnection of
-                                                Nothing -> pure unit
-                                                Just recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
-                                                        id : messageID,
-                                                        user: senderUser,
-                                                        content,
-                                                        date
-                                                }
-                Left error -> do
-                        log $ "received faulty payload " <> error
+                              case possibleRecipientConnection of
+                                    Nothing -> pure unit
+                                    Just recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
+                                          id : messageID,
+                                          user: senderUser,
+                                          content,
+                                          date
+                                    }
+                              -- handle rabbitmq
+            Left error -> do
+                  log $ "received faulty payload " <> error
 
-        where   log = R.liftEffect <<< EC.log
-                sendMessage connection = R.liftEffect <<< SW.sendMessage connection <<< WebSocketMessage
+      where   log = R.liftEffect <<< EC.log
+              sendMessage connection = R.liftEffect <<< SW.sendMessage connection <<< WebSocketMessage
 
-                withUser token f = do
-                        {configuration: Configuration configuration} <- RR.ask
-                        user <- R.liftEffect $ ST.userIDFromToken configuration.tokenSecretPOST token
-                        case user of
-                                Nothing -> do
-                                        R.liftEffect $ SW.close connection
-                                        log "closed due to auth error"
-                                Just userId -> f $ PrimaryKey userId
+              withUser token f = do
+                  {configuration: Configuration configuration} <- RR.ask
+                  user <- R.liftEffect $ ST.userIDFromToken configuration.tokenSecretPOST token
+                  case user of
+                              Nothing -> do
+                                    R.liftEffect $ SW.close connection
+                                    log "closed due to auth error"
+                              Just userId -> f $ PrimaryKey userId
 
 handleConnection :: WebSocketReader -> WebSocketConnection -> Request -> Effect Unit
 handleConnection reading connection request = do
-        SW.onError connection handleError
-        SW.onClose connection $ handleClose reading.configuration reading.allConnections request
-        SW.onMessage connection
-                (EA.launchAff_ <<<
-                 R.runBaseAff' <<<
-                 RE.catch (const (pure unit)) <<<
-                 RR.runReader reading <<<
-                 handleMessage connection)
+      SW.onError connection handleError
+      SW.onClose connection $ handleClose reading.configuration reading.allConnections request
+      SW.onMessage connection
+            (EA.launchAff_ <<<
+             R.runBaseAff' <<<
+             RE.catch (const (pure unit)) <<<
+             RR.runReader reading <<<
+             handleMessage connection)

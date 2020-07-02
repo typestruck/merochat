@@ -1,10 +1,10 @@
 -- | This module takes care of websocket plus chat editor events.
-module Client.IM.Chat(
-        update,
-        startChat,
-        sendMessage,
-        receiveMessage
-) where
+module Client.IM.Chat
+  ( update
+  , startChat
+  , sendMessage
+  , receiveMessage
+  ) where
 
 import Client.Common.Types
 import Debug.Trace
@@ -22,10 +22,12 @@ import Data.Array as DA
 import Data.DateTime as DT
 import Data.Either (Either(..))
 import Data.Either as DET
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
+import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds(..))
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
@@ -127,21 +129,25 @@ sendMessage content date = case _ of
     DM.fromMaybe false
       $ do
           last <- DA.last history
-          beforeLast <- history !! DA.length history - 2
+          beforeLast <- history !! (DA.length history - 2)
           let
             sender = _.sender $ DN.unwrap last
 
             recipient = _.recipient $ DN.unwrap beforeLast
           pure $ sender == userID && recipient == userID
 
-  sameSender entry anotherEntry = _.sender $ DN.unwrap entry == _.sender $ DN.unwrap anotherEntry
+  sameSender entry anotherEntry = _.sender (DN.unwrap entry) == _.sender (DN.unwrap anotherEntry)
+
+  countCharacters total (HistoryMessage { content }) = total + DSC.length content
+
+  getDate = DN.unwrap <<< _.date <<< DN.unwrap
 
   makeTurn (Contact { chatStarter, history }) sender
     | chatStarter == sender && isNewTurn history sender =
       let
         senderEntry = SU.unsafeFromJust "makeTurn" $ DA.last history
 
-        recipientEntry = SU.unsafeFromJust "makeTurn" $ history !! DA.length history - 2
+        recipientEntry = SU.unsafeFromJust "makeTurn" $ history !! (DA.length history - 2)
 
         Tuple senderMessages recipientMessages =
           SU.unsafeFromJust "makeTurn"
@@ -150,27 +156,27 @@ sendMessage content date = case _ of
                   groups = DA.groupBy sameSender history
 
                   size = DA.length groups
-                senderMessages <- groups !! size - 3
-                recipientMessages <- groups !! size - 2
+                senderMessages <- groups !! (size - 3)
+                recipientMessages <- groups !! (size - 2)
                 pure $ Tuple senderMessages recipientMessages
 
-        senderCharacters = countCharacters senderMessages
+        senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
 
-        recipientsCharacters = countCharacters recipientMessages
+        recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
       in
         Just
           $ Turn
-              { senderStats =
+              { senderStats:
                 Stats
-                  { characters = senderCharacters
-                  , interest = senderCharacters / recipientsCharacters
+                  { characters: senderCharacters
+                  , interest : senderCharacters / recipientCharacters
                   }
-              , recipientStats =
+              , recipientStats:
                 Stats
-                  { characters = recipientCharacters
-                  , interest = recipientsCharacters / senderCharacters
+                  { characters : recipientCharacters
+                  , interest : recipientCharacters / senderCharacters
                   }
-              , replayDelay = DN.unwrap (DT.diff (_.date $ DN.unwrap senderEntry) <<< _.date $ DN.unwrap recipientEntry :: Seconds)
+              , replayDelay : DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds)
               }
     | otherwise = Nothing
 
@@ -218,8 +224,8 @@ receiveMessage isFocused model@( IMModel
     index <- suggesting
     suggestions !! index
 
-  isChatting sender { contacts, chatting } = --REFACTOR: helpers for Contact to pull out fields
-    let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in recipientID == DET.either (_.id <<< DN.unwrap) identity sender
+  --REFACTOR: helpers for Contact to pull out fields
+  isChatting sender { contacts, chatting } = let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in recipientID == DET.either (_.id <<< DN.unwrap) identity sender
 
   processIncomingMessage m = case SU.unsafeFromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
     New contacts' ->
