@@ -46,7 +46,7 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettin
                                  in Tuple (Just user) $ Just contact
                         Tuple (Just index) _ ->
                                 let user@(IMUser { id }) = suggestions !@ index
-                                 in Tuple (Just user) <<< Just $ Contact { user, history : [], chatStarter: id }
+                                 in Tuple (Just user) <<< Just $ Contact { user, history : [], chatStarter: id, chatAge : 0.0 }
                         _ -> Tuple Nothing Nothing
 
 profileSettings :: ProfileSettingsToggle -> Html IMMessage

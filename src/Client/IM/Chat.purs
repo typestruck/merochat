@@ -11,7 +11,6 @@ import Debug.Trace
 import Prelude
 import Shared.IM.Types
 import Shared.Types
-
 import Client.Common.DOM as CCD
 import Client.IM.Contacts as CICN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
@@ -66,7 +65,8 @@ startChat model@( IMModel
           $ _
               { chatting = Just 0
               , suggesting = Nothing
-              , contacts = DA.cons (Contact { user: chatted, chatStarter: id, history: [] }) contacts
+              --REFACTOR: defaultContact
+              , contacts = DA.cons (Contact { user: chatted, chatStarter: id, history: [], chatAge: 0.0 }) contacts
               , suggestions = SU.unsafeFromJust "startChat" $ DA.deleteAt index suggestions
               }
     _ -> model
@@ -142,7 +142,7 @@ sendMessage content date = case _ of
 
   getDate = DN.unwrap <<< _.date <<< DN.unwrap
 
-  makeTurn (Contact { chatStarter, history }) sender
+  makeTurn (Contact { chatStarter, chatAge, history }) sender
     | chatStarter == sender && isNewTurn history sender =
       let
         senderEntry = SU.unsafeFromJust "makeTurn" $ DA.last history
@@ -167,16 +167,18 @@ sendMessage content date = case _ of
         Just
           $ Turn
               { senderStats:
-                Stats
-                  { characters: senderCharacters
-                  , interest : senderCharacters / recipientCharacters
-                  }
+                  Stats
+                    { characters: senderCharacters
+                    , interest: senderCharacters / recipientCharacters
+                    }
               , recipientStats:
-                Stats
-                  { characters : recipientCharacters
-                  , interest : recipientCharacters / senderCharacters
-                  }
-              , replayDelay : DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds)
+                  Stats
+                    { characters: recipientCharacters
+                    , interest: recipientCharacters / senderCharacters
+                    }
+              , replayDelay:
+                  DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds)
+              , chatAge
               }
     | otherwise = Nothing
 
@@ -270,7 +272,7 @@ updateHistoryMessage contacts recipientID { id, user, date, content } = case use
     index <- DA.findIndex (findUser userID) contacts
     Contact { history } <- contacts !! index
     map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
-  Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (Contact { user, history: [], chatStarter: userID }) : contacts
+  Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (Contact { user, history: [], chatStarter: userID, chatAge: 0.0 }) : contacts
   where
   findUser userID (Contact { user: IMUser { id } }) = userID == id
 

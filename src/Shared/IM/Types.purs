@@ -31,11 +31,13 @@ import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
+import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Time.Duration (Days(..))
+import Data.Time.Duration (Days(..), Seconds(..))
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
 import Database.PostgreSQL as DP
+import Effect.Now as DN
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign (Foreign, ForeignError(..))
@@ -81,6 +83,7 @@ newtype IMUser = IMUser (BasicUser (
 
 newtype Contact = Contact {
         user :: IMUser,
+        chatAge :: Number, --Days,
         chatStarter :: PrimaryKey,
         history :: Array HistoryMessage
 }
@@ -121,7 +124,8 @@ newtype Stats = Stats {
 newtype Turn = Turn {
     senderStats :: Stats,
     recipientStats:: Stats,
-    replayDelay :: Number --seconds
+    chatAge :: Number, -- Days,
+    replayDelay :: Number --Seconds
 }
 
 data ProfileSettingsToggle =
@@ -287,6 +291,7 @@ instance fromSQLRowContact :: FromSQLRow Contact where
         fromSQLRow [
                 _,
                 foreignSender,
+                foreignFirstMessageDate,
                 foreignID,
                 foreignAvatar,
                 foreignGender,
@@ -299,6 +304,7 @@ instance fromSQLRowContact :: FromSQLRow Contact where
                 foreignTags
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 sender <- parsePrimaryKey foreignSender
+                firstMessageDate <- SU.unsafeFromJust "fromsql contact" <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
                 user <- parseIMUser [
                         foreignID,
                         foreignAvatar,
@@ -313,6 +319,7 @@ instance fromSQLRowContact :: FromSQLRow Contact where
                 ]
                 pure $ Contact {
                         history: [],
+                        chatAge: DN.unwrap (DD.diff (EU.unsafePerformEffect DN.nowDate) firstMessageDate :: Days),
                         chatStarter: sender,
                         user
                 }

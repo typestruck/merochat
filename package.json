@@ -37,6 +37,7 @@
     "marked": "^1.1.0",
     "pg": "^8.0.0",
     "pg-native": "^3.0.0",
+    "purty": "^6.2.0",
     "simplemde": "^1.11.2",
     "snabbdom": "^0.7.3",
     "snabbdom-to-html": "^5.1.1",

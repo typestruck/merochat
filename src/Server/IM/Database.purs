@@ -41,7 +41,7 @@ suggest id =
         SD.select (Query ("select" <> userPresentationFields <> "from users u where id not in (1, $1) and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) order by random() limit 20")) $ Row1 id
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
-presentContacts id page = SD.select (Query ("select distinct date, sender," <> userPresentationFields <>
+presentContacts id page = SD.select (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
                                           order by date desc limit 10 offset $2""")) (id /\ page * 10)
 
