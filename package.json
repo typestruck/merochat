@@ -25,6 +25,7 @@
     "watch-sli": "npm run watch-s & npm run watch-li",
     "watch": "npm run watch-s & npm run watch-c",
     "test": "pulp test",
+    "webpack": "webpack-dev-server --progress --inline --hot",
     "deploy-server": "pulp build --src-path src/Server --include src/Shared --main Server.Main --optimise --to server.js",
     "start": "node server.js",
     "deploy": "npm install && bower install --force && npm run deploy-server"
@@ -43,6 +44,7 @@
     "snabbdom-to-html": "^5.1.1",
     "uuid": "^7.0.3",
     "uuid-validate": "0.0.3",
+    "webpack": "^4.43.0",
     "ws": "^7.1.2",
     "xhr2": "^0.2.0",
     "zeromq": "^6.0.0-beta.6"
@@ -50,7 +52,10 @@
   "devDependencies": {
     "@coreui/icons": "^1.0.1",
     "canvas": "^2.6.1",
-    "jsdom": "^15.2.1"
+    "jsdom": "^15.2.1",
+    "purs-loader": "^3.7.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1"

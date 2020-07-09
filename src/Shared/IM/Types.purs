@@ -73,7 +73,7 @@ newtype WS = WS WebSocket
 
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
-        avatar :: String,
+        avatar :: Maybe String,
         gender :: Maybe String,
         country :: Maybe String,
         languages :: Array String,
@@ -341,7 +341,7 @@ parseIMUser [
         id <- parsePrimaryKey foreignID
         maybeForeignerAvatar <- F.readNull foreignAvatar
         --REFACTOR: all image paths
-        avatar <- DM.maybe (pure "/client/media/avatar.png") (map ("/client/media/upload/" <> _ ) <<< F.readString) maybeForeignerAvatar
+        avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
         name <- F.readString foreignName
         maybeForeignerBirthday <- F.readNull foreignBirthday
         birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
