@@ -10,10 +10,13 @@ import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
+import Client.IM.Flame (NoMessages)
+import Client.IM.Flame as CIF
 import Client.IM.Scroll as CISR
 import Client.IM.Suggestion as CIS
 import Client.IM.UserMenu as CIU
 import Control.Monad.Except as CME
+import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -25,9 +28,8 @@ import Effect.Ref as ER
 import Effect.Timer as ET
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
-import Flame (QuerySelector(..))
-import Flame.Application.Effectful (AffUpdate)
-import Flame.Application.Effectful as FAE
+import Flame (ListUpdate, QuerySelector(..))
+import Flame as F
 import Flame.External as FE
 import Foreign as FO
 import Shared.IM.View as SIV
@@ -50,27 +52,27 @@ foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
 main :: Effect Unit
 main = do
         token <- CCS.getItem tokenKey
-        channel <- FAE.resumeMount (QuerySelector ".im") {
+        channel <- F.resumeMount (QuerySelector ".im") {
                 view: SIV.view,
-                init: Just <<< MM $ SetToken token,
+                init: [pure <<< Just <<< MM $ SetToken token],
                 update
         }
 
         setUpWebSocket channel token
 
         editor <- loadEditor
-        EU.runEffectFn2 keyHandled_ editor $ EU.mkEffectFn1 (SC.send channel <<< Just <<< CM <<< SendMessage)
+        EU.runEffectFn2 keyHandled_ editor $ EU.mkEffectFn1 (SC.send channel <<< DA.singleton <<< CM <<< BeforeSendMessage)
 
         CISR.scrollLastMessage
         --receive profile edition changes
-        CCD.addCustomEventListener nameChanged (SC.send channel <<< Just <<< MM <<< SetName)
+        CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< MM <<< SetName)
         --display settings/profile page
-        FE.send [FE.onClick' (Just (UMM <<< ShowUserContextMenu)), FE.onFocus (Just (CNM UpdateReadCount)) ] channel
+        FE.send [FE.onClick' [UMM <<< ShowUserContextMenu], FE.onFocus [CNM UpdateReadCount]] channel
 
-setUpWebSocket :: Channel (Maybe IMMessage) -> String -> Effect Unit
+setUpWebSocket :: Channel (Array IMMessage) -> String -> Effect Unit
 setUpWebSocket channel token = do
         webSocket <- WSW.create ("ws://localhost:" <> show port) []
-        SC.send channel <<< Just <<< MM $ SetWebSocket webSocket
+        SC.send channel <<< DA.singleton <<< MM $ SetWebSocket webSocket
 
         let webSocketTarget = WSW.toEventTarget webSocket
         --a ref is used to track reconnections
@@ -83,12 +85,15 @@ setUpWebSocket channel token = do
                         ER.write Nothing timerID) maybeID
 
                 let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.unsafeFromJust "client.im.main" $ WSEM.fromEvent event
+                --REFACTOR: clean this up
                 case possiblePayload of
                         Left e -> EC.log ("bogus payload " <> show (map FO.renderForeignError e))
                         Right payload -> do
                                 case SJ.fromJSON payload of
                                         Left e -> EC.log $ "bogus payload " <> show e
-                                        Right r -> SC.send channel <<< Just <<< CM $ ReceiveMessage r
+                                        Right r -> do
+                                                isFocused <- CCD.documentHasFocus
+                                                SC.send channel <<< DA.singleton <<< CM $ ReceiveMessage r isFocused
 
         closeListener <- WET.eventListener $ \_ -> do
                 maybeID <- ER.read timerID
@@ -102,28 +107,29 @@ setUpWebSocket channel token = do
         WET.addEventListener onOpen openListener false webSocketTarget
         WET.addEventListener onClose closeListener false webSocketTarget
 
-update :: AffUpdate IMModel IMMessage
-update environment@{ message, model, display } =
+update :: ListUpdate IMModel IMMessage
+update model message  =
         case message of
-                CM msg -> CIC.update $ environment { message = msg }
-                SM msg -> CIS.update $ environment { message = msg }
-                CNM msg -> CICN.update $ environment { message = msg }
-                UMM msg -> CIU.update $ environment { message = msg }
+                CM msg -> CIC.update model msg
+                SM msg -> CIS.update model msg
+                CNM msg -> CICN.update model msg
+                UMM msg -> CIU.update model msg
                 MM msg -> set msg
 
         where   set = case _ of
-                        SetWebSocket webSocket -> setWebSocket webSocket
-                        SetToken token -> setToken token
-                        SetName name -> setName name
+                        SetWebSocket webSocket -> setWebSocket webSocket model
+                        SetToken token -> setToken token model
+                        SetName name -> setName name model
 
-setWebSocket :: WebSocket -> Aff (IMModel -> IMModel)
-setWebSocket ws = FAE.diff { webSocket: Just $ WS ws }
+setWebSocket :: WebSocket -> IMModel -> NoMessages
+setWebSocket ws = CIF.diff { webSocket: Just $ WS ws }
 
-setToken :: String -> Aff (IMModel -> IMModel)
-setToken token = FAE.diff { token: Just token }
+setToken :: String -> IMModel -> NoMessages
+setToken token = CIF.diff { token: Just token }
 
-setName :: String -> Aff (IMModel -> IMModel)
-setName name = pure $ \model@(IMModel { user }) -> SN.updateModel model $ _ {
+--REFACTOR: pick between CIF.diff and SN.update*
+setName :: String -> IMModel -> NoMessages
+setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
         user = SN.updateUser user $ _ {
                 name = name
         }

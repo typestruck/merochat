@@ -485,13 +485,24 @@ create table recoveries
     constraint recoverer foreign key (recoverer) references users(id) on delete cascade
 );
 
-create table karmas (
+create table karmas
+(
     id serial primary key,
     target integer not null,
     current integer not null,
 
     constraint targetKarma foreign key (target) references users(id) on delete cascade
 );
+
+create table karmaHistories
+(
+    id serial primary key,
+    target integer not null,
+    amount integer not null,
+    date timestamp not null default clock_timestamp(),
+
+    constraint targetKarmaHistory foreign key (target) references users(id) on delete cascade
+)
 
 create table histories
 (

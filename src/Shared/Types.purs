@@ -18,9 +18,11 @@ import Data.Hashable (class Hashable)
 import Data.Hashable as DH
 import Data.Int53 (Int53)
 import Data.Int53 as DI
+import Data.JSDate (JSDate)
 import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
@@ -30,7 +32,6 @@ import Foreign (Foreign, F)
 import Foreign as F
 import Shared.Unsafe as SU
 import Unsafe.Coerce as UC
-import Data.JSDate (JSDate)
 
 foreign import data Editor :: Type
 
@@ -110,6 +111,8 @@ data ResponseError =
         } |
         BadRequest { reason :: String } |
         InternalError { reason :: String }
+
+derive instance newtypeMDateTime :: Newtype MDateTime _
 
 derive instance genericOk :: Generic Ok _
 derive instance genericGenerate :: Generic Generate _

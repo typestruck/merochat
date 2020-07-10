@@ -4,48 +4,54 @@ import Prelude
 import Shared.IM.Types
 
 import Client.Common.Network as CCN
+import Client.IM.Flame (NoMessages, MoreMessages, NextMessage)
+import Client.IM.Flame as CIF
+import Client.IM.Flame as CIF
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Debug.Trace (spy)
-import Shared.Types(Route(..), JSONResponse(..))
 import Effect.Aff (Aff)
-import Flame.Application.Effectful (AffUpdate)
-import Flame.Application.Effectful as FAE
+import Flame ((:>))
+import Flame as F
 import Shared.Newtype as SN
+import Shared.Types (Route(..), JSONResponse(..))
 
-update :: AffUpdate IMModel SuggestionMessage
-update { model, message } =
-        case message of
+update :: IMModel -> SuggestionMessage -> MoreMessages
+update model =
+        case _ of
                 PreviousSuggestion -> previousSuggestion model
                 NextSuggestion -> nextSuggestion model
+                DisplayMoreSuggestions (JSONResponse suggestions) -> displayMoreSuggestions suggestions model
 
-nextSuggestion :: IMModel -> Aff (IMModel -> IMModel)
-nextSuggestion model@(IMModel { suggestions, suggesting }) = do
+nextSuggestion :: IMModel -> MoreMessages
+nextSuggestion model@(IMModel { suggestions, suggesting }) =
         let next = DM.maybe 0 (_ + 1) suggesting
-        if next == DA.length suggestions then
-                fetchMoreSuggestions
-         else
-                FAE.diff {
-                        suggesting: Just next,
-                        chatting : Nothing
-                }
+        in      if next == DA.length suggestions then
+                        fetchMoreSuggestions model
+                 else
+                        F.noMessages <<< SN.updateModel model $ _ {
+                                suggesting = Just next,
+                                chatting = Nothing
+                        }
 
-previousSuggestion :: IMModel -> Aff (IMModel -> IMModel)
-previousSuggestion model@(IMModel { suggesting }) = do
+previousSuggestion :: IMModel -> MoreMessages
+previousSuggestion model@(IMModel { suggesting }) =
         let previous = DM.maybe 0 (_ - 1) suggesting
-        if previous < 0 then
-                fetchMoreSuggestions
-         else
-                FAE.diff {
-                        suggesting: Just previous,
-                        chatting : Nothing
-                }
+        in      if previous < 0 then
+                        fetchMoreSuggestions model
+                 else
+                        F.noMessages <<< SN.updateModel model $ _  {
+                                suggesting = Just previous,
+                                chatting = Nothing
+                        }
 
-fetchMoreSuggestions :: Aff (IMModel -> IMModel)
-fetchMoreSuggestions = do
-        JSONResponse suggestions <- CCN.get' Suggestions
-        FAE.diff {
+fetchMoreSuggestions :: IMModel -> NextMessage
+fetchMoreSuggestions = (_ :> [Just <<< SM <<< DisplayMoreSuggestions <$> CCN.get' Suggestions])
+
+displayMoreSuggestions :: Array Suggestion -> IMModel -> NoMessages
+displayMoreSuggestions suggestions =
+        CIF.diff {
                 suggesting: Just 0,
                 chatting : Nothing,
                 suggestions
