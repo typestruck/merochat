@@ -144,12 +144,12 @@ profile (IMModel { suggesting, chatting }) =
                 toTagSpan tag = HE.span (HA.class' "tag") tag
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history (IMModel { user: (IMUser sender), chatting }) chattingSuggestion = HE.div (HA.class' "message-history") <<< HE.div (HA.class' "message-history-wrapper") $
+history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div (HA.class' "message-history") <<< HE.div (HA.class' "message-history-wrapper") $
         case chattingSuggestion of
                 Nothing -> [HE.createEmptyElement "div"]
                 Just recipient -> display recipient
 
-        where   entry ({ id: senderID, avatar: senderAvatar }) recipientAvatar (HistoryMessage { sender, content }) =
+        where   entry recipientAvatar (HistoryMessage { sender, content }) =
                         let Tuple class' avatar =
                                 if senderID == sender then Tuple "sender-message" $ CIA.avatarForSender senderAvatar
                                  else Tuple "recipient-message" $ CIA.avatarForRecipient chatting recipientAvatar
@@ -160,7 +160,7 @@ history (IMModel { user: (IMUser sender), chatting }) chattingSuggestion = HE.di
 
                 display (Contact recipient@{history, user: IMUser { description, avatar }}) =
                         --having the description node always present avoids snabbdom choking on the use of innerHTML
-                        HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry sender avatar) history
+                        HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry avatar) history
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel {chatting, suggesting}) =

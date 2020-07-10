@@ -40,6 +40,8 @@ import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 
+--purty is fucking terrible
+
 update :: IMModel -> ChatMessage -> MoreMessages
 update model = case _ of
   BeforeSendMessage content -> startChat model content
@@ -191,33 +193,32 @@ receiveMessage isFocused model@( IMModel
   , suggestions
   }
 ) = case _ of
-  Received { previousID, id } ->
-    F.noMessages <<< SN.updateModel model
-      $ _
-          { contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
-          }
-  ClientMessage m@{ user } -> case processIncomingMessage m of
-    updatedModel@( IMModel
-        { token: Just tk
-      , webSocket: Just (WS ws)
-      , chatting: Just index
-      , contacts
-      }
-    ) ->  --mark it as read if we received a message from the current chat
-      let
-        fields =
-          { token: tk
-          , webSocket: ws
-          , chatting: index
-          , userID: recipientID
-          , contacts
-          }
-      in
-        if isFocused && isChatting user fields then
-          CICN.updateReadHistory updatedModel fields
-        else
-          F.noMessages updatedModel
-    updatedModel -> F.noMessages updatedModel
+      Received { previousID, id } ->
+            F.noMessages <<< SN.updateModel model
+              $ _
+                  { contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
+                  }
+      ClientMessage m@{ user } -> case processIncomingMessage m of
+            updatedModel@(IMModel
+                { token: Just tk
+              , webSocket: Just (WS ws)
+              , chatting: Just index
+              , contacts
+              }) ->  --mark it as read if we received a message from the current chat
+              let
+                fields =
+                  { token: tk
+                  , webSocket: ws
+                  , chatting: index
+                  , userID: recipientID
+                  , contacts
+                  }
+              in
+                if isFocused && isChatting user fields then
+                      CICN.updateReadHistory updatedModel fields
+                else
+                      F.noMessages updatedModel
+            updatedModel -> F.noMessages updatedModel
   where
   getUserID :: forall n a. Newtype n { id :: PrimaryKey | a } => Maybe n -> Maybe PrimaryKey
   getUserID = map (_.id <<< DN.unwrap)
@@ -230,33 +231,33 @@ receiveMessage isFocused model@( IMModel
   isChatting sender { contacts, chatting } = let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in recipientID == DET.either (_.id <<< DN.unwrap) identity sender
 
   processIncomingMessage m = case SU.unsafeFromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
-    New contacts' ->
-      --new messages bubble the contact to the top
-      let
-        added = DA.head contacts'
-      in
-        --edge case of recieving a message from a suggestion
-        if getUserID (map (_.user <<< DN.unwrap) added) == getUserID suggestingContact then
-          SN.updateModel model
-            $ _
-                { contacts = contacts'
-                , suggesting = Nothing
-                , suggestions =
-                  SU.unsafeFromJust "delete receiveMesage" do
-                    index <- suggesting
-                    DA.deleteAt index suggestions
-                , chatting = Just 0
-                }
-        else
-          SN.updateModel model
-            $ _
-                { contacts = contacts'
-                }
-    Existing contacts' ->
-      SN.updateModel model
-        $ _
-            { contacts = contacts'
-            }
+        New contacts' ->
+              --new messages bubble the contact to the top
+              let
+                added = DA.head contacts'
+              in
+                --edge case of recieving a message from a suggestion
+                if getUserID (map (_.user <<< DN.unwrap) added) == getUserID suggestingContact then
+                      SN.updateModel model
+                        $ _
+                            { contacts = contacts'
+                            , suggesting = Nothing
+                            , suggestions =
+                              SU.unsafeFromJust "delete receiveMesage" do
+                                index <- suggesting
+                                DA.deleteAt index suggestions
+                            , chatting = Just 0
+                            }
+                else
+                      SN.updateModel model
+                        $ _
+                            { contacts = contacts'
+                            }
+        Existing contacts' ->
+              SN.updateModel model
+                $ _
+                    { contacts = contacts'
+                    }
 
 updateHistoryMessage ::
   Array Contact ->
@@ -268,11 +269,11 @@ updateHistoryMessage ::
   } ->
   Maybe (ReceivedUser (Array Contact))
 updateHistoryMessage contacts recipientID { id, user, date, content } = case user of
-  Right userID@(PrimaryKey _) -> do
-    index <- DA.findIndex (findUser userID) contacts
-    Contact { history } <- contacts !! index
-    map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
-  Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (Contact { user, history: [], chatStarter: userID, chatAge: 0.0 }) : contacts
+      Right userID@(PrimaryKey _) -> do
+            index <- DA.findIndex (findUser userID) contacts
+            Contact { history } <- contacts !! index
+            map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
+      Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (Contact { user, history: [], chatStarter: userID, chatAge: 0.0 }) : contacts
   where
   findUser userID (Contact { user: IMUser { id } }) = userID == id
 
