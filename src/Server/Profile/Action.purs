@@ -23,6 +23,7 @@ import Node.FS.Sync as NFS
 import Run as R
 import Server.Bender as SB
 import Server.Profile.Database as SPD
+import Shared.Avatar(defaultAvatarName)
 import Server.Response as SRR
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
@@ -47,10 +48,10 @@ saveProfile :: PrimaryKey -> ProfileUser -> ServerEffect Ok
 saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, languages, tags }) = do
         when (isNull name || isNull headline || isNull description) $ SRR.throwBadRequest "Missing required info fields"
 
-        updatedAvatar <- base64From $ DS.split (Pattern ",") avatar
+        updatedAvatar <- base64From $ map (DS.split (Pattern ",")) avatar
         SPD.saveProfile {
                 user: SN.updateProfile profileUser $ _ { id = id },
-                avatar: if updatedAvatar == "avatar.png" then Nothing else Just updatedAvatar,
+                avatar: updatedAvatar,
                 languages,
                 tags
         }
@@ -60,7 +61,7 @@ saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, l
 
                 base64From =
                         case _ of
-                                [mediaType, base64] -> do
+                                Just [mediaType, base64] -> do
                                         if FD.any (_ == mediaType) $ DH.keys allowedMediaTypes then do
                                                 buffer <- R.liftEffect $ NB.fromString base64 Base64
                                                 bufferSize <- R.liftEffect $ NB.size buffer
@@ -71,7 +72,8 @@ saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, l
                                                         let fileName = uuid <> SU.unsafeFromJust "base64From" (DH.lookup mediaType allowedMediaTypes)
                                                         R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
 
-                                                        pure fileName
+                                                        pure $ Just fileName
                                          else
                                                 SRR.throwBadRequest invalidImageMessage
-                                _ -> pure <<< SU.unsafeFromJust "base64from" <<< DA.last $ DS.split (Pattern "/") avatar
+                                Just [savedFile] -> pure <<< DA.last $ DS.split (Pattern "/") savedFile
+                                _ -> pure Nothing

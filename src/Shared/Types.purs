@@ -16,6 +16,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
 import Data.Hashable (class Hashable)
 import Data.Hashable as DH
+import Data.Int as DIN
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.JSDate (JSDate)
@@ -176,10 +177,18 @@ instance fromSQLValuePrimaryKey :: FromSQLValue PrimaryKey where
 instance fromSQLValueGender :: FromSQLValue Gender where
         fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.unsafeFromJust "fromSQLValueGender" <<< DSR.read) <<< F.readString
 
+--these functions are needed cos javascript is crap and numbers from postgresql are parsed as strings
+
 parsePrimaryKey :: Foreign -> F PrimaryKey
 parsePrimaryKey data_
         | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
-        | otherwise = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString) $ F.readString data_
+        | otherwise = PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString <$> F.readString data_
+
+parseInt :: Foreign -> F Int
+parseInt data_
+        | F.typeOf data_ == "number" = F.readInt data_
+        | otherwise = SU.unsafeFromJust "parseInt" <<< DIN.fromString <$> F.readString data_
+
 
 instance encodeJsonEditor :: EncodeJson Editor where
         encodeJson editor = fromEditor editor

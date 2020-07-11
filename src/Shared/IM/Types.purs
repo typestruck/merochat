@@ -44,7 +44,7 @@ import Foreign (Foreign, ForeignError(..))
 import Foreign as F
 import Partial.Unsafe as PU
 import Shared.DateTime as SDT
-import Shared.Types (JSONResponse(..), MDate(..), MDateTime(..), PrimaryKey(..), parsePrimaryKey)
+import Shared.Types (JSONResponse(..), MDate(..), MDateTime(..), PrimaryKey(..), parsePrimaryKey, parseInt)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
@@ -78,7 +78,8 @@ newtype IMUser = IMUser (BasicUser (
         country :: Maybe String,
         languages :: Array String,
         tags :: Array String,
-        age :: Maybe Int
+        age :: Maybe Int,
+        karma :: Int
 ))
 
 newtype Contact = Contact {
@@ -301,7 +302,8 @@ instance fromSQLRowContact :: FromSQLRow Contact where
                 foreignDescription,
                 foreignCountry,
                 foreignLanguages,
-                foreignTags
+                foreignTags,
+                foreignKarma
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 sender <- parsePrimaryKey foreignSender
                 firstMessageDate <- SU.unsafeFromJust "fromsql contact" <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
@@ -315,7 +317,8 @@ instance fromSQLRowContact :: FromSQLRow Contact where
                         foreignDescription,
                         foreignCountry,
                         foreignLanguages,
-                        foreignTags
+                        foreignTags,
+                        foreignKarma
                 ]
                 pure $ Contact {
                         history: [],
@@ -336,7 +339,8 @@ parseIMUser [
         foreignDescription,
         foreignCountry,
         foreignLanguages,
-        foreignTags
+        foreignTags,
+        foreignKarma
 ] = do
         id <- parsePrimaryKey foreignID
         maybeForeignerAvatar <- F.readNull foreignAvatar
@@ -350,6 +354,7 @@ parseIMUser [
         headline <- F.readString foreignHeadline
         description <- F.readString foreignDescription
         maybeCountry <- F.readNull foreignCountry
+        karma <- parseInt foreignKarma
         country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
         maybeLanguages <- F.readNull foreignLanguages
         languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
@@ -363,6 +368,7 @@ parseIMUser [
                 gender,
                 headline,
                 description,
+                karma,
                 country,
                 languages,
                 tags
