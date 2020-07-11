@@ -22,7 +22,8 @@ headline,
 description,
 country,
 (select array_agg(l.id) from languages l join languagesUsers lu on l.id = lu.language and lu.speaker = u.id ) languages,
-(select string_agg(name, '\n' order by name) from tags l join tagsUsers tu on l.id = tu.tag and tu.creator = u.id ) tags """
+(select string_agg(name, '\n' order by name) from tags l join tagsUsers tu on l.id = tu.tag and tu.creator = u.id ) tags,
+(select sum(amount) from karmaHistories where target = u.id) karma """
 
 presentProfile :: PrimaryKey -> ServerEffect ProfileUser
 presentProfile id = SD.single' (Query $ "select" <> profilePresentationFields <> "from users u where id = $1") $ Row1 id

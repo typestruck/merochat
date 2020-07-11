@@ -52,12 +52,13 @@ newtype ProfileModel = ProfileModel {
 }
 
 newtype ProfileUser = ProfileUser (BasicUser (
-        avatar :: String,
+        avatar ::  Maybe String,
         gender :: Maybe Gender,
         country :: Maybe PrimaryKey,
         languages :: Array PrimaryKey,
         tags :: Array String,
-        birthday :: Maybe MDate
+        birthday :: Maybe MDate,
+        karma :: Int
 ))
 
 --REFACTOR: write a generic SetField message
@@ -109,12 +110,13 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 foreignDescription,
                 foreignCountry,
                 foreignLanguages,
-                foreignTags
+                foreignTags,--REFACTOR: avoid code duplication here and on im types
+                foreignKarma
         ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
                 id <- parsePrimaryKey foreignID
                 maybeForeignerAvatar <- F.readNull foreignAvatar
                 --REFACTOR: all image paths
-                avatar <- DM.maybe (pure "/client/media/avatar.png") (map ("/client/media/upload/" <> _ ) <<< F.readString) maybeForeignerAvatar
+                avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString)  maybeForeignerAvatar
                 name <- F.readString foreignUnread
                 maybeForeignerBirthday <- F.readNull foreignBirthday
                 birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
@@ -127,6 +129,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                 maybeLanguages :: Maybe Foreign <- F.readNull foreignLanguages
                 foreignIDLanguages <- DM.maybe (pure []) F.readArray maybeLanguages
                 languages <- DT.traverse parsePrimaryKey  foreignIDLanguages
+                karma <- parseInt foreignKarma
                 maybeTags <- F.readNull foreignTags
                 tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
                 pure $ ProfileUser {
@@ -138,6 +141,7 @@ instance fromSQLRowProfileUser :: FromSQLRow ProfileUser where
                         headline,
                         description,
                         country,
+                        karma,
                         languages,
                         tags
                 }

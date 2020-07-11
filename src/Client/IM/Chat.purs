@@ -44,9 +44,9 @@ import Shared.Unsafe as SU
 
 update :: IMModel -> ChatMessage -> MoreMessages
 update model = case _ of
-  BeforeSendMessage content -> startChat model content
-  SendMessage content date -> sendMessage content date model
-  ReceiveMessage payload isFocused -> receiveMessage isFocused model payload
+      BeforeSendMessage content -> startChat model content
+      SendMessage content date -> sendMessage content date model
+      ReceiveMessage payload isFocused -> receiveMessage isFocused model payload
 
 startChat :: IMModel -> String -> NextMessage
 startChat model@( IMModel
@@ -59,23 +59,23 @@ startChat model@( IMModel
 ) content = snocContact :> [ nextSendMessage ]
   where
   snocContact = case Tuple chatting suggesting of
-    Tuple Nothing (Just index) ->
-      let
-        chatted = suggestions !@ index
-      in
-        SN.updateModel model
-          $ _
-              { chatting = Just 0
-              , suggesting = Nothing
-              --REFACTOR: defaultContact
-              , contacts = DA.cons (Contact { user: chatted, chatStarter: id, history: [], chatAge: 0.0 }) contacts
-              , suggestions = SU.unsafeFromJust "startChat" $ DA.deleteAt index suggestions
-              }
-    _ -> model
+        Tuple Nothing (Just index) ->
+              let
+                chatted = suggestions !@ index
+              in
+                SN.updateModel model
+                  $ _
+                      { chatting = Just 0
+                      , suggesting = Nothing
+                      --REFACTOR: defaultContact
+                      , contacts = DA.cons (Contact { user: chatted, chatStarter: id, history: [], chatAge: 0.0 }) contacts
+                      , suggestions = SU.unsafeFromJust "startChat" $ DA.deleteAt index suggestions
+                      }
+        _ -> model
 
   nextSendMessage = do
-    date <- liftEffect $ map MDateTime EN.nowDateTime
-    CIF.next <<< CM $ SendMessage content date
+        date <- liftEffect $ map MDateTime EN.nowDateTime
+        CIF.next <<< CM $ SendMessage content date
 
 sendMessage :: String -> MDateTime -> IMModel -> NoMessages
 sendMessage content date = case _ of
@@ -294,17 +294,17 @@ updateHistoryMessage contacts recipientID { id, user, date, content } = case use
 
 updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> Maybe (Array Contact)
 updateTemporaryID contacts previousID id = do
-  index <- DA.findIndex (findUser previousID) contacts
-  Contact { history } <- contacts !! index
-  innerIndex <- DA.findIndex (findTemporary previousID) history
-  DA.modifyAt index (updateTemporary innerIndex id) contacts
-  where
-  findTemporary previousID (HistoryMessage { id }) = id == previousID
+      index <- DA.findIndex (findUser previousID) contacts
+      Contact { history } <- contacts !! index
+      innerIndex <- DA.findIndex (findTemporary previousID) history
+      DA.modifyAt index (updateTemporary innerIndex id) contacts
+      where
+      findTemporary previousID (HistoryMessage { id }) = id == previousID
 
-  findUser previousID (Contact { history }) = DA.any (findTemporary previousID) history
+      findUser previousID (Contact { history }) = DA.any (findTemporary previousID) history
 
-  updateTemporary index newID user@(Contact { history }) =
-    SN.updateContact user
-      $ _
-          { history = SU.unsafeFromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
-          }
+      updateTemporary index newID user@(Contact { history }) =
+            SN.updateContact user
+              $ _
+                  { history = SU.unsafeFromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
+                  }

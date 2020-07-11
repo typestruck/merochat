@@ -4,6 +4,7 @@ import Prelude
 import Shared.Profile.Types
 import Shared.Types
 
+import Client.Common.DOM (nameChanged)
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
 import Client.Common.Notification as CCNO
@@ -41,7 +42,6 @@ import Web.DOM (Element)
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
-import Client.Common.DOM (nameChanged)
 import Web.HTML.HTMLElement as WHH
 
 foreign import setEditorContent_ :: EffectFn2 Editor String Unit
@@ -54,7 +54,7 @@ update { model: model@(ProfileModel { editors }), message } =
         case message of
                 SelectAvatar -> selectAvatar
 
-                SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") base64
+                SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") $ Just base64
                 SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
                 SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
                 SetYear year -> setYear $ DI.fromString year

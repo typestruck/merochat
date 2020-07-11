@@ -788,3 +788,7 @@ svg.toolbar-action {
 select {
     color: white;
 }
+
+.karma-stats {
+    margin:10px 0;
+}
