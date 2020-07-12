@@ -13,7 +13,7 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Types (MDateTime(..), PrimaryKey(..))
 import Shared.Unsafe ((!@))
-import Test.Client.Model (contact, imUser)
+import Test.Client.Model (contact, imUser, anotherIMUserID)
 import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -29,8 +29,9 @@ tests = do
                         TUA.equal Nothing suggesting
 
                 TU.test "resumeChat sets chatting" $ do
-                        let m@(IMModel { chatting }) = DT.fst <<< CICN.resumeChat (SP.fromInt 32) <<< SN.updateModel model $ _ {
-                                chatting = Nothing
+                        let m@(IMModel { chatting }) = DT.fst <<< CICN.resumeChat anotherIMUserID <<< SN.updateModel model $ _ {
+                                chatting = Nothing,
+                                contacts = [SN.updateContact contact $ _ { user = imUser } , contact]
                         }
                         TUA.equal (Just 1) chatting
 

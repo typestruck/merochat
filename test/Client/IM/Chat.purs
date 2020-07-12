@@ -22,7 +22,7 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
-import Test.Client.Model (contact, imUser, model, suggestion, anotherIMUser)
+import Test.Client.Model (anotherIMUser, anotherIMUserID, contact, imUser, model, suggestion)
 import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -88,7 +88,7 @@ tests = do
                                 IMModel { chatting } = DT.fst $ CIC.startChat model' content
                         TUA.equal (Just 0) chatting
 
-                let     IMUser { id: senderID } = suggestion
+                let    -- IMUser { id: senderID } = suggestion
                         IMUser { id: recipientID } = imUser
                         messageID = SP.fromInt 1
                         newMessageID = SP.fromInt 101
@@ -102,7 +102,7 @@ tests = do
                                                 date,
                                                 id: messageID,
                                                 recipient: recipientID,
-                                                sender: senderID,
+                                                sender: anotherIMUserID,
                                                 content
                                         }]
                                 }]
@@ -121,13 +121,13 @@ tests = do
                                         date,
                                         id: newMessageID,
                                         content,
-                                        user: Right senderID
+                                        user: Right anotherIMUserID
                                 }
                         TUA.equal (Just $ HistoryMessage {
                                 status: Unread,
                                 id: newMessageID,
                                 content,
-                                sender: senderID,
+                                sender: anotherIMUserID,
                                 recipient: recipientID,
                                 date
                         }) $ getHistory contacts
@@ -147,7 +147,7 @@ tests = do
                                 HistoryMessage {
                                         status: Unread,
                                         id: newMessageID,
-                                        sender: senderID,
+                                        sender: anotherIMUserID,
                                         recipient: recipientID,
                                         content,
                                         date
@@ -156,29 +156,32 @@ tests = do
 
                 TU.test "receiveMessage set chatting if message comes from current suggestion" $ do
                         date <- liftEffect $ map MDateTime EN.nowDateTime
-                        let IMModel {contacts, chatting} = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
+                        let model' = SN.updateModel model $ _ {
                                 contacts = [],
                                 chatting = Nothing,
                                 suggesting = Just 0,
                                 suggestions = [anotherIMUser]
-                                }) $ ClientMessage {
+                                }
+                            IMModel { contacts, chatting } = DT.fst <<< CIC.receiveMessage true model' $ ClientMessage {
                                         id: newMessageID,
                                         user: Left anotherIMUser,
                                         content,
                                         date
                                 }
-                        TUA.equal (DA.head contacts) <<< Just $ SN.updateContact contact $ _ {
+                            suggestionToContact = Just $ SN.updateContact contact $ _ {
+                                chatStarter = anotherIMUserID,
                                 user = anotherIMUser,
                                 history = [HistoryMessage
                                 {
                                         status: Read,
                                         id: newMessageID,
-                                        sender: senderID,
+                                        sender: anotherIMUserID,
                                         recipient: recipientID,
                                         date,
                                         content
                                 }]
                         }
+                        TUA.equal suggestionToContact $ DA.head contacts
                         TUA.equal chatting $ Just 0
 
                 TU.test "receiveMessage mark messages as read if coming from current chat" $ do
