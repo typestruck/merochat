@@ -59,6 +59,9 @@ tests = do
                                 sender: userID
                         }] user.history
 
+                TU.test "sendMessage calculates turn" $ do
+                        TUA.equal 1 2
+
                 let IMModel { suggestions : modelSuggestions } = model
 
                 TU.test "startChat adds new contact from suggestion" $ do
@@ -88,8 +91,7 @@ tests = do
                                 IMModel { chatting } = DT.fst $ CIC.startChat model' content
                         TUA.equal (Just 0) chatting
 
-                let    -- IMUser { id: senderID } = suggestion
-                        IMUser { id: recipientID } = imUser
+                let     IMUser { id: recipientID } = imUser
                         messageID = SP.fromInt 1
                         newMessageID = SP.fromInt 101
 
@@ -198,7 +200,7 @@ tests = do
                                 }
                         TUA.equal [Tuple newMessageID Read] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
 
-                TU.test "receiveMessage does mark messages as read if window is not focused" $ do
+                TU.test "receiveMessage marks messages as read if window is not focused" $ do
                         date <- liftEffect $ map MDateTime EN.nowDateTime
                         let IMModel { contacts } = DT.fst <<< CIC.receiveMessage false (SN.updateModel model $ _ {
                                 contacts = [contact],

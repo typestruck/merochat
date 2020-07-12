@@ -30,84 +30,83 @@ import Web.UIEvent.WheelEvent as WUW
 
 update :: IMModel -> ContactMessage -> MoreMessages
 update model  =
-        case _ of
-                ResumeChat id -> resumeChat id model
-                MarkAsRead -> markRead model
-                --when the window is focused updated the read status of current chat
-                UpdateReadCount -> markRead model
-                FetchContacts event -> fetchContacts (SU.unsafeFromJust "contacts.update" $ WUW.fromEvent event) model
-                DisplayContacts (JSONResponse contacts) -> displayContacts contacts model
+      case _ of
+            ResumeChat id -> resumeChat id model
+            MarkAsRead -> markRead model
+            --when the window is focused updated the read status of current chat
+            UpdateReadCount -> markRead model
+            FetchContacts event -> fetchContacts (SU.unsafeFromJust "contacts.update" $ WUW.fromEvent event) model
+            DisplayContacts (JSONResponse contacts) -> displayContacts contacts model
 
 resumeChat :: PrimaryKey -> IMModel -> NoMessages
 resumeChat searchID model@(IMModel { contacts }) =
-        F.noMessages <<< SN.updateModel model $ _ {
-                suggesting = Nothing,
-                chatting = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
-        }
+      F.noMessages <<< SN.updateModel model $ _ {
+            suggesting = Nothing,
+            chatting = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
+      }
 
 markRead :: IMModel -> MoreMessages
 markRead =
-        case _ of
-                model@(IMModel {
-                        token: Just tk,
-                        user: IMUser { id: userID },
-                        webSocket: Just (WS ws),
-                        contacts,
-                        chatting: Just index
-                }) -> updateReadHistory model {
-                        token: tk,
-                        webSocket: ws,
-                        chatting: index,
-                        userID,
-                        contacts
-                }
-                model -> CIF.nothingNext model <<< liftEffect $ EC.log "invalid markRead state"
+      case _ of
+            model@(IMModel {
+                  token: Just tk,
+                  user: IMUser { id: userID },
+                  webSocket: Just (WS ws),
+                  contacts,
+                  chatting: Just index
+            }) -> updateReadHistory model {
+                  token: tk,
+                  webSocket: ws,
+                  chatting: index,
+                  userID,
+                  contacts
+            }
+            model -> CIF.nothingNext model <<< liftEffect $ EC.log "invalid markRead state"
 
 updateReadHistory :: IMModel -> {
-        token :: String,
-        userID :: PrimaryKey,
-        webSocket :: WebSocket,
-        contacts :: Array Contact,
-        chatting :: Int
+      token :: String,
+      userID :: PrimaryKey,
+      webSocket :: WebSocket,
+      contacts :: Array Contact,
+      chatting :: Int
 } -> MoreMessages
 updateReadHistory model { token, webSocket, chatting, userID, contacts } =
-        let     contactRead@(Contact { history }) = contacts !@ chatting
-                messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
+      let contactRead@(Contact { history }) = contacts !@ chatting
+          messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
+      in  if DA.null messagesRead then
+                F.noMessages model
+           else
+                CIF.nothingNext (updateContacts contactRead) (confirmRead messagesRead)
+  where unreadID userID (HistoryMessage { recipient, id, status })
+              | status == Unread && recipient == userID = Just id
+              | otherwise = Nothing
 
-        in      if DA.null messagesRead then
-                        F.noMessages model
-                 else
-                        CIF.nothingNext (updateContacts contactRead) (confirmRead messagesRead)
-        where   unreadID userID (HistoryMessage { recipient, id, status })
-                        | status == Unread && recipient == userID = Just id
-                        | otherwise = Nothing
+        read userID historyEntry@(HistoryMessage { recipient, id, status })
+              | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
+              | otherwise = historyEntry
 
-                read userID historyEntry@(HistoryMessage { recipient, id, status })
-                        | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
-                        | otherwise = historyEntry
+        updateContacts contactRead@(Contact { history }) = SN.updateModel model $ _ {
+              contacts = SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
+        }
 
-                updateContacts contactRead@(Contact { history }) = SN.updateModel model $ _ {
-                        contacts = SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
-                }
-
-                confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages {
-                        ids: messages,
-                        token
-                }
+        confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages {
+              ids: messages,
+              token
+        }
 
 fetchContacts :: WheelEvent -> IMModel -> MoreMessages
 fetchContacts event model@(IMModel { contactsPage })
-        | WUW.deltaY event < 1.0 =
-                F.noMessages model
-        | otherwise =   --needs some kind of throttling/loading
-                model :> [Just <<< CNM <<< DisplayContacts <$> CCN.get' (Contacts { page: contactsPage + 1 })]
+      | WUW.deltaY event < 1.0 =
+            F.noMessages model
+      | otherwise =   --needs some kind of throttling/loading
+            model :> [Just <<< CNM <<< DisplayContacts <$> CCN.get' (Contacts { page: contactsPage + 1 })]
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
 displayContacts newContacts model@(IMModel { contactsPage, contacts })
-        | DA.null newContacts =
-                F.noMessages model
-        | otherwise =
-                F.noMessages <<< SN.updateModel model $ _ {
-                        contactsPage = contactsPage + 1,
-                        contacts = contacts <> newContacts
-                }
+      | DA.null newContacts =
+            F.noMessages model
+      | otherwise =
+            F.noMessages <<< SN.updateModel model $ _ {
+                  contactsPage = contactsPage + 1,
+                  contacts = contacts <> newContacts
+            }

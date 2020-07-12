@@ -44,6 +44,9 @@ tests = do
                         }
                         TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 1)
 
+                TU.test "displayContacts shows next page" do
+                        TUA.equal 1 2
+
 model :: IMModel
 model = SN.updateModel TCM.model $ _ {
         contacts = [contact, anotherContact]
