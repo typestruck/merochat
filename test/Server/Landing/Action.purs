@@ -92,7 +92,7 @@ tests = do
                                         captchaResponse: Nothing
                                 }
                                 RegisterLoginUser {id} <- SU.unsafeFromJust "test" <$> (SDU.userBy $ Email email)
-                                count <- SD.scalar' (Query "select cast(count(1) as integer) from karmas where target = $1 and current = 5") $ Row1 id
+                                count <- SD.scalar' (Query "select cast(count(1) as integer) from karmaHistories where target = $1 and amount = 5") $ Row1 id
                                 R.liftAff $ TUA.equal 1 count
 
 

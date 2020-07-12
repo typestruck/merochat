@@ -19,40 +19,41 @@ import Shared.Types (Route(..), JSONResponse(..))
 
 update :: IMModel -> SuggestionMessage -> MoreMessages
 update model =
-        case _ of
-                PreviousSuggestion -> previousSuggestion model
-                NextSuggestion -> nextSuggestion model
-                DisplayMoreSuggestions (JSONResponse suggestions) -> displayMoreSuggestions suggestions model
+      case _ of
+            PreviousSuggestion -> previousSuggestion model
+            NextSuggestion -> nextSuggestion model
+            DisplayMoreSuggestions (JSONResponse suggestions) -> displayMoreSuggestions suggestions model
 
 nextSuggestion :: IMModel -> MoreMessages
 nextSuggestion model@(IMModel { suggestions, suggesting }) =
-        let next = DM.maybe 0 (_ + 1) suggesting
-        in      if next == DA.length suggestions then
-                        fetchMoreSuggestions model
-                 else
-                        F.noMessages <<< SN.updateModel model $ _ {
-                                suggesting = Just next,
-                                chatting = Nothing
-                        }
+      let next = DM.maybe 0 (_ + 1) suggesting
+      in      if next == DA.length suggestions then
+                  fetchMoreSuggestions model
+             else
+                  F.noMessages <<< SN.updateModel model $ _ {
+                        suggesting = Just next,
+                        chatting = Nothing
+                  }
 
 previousSuggestion :: IMModel -> MoreMessages
 previousSuggestion model@(IMModel { suggesting }) =
-        let previous = DM.maybe 0 (_ - 1) suggesting
-        in      if previous < 0 then
-                        fetchMoreSuggestions model
-                 else
-                        F.noMessages <<< SN.updateModel model $ _  {
-                                suggesting = Just previous,
-                                chatting = Nothing
-                        }
+      let previous = DM.maybe 0 (_ - 1) suggesting
+      in
+            if previous < 0 then
+                  fetchMoreSuggestions model
+             else
+                  F.noMessages <<< SN.updateModel model $ _  {
+                        suggesting = Just previous,
+                        chatting = Nothing
+                  }
 
 fetchMoreSuggestions :: IMModel -> NextMessage
 fetchMoreSuggestions = (_ :> [Just <<< SM <<< DisplayMoreSuggestions <$> CCN.get' Suggestions])
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> NoMessages
 displayMoreSuggestions suggestions =
-        CIF.diff {
-                suggesting: Just 0,
-                chatting : Nothing,
-                suggestions
-        }
+      CIF.diff {
+            suggesting: Just 0,
+            chatting : Nothing,
+            suggestions
+      }
