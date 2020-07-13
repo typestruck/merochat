@@ -26,6 +26,6 @@ import Test.Unit.Main as TUM
 
 tests :: TestSuite
 tests = do
-        TU.suite "im actions" $ do
+        TU.suite "im actions" do
                 TU.test "contactList" $
                         TUA.equal 1 2

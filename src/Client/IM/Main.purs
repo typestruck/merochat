@@ -97,7 +97,7 @@ setUpWebSocket channel token = do
 
         closeListener <- WET.eventListener $ \_ -> do
                 maybeID <- ER.read timerID
-                when (DM.isNothing maybeID) $ do
+                when (DM.isNothing maybeID) do
                         CCN.alert "Connection to the server lost. Retrying..."
                         milliseconds <- ERD.randomInt 2000 7000
                         id <- ET.setTimeout milliseconds <<< void $ setUpWebSocket channel token

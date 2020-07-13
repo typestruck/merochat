@@ -56,65 +56,65 @@ foreign import eqWS :: WebSocket -> WebSocket -> Boolean
 type Suggestion = IMUser
 
 type BasicUser fields = {
-        id :: PrimaryKey,
-        name :: String,
-        headline :: String,
-        description :: String |
-        fields
+      id :: PrimaryKey,
+      name :: String,
+      headline :: String,
+      description :: String |
+      fields
 }
 
 type BasicMessage fields = {
-        id :: PrimaryKey,
-        content :: String |
-        fields
+      id :: PrimaryKey,
+      content :: String |
+      fields
 }
 
 newtype WS = WS WebSocket
 
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
-        avatar :: Maybe String,
-        gender :: Maybe String,
-        country :: Maybe String,
-        languages :: Array String,
-        tags :: Array String,
-        age :: Maybe Int,
-        karma :: Int
+      avatar :: Maybe String,
+      gender :: Maybe String,
+      country :: Maybe String,
+      languages :: Array String,
+      tags :: Array String,
+      age :: Maybe Int,
+      karma :: Int
 ))
 
 newtype Contact = Contact {
-        user :: IMUser,
-        chatAge :: Number, --Days,
-        chatStarter :: PrimaryKey,
-        history :: Array HistoryMessage
+      user :: IMUser,
+      chatAge :: Number, --Days,
+      chatStarter :: PrimaryKey,
+      history :: Array HistoryMessage
 }
 
 newtype IMModel = IMModel {
-        suggestions :: Array Suggestion,
-        contacts :: Array Contact,
-        webSocket :: Maybe WS,
-        temporaryID :: PrimaryKey,
-        --used to authenticate web socket messages
-        token :: Maybe String,
-        --the current logged in user
-        user :: IMUser,
-        --indexes
-        suggesting :: Maybe Int,
-        chatting :: Maybe Int,
-        --offsets
-        contactsPage :: Int,
-        --visibility switches
-        userContextMenuVisible :: Boolean,
-        profileSettingsToggle :: ProfileSettingsToggle
+      suggestions :: Array Suggestion,
+      contacts :: Array Contact,
+      webSocket :: Maybe WS,
+      temporaryID :: PrimaryKey,
+      --used to authenticate web socket messages
+      token :: Maybe String,
+      --the current logged in user
+      user :: IMUser,
+      --indexes
+      suggesting :: Maybe Int,
+      chatting :: Maybe Int,
+      --offsets
+      contactsPage :: Int,
+      --visibility switches
+      userContextMenuVisible :: Boolean,
+      profileSettingsToggle :: ProfileSettingsToggle
 }
 
 newtype HistoryMessage = HistoryMessage {
-        id :: PrimaryKey,
-        sender :: PrimaryKey,
-        recipient :: PrimaryKey,
-        date :: MDateTime,
-        content :: String,
-        status :: MessageStatus
+      id :: PrimaryKey,
+      sender :: PrimaryKey,
+      recipient :: PrimaryKey,
+      date :: MDateTime,
+      content :: String,
+      status :: MessageStatus
 }
 
 newtype Stats = Stats {
@@ -130,74 +130,74 @@ newtype Turn = Turn {
 }
 
 data ProfileSettingsToggle =
-        Hidden |
-        ShowProfile |
-        ShowSettings
+      Hidden |
+      ShowProfile |
+      ShowSettings
 
 data MessageStatus =
-        Unread |
-        Read
+      Unread |
+      Read
 
 data UserMenuMessage =
-        ConfirmLogout |
-        ShowUserContextMenu Event |
-        Logout Boolean |
-        ToggleProfileSettings ProfileSettingsToggle |
-        SetUserContentMenuVisible Boolean |
-        SetModalContents (Maybe String) String (JSONResponse String)
+      ConfirmLogout |
+      ShowUserContextMenu Event |
+      Logout Boolean |
+      ToggleProfileSettings ProfileSettingsToggle |
+      SetUserContentMenuVisible Boolean |
+      SetModalContents (Maybe String) String (JSONResponse String)
 
 data ContactMessage =
-        MarkAsRead |
-        ResumeChat PrimaryKey |
-        UpdateReadCount |
-        DisplayContacts (JSONResponse (Array Contact)) |
-        FetchContacts Event
+      MarkAsRead |
+      ResumeChat PrimaryKey |
+      UpdateReadCount |
+      DisplayContacts (JSONResponse (Array Contact)) |
+      FetchContacts Event
 
 data SuggestionMessage =
-        PreviousSuggestion |
-        NextSuggestion |
-        DisplayMoreSuggestions (JSONResponse (Array Suggestion))
+      PreviousSuggestion |
+      NextSuggestion |
+      DisplayMoreSuggestions (JSONResponse (Array Suggestion))
 
 data ChatMessage =
-        BeforeSendMessage String |
-        SendMessage String MDateTime |
-        ReceiveMessage WebSocketPayloadClient Boolean
+      BeforeSendMessage String |
+      SendMessage String MDateTime |
+      ReceiveMessage WebSocketPayloadClient Boolean
 
 data MainMessage =
-        SetWebSocket WebSocket |
-        SetToken String |
-        SetName String
+      SetWebSocket WebSocket |
+      SetToken String |
+      SetName String
 
 --REFACTOR: give these descriptive names
 data IMMessage =
-        UMM UserMenuMessage |
-        SM SuggestionMessage |
-        CM ChatMessage |
-        MM MainMessage |
-        CNM ContactMessage
+      UMM UserMenuMessage |
+      SM SuggestionMessage |
+      CM ChatMessage |
+      MM MainMessage |
+      CNM ContactMessage
 
 data WebSocketPayloadServer =
-        Connect String |
-        ServerMessage (BasicMessage (
-                token :: String,
-                user :: PrimaryKey,
-                turn :: Maybe Turn
-        )) |
-        ReadMessages {
-                token :: String,
-                --alternatively, update by user?
-                ids :: Array PrimaryKey
-        }
+      Connect String |
+      ServerMessage (BasicMessage (
+            token :: String,
+            user :: PrimaryKey,
+            turn :: Maybe Turn
+      )) |
+      ReadMessages {
+            token :: String,
+            --alternatively, update by user?
+            ids :: Array PrimaryKey
+      }
 
 data WebSocketPayloadClient =
-        ClientMessage (BasicMessage (
-                user :: Either IMUser PrimaryKey,
-                date :: MDateTime
-        ))|
-        Received {
-                previousID :: PrimaryKey,
-                id :: PrimaryKey
-        }
+      ClientMessage (BasicMessage (
+            user :: Either IMUser PrimaryKey,
+            date :: MDateTime
+      ))|
+      Received {
+            previousID :: PrimaryKey,
+            id :: PrimaryKey
+      }
 
 derive instance genericStats :: Generic Stats _
 derive instance genericTurn :: Generic Turn _
@@ -220,202 +220,204 @@ derive instance eqHistoryMessage :: Eq HistoryMessage
 derive instance eqIMModel :: Eq IMModel
 derive instance eqContact :: Eq Contact
 derive instance eqIMUser :: Eq IMUser
+derive instance eqStats :: Eq Stats
+derive instance eqTurn :: Eq Turn
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 instance eqWSW :: Eq WS where
-        eq (WS w) (WS s) = eqWS w s
+      eq (WS w) (WS s) = eqWS w s
 
 instance showStats :: Show Stats where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showTurn :: Show Turn where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showContact :: Show Contact where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showHistoryMessage :: Show HistoryMessage where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showIMUser :: Show IMUser where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showWS :: Show WS where
-        show _ = "web socket"
+      show _ = "web socket"
 instance showIMModel :: Show IMModel where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showMessageStatus :: Show MessageStatus where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 
 instance encodeJsonContact :: EncodeJson Contact where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonWS :: EncodeJson WS where
-        encodeJson (WS ws) = fromWS ws
+      encodeJson (WS ws) = fromWS ws
 instance encodeJsonIMUser :: EncodeJson IMUser where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonTurn :: EncodeJson Turn where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonStats :: EncodeJson Stats where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 
 instance decodeJsonContact :: DecodeJson Contact where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonWS :: DecodeJson WS where
-        decodeJson = Right <<< toWS
+      decodeJson = Right <<< toWS
 instance decodeJsonIMUser :: DecodeJson IMUser where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonTurn :: DecodeJson Turn where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonStats :: DecodeJson Stats where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
 
 instance fromSQLRowIMUser :: FromSQLRow IMUser where
-        fromSQLRow= DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept <<< parseIMUser
+      fromSQLRow= DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept <<< parseIMUser
 
 instance fromSQLRowContact :: FromSQLRow Contact where
-        fromSQLRow [
-                _,
-                foreignSender,
-                foreignFirstMessageDate,
-                foreignID,
-                foreignAvatar,
-                foreignGender,
-                foreignBirthday,
-                foreignName,
-                foreignHeadline,
-                foreignDescription,
-                foreignCountry,
-                foreignLanguages,
-                foreignTags,
-                foreignKarma
-        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                sender <- parsePrimaryKey foreignSender
-                firstMessageDate <- SU.unsafeFromJust "fromsql contact" <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
-                user <- parseIMUser [
-                        foreignID,
-                        foreignAvatar,
-                        foreignGender,
-                        foreignBirthday,
-                        foreignName,
-                        foreignHeadline,
-                        foreignDescription,
-                        foreignCountry,
-                        foreignLanguages,
-                        foreignTags,
-                        foreignKarma
-                ]
-                pure $ Contact {
-                        history: [],
-                        chatAge: DN.unwrap (DD.diff (EU.unsafePerformEffect DN.nowDate) firstMessageDate :: Days),
-                        chatStarter: sender,
-                        user
-                }
-        fromSQLRow _ = Left "missing or extra fields from users table contact projection"
+      fromSQLRow [
+            _,
+            foreignSender,
+            foreignFirstMessageDate,
+            foreignID,
+            foreignAvatar,
+            foreignGender,
+            foreignBirthday,
+            foreignName,
+            foreignHeadline,
+            foreignDescription,
+            foreignCountry,
+            foreignLanguages,
+            foreignTags,
+            foreignKarma
+      ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+            sender <- parsePrimaryKey foreignSender
+            firstMessageDate <- SU.unsafeFromJust "fromsql contact" <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
+            user <- parseIMUser [
+                  foreignID,
+                  foreignAvatar,
+                  foreignGender,
+                  foreignBirthday,
+                  foreignName,
+                  foreignHeadline,
+                  foreignDescription,
+                  foreignCountry,
+                  foreignLanguages,
+                  foreignTags,
+                  foreignKarma
+            ]
+            pure $ Contact {
+                  history: [],
+                  chatAge: DN.unwrap (DD.diff (EU.unsafePerformEffect DN.nowDate) firstMessageDate :: Days),
+                  chatStarter: sender,
+                  user
+            }
+      fromSQLRow _ = Left "missing or extra fields from users table contact projection"
 
 parseIMUser :: Array Foreign -> Except (NonEmptyList ForeignError) IMUser
 parseIMUser [
-        foreignID,
-        foreignAvatar,
-        foreignGender,
-        foreignBirthday,
-        foreignName,
-        foreignHeadline,
-        foreignDescription,
-        foreignCountry,
-        foreignLanguages,
-        foreignTags,
-        foreignKarma
+      foreignID,
+      foreignAvatar,
+      foreignGender,
+      foreignBirthday,
+      foreignName,
+      foreignHeadline,
+      foreignDescription,
+      foreignCountry,
+      foreignLanguages,
+      foreignTags,
+      foreignKarma
 ] = do
-        id <- parsePrimaryKey foreignID
-        maybeForeignerAvatar <- F.readNull foreignAvatar
-        --REFACTOR: all image paths
-        avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
-        name <- F.readString foreignName
-        maybeForeignerBirthday <- F.readNull foreignBirthday
-        birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
-        maybeGender <- F.readNull foreignGender
-        gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
-        headline <- F.readString foreignHeadline
-        description <- F.readString foreignDescription
-        maybeCountry <- F.readNull foreignCountry
-        karma <- parseInt foreignKarma
-        country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
-        maybeLanguages <- F.readNull foreignLanguages
-        languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
-        maybeTags <- F.readNull foreignTags
-        tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
-        pure $ IMUser {
-                id,
-                avatar,
-                name,
-                age: SDT.ageFrom birthday,
-                gender,
-                headline,
-                description,
-                karma,
-                country,
-                languages,
-                tags
-        }
+      id <- parsePrimaryKey foreignID
+      maybeForeignerAvatar <- F.readNull foreignAvatar
+      --REFACTOR: all image paths
+      avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
+      name <- F.readString foreignName
+      maybeForeignerBirthday <- F.readNull foreignBirthday
+      birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
+      maybeGender <- F.readNull foreignGender
+      gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
+      headline <- F.readString foreignHeadline
+      description <- F.readString foreignDescription
+      maybeCountry <- F.readNull foreignCountry
+      karma <- parseInt foreignKarma
+      country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
+      maybeLanguages <- F.readNull foreignLanguages
+      languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
+      maybeTags <- F.readNull foreignTags
+      tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
+      pure $ IMUser {
+            id,
+            avatar,
+            name,
+            age: SDT.ageFrom birthday,
+            gender,
+            headline,
+            description,
+            karma,
+            country,
+            languages,
+            tags
+      }
 parseIMUser _ =  CME.throwError <<< DLN.singleton $ ForeignError "missing or extra fields from users table imuser projection"
 
 instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
-        fromSQLRow [
-                foreignID,
-                foreignSender,
-                foreignRecipient,
-                foreignDate,
-                foreignContent,
-                foreignStatus
-        ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- parsePrimaryKey foreignID
-                sender <- parsePrimaryKey foreignSender
-                recipient <- parsePrimaryKey foreignRecipient
-                date <- MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
-                content <- F.readString foreignContent
-                status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
-                pure $ HistoryMessage { id, sender, recipient, date, content, status }
-        fromSQLRow _ = Left "missing or extra fields from users table"
+      fromSQLRow [
+            foreignID,
+            foreignSender,
+            foreignRecipient,
+            foreignDate,
+            foreignContent,
+            foreignStatus
+      ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+            id <- parsePrimaryKey foreignID
+            sender <- parsePrimaryKey foreignSender
+            recipient <- parsePrimaryKey foreignRecipient
+            date <- MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
+            content <- F.readString foreignContent
+            status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
+            pure $ HistoryMessage { id, sender, recipient, date, content, status }
+      fromSQLRow _ = Left "missing or extra fields from users table"
 
 --thats a lot of work...
 instance ordMessageStatus :: Ord MessageStatus where
-        compare Unread Read = LT
-        compare Read Unread = GT
-        compare _ _ = EQ
+      compare Unread Read = LT
+      compare Read Unread = GT
+      compare _ _ = EQ
 
 instance boundedMessageStatus :: Bounded MessageStatus where
-        bottom = Unread
-        top = Read
+      bottom = Unread
+      top = Read
 
 instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
-        cardinality = Cardinality 1
+      cardinality = Cardinality 1
 
-        fromEnum Unread = 0
-        fromEnum Read = 1
+      fromEnum Unread = 0
+      fromEnum Read = 1
 
-        toEnum 0 = Just Unread
-        toEnum 1 = Just Read
-        toEnum _ = Nothing
+      toEnum 0 = Just Unread
+      toEnum 1 = Just Read
+      toEnum _ = Nothing
 
 instance enumMessageStatus :: Enum MessageStatus where
-        succ Unread = Just Read
-        succ Read = Nothing
+      succ Unread = Just Read
+      succ Read = Nothing
 
-        pred Unread = Nothing
-        pred Read = Just Unread
+      pred Unread = Nothing
+      pred Read = Just Unread

@@ -24,9 +24,9 @@ login = do
         maybeRegisterLogin  <- CCE.validateEmailPassword
         case maybeRegisterLogin of
                 Nothing -> pure unit
-                Just registerLogin -> EA.launchAff_ $ do
+                Just registerLogin -> EA.launchAff_ do
                         token <- CCNT.post' (SR.fromRoute $ Login { next: Nothing }) $ Just registerLogin
-                        liftEffect $ do
+                        liftEffect do
                                 -- the location to go after login is either the query parameter next or /im
                                 redirect <- SR.toRoute <$> CCL.search
                                 CCE.login token $ DE.either (const defaultNext) SR.fromRoute redirect

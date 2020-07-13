@@ -16,8 +16,8 @@ import Test.Unit.Assert as TUA
 
 tests :: TestSuite
 tests = do
-        TU.suite "token" $ do
-                TU.test "token encoding decoding" $ do
+        TU.suite "token" do
+                TU.test "token encoding decoding" do
                         TS.serverAction $ \_ -> do
                                 let     id = DI.fromInt 23
                                 { configuration : Configuration configuration } <- RR.ask

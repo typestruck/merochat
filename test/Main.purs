@@ -9,7 +9,7 @@ import Test.Shared.Main as TSSM
 import Test.Unit.Main as TUM
 
 main :: Effect Unit
-main = TUM.runTest $ do
+main = TUM.runTest do
         TSSM.tests
         TSM.tests
         TCM.tests

@@ -27,7 +27,7 @@ email = "e@a.com"
 
 tests :: TestSuite
 tests = do
-        TU.suite "landing actions" $ do
+        TU.suite "landing actions" do
                 let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
                         catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
 

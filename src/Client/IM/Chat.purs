@@ -1,10 +1,11 @@
 -- | This module takes care of websocket plus chat editor events.
-module Client.IM.Chat
-  ( update
-  , startChat
-  , sendMessage
-  , receiveMessage
-  ) where
+module Client.IM.Chat (
+      update,
+      startChat,
+      sendMessage,
+      receiveMessage,
+      makeTurn
+) where
 
 import Client.Common.Types
 import Debug.Trace
@@ -49,14 +50,13 @@ update model = case _ of
       ReceiveMessage payload isFocused -> receiveMessage isFocused model payload
 
 startChat :: IMModel -> String -> NextMessage
-startChat model@( IMModel
-    { chatting
-  , user: IMUser { id }
-  , contacts
-  , suggesting
-  , suggestions
-  }
-) content = snocContact :> [ nextSendMessage ]
+startChat model@(IMModel {
+      chatting
+      , user: IMUser { id }
+      , contacts
+      , suggesting
+      , suggestions
+}) content = snocContact :> [ nextSendMessage ]
   where snocContact = case Tuple chatting suggesting of
               Tuple Nothing (Just index) ->
                     let
@@ -120,61 +120,55 @@ sendMessage content date = case _ of
                       , turn
                       }
       model -> CIF.nothingNext model <<< liftEffect $ EC.log "Invalid sendMessage state"
-  where isNewTurn history userID =
-              DM.fromMaybe false
-                $ do
-                    last <- DA.last history
-                    beforeLast <- history !! (DA.length history - 2)
-                    let
-                      sender = _.sender $ DN.unwrap last
 
+makeTurn :: Contact -> PrimaryKey -> Maybe Turn
+makeTurn (Contact { chatStarter, chatAge, history }) sender =
+      if chatStarter == sender && isNewTurn history sender then
+            let senderEntry = SU.unsafeFromJust "makeTurn" $ DA.last history
+                recipientEntry = SU.unsafeFromJust "makeTurn" $ history !! (DA.length history - 2)
+                Tuple senderMessages recipientMessages = SU.unsafeFromJust "makeTurn" do
+                      let groups = DA.groupBy sameSender history
+                          size = DA.length groups
+                      senderMessages <- groups !! (size - 3)
+                      recipientMessages <- groups !! (size - 2)
+                      pure $ Tuple senderMessages recipientMessages
+                senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
+                recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
+            in  Just $ Turn {
+                      senderStats:
+                        Stats
+                          { characters: senderCharacters
+                          , interest: senderCharacters / recipientCharacters
+                          }
+                    , recipientStats:
+                        Stats
+                          { characters: recipientCharacters
+                          , interest: recipientCharacters / senderCharacters
+                          }
+                    , replayDelay:
+                        DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds)
+                    , chatAge
+                    }
+       else Nothing
+      where isNewTurn history userID = DM.fromMaybe false do
+                  last <- DA.last history
+                  beforeLast <- history !! (DA.length history - 2)
+                  let sender = _.sender $ DN.unwrap last
                       recipient = _.recipient $ DN.unwrap beforeLast
-                    pure $ sender == userID && recipient == userID
+                  pure $ sender == userID && recipient == userID
 
-        sameSender entry anotherEntry = _.sender (DN.unwrap entry) == _.sender (DN.unwrap anotherEntry)
-
-        countCharacters total (HistoryMessage { content }) = total + DSC.length content
-
-        getDate = DN.unwrap <<< _.date <<< DN.unwrap
-
-        makeTurn (Contact { chatStarter, chatAge, history }) sender
-              | chatStarter == sender && isNewTurn history sender =
-                let senderEntry = SU.unsafeFromJust "makeTurn" $ DA.last history
-                    recipientEntry = SU.unsafeFromJust "makeTurn" $ history !! (DA.length history - 2)
-                    Tuple senderMessages recipientMessages = SU.unsafeFromJust "makeTurn" $ do
-                          let groups = DA.groupBy sameSender history
-                              size = DA.length groups
-                          senderMessages <- groups !! (size - 3)
-                          recipientMessages <- groups !! (size - 2)
-                          pure $ Tuple senderMessages recipientMessages
-                    senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
-                    recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
-                in  Just $ Turn {
-                          senderStats:
-                            Stats
-                              { characters: senderCharacters
-                              , interest: senderCharacters / recipientCharacters
-                              }
-                        , recipientStats:
-                            Stats
-                              { characters: recipientCharacters
-                              , interest: recipientCharacters / senderCharacters
-                              }
-                        , replayDelay:
-                            DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds)
-                        , chatAge
-                        }
-              | otherwise = Nothing
+            sameSender entry anotherEntry = _.sender (DN.unwrap entry) == _.sender (DN.unwrap anotherEntry)
+            countCharacters total (HistoryMessage { content }) = total + DSC.length content
+            getDate = DN.unwrap <<< _.date <<< DN.unwrap
 
 receiveMessage :: Boolean -> IMModel -> WebSocketPayloadClient -> MoreMessages
-receiveMessage isFocused model@( IMModel
-    { user: IMUser { id: recipientID }
-  , contacts
-  , suggesting
-  , chatting
-  , suggestions
-  }
-) = case _ of
+receiveMessage isFocused model@(IMModel {
+      user: IMUser { id: recipientID }
+      , contacts
+      , suggesting
+      , chatting
+      , suggestions
+}) = case _ of
       Received { previousID, id } ->
             F.noMessages <<< SN.updateModel model
               $ _
@@ -241,15 +235,12 @@ receiveMessage isFocused model@( IMModel
                           { contacts = contacts'
                           }
 
-updateHistoryMessage ::
-  Array Contact ->
-  PrimaryKey ->
-  { id :: PrimaryKey
-  , user :: Either IMUser PrimaryKey
-  , date :: MDateTime
-  , content :: String
-  } ->
-  Maybe (ReceivedUser (Array Contact))
+updateHistoryMessage :: Array Contact -> PrimaryKey -> {
+      id :: PrimaryKey
+      , user :: Either IMUser PrimaryKey
+      , date :: MDateTime
+      , content :: String
+} -> Maybe (ReceivedUser (Array Contact))
 updateHistoryMessage contacts recipientID { id, user, date, content } = case user of
       Right userID@(PrimaryKey _) -> do
             index <- DA.findIndex (findUser userID) contacts

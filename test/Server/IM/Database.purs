@@ -26,7 +26,7 @@ import Test.Unit.Main as TUM
 
 tests :: TestSuite
 tests = do
-        TU.suite "im database" $ do
+        TU.suite "im database" do
                 TU.test "insertMessage creates history" $
                         TS.serverAction $ \_ -> do
                                 userID <- SLD.createUser {

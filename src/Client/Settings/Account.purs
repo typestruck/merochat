@@ -49,7 +49,7 @@ changePassword model@(SettingsModel { password, passwordConfirmation }) = do
                 liftEffect $ CCN.alert "Password and confirmation do not match"
          else do
                 Ok <- CCNT.post' (SRO.fromRoute AccountPassword) $ Just model
-                liftEffect $ do
+                liftEffect do
                         CCN.alert "Password changed, you will be logged out"
                         CCL.logout
         FAE.noChanges
@@ -57,7 +57,7 @@ changePassword model@(SettingsModel { password, passwordConfirmation }) = do
 terminateAccount :: Aff (SettingsModel -> SettingsModel)
 terminateAccount = do
         confirmed <- liftEffect $ CCD.confirm "This action cannot be undone! Are you sure you want to terminate your account?"
-        when confirmed $ do
+        when confirmed do
                 Ok <- CCNT.post' (SRO.fromRoute Terminate) (Nothing :: Maybe SettingsModel)
                 liftEffect CCL.logout
         FAE.noChanges

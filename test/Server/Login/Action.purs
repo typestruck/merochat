@@ -29,8 +29,8 @@ password = "hunter12"
 
 tests :: TestSuite
 tests = do
-         TU.suite "login actions" $ do
-                TU.test "login - validation" $ do
+         TU.suite "login actions" do
+                TU.test "login - validation" do
                         let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
                                 catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
 

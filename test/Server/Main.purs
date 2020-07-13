@@ -6,6 +6,7 @@ import Test.Server.Landing.Action as TSLA
 import Test.Server.Login.Action as TSLIA
 import Test.Server.IM.Database as TSID
 import Test.Server.Token as TST
+import Test.Server.IM.Action as TSIA
 import Test.Unit (TestSuite)
 
 tests :: TestSuite
@@ -14,5 +15,6 @@ tests = do
         TST.tests
         TSLIA.tests
         TSID.tests
+        TSIA.tests
 
 

@@ -20,50 +20,50 @@ import Test.Unit.Main as TUM
 
 tests :: TestSuite
 tests = do
-        TU.suite "im suggestion update" $ do
-                TU.test "nextSuggestion sets suggesting to zero if Nothing" $ do
+        TU.suite "im suggestion update" do
+                TU.test "nextSuggestion sets suggesting to zero if Nothing" do
                         let IMModel { suggesting } = DT.fst <<< CIS.nextSuggestion <<< TSU.updateModel model $ _ {
                                 suggestions = [imUser],
                                 suggesting = Nothing
                         }
                         TUA.equal (Just 0) suggesting
 
-                TU.test "nextSuggestion bumps suggesting" $ do
+                TU.test "nextSuggestion bumps suggesting" do
                         let IMModel { suggesting } = DT.fst <<< CIS.nextSuggestion <<< TSU.updateModel model $ _ {
                                 suggestions = [imUser, imUser],
                                 suggesting = Just 0
                         }
                         TUA.equal (Just 1) suggesting
 
-                TU.test "nextSuggestion does not go over suggestions length" $ do
+                TU.test "nextSuggestion does not go over suggestions length" do
                         let IMModel { suggesting } = DT.fst <<< CIS.nextSuggestion <<< TSU.updateModel model $ _ {
                                 suggestions = [imUser, imUser, imUser],
                                 suggesting = Just 2
                         }
                         TUA.equal (Just 2) suggesting
 
-                TU.test "nextSuggestion clears chatting" $ do
+                TU.test "nextSuggestion clears chatting" do
                         let IMModel { chatting } = DT.fst <<< CIS.nextSuggestion <<< TSU.updateModel model $ _ {
                                 chatting = Just 2,
                                 suggestions = [imUser, imUser]
                         }
                         TUA.equal Nothing chatting
 
-                TU.test "previousSuggestion descreases suggesting" $ do
+                TU.test "previousSuggestion descreases suggesting" do
                         let IMModel { suggesting } = DT.fst <<< CIS.previousSuggestion <<< TSU.updateModel model $ _ {
                                 suggestions = [imUser, imUser],
                                 suggesting = Just 1
                         }
                         TUA.equal (Just 0) suggesting
 
-                TU.test "previousSuggestion does not go bellow zero" $ do
+                TU.test "previousSuggestion does not go bellow zero" do
                         let IMModel { suggesting } = DT.fst <<< CIS.previousSuggestion <<< TSU.updateModel model $ _ {
                                 suggestions = [imUser, imUser, imUser],
                                 suggesting = Just 0
                         }
                         TUA.equal (Just 0) suggesting
 
-                TU.test "displayMoreSuggestions clears chatting" $ do
+                TU.test "displayMoreSuggestions clears chatting" do
                         let IMModel { chatting } = DT.fst <<< CIS.displayMoreSuggestions [] <<< TSU.updateModel model $ _ {
                                 chatting = Just 2,
                                 suggestions = [imUser, imUser]
