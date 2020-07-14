@@ -36,6 +36,7 @@ import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Newtype as SN
 import Shared.Types (Editor)
+import Client.IM.History as CIH
 import Shared.Unsafe as SU
 import Shared.WebSocketOptions (port)
 import Signal.Channel (Channel)
@@ -107,6 +108,7 @@ setUpWebSocket channel token = do
         WET.addEventListener onOpen openListener false webSocketTarget
         WET.addEventListener onClose closeListener false webSocketTarget
 
+--REFACTOR: a single update function to cut down those wrapper types?
 update :: ListUpdate IMModel IMMessage
 update model message  =
         case message of
@@ -114,6 +116,7 @@ update model message  =
                 SM msg -> CIS.update model msg
                 CNM msg -> CICN.update model msg
                 UMM msg -> CIU.update model msg
+                HM msg -> CIH.update model msg
                 MM msg -> set msg
 
         where   set = case _ of

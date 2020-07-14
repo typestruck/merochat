@@ -96,7 +96,8 @@ data Route =
         AccountPassword |
         Terminate |
         Suggestions |
-        Contacts { page :: Int }
+        Contacts { page :: Int } |
+        History { page :: Int }
 
 data Generate = Name | Headline | Description
 

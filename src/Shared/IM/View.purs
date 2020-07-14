@@ -4,11 +4,9 @@ import Debug.Trace
 import Prelude
 import Shared.IM.Types
 
-import Shared.Avatar as SA
-import Shared.Avatar (defaultAvatar)
+import Control.Alt ((<|>))
 import Data.Array ((:))
 import Data.Array as DA
-import Control.Alt((<|>))
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
@@ -20,6 +18,8 @@ import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Shared.Avatar (defaultAvatar)
+import Shared.Avatar as SA
 import Shared.Markdown as SM
 import Shared.Types (MDateTime(..))
 import Shared.Unsafe ((!@))
@@ -145,7 +145,7 @@ profile (IMModel { suggesting, chatting }) =
             toTagSpan tag = HE.span (HA.class' "tag") tag
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div (HA.class' "message-history") <<< HE.div (HA.class' "message-history-wrapper") $
+history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div [HA.class' "message-history", HA.id "message-history", HA.onScroll (HS FetchHistory) ] <<< HE.div (HA.class' "message-history-wrapper") $
       case chattingSuggestion of
             Nothing -> [HE.createEmptyElement "div"]
             Just recipient -> display recipient

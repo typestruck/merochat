@@ -94,6 +94,7 @@ newtype IMModel = IMModel {
       contacts :: Array Contact,
       webSocket :: Maybe WS,
       temporaryID :: PrimaryKey,
+      freeToFetchChatHistory :: Boolean,
       --used to authenticate web socket messages
       token :: Maybe String,
       --the current logged in user
@@ -138,6 +139,11 @@ data MessageStatus =
       Unread |
       Read
 
+data ChatHistoryMessage =
+      CheckScrollTop |
+      FetchHistory Boolean |
+      DisplayHistory (JSONResponse (Array HistoryMessage))
+
 data UserMenuMessage =
       ConfirmLogout |
       ShowUserContextMenu Event |
@@ -174,7 +180,8 @@ data IMMessage =
       SM SuggestionMessage |
       CM ChatMessage |
       MM MainMessage |
-      CNM ContactMessage
+      CNM ContactMessage |
+      HM ChatHistoryMessage
 
 data WebSocketPayloadServer =
       Connect String |
