@@ -94,6 +94,7 @@ newtype IMModel = IMModel {
       contacts :: Array Contact,
       webSocket :: Maybe WS,
       temporaryID :: PrimaryKey,
+      freeToFetchChatHistory :: Boolean,
       --used to authenticate web socket messages
       token :: Maybe String,
       --the current logged in user
@@ -101,8 +102,6 @@ newtype IMModel = IMModel {
       --indexes
       suggesting :: Maybe Int,
       chatting :: Maybe Int,
-      --offsets
-      contactsPage :: Int,
       --visibility switches
       userContextMenuVisible :: Boolean,
       profileSettingsToggle :: ProfileSettingsToggle
@@ -137,6 +136,11 @@ data ProfileSettingsToggle =
 data MessageStatus =
       Unread |
       Read
+
+data ChatHistoryMessage =
+      CheckScrollTop |
+      FetchHistory Boolean |
+      DisplayHistory (JSONResponse (Array HistoryMessage))
 
 data UserMenuMessage =
       ConfirmLogout |
@@ -174,7 +178,8 @@ data IMMessage =
       SM SuggestionMessage |
       CM ChatMessage |
       MM MainMessage |
-      CNM ContactMessage
+      CNM ContactMessage |
+      HM ChatHistoryMessage
 
 data WebSocketPayloadServer =
       Connect String |
@@ -308,7 +313,7 @@ instance fromSQLRowContact :: FromSQLRow Contact where
             foreignKarma
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
             sender <- parsePrimaryKey foreignSender
-            firstMessageDate <- SU.unsafeFromJust "fromsql contact" <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
+            firstMessageDate <- SU.fromJust "fromsql contact" <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
             user <- parseIMUser [
                   foreignID,
                   foreignAvatar,
@@ -389,9 +394,9 @@ instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
             id <- parsePrimaryKey foreignID
             sender <- parsePrimaryKey foreignSender
             recipient <- parsePrimaryKey foreignRecipient
-            date <- MDateTime <<< SU.unsafeFromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
+            date <- MDateTime <<< SU.fromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
             content <- F.readString foreignContent
-            status <- SU.unsafeFromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
+            status <- SU.fromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
             pure $ HistoryMessage { id, sender, recipient, date, content, status }
       fromSQLRow _ = Left "missing or extra fields from users table"
 

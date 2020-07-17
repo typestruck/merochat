@@ -46,7 +46,7 @@ tests = do
             TU.test "sendMessage adds message to history" do
                   date <- liftEffect $ map MDateTime EN.nowDateTime
                   let IMModel { user: IMUser { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage content date model
-                      Contact user = SN.unsafeFromJust "test" do
+                      Contact user = SN.fromJust "test" do
                         index <- chatting
                         contacts !! index
 

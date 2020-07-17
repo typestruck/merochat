@@ -47,7 +47,7 @@ completeRegistration captchaResponse = register $ Just captchaResponse
 
 registerOnEnter :: Event -> Effect Unit
 registerOnEnter event = do
-        let pressed = WUK.key <<< SU.unsafeFromJust "registerOnEnter" $ WUK.fromEvent event
+        let pressed = WUK.key <<< SU.fromJust "registerOnEnter" $ WUK.fromEvent event
         when (pressed == "Enter") $ register Nothing
 
 main :: Effect Unit

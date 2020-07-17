@@ -2,14 +2,19 @@ module Server.IM.Database where
 
 import Prelude
 
+import Data.Array ((..), (:))
+import Data.Array as DA
 import Data.Either (Either(..))
+import Data.NonEmpty (foldl1)
+import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (class FromSQLRow, Pool, Query(..), Row1(..), Row2(..), Row3(..))
+import Debug.Trace (spy)
 import Server.Database as SD
 import Server.Types (ServerEffect, BaseEffect)
 import Shared.IM.Types (Contact(..), HistoryMessage, IMUser)
-import Shared.Types (PrimaryKey)
+import Shared.Types (PrimaryKey(..))
 
 userPresentationFields :: String
 userPresentationFields = """ u.id,
@@ -42,23 +47,37 @@ suggest :: PrimaryKey -> ServerEffect (Array IMUser)
 suggest id =
       SD.select (Query ("select" <> userPresentationFields <> "from users u where id not in (1, $1) and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) order by random() limit 20")) $ Row1 id
 
-presentContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
-presentContacts id page = SD.select (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>
-                                      """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
-                                          order by date desc limit 10 offset $2""")) (id /\ page * 10)
+contactsPerPage :: Int
+contactsPerPage = 10
 
+messagesPerPage :: Int
+messagesPerPage = 15
+
+presentContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
+presentContacts id skip = SD.select (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>
+                                      """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
+                                          order by date desc limit $2 offset $3""")) (id /\ contactsPerPage /\ skip)
+
+--there must be a better way to do this
 chatHistory :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array HistoryMessage)
-chatHistory id otherIDs = SD.select (Query ("select" <> messagePresentationFields <> "from messages where (sender = $1 or recipient = $1) and (sender = any($2) or recipient = any($2)) order by date, sender, recipient")) (id /\ otherIDs)
+chatHistory id otherIDs = SD.select (Query query) (id /\ messagesPerPage)
+      where query = "select * from (" <> DS.joinWith " union all " (select <$> otherIDs) <> ") r order by date, sender, recipient"
+            select n =
+                  let parameter = show n
+                  in "select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = $1 order by date desc limit $2) a"
+
+chatHistoryBetween :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
+chatHistoryBetween id otherID skip = SD.select (Query ("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (id /\ otherID /\ messagesPerPage /\ skip)
 
 insertMessage :: forall r. PrimaryKey -> PrimaryKey -> String -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey (Either IMUser PrimaryKey))
 insertMessage sender recipient content = SD.withTransaction $ \connection -> do
       priorExistingHistory <- SD.scalarWith connection (Query """select insertHistory($1, $2)""") $ Row2 sender recipient
       messageID <- SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") $ Row3 sender recipient content
       if priorExistingHistory then
-              pure <<< Tuple messageID $ Right sender
+            pure <<< Tuple messageID $ Right sender
        else do
-              senderUser <- SD.singleWith connection presentUserQuery $ presentUserParameters sender
-              pure <<< Tuple messageID $ Left senderUser
+            senderUser <- SD.singleWith connection presentUserQuery $ presentUserParameters sender
+            pure <<< Tuple messageID $ Left senderUser
 
 --when using an array parameter, any must be used instead of in
 markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit

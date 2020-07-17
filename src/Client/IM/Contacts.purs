@@ -35,7 +35,7 @@ update model  =
             MarkAsRead -> markRead model
             --when the window is focused updated the read status of current chat
             UpdateReadCount -> markRead model
-            FetchContacts event -> fetchContacts (SU.unsafeFromJust "contacts.update" $ WUW.fromEvent event) model
+            FetchContacts event -> fetchContacts (SU.fromJust "contacts.update" $ WUW.fromEvent event) model
             DisplayContacts (JSONResponse contacts) -> displayContacts contacts model
 
 resumeChat :: PrimaryKey -> IMModel -> NoMessages
@@ -73,40 +73,39 @@ updateReadHistory :: IMModel -> {
 updateReadHistory model { token, webSocket, chatting, userID, contacts } =
       let contactRead@(Contact { history }) = contacts !@ chatting
           messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
-      in  if DA.null messagesRead then
-                F.noMessages model
-           else
-                CIF.nothingNext (updateContacts contactRead) (confirmRead messagesRead)
-  where unreadID userID (HistoryMessage { recipient, id, status })
-              | status == Unread && recipient == userID = Just id
-              | otherwise = Nothing
+      in if DA.null messagesRead then
+            F.noMessages model
+          else
+            CIF.nothingNext (updateContacts contactRead) (confirmRead messagesRead)
+      where unreadID userID (HistoryMessage { recipient, id, status })
+                  | status == Unread && recipient == userID = Just id
+                  | otherwise = Nothing
 
-        read userID historyEntry@(HistoryMessage { recipient, id, status })
-              | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
-              | otherwise = historyEntry
+            read userID historyEntry@(HistoryMessage { recipient, id, status })
+                  | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
+                  | otherwise = historyEntry
 
-        updateContacts contactRead@(Contact { history }) = SN.updateModel model $ _ {
-              contacts = SU.unsafeFromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
-        }
+            updateContacts contactRead@(Contact { history }) = SN.updateModel model $ _ {
+                  contacts = SU.fromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
+            }
 
-        confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages {
-              ids: messages,
-              token
-        }
+            confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages {
+                  ids: messages,
+                  token
+            }
 
 fetchContacts :: WheelEvent -> IMModel -> MoreMessages
-fetchContacts event model@(IMModel { contactsPage })
+fetchContacts event model@(IMModel { contacts })
       | WUW.deltaY event < 1.0 =
             F.noMessages model
       | otherwise =   --needs some kind of throttling/loading
-            model :> [Just <<< CNM <<< DisplayContacts <$> CCN.get' (Contacts { page: contactsPage + 1 })]
+            model :> [Just <<< CNM <<< DisplayContacts <$> CCN.get' (Contacts { skip: DA.length contacts })]
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
-displayContacts newContacts model@(IMModel { contactsPage, contacts })
+displayContacts newContacts model@(IMModel { contacts })
       | DA.null newContacts =
             F.noMessages model
       | otherwise =
             F.noMessages <<< SN.updateModel model $ _ {
-                  contactsPage = contactsPage + 1,
                   contacts = contacts <> newContacts
             }

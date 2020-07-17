@@ -62,7 +62,7 @@ showUserContextMenu model@(IMModel { userContextMenuVisible }) event
                 F.noMessages <<< SN.updateModel model $ _ { userContextMenuVisible = false }
         | otherwise =
                 model :> [
-                        liftEffect <<< map (Just <<< UMM <<< SetUserContentMenuVisible <<< (_ == "user-context-menu")) $ WDE.id <<< SU.unsafeFromJust "usermenu.update" $ do
+                        liftEffect <<< map (Just <<< UMM <<< SetUserContentMenuVisible <<< (_ == "user-context-menu")) $ WDE.id <<< SU.fromJust "usermenu.update" $ do
                         target <- WEE.target event
                         WDE.fromEventTarget target
                 ]

@@ -66,7 +66,7 @@ update { model: model@(ProfileModel { editors }), message } =
                 SetEditors editor -> setEditors editor model
                 SetTagEnter (Tuple key tag) -> addTag key tag
 
-                AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.unsafeFromJust "addLanguage" $ DI.fromString language
+                AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.fromJust "addLanguage" $ DI.fromString language
 
                 RemoveLanguage language event -> removeLanguage language event
                 RemoveTag tag event -> removeTag tag event
@@ -101,14 +101,14 @@ setEditorFieldOrGenerate what field characters value editor = do
                         JSONResponse name <- CCN.get' $ Generate { what }
                         pure name
                   else pure trimmed
-        setEditorContent (SU.unsafeFromJust "setEditorFieldOrGenerate" editor) toSet
+        setEditorContent (SU.fromJust "setEditorFieldOrGenerate" editor) toSet
         setProfileField field $ DS.take characters toSet
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
 selectAvatar = do
         liftEffect do
                 input <- getFileInput
-                WHH.click <<< SU.unsafeFromJust "selectAvatar" $ WHH.fromElement input
+                WHH.click <<< SU.fromJust "selectAvatar" $ WHH.fromElement input
         FAE.noChanges
 
 setYear :: Maybe Int -> Aff (ProfileModel -> ProfileModel)
@@ -133,7 +133,7 @@ updateBirthday updater = pure $ \model -> SN.updateProfileModel model $ \record 
                 }
         }
         where   toDateComponent :: forall d. BoundedEnum d => Int -> d
-                toDateComponent = SU.unsafeFromJust "setBirthday" <<< DE.toEnum
+                toDateComponent = SU.fromJust "setBirthday" <<< DE.toEnum
                 isAgeVisible' =
                         case _ of
                                 Tuple Nothing _ -> true
@@ -174,7 +174,7 @@ removeLanguage language event = do
                 {
                         isLanguagesVisible = true,
                         user = SN.updateProfile user $ \record -> record {
-                                languages = SU.unsafeFromJust "remove language" do
+                                languages = SU.fromJust "remove language" do
                                         index <- DA.findIndex ( _ == language) record.languages
                                         DA.deleteAt index record.languages
                         }
@@ -197,7 +197,7 @@ removeTag tag event = do
                 {
                         isTagsVisible = true,
                         user = SN.updateProfile user $ \record -> record {
-                                tags = SU.unsafeFromJust "remove tag" do
+                                tags = SU.fromJust "remove tag" do
                                         index <- DA.findIndex ( _ == tag) record.tags
                                         DA.deleteAt index record.tags
                         }

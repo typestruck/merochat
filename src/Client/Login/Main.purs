@@ -34,7 +34,7 @@ login = do
 
 
 loginOnEnter event = do
-        let pressed = WUK.key <<< SU.unsafeFromJust "registerOnEnter" $ WUK.fromEvent event
+        let pressed = WUK.key <<< SU.fromJust "registerOnEnter" $ WUK.fromEvent event
         when (pressed == "Enter") login
 
 main :: Effect Unit

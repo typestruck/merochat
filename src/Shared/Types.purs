@@ -24,6 +24,7 @@ import Data.JSDate as DJ
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
+import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
@@ -96,7 +97,8 @@ data Route =
         AccountPassword |
         Terminate |
         Suggestions |
-        Contacts { page :: Int }
+        Contacts { skip :: Int } |
+        History { skip :: Int, with :: PrimaryKey }
 
 data Generate = Name | Headline | Description
 
@@ -114,6 +116,7 @@ data ResponseError =
         InternalError { reason :: String }
 
 derive instance newtypeMDateTime :: Newtype MDateTime _
+derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 
 derive instance genericOk :: Generic Ok _
 derive instance genericGenerate :: Generic Generate _
@@ -145,7 +148,7 @@ instance showRoute :: Show Route where
 instance showResponseError :: Show ResponseError where
         show = DGRS.genericShow
 instance showPrimaryKey :: Show PrimaryKey where
-        show = DGRS.genericShow
+        show (PrimaryKey i) = DS.replace (Pattern ".0") (Replacement "") <<< show $ DI.toNumber i
 instance showOk :: Show Ok where
         show = DGRS.genericShow
 instance showGender :: Show Gender where
@@ -175,19 +178,19 @@ instance toSQLValueGender :: ToSQLValue Gender where
 instance fromSQLValuePrimaryKey :: FromSQLValue PrimaryKey where
         fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
 instance fromSQLValueGender :: FromSQLValue Gender where
-        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.unsafeFromJust "fromSQLValueGender" <<< DSR.read) <<< F.readString
+        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust "fromSQLValueGender" <<< DSR.read) <<< F.readString
 
 --these functions are needed cos javascript is crap and numbers from postgresql are parsed as strings
 
 parsePrimaryKey :: Foreign -> F PrimaryKey
 parsePrimaryKey data_
-        | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
-        | otherwise = PrimaryKey <<< SU.unsafeFromJust "parsePrimaryKey" <<< DI.fromString <$> F.readString data_
+        | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
+        | otherwise = PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromString <$> F.readString data_
 
 parseInt :: Foreign -> F Int
 parseInt data_
         | F.typeOf data_ == "number" = F.readInt data_
-        | otherwise = SU.unsafeFromJust "parseInt" <<< DIN.fromString <$> F.readString data_
+        | otherwise = SU.fromJust "parseInt" <<< DIN.fromString <$> F.readString data_
 
 
 instance encodeJsonEditor :: EncodeJson Editor where
@@ -201,7 +204,7 @@ instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
 instance encodeJsonMDateTime :: EncodeJson MDateTime where
         encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
 instance encodeJsonMDate :: EncodeJson MDate where
-        encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0) (SU.unsafeFromJust "encode mdate" $ DE.toEnum 0)
+        encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0)
 
 instance decodeJsonEditor :: DecodeJson Editor where
         decodeJson = Right <<< toEditor
@@ -212,11 +215,11 @@ instance decodeJsonOk :: DecodeJson Ok where
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
         decodeJson = Right <<< PrimaryKey <<< toInt53
 instance decodeJsonMDateTime :: DecodeJson MDateTime where
-        decodeJson json = Right <<< MDateTime <<< SU.unsafeFromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
+        decodeJson json = Right <<< MDateTime <<< SU.fromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
                 where   jsonString :: String
                         jsonString = UC.unsafeCoerce json
 instance decodeJsonMDate :: DecodeJson MDate where
-        decodeJson json = Right <<< MDate <<< SU.unsafeFromJust "decodeJson mdate" <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
+        decodeJson json = Right <<< MDate <<< SU.fromJust "decodeJson mdate" <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
                 where   jsonString :: String
                         jsonString = UC.unsafeCoerce json
 

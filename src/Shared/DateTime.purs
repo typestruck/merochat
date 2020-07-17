@@ -24,7 +24,7 @@ ageFrom birthday = fromDays <<< DD.diff now <$> birthday
 getMinimumYear :: Effect Int
 getMinimumYear = do
         now <- EN.nowDate
-        pure $ SU.unsafeFromJust "profile.template" do
+        pure $ SU.fromJust "profile.template" do
                 date <- DD.adjust (Days (negate (365.0 * 13.0))) now
                 pure <<< DE.fromEnum $ DD.year date
 

@@ -41,7 +41,7 @@ insertWith connection query parameters = insertReturnID query parameters connect
 insertReturnID query parameters connection = do
         rows <- DP.scalar connection (addReturnID query) parameters
         rows' <- runLogEither "insertReturnID" rows
-        pure $ SU.unsafeFromJust "insertReturnID" rows'
+        pure $ SU.fromJust "insertReturnID" rows'
 
         where addReturnID (Query text) = Query $ text <> " returning id"
 
@@ -56,7 +56,7 @@ scalar' query parameters = withConnection $ \connection -> scalarWith connection
 scalarWith connection query parameters = do
         rows <- DP.scalar connection query parameters
         rows' <- runLogEither "scalarWith" rows
-        pure $ SU.unsafeFromJust "scalarWith" rows'
+        pure $ SU.fromJust "scalarWith" rows'
 
 select :: forall r query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> BaseEffect { pool :: Pool | r } (Array row)
 select query parameters = withConnection $ \connection -> do
