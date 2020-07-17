@@ -98,7 +98,7 @@ This component shows all Users previously chatted with.
 
 * Chat notifications are not displayed for muted contacts, nor they are [suggested](#suggestions) for chatting
 
-* Infinite scrolling for pagination
+* Infinite scrolling for pagination ([#63](https://github.com/easafe/melanchat/issues/63))
 
 Mockup of contact list component ([#9](https://github.com/easafe/melanchat/issues/9)):
 
