@@ -18,7 +18,7 @@ import Shared.Unsafe as SU
 profile :: Request -> ResponseEffect
 profile { method, path, body } = SRS.ifLogged path do
         { session: { userID: maybeUserID } } <- RR.ask
-        let userID = PrimaryKey $ SU.unsafeFromJust "router" maybeUserID
+        let userID = PrimaryKey $ SU.fromJust "router" maybeUserID
         if method == Get then do
                 profileUser <- SPD.presentProfile userID
                 countries <- SPD.presentCountries
@@ -35,5 +35,5 @@ profile { method, path, body } = SRS.ifLogged path do
 generate :: Request -> ResponseEffect
 generate { query } = do
         --REFACTOR: the query parameters outside of the Shared.Router functions are not type safe
-        generated <- SPA.generate <<< SU.unsafeFromJust "generate" $ DSR.read (query !@ "what")
+        generated <- SPA.generate <<< SU.fromJust "generate" $ DSR.read (query !@ "what")
         SRR.json' generated

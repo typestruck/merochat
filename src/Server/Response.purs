@@ -70,7 +70,7 @@ serveDevelopmentFile path = do
 contentTypeFromExtension :: String -> Headers
 contentTypeFromExtension = headerContentType <<< show <<< read <<< NP.extname
         where   read :: String -> ContentType
-                read = SU.unsafeFromJust "contentTypeFromExtension" <<< DSR.read
+                read = SU.fromJust "contentTypeFromExtension" <<< DSR.read
 
 headerContentType :: String -> Headers
 headerContentType = H.header "Content-Type"

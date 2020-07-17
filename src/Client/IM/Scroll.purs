@@ -23,4 +23,4 @@ scrollLastMessage = do
 
       where scrollTo node mutations _ = do
                   mutationTypes <- DT.traverse (map (_ == "childList") <<< WDM.typeString) mutations
-                  when (DF.or mutationTypes) $ CCD.scrollDown (SU.unsafeFromJust "scrollTo" $ WDE.fromNode node)
+                  when (DF.or mutationTypes) $ CCD.scrollDown (SU.fromJust "scrollTo" $ WDE.fromNode node)

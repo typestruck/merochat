@@ -69,7 +69,7 @@ saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, l
                                                         SRR.throwBadRequest imageTooBigMessage
                                                  else do
                                                         uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
-                                                        let fileName = uuid <> SU.unsafeFromJust "base64From" (DH.lookup mediaType allowedMediaTypes)
+                                                        let fileName = uuid <> SU.fromJust "base64From" (DH.lookup mediaType allowedMediaTypes)
                                                         R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
 
                                                         pure $ Just fileName

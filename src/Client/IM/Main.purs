@@ -85,7 +85,7 @@ setUpWebSocket channel token = do
                         ET.clearTimeout id
                         ER.write Nothing timerID) maybeID
 
-                let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.unsafeFromJust "client.im.main" $ WSEM.fromEvent event
+                let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust "client.im.main" $ WSEM.fromEvent event
                 --REFACTOR: clean this up
                 case possiblePayload of
                         Left e -> EC.log ("bogus payload " <> show (map FO.renderForeignError e))

@@ -32,4 +32,4 @@ ifLogged path handler = do
 loggedUserID :: ServerEffect PrimaryKey
 loggedUserID = do
         { session: { userID: maybeUserID } } <- RR.ask
-        pure <<< PrimaryKey $ SU.unsafeFromJust "loggedUserId" maybeUserID
+        pure <<< PrimaryKey $ SU.fromJust "loggedUserId" maybeUserID

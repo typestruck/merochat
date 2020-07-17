@@ -4,8 +4,11 @@ import Prelude
 
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Int53 as DI
 import Data.Maybe as DM
+import Data.Newtype as DN
 import Data.String (Pattern(..))
+import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Data.String.Read as DSR
 import Routing.Duplex (RouteDuplex')
@@ -13,25 +16,27 @@ import Routing.Duplex as RD
 import Routing.Duplex.Generic as RDG
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import Routing.Duplex.Parser (RouteError)
-import Shared.Types (Route)
+import Shared.Types
 import Shared.Unsafe as SU
 
 routes :: RouteDuplex' Route
 routes = RD.root $ RDG.sum {
-        "Landing" : RDG.noArgs,
-        "Register" : "register" / RDG.noArgs,
-        "Login": "login" ? { next: RD.optional <<< RD.string },
-        "IM": "im" / RDG.noArgs,
-        "Contacts" : "im" / "contacts" ? { page: RD.int },
-        "Suggestions" : "im" / "suggestions" / RDG.noArgs,
-        "Profile": "profile" / RDG.noArgs,
-        "Generate":  "profile" / "generate" ? { what: parseWhat },
-        "Settings": "settings" / RDG.noArgs,
-        "AccountEmail": "settings" / "email" / RDG.noArgs,
-        "AccountPassword": "settings" / "password" / RDG.noArgs,
-        "Terminate": "settings" / "close" / RDG.noArgs
+      "Landing" : RDG.noArgs,
+      "Register" : "register" / RDG.noArgs,
+      "Login": "login" ? { next: RD.optional <<< RD.string },
+      "IM": "im" / RDG.noArgs,
+      "Contacts" : "im" / "contacts" ? { skip: RD.int },
+      "Suggestions" : "im" / "suggestions" / RDG.noArgs,
+      "Profile": "profile" / RDG.noArgs,
+      "Generate":  "profile" / "generate" ? { what: parseWhat },
+      "Settings": "settings" / RDG.noArgs,
+      "AccountEmail": "settings" / "email" / RDG.noArgs,
+      "AccountPassword": "settings" / "password" / RDG.noArgs,
+      "Terminate": "settings" / "close" / RDG.noArgs,
+      "History" : "im" / "history" ? { skip: RD.int, with: parsePrimaryKey }
 }
-        where parseWhat = RD.as show (DM.maybe (Left "error parsing what parameter") Right <<< DSR.read)
+      where parseWhat = RD.as show (DM.maybe (Left "error parsing what parameter") Right <<< DSR.read)
+            parsePrimaryKey = RD.as (DS.replace (Pattern ".0") (Replacement "") <<< show <<< DI.toNumber <<< DN.unwrap) (DM.maybe (Left "error parsing what parameter") (Right <<< PrimaryKey) <<< DI.fromString)
 
 toRoute :: String -> Either RouteError Route
 toRoute = RD.parse routes
@@ -42,4 +47,4 @@ fromRoute = RD.print routes
 
 -- | Print a route without query string
 fromRouteToPath :: Route -> String
-fromRouteToPath = SU.unsafeFromJust "fromRouteToPath" <<< DA.head <<< DS.split (Pattern "?") <<< RD.print routes
+fromRouteToPath = SU.fromJust "fromRouteToPath" <<< DA.head <<< DS.split (Pattern "?") <<< RD.print routes

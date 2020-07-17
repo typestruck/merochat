@@ -68,7 +68,7 @@ startChat model@(IMModel {
                             , suggesting = Nothing
                             --REFACTOR: defaultContact
                             , contacts = DA.cons (Contact { user: chatted, chatStarter: id, history: [], chatAge: 0.0 }) contacts
-                            , suggestions = SU.unsafeFromJust "startChat" $ DA.deleteAt index suggestions
+                            , suggestions = SU.fromJust "startChat" $ DA.deleteAt index suggestions
                             }
               _ -> model
 
@@ -107,7 +107,7 @@ sendMessage content date = case _ of
                       SN.updateModel model
                         $ _
                             { temporaryID = newTemporaryID
-                            , contacts = SU.unsafeFromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
+                            , contacts = SU.fromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
                             }
                 turn = makeTurn updatedChatting senderID
             in --needs to handle failure!
@@ -124,9 +124,9 @@ sendMessage content date = case _ of
 makeTurn :: Contact -> PrimaryKey -> Maybe Turn
 makeTurn (Contact { chatStarter, chatAge, history }) sender =
       if chatStarter == sender && isNewTurn history sender then
-            let senderEntry = SU.unsafeFromJust "makeTurn" $ DA.last history
-                recipientEntry = SU.unsafeFromJust "makeTurn" $ history !! (DA.length history - 2)
-                Tuple senderMessages recipientMessages = SU.unsafeFromJust "makeTurn" do
+            let senderEntry = SU.fromJust "makeTurn" $ DA.last history
+                recipientEntry = SU.fromJust "makeTurn" $ history !! (DA.length history - 2)
+                Tuple senderMessages recipientMessages = SU.fromJust "makeTurn" do
                       let groups = DA.groupBy sameSender history
                           size = DA.length groups
                       senderMessages <- groups !! (size - 3)
@@ -206,7 +206,7 @@ receiveMessage isFocused model@(IMModel {
               let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in
               recipientID == DET.either (_.id <<< DN.unwrap) identity sender
 
-        processIncomingMessage m = case SU.unsafeFromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
+        processIncomingMessage m = case SU.fromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
               New contacts' ->
                     --new messages bubble the contact to the top
                     let
@@ -219,7 +219,7 @@ receiveMessage isFocused model@(IMModel {
                                   { contacts = contacts'
                                   , suggesting = Nothing
                                   , suggestions =
-                                    SU.unsafeFromJust "delete receiveMesage" do
+                                    SU.fromJust "delete receiveMesage" do
                                       index <- suggesting
                                       DA.deleteAt index suggestions
                                   , chatting = Just 0
@@ -278,5 +278,5 @@ updateTemporaryID contacts previousID id = do
       updateTemporary index newID user@(Contact { history }) =
             SN.updateContact user
               $ _
-                  { history = SU.unsafeFromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
+                  { history = SU.fromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
                   }

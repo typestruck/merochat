@@ -26,8 +26,8 @@ model = IMModel {
       suggestions: [suggestion],
       temporaryID : SP.fromInt 0,
       suggesting: Just 0,
-      contactsPage: 0,
       token: Just "",
+      freeToFetchChatHistory: true,
       contacts: [contact],
       webSocket: Just $ WS (UC.unsafeCoerce 23 :: WebSocket),
       chatting: Just 0

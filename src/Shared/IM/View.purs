@@ -145,7 +145,7 @@ profile (IMModel { suggesting, chatting }) =
             toTagSpan tag = HE.span (HA.class' "tag") tag
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div [HA.class' "message-history", HA.id "message-history", HA.onScroll (HS FetchHistory) ] <<< HE.div (HA.class' "message-history-wrapper") $
+history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll (HM CheckScrollTop)] $
       case chattingSuggestion of
             Nothing -> [HE.createEmptyElement "div"]
             Just recipient -> display recipient

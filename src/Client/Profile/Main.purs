@@ -58,8 +58,8 @@ setUpAvatarChange channel = do
 
         input <- CPU.getFileInput
         CCD.addEventListener input change $ \_ -> do
-                fileList <- SU.unsafeFromJust "client.profile.main" <$> WHI.files (SU.unsafeFromJust "client.profile.main" $ WHI.fromElement input)
-                let file = SU.unsafeFromJust "client.profile.main" $ WFL.item 0 fileList
+                fileList <- SU.fromJust "client.profile.main" <$> WHI.files (SU.fromJust "client.profile.main" $ WHI.fromElement input)
+                let file = SU.fromJust "client.profile.main" $ WFL.item 0 fileList
 
                 if WFF.size file > 500.0 * 1024.0 then
                         CCN.alert "Max allowed size for avatar is 500kb"
