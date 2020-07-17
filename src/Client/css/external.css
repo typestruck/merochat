@@ -30,7 +30,7 @@ a:hover, input[type=button]:hover {
         margin-bottom: 100px;
 }
 
-.sign-up input {
+.form-up input {
         height: 60px;
         display: block;
         padding: 20px;
@@ -39,7 +39,7 @@ a:hover, input[type=button]:hover {
         border: 1px solid #b5b7b6;
 }
 
-.sign-up input[type=button] {
+.form-up input[type=button] {
         font-weight: bolder;
         border: none;
         font-size: 1.3em;
@@ -87,7 +87,7 @@ h2 {
                 width: 120px;
                 margin: 0 10px;
         }
-        .sign-up {
+        .form-up {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -96,12 +96,12 @@ h2 {
                 padding: 20px 0px 70px;
                 width: 100%;
         }
-        .sign-up input {
+        .form-up input {
                 width: 95%;
                 margin: 15px 0;
                 height: 30px;
         }
-        .sign-up input[type=button] {
+        .form-up input[type=button] {
                 font-size: 1em;
                 line-height: 0;
         }
@@ -119,11 +119,11 @@ h2 {
                 width: 320px;
                 margin: 0 10px;
         }
-        .sign-up input {
+        .form-up input {
                 width: 530px;
                 height: 50px;
         }
-        .sign-up input[type=button] {
+        .form-up input[type=button] {
                 font-size: 1.1em;
                 line-height: 0;
         }
@@ -134,7 +134,7 @@ h2 {
                 font-size: 2em;
                 line-height: 0;
         }
-        .sign-up input {
+        .form-up input {
                 width: 570px;
         }
 }

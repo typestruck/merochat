@@ -44,17 +44,17 @@ foreign import toEditor :: Json -> Editor
 foreign import toInt53 :: Json -> Int53
 
 type BasicUser fields = {
-        id :: PrimaryKey,
-        name :: String,
-        headline :: String,
-        description :: String |
-        fields
+      id :: PrimaryKey,
+      name :: String,
+      headline :: String,
+      description :: String |
+      fields
 }
 
 newtype RegisterLoginUser = RegisterLoginUser {
-        id :: PrimaryKey,
-        email :: String,
-        password :: String
+      id :: PrimaryKey,
+      email :: String,
+      password :: String
 }
 
 newtype MDateTime = MDateTime DateTime
@@ -63,17 +63,21 @@ newtype MDate = MDate Date
 
 newtype PrimaryKey = PrimaryKey Int53
 
--- | Fields for registration or login
-newtype RegisterLogin = RegisterLogin {
-        email:: String,
-        password:: String,
-        captchaResponse:: Maybe String
+type EmailCaptcha r = {
+      email:: String,
+      captchaResponse:: Maybe String |
+      r
 }
+
+-- | Fields for registration or login
+newtype RegisterLogin = RegisterLogin (EmailCaptcha (password :: String))
+
+newtype RecoverPassword = RecoverPassword (EmailCaptcha ())
 
 -- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests
 newtype Token = Token {
-        tokenGET :: String,
-        tokenPOST :: String
+      tokenGET :: String,
+      tokenPOST :: String
 }
 
 --REFACTOR:the usage of JSONResponse could be swapped for more apt types
@@ -86,39 +90,44 @@ data Gender = Female | Male | NonBinary | Other
 
 -- | All available endpoints for melanchat
 data Route =
-        Landing |
-        Register |
-        Login { next :: Maybe String } |
-        IM |
-        Profile |
-        Generate { what :: Generate} |
-        Settings |
-        AccountEmail |
-        AccountPassword |
-        Terminate |
-        Suggestions |
-        Contacts { skip :: Int } |
-        History { skip :: Int, with :: PrimaryKey }
+      Landing |
+      Register |
+      Login { next :: Maybe String } |
+      IM |
+      Profile |
+      Generate { what :: Generate} |
+      Settings |
+      AccountEmail |
+      AccountPassword |
+      Terminate |
+      Suggestions |
+      Recover { token :: Maybe String } |
+      Contacts { skip :: Int } |
+      History { skip :: Int, with :: PrimaryKey }
 
-data Generate = Name | Headline | Description
+data Generate =
+        Name |
+        Headline |
+        Description
 
 data By =
-        ID PrimaryKey |
-        Email String
+      ID PrimaryKey |
+      Email String
 
 -- | Errors that should be reported back to the user
 data ResponseError =
-        NotFound {
-                reason :: String,
-                isPost :: Boolean
-        } |
-        BadRequest { reason :: String } |
-        InternalError { reason :: String }
+      NotFound {
+            reason :: String,
+            isPost :: Boolean
+      } |
+      BadRequest { reason :: String } |
+      InternalError { reason :: String }
 
 derive instance newtypeMDateTime :: Newtype MDateTime _
 derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 
 derive instance genericOk :: Generic Ok _
+derive instance genericRecover :: Generic RecoverPassword _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
 derive instance genericRegisterLogin :: Generic RegisterLogin _
@@ -132,6 +141,7 @@ derive instance genericMDateTime :: Generic MDateTime _
 derive instance genericMDate :: Generic MDate _
 
 derive instance eqGenerate :: Eq Generate
+derive instance eqRecover :: Eq RecoverPassword
 derive instance eqMDateTime :: Eq MDateTime
 derive instance eqMDate :: Eq MDate
 derive instance eqOk :: Eq Ok
@@ -140,116 +150,120 @@ derive instance eqRoute :: Eq Route
 derive instance eqPrimaryKey :: Eq PrimaryKey
 
 instance showGenerate :: Show Generate where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showToken :: Show Token where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showRoute :: Show Route where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showResponseError :: Show ResponseError where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showPrimaryKey :: Show PrimaryKey where
-        show (PrimaryKey i) = DS.replace (Pattern ".0") (Replacement "") <<< show $ DI.toNumber i
+      show (PrimaryKey i) = DS.replace (Pattern ".0") (Replacement "") <<< show $ DI.toNumber i
 instance showOk :: Show Ok where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showGender :: Show Gender where
-        show Female = "Female"
-        show Male = "Male"
-        show NonBinary = "Non binary"
-        show Other = "Other"
+      show Female = "Female"
+      show Male = "Male"
+      show NonBinary = "Non binary"
+      show Other = "Other"
 instance showMDateTime :: Show MDateTime where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 instance showMDate :: Show MDate where
-        show = DGRS.genericShow
+      show = DGRS.genericShow
 
 instance primaryKeySemiring :: Semiring PrimaryKey where
-        add (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a + b)
-        zero = PrimaryKey $ DI.fromInt 0
-        mul (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a * b)
-        one = PrimaryKey $ DI.fromInt 1
+      add (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a + b)
+      zero = PrimaryKey $ DI.fromInt 0
+      mul (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a * b)
+      one = PrimaryKey $ DI.fromInt 1
 
 instance hashablePrimaryKey :: Hashable PrimaryKey where
-        hash (PrimaryKey key) = DH.hash $ DI.toNumber key
+      hash (PrimaryKey key) = DH.hash $ DI.toNumber key
 
 instance toSQLValuePrimaryKey :: ToSQLValue PrimaryKey where
-        toSQLValue (PrimaryKey int53) = F.unsafeToForeign $ DI.toNumber int53
+      toSQLValue (PrimaryKey int53) = F.unsafeToForeign $ DI.toNumber int53
 instance toSQLValueGender :: ToSQLValue Gender where
-        toSQLValue = F.unsafeToForeign <<< show
+      toSQLValue = F.unsafeToForeign <<< show
 
 instance fromSQLValuePrimaryKey :: FromSQLValue PrimaryKey where
-        fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
+      fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
 instance fromSQLValueGender :: FromSQLValue Gender where
-        fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust "fromSQLValueGender" <<< DSR.read) <<< F.readString
+      fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust "fromSQLValueGender" <<< DSR.read) <<< F.readString
 
 --these functions are needed cos javascript is crap and numbers from postgresql are parsed as strings
 
 parsePrimaryKey :: Foreign -> F PrimaryKey
 parsePrimaryKey data_
-        | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
-        | otherwise = PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromString <$> F.readString data_
+      | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
+      | otherwise = PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromString <$> F.readString data_
 
 parseInt :: Foreign -> F Int
 parseInt data_
-        | F.typeOf data_ == "number" = F.readInt data_
-        | otherwise = SU.fromJust "parseInt" <<< DIN.fromString <$> F.readString data_
+      | F.typeOf data_ == "number" = F.readInt data_
+      | otherwise = SU.fromJust "parseInt" <<< DIN.fromString <$> F.readString data_
 
 
 instance encodeJsonEditor :: EncodeJson Editor where
-        encodeJson editor = fromEditor editor
+      encodeJson editor = fromEditor editor
 instance encodeJsonGender :: EncodeJson Gender where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonOk :: EncodeJson Ok where
-        encodeJson = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonRecover :: EncodeJson RecoverPassword where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
-        encodeJson (PrimaryKey id) = fromInt53 id
+      encodeJson (PrimaryKey id) = fromInt53 id
 instance encodeJsonMDateTime :: EncodeJson MDateTime where
-        encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
+      encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
 instance encodeJsonMDate :: EncodeJson MDate where
-        encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0)
+      encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0)
 
 instance decodeJsonEditor :: DecodeJson Editor where
-        decodeJson = Right <<< toEditor
+      decodeJson = Right <<< toEditor
 instance decodeJsonGender :: DecodeJson Gender where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonOk :: DecodeJson Ok where
-        decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonRecover :: DecodeJson RecoverPassword where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
-        decodeJson = Right <<< PrimaryKey <<< toInt53
+      decodeJson = Right <<< PrimaryKey <<< toInt53
 instance decodeJsonMDateTime :: DecodeJson MDateTime where
-        decodeJson json = Right <<< MDateTime <<< SU.fromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
-                where   jsonString :: String
-                        jsonString = UC.unsafeCoerce json
+      decodeJson json = Right <<< MDateTime <<< SU.fromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
+            where jsonString :: String
+                  jsonString = UC.unsafeCoerce json
 instance decodeJsonMDate :: DecodeJson MDate where
-        decodeJson json = Right <<< MDate <<< SU.fromJust "decodeJson mdate" <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
-                where   jsonString :: String
-                        jsonString = UC.unsafeCoerce json
+      decodeJson json = Right <<< MDate <<< SU.fromJust "decodeJson mdate" <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
+            where jsonString :: String
+                  jsonString = UC.unsafeCoerce json
 
 --as it is right now, every query must have a FromSQLRow instance
 -- is there not an easier way to do this?
 
 instance fromSQLRowResiterLoginUser :: FromSQLRow RegisterLoginUser where
-        fromSQLRow [foreignID, foreignEmail, foreignPassword] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-                id <- parsePrimaryKey foreignID
-                email <- F.readString foreignEmail
-                password <- F.readString foreignPassword
-                pure $ RegisterLoginUser { id, email, password }
-        fromSQLRow _ = Left "missing/extra fields from users table"
+      fromSQLRow [foreignID, foreignEmail, foreignPassword] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+            id <- parsePrimaryKey foreignID
+            email <- F.readString foreignEmail
+            password <- F.readString foreignPassword
+            pure $ RegisterLoginUser { id, email, password }
+      fromSQLRow _ = Left "missing/extra fields from users table"
 
 instance ordPrimaryKey :: Ord PrimaryKey where
-        compare (PrimaryKey pk) (PrimaryKey anotherPK) = compare pk anotherPK
+      compare (PrimaryKey pk) (PrimaryKey anotherPK) = compare pk anotherPK
 
 instance readGender :: Read Gender where
-        read input =
-                case DS.toLower $ DS.trim input of
-                        "female" -> Just Female
-                        "male" -> Just Male
-                        "non binary" -> Just NonBinary
-                        "other" -> Just Other
-                        _ -> Nothing
+      read input =
+            case DS.toLower $ DS.trim input of
+                  "female" -> Just Female
+                  "male" -> Just Male
+                  "non binary" -> Just NonBinary
+                  "other" -> Just Other
+                  _ -> Nothing
 
 instance readGenerate :: Read Generate where
-        read input =
-                 case DS.toLower $ DS.trim input of
-                        "name" -> Just Name
-                        "headline" -> Just Headline
-                        "description" -> Just Description
-                        _ -> Nothing
+      read input =
+            case DS.toLower $ DS.trim input of
+                  "name" -> Just Name
+                  "headline" -> Just Headline
+                  "description" -> Just Description
+                  _ -> Nothing

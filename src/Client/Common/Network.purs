@@ -39,22 +39,20 @@ import Shared.Router as SR
 import Shared.Types (Route)
 import Web.XHR.FormData (FormData)
 
---REFACTOR: urls should be Route not String
-
 -- | A simplified version of post without the option to handle errors
-post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Maybe contents -> Aff response
-post' url data' = do
-        response <- post url data'
+post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => Route -> Maybe contents -> Aff response
+post' route data' = do
+        response <- post route data'
         case response of
                 Right right -> pure right
                 Left error -> alertResponseError $ A.printResponseFormatError error
 
 -- | Performs a POST request
-post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => String -> Maybe contents -> Aff (Either ResponseFormatError response)
-post url data' = do
+post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => Route -> Maybe contents -> Aff (Either ResponseFormatError response)
+post route data' = do
         --see Token in shared/Types.purs
         token <- liftEffect $ CCS.getItem tokenKey
-        response <- A.request $ (defaultRequest url POST token) {
+        response <- A.request $ (defaultRequest route POST token) {
                 content = map (RB.json <<< DAEGR.genericEncodeJson) data'
         }
         parseBody response
@@ -69,12 +67,12 @@ get' route = do
 get :: forall response r. Generic response r => DecodeRep r => Route -> Aff (Either ResponseFormatError response)
 get route = do
         token <- liftEffect CCC.getMelanchatCookie
-        response <- A.request $ defaultRequest (SR.fromRoute route) GET token
+        response <- A.request $ defaultRequest route GET token
         parseBody response
 
-defaultRequest url method token =
+defaultRequest route method token =
         A.defaultRequest {
-                url = url,
+                url = SR.fromRoute route,
                 method = Left method,
                 responseFormat = RF.json,
                 headers = [

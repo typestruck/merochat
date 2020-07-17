@@ -33,7 +33,7 @@ register captchaResponse = do
                                 grecaptchaExecute
                          else
                                 EA.launchAff_ do
-                                        response <- CCNT.post (SR.fromRoute Register) <<< Just <<< RegisterLogin $ rl { captchaResponse = captchaResponse }
+                                        response <- CCNT.post Register <<< Just <<< RegisterLogin $ rl { captchaResponse = captchaResponse }
                                         case response of
                                                 Right token -> enter token
                                                 Left left -> liftEffect do
@@ -53,6 +53,6 @@ registerOnEnter event = do
 main :: Effect Unit
 main = do
         registerButton <- CCD.querySelector "#register"
-        signUpDiv <- CCD.querySelector ".sign-up"
+        signUpDiv <- CCD.querySelector ".form-up"
         CCD.addEventListener signUpDiv keyup registerOnEnter
         CCD.addEventListener registerButton click (const (register Nothing))

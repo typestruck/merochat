@@ -28,6 +28,7 @@ import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.PrimaryKey as SP
+import Server.Recover.Router as SRER
 import Shared.Router as SRO
 import Shared.Types (Generate(..), ResponseError(..), Route(..))
 
@@ -47,7 +48,7 @@ router request@{ headers, path, method } =
        else if paths == SRO.fromRoute Register && method == Post then
             SLR.register request
       --login
-       else if paths == SRO.fromRouteToPath (Login { next: Nothing }) then
+       else if paths == SRO.fromRoute (Login { next: Nothing }) then
             SLIR.login request
       --im
        else if paths == SRO.fromRoute IM then
@@ -72,6 +73,9 @@ router request@{ headers, path, method } =
             SSR.changePassword request
        else if paths == SRO.fromRoute Terminate && method == Post then
             SSR.terminateAccount request
+      --recover
+       else if paths == SRO.fromRoute (Recover { token: Nothing }) then
+            SRER.recover request
       --local files and 404 for development
        else do
             { configuration : Configuration configuration } <- RR.ask
