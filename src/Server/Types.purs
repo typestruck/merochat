@@ -46,7 +46,10 @@ newtype Configuration = Configuration {
         captchaSecret :: String,
         tokenSecretGET :: String,
         tokenSecretPOST :: String,
-        salt :: String
+        salt :: String,
+        emailHost :: String,
+        emailUser :: String,
+        emailPassword :: String
 }
 
 derive instance genericConfiguration :: Generic Configuration _

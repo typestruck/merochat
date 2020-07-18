@@ -20,8 +20,6 @@ MelanChat is written in PureScript, both server-side and client-side. It uses [p
 
 * Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql) (the user "melanchat" and databases "melanchat" and "melanchatTest" are expected)
 
-* Set configuration.json (see the [example configuration](configuration-example.json))
-
 * Run `npm run watch` for a hot reloading server at http://localhost:8000
 
 ## Pull requests

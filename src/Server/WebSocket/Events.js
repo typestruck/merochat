@@ -1,3 +1,4 @@
+//REFACTOR: own module for this shite
 const zmq = require("zeromq");
 const sock = new zmq.Push;
 

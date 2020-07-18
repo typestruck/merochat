@@ -11,7 +11,7 @@
     "test": "test"
   },
   "scripts": {
-    "watch-s": "pulp --watch run -o output/Server --src-path src/Server --include src/Shared --main Server.Main ",
+    "watch-s": "export DEVELOPMENT=true && pulp --watch run -o output/Server --src-path src/Server --include src/Shared --main Server.Main ",
     "watch-l": "pulp --watch browserify -o output/Client/landing --src-path src/Client/Landing --main Client.Landing.Main --include src/Shared:src/Client/Common --to src/Client/javascript/landing.bundle.js --standalone Landing",
     "watch-li": "pulp --watch browserify -o output/Client/Login --src-path src/Client/Login --main Client.Login.Main --include src/Shared:src/Client/Common --to src/Client/javascript/login.bundle.js",
     "watch-im": "pulp --watch browserify -o output/Client/IM --src-path src/Client/IM --main Client.IM.Main --include src/Shared:src/Client/Common --to src/Client/javascript/im.bundle.js",
@@ -38,6 +38,7 @@
     "decimal.js": "^10.2.0",
     "insane": "^2.6.2",
     "marked": "^1.1.0",
+    "nodemailer": "^6.4.10",
     "pg": "^8.0.0",
     "pg-native": "^3.0.0",
     "purty": "^6.2.0",

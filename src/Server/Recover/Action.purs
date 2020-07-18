@@ -4,29 +4,32 @@ import Prelude
 import Server.Types
 import Shared.Types
 
-import Affjax as A
-import Affjax.RequestBody as RB
-import Affjax.ResponseFormat as RF
-import Affjax.StatusCode (StatusCode(..))
-import Data.Argonaut.Decode as DAD
 import Data.Either (Either(..))
 import Data.Either as DE
-import Data.FormURLEncoded as DF
-import Data.HTTP.Method (Method(..))
-import Server.Token as ST
-import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
-import Data.Tuple (Tuple(..))
 import Run as R
+import Server.Database.User as SDU
+import Server.Captcha as SC
+import Data.UUID as DU
 import Run.Reader as RR
 import Server.Response as SRR
 
-invalidUserEmailMessage :: String
-invalidUserEmailMessage = "Invalid email or password"
+invalidEmailMessage :: String
+invalidEmailMessage = "Invalid email"
 
-emailAlreadyRegisteredMessage :: String
-emailAlreadyRegisteredMessage = "Email already registered"
+accountNotFound :: String
+accountNotFound = "Could not find an account with this email"
 
 recover :: RecoverPassword -> ServerEffect Ok
-recover _ = pure Ok
+recover (RecoverPassword { email, captchaResponse }) = do
+      when (DS.null email) $ SRR.throwBadRequest invalidEmailMessage
+      user <- SDU.userBy $ Email email
+      when (DM.isNothing user) $ SRR.throwBadRequest accountNotFound
+      SC.validateCaptcha captchaResponse
+
+      token <- R.liftEffect (DU.toString <$> DU.genUUID)
+      SRD.insertRecover { email, token }
+
+      pure Ok
+

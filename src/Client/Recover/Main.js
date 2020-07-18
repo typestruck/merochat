@@ -1,3 +1,5 @@
+//REFACTOR: make this a module to avoid duplication
+
 exports.grecaptchaExecute = function () {
       grecaptcha.execute()
 }
