@@ -128,13 +128,15 @@ Mockup of contact list component ([#9](https://github.com/easafe/melanchat/issue
 
     c) Mark this chat as read or unread
 
-    d) Block this contact
+    d) Block this contact ([#61](https://github.com/easafe/melanchat/issues/61))
 
 8. Online status (see [User](../user/requirements.md#user-information))
 
 9. Private notes left for this contact (see [User](../user/requirements.md#user-information))
 
 ## Suggestions
+
+_See (seedling)[github.com/easafe/seedling]_
 
 A suggestion is a new (or from the contact list) User picked by the application for the current User to chat with.
 
