@@ -44,7 +44,7 @@ The following data about an User is visible to other Users on the application:
 
 * Gender
 
-    * M/F/O
+    * M/F/O/NB
 
 * Country
 
@@ -118,7 +118,7 @@ Mockup of landing page with call to action for registering a new account ([#3](h
 
     b) Browser is redirected to /im
 
-    c) User taken through a tutorial (TBD)
+    c) User taken through a tutorial ([#110](https://github.com/easafe/melanchat/issues/110))
 
 4. Temporary User creation
 
@@ -166,7 +166,7 @@ Users can manually end their session at any time.
 
 Users can request to reset their password in the occasion it is lost. Password reseting is done via email, by supplying a secret link- the application never emails existing passwords.
 
-Mockup of recover password page:
+Mockup of recover password page ([#47](https://github.com/easafe/melanchat/issues/47)) :
 
 ![recover page](images/recover_password.png)
 
