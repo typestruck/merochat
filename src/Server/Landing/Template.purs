@@ -44,7 +44,7 @@ template = do
                                     HE.i_ " interesting ",
                                     HE.text "people"
                               ],
-                              HE.div (HA.class' "sign-up") [
+                              HE.div (HA.class' "form-up") [
                                     HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
                                     HE.input [HA.type' "password", HA.autocomplete false, HA.id "password", HA.placeholder "Password"] ,
                                     HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
@@ -184,7 +184,7 @@ template = do
                                     HE.br,
                                     HE.text "It can't get better (or healthier) than this"
                               ],
-                              HE.a [HA.class' "sign-up-call", HA.href "#headline"] $ "... and it is free! Click here to create an account and chat right away #melanchat"
+                              HE.a [HA.class' "form-up-call", HA.href "#headline"] $ "... and it is free! Click here to create an account and chat right away #melanchat"
                         ],
                         externalFooter
                   ]

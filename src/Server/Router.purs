@@ -28,6 +28,7 @@ import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.PrimaryKey as SP
+import Server.Recover.Router as SRER
 import Shared.Router as SRO
 import Shared.Types (Generate(..), ResponseError(..), Route(..))
 
@@ -46,10 +47,10 @@ router request@{ headers, path, method } =
             SLR.landing
        else if paths == SRO.fromRoute Register && method == Post then
             SLR.register request
-      --login
-       else if paths == SRO.fromRouteToPath (Login { next: Nothing }) then
+       --login
+       else if paths == SRO.fromRoute (Login { next: Nothing }) then
             SLIR.login request
-      --im
+       --im
        else if paths == SRO.fromRoute IM then
             SIR.im request
        else if paths == SRO.fromRouteToPath (Contacts { skip: 0 }) then
@@ -58,12 +59,12 @@ router request@{ headers, path, method } =
             SIR.suggestions
        else if paths == SRO.fromRouteToPath (History { skip: 0, with: SP.fromInt 0 }) then
             SIR.history request
-      --profile
+       --profile
        else if paths == SRO.fromRoute Profile then
             SPR.profile request
        else if paths == SRO.fromRouteToPath (Generate { what: Name }) then
             SPR.generate request
-      --settings
+       --settings
        else if paths == SRO.fromRoute Settings then
             SSR.settings request
        else if paths == SRO.fromRoute AccountEmail && method == Post then
@@ -72,7 +73,12 @@ router request@{ headers, path, method } =
             SSR.changePassword request
        else if paths == SRO.fromRoute Terminate && method == Post then
             SSR.terminateAccount request
-      --local files and 404 for development
+       --recover
+       else if paths == SRO.fromRoute (Recover { token: Nothing }) then
+            SRER.recover request
+       else if paths == SRO.fromRoute Reset then
+            SRER.reset request
+       --local files and 404 for development
        else do
             { configuration : Configuration configuration } <- RR.ask
 

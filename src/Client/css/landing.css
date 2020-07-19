@@ -101,7 +101,7 @@ h2 {
         margin-top: 60px;
 }
 
-.sign-up-call {
+.form-up-call {
         border-bottom: 3px solid #db5a5d;
         color: #db5a5d;
         margin: 60px 0;
@@ -144,7 +144,7 @@ h2 {
         .point-2 {
                 font-size: 1em;
         }
-        .sign-up-call {
+        .form-up-call {
                 font-size: 1.1em;
         }
         .footer-menu li {
@@ -185,7 +185,7 @@ h2 {
         .point-2 {
                 font-size: 1.2em;
         }
-        .sign-up-call {
+        .form-up-call {
                 font-size: 1.8em;
         }
 }
@@ -207,7 +207,7 @@ h2 {
         .subheadline {
                 font-size: 1.2em;
         }
-        .sign-up input {
+        .form-up input {
                 width: 570px;
         }
         h2 {
@@ -220,7 +220,7 @@ h2 {
         .point-2 {
                 font-size: 1.4em;
         }
-        .sign-up-call {
+        .form-up-call {
                 font-size: 2.3em;
         }
 }

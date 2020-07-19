@@ -30,7 +30,9 @@ routes = RD.root $ RDG.sum {
       "Profile": "profile" / RDG.noArgs,
       "Generate":  "profile" / "generate" ? { what: parseWhat },
       "Settings": "settings" / RDG.noArgs,
+      "Reset": "reset" / RDG.noArgs,
       "AccountEmail": "settings" / "email" / RDG.noArgs,
+      "Recover": "recover" ? { token: RD.optional <<< RD.string },
       "AccountPassword": "settings" / "password" / RDG.noArgs,
       "Terminate": "settings" / "close" / RDG.noArgs,
       "History" : "im" / "history" ? { skip: RD.int, with: parsePrimaryKey }

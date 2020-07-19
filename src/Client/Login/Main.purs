@@ -25,7 +25,7 @@ login = do
         case maybeRegisterLogin of
                 Nothing -> pure unit
                 Just registerLogin -> EA.launchAff_ do
-                        token <- CCNT.post' (SR.fromRoute $ Login { next: Nothing }) $ Just registerLogin
+                        token <- CCNT.post' (Login { next: Nothing }) $ Just registerLogin
                         liftEffect do
                                 -- the location to go after login is either the query parameter next or /im
                                 redirect <- SR.toRoute <$> CCL.search
@@ -40,6 +40,6 @@ loginOnEnter event = do
 main :: Effect Unit
 main = do
         loginButton <- CCD.querySelector "#login"
-        signUpDiv <- CCD.querySelector ".sign-up"
+        signUpDiv <- CCD.querySelector ".form-up"
         CCD.addEventListener signUpDiv keyup loginOnEnter
         CCD.addEventListener loginButton click (const login)
