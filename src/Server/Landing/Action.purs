@@ -21,6 +21,7 @@ import Data.Tuple (Tuple(..))
 import Run as R
 import Run.Reader as RR
 import Server.Bender as SB
+import Server.Captcha as SC
 import Server.Landing.Database as SLD
 import Server.Database.User as SDU
 import Server.Response as SRR

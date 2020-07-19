@@ -3,8 +3,10 @@ module Client.Recover.Main where
 import Prelude
 import Shared.Types
 
+import Affjax (ResponseFormatError(..))
 import Client.Common.DOM as CCD
 import Client.Common.External as CCE
+import Client.Common.Location as CCL
 import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Data.Either (Either(..))
@@ -12,13 +14,13 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
+import Effect.Class.Console as EC
 import Shared.Router as SR
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
-import Web.UIEvent.KeyboardEvent as WUK
-import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 import Web.UIEvent.MouseEvent.EventTypes (click)
 
 foreign import grecaptchaExecute :: Effect Unit
@@ -34,7 +36,7 @@ recover captchaResponse = do
             grecaptchaExecute
        else
             EA.launchAff_ do
-                  response <- CCNT.post (Recover { token: Nothing }) <<< Just $ RecoverPassword {
+                  response <- CCNT.post (Recover { token: Nothing }) <<< Just $ RecoverAccount {
                         email: email,
                         captchaResponse: captchaResponse
                   }
@@ -48,14 +50,31 @@ recover captchaResponse = do
 completeRecover :: String -> Effect Unit
 completeRecover captchaResponse = recover $ Just captchaResponse
 
-recoverOnEnter :: Event -> Effect Unit
-recoverOnEnter event = do
-      let pressed = WUK.key <<< SU.fromJust "recover" $ WUK.fromEvent event
-      when (pressed == "Enter") $ recover Nothing
+reset :: String -> Effect Unit
+reset token = do
+      passwordElement <- CCD.querySelector "#password"
+      confirmPasswordElement <- CCD.querySelector "#confirm-password"
+      password <- CCD.value passwordElement
+      confirmPassword <- CCD.value confirmPasswordElement
+      if DS.null password || DS.null confirmPassword then
+            CCN.alert "Fill in password and confirmation"
+       else if password /= confirmPassword then
+            CCN.alert "Password and confirmation do not match"
+       else do
+            EA.launchAff_ (CCNT.post' Reset <<< Just $ ResetPassword { token, password } :: Aff Ok)
+            CCN.alert "Password reset! Redirecting to login"
+            CCL.setLocation <<< SR.fromRoute $ Login { next: Nothing }
 
 main :: Effect Unit
 main = do
-      recoverButton <- CCD.querySelector "#login"
-      signUpDiv <- CCD.querySelector ".form-up"
-      CCD.addEventListener signUpDiv keyup recoverOnEnter
-      CCD.addEventListener recoverButton click (const (recover Nothing))
+      formUpDiv <- CCD.querySelector ".form-up"
+      path <- CCL.path
+      case SR.toRoute path of
+            Right (Recover { token: Just t }) -> do
+                  resetButton <- CCD.querySelector "#reset"
+                  CCD.onEnter formUpDiv (reset t)
+                  CCD.addEventListener resetButton click (const (reset t))
+            _ -> do
+                  recoverButton <- CCD.querySelector "#recover"
+                  CCD.onEnter formUpDiv (recover Nothing)
+                  CCD.addEventListener recoverButton click (const (recover Nothing))

@@ -72,7 +72,12 @@ type EmailCaptcha r = {
 -- | Fields for registration or login
 newtype RegisterLogin = RegisterLogin (EmailCaptcha (password :: String))
 
-newtype RecoverPassword = RecoverPassword (EmailCaptcha ())
+newtype RecoverAccount = RecoverAccount (EmailCaptcha ())
+
+newtype ResetPassword = ResetPassword {
+      token :: String,
+      password :: String
+}
 
 -- | tokenPOST is a mitigation for csrf/cookie interception (since httpure http doesn't seem to offer any sort of antiforgery tokens) used for post requests, whereas tokenGET is used for (login restricted) get requests
 newtype Token = Token {
@@ -101,6 +106,7 @@ data Route =
       AccountPassword |
       Terminate |
       Suggestions |
+      Reset |
       Recover { token :: Maybe String } |
       Contacts { skip :: Int } |
       History { skip :: Int, with :: PrimaryKey }
@@ -126,8 +132,9 @@ data ResponseError =
 derive instance newtypeMDateTime :: Newtype MDateTime _
 derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 
+derive instance genericResetPassword :: Generic ResetPassword _
 derive instance genericOk :: Generic Ok _
-derive instance genericRecover :: Generic RecoverPassword _
+derive instance genericRecover :: Generic RecoverAccount _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
 derive instance genericRegisterLogin :: Generic RegisterLogin _
@@ -141,7 +148,7 @@ derive instance genericMDateTime :: Generic MDateTime _
 derive instance genericMDate :: Generic MDate _
 
 derive instance eqGenerate :: Eq Generate
-derive instance eqRecover :: Eq RecoverPassword
+derive instance eqRecover :: Eq RecoverAccount
 derive instance eqMDateTime :: Eq MDateTime
 derive instance eqMDate :: Eq MDate
 derive instance eqOk :: Eq Ok
@@ -202,14 +209,15 @@ parseInt data_
       | F.typeOf data_ == "number" = F.readInt data_
       | otherwise = SU.fromJust "parseInt" <<< DIN.fromString <$> F.readString data_
 
-
+instance encodeJsonResetPassword :: EncodeJson ResetPassword where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonEditor :: EncodeJson Editor where
       encodeJson editor = fromEditor editor
 instance encodeJsonGender :: EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonOk :: EncodeJson Ok where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonRecover :: EncodeJson RecoverPassword where
+instance encodeJsonRecover :: EncodeJson RecoverAccount where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
       encodeJson (PrimaryKey id) = fromInt53 id
@@ -218,13 +226,15 @@ instance encodeJsonMDateTime :: EncodeJson MDateTime where
 instance encodeJsonMDate :: EncodeJson MDate where
       encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0)
 
+instance decodeJsonResetPassword :: DecodeJson ResetPassword where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonEditor :: DecodeJson Editor where
       decodeJson = Right <<< toEditor
 instance decodeJsonGender :: DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonOk :: DecodeJson Ok where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonRecover :: DecodeJson RecoverPassword where
+instance decodeJsonRecover :: DecodeJson RecoverAccount where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
       decodeJson = Right <<< PrimaryKey <<< toInt53

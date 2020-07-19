@@ -17,7 +17,7 @@ import Data.FormURLEncoded as DF
 import Data.HTTP.Method (Method(..))
 import Data.Argonaut.Decode as DAD
 
-validateCaptcha :: String -> ServerEffect Unit
+validateCaptcha :: Maybe String -> ServerEffect Unit
 validateCaptcha captchaResponse = do
       { configuration : Configuration configuration } <- RR.ask
 
@@ -28,7 +28,7 @@ validateCaptcha captchaResponse = do
                   responseFormat = RF.json,
                   content = Just <<< RB.formURLEncoded $ DF.fromArray [
                         Tuple "secret" $ Just configuration.captchaSecret,
-                        Tuple "response" $ Just captchaResponse
+                        Tuple "response" captchaResponse
                   ]
             }
             case response.body of

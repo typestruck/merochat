@@ -16,8 +16,8 @@ import Shared.Unsafe as SU
 -- | The process will fail if any of them are missing on production, dummy values will be used for development
 readConfiguration :: Effect Configuration
 readConfiguration = do
-      isDevelopment <- DM.maybe false <$> NP.lookupEnv "DEVELOPMENT"
-      if isDevelopment then
+      isDevelopment <- DM.maybe false (_ == "true")  <$> NP.lookupEnv "DEVELOPMENT"
+      if isDevelopment then do
             EC.log "Starting development environment"
             pure $ Configuration {
                   port: 8000,
