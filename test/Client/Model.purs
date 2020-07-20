@@ -77,8 +77,8 @@ suggestion = SN.updateUser imUser $ _ { id = suggestionID }
 historyMessage :: HistoryMessage
 historyMessage = HistoryMessage {
       id: SP.fromInt 1,
-      sender: contactID,
-      recipient: imUserID,
+      sender:  imUserID,
+      recipient:contactID,
       date: MDateTime <<< EU.unsafePerformEffect $ EN.nowDateTime,
       content: "test",
       status: Unread

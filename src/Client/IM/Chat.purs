@@ -145,7 +145,7 @@ makeTurn (Contact { chatStarter, chatAge, history }) sender =
                           { characters: recipientCharacters
                           , interest: recipientCharacters / senderCharacters
                           }
-                    , replayDelay:
+                    , replyDelay:
                         DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds)
                     , chatAge
                     }

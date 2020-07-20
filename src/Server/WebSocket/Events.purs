@@ -79,7 +79,7 @@ handleMessage connection (WebSocketMessage message) = do
       where log = R.liftEffect <<< EC.log
             sendMessage connection' = R.liftEffect <<< SW.sendMessage connection' <<< WebSocketMessage
 
-            messageLine sender recipient (Turn {senderStats, recipientStats, chatAge, replayDelay}) = DS.joinWith ";" [messageFrom sender senderStats, messageFrom recipient recipientStats, comma [chatAge, replayDelay]]
+            messageLine sender recipient (Turn {senderStats, recipientStats, chatAge, replyDelay}) = DS.joinWith ";" [messageFrom sender senderStats, messageFrom recipient recipientStats, comma [chatAge, replyDelay]]
             messageFrom (PrimaryKey id) (Stats {characters, interest}) = comma [DI.toNumber id, characters, interest]
             comma = DS.joinWith "," <<< map show
 

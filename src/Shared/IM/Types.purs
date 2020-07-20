@@ -125,7 +125,7 @@ newtype Turn = Turn {
     senderStats :: Stats,
     recipientStats:: Stats,
     chatAge :: Number, -- Days,
-    replayDelay :: Number --Seconds
+    replyDelay :: Number --Seconds
 }
 
 data ProfileSettingsToggle =

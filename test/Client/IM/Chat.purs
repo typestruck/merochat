@@ -59,15 +59,31 @@ tests = do
                         sender: userID
                   }] user.history
 
+            let recipientMessage = SN.updateHistoryMessage historyMessage $ _ {
+                  sender = anotherIMUserID,
+                  recipient = imUserID
+            }
+
             TU.test "makeTurn calculate turn" do
-                  TUA.equal 1 2
+                  let contact' = SN.updateContact contact $ _ {
+                        history = [historyMessage, recipientMessage, historyMessage]
+                  }
+                      turn = Just $ Turn {
+                            chatAge: 0.0,
+                            recipientStats: Stats {
+                                  characters: 4.0,
+                                  interest: 1.0
+                            },
+                            replyDelay: 0.0,
+                            senderStats: Stats {
+                                  characters: 4.0,
+                                  interest: 1.0
+                            }
+                        }
+                  TUA.equal turn $ CIC.makeTurn contact' imUserID
 
             TU.test "makeTurn don't calculate turn for recipient " do
                   TUA.equal Nothing <<< CIC.makeTurn contact $ SP.fromInt 90000
-
-            let recipientMessage = SN.updateHistoryMessage historyMessage $ _ {
-                  sender = imUserID
-            }
 
             TU.test "makeTurn don't calculate turn if last message isn't from the sender" do
                   let contact' = SN.updateContact contact $ _ {
