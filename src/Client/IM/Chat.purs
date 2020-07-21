@@ -35,6 +35,7 @@ import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Now as EN
 import Flame (ListUpdate, (:>))
+import Shared.IM.Contact as SIC
 import Flame as F
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
@@ -67,7 +68,7 @@ startChat model@(IMModel {
                             { chatting = Just 0
                             , suggesting = Nothing
                             --REFACTOR: defaultContact
-                            , contacts = DA.cons (Contact { user: chatted, chatStarter: id, history: [], chatAge: 0.0 }) contacts
+                            , contacts = DA.cons (SIC.defaultContact id chatted) contacts
                             , suggestions = SU.fromJust "startChat" $ DA.deleteAt index suggestions
                             }
               _ -> model
@@ -246,7 +247,7 @@ updateHistoryMessage contacts recipientID { id, user, date, content } = case use
             index <- DA.findIndex (findUser userID) contacts
             Contact { history } <- contacts !! index
             map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
-      Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (Contact { user, history: [], chatStarter: userID, chatAge: 0.0 }) : contacts
+      Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (SIC.defaultContact  userID user) : contacts
   where findUser userID (Contact { user: IMUser { id } }) = userID == id
 
         updateHistory { id, userID, content, date } user@(Contact { history }) =

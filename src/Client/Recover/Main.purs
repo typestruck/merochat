@@ -63,13 +63,13 @@ reset token = do
        else do
             EA.launchAff_ (CCNT.post' Reset <<< Just $ ResetPassword { token, password } :: Aff Ok)
             CCN.alert "Password reset! Redirecting to login"
-            CCL.setLocation <<< SR.fromRoute $ Login { next: Nothing }
+            CCL.setLocation $ Login { next: Nothing }
 
 main :: Effect Unit
 main = do
       formUpDiv <- CCD.querySelector ".form-up"
       path <- CCL.path
-      case SR.toRoute path of
+      case path of
             Right (Recover { token: Just t }) -> do
                   resetButton <- CCD.querySelector "#reset"
                   CCD.onEnter formUpDiv (reset t)

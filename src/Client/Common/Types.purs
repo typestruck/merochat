@@ -8,8 +8,3 @@ import Web.Socket.WebSocket (WebSocket)
 
 --REFACTOR: these types are basically IM only
 
-type WebSocketHandler = {
-        sendPayload :: forall v value. Generic value v => EncodeRep v => WebSocket -> value -> Effect Unit
-}
-
-data ReceivedUser a = New a | Existing a

@@ -4,16 +4,16 @@ import Prelude
 
 import Browser.Cookie as BC
 import Browser.Cookies.Data (CookieOpts(..), SetCookie(..), Cookie(..))
-import Client.Common.Storage (tokenKey)
-import Client.Common.Storage as CCS
 import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Notification as CCN
+import Client.Common.Storage (tokenKey)
+import Client.Common.Storage as CCS
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect (Effect)
-import Shared.Types (RegisterLogin(..), Token(..))
 import Shared.Cookies (cookieName)
+import Shared.Types (RegisterLogin(..), Route, Token(..))
 
 -- | Abstracts the validation common to register and login
 validateEmailPassword :: Effect (Maybe RegisterLogin)
@@ -32,7 +32,7 @@ validateEmailPassword = do
                                 captchaResponse: Nothing
                         }
 
-login :: Token -> String -> Effect Unit
+login :: Token -> Route -> Effect Unit
 login (Token { tokenGET, tokenPOST }) redirect =  do
         BC.setCookie $ SetCookie {
                 cookie : Cookie {

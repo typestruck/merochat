@@ -1,50 +1,32 @@
 module Client.Common.Location where
 
-import Debug.Trace
 import Prelude
 
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.MediaType (MediaType(..))
+import Data.Either (Either)
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
-import Effect.Exception as EE
-import Partial.Unsafe as UP
-import Shared.Header (xAccessToken)
-import Type.Data.Boolean (kind Boolean)
-import Web.DOM.Document as WDD
-import Web.DOM.Element (Element)
-import Web.DOM.Element as WDE
-import Web.DOM.ParentNode (QuerySelector(..))
-import Web.DOM.ParentNode as WDP
-import Web.Event.Event (EventType)
-import Web.Event.EventTarget as WET
-import Web.Event.Internal.Types (Event)
+import Routing.Duplex.Parser (RouteError)
+import Shared.Router as SR
+import Shared.Types (Route)
 import Web.HTML as WH
-import Web.HTML.HTMLDocument as WHHD
-import Web.HTML.HTMLInputElement as WHHI
 import Web.HTML.Location as WHL
 import Web.HTML.Window as WHW
-import Web.Storage.Storage as WSS
 
---REFACTOR: there urls must be Route
-setLocation :: String -> Effect Unit
-setLocation url = do
+setLocation :: Route -> Effect Unit
+setLocation route = do
         window <- WH.window
         location <- WHW.location window
-        WHL.setHref url location
+        WHL.setHref (SR.fromRoute route) location
 
-search :: Effect String
+search :: Effect (Either RouteError Route)
 search = do
         window <- WH.window
         location <- WHW.location window
-        WHL.search location
+        SR.toRoute <$> WHL.search location
 
-path :: Effect String
+path :: Effect (Either RouteError Route)
 path = do
         window <- WH.window
         location <- WHW.location window
-        search <-WHL.search location
+        search' <-WHL.search location
         pathname <- WHL.pathname location
-        pure $ pathname <> search
+        pure <<< SR.toRoute $ pathname <> search'

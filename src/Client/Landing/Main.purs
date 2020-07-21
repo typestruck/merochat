@@ -25,21 +25,21 @@ foreign import grecaptchaReset :: Effect Unit
 
 register :: Maybe String -> Effect Unit
 register captchaResponse = do
-        registerLogin <- CCE.validateEmailPassword
-        case registerLogin of
-                Nothing -> pure unit
-                Just (RegisterLogin rl) ->
-                        if DM.isNothing captchaResponse then
-                                grecaptchaExecute
-                         else
-                                EA.launchAff_ do
-                                        response <- CCNT.post Register <<< Just <<< RegisterLogin $ rl { captchaResponse = captchaResponse }
-                                        case response of
-                                                Right token -> enter token
-                                                Left left -> liftEffect do
-                                                        grecaptchaReset
-                                                        CCN.alert "Could not register. Please try again."
-        where   enter token = liftEffect <<< CCE.login token $ SR.fromRoute IM
+      registerLogin <- CCE.validateEmailPassword
+      case registerLogin of
+            Nothing -> pure unit
+            Just (RegisterLogin rl) ->
+                  if DM.isNothing captchaResponse then
+                        grecaptchaExecute
+                   else
+                        EA.launchAff_ do
+                              response <- CCNT.post Register <<< Just <<< RegisterLogin $ rl { captchaResponse = captchaResponse }
+                              case response of
+                                    Right token -> enter token
+                                    Left left -> liftEffect do
+                                          grecaptchaReset
+                                          CCN.alert "Could not register. Please try again."
+      where enter token = liftEffect $ CCE.login token IM
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit
@@ -47,12 +47,12 @@ completeRegistration captchaResponse = register $ Just captchaResponse
 
 registerOnEnter :: Event -> Effect Unit
 registerOnEnter event = do
-        let pressed = WUK.key <<< SU.fromJust "registerOnEnter" $ WUK.fromEvent event
-        when (pressed == "Enter") $ register Nothing
+      let pressed = WUK.key <<< SU.fromJust "registerOnEnter" $ WUK.fromEvent event
+      when (pressed == "Enter") $ register Nothing
 
 main :: Effect Unit
 main = do
-        registerButton <- CCD.querySelector "#register"
-        signUpDiv <- CCD.querySelector ".form-up"
-        CCD.addEventListener signUpDiv keyup registerOnEnter
-        CCD.addEventListener registerButton click (const (register Nothing))
+      registerButton <- CCD.querySelector "#register"
+      signUpDiv <- CCD.querySelector ".form-up"
+      CCD.addEventListener signUpDiv keyup registerOnEnter
+      CCD.addEventListener registerButton click (const (register Nothing))

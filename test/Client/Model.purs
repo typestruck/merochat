@@ -5,6 +5,7 @@ import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Prelude
+import Shared.IM.Contact as SIC
 import Shared.IM.Types
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
@@ -61,12 +62,7 @@ anotherIMUser :: IMUser
 anotherIMUser = SN.updateUser imUser $ _ { id = anotherIMUserID }
 
 contact :: Contact
-contact = Contact {
-      chatStarter: imUserID,
-      user: anotherIMUser,
-      history: [],
-      chatAge: 0.0
-}
+contact = SIC.defaultContact imUserID anotherIMUser
 
 suggestionID :: PrimaryKey
 suggestionID = SP.fromInt 300

@@ -18,6 +18,7 @@ import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Shared.IM.Contact as SIC
 import Shared.Avatar (defaultAvatar)
 import Shared.Avatar as SA
 import Shared.Markdown as SM
@@ -49,7 +50,7 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettin
                               in Tuple (Just user) $ Just contact
                         Tuple (Just index) _ ->
                               let user@(IMUser { id }) = suggestions !@ index
-                              in Tuple (Just user) <<< Just $ Contact { user, history : [], chatStarter: id, chatAge : 0.0 }
+                              in Tuple (Just user) <<< Just $ SIC.defaultContact id user
                         _ -> Tuple Nothing Nothing
 
 profileSettings :: ProfileSettingsToggle -> Html IMMessage

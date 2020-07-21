@@ -204,6 +204,8 @@ data WebSocketPayloadClient =
             id :: PrimaryKey
       }
 
+data ReceivedUser a = New a | Existing a
+
 derive instance genericStats :: Generic Stats _
 derive instance genericTurn :: Generic Turn _
 derive instance genericContact :: Generic Contact _
