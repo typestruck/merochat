@@ -1,4 +1,3 @@
---REFACTOR: accept string instead of Query
 --REFACTOR: use /\ instead of RowN
 module Server.Database where
 

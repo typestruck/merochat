@@ -7,6 +7,7 @@ import Client.Common.External as CCE
 import Client.Common.Notification as CCN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Client.Common.Captcha as CCC
 import Effect (Effect)
 import Web.Event.Internal.Types (Event)
 import Effect.Aff as EA
@@ -20,9 +21,6 @@ import Web.UIEvent.MouseEvent.EventTypes (click)
 import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 import Web.UIEvent.KeyboardEvent as WUK
 
-foreign import grecaptchaExecute :: Effect Unit
-foreign import grecaptchaReset :: Effect Unit
-
 register :: Maybe String -> Effect Unit
 register captchaResponse = do
       registerLogin <- CCE.validateEmailPassword
@@ -30,14 +28,14 @@ register captchaResponse = do
             Nothing -> pure unit
             Just (RegisterLogin rl) ->
                   if DM.isNothing captchaResponse then
-                        grecaptchaExecute
+                        CCC.grecaptchaExecute
                    else
                         EA.launchAff_ do
                               response <- CCNT.post Register <<< Just <<< RegisterLogin $ rl { captchaResponse = captchaResponse }
                               case response of
                                     Right token -> enter token
                                     Left left -> liftEffect do
-                                          grecaptchaReset
+                                          CCC.grecaptchaReset
                                           CCN.alert "Could not register. Please try again."
       where enter token = liftEffect $ CCE.login token IM
 

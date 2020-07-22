@@ -50,7 +50,7 @@ tests = do
                                         Tuple _ (Left (IMUser {id})) -> do
                                                 R.liftAff $ TUA.equal userID id
                                                 --for some reason Database.PostgreSql gets the count as a string
-                                                count <- SD.scalar' (Query """select cast(count(1) as integer) as c from histories where sender = $1 and recipient = $2""") $ Row2  userID anotherUserID
+                                                count <- SD.scalar' (Query """select cast(count(1) as integer) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
                                                 R.liftAff $ TUA.equal 1 count
                 TU.test "insertMessage returns user if history exists" $
                         TS.serverAction $ \_ -> do
@@ -73,7 +73,7 @@ tests = do
                                 case response of
                                         Tuple _ (Right sender) -> do
                                                 R.liftAff $ TUA.equal anotherUserID sender
-                                                count <- SD.scalar' (Query """select cast(count(1) as integer) as c from histories where sender = $1 and recipient = $2""") $ Row2 anotherUserID userID
+                                                count <- SD.scalar' (Query """select cast(count(1) as integer) as c from histories where sender = $1 and recipient = $2""") (anotherUserID /\ userID)
                                                 --zero as anotherUserID was already inserted as recipient
                                                 R.liftAff $ TUA.equal 0 count
                                         Tuple _ (Left _) -> do
