@@ -1,13 +1,6 @@
 -- | This module takes care of websocket plus chat editor events.
-module Client.IM.Chat (
-      update,
-      startChat,
-      sendMessage,
-      receiveMessage,
-      makeTurn
-) where
+module Client.IM.Chat where
 
-import Client.Common.Types
 import Debug.Trace
 import Prelude
 import Shared.IM.Types
@@ -44,12 +37,6 @@ import Shared.Unsafe as SU
 
 --purty is fucking terrible
 
-update :: IMModel -> ChatMessage -> MoreMessages
-update model = case _ of
-      BeforeSendMessage content -> startChat model content
-      SendMessage content date -> sendMessage content date model
-      ReceiveMessage payload isFocused -> receiveMessage isFocused model payload
-
 startChat :: IMModel -> String -> NextMessage
 startChat model@(IMModel {
       chatting
@@ -58,24 +45,23 @@ startChat model@(IMModel {
       , suggesting
       , suggestions
 }) content = snocContact :> [ nextSendMessage ]
-  where snocContact = case Tuple chatting suggesting of
-              Tuple Nothing (Just index) ->
-                    let
-                      chatted = suggestions !@ index
-                    in
-                      SN.updateModel model
-                        $ _
-                            { chatting = Just 0
-                            , suggesting = Nothing
-                            --REFACTOR: defaultContact
-                            , contacts = DA.cons (SIC.defaultContact id chatted) contacts
-                            , suggestions = SU.fromJust "startChat" $ DA.deleteAt index suggestions
-                            }
-              _ -> model
+      where snocContact = case Tuple chatting suggesting of
+                  Tuple Nothing (Just index) ->
+                        let
+                        chatted = suggestions !@ index
+                        in
+                        SN.updateModel model
+                              $ _
+                              { chatting = Just 0
+                              , suggesting = Nothing
+                              , contacts = DA.cons (SIC.defaultContact id chatted) contacts
+                              , suggestions = SU.fromJust "startChat" $ DA.deleteAt index suggestions
+                              }
+                  _ -> model
 
-        nextSendMessage = do
-              date <- liftEffect $ map MDateTime EN.nowDateTime
-              CIF.next <<< CM $ SendMessage content date
+            nextSendMessage = do
+                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  CIF.next $ SendMessage content date
 
 sendMessage :: String -> MDateTime -> IMModel -> NoMessages
 sendMessage content date = case _ of
@@ -202,7 +188,6 @@ receiveMessage isFocused model@(IMModel {
               index <- suggesting
               suggestions !! index
 
-        --REFACTOR: helpers for Contact to pull out fields
         isChatting sender { contacts, chatting } =
               let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in
               recipientID == DET.either (_.id <<< DN.unwrap) identity sender

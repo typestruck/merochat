@@ -20,15 +20,9 @@ import Shared.Newtype as SN
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 
-update :: IMModel -> ChatHistoryMessage -> MoreMessages
-update model = case _ of
-      CheckScrollTop -> checkScrollTop model
-      FetchHistory shouldFetch -> fetchHistory shouldFetch model
-      DisplayHistory (JSONResponse history) -> displayHistory history model
-
 checkScrollTop :: IMModel -> MoreMessages
 checkScrollTop model@(IMModel { freeToFetchChatHistory })
-      | freeToFetchChatHistory = model :> [ Just <<< HM <<< FetchHistory <$> getScrollTop ]
+      | freeToFetchChatHistory = model :> [ Just <<< FetchHistory <$> getScrollTop ]
 
       where getScrollTop = liftEffect do
                   element <- CCD.querySelector "#message-history-wrapper"
@@ -44,7 +38,7 @@ fetchHistory shouldFetch model@(IMModel { chatting, contacts })
                   contacts !! index
             in (SN.updateModel model $ _ {
                   freeToFetchChatHistory = false
-            }) :> [ Just <<< HM <<< DisplayHistory <$> CCN.get' (History {
+            }) :> [ Just <<< DisplayHistory <$> CCN.get' (History {
                         skip: DA.length history,
                         with: id
                   })

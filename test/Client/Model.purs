@@ -18,7 +18,6 @@ run model f = do
       f' <- f
       pure $ f' model
 
-
 model :: IMModel
 model = IMModel {
       userContextMenuVisible: false,

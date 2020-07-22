@@ -56,15 +56,15 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettin
 profileSettings :: ProfileSettingsToggle -> Html IMMessage
 profileSettings toggle = HE.div (HA.class' $ "profile-settings-placeholder" <> if toggle /= Hidden then "" else " hidden") [
       HE.div (HA.class' "profile-settings-menu") [
-            HE.div [HA.onClick (UMM $ ToggleProfileSettings Hidden)] [
+            HE.div [HA.onClick (ToggleProfileSettings Hidden)] [
                   HE.svg [HA.class' "svg-32 back-arrow", HA.id "cil-arrow-thick-to-left", HA.viewBox "0 0 24 24"] [
                         HE.path' $ HA.d "M15.75 8.25v-5.625h-1.81l-9.375 9.366 9.375 9.384h1.811v-5.625h7.5v-7.5zM21.75 14.25h-7.5v5.314l-7.564-7.572 7.564-7.557v5.315h7.5z",
                         HE.path' $ HA.d "M0.75 2.625h1.5v18.75h-1.5v-18.75z"
                   ],
                   HE.text "Back to chats"
             ],
-            HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowProfile), HA.class' { green: toggle == ShowProfile }] "Your profile",
-            HE.div [HA.onClick (UMM $ ToggleProfileSettings ShowSettings), HA.class' { green: toggle == ShowSettings }] "Your settings"
+            HE.div [HA.onClick (ToggleProfileSettings ShowProfile), HA.class' { green: toggle == ShowProfile }] "Your profile",
+            HE.div [HA.onClick (ToggleProfileSettings ShowSettings), HA.class' { green: toggle == ShowSettings }] "Your settings"
       ],
       HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ "Loading...",
       HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ "Loading..."
@@ -72,7 +72,7 @@ profileSettings toggle = HE.div (HA.class' $ "profile-settings-placeholder" <> i
 
 userMenu :: IMModel -> Html IMMessage
 userMenu (IMModel { user: IMUser { name, avatar, karma }, userContextMenuVisible }) =  HE.div [HA.id "settings", HA.class' "settings"][
-      HE.a (HA.onClick (UMM $ ToggleProfileSettings ShowProfile)) $ HE.img [HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
+      HE.a (HA.onClick (ToggleProfileSettings ShowProfile)) $ HE.img [HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
       HE.div (HA.class' "settings-name") [
             HE.strong_ name,
             HE.br,
@@ -87,9 +87,9 @@ userMenu (IMModel { user: IMUser { name, avatar, karma }, userContextMenuVisible
                   ]
             ],
             HE.div [HA.class' "drop-menu fade-in effect"][
-                   HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowProfile)] "Profile",
-                   HE.a [HA.class' "menu-button", HA.onClick (UMM $ ToggleProfileSettings ShowSettings)] "Settings",
-                   HE.a [HA.class' "menu-button", HA.onClick (UMM ConfirmLogout)] "Logout"
+                   HE.a [HA.class' "menu-button", HA.onClick (ToggleProfileSettings ShowProfile)] "Profile",
+                   HE.a [HA.class' "menu-button", HA.onClick (ToggleProfileSettings ShowSettings)] "Settings",
+                   HE.a [HA.class' "menu-button", HA.onClick ConfirmLogout] "Logout"
             ]
       ]
 ]
@@ -99,7 +99,7 @@ profile (IMModel { suggesting, chatting }) =
       case _ of
             (Just (IMUser { name, avatar, age, karma, headline, gender, country, languages, tags })) ->
                   HE.div (HA.class' "suggestion") [
-                        HE.a [HA.class' "skip", HA.title "See previous profile again", HA.onClick $ SM PreviousSuggestion] [
+                        HE.a [HA.class' "skip", HA.title "See previous profile again", HA.onClick PreviousSuggestion] [
                               HE.svg [HA.id "cil-arrow-thick-from-right", HA.viewBox "0 0 24 24", HA.class' "svg-50"] [
                                     HE.path' $ HA.d "M11.936 2.625h-1.811l-9.375 9.384 9.375 9.366h1.81v-5.625h6.75v-7.5h-6.75zM17.186 9.75v4.5h-6.75v5.315l-7.564-7.557 7.564-7.572v5.314z",
                                     HE.path' $ HA.d "M21.686 2.625h1.5v18.75h-1.5v-18.75z"
@@ -120,7 +120,7 @@ profile (IMModel { suggesting, chatting }) =
                               HE.div (HA.class' "karma-stats") <<< HE.span_ $ "Karma: " <> show karma,
                               HE.div_ $ map toTagSpan tags
                         ],
-                        HE.a [HA.class' "skip green", HA.title "See next profile", HA.onClick $ SM NextSuggestion] [
+                        HE.a [HA.class' "skip green", HA.title "See next profile", HA.onClick NextSuggestion] [
                               HE.svg [HA.id "cil-arrow-thick-from-left", HA.class' "svg-50", HA.viewBox "0 0 24 24"] [
                                     HE.path' $ HA.d "M13.875 2.625h-1.811v5.625h-6.75v7.5h6.75v5.625h1.81l9.375-9.366zM13.564 19.565v-5.315h-6.75v-4.5h6.75v-5.314l7.564 7.572z",
                                     HE.path' $ HA.d "M0.814 2.625h1.5v18.75h-1.5v-18.75z"
@@ -146,7 +146,7 @@ profile (IMModel { suggesting, chatting }) =
             toTagSpan tag = HE.span (HA.class' "tag") tag
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll (HM CheckScrollTop)] $
+history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckScrollTop] $
       case chattingSuggestion of
             Nothing -> [HE.createEmptyElement "div"]
             Just recipient -> display recipient
@@ -174,7 +174,7 @@ chat (IMModel {chatting, suggesting}) =
 search model = HE.div' $ HA.class' "search"
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onWheel' (CNM <<< FetchContacts),  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onWheel' FetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
       where getDate history = do
                   HistoryMessage { date: MDateTime md } <- DA.last history
                   pure md
@@ -186,7 +186,7 @@ contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onW
             lastMessage = DM.maybe "" (SM.toRestrictedHTML <<< _.content <<< DN.unwrap) <<< DA.last
 
             contactEntry index (Contact { history, user: IMUser { id, name, avatar, headline }}) =
-                  HE.div [HA.class' "contact", HA.onClick <<< CNM $ ResumeChat id] [
+                  HE.div [HA.class' "contact", HA.onClick $ ResumeChat id] [
                         HE.img [HA.class' "avatar-contact-list", HA.src $ SA.avatarForRecipient (Just index) avatar],
                         HE.div [HA.class' "contact-profile"] [
                               HE.strong_ name,

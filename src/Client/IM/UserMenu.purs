@@ -20,21 +20,11 @@ import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 
-update :: IMModel -> UserMenuMessage -> MoreMessages
-update model =
-        case _ of
-                ConfirmLogout -> confirmLogout model
-                Logout confirmed -> logout model confirmed
-                ShowUserContextMenu event -> showUserContextMenu model event
-                ToggleProfileSettings toggle -> toggleProfileSettings model toggle
-                SetModalContents file root (JSONResponse html) -> CIF.nothingNext model $ loadModal root html file
-                SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
-
 logout :: IMModel -> Boolean -> MoreMessages
 logout model confirmed = CIF.nothingNext model <<< liftEffect $ when confirmed CCLO.logout
 
 confirmLogout :: IMModel -> NoMessages
-confirmLogout = (_ :> [Just <<< UMM <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
+confirmLogout = (_ :> [Just <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
 
 --PERFORMANCE: load bundles only once
 toggleProfileSettings :: IMModel -> ProfileSettingsToggle -> MoreMessages
@@ -42,10 +32,10 @@ toggleProfileSettings model =
         case _ of
                 ShowProfile -> showTab Profile ShowProfile "profile.bundle.js" "#profile-edition-root"
                 ShowSettings -> showTab Settings ShowSettings "settings.bundle.js" "#settings-edition-root"
-                Hidden -> CIF.justNext (SN.updateModel model $ _ { profileSettingsToggle = Hidden }) <<< UMM <<< SetModalContents Nothing "#profile-edition-root" $ JSONResponse "Loading..."
+                Hidden -> CIF.justNext (SN.updateModel model $ _ { profileSettingsToggle = Hidden }) <<< SetModalContents Nothing "#profile-edition-root" $ JSONResponse "Loading..."
         where   showTab route toggle file root =
                         (SN.updateModel model $ _ { profileSettingsToggle = toggle }) :> [
-                                Just <<< UMM <<< SetModalContents (Just file) root <$> CCN.get' route
+                                Just <<< SetModalContents (Just file) root <$> CCN.get' route
                         ]
 loadModal :: String -> String -> Maybe String -> Aff Unit
 loadModal root html file = liftEffect do
@@ -62,7 +52,7 @@ showUserContextMenu model@(IMModel { userContextMenuVisible }) event
                 F.noMessages <<< SN.updateModel model $ _ { userContextMenuVisible = false }
         | otherwise =
                 model :> [
-                        liftEffect <<< map (Just <<< UMM <<< SetUserContentMenuVisible <<< (_ == "user-context-menu")) $ WDE.id <<< SU.fromJust "usermenu.update" $ do
+                        liftEffect <<< map (Just <<< SetUserContentMenuVisible <<< (_ == "user-context-menu")) $ WDE.id <<< SU.fromJust "usermenu.update" $ do
                         target <- WEE.target event
                         WDE.fromEventTarget target
                 ]

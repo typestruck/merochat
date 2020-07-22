@@ -137,49 +137,36 @@ data MessageStatus =
       Unread |
       Read
 
-data ChatHistoryMessage =
+data IMMessage =
+      --history
       CheckScrollTop |
       FetchHistory Boolean |
-      DisplayHistory (JSONResponse (Array HistoryMessage))
-
-data UserMenuMessage =
+      DisplayHistory (JSONResponse (Array HistoryMessage)) |
+      --user menu
       ConfirmLogout |
       ShowUserContextMenu Event |
       Logout Boolean |
       ToggleProfileSettings ProfileSettingsToggle |
       SetUserContentMenuVisible Boolean |
-      SetModalContents (Maybe String) String (JSONResponse String)
-
-data ContactMessage =
+      SetModalContents (Maybe String) String (JSONResponse String) |
+      --contact
       MarkAsRead |
       ResumeChat PrimaryKey |
       UpdateReadCount |
       DisplayContacts (JSONResponse (Array Contact)) |
-      FetchContacts Event
-
-data SuggestionMessage =
+      FetchContacts Event |
+      --suggestion
       PreviousSuggestion |
       NextSuggestion |
-      DisplayMoreSuggestions (JSONResponse (Array Suggestion))
-
-data ChatMessage =
+      DisplayMoreSuggestions (JSONResponse (Array Suggestion)) |
+      --chat
       BeforeSendMessage String |
       SendMessage String MDateTime |
-      ReceiveMessage WebSocketPayloadClient Boolean
-
-data MainMessage =
+      ReceiveMessage WebSocketPayloadClient Boolean |
+      --main
       SetWebSocket WebSocket |
       SetToken String |
       SetName String
-
---REFACTOR: give these descriptive names
-data IMMessage =
-      UMM UserMenuMessage |
-      SM SuggestionMessage |
-      CM ChatMessage |
-      MM MainMessage |
-      CNM ContactMessage |
-      HM ChatHistoryMessage
 
 data WebSocketPayloadServer =
       Connect String |

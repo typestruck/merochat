@@ -1,6 +1,5 @@
 module Client.IM.Contacts where
 
-import Client.Common.Types
 import Debug.Trace
 import Prelude
 import Shared.IM.Types
@@ -27,16 +26,6 @@ import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
 import Web.UIEvent.WheelEvent (WheelEvent)
 import Web.UIEvent.WheelEvent as WUW
-
-update :: IMModel -> ContactMessage -> MoreMessages
-update model  =
-      case _ of
-            ResumeChat id -> resumeChat id model
-            MarkAsRead -> markRead model
-            --when the window is focused updated the read status of current chat
-            UpdateReadCount -> markRead model
-            FetchContacts event -> fetchContacts (SU.fromJust "contacts.update" $ WUW.fromEvent event) model
-            DisplayContacts (JSONResponse contacts) -> displayContacts contacts model
 
 resumeChat :: PrimaryKey -> IMModel -> NoMessages
 resumeChat searchID model@(IMModel { contacts }) =
@@ -99,7 +88,7 @@ fetchContacts event model@(IMModel { contacts })
       | WUW.deltaY event < 1.0 =
             F.noMessages model
       | otherwise =   --needs some kind of throttling/loading
-            model :> [Just <<< CNM <<< DisplayContacts <$> CCN.get' (Contacts { skip: DA.length contacts })]
+            model :> [Just <<< DisplayContacts <$> CCN.get' (Contacts { skip: DA.length contacts })]
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
 displayContacts newContacts model@(IMModel { contacts })

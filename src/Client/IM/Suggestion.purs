@@ -17,13 +17,6 @@ import Flame as F
 import Shared.Newtype as SN
 import Shared.Types (Route(..), JSONResponse(..))
 
-update :: IMModel -> SuggestionMessage -> MoreMessages
-update model =
-      case _ of
-            PreviousSuggestion -> previousSuggestion model
-            NextSuggestion -> nextSuggestion model
-            DisplayMoreSuggestions (JSONResponse suggestions) -> displayMoreSuggestions suggestions model
-
 nextSuggestion :: IMModel -> MoreMessages
 nextSuggestion model@(IMModel { suggestions, suggesting }) =
       let next = DM.maybe 0 (_ + 1) suggesting
@@ -48,7 +41,7 @@ previousSuggestion model@(IMModel { suggesting }) =
                   }
 
 fetchMoreSuggestions :: IMModel -> NextMessage
-fetchMoreSuggestions = (_ :> [Just <<< SM <<< DisplayMoreSuggestions <$> CCN.get' Suggestions])
+fetchMoreSuggestions = (_ :> [Just <<< DisplayMoreSuggestions <$> CCN.get' Suggestions])
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> NoMessages
 displayMoreSuggestions suggestions =
