@@ -30,9 +30,8 @@ import Server.IM.Database as SID
 import Server.Token as ST
 import Server.WebSocket (WebSocketConnection, WebSocketMessage(..), CloseCode, CloseReason)
 import Server.WebSocket as SW
+import Server.Wheel as SWL
 import Shared.JSON as SJ
-
-foreign import sendWheelMessage_ :: EffectFn1 String Unit
 
 handleError :: Error -> Effect Unit
 handleError = EC.log <<< show
@@ -72,17 +71,12 @@ handleMessage connection (WebSocketMessage message) = do
                               --pass along karma calculation to wheel
                               case turn of
                                     Nothing -> pure unit
-                                    Just t -> R.liftEffect <<< EU.runEffectFn1 sendWheelMessage_ $ messageLine userID recipient t
+                                    Just t -> R.liftEffect $ SWL.sendMessage userID recipient t
             Left error -> do
                   log $ "received faulty payload " <> error
 
       where log = R.liftEffect <<< EC.log
             sendMessage connection' = R.liftEffect <<< SW.sendMessage connection' <<< WebSocketMessage
-
-            messageLine sender recipient (Turn {senderStats, recipientStats, chatAge, replyDelay}) = DS.joinWith ";" [messageFrom sender senderStats, messageFrom recipient recipientStats, comma [chatAge, replyDelay]]
-            messageFrom (PrimaryKey id) (Stats {characters, interest}) = comma [DI.toNumber id, characters, interest]
-            comma = DS.joinWith "," <<< map show
-
             withUser token f = do
                   {configuration: Configuration configuration} <- RR.ask
                   user <- R.liftEffect $ ST.userIDFromToken configuration.tokenSecretPOST token

@@ -1,4 +1,3 @@
---REFACTOR: use /\ instead of RowN
 module Server.Database where
 
 import Prelude
