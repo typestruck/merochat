@@ -7,8 +7,11 @@ import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
-import Server.Template (externalDefaultParameters, externalFooter)
+import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.Router as SR
+import Shared.Types (Route(..))
+import Shared.Router.Default as SRD
 
 template :: Maybe String -> Effect String
 template token = do
@@ -44,13 +47,13 @@ template token = do
                                                       HE.input [HA.type' "button", HA.id "reset", HA.value "Change password", HA.class' "action-button"]
                                                 ]
                                           ],
-                              HE.a [HA.href "/login", HA.class' "question-link forgot"] "Already have an account?",
+                              HE.a [HA.href SRD.login, HA.class' "question-link forgot"] "Already have an account?",
                               HE.div [HA.class' "question-or"] [
                                     HE.hr' $ HA.class' "hr-or",
                                     HE.text "or",
                                     HE.hr' $ HA.class' "hr-or"
                               ],
-                              HE.a [HA.href "/", HA.class' "question-link"] "Don't have an account?"
+                              HE.a [HA.href $ SR.fromRoute Landing, HA.class' "question-link"] "Don't have an account?"
 
                   ]
             ]

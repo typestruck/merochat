@@ -2,12 +2,16 @@ module Server.Landing.Template where
 
 import Prelude
 
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
+import Shared.Router as SR
+import Shared.Router.Default as SRD
+import Shared.Types (Route(..))
 
 template :: Effect String
 template = do
@@ -30,12 +34,12 @@ template = do
             content = [
                   HE.div (HA.class' "landing") [
                         HE.div (HA.class' "header") [
-                              HE.a [HA.href "/", HA.class' "logo"] $ HE.img [
+                              HE.a [HA.href $ SR.fromRoute Landing, HA.class' "logo"] $ HE.img [
                                           HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
                                           HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
                                           HA.src "/client/media/logo.png"],
                                           --REFACTOR: use Shared.Router in view too
-                              HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href "/login"] "Login"
+                              HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href SRD.login] "Login"
                         ],
                         HE.div (HA.class' "green-area") [
                               HE.h1 (HA.id "headline") "Friendly. Random. Chat.",

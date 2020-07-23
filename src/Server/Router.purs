@@ -26,6 +26,7 @@ import Server.Settings.Router as SSR
 import Server.Token as ST
 import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
+import Shared.Router.Default as SRD
 import Shared.Header (xAccessToken)
 import Shared.PrimaryKey as SP
 import Server.Recover.Router as SRER
@@ -48,21 +49,21 @@ router request@{ headers, path, method } =
        else if paths == SRO.fromRoute Register && method == Post then
             SLR.register request
        --login
-       else if paths == SRO.fromRoute (Login { next: Nothing }) then
+       else if paths == SRD.login then
             SLIR.login request
        --im
        else if paths == SRO.fromRoute IM then
             SIR.im request
-       else if paths == SRO.fromRouteToPath (Contacts { skip: 0 }) then
+       else if paths == SRD.contacts then
             SIR.contacts request
        else if paths == SRO.fromRoute Suggestions then
             SIR.suggestions request
-       else if paths == SRO.fromRouteToPath (History { skip: 0, with: SP.fromInt 0 }) then
+       else if paths == SRD.history then
             SIR.history request
        --profile
        else if paths == SRO.fromRoute Profile then
             SPR.profile request
-       else if paths == SRO.fromRouteToPath (Generate { what: Name }) then
+       else if paths == SRD.generate then
             SPR.generate request
        --settings
        else if paths == SRO.fromRoute Settings then
@@ -74,7 +75,7 @@ router request@{ headers, path, method } =
        else if paths == SRO.fromRoute Terminate && method == Post then
             SSR.terminateAccount request
        --recover
-       else if paths == SRO.fromRoute (Recover { token: Nothing }) then
+       else if paths == SRD.recover then
             SRER.recover request
        else if paths == SRO.fromRoute Reset then
             SRER.reset request
