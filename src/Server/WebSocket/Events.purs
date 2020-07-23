@@ -28,7 +28,7 @@ import Run.Except as RE
 import Run.Reader as RR
 import Server.IM.Database as SID
 import Server.Token as ST
-import Server.WebSocket (WebSocketConnection, WebSocketMessage(..), CloseCode, CloseReason)
+import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Server.Wheel as SWL
 import Shared.JSON as SJ
@@ -59,19 +59,15 @@ handleMessage connection (WebSocketMessage message) = do
                               }
 
                               possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
-                              --REFACTOR: there must be a way to abstract this Maybe pattern
-                              case possibleRecipientConnection of
-                                    Nothing -> pure unit
-                                    Just recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
+                              whenJust possibleRecipientConnection $ \recipientConnection ->
+                                    sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
                                           id : messageID,
                                           user: senderUser,
                                           content,
                                           date
                                     }
                               --pass along karma calculation to wheel
-                              case turn of
-                                    Nothing -> pure unit
-                                    Just t -> R.liftEffect $ SWL.sendMessage userID recipient t
+                              whenJust turn (R.liftEffect <<< SWL.sendMessage userID recipient)
             Left error -> do
                   log $ "received faulty payload " <> error
 
@@ -85,6 +81,10 @@ handleMessage connection (WebSocketMessage message) = do
                                     R.liftEffect $ SW.close connection
                                     log "closed due to auth error"
                               Just userId -> f userId
+            whenJust :: forall v. Maybe v -> (v -> WebSocketEffect) -> WebSocketEffect
+            whenJust value f = case value of
+                  Nothing -> pure unit
+                  Just v -> f v
 
 handleConnection :: WebSocketReader -> WebSocketConnection -> Request -> Effect Unit
 handleConnection reading connection request = do

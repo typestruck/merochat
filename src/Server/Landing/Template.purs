@@ -38,7 +38,6 @@ template = do
                                           HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
                                           HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
                                           HA.src "/client/media/logo.png"],
-                                          --REFACTOR: use Shared.Router in view too
                               HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href SRD.login] "Login"
                         ],
                         HE.div (HA.class' "green-area") [

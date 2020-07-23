@@ -145,7 +145,6 @@ setWebSocket ws = CIF.diff { webSocket: Just $ WS ws }
 setToken :: String -> IMModel -> NoMessages
 setToken token = CIF.diff { token: Just token }
 
---REFACTOR: pick between CIF.diff and SN.update*
 setName :: String -> IMModel -> NoMessages
 setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
       user = SN.updateUser user $ _ {

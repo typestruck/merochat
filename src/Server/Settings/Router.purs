@@ -25,7 +25,6 @@ changeEmail request@{ body } = do
         userID <- SRS.checkLogin request
         SRR.json body (SSA.changeEmail userID)
 
---REFACTOR: abstract this workflow of doing a json action after getting the logged id
 changePassword :: Request -> ResponseEffect
 changePassword request@{ body } = do
         userID <- SRS.checkLogin request
