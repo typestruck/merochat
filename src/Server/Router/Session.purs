@@ -15,7 +15,7 @@ import Run.Reader as RR
 checkAnonymous :: ServerEffect Unit
 checkAnonymous = do
       { session : { userID } } <- RR.ask
-      when (DM.isNothing userID) $ RE.throw AnonymousRequired
+      when (DM.isJust userID) $ RE.throw AnonymousRequired
 
 -- | Raises an exception if there is no logged user
 checkLogin :: Request -> ServerEffect PrimaryKey

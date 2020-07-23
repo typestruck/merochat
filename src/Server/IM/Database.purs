@@ -60,7 +60,9 @@ presentContacts id skip = SD.select (Query ("select distinct date, sender, first
 
 --there must be a better way to do this
 chatHistory :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array HistoryMessage)
-chatHistory id otherIDs = SD.select (Query query) (id /\ messagesPerPage)
+chatHistory id otherIDs
+      | DA.null otherIDs = pure []
+      | otherwise = SD.select (Query query) (id /\ messagesPerPage)
       where query = "select * from (" <> DS.joinWith " union all " (select <$> otherIDs) <> ") r order by date, sender, recipient"
             select n =
                   let parameter = show n
