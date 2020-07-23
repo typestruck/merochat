@@ -6,30 +6,24 @@ import Shared.Types
 
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import HTTPure (Headers, Response, ResponseM, Path)
+import HTTPure (Method(..), Request)
 import HTTPure.Lookup ((!@))
+import Run.Except as RE
 import Run.Reader as RR
-import Server.Response as SRR
-import Shared.Router as SRO
-import Shared.Unsafe as SU
 
-ifAnonymous :: ResponseEffect -> ResponseEffect
-ifAnonymous handler = do
+-- | Raises an exception if there is a logged user
+checkAnonymous :: ServerEffect Unit
+checkAnonymous = do
       { session : { userID } } <- RR.ask
-      if DM.isNothing userID then
-            handler
-       else
-            SRR.redirect $ SRO.fromRoute IM
+      when (DM.isNothing userID) $ RE.throw AnonymousRequired
 
-ifLogged :: Path -> ResponseEffect -> ResponseEffect
-ifLogged path handler = do
+-- | Raises an exception if there is no logged user
+checkLogin :: Request -> ServerEffect PrimaryKey
+checkLogin { path, method } = do
       { session : { userID } } <- RR.ask
-      if DM.isJust userID then
-            handler
-       else
-            SRR.redirect <<< SRO.fromRoute $ Login { next: Just (path !@ 0) }
-
-loggedUserID :: ServerEffect PrimaryKey
-loggedUserID = do
-      { session: { userID: maybeUserID } } <- RR.ask
-      pure $ SU.fromJust "loggedUserId" maybeUserID
+      case userID of
+            Just id -> pure id
+            _ -> RE.throw $ LoginRequired {
+                  next: path !@ 0,
+                  isPost: method == Post
+            }

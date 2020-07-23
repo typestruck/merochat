@@ -15,24 +15,25 @@ import Shared.Types (JSONResponse(..), PrimaryKey(..))
 import Shared.Unsafe as SU
 
 settings :: Request -> ResponseEffect
-settings { path } = SRS.ifLogged path do
+settings request = do
+        void $ SRS.checkLogin request
         contents <- R.liftEffect SST.template
         SRR.json' $ JSONResponse contents
 
 changeEmail :: Request -> ResponseEffect
-changeEmail { path, body } = SRS.ifLogged path do
-        userID <- SRS.loggedUserID
+changeEmail request@{ body } = do
+        userID <- SRS.checkLogin request
         SRR.json body (SSA.changeEmail userID)
 
 --REFACTOR: abstract this workflow of doing a json action after getting the logged id
 changePassword :: Request -> ResponseEffect
-changePassword { path, body } = SRS.ifLogged path do
-        userID <- SRS.loggedUserID
+changePassword request@{ body } = do
+        userID <- SRS.checkLogin request
         SRR.json body (SSA.changePassword userID)
 
 terminateAccount :: Request -> ResponseEffect
-terminateAccount { path } = SRS.ifLogged path do
-        userID <- SRS.loggedUserID
+terminateAccount request = do
+        userID <- SRS.checkLogin request
         ok <- SSA.terminateAccount userID
         SRR.json' ok
 

@@ -20,18 +20,16 @@ import Shared.Router as SR
 import Shared.Unsafe as SU
 
 im :: Request -> ResponseEffect
-im { path } = do
-      let handler = do
-            userID <- SRS.loggedUserID
-            user <- SID.presentUser userID
-            suggestions <- SIA.suggest userID
-            contacts <- SIA.contactList userID 0
-            SRR.serveTemplate $ SIT.template { contacts, suggestions, user }
-      SRS.ifLogged path handler
+im request = do
+      userID <- SRS.checkLogin request
+      user <- SID.presentUser userID
+      suggestions <- SIA.suggest userID
+      contacts <- SIA.contactList userID 0
+      SRR.serveTemplate $ SIT.template { contacts, suggestions, user }
 
 contacts :: Request -> ResponseEffect
 contacts request = do
-      userID <- SRS.loggedUserID
+      userID <- SRS.checkLogin request
       case SR.toRoute $ H.fullPath request of
             Right (Contacts { skip }) -> do
                   list <- SIA.contactList userID skip
@@ -40,15 +38,15 @@ contacts request = do
 
 history :: Request -> ResponseEffect
 history request = do
-      userID <- SRS.loggedUserID
+      userID <- SRS.checkLogin request
       case SR.toRoute $ H.fullPath request of
             Right (History { skip, with }) -> do
                   list <- SID.chatHistoryBetween userID with skip
                   SRR.json' $ JSONResponse list
             _ -> SRR.throwBadRequest "invalid parameters"
 
-suggestions :: ResponseEffect
-suggestions = do
-      userID <- SRS.loggedUserID
+suggestions :: Request -> ResponseEffect
+suggestions request = do
+      userID <- SRS.checkLogin request
       list <- SIA.suggest userID
       SRR.json' $ JSONResponse list

@@ -56,7 +56,7 @@ router request@{ headers, path, method } =
        else if paths == SRO.fromRouteToPath (Contacts { skip: 0 }) then
             SIR.contacts request
        else if paths == SRO.fromRoute Suggestions then
-            SIR.suggestions
+            SIR.suggestions request
        else if paths == SRO.fromRouteToPath (History { skip: 0, with: SP.fromInt 0 }) then
             SIR.history request
        --profile

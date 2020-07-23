@@ -9,7 +9,11 @@ import HTTPure (Method(..), Request, ResponseM, Path)
 import Server.Response as SRR
 
 landing :: ResponseEffect
-landing = SRS.ifAnonymous $ SRR.serveTemplate SLT.template
+landing = do
+        SRS.checkAnonymous
+        SRR.serveTemplate SLT.template
 
 register :: Request -> ResponseEffect
-register { body } = SRS.ifAnonymous <<< SRR.json body $ SLA.register ""
+register { body } = do
+      SRS.checkAnonymous
+      SRR.json body $ SLA.register ""

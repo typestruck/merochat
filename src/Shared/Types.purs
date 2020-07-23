@@ -126,6 +126,11 @@ data ResponseError =
             reason :: String,
             isPost :: Boolean
       } |
+      LoginRequired {
+            next :: String,
+            isPost :: Boolean
+      } |
+      AnonymousRequired |
       BadRequest { reason :: String } |
       InternalError { reason :: String }
 

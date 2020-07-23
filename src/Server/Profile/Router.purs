@@ -19,8 +19,8 @@ import Shared.Types
 import Shared.Unsafe as SU
 
 profile :: Request -> ResponseEffect
-profile { method, path, body } = SRS.ifLogged path do
-        userID <- SRS.loggedUserID
+profile request@{ method, body } = do
+        userID <- SRS.checkLogin request
         if method == Get then do
                 profileUser <- SPD.presentProfile userID
                 countries <- SPD.presentCountries
@@ -36,6 +36,7 @@ profile { method, path, body } = SRS.ifLogged path do
 
 generate :: Request -> ResponseEffect
 generate request = do
+        void $ SRS.checkLogin request
         case SR.toRoute $ H.fullPath request of
                 Right (Generate { what }) -> do
                         generated <- SPA.generate what

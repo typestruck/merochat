@@ -9,8 +9,9 @@ import Server.Response as SRR
 import HTTPure (Method(..), Request, ResponseM, Path)
 
 login :: Request -> ResponseEffect
-login { method, body } = SRS.ifAnonymous $
-        if method == Get then
-                SRR.serveTemplate SLIT.template
-         else
-                SRR.json body SLI.login
+login { method, body } = do
+      SRS.checkAnonymous
+      if method == Get then
+            SRR.serveTemplate SLIT.template
+       else
+            SRR.json body SLI.login

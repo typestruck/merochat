@@ -15,7 +15,8 @@ import Server.Router.Session as SRS
 import Shared.Router as SR
 
 recover :: Request -> ResponseEffect
-recover request@{ method, body } = SRS.ifAnonymous $
+recover request@{ method, body } = do
+      SRS.checkAnonymous
       if method == Get then do
             let token' = case SR.toRoute $ H.fullPath request of
                   Right (Recover { token }) -> token
@@ -25,4 +26,6 @@ recover request@{ method, body } = SRS.ifAnonymous $
             SRR.json body SRA.recover
 
 reset :: Request -> ResponseEffect
-reset request@{ body } = SRS.ifAnonymous (SRR.json body SRA.reset)
+reset request@{ body } = do
+      SRS.checkAnonymous
+      SRR.json body SRA.reset
