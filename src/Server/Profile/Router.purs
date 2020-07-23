@@ -2,8 +2,10 @@ module Server.Profile.Router where
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.String.Read as DSR
 import HTTPure (Method(..), Request, (!@))
+import HTTPure as H
 import Run as R
 import Run.Reader as RR
 import Server.Profile.Action as SPA
@@ -12,7 +14,8 @@ import Server.Profile.Template as SPT
 import Server.Response as SRR
 import Server.Router.Session as SRS
 import Server.Types (ResponseEffect)
-import Shared.Types (JSONResponse(..), PrimaryKey(..))
+import Shared.Router as SR
+import Shared.Types
 import Shared.Unsafe as SU
 
 profile :: Request -> ResponseEffect
@@ -32,7 +35,9 @@ profile { method, path, body } = SRS.ifLogged path do
                 SRR.json body (SPA.saveProfile userID)
 
 generate :: Request -> ResponseEffect
-generate { query } = do
-        --REFACTOR: the query parameters outside of the Shared.Router functions are not type safe
-        generated <- SPA.generate <<< SU.fromJust "generate" $ DSR.read (query !@ "what")
-        SRR.json' generated
+generate request = do
+        case SR.toRoute $ H.fullPath request of
+                Right (Generate { what }) -> do
+                        generated <- SPA.generate what
+                        SRR.json' generated
+                _ -> SRR.throwBadRequest "invalid parameters"

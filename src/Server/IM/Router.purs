@@ -29,12 +29,14 @@ im { path } = do
             SRR.serveTemplate $ SIT.template { contacts, suggestions, user }
       SRS.ifLogged path handler
 
---REFACTOR: page and other query parameters can be safely parsed by using the Shared.Router functions....
 contacts :: Request -> ResponseEffect
-contacts { query } = do
+contacts request = do
       userID <- SRS.loggedUserID
-      list <- SIA.contactList userID <<< SU.fromJust "contacts" $ DI.fromString (query !@ "skip")
-      SRR.json' $ JSONResponse list
+      case SR.toRoute $ H.fullPath request of
+            Right (Contacts { skip }) -> do
+                  list <- SIA.contactList userID skip
+                  SRR.json' $ JSONResponse list
+            _ -> SRR.throwBadRequest "invalid parameters"
 
 history :: Request -> ResponseEffect
 history request = do
