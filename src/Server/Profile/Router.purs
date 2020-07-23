@@ -17,8 +17,7 @@ import Shared.Unsafe as SU
 
 profile :: Request -> ResponseEffect
 profile { method, path, body } = SRS.ifLogged path do
-        { session: { userID: maybeUserID } } <- RR.ask
-        let userID = PrimaryKey $ SU.fromJust "router" maybeUserID
+        userID <- SRS.loggedUserID
         if method == Get then do
                 profileUser <- SPD.presentProfile userID
                 countries <- SPD.presentCountries

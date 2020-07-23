@@ -84,7 +84,7 @@ handleMessage connection (WebSocketMessage message) = do
                               Nothing -> do
                                     R.liftEffect $ SW.close connection
                                     log "closed due to auth error"
-                              Just userId -> f $ PrimaryKey userId
+                              Just userId -> f userId
 
 handleConnection :: WebSocketReader -> WebSocketConnection -> Request -> Effect Unit
 handleConnection reading connection request = do
