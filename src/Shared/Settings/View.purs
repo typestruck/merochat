@@ -26,11 +26,11 @@ account (SettingsModel { email, emailConfirmation, password, passwordConfirmatio
                         HE.legend_ "Account",
                         HE.div_ [
                                 HE.label_ "Email",
-                                HE.input [HA.type' "text", HA.onInput SetEmail]
+                                HE.input [HA.type' "text", HA.value email, HA.onInput SetEmail]
                         ],
                         HE.div_ [
                                 HE.label_ "Confirm email",
-                                HE.input [HA.type' "text", HA.onInput SetEmailConfirmation]
+                                HE.input [HA.type' "text", HA.value emailConfirmation, HA.onInput SetEmailConfirmation]
                         ],
                         HE.input [HA.type' "button", HA.value "Change email", HA.class' "action-button", HA.onClick ChangeEmail],
                         HE.br,

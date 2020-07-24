@@ -32,14 +32,19 @@ update { model, message } =
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
 changeEmail model@(SettingsModel { email, emailConfirmation }) = do
-        if DS.null email || DS.null emailConfirmation then
+        if DS.null email || DS.null emailConfirmation then do
                 liftEffect $ CCN.alert "Fill in email and confirmation"
-         else if email /= emailConfirmation then
+                FAE.noChanges
+         else if email /= emailConfirmation then do
                 liftEffect $ CCN.alert "Email and confirmation do not match"
+                FAE.noChanges
          else do
                 Ok <- CCNT.post' AccountEmail $ Just model
                 liftEffect $ CCN.alert "Email changed"
-        FAE.noChanges
+                FAE.diff {
+                        email: "",
+                        emailConfirmation: ""
+                }
 
 changePassword :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
 changePassword model@(SettingsModel { password, passwordConfirmation }) = do
