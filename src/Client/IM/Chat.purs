@@ -157,69 +157,61 @@ receiveMessage isFocused model@(IMModel {
       , suggestions
 }) = case _ of
       Received { previousID, id } ->
-            F.noMessages <<< SN.updateModel model
-              $ _
-                  { contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
-                  }
+            F.noMessages <<< SN.updateModel model $ _ {
+                  contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
+            }
       ClientMessage m@{ user } -> case processIncomingMessage m of
-            updatedModel@(IMModel
-                { token: Just tk
-              , webSocket: Just (WS ws)
-              , chatting: Just index
-              , contacts
-              }) ->  --mark it as read if we received a message from the current chat
-              let fields = {
+            updatedModel@(IMModel {
+                  token: Just tk
+                  , webSocket: Just (WS ws)
+                  , chatting: Just index
+                  , contacts
+            }) ->  --mark it as read if we received a message from the current chat
+                  let fields = {
                         token: tk
-                      , webSocket: ws
-                      , chatting: index
-                      , userID: recipientID
-                      , contacts
+                        , webSocket: ws
+                        , chatting: index
+                        , userID: recipientID
+                        , contacts
                   }
-              in
-                if isFocused && isChatting user fields then
-                      CICN.updateReadHistory updatedModel fields
-                else
-                      F.noMessages updatedModel
-            updatedModel -> F.noMessages updatedModel
-  where getUserID :: forall n a. Newtype n { id :: PrimaryKey | a } => Maybe n -> Maybe PrimaryKey
-        getUserID = map (_.id <<< DN.unwrap)
-
-        suggestingContact = do
-              index <- suggesting
-              suggestions !! index
-
-        isChatting sender { contacts, chatting } =
-              let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in
-              recipientID == DET.either (_.id <<< DN.unwrap) identity sender
-
-        processIncomingMessage m = case SU.fromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
-              New contacts' ->
-                    --new messages bubble the contact to the top
-                    let
-                      added = DA.head contacts'
-                    in
-                      --edge case of recieving a message from a suggestion
-                      if getUserID (map (_.user <<< DN.unwrap) added) == getUserID suggestingContact then
-                            SN.updateModel model
-                              $ _
-                                  { contacts = contacts'
-                                  , suggesting = Nothing
-                                  , suggestions =
-                                    SU.fromJust "delete receiveMesage" do
-                                      index <- suggesting
-                                      DA.deleteAt index suggestions
-                                  , chatting = Just 0
-                                  }
+                  in if isFocused && (spy "isChatting" isChatting user fields) then
+                        CICN.updateReadHistory updatedModel fields
                       else
-                            SN.updateModel model
-                              $ _
-                                  { contacts = contacts'
-                                  }
-              Existing contacts' ->
-                    SN.updateModel model
-                      $ _
-                          { contacts = contacts'
-                          }
+                        F.noMessages updatedModel
+            updatedModel -> F.noMessages updatedModel
+      where getUserID :: forall n a. Newtype n { id :: PrimaryKey | a } => Maybe n -> Maybe PrimaryKey
+            getUserID = map (_.id <<< DN.unwrap)
+
+            suggestingContact = do
+                  index <- suggesting
+                  suggestions !! index
+
+            isChatting sender { contacts, chatting } =
+                  let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in
+                  recipientID == DET.either (_.id <<< DN.unwrap) identity sender
+
+            processIncomingMessage m = case SU.fromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
+                  New contacts' ->
+                        --new messages bubble the contact to the top
+                        let added = DA.head contacts'
+                        in if getUserID (map (_.user <<< DN.unwrap) added) == getUserID suggestingContact then
+                                    --edge case of receiving a message from a suggestion
+                                    SN.updateModel model $ _ {
+                                          contacts = contacts'
+                                          , suggesting = Nothing
+                                          , suggestions = SU.fromJust "delete receiveMesage" do
+                                                index <- suggesting
+                                                DA.deleteAt index suggestions
+                                          , chatting = Just 0
+                                    }
+                            else
+                              SN.updateModel model $ _ {
+                                    contacts = contacts',
+                                    --since the contact list is altered, the chatting index must be bumped
+                                    chatting = (_ + 1) <$> chatting
+                              }
+                  Existing contacts' ->
+                        SN.updateModel model $ _ { contacts = contacts' }
 
 updateHistoryMessage :: Array Contact -> PrimaryKey -> {
       id :: PrimaryKey
@@ -233,22 +225,18 @@ updateHistoryMessage contacts recipientID { id, user, date, content } = case use
             Contact { history } <- contacts !! index
             map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
       Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (SIC.defaultContact  userID user) : contacts
-  where findUser userID (Contact { user: IMUser { id } }) = userID == id
-
-        updateHistory { id, userID, content, date } user@(Contact { history }) =
-              SN.updateContact user
-                $ _
-                    { history =
-                      DA.snoc history
-                        $ HistoryMessage
-                            { status: Unread
-                            , sender: userID
-                            , recipient: recipientID
-                            , id
-                            , content
-                            , date
-                            }
-                    }
+      where findUser userID (Contact { user: IMUser { id } }) = userID == id
+            updateHistory { id, userID, content, date } user@(Contact { history }) =
+                  SN.updateContact user $ _ {
+                        history = DA.snoc history $ HistoryMessage {
+                              status: Unread
+                              , sender: userID
+                              , recipient: recipientID
+                              , id
+                              , content
+                              , date
+                        }
+                  }
 
 updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> Maybe (Array Contact)
 updateTemporaryID contacts previousID id = do
@@ -256,13 +244,9 @@ updateTemporaryID contacts previousID id = do
       Contact { history } <- contacts !! index
       innerIndex <- DA.findIndex (findTemporary previousID) history
       DA.modifyAt index (updateTemporary innerIndex id) contacts
-      where
-      findTemporary previousID (HistoryMessage { id }) = id == previousID
-
-      findUser previousID (Contact { history }) = DA.any (findTemporary previousID) history
-
-      updateTemporary index newID user@(Contact { history }) =
-            SN.updateContact user
-              $ _
-                  { history = SU.fromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
+      where findTemporary previousID (HistoryMessage { id }) = id == previousID
+            findUser previousID (Contact { history }) = DA.any (findTemporary previousID) history
+            updateTemporary index newID user@(Contact { history }) =
+                  SN.updateContact user $ _ {
+                        history = SU.fromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
                   }

@@ -16,15 +16,16 @@ import Test.Unit.Assert as TUA
 
 tests :: TestSuite
 tests = do
-        TU.suite "token" do
-                TU.test "token encoding decoding" do
-                        TS.serverAction $ \_ -> do
-                                let     id = DI.fromInt 23
-                                { configuration : Configuration configuration } <- RR.ask
-                                Token { tokenGET, tokenPOST } <- ST.createToken id
+      TU.suite "token" do
+            TU.test "token encoding decoding" do
+                  TS.serverAction $ \_ -> do
+                        let id =  DI.fromInt 23
+                            key = PrimaryKey id
+                        { configuration : Configuration configuration } <- RR.ask
+                        Token { tokenGET, tokenPOST } <- ST.createToken id
 
-                                userIDGET <- SU.fromJust "test" <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretGET tokenGET)
-                                R.liftAff $ TUA.equal id userIDGET
+                        userIDGET <- SU.fromJust "test" <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretGET tokenGET)
+                        R.liftAff $ TUA.equal key userIDGET
 
-                                userIDPOST <- SU.fromJust "test" <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
-                                R.liftAff $ TUA.equal id userIDPOST
+                        userIDPOST <- SU.fromJust "test" <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
+                        R.liftAff $ TUA.equal key userIDPOST

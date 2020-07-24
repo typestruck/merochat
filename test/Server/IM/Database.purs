@@ -22,6 +22,7 @@ import Data.Tuple(Tuple(..))
 import Test.Unit as TU
 import Server.IM.Database as SID
 import Test.Unit.Assert as TUA
+import Data.Tuple.Nested((/\))
 import Test.Unit.Main as TUM
 
 tests :: TestSuite

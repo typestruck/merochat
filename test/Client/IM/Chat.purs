@@ -1,6 +1,5 @@
 module Test.Client.IM.Chat where
 
-import Client.Common.Types
 import Prelude
 import Shared.IM.Types
 import Shared.Types
@@ -185,6 +184,19 @@ tests = do
                         }
                   ]
 
+            TU.test "receiveMessage bumps chatting" do
+                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  let IMModel { chatting } = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
+                        contacts = [contact],
+                        chatting = Just 0
+                        }) $ ClientMessage {
+                              date,
+                              id: newMessageID,
+                              content,
+                              user: Left anotherIMUser
+                        }
+                  TUA.equal (Just 1) chatting
+
             TU.test "receiveMessage set chatting if message comes from current suggestion" do
                   date <- liftEffect $ map MDateTime EN.nowDateTime
                   let model' = SN.updateModel model $ _ {
@@ -223,7 +235,7 @@ tests = do
                         suggesting = Nothing
                         }) $ ClientMessage {
                               id: newMessageID,
-                              user: Left anotherIMUser,
+                              user: Right contactID,
                               content,
                               date
                         }
