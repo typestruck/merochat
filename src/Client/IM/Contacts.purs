@@ -6,14 +6,15 @@ import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.Network as CCN
-import Client.IM.Flame (NoMessages, MoreMessages)
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
+import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIM
+import Client.IM.WebSocket as CIW
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Effect.Aff (Aff)
-import Client.IM.WebSocket as CIW
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Flame ((:>))
@@ -27,12 +28,16 @@ import Web.Socket.WebSocket (WebSocket)
 import Web.UIEvent.WheelEvent (WheelEvent)
 import Web.UIEvent.WheelEvent as WUW
 
-resumeChat :: PrimaryKey -> IMModel -> NoMessages
-resumeChat searchID model@(IMModel { contacts }) =
-      F.noMessages <<< SN.updateModel model $ _ {
-            suggesting = Nothing,
-            chatting = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
-      }
+resumeChat :: PrimaryKey -> IMModel -> MoreMessages
+resumeChat searchID model@(IMModel { contacts, chatting }) = do
+      let index = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
+      if index == chatting then
+            F.noMessages model
+       else
+            CIF.nothingNext (SN.updateModel model $ _ {
+                  suggesting = Nothing,
+                  chatting = index
+            }) $ liftEffect CIS.scrollLastMessage
 
 markRead :: IMModel -> MoreMessages
 markRead =
@@ -63,9 +68,12 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
       let contactRead@(Contact { history }) = contacts !@ chatting
           messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
       in if DA.null messagesRead then
-            F.noMessages model
+            CIF.nothingNext model scroll
           else
-            CIF.nothingNext (updateContacts contactRead) (confirmRead messagesRead)
+            CIF.nothingNext (updateContacts contactRead) do
+                  confirmRead messagesRead
+                  scroll
+
       where unreadID userID (HistoryMessage { recipient, id, status })
                   | status == Unread && recipient == userID = Just id
                   | otherwise = Nothing
@@ -82,6 +90,8 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
                   ids: messages,
                   token
             }
+
+            scroll = liftEffect CIS.scrollLastMessage
 
 fetchContacts :: WheelEvent -> IMModel -> MoreMessages
 fetchContacts event model@(IMModel { contacts })

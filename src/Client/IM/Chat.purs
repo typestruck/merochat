@@ -174,7 +174,7 @@ receiveMessage isFocused model@(IMModel {
                         , userID: recipientID
                         , contacts
                   }
-                  in if isFocused && (spy "isChatting" isChatting user fields) then
+                  in if isFocused && isChatting user fields then
                         CICN.updateReadHistory updatedModel fields
                       else
                         F.noMessages updatedModel

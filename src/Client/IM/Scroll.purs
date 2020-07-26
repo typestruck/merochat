@@ -17,10 +17,5 @@ import Debug.Trace
 
 scrollLastMessage :: Effect Unit
 scrollLastMessage = do
-      node <- map WDE.toNode $ CCD.querySelector ".message-history-wrapper"
-      observer <- WDM.mutationObserver (scrollTo node)
-      WDM.observe node {childList: true} observer
-
-      where scrollTo node mutations _ = do
-                  mutationTypes <- DT.traverse (map (_ == "childList") <<< WDM.typeString) mutations
-                  when (DF.or mutationTypes) $ CCD.scrollDown (SU.fromJust "scrollTo" $ WDE.fromNode node)
+      node <- SU.fromJust "scrollTo" <<< WDE.fromNode <<< WDE.toNode <$> CCD.querySelector ".message-history-wrapper"
+      CCD.scrollDown node
