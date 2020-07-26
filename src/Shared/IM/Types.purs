@@ -95,6 +95,7 @@ newtype IMModel = IMModel {
       webSocket :: Maybe WS,
       temporaryID :: PrimaryKey,
       freeToFetchChatHistory :: Boolean,
+      freeToFetchContactList :: Boolean,
       --used to authenticate web socket messages
       token :: Maybe String,
       --the current logged in user

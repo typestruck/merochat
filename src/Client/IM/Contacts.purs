@@ -94,17 +94,17 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
             scroll = liftEffect CIS.scrollLastMessage
 
 fetchContacts :: WheelEvent -> IMModel -> MoreMessages
-fetchContacts event model@(IMModel { contacts })
-      | WUW.deltaY event < 1.0 =
-            F.noMessages model
-      | otherwise =   --needs some kind of throttling/loading
-            model :> [Just <<< DisplayContacts <$> CCN.get' (Contacts { skip: DA.length contacts })]
+fetchContacts event model@(IMModel { contacts, freeToFetchContactList })
+      | WUW.deltaY event < 1.0 || not freeToFetchContactList =
+            F.noMessages (spy "didnt scroll" model)
+      | otherwise =
+            (SN.updateModel model $ _ {
+                  freeToFetchContactList = false
+            }) :> [Just <<< DisplayContacts <$> CCN.get' (Contacts { skip: DA.length contacts })]
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
-displayContacts newContacts model@(IMModel { contacts })
-      | DA.null newContacts =
-            F.noMessages model
-      | otherwise =
-            F.noMessages <<< SN.updateModel model $ _ {
-                  contacts = contacts <> newContacts
-            }
+displayContacts newContacts model@(IMModel { contacts }) =
+      F.noMessages <<< SN.updateModel model $ _ {
+            contacts = contacts <> newContacts,
+            freeToFetchContactList = true
+      }

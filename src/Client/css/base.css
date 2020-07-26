@@ -159,3 +159,8 @@ svg {
     font-weight: bold;
     flex-shrink: 0;
 }
+
+select option {
+    background-color: #262626;
+    color:white
+}
