@@ -1,25 +1,26 @@
 module Client.Landing.Main where
 
 import Prelude
+import Shared.Types
 
+import Client.Common.Captcha as CCC
 import Client.Common.DOM as CCD
 import Client.Common.External as CCE
+import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Client.Common.Captcha as CCC
+import Debug.Trace (spy)
 import Effect (Effect)
-import Web.Event.Internal.Types (Event)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Shared.Unsafe as SU
-import Data.Either (Either(..))
 import Shared.Router as SR
-import Client.Common.Network as CCNT
-import Shared.Types
-import Web.UIEvent.MouseEvent.EventTypes (click)
-import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
+import Shared.Unsafe as SU
+import Web.Event.Internal.Types (Event)
 import Web.UIEvent.KeyboardEvent as WUK
+import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
+import Web.UIEvent.MouseEvent.EventTypes (click)
 
 register :: Maybe String -> Effect Unit
 register captchaResponse = do
@@ -27,7 +28,7 @@ register captchaResponse = do
       case registerLogin of
             Nothing -> pure unit
             Just (RegisterLogin rl) ->
-                  if DM.isNothing captchaResponse then
+                  if spy "here at iffff" (DM.isNothing captchaResponse) then
                         CCC.grecaptchaExecute
                    else
                         EA.launchAff_ do
@@ -36,7 +37,7 @@ register captchaResponse = do
                                     Right token -> enter token
                                     Left left -> liftEffect do
                                           CCC.grecaptchaReset
-                                          CCN.alert "Could not register. Please try again."
+                                          CCN.alert left
       where enter token = liftEffect $ CCE.login token IM
 
 -- | Callback for grecaptcha

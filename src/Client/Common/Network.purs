@@ -1,8 +1,8 @@
 module Client.Common.Network(
-        post,
-        post',
-        get,
-        get'
+      post,
+      post',
+      get,
+      get'
 ) where
 
 import Prelude
@@ -37,60 +37,59 @@ import Partial.Unsafe as PU
 import Shared.Header (xAccessToken)
 import Shared.Router as SR
 import Shared.Types (Route)
-import Web.XHR.FormData (FormData)
 
 -- | A simplified version of post without the option to handle errors
 post' :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => Route -> Maybe contents -> Aff response
 post' route data' = do
-        response <- post route data'
-        case response of
-                Right right -> pure right
-                Left error -> alertResponseError $ A.printResponseFormatError error
+      response <- post route data'
+      case response of
+            Right right -> pure right
+            Left error -> alertResponseError error
 
 -- | Performs a POST request
-post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => Route -> Maybe contents -> Aff (Either ResponseFormatError response)
+post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => Route -> Maybe contents -> Aff (Either String response)
 post route data' = do
-        --see Token in shared/Types.purs
-        token <- liftEffect $ CCS.getItem tokenKey
-        response <- A.request $ (defaultRequest route POST token) {
-                content = map (RB.json <<< DAEGR.genericEncodeJson) data'
-        }
-        parseBody response
+      --see Token in shared/Types.purs
+      token <- liftEffect $ CCS.getItem tokenKey
+      response <- A.request $ (defaultRequest route POST token) {
+            content = map (RB.json <<< DAEGR.genericEncodeJson) data'
+      }
+      parseBody response
 
 get' :: forall response r. Generic response r => DecodeRep r => Route -> Aff response
 get' route = do
-        response <- get route
-        case response of
-                Right right -> pure right
-                Left error -> alertResponseError $ A.printResponseFormatError error
+      response <- get route
+      case response of
+            Right right -> pure right
+            Left error -> alertResponseError  error
 
-get :: forall response r. Generic response r => DecodeRep r => Route -> Aff (Either ResponseFormatError response)
+get :: forall response r. Generic response r => DecodeRep r => Route -> Aff (Either String response)
 get route = do
-        token <- liftEffect CCC.getMelanchatCookie
-        response <- A.request $ defaultRequest route GET token
-        parseBody response
+      token <- liftEffect CCC.getMelanchatCookie
+      response <- A.request $ defaultRequest route GET token
+      parseBody response
 
 defaultRequest route method token =
-        A.defaultRequest {
-                url = SR.fromRoute route,
-                method = Left method,
-                responseFormat = RF.json,
-                headers = [
-                        Accept $ MediaType "application/json",
-                        ContentType $ MediaType "application/json",
-                        RequestHeader xAccessToken token
-                ]
-        }
+      A.defaultRequest {
+            url = SR.fromRoute route,
+            method = Left method,
+            responseFormat = RF.json,
+            headers = [
+                  Accept $ MediaType "application/json",
+                  ContentType $ MediaType "application/json",
+                  RequestHeader xAccessToken token
+            ]
+      }
 
 parseBody response =
-        case response.body of
-                Right payload ->
-                        if response.status == StatusCode 200 then
-                                DE.either alertResponseError (pure <<< Right) $ DADGR.genericDecodeJson payload
-                         else
-                                alertResponseError <<< PU.unsafePartial $ DE.fromRight $ DAD.decodeJson payload
-                Left left -> pure $ Left left
+      case response.body of
+            Right payload ->
+                  if response.status == StatusCode 200 then
+                        DE.either alertResponseError (pure <<< Right) $ DADGR.genericDecodeJson payload
+                   else
+                        pure <<< Left <<< PU.unsafePartial $ DE.fromRight $ DAD.decodeJson payload
+            Left left -> pure <<< Left $ A.printResponseFormatError left
 
 alertResponseError message = do
-        liftEffect $ CCN.alert message
-        CMEC.throwError <<< EE.error $ "Error: " <> message
+      liftEffect $ CCN.alert message
+      CMEC.throwError <<< EE.error $ "Error: " <> message
