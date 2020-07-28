@@ -17,7 +17,7 @@ import Shared.Markdown as SM
 import Shared.Types (MDateTime(..))
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onWheel' FetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onScroll CheckScrollBottom,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
       where getDate history = do
                   HistoryMessage { date: MDateTime md } <- DA.last history
                   pure md

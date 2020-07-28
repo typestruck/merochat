@@ -5,6 +5,7 @@ import Prelude
 import Shared.IM.Types
 import Shared.Types
 
+import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
@@ -23,7 +24,9 @@ import Shared.Newtype as SN
 import Shared.Router as SR
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Web.DOM.Element as WDE
 import Web.Event.Internal.Types (Event)
+import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 import Web.UIEvent.WheelEvent (WheelEvent)
 import Web.UIEvent.WheelEvent as WUW
@@ -93,14 +96,26 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
 
             scroll = liftEffect CIS.scrollLastMessage
 
-fetchContacts :: WheelEvent -> IMModel -> MoreMessages
-fetchContacts event model@(IMModel { contacts, freeToFetchContactList })
-      | WUW.deltaY event < 1.0 || not freeToFetchContactList =
-            F.noMessages (spy "didnt scroll" model)
-      | otherwise =
-            (SN.updateModel model $ _ {
+--REFACTOR: dont do querySelector inside updates, pass the element as parameter
+checkScrollBottom :: IMModel -> MoreMessages
+checkScrollBottom model@(IMModel { contacts, freeToFetchContactList })
+      | freeToFetchContactList = model :> [ Just <<< FetchContacts <$> getScrollBottom ]
+
+      where getScrollBottom = liftEffect do
+                  element <- CCD.querySelector "#message-history-wrapper"
+                  top <- WDE.scrollTop element
+                  height <- WDE.scrollHeight element
+                  offset <- WHH.offsetHeight <<< SU.fromJust "checkScrollBottom" $ WHH.fromElement element
+                  pure $ top == height - offset
+
+      | otherwise = F.noMessages model
+
+fetchContacts :: Boolean -> IMModel -> MoreMessages
+fetchContacts shouldFetch model@(IMModel { contacts, freeToFetchContactList })
+      | shouldFetch = (SN.updateModel model $ _ {
                   freeToFetchContactList = false
             }) :> [Just <<< DisplayContacts <$> CCN.get' (Contacts { skip: DA.length contacts })]
+      | otherwise =F.noMessages model
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
 displayContacts newContacts model@(IMModel { contacts }) =

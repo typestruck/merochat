@@ -4,7 +4,9 @@ import Prelude
 import Shared.Settings.Types
 import Shared.Types
 
+import Data.Maybe as DM
 import Data.String as DS
+import Server.Database.User as SDU
 import Server.Response as SSR
 import Server.Settings.Database as SSD
 import Server.Token as ST
@@ -24,10 +26,15 @@ blankPasswordMessage = "Password and confirmation are required"
 passwordDoesNotMatchMessage :: String
 passwordDoesNotMatchMessage = "Password and confirmation do not match"
 
+emailAlreadyRegisteredMessage :: String
+emailAlreadyRegisteredMessage = "Email already registered"
+
 changeEmail :: PrimaryKey -> SettingsModel -> ServerEffect Ok
 changeEmail userID (SettingsModel { email, emailConfirmation }) = do
         when (DS.null email || DS.null emailConfirmation) $ SSR.throwBadRequest blankEmailMessage
         when (email /= emailConfirmation) $ SSR.throwBadRequest emailDoesNotMatchMessage
+        maybeUser <- SDU.userBy $ Email email
+        when (DM.isJust maybeUser) $ SSR.throwBadRequest emailAlreadyRegisteredMessage
 
         SSD.changeEmail userID email
         pure Ok

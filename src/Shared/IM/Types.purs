@@ -154,8 +154,9 @@ data IMMessage =
       MarkAsRead |
       ResumeChat PrimaryKey |
       UpdateReadCount |
+      CheckScrollBottom |
+      FetchContacts Boolean |
       DisplayContacts (JSONResponse (Array Contact)) |
-      FetchContacts Event |
       --suggestion
       PreviousSuggestion |
       NextSuggestion |

@@ -118,7 +118,8 @@ update model  =
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead model
             UpdateReadCount -> CICN.markRead model --when the window is focused updated the read status of current chat
-            FetchContacts event -> CICN.fetchContacts (SU.fromJust "contacts.update" $ WUW.fromEvent event) model
+            CheckScrollBottom -> CICN.checkScrollBottom model
+            FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
             DisplayContacts (JSONResponse contacts) -> CICN.displayContacts contacts model
             --history
             CheckScrollTop -> CIH.checkScrollTop model

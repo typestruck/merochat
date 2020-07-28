@@ -649,7 +649,7 @@ svg.toolbar-action {
 }
 
 .end {
-    align-self: end;
+    align-self: flex-end;
 }
 
 .remove-tag {
