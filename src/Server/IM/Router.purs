@@ -4,6 +4,7 @@ import Prelude
 import Server.Types
 import Shared.Types
 
+import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Either as DE
 import Data.Int as DI
@@ -33,6 +34,15 @@ contacts request = do
       case SR.toRoute $ H.fullPath request of
             Right (Contacts { skip }) -> do
                   list <- SIA.contactList userID skip
+                  SRR.json' $ JSONResponse list
+            _ -> SRR.throwBadRequest "invalid parameters"
+
+singleContact :: Request -> ResponseEffect
+singleContact request = do
+      userID <- SRS.checkLogin request
+      case SR.toRoute $ H.fullPath request of
+            Right (SingleContact { id }) -> do
+                  list <- DA.singleton <$> SIA.singleContact userID id
                   SRR.json' $ JSONResponse list
             _ -> SRR.throwBadRequest "invalid parameters"
 

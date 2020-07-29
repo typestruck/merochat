@@ -14,7 +14,7 @@ import Shared.Avatar as SA
 import Shared.Markdown as SM
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckScrollTop] $
+history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatting }) chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] $
       case chattingSuggestion of
             Nothing -> [HE.createEmptyElement "div"]
             Just recipient -> display recipient

@@ -14,6 +14,7 @@ import Debug.Trace (spy)
 import Server.Database as SD
 import Server.Types (ServerEffect, BaseEffect)
 import Shared.IM.Types (Contact(..), HistoryMessage, IMUser)
+import Shared.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage)
 import Shared.Types (PrimaryKey(..))
 
 userPresentationFields :: String
@@ -47,22 +48,20 @@ suggest :: PrimaryKey -> ServerEffect (Array IMUser)
 suggest id =
       SD.select (Query ("select" <> userPresentationFields <> "from users u where id not in (1, $1) and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) order by random() limit 20")) $ Row1 id
 
-contactsPerPage :: Int
-contactsPerPage = 10
-
-messagesPerPage :: Int
-messagesPerPage = 15
-
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
 presentContacts id skip = SD.select (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
                                           order by date desc limit $2 offset $3""")) (id /\ contactsPerPage /\ skip)
 
+presentSingleContact :: PrimaryKey -> PrimaryKey -> ServerEffect Contact
+presentSingleContact id otherID = SD.single' (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>
+                                      """from users u join histories h on (u.id = $1 and h.recipient = $2 or u.id = $2 and h.sender = $1)""")) (id /\ otherID)
+
 --there must be a better way to do this
 chatHistory :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array HistoryMessage)
 chatHistory id otherIDs
       | DA.null otherIDs = pure []
-      | otherwise = SD.select (Query query) (id /\ messagesPerPage)
+      | otherwise = SD.select (Query query) (id /\ initialMessagesPerPage)
       where query = "select * from (" <> DS.joinWith " union all " (select <$> otherIDs) <> ") r order by date, sender, recipient"
             select n =
                   let parameter = show n

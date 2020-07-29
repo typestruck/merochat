@@ -1,6 +1,7 @@
 module Client.IM.Contacts where
 
 import Debug.Trace
+import Debug.Trace
 import Prelude
 import Shared.IM.Types
 import Shared.Types
@@ -26,21 +27,28 @@ import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Internal.Types (Event)
+import Shared.IM.Contact as SIC
 import Web.HTML.HTMLElement as WHH
+import Shared.Page(initialMessagesPerPage)
 import Web.Socket.WebSocket (WebSocket)
 import Web.UIEvent.WheelEvent (WheelEvent)
 import Web.UIEvent.WheelEvent as WUW
 
 resumeChat :: PrimaryKey -> IMModel -> MoreMessages
-resumeChat searchID model@(IMModel { contacts, chatting }) = do
-      let index = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
-      if index == chatting then
-            F.noMessages model
-       else
-            CIF.nothingNext (SN.updateModel model $ _ {
-                  suggesting = Nothing,
-                  chatting = index
-            }) $ liftEffect CIS.scrollLastMessage
+resumeChat searchID model@(IMModel { contacts, chatting }) =
+      let   index = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
+            Contact { shouldFetchChatHistory, history, user: IMUser { id } } = SIC.chattingContact contacts index
+      in
+            if index == chatting then
+                  F.noMessages model
+             else
+                  (SN.updateModel model $ _ {
+                        suggesting = Nothing,
+                        chatting = index
+                  }) :> [
+                        CIF.next UpdateReadCount ,
+                        CIF.next $ FetchHistory shouldFetchChatHistory
+                  ]
 
 markRead :: IMModel -> MoreMessages
 markRead =
@@ -58,7 +66,7 @@ markRead =
                   userID,
                   contacts
             }
-            model -> CIF.nothingNext model <<< liftEffect $ EC.log "invalid markRead state"
+            model -> F.noMessages model
 
 updateReadHistory :: IMModel -> {
       token :: String,
@@ -97,15 +105,15 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
             scroll = liftEffect CIS.scrollLastMessage
 
 --REFACTOR: dont do querySelector inside updates, pass the element as parameter
-checkScrollBottom :: IMModel -> MoreMessages
-checkScrollBottom model@(IMModel { contacts, freeToFetchContactList })
+checkFetchContacts :: IMModel -> MoreMessages
+checkFetchContacts model@(IMModel { contacts, freeToFetchContactList })
       | freeToFetchContactList = model :> [ Just <<< FetchContacts <$> getScrollBottom ]
 
       where getScrollBottom = liftEffect do
                   element <- CCD.querySelector "#message-history-wrapper"
                   top <- WDE.scrollTop element
                   height <- WDE.scrollHeight element
-                  offset <- WHH.offsetHeight <<< SU.fromJust "checkScrollBottom" $ WHH.fromElement element
+                  offset <- WHH.offsetHeight <<< SU.fromJust "fetchContacts" $ WHH.fromElement element
                   pure $ top == height - offset
 
       | otherwise = F.noMessages model

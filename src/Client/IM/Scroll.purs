@@ -1,19 +1,21 @@
 module Client.IM.Scroll where
 
-import Web.DOM.MutationObserver as WDM
-import Web.DOM.MutationObserver (MutationObserver)
-import Web.DOM.MutationRecord (MutationRecordType(..), MutationRecord)
-import Web.DOM.MutationRecord as WDM
-import Web.DOM.Internal.Types (Node)
+import Debug.Trace
 import Prelude
-import Shared.Unsafe as SU
-import Data.Traversable as DT
-import Web.DOM.Element as WDE
+
 import Client.Common.DOM as CCD
 import Data.Array as DA
 import Data.Foldable as DF
-import Effect(Effect)
-import Debug.Trace
+import Data.Traversable as DT
+import Effect (Effect)
+import Effect.Class.Console as EC
+import Shared.Unsafe as SU
+import Web.DOM.Element as WDE
+import Web.DOM.Internal.Types (Node)
+import Web.DOM.MutationObserver (MutationObserver)
+import Web.DOM.MutationObserver as WDM
+import Web.DOM.MutationRecord (MutationRecordType(..), MutationRecord)
+import Web.DOM.MutationRecord as WDM
 
 scrollLastMessage :: Effect Unit
 scrollLastMessage = do

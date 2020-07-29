@@ -20,6 +20,7 @@ run model f = do
 
 model :: IMModel
 model = IMModel {
+      freeToFetchContactList: true,
       userContextMenuVisible: false,
       profileSettingsToggle: Hidden,
       user: imUser,

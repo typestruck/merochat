@@ -5,10 +5,13 @@ import Debug.Trace
 import Prelude
 import Shared.IM.Types
 import Shared.Types
+
 import Client.Common.DOM as CCD
+import Client.Common.Network as CCNT
 import Client.IM.Contacts as CICN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
+import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
 import Data.Array ((:), (!!))
 import Data.Array as DA
@@ -28,8 +31,8 @@ import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Now as EN
 import Flame (ListUpdate, (:>))
-import Shared.IM.Contact as SIC
 import Flame as F
+import Shared.IM.Contact as SIC
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
@@ -65,47 +68,41 @@ startChat model@(IMModel {
 
 sendMessage :: String -> MDateTime -> IMModel -> NoMessages
 sendMessage content date = case _ of
-      model@( IMModel
-          { user: IMUser { id: senderID }
-        , webSocket: Just (WS webSocket)
-        , token: Just token
-        , chatting: Just chatting
-        , temporaryID
-        , contacts
-        }
-      ) ->
-            let recipient@(Contact { user: IMUser { id: recipientID }, history }) = contacts !@ chatting
-                newTemporaryID = temporaryID + SP.fromInt 1
-                updatedChatting =
-                      SN.updateContact recipient
-                        $ _
-                            { history =
-                              DA.snoc history
-                                $ HistoryMessage
-                                    { id: newTemporaryID
-                                    , status: Unread
-                                    , sender: senderID
-                                    , recipient: recipientID
-                                    , date
-                                    , content
-                                    }
-                            }
-                updatedModel =
-                      SN.updateModel model
-                        $ _
-                            { temporaryID = newTemporaryID
-                            , contacts = SU.fromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
-                            }
-                turn = makeTurn updatedChatting senderID
+      model@(IMModel {
+            user: IMUser { id: senderID },
+            webSocket: Just (WS webSocket),
+            token: Just token,
+            chatting: Just chatting,
+            temporaryID,
+            contacts
+      }) ->
+            let  recipient@(Contact { user: IMUser { id: recipientID }, history }) = contacts !@ chatting
+                 newTemporaryID = temporaryID + SP.fromInt 1
+                 updatedChatting = SN.updateContact recipient $ _ {
+                        history = DA.snoc history $ HistoryMessage {
+                              id: newTemporaryID,
+                              status: Unread,
+                              sender: senderID,
+                              recipient: recipientID,
+                              date,
+                              content
+                        }
+                 }
+                 updatedModel = SN.updateModel model $ _ {
+                        temporaryID = newTemporaryID,
+                        contacts = SU.fromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
+                 }
+                 turn = makeTurn updatedChatting senderID
             in --needs to handle failure!
-                CIF.nothingNext updatedModel <<< liftEffect <<< CIW.sendPayload webSocket
-                  $ ServerMessage
-                      { id: newTemporaryID
-                      , user: recipientID
-                      , token: token
-                      , content
-                      , turn
-                      }
+                  CIF.nothingNext updatedModel $ liftEffect do
+                        CIS.scrollLastMessage
+                        CIW.sendPayload webSocket $ ServerMessage {
+                              id: newTemporaryID,
+                              user: recipientID,
+                              token: token,
+                              content,
+                              turn
+                        }
       model -> CIF.nothingNext model <<< liftEffect $ EC.log "Invalid sendMessage state"
 
 makeTurn :: Contact -> PrimaryKey -> Maybe Turn
@@ -121,21 +118,18 @@ makeTurn (Contact { chatStarter, chatAge, history }) sender =
                       pure $ Tuple senderMessages recipientMessages
                 senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
                 recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
-            in  Just $ Turn {
-                      senderStats:
-                        Stats
-                          { characters: senderCharacters
-                          , interest: senderCharacters / recipientCharacters
-                          }
-                    , recipientStats:
-                        Stats
-                          { characters: recipientCharacters
-                          , interest: recipientCharacters / senderCharacters
-                          }
-                    , replyDelay:
-                        DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds)
-                    , chatAge
-                    }
+            in Just $ Turn {
+                  senderStats: Stats {
+                        characters: senderCharacters,
+                        interest: senderCharacters / recipientCharacters
+                  },
+                  recipientStats: Stats {
+                        characters: recipientCharacters,
+                        interest: recipientCharacters / senderCharacters
+                  },
+                  replyDelay: DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry :: Seconds),
+                  chatAge
+            }
        else Nothing
       where isNewTurn history userID = DM.fromMaybe false do
                   last <- DA.last history
@@ -150,18 +144,17 @@ makeTurn (Contact { chatStarter, chatAge, history }) sender =
 
 receiveMessage :: Boolean -> IMModel -> WebSocketPayloadClient -> MoreMessages
 receiveMessage isFocused model@(IMModel {
-      user: IMUser { id: recipientID }
-      , contacts
-      , suggesting
-      , chatting
-      , suggestions
+      user: IMUser { id: recipientID },
+      contacts,
+      suggestions
 }) = case _ of
       Received { previousID, id } ->
             F.noMessages <<< SN.updateModel model $ _ {
                   contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
             }
-      ClientMessage m@{ user } -> case processIncomingMessage m of
-            updatedModel@(IMModel {
+      ClientMessage m@{ user } -> case processIncomingMessage m model of
+            Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.get' (SingleContact {id: userID})]
+            Right updatedModel@(IMModel {
                   token: Just tk
                   , webSocket: Just (WS ws)
                   , chatting: Just index
@@ -178,53 +171,63 @@ receiveMessage isFocused model@(IMModel {
                         CICN.updateReadHistory updatedModel fields
                       else
                         F.noMessages updatedModel
-            updatedModel -> F.noMessages updatedModel
-      where getUserID :: forall n a. Newtype n { id :: PrimaryKey | a } => Maybe n -> Maybe PrimaryKey
-            getUserID = map (_.id <<< DN.unwrap)
-
-            suggestingContact = do
-                  index <- suggesting
-                  suggestions !! index
-
-            isChatting sender { contacts, chatting } =
+            Right updatedModel -> F.noMessages updatedModel
+      where isChatting sender { contacts, chatting } =
                   let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in
                   recipientID == DET.either (_.id <<< DN.unwrap) identity sender
 
-            processIncomingMessage m = case SU.fromJust "receiveMessage" $ updateHistoryMessage contacts recipientID m of
-                  New contacts' ->
-                        --new messages bubble the contact to the top
-                        let added = DA.head contacts'
-                        in if getUserID (map (_.user <<< DN.unwrap) added) == getUserID suggestingContact then
-                                    --edge case of receiving a message from a suggestion
-                                    SN.updateModel model $ _ {
-                                          contacts = contacts'
-                                          , suggesting = Nothing
-                                          , suggestions = SU.fromJust "delete receiveMesage" do
-                                                index <- suggesting
-                                                DA.deleteAt index suggestions
-                                          , chatting = Just 0
-                                    }
-                            else
-                              SN.updateModel model $ _ {
-                                    contacts = contacts',
-                                    --since the contact list is altered, the chatting index must be bumped
-                                    chatting = (_ + 1) <$> chatting
-                              }
-                  Existing contacts' ->
-                        SN.updateModel model $ _ { contacts = contacts' }
+--this must be simplified to
+-- if contact is not in the list, fetch
+-- trying to be clever with Either user id is only a source of edge cases
+processIncomingMessage :: _ -> IMModel -> Either PrimaryKey IMModel
+processIncomingMessage m model@(IMModel {
+      user: IMUser { id: recipientID },
+      suggestions,
+      contacts,
+      suggesting,
+      chatting
+}) = case updateContactList contacts recipientID m of
+      New contacts' ->
+            --new messages bubble the contact to the top
+            let added = DA.head contacts' in Right $
+                  if getUserID (map (_.user <<< DN.unwrap) added) == getUserID suggestingContact then
+                        --edge case of receiving a message from a suggestion
+                        SN.updateModel model $ _ {
+                              contacts = contacts'
+                              , suggesting = Nothing
+                              , suggestions = SU.fromJust "delete receiveMesage" do
+                                    index <- suggesting
+                                    DA.deleteAt index suggestions
+                              , chatting = Just 0
+                        }
+                   else
+                        SN.updateModel model $ _ {
+                              contacts = contacts',
+                              --since the contact list is altered, the chatting index must be bumped
+                              chatting = (_ + 1) <$> chatting
+                        }
+      Existing contacts' ->
+            Right <<< SN.updateModel model $ _ { contacts = contacts' }
+      ExistingToFetch userID -> Left userID
 
-updateHistoryMessage :: Array Contact -> PrimaryKey -> {
+      where suggestingContact = do
+                  index <- suggesting
+                  suggestions !! index
+            getUserID :: forall n a. Newtype n { id :: PrimaryKey | a } => Maybe n -> Maybe PrimaryKey
+            getUserID = map (_.id <<< DN.unwrap)
+
+updateContactList :: Array Contact -> PrimaryKey -> {
       id :: PrimaryKey
       , user :: Either IMUser PrimaryKey
       , date :: MDateTime
       , content :: String
-} -> Maybe (ReceivedUser (Array Contact))
-updateHistoryMessage contacts recipientID { id, user, date, content } = case user of
-      Right userID@(PrimaryKey _) -> do
-            index <- DA.findIndex (findUser userID) contacts
-            Contact { history } <- contacts !! index
-            map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
-      Left user@(IMUser { id: userID }) -> Just <<< New $ updateHistory { userID, content, id, date } (SIC.defaultContact  userID user) : contacts
+} -> (ReceivedUser (Array Contact) PrimaryKey)
+updateContactList contacts recipientID { id, user, date, content } = case user of
+      Right userID -> case updateExisting userID of
+            Nothing -> ExistingToFetch userID -- edge case of an existing contact not be yet visible on the contact list due to pagination
+            Just existing -> existing
+      Left user@(IMUser { id: userID }) -> New (updateHistory { userID, content, id, date } (SIC.defaultContact userID user) : contacts)
+
       where findUser userID (Contact { user: IMUser { id } }) = userID == id
             updateHistory { id, userID, content, date } user@(Contact { history }) =
                   SN.updateContact user $ _ {
@@ -238,12 +241,18 @@ updateHistoryMessage contacts recipientID { id, user, date, content } = case use
                         }
                   }
 
+            updateExisting userID = do
+                  index <- DA.findIndex (findUser userID) contacts
+                  Contact { history } <- contacts !! index
+                  map Existing $ DA.modifyAt index (updateHistory { userID, content, id, date }) contacts
+
 updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> Maybe (Array Contact)
 updateTemporaryID contacts previousID id = do
       index <- DA.findIndex (findUser previousID) contacts
       Contact { history } <- contacts !! index
       innerIndex <- DA.findIndex (findTemporary previousID) history
       DA.modifyAt index (updateTemporary innerIndex id) contacts
+
       where findTemporary previousID (HistoryMessage { id }) = id == previousID
             findUser previousID (Contact { history }) = DA.any (findTemporary previousID) history
             updateTemporary index newID user@(Contact { history }) =

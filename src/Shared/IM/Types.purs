@@ -83,6 +83,7 @@ newtype IMUser = IMUser (BasicUser (
 ))
 
 newtype Contact = Contact {
+      shouldFetchChatHistory :: Boolean, -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
       user :: IMUser,
       chatAge :: Number, --Days,
       chatStarter :: PrimaryKey,
@@ -140,7 +141,7 @@ data MessageStatus =
 
 data IMMessage =
       --history
-      CheckScrollTop |
+      CheckFetchHistory |
       FetchHistory Boolean |
       DisplayHistory (JSONResponse (Array HistoryMessage)) |
       --user menu
@@ -154,7 +155,7 @@ data IMMessage =
       MarkAsRead |
       ResumeChat PrimaryKey |
       UpdateReadCount |
-      CheckScrollBottom |
+      CheckFetchContacts |
       FetchContacts Boolean |
       DisplayContacts (JSONResponse (Array Contact)) |
       --suggestion
@@ -193,7 +194,10 @@ data WebSocketPayloadClient =
             id :: PrimaryKey
       }
 
-data ReceivedUser a = New a | Existing a
+data ReceivedUser a b =
+      New a |
+      Existing a |
+      ExistingToFetch b
 
 derive instance genericStats :: Generic Stats _
 derive instance genericTurn :: Generic Turn _
@@ -319,6 +323,7 @@ instance fromSQLRowContact :: FromSQLRow Contact where
                   foreignKarma
             ]
             pure $ Contact {
+                  shouldFetchChatHistory: true,
                   history: [],
                   chatAge: DN.unwrap (DD.diff (EU.unsafePerformEffect DN.nowDate) firstMessageDate :: Days),
                   chatStarter: sender,

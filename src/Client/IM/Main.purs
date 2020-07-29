@@ -19,8 +19,10 @@ import Client.IM.UserMenu as CIU
 import Control.Monad.Except as CME
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Console as EC
@@ -33,6 +35,7 @@ import Flame (ListUpdate, QuerySelector(..))
 import Flame as F
 import Flame.External as FE
 import Foreign as FO
+import Partial.Unsafe as UP
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Newtype as SN
@@ -42,11 +45,13 @@ import Shared.WebSocketOptions (port)
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.Event.EventTarget as WET
+import Web.HTML as WH
+import Web.HTML.Event.EventTypes (focus)
+import Web.HTML.Window as WHW
 import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
-import Web.UIEvent.WheelEvent as WUW
 
 foreign import loadEditor :: Effect Editor
 foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
@@ -56,7 +61,7 @@ main = do
       token <- CCS.getItem tokenKey
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view,
-            init: [pure <<< Just $ SetToken token],
+            init: [CIF.next $ SetToken token],
             update
       }
 
@@ -69,7 +74,16 @@ main = do
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetName)
       --display settings/profile page
-      FE.send [FE.onClick' [ShowUserContextMenu], FE.onFocus [UpdateReadCount]] channel
+      FE.send [FE.onClick' [ShowUserContextMenu]] channel
+
+      windowsFocus channel
+
+windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
+windowsFocus channel = do
+      focusListener <- WET.eventListener $ const (SC.send channel $ DA.singleton UpdateReadCount)
+      --focus event has to be on the window as chrome is a whiny baby about document
+      window <- WH.window
+      WET.addEventListener focus focusListener false $ WHW.toEventTarget window
 
 setUpWebSocket :: Channel (Array IMMessage) -> String -> Effect Unit
 setUpWebSocket channel token = do
@@ -85,15 +99,10 @@ setUpWebSocket channel token = do
             DM.maybe (pure unit) (\id -> do
                   ET.clearTimeout id
                   ER.write Nothing timerID) maybeID
-            let possiblePayload = CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust "client.im.main" $ WSEM.fromEvent event
-            case possiblePayload of
-                  Left e -> EC.log $ "bogus payload " <> show (map FO.renderForeignError e)
-                  Right payload -> do
-                        case SJ.fromJSON payload of
-                              Left e -> EC.log $ "bogus payload " <> e
-                              Right r -> do
-                                    isFocused <- CCD.documentHasFocus
-                                    SC.send channel <<< DA.singleton $ ReceiveMessage r isFocused
+            let payload = fromRight' <<< CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust "client.im.main" $ WSEM.fromEvent event
+                message = fromRight' $ SJ.fromJSON payload
+            isFocused <- CCD.documentHasFocus
+            SC.send channel <<< DA.singleton $ ReceiveMessage message isFocused
 
       closeListener <- WET.eventListener $ \_ -> do
             maybeID <- ER.read timerID
@@ -107,6 +116,9 @@ setUpWebSocket channel token = do
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
 
+      where fromRight' :: forall a b. Either a b -> b
+            fromRight' et = UP.unsafePartial (DE.fromRight et)
+
 update :: ListUpdate IMModel IMMessage
 update model  =
       case _ of
@@ -117,12 +129,12 @@ update model  =
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead model
-            UpdateReadCount -> CICN.markRead model --when the window is focused updated the read status of current chat
-            CheckScrollBottom -> CICN.checkScrollBottom model
+            UpdateReadCount -> CICN.markRead model
+            CheckFetchContacts -> CICN.checkFetchContacts model
             FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
             DisplayContacts (JSONResponse contacts) -> CICN.displayContacts contacts model
             --history
-            CheckScrollTop -> CIH.checkScrollTop model
+            CheckFetchHistory -> CIH.checkFetchHistory model
             FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
             DisplayHistory (JSONResponse history) -> CIH.displayHistory history model
             --suggestion

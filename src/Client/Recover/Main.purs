@@ -4,6 +4,7 @@ import Prelude
 import Shared.Types
 
 import Affjax (ResponseFormatError(..))
+import Client.Common.Captcha as CCC
 import Client.Common.DOM as CCD
 import Client.Common.External as CCE
 import Client.Common.Location as CCL
@@ -11,7 +12,6 @@ import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Client.Common.Captcha as CCC
 import Data.Maybe as DM
 import Data.String as DS
 import Effect (Effect)
@@ -27,19 +27,16 @@ import Web.UIEvent.MouseEvent.EventTypes (click)
 recover :: Maybe String -> Effect Unit
 recover captchaResponse = do
       emailElement <- CCD.querySelector "#email"
-      email <- CCD.value emailElement
+      email <- DS.trim <$> CCD.value emailElement
       if DS.null email then do
             CCN.alert "Email is mandatory"
        else if DM.isNothing captchaResponse then
             CCC.grecaptchaExecute
        else
             EA.launchAff_ do
-                  response <- CCNT.post (Recover { token: Nothing }) <<< Just $ RecoverAccount {
-                        email: email,
-                        captchaResponse: captchaResponse
-                  }
+                  response <- CCNT.post (Recover { token: Nothing }) <<< Just $ RecoverAccount { email, captchaResponse }
                   case response of
-                        Right Ok -> liftEffect <<< CCN.alert $ "Recover link sent to" <> email
+                        Right Ok -> liftEffect <<< CCN.alert $ "Recover link sent to " <> email
                         Left left -> liftEffect do
                               CCC.grecaptchaReset
                               CCN.alert "Could not recover. Please try again."

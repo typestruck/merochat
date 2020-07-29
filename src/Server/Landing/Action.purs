@@ -34,7 +34,6 @@ emailAlreadyRegisteredMessage = "Email already registered"
 
 register :: String -> RegisterLogin -> ServerEffect Token
 register remoteIP (RegisterLogin { captchaResponse, email, password }) = do
-      void $ SRR.throwBadRequest invalidUserEmailMessage
       when (DS.null email || DS.null password) $ SRR.throwBadRequest invalidUserEmailMessage
       user <- SDU.userBy $ Email email
       when (DM.isJust user) $ SRR.throwBadRequest emailAlreadyRegisteredMessage

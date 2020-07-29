@@ -61,7 +61,7 @@ get' route = do
       response <- get route
       case response of
             Right right -> pure right
-            Left error -> alertResponseError  error
+            Left error -> alertResponseError error
 
 get :: forall response r. Generic response r => DecodeRep r => Route -> Aff (Either String response)
 get route = do

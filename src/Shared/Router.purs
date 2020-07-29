@@ -25,6 +25,7 @@ routes = RD.root $ RDG.sum {
       "Register" : "register" / RDG.noArgs,
       "Login": "login" ? { next: RD.optional <<< RD.string },
       "IM": "im" / RDG.noArgs,
+      "SingleContact": "im" / "contact" ? { id: parsePrimaryKey } ,
       "Contacts" : "im" / "contacts" ? { skip: RD.int },
       "Suggestions" : "im" / "suggestions" / RDG.noArgs,
       "Profile": "profile" / RDG.noArgs,

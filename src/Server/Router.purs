@@ -60,6 +60,8 @@ router request@{ headers, path, method } =
             SIR.suggestions request
        else if paths == SRD.history then
             SIR.history request
+       else if paths == SRD.singleContact then
+            SIR.singleContact request
        --profile
        else if paths == SRO.fromRoute Profile then
             SPR.profile request

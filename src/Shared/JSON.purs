@@ -8,8 +8,10 @@ import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Argonaut.Parser as DAP
+import Data.Argonaut.Types.Generic.Rep (Encoding)
 import Data.Either (Either)
 import Data.Generic.Rep (class Generic)
+import Debug.Trace (spy)
 
 fromJSON :: forall v value. Generic value v => DecodeRep v => String -> Either String value
 fromJSON content = do

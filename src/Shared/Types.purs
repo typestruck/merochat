@@ -112,13 +112,14 @@ data Route =
       Suggestions |
       Reset |
       Recover { token :: Maybe String } |
+      SingleContact { id :: PrimaryKey } |
       Contacts { skip :: Int } |
       History { skip :: Int, with :: PrimaryKey }
 
 data Generate =
-        Name |
-        Headline |
-        Description
+      Name |
+      Headline |
+      Description
 
 data By =
       ID PrimaryKey |

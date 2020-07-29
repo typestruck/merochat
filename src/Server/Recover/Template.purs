@@ -34,7 +34,7 @@ template token = do
                                                 HE.h2 (HA.class' "ext-heading") "Recover account",
                                                 HE.div (HA.class' "form-up") [
                                                       HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
-                                                      HE.input [HA.type' "button", HA.id "login", HA.value "Recover"],
+                                                      HE.input [HA.type' "button", HA.id "recover", HA.value "Recover"],
                                                       HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible"]
                                                 ]
                                           ]

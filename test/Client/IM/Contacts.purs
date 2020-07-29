@@ -38,6 +38,9 @@ tests = do
                   let IMModel { chatting } = DT.fst $ CICN.resumeChat anotherContactID m
                   TUA.equal (Just 0) chatting
 
+            TU.test "resumeChat marks as read" do
+                  TUA.equal 2 1
+
             TU.test "markRead sets recieved messages as read" do
                   let IMModel { contacts } = DT.fst <<< CICN.markRead <<< SN.updateModel model $ _ {
                         chatting = Just 1

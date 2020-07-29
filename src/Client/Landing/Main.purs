@@ -28,7 +28,7 @@ register captchaResponse = do
       case registerLogin of
             Nothing -> pure unit
             Just (RegisterLogin rl) ->
-                  if spy "here at iffff" (DM.isNothing captchaResponse) then
+                  if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
                    else
                         EA.launchAff_ do
