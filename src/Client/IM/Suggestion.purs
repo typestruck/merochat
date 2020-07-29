@@ -15,7 +15,7 @@ import Effect.Aff (Aff)
 import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
-import Shared.Types (Route(..), JSONResponse(..))
+import Shared.Types (Route(..))
 
 nextSuggestion :: IMModel -> MoreMessages
 nextSuggestion model@(IMModel { suggestions, suggesting }) =

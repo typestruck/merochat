@@ -85,8 +85,9 @@ newtype Token = Token {
       tokenPOST :: String
 }
 
---REFACTOR: the usage of JSONResponse could be swapped for more apt types
-newtype JSONResponse p = JSONResponse p
+--these wrappers are for json type safety
+newtype SettingsPayload = SettingsPayload String
+newtype GeneratePayload = GeneratePayload String
 
 -- | Used by requests which don't meaningfully respond anything
 data Ok = Ok
@@ -142,6 +143,8 @@ data ResponseError =
 derive instance newtypeMDateTime :: Newtype MDateTime _
 derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 
+derive instance genericGeneratePayload :: Generic GeneratePayload _
+derive instance genericSettingsPayload :: Generic SettingsPayload _
 derive instance genericResetPassword :: Generic ResetPassword _
 derive instance genericOk :: Generic Ok _
 derive instance genericRecover :: Generic RecoverAccount _
@@ -153,7 +156,6 @@ derive instance genericToken :: Generic Token _
 derive instance genericResponseError :: Generic ResponseError _
 derive instance genericPrimaryKey :: Generic PrimaryKey _
 derive instance genericUser :: Generic RegisterLoginUser _
-derive instance genericJSONString :: Generic (JSONResponse p) _
 derive instance genericMDateTime :: Generic MDateTime _
 derive instance genericMDate :: Generic MDate _
 

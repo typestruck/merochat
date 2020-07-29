@@ -11,14 +11,14 @@ import Server.Settings.Action as SSA
 import Server.Settings.Database as SSD
 import Server.Settings.Template as SST
 import Server.Types (ResponseEffect)
-import Shared.Types (JSONResponse(..), PrimaryKey(..))
+import Shared.Types
 import Shared.Unsafe as SU
 
 settings :: Request -> ResponseEffect
 settings request = do
         void $ SRS.checkLogin request
         contents <- R.liftEffect SST.template
-        SRR.json' $ JSONResponse contents
+        SRR.json' $ SettingsPayload contents
 
 changeEmail :: Request -> ResponseEffect
 changeEmail request@{ body } = do

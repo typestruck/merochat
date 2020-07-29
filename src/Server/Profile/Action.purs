@@ -37,9 +37,9 @@ imageTooBigMessage = "Max allowed size for avatar is 500kb"
 allowedMediaTypes :: HashMap String String
 allowedMediaTypes = DH.fromFoldable [Tuple "data:image/png;base64" ".png", Tuple "data:image/jpeg;base64" ".jpg", Tuple "data:image/tiff;base64" ".tiff", Tuple "data:image/bmp;base64" ".bmp" ]
 
-generate :: Generate -> ServerEffect (JSONResponse String)
+generate :: Generate -> ServerEffect GeneratePayload
 generate =
-        map JSONResponse <<< case _ of
+        map GeneratePayload <<< case _ of
                 Name -> SB.generateName
                 Headline -> SB.generateHeadline
                 Description -> SB.generateDescription

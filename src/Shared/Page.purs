@@ -1,7 +1,7 @@
 module Shared.Page where
 
 contactsPerPage :: Int
-contactsPerPage = 3
+contactsPerPage = 20
 
 initialMessagesPerPage :: Int
 initialMessagesPerPage = 1

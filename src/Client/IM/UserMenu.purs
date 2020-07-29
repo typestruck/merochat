@@ -2,6 +2,7 @@ module Client.IM.UserMenu where
 
 import Prelude
 import Shared.IM.Types
+import Shared.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Logout as CCLO
@@ -14,7 +15,7 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
-import Shared.Types (JSONResponse(..), Route(..))
+import Shared.Types (Route(..))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
@@ -32,7 +33,7 @@ toggleProfileSettings model =
         case _ of
                 ShowProfile -> showTab Profile ShowProfile "profile.bundle.js" "#profile-edition-root"
                 ShowSettings -> showTab Settings ShowSettings "settings.bundle.js" "#settings-edition-root"
-                Hidden -> CIF.justNext (SN.updateModel model $ _ { profileSettingsToggle = Hidden }) <<< SetModalContents Nothing "#profile-edition-root" $ JSONResponse "Loading..."
+                Hidden -> CIF.justNext (SN.updateModel model $ _ { profileSettingsToggle = Hidden }) <<< SetModalContents Nothing "#profile-edition-root" $ ProfileSettingsPayload "Loading..."
         where   showTab route toggle file root =
                         (SN.updateModel model $ _ { profileSettingsToggle = toggle }) :> [
                                 Just <<< SetModalContents (Just file) root <$> CCN.get' route

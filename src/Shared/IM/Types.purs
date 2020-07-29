@@ -44,7 +44,7 @@ import Foreign (Foreign, ForeignError(..))
 import Foreign as F
 import Partial.Unsafe as PU
 import Shared.DateTime as SDT
-import Shared.Types (JSONResponse(..), MDate(..), MDateTime(..), PrimaryKey(..), parsePrimaryKey, parseInt)
+import Shared.Types (MDate(..), MDateTime(..), PrimaryKey(..), parsePrimaryKey, parseInt)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
@@ -68,6 +68,11 @@ type BasicMessage fields = {
       content :: String |
       fields
 }
+
+type ClientMessagePayload = (BasicMessage (
+      userID :: PrimaryKey,
+      date :: MDateTime
+))
 
 newtype WS = WS WebSocket
 
@@ -130,6 +135,12 @@ newtype Turn = Turn {
     replyDelay :: Number --Seconds
 }
 
+newtype SuggestionsPayload = SuggestionsPayload (Array IMUser)
+newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
+newtype SingleContactPayload = SingleContactPayload (Array Contact)
+newtype ContactsPayload = ContactsPayload (Array Contact)
+newtype ProfileSettingsPayload = ProfileSettingsPayload String
+
 data ProfileSettingsToggle =
       Hidden |
       ShowProfile |
@@ -143,25 +154,25 @@ data IMMessage =
       --history
       CheckFetchHistory |
       FetchHistory Boolean |
-      DisplayHistory (JSONResponse (Array HistoryMessage)) |
+      DisplayHistory HistoryPayload  |
       --user menu
       ConfirmLogout |
       ShowUserContextMenu Event |
       Logout Boolean |
       ToggleProfileSettings ProfileSettingsToggle |
       SetUserContentMenuVisible Boolean |
-      SetModalContents (Maybe String) String (JSONResponse String) |
+      SetModalContents (Maybe String) String ProfileSettingsPayload |
       --contact
       MarkAsRead |
       ResumeChat PrimaryKey |
       UpdateReadCount |
       CheckFetchContacts |
       FetchContacts Boolean |
-      DisplayContacts (JSONResponse (Array Contact)) |
+      DisplayContacts ContactsPayload  |
       --suggestion
       PreviousSuggestion |
       NextSuggestion |
-      DisplayMoreSuggestions (JSONResponse (Array Suggestion)) |
+      DisplayMoreSuggestions SuggestionsPayload |
       --chat
       BeforeSendMessage String |
       SendMessage String MDateTime |
@@ -184,11 +195,6 @@ data WebSocketPayloadServer =
             ids :: Array PrimaryKey
       }
 
-type ClientMessagePayload = (BasicMessage (
-      userID :: PrimaryKey,
-      date :: MDateTime
-))
-
 data WebSocketPayloadClient =
       ClientMessage ClientMessagePayload |
       Received {
@@ -196,6 +202,11 @@ data WebSocketPayloadClient =
             id :: PrimaryKey
       }
 
+derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _
+derive instance genericContactsPayload :: Generic ContactsPayload _
+derive instance genericSingleContactPayload :: Generic SingleContactPayload _
+derive instance genericHistoryPayload :: Generic HistoryPayload _
+derive instance genericSuggestionsPayload :: Generic SuggestionsPayload _
 derive instance genericStats :: Generic Stats _
 derive instance genericTurn :: Generic Turn _
 derive instance genericContact :: Generic Contact _

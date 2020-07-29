@@ -39,7 +39,7 @@ import Partial.Unsafe as UP
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Newtype as SN
-import Shared.Types (Editor, JSONResponse(..))
+import Shared.Types (Editor)
 import Shared.Unsafe as SU
 import Shared.WebSocketOptions (port)
 import Signal.Channel (Channel)
@@ -132,21 +132,21 @@ update model  =
             UpdateReadCount -> CICN.markRead model
             CheckFetchContacts -> CICN.checkFetchContacts model
             FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
-            DisplayContacts (JSONResponse contacts) -> CICN.displayContacts contacts model
+            DisplayContacts (ContactsPayload contacts) -> CICN.displayContacts contacts model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
-            DisplayHistory (JSONResponse history) -> CIH.displayHistory history model
+            DisplayHistory (HistoryPayload history) -> CIH.displayHistory history model
             --suggestion
             PreviousSuggestion -> CIS.previousSuggestion model
             NextSuggestion -> CIS.nextSuggestion model
-            DisplayMoreSuggestions (JSONResponse suggestions) -> CIS.displayMoreSuggestions suggestions model
+            DisplayMoreSuggestions (SuggestionsPayload suggestions) -> CIS.displayMoreSuggestions suggestions model
             --user menu
             ConfirmLogout -> CIU.confirmLogout model
             Logout confirmed -> CIU.logout model confirmed
             ShowUserContextMenu event -> CIU.showUserContextMenu model event
             ToggleProfileSettings toggle -> CIU.toggleProfileSettings model toggle
-            SetModalContents file root (JSONResponse html) -> CIF.nothingNext model $ CIU.loadModal root html file
+            SetModalContents file root (ProfileSettingsPayload html) -> CIF.nothingNext model $ CIU.loadModal root html file
             SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
             SetWebSocket webSocket -> setWebSocket webSocket model
             SetToken token -> setToken token model
