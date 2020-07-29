@@ -177,8 +177,7 @@ receiveMessage isFocused model@(IMModel {
                   recipientID == DET.either (_.id <<< DN.unwrap) identity sender
 
 --this must be simplified to
--- if contact is not in the list, fetch
--- trying to be clever with Either user id is only a source of edge cases
+-- if contacts present in histories must always come Left User
 processIncomingMessage :: _ -> IMModel -> Either PrimaryKey IMModel
 processIncomingMessage m model@(IMModel {
       user: IMUser { id: recipientID },
