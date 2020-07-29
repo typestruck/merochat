@@ -50,9 +50,9 @@ handleMessage connection (WebSocketMessage message) = do
                   case payload of
                         Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
                         ReadMessages { token, ids } -> withUser token $ \userID -> SID.markRead userID ids
-                        ServerMessage {id, user: recipient, token, content, turn} -> withUser token $ \userID -> do
+                        ServerMessage {id, userID: recipient, token, content, turn} -> withUser token $ \userID -> do
                               date <- R.liftEffect $ map MDateTime EN.nowDateTime
-                              Tuple messageID senderUser <- SID.insertMessage userID recipient content
+                              messageID <- SID.insertMessage userID recipient content
                               sendMessage connection <<< SJ.toJSON $ Received {
                                     previousID: id,
                                     id: messageID
@@ -62,7 +62,7 @@ handleMessage connection (WebSocketMessage message) = do
                               whenJust possibleRecipientConnection $ \recipientConnection ->
                                     sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
                                           id : messageID,
-                                          user: senderUser,
+                                          userID,
                                           content,
                                           date
                                     }

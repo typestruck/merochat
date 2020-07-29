@@ -70,15 +70,11 @@ chatHistory id otherIDs
 chatHistoryBetween :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
 chatHistoryBetween id otherID skip = SD.select (Query ("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (id /\ otherID /\ messagesPerPage /\ skip)
 
-insertMessage :: forall r. PrimaryKey -> PrimaryKey -> String -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey (Either IMUser PrimaryKey))
+insertMessage :: forall r. PrimaryKey -> PrimaryKey -> String -> BaseEffect { pool :: Pool | r } PrimaryKey
 insertMessage sender recipient content = SD.withTransaction $ \connection -> do
-      priorExistingHistory <- SD.scalarWith connection (Query """select insertHistory($1, $2)""") (sender /\ recipient)
+      SD.executeWith connection (Query """select insertHistory($1, $2)""") (sender /\ recipient)
       messageID <- SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") (sender /\ recipient /\ content)
-      if priorExistingHistory then
-            pure <<< Tuple messageID $ Right sender
-       else do
-            senderUser <- SD.singleWith connection presentUserQuery $ presentUserParameters sender
-            pure <<< Tuple messageID $ Left senderUser
+      pure $ messageID
 
 --when using an array parameter, any must be used instead of in
 markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit

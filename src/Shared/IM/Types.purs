@@ -175,7 +175,7 @@ data WebSocketPayloadServer =
       Connect String |
       ServerMessage (BasicMessage (
             token :: String,
-            user :: PrimaryKey,
+            userID :: PrimaryKey,
             turn :: Maybe Turn
       )) |
       ReadMessages {
@@ -184,20 +184,17 @@ data WebSocketPayloadServer =
             ids :: Array PrimaryKey
       }
 
+type ClientMessagePayload = (BasicMessage (
+      userID :: PrimaryKey,
+      date :: MDateTime
+))
+
 data WebSocketPayloadClient =
-      ClientMessage (BasicMessage (
-            user :: Either IMUser PrimaryKey,
-            date :: MDateTime
-      ))|
+      ClientMessage ClientMessagePayload |
       Received {
             previousID :: PrimaryKey,
             id :: PrimaryKey
       }
-
-data ReceivedUser a b =
-      New a |
-      Existing a |
-      ExistingToFetch b
 
 derive instance genericStats :: Generic Stats _
 derive instance genericTurn :: Generic Turn _

@@ -520,13 +520,9 @@ create table histories
     unique(sender, recipient)
 );
 
-CREATE OR REPLACE FUNCTION insertHistory
-(senderID int, recipientID int)
-  RETURNS boolean AS
+CREATE OR REPLACE function insertHistory
+(senderID int, recipientID int) returns void AS
 $$
-declare alreadyExists boolean := (exists(select 1
-    from histories
-    where sender = senderID and recipient = recipientID or sender = recipientID and recipient = senderID ));
 begin
     if exists(select 1
     from histories
@@ -540,9 +536,7 @@ begin
     on conflict
     (sender, recipient) do
     update set senderArchived = false, recipientArchived = false, date = clock_timestamp();
-end
-if;
-return alreadyExists;
+end if;
 end;
   $$
   LANGUAGE plpgsql;

@@ -10,7 +10,6 @@ import Data.HashMap as DH
 import Data.Newtype as DN
 import Server.IM.Database as SID
 import Shared.Newtype as SN
-import Shared.Page (initialMessagesPerPage)
 import Shared.Unsafe as SU
 
 suggest :: PrimaryKey -> ServerEffect (Array IMUser)
@@ -33,7 +32,7 @@ contactList id page = do
 singleContact :: PrimaryKey -> PrimaryKey -> ServerEffect Contact
 singleContact id otherID = do
         contact <- SID.presentSingleContact id otherID
-        history <- SID.chatHistoryBetween id otherID initialMessagesPerPage
+        history <- SID.chatHistoryBetween id otherID 0
         pure <<< SN.updateContact contact $ _ {
                 history = history
         }
