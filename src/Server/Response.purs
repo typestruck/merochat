@@ -8,7 +8,8 @@ module Server.Response(
       throwInternalError,
       throwBadRequest,
       redirect,
-      serveTemplate
+      serveTemplate,
+      headerContentType
 ) where
 
 import Prelude
@@ -33,6 +34,7 @@ import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Console as EC
 import HTTPure (Headers, Response, ResponseM, Path)
+
 import HTTPure as H
 import HTTPure.Body (class Body)
 import Node.FS.Aff as NFA
@@ -46,13 +48,14 @@ import Shared.JSON as SJ
 import Shared.Router as SR
 import Shared.Unsafe as SU
 
-html :: String -> ResponseEffect
+html :: forall e. String -> Run (aff :: AFF | e) Response
 html contents = ok' (headerContentType $ show HTML) contents
 
+--REFACTOR: user Shared.Json
 -- | Parses the request body as JSON, feeds it to a handler and serializes the return as a JSON response
 json :: forall a b c d. Generic a b => EncodeRep b => Generic c d => DecodeRep d => String -> (c -> ServerEffect a) -> ResponseEffect
 json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) runHandler $ DAP.jsonParser body
-      where   runHandler arg = do
+      where runHandler arg = do
                   response <- handler $ PU.unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
                   json' response
 
@@ -94,10 +97,10 @@ requestError ohno = do
                         jsonError (const <<< H.notFound') reason
                    else do
                         contents <- R.liftEffect SNT.template
-                        ok' (headerContentType $ show HTML) contents
+                        html contents
       where jsonError handler = R.liftAff <<< handler (headerContentType $ show JSON) <<< DAC.stringify <<< DAE.encodeJson
 
-throwInternalError :: forall whatever. String -> ServerEffect whatever
+throwInternalError :: forall whatever.  String -> ServerEffect whatever
 throwInternalError reason = RE.throw $ InternalError { reason }
 
 throwBadRequest :: forall whatever. String -> ServerEffect whatever
