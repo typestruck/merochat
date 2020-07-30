@@ -102,6 +102,7 @@ newtype IMModel = IMModel {
       temporaryID :: PrimaryKey,
       freeToFetchChatHistory :: Boolean,
       freeToFetchContactList :: Boolean,
+      markdownForPreview :: Maybe String,
       --used to authenticate web socket messages
       token :: Maybe String,
       --the current logged in user
@@ -150,6 +151,8 @@ data MessageStatus =
       Unread |
       Read
 
+data Markup = Bold
+
 data IMMessage =
       --history
       CheckFetchHistory |
@@ -177,6 +180,10 @@ data IMMessage =
       BeforeSendMessage String |
       SendMessage String MDateTime |
       ReceiveMessage WebSocketPayloadClient Boolean |
+      Apply Markup |
+      Preview |
+      SetPreview String |
+      ExitPreview |
       --main
       SetWebSocket WebSocket |
       SetToken String |

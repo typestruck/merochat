@@ -23,6 +23,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
+import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds(..))
 import Data.Tuple (Tuple(..))
@@ -37,6 +38,8 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Web.HTML.HTMLElement as WHHEL
+import Web.HTML.HTMLTextAreaElement as WHHTA
 
 --purty is fucking terrible
 
@@ -242,3 +245,104 @@ updateTemporaryID contacts previousID id = do
                   SN.updateContact user $ _ {
                         history = SU.fromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
                   }
+
+applyMarkup :: Markup -> IMModel -> MoreMessages
+applyMarkup markup model = CIF.nothingNext model <<< liftEffect $ apply markup
+
+apply markup = do
+      textarea <- SU.fromJust "apply" <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+      let   Tuple before after = case markup of
+                  Bold -> Tuple "**" "**"
+            -- case "italic":
+            --       myValueBefore = "*"
+            --       myValueAfter = "*"
+            --       break
+            -- case "strike":
+            --       myValueBefore = "~"
+            --       myValueAfter = "~"
+            --       break
+            -- case "h1":
+            --       myValueBefore = "# "
+            --       myValueAfter = ""
+            --       break
+            -- case "h2":
+            --       myValueBefore = "## "
+            --       myValueAfter = ""
+            --       break
+            -- case "h3":
+            --       myValueBefore = "### "
+            --       myValueAfter = ""
+            --       break
+            -- case "bq":
+            --       myValueBefore = "> "
+            --       myValueAfter = ""
+            --       break
+            -- case "ol":
+            --       myValueBefore = "1. "
+            --       myValueAfter = ""
+            --       break
+            -- case "ul":
+            --       myValueBefore = "- "
+            --       myValueAfter = ""
+            --       break
+            -- case "ic":
+            --       myValueBefore = "`"
+            --       myValueAfter = "`"
+            --       break
+            -- case "bc":
+            --       myValueBefore = "```\n"
+            --       myValueAfter = "\n```"
+            --       break
+            -- case "link":
+            --       myValueBefore = "["
+            --       myValueAfter = "]()"
+            --       break
+            -- case "check":
+            --       myValueBefore = "- [x] "
+            --       myValueAfter = ""
+            --       break
+            -- case "image":
+            --       myValueBefore = "![alt text](image.jpg)"
+            --       myValueAfter = ""
+            --       break
+            -- case "hr":
+            --       myValueBefore = "---\n"
+            --       myValueAfter = ""
+            --       break
+            -- case "table":
+            --       myValueBefore = "| Header | Title |\n| ----------- | ----------- |\n| Paragraph | Text |\n"
+            --       myValueAfter = ""
+            --       break
+      start <- WHHTA.selectionStart textarea
+      end <- WHHTA.selectionEnd textarea
+      value <- WHHTA.value textarea
+      let   beforeSize = DS.length before
+            beforeSelection = DS.take start value
+            selected = DS.take (end - start) $ DS.drop start value
+            afterSelection = DS.drop end value
+            newValue = beforeSelection <> before <> selected <> after <> afterSelection
+      WHHTA.setValue newValue textarea
+      WHHTA.setSelectionStart (start + beforeSize) textarea
+      WHHTA.setSelectionEnd (end + beforeSize) textarea
+      WHHEL.focus $ WHHTA.toHTMLElement textarea
+
+preview :: IMModel -> NextMessage
+preview model = model :> [liftEffect do
+      textarea <- SU.fromJust "apply" <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+      value <- WHHTA.value textarea
+      CIF.next $ SetPreview value
+]
+
+setMarkdownPreview :: String -> IMModel -> NoMessages
+setMarkdownPreview markdown model = do
+      F.noMessages <<< SN.updateModel model $ _ {
+            markdownForPreview = Just markdown
+      }
+
+exitPreview :: IMModel -> NextMessage
+exitPreview model = do
+      CIF.nothingNext (SN.updateModel model $ _ {
+            markdownForPreview = Nothing
+      }) $ liftEffect do
+            textarea <- SU.fromJust "apply" <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+            WHHEL.focus $ WHHTA.toHTMLElement textarea

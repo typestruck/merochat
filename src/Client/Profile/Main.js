@@ -1,6 +1,3 @@
-//we probably dont want to blunde simplemde here twice on top of the im bundle
-const SimpleMDE = require('simplemde');
-
 function newEditor(selector) {
         return new SimpleMDE({
                 element: document.querySelector(selector),

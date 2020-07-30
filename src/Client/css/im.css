@@ -464,12 +464,6 @@ img.emoji {
     padding-right: 5px;
 }
 
-.chat-input {
-    display: flex;
-    flex-flow: column;
-    padding: 0px 55px;
-}
-
 .toolbar {
     padding-bottom: 10px;
     display: flex;
@@ -477,7 +471,7 @@ img.emoji {
     align-items: end;
 }
 
-.chat-input-textarea img.emoji, .text img.emoji {
+.chat-input img.emoji, .text img.emoji {
     height: 1em;
     width: 1em;
     margin: 0 .05em 0 .1em;
@@ -499,15 +493,22 @@ svg.toolbar-action {
 .svg-no-margin {
     margin: 0;
 }
-
-.chat-input-textarea-options {
-    /* display: flex; */
-    align-items: center;
-    height: 40px;
+.chat-input-options {
+    margin-bottom: 4px;
+}
+.chat-input-options button {
+    font-size:1.2em;
+    color:white;
+    font-weight: bold;
+    background: #262626;
+    border:0;
+    padding: 5px;
+    cursor: pointer;
 }
 
-.chat-input-textarea {
-    flex-grow: 1;
+.chat-input {
+    resize: none;
+    width: 100%;
     border: 1px solid lightgray;
     cursor: text;
     border-radius: 4px;

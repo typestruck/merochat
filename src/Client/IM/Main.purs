@@ -53,8 +53,7 @@ import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
 
-foreign import loadEditor :: Effect Editor
-foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
+--foreign import keyHandled_ :: EffectFn2 (EffectFn1 String Unit) Unit
 
 main :: Effect Unit
 main = do
@@ -67,10 +66,8 @@ main = do
 
       setUpWebSocket channel token
 
-      editor <- loadEditor
-      EU.runEffectFn2 keyHandled_ editor $ EU.mkEffectFn1 (SC.send channel <<< DA.singleton <<< BeforeSendMessage)
+    --  EU.runEffectFn2 keyHandled_ editor $ EU.mkEffectFn1 (SC.send channel <<< DA.singleton <<< BeforeSendMessage)
 
-      CISR.scrollLastMessage
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetName)
       --display settings/profile page
@@ -126,6 +123,10 @@ update model  =
             BeforeSendMessage content -> CIC.startChat model content
             SendMessage content date -> CIC.sendMessage content date model
             ReceiveMessage payload isFocused -> CIC.receiveMessage isFocused model payload
+            Apply markup -> CIC.applyMarkup markup model
+            Preview -> CIC.preview model
+            SetPreview markdown -> CIC.setMarkdownPreview markdown model
+            ExitPreview -> CIC.exitPreview model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead model

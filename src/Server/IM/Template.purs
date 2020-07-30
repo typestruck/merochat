@@ -37,6 +37,7 @@ template {contacts, suggestions, user} = do
                         freeToFetchContactList: true,
                         userContextMenuVisible: false,
                         profileSettingsToggle: Hidden,
+                        markdownForPreview: Nothing,
                         contacts,
                         suggestions,
                         user
