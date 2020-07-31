@@ -16,35 +16,36 @@ import Server.Template as ST
 import Shared.IM.View as SIV
 
 template :: {
-        contacts :: Array Contact,
-        suggestions :: Array Suggestion,
-        user :: IMUser
+      contacts :: Array Contact,
+      suggestions :: Array Suggestion,
+      user :: IMUser
 } -> Effect String
 template {contacts, suggestions, user} = do
-        let parameters = defaultParameters {
-                javascript = javascript,
-                css = css
-        }
-        F.preMount (QuerySelector ".im") {
-                view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
-                init: IMModel {
-                        chatting: Nothing,
-                        webSocket: Nothing,
-                        token: Nothing,
-                        temporaryID: SP.fromInt 0,
-                        suggesting: if DA.null suggestions then Nothing else Just 0,
-                        freeToFetchChatHistory:true,
-                        freeToFetchContactList: true,
-                        userContextMenuVisible: false,
-                        profileSettingsToggle: Hidden,
-                        markdownForPreview: Nothing,
-                        contacts,
-                        suggestions,
-                        user
-                }
-        }
-        where   javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"] ]
-                css = [
-                        HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"],
-                        HE.link [HA.rel "stylesheet", HA.href "https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"]
-                ]
+      let parameters = defaultParameters {
+            javascript = javascript,
+            css = css
+      }
+      F.preMount (QuerySelector ".im") {
+            view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
+            init: IMModel {
+                  chatting: Nothing,
+                  webSocket: Nothing,
+                  token: Nothing,
+                  temporaryID: SP.fromInt 0,
+                  suggesting: if DA.null suggestions then Nothing else Just 0,
+                  freeToFetchChatHistory:true,
+                  freeToFetchContactList: true,
+                  userContextMenuVisible: false,
+                  profileSettingsToggle: Hidden,
+                  message: Nothing,
+                  isPreviewing: false,
+                  contacts,
+                  suggestions,
+                  user
+            }
+      }
+      where javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"] ]
+            css = [
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"],
+                  HE.link [HA.rel "stylesheet", HA.href "https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"]
+            ]

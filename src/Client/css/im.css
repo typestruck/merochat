@@ -509,6 +509,7 @@ svg.toolbar-action {
 .chat-input {
     resize: none;
     width: 100%;
+    font-size:1.2em;
     border: 1px solid lightgray;
     cursor: text;
     border-radius: 4px;
