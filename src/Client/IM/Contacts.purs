@@ -94,7 +94,7 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
                   | otherwise = historyEntry
 
             updateContacts contactRead@(Contact { history }) = SN.updateModel model $ _ {
-                  contacts = SU.fromJust "updateReadHistory" $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
+                  contacts = SU.fromJust $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
             }
 
             confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages {
@@ -113,7 +113,7 @@ checkFetchContacts model@(IMModel { contacts, freeToFetchContactList })
                   element <- CCD.querySelector "#message-history-wrapper"
                   top <- WDE.scrollTop element
                   height <- WDE.scrollHeight element
-                  offset <- WHH.offsetHeight <<< SU.fromJust "fetchContacts" $ WHH.fromElement element
+                  offset <- WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
                   pure $ top == height - offset
 
       | otherwise = F.noMessages model

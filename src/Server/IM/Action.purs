@@ -26,7 +26,7 @@ contactList id page = do
                         DH.insertWith (<>) (if sender == userID then recipient else sender) [m] hashMap
 
                 intoContacts userHistory user@(Contact { user: IMUser { id } }) = SN.updateContact user $ _ {
-                        history = SU.fromJust "contactList" $ DH.lookup id userHistory
+                        history = SU.fromJust $ DH.lookup id userHistory
                 }
 
 singleContact :: PrimaryKey -> PrimaryKey -> ServerEffect Contact

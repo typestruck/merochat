@@ -37,6 +37,7 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Router as SR
 import Shared.Types (Ok(..), Route(..))
+import Client.Common.File as CCF
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.DOM.Element as WDE
@@ -51,164 +52,164 @@ getFileInput = CCD.querySelector "#avatar-file-input"
 
 update :: AffUpdate ProfileModel ProfileMessage
 update { model: model@(ProfileModel { editors }), message } =
-        case message of
-                SelectAvatar -> selectAvatar
+      case message of
+            SelectAvatar -> selectAvatar
 
-                SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") $ Just base64
-                SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
-                SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
-                SetYear year -> setYear $ DI.fromString year
-                SetMonth month -> setMonth $ DI.fromString month
-                SetDay day -> setDay $ DI.fromString day
-                SetName name -> setEditorFieldOrGenerate Name (SProxy :: SProxy "name") 50 name editors.name
-                SetHeadline headline -> setEditorFieldOrGenerate Headline (SProxy :: SProxy "headline") 200 headline editors.headline
-                SetDescription description -> setEditorFieldOrGenerate Description (SProxy :: SProxy "description") 10000 description editors.description
-                SetEditors editor -> setEditors editor model
-                SetTagEnter (Tuple key tag) -> addTag key tag
+            SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") $ Just base64
+            SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
+            SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
+            SetYear year -> setYear $ DI.fromString year
+            SetMonth month -> setMonth $ DI.fromString month
+            SetDay day -> setDay $ DI.fromString day
+            SetName name -> setEditorFieldOrGenerate Name (SProxy :: SProxy "name") 50 name editors.name
+            SetHeadline headline -> setEditorFieldOrGenerate Headline (SProxy :: SProxy "headline") 200 headline editors.headline
+            SetDescription description -> setEditorFieldOrGenerate Description (SProxy :: SProxy "description") 10000 description editors.description
+            SetEditors editor -> setEditors editor model
+            SetTagEnter (Tuple key tag) -> addTag key tag
 
-                AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.fromJust "addLanguage" $ DI.fromString language
+            AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.fromJust $ DI.fromString language
 
-                RemoveLanguage language event -> removeLanguage language event
-                RemoveTag tag event -> removeTag tag event
+            RemoveLanguage language event -> removeLanguage language event
+            RemoveTag tag event -> removeTag tag event
 
-                ToggleAge visible -> setModelField (SProxy :: SProxy "isAgeVisible") visible
-                ToggleCountry visible -> setModelField (SProxy :: SProxy "isCountryVisible") visible
-                ToggleGender visible -> setModelField (SProxy :: SProxy "isGenderVisible") visible
-                ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") visible
-                ToggleTags visible -> setModelField (SProxy :: SProxy "isTagsVisible") visible
+            ToggleAge visible -> setModelField (SProxy :: SProxy "isAgeVisible") visible
+            ToggleCountry visible -> setModelField (SProxy :: SProxy "isCountryVisible") visible
+            ToggleGender visible -> setModelField (SProxy :: SProxy "isGenderVisible") visible
+            ToggleLanguages visible -> setModelField (SProxy :: SProxy "isLanguagesVisible") visible
+            ToggleTags visible -> setModelField (SProxy :: SProxy "isTagsVisible") visible
 
-                SaveProfile -> saveProfile model
+            SaveProfile -> saveProfile model
 
 setEditorContent :: Editor -> String -> Aff Unit
 setEditorContent editor = liftEffect <<< EU.runEffectFn2 setEditorContent_ editor
 
 setEditors :: Editors Editor Editor Editor -> ProfileModel -> Aff (ProfileModel -> ProfileModel)
 setEditors editor (ProfileModel { user: ProfileUser { name, headline, description } }) = do
-        setEditorContent editor.name name
-        setEditorContent editor.headline headline
-        setEditorContent editor.description description
-        FAE.diff {
-                editors: {
-                        name: Just editor.name,
-                        headline: Just editor.headline,
-                        description: Just editor.description
-                }
-        }
+      setEditorContent editor.name name
+      setEditorContent editor.headline headline
+      setEditorContent editor.description description
+      FAE.diff {
+            editors: {
+                  name: Just editor.name,
+                  headline: Just editor.headline,
+                  description: Just editor.description
+            }
+      }
 
 setEditorFieldOrGenerate what field characters value editor = do
-        let trimmed = DS.trim value
-        toSet <- if DS.null trimmed then do
-                        GeneratePayload name <- CCN.get' $ Generate { what }
-                        pure name
-                  else pure trimmed
-        setEditorContent (SU.fromJust "setEditorFieldOrGenerate" editor) toSet
-        setProfileField field $ DS.take characters toSet
+      let trimmed = DS.trim value
+      toSet <- if DS.null trimmed then do
+                  GeneratePayload name <- CCN.get' $ Generate { what }
+                  pure name
+                else pure trimmed
+      setEditorContent (SU.fromJust editor) toSet
+      setProfileField field $ DS.take characters toSet
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
 selectAvatar = do
-        liftEffect do
-                input <- getFileInput
-                WHH.click <<< SU.fromJust "selectAvatar" $ WHH.fromElement input
-        FAE.noChanges
+      liftEffect do
+            input <- getFileInput
+            CCF.triggerFileSelect input
+      FAE.noChanges
 
 setYear :: Maybe Int -> Aff (ProfileModel -> ProfileModel)
 setYear year = updateBirthday setYear'
-        where setYear' (Tuple _ rest) = Tuple year rest
+      where setYear' (Tuple _ rest) = Tuple year rest
 
 setMonth :: Maybe Int -> Aff (ProfileModel -> ProfileModel)
 setMonth month = updateBirthday setMonth'
-        where setMonth' (Tuple year (Tuple _ day)) = Tuple year (Tuple month day)
+      where setMonth' (Tuple year (Tuple _ day)) = Tuple year (Tuple month day)
 
 setDay :: Maybe Int -> Aff (ProfileModel -> ProfileModel)
 setDay day = updateBirthday setDay'
-        where   setDay' (Tuple year (Tuple month _)) = Tuple year (Tuple month day)
+      where setDay' (Tuple year (Tuple month _)) = Tuple year (Tuple month day)
 
 updateBirthday :: ((Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))) -> (Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int)))) -> Aff (ProfileModel -> ProfileModel)
 updateBirthday updater = pure $ \model -> SN.updateProfileModel model $ \record ->
-        let  updatedBirthday = updater record.birthday in record {
-                birthday = updatedBirthday,
-                isAgeVisible = isAgeVisible' updatedBirthday,
-                user = SN.updateProfile record.user $ \userRecord -> userRecord {
-                        birthday = setBirthday userRecord.birthday updatedBirthday
-                }
-        }
-        where   toDateComponent :: forall d. BoundedEnum d => Int -> d
-                toDateComponent = SU.fromJust "setBirthday" <<< DE.toEnum
-                isAgeVisible' =
-                        case _ of
-                                Tuple Nothing _ -> true
-                                Tuple (Just _) (Tuple (Just _) (Just _)) -> true
-                                _ -> false
-                setBirthday birthday =
-                        case _ of
-                                Tuple (Just year) (Tuple (Just month) (Just day)) -> MDate <$> DD.exactDate (toDateComponent year) (toDateComponent month) (toDateComponent day)
-                                Tuple Nothing _ -> Nothing -- so the age can be cleared
-                                _ -> birthday
+      let  updatedBirthday = updater record.birthday in record {
+            birthday = updatedBirthday,
+            isAgeVisible = isAgeVisible' updatedBirthday,
+            user = SN.updateProfile record.user $ \userRecord -> userRecord {
+                  birthday = setBirthday userRecord.birthday updatedBirthday
+            }
+      }
+      where toDateComponent :: forall d. BoundedEnum d => Int -> d
+            toDateComponent = SU.fromJust <<< DE.toEnum
+            isAgeVisible' =
+                  case _ of
+                        Tuple Nothing _ -> true
+                        Tuple (Just _) (Tuple (Just _) (Just _)) -> true
+                        _ -> false
+            setBirthday birthday =
+                  case _ of
+                        Tuple (Just year) (Tuple (Just month) (Just day)) -> MDate <$> DD.exactDate (toDateComponent year) (toDateComponent month) (toDateComponent day)
+                        Tuple Nothing _ -> Nothing -- so the age can be cleared
+                        _ -> birthday
 
 setModelField field value = pure $ \model -> SN.updateProfileModel model (R.set field value)
 
 setProfileField field value =
-        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
-                user = SN.updateProfile user (R.set field value)
-        }
+      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
+            user = SN.updateProfile user (R.set field value)
+      }
 
 setHideProfileField visibilityField field value =
-        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ \record ->
-                R.set visibilityField true $ record {
-                        user = SN.updateProfile user (R.set field value)
-                }
+      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ \record ->
+            R.set visibilityField true $ record {
+                  user = SN.updateProfile user (R.set field value)
+            }
 --REFACTOR: abstract with the tag functions bellow
 addLanguage language =
-        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
-                {
-                        isLanguagesVisible = true,
-                        user = SN.updateProfile user $ \record -> record {
-                                languages = DA.snoc record.languages language
-                        }
-                }
+      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+            {
+                  isLanguagesVisible = true,
+                  user = SN.updateProfile user $ \record -> record {
+                        languages = DA.snoc record.languages language
+                  }
+            }
 removeLanguage language event = do
-        --I am not sure if this is correct behavior: the span which the event bubbles to is removed from the dom
-        -- should the event still occur?
-        liftEffect $ WEE.stopPropagation event
-        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
-                {
-                        isLanguagesVisible = true,
-                        user = SN.updateProfile user $ \record -> record {
-                                languages = SU.fromJust "remove language" do
-                                        index <- DA.findIndex ( _ == language) record.languages
-                                        DA.deleteAt index record.languages
-                        }
-                }
+      --I am not sure if this is correct behavior: the span which the event bubbles to is removed from the dom
+      -- should the event still occur?
+      liftEffect $ WEE.stopPropagation event
+      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+            {
+                  isLanguagesVisible = true,
+                  user = SN.updateProfile user $ \record -> record {
+                        languages = SU.fromJust  do
+                              index <- DA.findIndex ( _ == language) record.languages
+                              DA.deleteAt index record.languages
+                  }
+            }
 
 addTag key tag =
-        case key of
-                "Enter" ->
-                        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
-                                {
-                                        isTagsVisible = true,
-                                        user = SN.updateProfile user $ \record -> record {
-                                                tags = DA.snoc record.tags tag
-                                        }
-                                }
-                _ -> FAE.noChanges
-removeTag tag event = do
-        liftEffect $ WEE.stopPropagation event
-        pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
-                {
-                        isTagsVisible = true,
-                        user = SN.updateProfile user $ \record -> record {
-                                tags = SU.fromJust "remove tag" do
-                                        index <- DA.findIndex ( _ == tag) record.tags
-                                        DA.deleteAt index record.tags
+      case key of
+            "Enter" ->
+                  pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+                        {
+                              isTagsVisible = true,
+                              user = SN.updateProfile user $ \record -> record {
+                                    tags = DA.snoc record.tags tag
+                              }
                         }
-                }
+            _ -> FAE.noChanges
+removeTag tag event = do
+      liftEffect $ WEE.stopPropagation event
+      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+            {
+                  isTagsVisible = true,
+                  user = SN.updateProfile user $ \record -> record {
+                        tags = SU.fromJust do
+                              index <- DA.findIndex ( _ == tag) record.tags
+                              DA.deleteAt index record.tags
+                  }
+            }
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile model@(ProfileModel { user: user@(ProfileUser { name }) }) = do
-        Ok <- CCN.post' Profile $ Just user
-        liftEffect do
-                CCNO.alert "Profile updated"
-                --let im know that the name has changed
-                CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
-        FAE.noChanges
+      Ok <- CCN.post' Profile $ Just user
+      liftEffect do
+            CCNO.alert "Profile updated"
+            --let im know that the name has changed
+            CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
+      FAE.noChanges
 

@@ -26,4 +26,4 @@ avatarForSender = DM.fromMaybe defaultAvatar
 
 
 avatarForRecipient :: Maybe Int -> Maybe String -> String
-avatarForRecipient index = DM.fromMaybe (fileName $ mod (SU.fromJust "view.profile" index) differentAvatarImages + 1)
+avatarForRecipient index = DM.fromMaybe (fileName $ mod (SU.fromJust index) differentAvatarImages + 1)

@@ -57,7 +57,7 @@ addCustomEventListener :: EventType -> (String -> Effect Unit) -> Effect Unit
 addCustomEventListener eventType handler = do
       window <- WH.window
       document <- WHHD.toDocument <$> WHW.document window
-      listener <- WET.eventListener (handler <<< DFU.runFn1 customEventDetail_ <<< SU.fromJust "addCustomEventListener" <<< WEC.fromEvent)
+      listener <- WET.eventListener (handler <<< DFU.runFn1 customEventDetail_ <<< SU.fromJust <<< WEC.fromEvent)
       WET.addEventListener eventType listener false $ WDD.toEventTarget document
 
 confirm :: String -> Effect Boolean
@@ -94,7 +94,7 @@ setInnerHTML :: Element -> String -> Effect Unit
 setInnerHTML element = EU.runEffectFn2 innerHTML_ element
 
 innerTextFromTarget :: Event -> Effect String
-innerTextFromTarget event = EU.runEffectFn1 innerText_ $ SU.fromJust "innerTextFromTarget" do
+innerTextFromTarget event = EU.runEffectFn1 innerText_ $ SU.fromJust do
       target <- WEE.target event
       WDE.fromEventTarget target
 
@@ -103,13 +103,13 @@ loadScript name = do
       window <- WH.window
       document <- WHW.document window
       script <- WDD.createElement "script" $ WHHD.toDocument document
-      WHS.setSrc ("/client/javascript/"<>name) <<< SU.fromJust "loadScript" $ WHS.fromElement script
-      body <- SU.fromJust "loadScript" <$> WHHD.body document
+      WHS.setSrc ("/client/javascript/"<>name) <<< SU.fromJust $ WHS.fromElement script
+      body <- SU.fromJust <$> WHHD.body document
       void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body
 
 onEnter :: Element -> Effect Unit -> Effect Unit
 onEnter element action = do
       addEventListener element keyup go
       where go event = do
-                  let pressed = WUK.key <<< SU.fromJust "recover" $ WUK.fromEvent event
+                  let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
                   when (pressed == "Enter") action

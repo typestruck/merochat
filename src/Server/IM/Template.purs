@@ -39,6 +39,7 @@ template {contacts, suggestions, user} = do
                   profileSettingsToggle: Hidden,
                   message: Nothing,
                   isPreviewing: false,
+                  selectedImage: Nothing,
                   contacts,
                   suggestions,
                   user

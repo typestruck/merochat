@@ -17,6 +17,6 @@ defaultContact id chatted = Contact {
 }
 
 chattingContact :: Array Contact -> Maybe Int -> Contact
-chattingContact contacts chatting = SU.fromJust "chattingContact" do
+chattingContact contacts chatting = SU.fromJust do
         index <- chatting
         contacts !! index

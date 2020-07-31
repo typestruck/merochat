@@ -12,4 +12,4 @@ removeMelanchatCookie :: Effect Unit
 removeMelanchatCookie = BC.removeCookie cookieName
 
 getMelanchatCookie :: Effect String
-getMelanchatCookie = (\(Cookie { value }) -> value) <<< SU.fromJust "getMelanchatCookie" <$> BC.getCookie cookieName
+getMelanchatCookie = (\(Cookie { value }) -> value) <<< SU.fromJust <$> BC.getCookie cookieName

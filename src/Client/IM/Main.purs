@@ -5,6 +5,7 @@ import Shared.IM.Types
 
 import Client.Common.DOM (nameChanged)
 import Client.Common.DOM as CCD
+import Client.Common.File as CCF
 import Client.Common.Notification as CCN
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
@@ -23,15 +24,10 @@ import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Effect.Console as EC
 import Effect.Random as ERD
 import Effect.Ref as ER
 import Effect.Timer as ET
-import Effect.Uncurried (EffectFn1, EffectFn2)
-import Effect.Uncurried as EU
 import Flame (ListUpdate, QuerySelector(..))
 import Flame as F
 import Flame.External as FE
@@ -40,7 +36,6 @@ import Partial.Unsafe as UP
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Newtype as SN
-import Shared.Types (Editor)
 import Shared.Unsafe as SU
 import Shared.WebSocketOptions (port)
 import Signal.Channel (Channel)
@@ -51,7 +46,6 @@ import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.Window as WHW
 import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
-import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
 
 main :: Effect Unit
@@ -69,49 +63,11 @@ main = do
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetName)
       --display settings/profile page
       FE.send [FE.onClick' [ShowUserContextMenu]] channel
+      --image upload
+      input <- CIC.getFileInput
+      CCF.setUpFileChange (DA.singleton <<< ToggleImageForm <<< Just ) input channel
 
       windowsFocus channel
-
-windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
-windowsFocus channel = do
-      focusListener <- WET.eventListener $ const (SC.send channel $ DA.singleton UpdateReadCount)
-      --focus event has to be on the window as chrome is a whiny baby about document
-      window <- WH.window
-      WET.addEventListener focus focusListener false $ WHW.toEventTarget window
-
-setUpWebSocket :: Channel (Array IMMessage) -> String -> Effect Unit
-setUpWebSocket channel token = do
-      webSocket <- WSW.create ("ws://localhost:" <> show port) []
-      SC.send channel <<< DA.singleton $ SetWebSocket webSocket
-
-      let webSocketTarget = WSW.toEventTarget webSocket
-      --a ref is used to track reconnections
-      timerID <- ER.new Nothing
-      openListener <- WET.eventListener $ const (WSW.sendString webSocket <<< SJ.toJSON $ Connect token)
-      messageListener <- WET.eventListener $ \event -> do
-            maybeID <- ER.read timerID
-            DM.maybe (pure unit) (\id -> do
-                  ET.clearTimeout id
-                  ER.write Nothing timerID) maybeID
-            let payload = fromRight' <<< CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust "client.im.main" $ WSEM.fromEvent event
-                message = fromRight' $ SJ.fromJSON payload
-            isFocused <- CCD.documentHasFocus
-            SC.send channel <<< DA.singleton $ ReceiveMessage message isFocused
-
-      closeListener <- WET.eventListener $ \_ -> do
-            maybeID <- ER.read timerID
-            when (DM.isNothing maybeID) do
-                  CCN.alert "Connection to the server lost. Retrying..."
-                  milliseconds <- ERD.randomInt 2000 7000
-                  id <- ET.setTimeout milliseconds <<< void $ setUpWebSocket channel token
-                  ER.write (Just id) timerID
-
-      WET.addEventListener onMessage messageListener false webSocketTarget
-      WET.addEventListener onOpen openListener false webSocketTarget
-      WET.addEventListener onClose closeListener false webSocketTarget
-
-      where fromRight' :: forall a b. Either a b -> b
-            fromRight' et = UP.unsafePartial (DE.fromRight et)
 
 update :: ListUpdate IMModel IMMessage
 update model  =
@@ -124,7 +80,9 @@ update model  =
             ReceiveMessage payload isFocused -> CIC.receiveMessage isFocused model payload
             Apply markup -> CIC.applyMarkup markup model
             Preview -> CIC.preview model
+            SelectImage -> CIC.selectImage model
             ExitPreview -> CIC.exitPreview model
+            ToggleImageForm maybeBase64 -> CIC.toggleImageForm model maybeBase64
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead model
@@ -150,16 +108,53 @@ update model  =
             SetWebSocket webSocket -> setWebSocket webSocket model
             SetToken token -> setToken token model
             SetName name -> setName name model
+      where setWebSocket ws = CIF.diff { webSocket: Just $ WS ws }
 
-setWebSocket :: WebSocket -> IMModel -> NoMessages
-setWebSocket ws = CIF.diff { webSocket: Just $ WS ws }
+            setToken token = CIF.diff { token: Just token }
 
-setToken :: String -> IMModel -> NoMessages
-setToken token = CIF.diff { token: Just token }
+            setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
+                  user = SN.updateUser user $ _ {
+                        name = name
+                  }
+            }
 
-setName :: String -> IMModel -> NoMessages
-setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
-      user = SN.updateUser user $ _ {
-            name = name
-      }
-}
+windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
+windowsFocus channel = do
+      focusListener <- WET.eventListener $ const (SC.send channel $ DA.singleton UpdateReadCount)
+      --focus event has to be on the window as chrome is a whiny baby about document
+      window <- WH.window
+      WET.addEventListener focus focusListener false $ WHW.toEventTarget window
+
+setUpWebSocket :: Channel (Array IMMessage) -> String -> Effect Unit
+setUpWebSocket channel token = do
+      webSocket <- WSW.create ("ws://localhost:" <> show port) []
+      SC.send channel <<< DA.singleton $ SetWebSocket webSocket
+
+      let webSocketTarget = WSW.toEventTarget webSocket
+      --a ref is used to track reconnections
+      timerID <- ER.new Nothing
+      openListener <- WET.eventListener $ const (WSW.sendString webSocket <<< SJ.toJSON $ Connect token)
+      messageListener <- WET.eventListener $ \event -> do
+            maybeID <- ER.read timerID
+            DM.maybe (pure unit) (\id -> do
+                  ET.clearTimeout id
+                  ER.write Nothing timerID) maybeID
+            let payload = fromRight' <<< CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust $ WSEM.fromEvent event
+                message = fromRight' $ SJ.fromJSON payload
+            isFocused <- CCD.documentHasFocus
+            SC.send channel <<< DA.singleton $ ReceiveMessage message isFocused
+
+      closeListener <- WET.eventListener $ \_ -> do
+            maybeID <- ER.read timerID
+            when (DM.isNothing maybeID) do
+                  CCN.alert "Connection to the server lost. Retrying..."
+                  milliseconds <- ERD.randomInt 2000 7000
+                  id <- ET.setTimeout milliseconds <<< void $ setUpWebSocket channel token
+                  ER.write (Just id) timerID
+
+      WET.addEventListener onMessage messageListener false webSocketTarget
+      WET.addEventListener onOpen openListener false webSocketTarget
+      WET.addEventListener onClose closeListener false webSocketTarget
+
+      where fromRight' :: forall a b. Either a b -> b
+            fromRight' et = UP.unsafePartial (DE.fromRight et)

@@ -207,19 +207,19 @@ instance toSQLValueGender :: ToSQLValue Gender where
 instance fromSQLValuePrimaryKey :: FromSQLValue PrimaryKey where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
 instance fromSQLValueGender :: FromSQLValue Gender where
-      fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust "fromSQLValueGender" <<< DSR.read) <<< F.readString
+      fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
 --these functions are needed cos javascript is crap and numbers from postgresql are parsed as strings
 
 parsePrimaryKey :: Foreign -> F PrimaryKey
 parsePrimaryKey data_
-      | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromNumber) $ F.readNumber data_
-      | otherwise = PrimaryKey <<< SU.fromJust "parsePrimaryKey" <<< DI.fromString <$> F.readString data_
+      | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.fromJust <<< DI.fromNumber) $ F.readNumber data_
+      | otherwise = PrimaryKey <<< SU.fromJust <<< DI.fromString <$> F.readString data_
 
 parseInt :: Foreign -> F Int
 parseInt data_
       | F.typeOf data_ == "number" = F.readInt data_
-      | otherwise = SU.fromJust "parseInt" <<< DIN.fromString <$> F.readString data_
+      | otherwise = SU.fromJust <<< DIN.fromString <$> F.readString data_
 
 instance encodeJsonResetPassword :: EncodeJson ResetPassword where
       encodeJson = DAEGR.genericEncodeJson
@@ -236,7 +236,7 @@ instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
 instance encodeJsonMDateTime :: EncodeJson MDateTime where
       encodeJson (MDateTime dateTime) = fromJSDate $ DJ.fromDateTime dateTime
 instance encodeJsonMDate :: EncodeJson MDate where
-      encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0) (SU.fromJust "encode mdate" $ DE.toEnum 0)
+      encodeJson (MDate date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.fromJust $ DE.toEnum 0) (SU.fromJust $ DE.toEnum 0) (SU.fromJust $ DE.toEnum 0) (SU.fromJust $ DE.toEnum 0)
 
 instance decodeJsonResetPassword :: DecodeJson ResetPassword where
       decodeJson = DADGR.genericDecodeJson
@@ -251,11 +251,11 @@ instance decodeJsonRecover :: DecodeJson RecoverAccount where
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
       decodeJson = Right <<< PrimaryKey <<< toInt53
 instance decodeJsonMDateTime :: DecodeJson MDateTime where
-      decodeJson json = Right <<< MDateTime <<< SU.fromJust "decodeJson mdatetime" <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
+      decodeJson json = Right <<< MDateTime <<< SU.fromJust <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
             where jsonString :: String
                   jsonString = UC.unsafeCoerce json
 instance decodeJsonMDate :: DecodeJson MDate where
-      decodeJson json = Right <<< MDate <<< SU.fromJust "decodeJson mdate" <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
+      decodeJson json = Right <<< MDate <<< SU.fromJust <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
             where jsonString :: String
                   jsonString = UC.unsafeCoerce json
 

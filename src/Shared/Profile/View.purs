@@ -89,7 +89,7 @@ view minimumYear (ProfileModel {
             toInt (Tuple (PrimaryKey pk) value) = Tuple (DI.toInt pk) value
 
             languageHM = DH.fromArray languages
-            getLanguage = SU.fromJust "getLangauge" <<< flip DH.lookup languageHM
+            getLanguage = SU.fromJust <<< flip DH.lookup languageHM
             tagEdition :: forall a. String -> (a -> Event -> ProfileMessage) -> Tuple a String -> Html ProfileMessage
             tagEdition title message (Tuple id text) = HE.span [HA.onClick' (message id), HA.title $ "Click to remove " <> title, HA.class' "tag"] [
                   HE.text text,
@@ -121,7 +121,7 @@ view minimumYear (ProfileModel {
                         Tuple (Just _) (Tuple (Just _) _ ) -> true
                         _ -> false
             toDateComponent :: forall d. BoundedEnum d => Int -> d
-            toDateComponent = SU.fromJust "profile.view" <<< DE.toEnum
+            toDateComponent = SU.fromJust <<< DE.toEnum
             lastDayMonth =
                   case _ of
                         Tuple (Just year) (Tuple (Just month) _) -> DE.fromEnum $ DD.lastDayOfMonth (toDateComponent year) (toDateComponent month)
