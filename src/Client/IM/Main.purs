@@ -22,6 +22,7 @@ import Data.Either (Either(..))
 import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -53,9 +54,6 @@ import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
 
-foreign import loadEditor :: Effect Editor
-foreign import keyHandled_ :: EffectFn2 Editor (EffectFn1 String Unit) Unit
-
 main :: Effect Unit
 main = do
       token <- CCS.getItem tokenKey
@@ -67,10 +65,6 @@ main = do
 
       setUpWebSocket channel token
 
-      editor <- loadEditor
-      EU.runEffectFn2 keyHandled_ editor $ EU.mkEffectFn1 (SC.send channel <<< DA.singleton <<< BeforeSendMessage)
-
-      CISR.scrollLastMessage
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetName)
       --display settings/profile page
@@ -123,9 +117,14 @@ update :: ListUpdate IMModel IMMessage
 update model  =
       case _ of
             --chat
-            BeforeSendMessage content -> CIC.startChat model content
-            SendMessage content date -> CIC.sendMessage content date model
+            SetUpMessage event -> CIC.setUpMessage model event
+            BeforeSendMessage sent content -> CIC.beforeSendMessage model sent content
+            SendMessage date -> CIC.sendMessage date model
+            SetMessageContent content -> CIC.setMessage content model
             ReceiveMessage payload isFocused -> CIC.receiveMessage isFocused model payload
+            Apply markup -> CIC.applyMarkup markup model
+            Preview -> CIC.preview model
+            ExitPreview -> CIC.exitPreview model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead model

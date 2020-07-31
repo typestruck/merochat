@@ -23,9 +23,11 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
+import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds(..))
 import Data.Tuple (Tuple(..))
+import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
@@ -37,44 +39,67 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Web.Event.Event (Event)
+import Web.Event.Event as WEE
+import Web.HTML.HTMLElement as WHHEL
+import Web.HTML.HTMLTextAreaElement as WHHTA
+import Web.UIEvent.KeyboardEvent (KeyboardEvent)
+import Web.UIEvent.KeyboardEvent as WUK
 
 --purty is fucking terrible
 
-startChat :: IMModel -> String -> NextMessage
-startChat model@(IMModel {
-      chatting
-      , user: IMUser { id }
-      , contacts
-      , suggesting
-      , suggestions
-}) content = snocContact :> [ nextSendMessage ]
+setUpMessage :: IMModel -> Event -> NextMessage
+setUpMessage model event = model :> [liftEffect do
+      let   keyboardEvent = SU.fromJust "beforeSendMessage" $ WUK.fromEvent event
+            textarea = SU.fromJust "beforeSendMessage" do
+                  target <- WEE.target event
+                  WHHTA.fromEventTarget target
+      content <- WHHTA.value textarea
+      CIF.next $ BeforeSendMessage (WUK.key keyboardEvent == "Enter" && not WUK.shiftKey keyboardEvent) content
+]
+
+beforeSendMessage :: IMModel -> Boolean -> String -> MoreMessages
+beforeSendMessage model@(IMModel {
+      chatting,
+      user: IMUser { id },
+      contacts,
+      suggesting,
+      suggestions
+}) sent content
+      | sent = snocContact :> [ nextSendMessage ]
+
       where snocContact = case Tuple chatting suggesting of
                   Tuple Nothing (Just index) ->
-                        let
-                        chatted = suggestions !@ index
+                        let chatted = suggestions !@ index
                         in
-                        SN.updateModel model
-                              $ _
-                              { chatting = Just 0
-                              , suggesting = Nothing
-                              , contacts = DA.cons (SIC.defaultContact id chatted) contacts
-                              , suggestions = SU.fromJust "startChat" $ DA.deleteAt index suggestions
+                              SN.updateModel model $ _ {
+                                    message = Just content,
+                                    chatting = Just 0,
+                                    suggesting = Nothing,
+                                    contacts = DA.cons (SIC.defaultContact id chatted) contacts,
+                                    suggestions = SU.fromJust "beforeSendMessage" $ DA.deleteAt index suggestions
                               }
                   _ -> model
 
             nextSendMessage = do
                   date <- liftEffect $ map MDateTime EN.nowDateTime
-                  CIF.next $ SendMessage content date
+                  CIF.next $ SendMessage date
 
-sendMessage :: String -> MDateTime -> IMModel -> NoMessages
-sendMessage content date = case _ of
+      | otherwise =
+            F.noMessages <<< SN.updateModel model $ _ {
+                  message = Just content
+            }
+
+sendMessage ::  MDateTime -> IMModel -> NoMessages
+sendMessage date = case _ of
       model@(IMModel {
             user: IMUser { id: senderID },
             webSocket: Just (WS webSocket),
             token: Just token,
             chatting: Just chatting,
             temporaryID,
-            contacts
+            contacts,
+            message: Just content
       }) ->
             let  recipient@(Contact { user: IMUser { id: recipientID }, history }) = contacts !@ chatting
                  newTemporaryID = temporaryID + SP.fromInt 1
@@ -90,6 +115,7 @@ sendMessage content date = case _ of
                  }
                  updatedModel = SN.updateModel model $ _ {
                         temporaryID = newTemporaryID,
+                        message = Nothing,
                         contacts = SU.fromJust "sendMessage" $ DA.updateAt chatting updatedChatting contacts
                  }
                  turn = makeTurn updatedChatting senderID
@@ -242,3 +268,47 @@ updateTemporaryID contacts previousID id = do
                   SN.updateContact user $ _ {
                         history = SU.fromJust "receiveMessage" $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
                   }
+
+applyMarkup :: Markup -> IMModel -> MoreMessages
+applyMarkup markup model@(IMModel { message }) = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
+
+apply :: Markup -> String -> Effect IMMessage
+apply markup value = do
+      textarea <- SU.fromJust "apply" <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+      let   Tuple before after = case markup of
+                  Bold -> Tuple "**" "**"
+                  Italic -> Tuple "*" "*"
+                  Strike -> Tuple "~" "~"
+                  Heading -> Tuple "## " ""
+                  OrderedList -> Tuple "1. " ""
+                  UnorderedList -> Tuple "- " ""
+      start <- WHHTA.selectionStart textarea
+      end <- WHHTA.selectionEnd textarea
+      let   beforeSize = DS.length before
+            beforeSelection = DS.take start value
+            selected = DS.take (end - start) $ DS.drop start value
+            afterSelection = DS.drop end value
+            newValue = beforeSelection <> before <> selected <> after <> afterSelection
+      WHHTA.setValue newValue textarea
+      WHHTA.setSelectionStart (start + beforeSize) textarea
+      WHHTA.setSelectionEnd (end + beforeSize) textarea
+      WHHEL.focus $ WHHTA.toHTMLElement textarea
+      pure $ SetMessageContent newValue
+
+preview ::  IMModel -> NoMessages
+preview model =
+      F.noMessages <<< SN.updateModel model $ _ {
+            isPreviewing = true
+      }
+
+exitPreview :: IMModel -> NextMessage
+exitPreview model =
+      F.noMessages <<< SN.updateModel model $ _ {
+            isPreviewing = false
+      }
+
+setMessage :: String -> IMModel -> NoMessages
+setMessage markdown model =
+      F.noMessages <<< SN.updateModel model $ _ {
+            message = Just markdown
+      }

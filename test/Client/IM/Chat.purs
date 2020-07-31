@@ -92,31 +92,31 @@ tests = do
 
             let IMModel { suggestions : modelSuggestions } = model
 
-            TU.test "startChat adds new contact from suggestion" do
+            TU.test "beforeSendMessage adds new contact from suggestion" do
                   let model' = SN.updateModel model $ _ {
                               suggestions = suggestion : modelSuggestions,
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                      IMModel { contacts } = DT.fst $ CIC.startChat model' content
+                      IMModel { contacts } = DT.fst $ CIC.beforeSendMessage model' content
                   TUA.equal ( _.user <<< DN.unwrap <$> DA.head contacts) $ Just suggestion
 
-            TU.test "startChat resets suggesting" do
+            TU.test "beforeSendMessage resets suggesting" do
                   let model' = SN.updateModel model $ _ {
                               suggestions = suggestion : modelSuggestions,
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                      IMModel { suggesting } = DT.fst $ CIC.startChat model' content
+                      IMModel { suggesting } = DT.fst $ CIC.beforeSendMessage model' content
                   TUA.equal Nothing suggesting
 
-            TU.test "startChat sets chatting to 0" do
+            TU.test "beforeSendMessage sets chatting to 0" do
                   let model' = SN.updateModel model $ _ {
                               suggestions = suggestion : modelSuggestions,
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                      IMModel { chatting } = DT.fst $ CIC.startChat model' content
+                      IMModel { chatting } = DT.fst $ CIC.beforeSendMessage model' content
                   TUA.equal (Just 0) chatting
 
             let IMUser { id: recipientID } = imUser

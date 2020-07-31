@@ -35,6 +35,7 @@ import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Time.Duration (Days(..), Seconds(..))
+import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
 import Database.PostgreSQL as DP
 import Effect.Now as DN
@@ -102,6 +103,8 @@ newtype IMModel = IMModel {
       temporaryID :: PrimaryKey,
       freeToFetchChatHistory :: Boolean,
       freeToFetchContactList :: Boolean,
+      message :: Maybe String,
+      isPreviewing :: Boolean,
       --used to authenticate web socket messages
       token :: Maybe String,
       --the current logged in user
@@ -150,6 +153,14 @@ data MessageStatus =
       Unread |
       Read
 
+data Markup =
+      Bold |
+      Italic |
+      Strike |
+      Heading |
+      OrderedList |
+      UnorderedList
+
 data IMMessage =
       --history
       CheckFetchHistory |
@@ -174,9 +185,14 @@ data IMMessage =
       NextSuggestion |
       DisplayMoreSuggestions SuggestionsPayload |
       --chat
-      BeforeSendMessage String |
-      SendMessage String MDateTime |
+      SetUpMessage Event |
+      BeforeSendMessage Boolean String |
+      SendMessage MDateTime |
       ReceiveMessage WebSocketPayloadClient Boolean |
+      SetMessageContent String |
+      Apply Markup |
+      Preview |
+      ExitPreview |
       --main
       SetWebSocket WebSocket |
       SetToken String |

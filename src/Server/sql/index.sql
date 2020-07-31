@@ -502,7 +502,7 @@ create table karmaHistories
     date timestamp not null default clock_timestamp(),
 
     constraint targetKarmaHistory foreign key (target) references users(id) on delete cascade
-)
+);
 
 create table histories
 (

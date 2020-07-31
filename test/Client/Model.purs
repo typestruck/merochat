@@ -20,6 +20,8 @@ run model f = do
 
 model :: IMModel
 model = IMModel {
+      message: Nothing,
+      isPreviewing: false,
       freeToFetchContactList: true,
       userContextMenuVisible: false,
       profileSettingsToggle: Hidden,
