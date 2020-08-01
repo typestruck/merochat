@@ -100,6 +100,7 @@ update { webSocketRef, token, fileReader} model  =
             ExitPreview -> CIC.exitPreview model
             ToggleImageForm maybeBase64 -> CIC.toggleImageForm model maybeBase64
             SetImageCaption caption -> CIC.setImageCaption caption model
+            ToggleMessageEnter -> CIC.toggleMessageEnter model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket token model

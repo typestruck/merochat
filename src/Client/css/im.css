@@ -506,7 +506,16 @@ svg.toolbar-action {
     cursor: pointer;
 }
 
+.chat-input-area {
+    display:flex;
+    flex-direction: row;
+}
+.chat-input-options label {
+    display: inline;
+}
+
 .chat-input {
+    flex-grow: 1;
     resize: none;
     width: 100%;
     font-size:1.2em;
