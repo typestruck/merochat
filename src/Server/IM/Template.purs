@@ -32,6 +32,7 @@ template {contacts, suggestions, user} = do
                   temporaryID: SP.fromInt 0,
                   suggesting: if DA.null suggestions then Nothing else Just 0,
                   freeToFetchChatHistory:true,
+                  messageEnter: true,
                   imageCaption: Nothing,
                   freeToFetchContactList: true,
                   userContextMenuVisible: false,

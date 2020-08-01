@@ -12,7 +12,7 @@ import Flame.HTML.Element as HE
 import Shared.Markdown as SM
 
 chat :: IMModel -> Html IMMessage
-chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage }) =
+chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, messageEnter }) =
       HE.div (HA.class' "send-box") [
             HE.input [HA.id "image-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
             HE.div (HA.class' imageFormClasses) [
@@ -36,16 +36,21 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage }) =
                         HE.button [HA.onClick (Apply OrderedList), HA.title "Ordered list"] "O",
                         HE.button [HA.onClick (Apply UnorderedList), HA.title "Unordered list"] "L",
                         HE.button [HA.onClick SelectImage, HA.title "Upload image"] "Image",
-                        HE.button [HA.onClick Preview, HA.title "Preview"] "Preview"
+                        HE.button [HA.onClick Preview, HA.title "Preview"] "Preview",
+                        HE.input [HA.type' "checkbox", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
+                        HE.label (HA.for "message-enter") "Send message on enter"
                   ],
-                  HE.textarea' [
-                        HA.rows 1,
-                        HA.class' "chat-input",
-                        HA.id "chat-input",
-                        HA.placeholder "Type a message or drag files here",
-                        HA.autofocus true,
-                        HA.onKeyup' SetUpMessage,
-                        HA.value $ DM.fromMaybe "" message
+                  HE.div [HA.class' "chat-input-area"] [
+                        HE.textarea' [
+                              HA.rows 1,
+                              HA.class' "chat-input",
+                              HA.id "chat-input",
+                              HA.placeholder "Type a message or drag files here",
+                              HA.autofocus true,
+                              HA.onKeyup' SetUpMessage,
+                              HA.value $ DM.fromMaybe "" message
+                        ],
+                        HE.button [HA.class' sendClasses, HA.onClick <<< BeforeSendMessage true $ DM.fromMaybe "" message ] "Send"
                   ]
             ],
             HE.div (HA.class' previewClasses) [
@@ -59,4 +64,5 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage }) =
             editorClasses = classes $ (DM.isJust chatting || DM.isJust suggesting) && not isPreviewing
             previewClasses = classes isPreviewing
             imageFormClasses = classes (DM.isJust selectedImage) <> "image-form"
+            sendClasses = classes $ not messageEnter
 

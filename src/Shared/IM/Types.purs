@@ -4,7 +4,6 @@ import Prelude
 
 import Control.Monad.Except (Except)
 import Control.Monad.Except as CME
-import Data.Argonaut.Core (Json)
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
@@ -99,6 +98,7 @@ newtype IMModel = IMModel {
       message :: Maybe String,
       selectedImage :: Maybe String,
       imageCaption :: Maybe String,
+      messageEnter :: Boolean,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -194,6 +194,7 @@ data IMMessage =
       Preview |
       ExitPreview |
       SetImageCaption String |
+      ToggleMessageEnter |
       --main
       PreventStop Event |
       SetName String

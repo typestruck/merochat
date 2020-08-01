@@ -62,13 +62,15 @@ getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#image-file-input"
 
 setUpMessage :: IMModel -> Event -> NextMessage
-setUpMessage model event = model :> [liftEffect do
+setUpMessage model@(IMModel { messageEnter }) event = model :> [liftEffect do
       let   keyboardEvent = SU.fromJust $ WUK.fromEvent event
             textarea = SU.fromJust  do
                   target <- WEE.target event
                   WHHTA.fromEventTarget target
       content <- WHHTA.value textarea
-      CIF.next $ BeforeSendMessage (WUK.key keyboardEvent == "Enter" && not WUK.shiftKey keyboardEvent) content
+      let sent = messageEnter && WUK.key keyboardEvent == "Enter" && not WUK.shiftKey keyboardEvent
+      when sent $ CCD.preventStop event
+      CIF.next $ BeforeSendMessage sent content
 ]
 
 beforeSendMessage :: IMModel -> Boolean -> String -> MoreMessages
@@ -352,3 +354,9 @@ catchFile :: IMModel -> FileReader -> Event -> NoMessages
 catchFile model fileReader event = CIF.nothingNext model $ liftEffect do
       CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
       CCD.preventStop event
+
+toggleMessageEnter :: IMModel -> NoMessages
+toggleMessageEnter model@(IMModel { messageEnter }) =
+      F.noMessages <<< SN.updateModel model $ _ {
+            messageEnter = not messageEnter
+      }
