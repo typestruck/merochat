@@ -50,19 +50,17 @@ resumeChat searchID model@(IMModel { contacts, chatting }) =
                         CIF.next $ FetchHistory shouldFetchChatHistory
                   ]
 
-markRead :: IMModel -> MoreMessages
-markRead =
+markRead :: WebSocket -> String -> IMModel -> MoreMessages
+markRead webSocket token =
       case _ of
             model@(IMModel {
-                  token: Just tk,
                   user: IMUser { id: userID },
-                  webSocket: Just (WS ws),
                   contacts,
                   chatting: Just index
             }) -> updateReadHistory model {
-                  token: tk,
-                  webSocket: ws,
                   chatting: index,
+                  token,
+                  webSocket,
                   userID,
                   contacts
             }
@@ -104,7 +102,6 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
 
             scroll = liftEffect CIS.scrollLastMessage
 
---REFACTOR: dont do querySelector inside updates, pass the element as parameter
 checkFetchContacts :: IMModel -> MoreMessages
 checkFetchContacts model@(IMModel { contacts, freeToFetchContactList })
       | freeToFetchContactList = model :> [ Just <<< FetchContacts <$> getScrollBottom ]

@@ -5,12 +5,12 @@ import Prelude
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
 import Shared.Unsafe as SU
-import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
@@ -29,9 +29,10 @@ import Web.HTML.HTMLDocument as WHHD
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLInputElement as WHHI
 import Web.HTML.HTMLScriptElement as WHS
-import Web.UIEvent.KeyboardEvent as WUK
 import Web.HTML.Window as HWH
 import Web.HTML.Window as WHW
+import Web.UIEvent.KeyboardEvent as WUK
+import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 
 foreign import innerHTML_ :: EffectFn2 Element String Unit
 foreign import innerText_ :: EffectFn1 Element String
@@ -113,3 +114,8 @@ onEnter element action = do
       where go event = do
                   let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
                   when (pressed == "Enter") action
+
+preventStop :: Event -> Effect Unit
+preventStop event = do
+      WEE.preventDefault event
+      WEE.stopPropagation event

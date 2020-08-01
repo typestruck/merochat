@@ -20,6 +20,7 @@ exports.parse = function (input) {
                   }
             }
       });
+
       return marked(input, {
             smartypants: true
       });

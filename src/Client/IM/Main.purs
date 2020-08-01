@@ -24,10 +24,14 @@ import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
+import Effect.Class (liftEffect)
 import Effect.Random as ERD
+import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Timer as ET
+import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..))
 import Flame as F
 import Flame.External as FE
@@ -40,44 +44,56 @@ import Shared.Unsafe as SU
 import Shared.WebSocketOptions (port)
 import Signal.Channel (Channel)
 import Signal.Channel as SC
+import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
+import Web.File.FileReader as WFR
 import Web.HTML as WH
+import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.Window as WHW
 import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
+import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
 
 main :: Effect Unit
 main = do
+      webSocket <- WSW.create ("ws://localhost:" <> show port) []
+      --web socket needs to be a ref as any time the connection can closed and recreated by events
+      webSocketRef <- ER.new webSocket
+      fileReader <- WFR.fileReader
+      --used to auth web socket operations
       token <- CCS.getItem tokenKey
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view,
-            init: [CIF.next $ SetToken token],
-            update
+            init: [],
+            update: update { token, fileReader, webSocketRef }
       }
 
-      setUpWebSocket channel token
-
+      setUpWebSocket webSocketRef channel token
+      --for drag and drop
+      CCF.setUpBase64Reader fileReader (DA.singleton <<< ToggleImageForm <<< Just) channel
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetName)
       --display settings/profile page
       FE.send [FE.onClick' [ShowUserContextMenu]] channel
       --image upload
       input <- CIC.getFileInput
-      CCF.setUpFileChange (DA.singleton <<< ToggleImageForm <<< Just ) input channel
+      CCF.setUpFileChange (DA.singleton <<< ToggleImageForm <<< Just) input channel
 
       windowsFocus channel
 
-update :: ListUpdate IMModel IMMessage
-update model  =
+update :: _ -> ListUpdate IMModel IMMessage
+update { webSocketRef, token, fileReader} model  =
       case _ of
             --chat
+            --REFACTOR: decide if model should always be first or last parameter
+            DropFile event -> CIC.catchFile model fileReader event
             SetUpMessage event -> CIC.setUpMessage model event
             BeforeSendMessage sent content -> CIC.beforeSendMessage model sent content
-            SendMessage date -> CIC.sendMessage date model
+            SendMessage date -> CIC.sendMessage webSocket token date model
             SetMessageContent content -> CIC.setMessage content model
-            ReceiveMessage payload isFocused -> CIC.receiveMessage isFocused model payload
+            ReceiveMessage payload isFocused -> CIC.receiveMessage webSocket token isFocused model payload
             Apply markup -> CIC.applyMarkup markup model
             Preview -> CIC.preview model
             SelectImage -> CIC.selectImage model
@@ -86,14 +102,15 @@ update model  =
             SetImageCaption caption -> CIC.setImageCaption caption model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
-            MarkAsRead -> CICN.markRead model
-            UpdateReadCount -> CICN.markRead model
+            MarkAsRead -> CICN.markRead webSocket token model
+            UpdateReadCount -> CICN.markRead webSocket token model
             CheckFetchContacts -> CICN.checkFetchContacts model
             FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
             DisplayContacts (ContactsPayload contacts) -> CICN.displayContacts contacts model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
+
             DisplayHistory (HistoryPayload history) -> CIH.displayHistory history model
             --suggestion
             PreviousSuggestion -> CIS.previousSuggestion model
@@ -106,18 +123,16 @@ update model  =
             ToggleProfileSettings toggle -> CIU.toggleProfileSettings model toggle
             SetModalContents file root (ProfileSettingsPayload html) -> CIF.nothingNext model $ CIU.loadModal root html file
             SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
-            SetWebSocket webSocket -> setWebSocket webSocket model
-            SetToken token -> setToken token model
+            --main
             SetName name -> setName name model
-      where setWebSocket ws = CIF.diff { webSocket: Just $ WS ws }
-
-            setToken token = CIF.diff { token: Just token }
-
+            PreventStop event -> preventStop model event
+      where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef
             setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
                   user = SN.updateUser user $ _ {
                         name = name
                   }
             }
+            preventStop model event = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
 windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
 windowsFocus channel = do
@@ -126,11 +141,9 @@ windowsFocus channel = do
       window <- WH.window
       WET.addEventListener focus focusListener false $ WHW.toEventTarget window
 
-setUpWebSocket :: Channel (Array IMMessage) -> String -> Effect Unit
-setUpWebSocket channel token = do
-      webSocket <- WSW.create ("ws://localhost:" <> show port) []
-      SC.send channel <<< DA.singleton $ SetWebSocket webSocket
-
+setUpWebSocket :: Ref WebSocket -> Channel (Array IMMessage) -> String -> Effect Unit
+setUpWebSocket webSocketRef channel token = do
+      webSocket <- ER.read webSocketRef
       let webSocketTarget = WSW.toEventTarget webSocket
       --a ref is used to track reconnections
       timerID <- ER.new Nothing
@@ -150,7 +163,10 @@ setUpWebSocket channel token = do
             when (DM.isNothing maybeID) do
                   CCN.alert "Connection to the server lost. Retrying..."
                   milliseconds <- ERD.randomInt 2000 7000
-                  id <- ET.setTimeout milliseconds <<< void $ setUpWebSocket channel token
+                  id <- ET.setTimeout milliseconds <<< void $ do
+                        newWebSocket <- WSW.create ("ws://localhost:" <> show port) []
+                        ER.write newWebSocket webSocketRef
+                        setUpWebSocket webSocketRef channel token
                   ER.write (Just id) timerID
 
       WET.addEventListener onMessage messageListener false webSocketTarget

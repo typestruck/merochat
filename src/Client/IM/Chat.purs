@@ -40,17 +40,25 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Signal.Channel (Channel)
 import Web.DOM (Element)
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
+import Web.File.FileList as WFF
+import Web.File.FileReader (FileReader, fileReader)
+import Web.HTML.Event.DataTransfer as WHEDT
+import Web.HTML.Event.DragEvent (DragEvent)
+import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHEL
 import Web.HTML.HTMLTextAreaElement as WHHTA
+import Web.Socket.WebSocket (WebSocket)
 import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 import Web.UIEvent.KeyboardEvent as WUK
 
 --purty is fucking terrible
 
 getFileInput :: Effect Element
+--REFACTOR: make selectors inside updates type safe
 getFileInput = CCD.querySelector "#image-file-input"
 
 setUpMessage :: IMModel -> Event -> NextMessage
@@ -95,12 +103,10 @@ beforeSendMessage model@(IMModel {
                   message = Just content
             }
 
-sendMessage ::  MDateTime -> IMModel -> NoMessages
-sendMessage date = case _ of
+sendMessage :: WebSocket -> String -> MDateTime -> IMModel -> NoMessages
+sendMessage webSocket token date = case _ of
       model@(IMModel {
             user: IMUser { id: senderID },
-            webSocket: Just (WS webSocket),
-            token: Just token,
             chatting: Just chatting,
             temporaryID,
             contacts,
@@ -117,14 +123,14 @@ sendMessage date = case _ of
                               sender: senderID,
                               recipient: recipientID,
                               date,
-                              content: spy "cc" (DM.maybe' (\_ -> SU.fromJust message) (asMarkdownImage imageCaption) selectedImage)
+                              content: DM.maybe' (\_ -> SU.fromJust message) (asMarkdownImage imageCaption) selectedImage
                         }
                  }
                  updatedModel = SN.updateModel model $ _ {
                         temporaryID = newTemporaryID,
                         imageCaption = Nothing,
                         selectedImage = Nothing,
-                        message = Nothing,
+                        message = if DM.isJust selectedImage then message else Nothing,
                         contacts = SU.fromJust $ DA.updateAt chatting updatedChatting contacts
                  }
                  turn = makeTurn updatedChatting senderID
@@ -181,8 +187,8 @@ makeTurn (Contact { chatStarter, chatAge, history }) sender =
             countCharacters total (HistoryMessage { content }) = total + DSC.length content
             getDate = DN.unwrap <<< _.date <<< DN.unwrap
 
-receiveMessage :: Boolean -> IMModel -> WebSocketPayloadClient -> MoreMessages
-receiveMessage isFocused model@(IMModel {
+receiveMessage :: WebSocket -> String -> Boolean -> IMModel -> WebSocketPayloadClient -> MoreMessages
+receiveMessage webSocket token isFocused model@(IMModel {
       user: IMUser { id: recipientID },
       contacts,
       suggestions
@@ -194,17 +200,15 @@ receiveMessage isFocused model@(IMModel {
       ClientMessage payload@{ userID } -> case processIncomingMessage payload model of
             Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.get' (SingleContact { id: userID })]
             Right updatedModel@(IMModel {
-                  token: Just tk,
-                  webSocket: Just (WS ws),
                   chatting: Just index,
                   contacts
             }) ->  --mark it as read if we received a message from the current chat
                   let fields = {
-                        token: tk,
-                        webSocket: ws,
                         chatting: index,
                         userID: recipientID,
-                        contacts
+                        contacts,
+                        token,
+                        webSocket
                   }
                   in
                         if isFocused && isChatting userID fields then
@@ -343,3 +347,8 @@ setImageCaption caption model =
       F.noMessages <<< SN.updateModel model $ _ {
             imageCaption = Just caption
       }
+
+catchFile :: IMModel -> FileReader -> Event -> NoMessages
+catchFile model fileReader event = CIF.nothingNext model $ liftEffect do
+      CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
+      CCD.preventStop event

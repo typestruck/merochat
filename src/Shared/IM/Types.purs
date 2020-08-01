@@ -50,10 +50,6 @@ import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
 
-foreign import fromWS :: WebSocket -> Json
-foreign import toWS :: Json -> WS
-foreign import eqWS :: WebSocket -> WebSocket -> Boolean
-
 type Suggestion = IMUser
 
 type BasicUser fields = {
@@ -74,8 +70,6 @@ type ClientMessagePayload = (BasicMessage (
       userID :: PrimaryKey,
       date :: MDateTime
 ))
-
-newtype WS = WS WebSocket
 
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
@@ -99,15 +93,12 @@ newtype Contact = Contact {
 newtype IMModel = IMModel {
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
-      webSocket :: Maybe WS,
       temporaryID :: PrimaryKey,
       freeToFetchChatHistory :: Boolean,
       freeToFetchContactList :: Boolean,
       message :: Maybe String,
       selectedImage :: Maybe String,
       imageCaption :: Maybe String,
-      --used to authenticate web socket messages
-      token :: Maybe String,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -191,6 +182,7 @@ data IMMessage =
       NextSuggestion |
       DisplayMoreSuggestions SuggestionsPayload |
       --chat
+      DropFile Event |
       SetUpMessage Event |
       BeforeSendMessage Boolean String |
       SendMessage MDateTime |
@@ -203,8 +195,7 @@ data IMMessage =
       ExitPreview |
       SetImageCaption String |
       --main
-      SetWebSocket WebSocket |
-      SetToken String |
+      PreventStop Event |
       SetName String
 
 data WebSocketPayloadServer =
@@ -240,7 +231,6 @@ derive instance genericContact :: Generic Contact _
 derive instance genericIMUser :: Generic IMUser _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericWS :: Generic WS _
 derive instance genericIMModel :: Generic IMModel _
 derive instance genericHistoryMessage :: Generic HistoryMessage _
 derive instance genericMessageStatus :: Generic MessageStatus _
@@ -259,8 +249,6 @@ derive instance eqStats :: Eq Stats
 derive instance eqTurn :: Eq Turn
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
-instance eqWSW :: Eq WS where
-      eq (WS w) (WS s) = eqWS w s
 
 instance showMessageContent :: Show MessageContent where
       show = DGRS.genericShow
@@ -278,8 +266,6 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
-instance showWS :: Show WS where
-      show _ = "web socket"
 instance showIMModel :: Show IMModel where
       show = DGRS.genericShow
 instance showMessageStatus :: Show MessageStatus where
@@ -295,8 +281,6 @@ instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle whe
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonWS :: EncodeJson WS where
-      encodeJson (WS ws) = fromWS ws
 instance encodeJsonIMUser :: EncodeJson IMUser where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
@@ -316,8 +300,6 @@ instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonWS :: DecodeJson WS where
-      decodeJson = Right <<< toWS
 instance decodeJsonIMUser :: DecodeJson IMUser where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonTurn :: DecodeJson Turn where
@@ -388,7 +370,6 @@ parseIMUser [
 ] = do
       id <- parsePrimaryKey foreignID
       maybeForeignerAvatar <- F.readNull foreignAvatar
-      --REFACTOR: all image paths
       avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
       name <- F.readString foreignName
       maybeForeignerBirthday <- F.readNull foreignBirthday
