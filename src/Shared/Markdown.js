@@ -1,11 +1,7 @@
 var marked = require('marked');
-var insane = require('insane');
 
 //REFACTOR: make this all type safe
 exports.parse = function (input) {
-      //looks like you need to overwrite previous calls to marked.use if you dont want to pass an option
-      var image = new marked.Renderer().image;
-
       marked.use({
             renderer: {
                   link(href, title, text) {
@@ -14,9 +10,17 @@ exports.parse = function (input) {
 
                         return `<a href="${href}" title="${title || ""}" target="blank">${text}</a>`;
                   },
-                  image
+                  image(src, title, text) {
+                        var tag = `<img src="${src}" alt="${title || ""}" />`
+
+                        if (text)
+                              tag += `<br/>${text}`;
+
+                        return tag;
+                  }
             }
       });
+
       return marked(input, {
             smartypants: true
       });
@@ -33,7 +37,7 @@ exports.parseRestricted = function(input) {
                         if (title)
                               tag = `${tag}: ${title}`;
 
-                              return tag;
+                        return tag;
                   }
             }
       });
@@ -41,5 +45,3 @@ exports.parseRestricted = function(input) {
             smartypants: true
       });
 }
-
-exports.sanitize = insane;

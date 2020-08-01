@@ -7,7 +7,7 @@ import Shared.Types
 
 import Data.Array as DA
 import Data.Foldable as FD
-import Data.HashMap (HashMap)
+import Server.File (allowedMediaTypes)
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
@@ -33,9 +33,6 @@ invalidImageMessage = "Invalid image"
 
 imageTooBigMessage :: String
 imageTooBigMessage = "Max allowed size for avatar is 500kb"
-
-allowedMediaTypes :: HashMap String String
-allowedMediaTypes = DH.fromFoldable [Tuple "data:image/png;base64" ".png", Tuple "data:image/jpeg;base64" ".jpg", Tuple "data:image/tiff;base64" ".tiff", Tuple "data:image/bmp;base64" ".bmp" ]
 
 generate :: Generate -> ServerEffect GeneratePayload
 generate =
@@ -69,7 +66,7 @@ saveProfile id profileUser@(ProfileUser { name, headline, description, avatar, l
                                                         SRR.throwBadRequest imageTooBigMessage
                                                  else do
                                                         uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
-                                                        let fileName = uuid <> SU.fromJust "base64From" (DH.lookup mediaType allowedMediaTypes)
+                                                        let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
                                                         R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
 
                                                         pure $ Just fileName

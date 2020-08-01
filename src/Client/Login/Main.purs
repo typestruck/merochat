@@ -35,7 +35,7 @@ login = do
 
 loginOnEnter :: Event -> Effect Unit
 loginOnEnter event = do
-      let pressed = WUK.key <<< SU.fromJust "registerOnEnter" $ WUK.fromEvent event
+      let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
       when (pressed == "Enter") login
 
 main :: Effect Unit

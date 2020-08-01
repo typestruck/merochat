@@ -22,6 +22,7 @@ import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
+import Server.IM.Action as SIA
 import Node.HTTP (Request)
 import Run as R
 import Run.Except as RE
@@ -52,7 +53,7 @@ handleMessage connection (WebSocketMessage message) = do
                         ReadMessages { token, ids } -> withUser token $ \userID -> SID.markRead userID ids
                         ServerMessage {id, userID: recipient, token, content, turn} -> withUser token $ \userID -> do
                               date <- R.liftEffect $ map MDateTime EN.nowDateTime
-                              messageID <- SID.insertMessage userID recipient content
+                              Tuple messageID finalContent <- SIA.insertMessage userID recipient content
                               sendMessage connection <<< SJ.toJSON $ Received {
                                     previousID: id,
                                     id: messageID
@@ -63,7 +64,7 @@ handleMessage connection (WebSocketMessage message) = do
                                     sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
                                           id : messageID,
                                           userID,
-                                          content,
+                                          content: finalContent,
                                           date
                                     }
                               --pass along karma calculation to wheel

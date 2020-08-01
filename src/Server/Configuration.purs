@@ -48,7 +48,7 @@ readConfiguration = do
                               emailPassword
                         }
                   _ -> EE.throw "Wrong number of environment variables"
-      where getVariable name = SU.fromJust (name <> " variable missing!") <$> NP.lookupEnv name
-            parsePort value = SU.fromJust "PORT couldn't be parsed!" do
+      where getVariable name = SU.fromJust <$> NP.lookupEnv name
+            parsePort value = SU.fromJust do
                   v <- value
                   DI.fromString v

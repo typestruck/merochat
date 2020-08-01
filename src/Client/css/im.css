@@ -790,3 +790,23 @@ svg.toolbar-action {
 .karma-stats {
     margin:10px 0;
 }
+
+.image-form {
+    position: absolute;
+    display: flex;
+    border:1px solid gray;
+    top: 2%;
+    z-index:4;
+    flex-direction: column;
+    background-color: #262626;
+    height: 95%;
+}
+
+.send-image {
+    display: flex;
+    flex-direction: row;
+}
+
+.send-image input {
+    flex-grow: 1;
+}

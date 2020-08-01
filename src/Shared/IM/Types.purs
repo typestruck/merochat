@@ -50,10 +50,6 @@ import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
 
-foreign import fromWS :: WebSocket -> Json
-foreign import toWS :: Json -> WS
-foreign import eqWS :: WebSocket -> WebSocket -> Boolean
-
 type Suggestion = IMUser
 
 type BasicUser fields = {
@@ -65,17 +61,15 @@ type BasicUser fields = {
 }
 
 type BasicMessage fields = {
-      id :: PrimaryKey,
-      content :: String |
+      id :: PrimaryKey |
       fields
 }
 
 type ClientMessagePayload = (BasicMessage (
+      content :: String,
       userID :: PrimaryKey,
       date :: MDateTime
 ))
-
-newtype WS = WS WebSocket
 
 --fields needed by the IM page
 newtype IMUser = IMUser (BasicUser (
@@ -99,14 +93,12 @@ newtype Contact = Contact {
 newtype IMModel = IMModel {
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
-      webSocket :: Maybe WS,
       temporaryID :: PrimaryKey,
       freeToFetchChatHistory :: Boolean,
       freeToFetchContactList :: Boolean,
       message :: Maybe String,
-      isPreviewing :: Boolean,
-      --used to authenticate web socket messages
-      token :: Maybe String,
+      selectedImage :: Maybe String,
+      imageCaption :: Maybe String,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -114,7 +106,8 @@ newtype IMModel = IMModel {
       chatting :: Maybe Int,
       --visibility switches
       userContextMenuVisible :: Boolean,
-      profileSettingsToggle :: ProfileSettingsToggle
+      profileSettingsToggle :: ProfileSettingsToggle,
+      isPreviewing :: Boolean
 }
 
 newtype HistoryMessage = HistoryMessage {
@@ -143,6 +136,10 @@ newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
 newtype SingleContactPayload = SingleContactPayload (Array Contact)
 newtype ContactsPayload = ContactsPayload (Array Contact)
 newtype ProfileSettingsPayload = ProfileSettingsPayload String
+
+data MessageContent =
+      Image (Tuple String String) |
+      Text String
 
 data ProfileSettingsToggle =
       Hidden |
@@ -185,22 +182,26 @@ data IMMessage =
       NextSuggestion |
       DisplayMoreSuggestions SuggestionsPayload |
       --chat
+      DropFile Event |
       SetUpMessage Event |
       BeforeSendMessage Boolean String |
       SendMessage MDateTime |
       ReceiveMessage WebSocketPayloadClient Boolean |
       SetMessageContent String |
+      SelectImage |
+      ToggleImageForm (Maybe String) |
       Apply Markup |
       Preview |
       ExitPreview |
+      SetImageCaption String |
       --main
-      SetWebSocket WebSocket |
-      SetToken String |
+      PreventStop Event |
       SetName String
 
 data WebSocketPayloadServer =
       Connect String |
       ServerMessage (BasicMessage (
+            content :: MessageContent,
             token :: String,
             userID :: PrimaryKey,
             turn :: Maybe Turn
@@ -218,6 +219,7 @@ data WebSocketPayloadClient =
             id :: PrimaryKey
       }
 
+derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _
 derive instance genericContactsPayload :: Generic ContactsPayload _
 derive instance genericSingleContactPayload :: Generic SingleContactPayload _
@@ -229,7 +231,6 @@ derive instance genericContact :: Generic Contact _
 derive instance genericIMUser :: Generic IMUser _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericWS :: Generic WS _
 derive instance genericIMModel :: Generic IMModel _
 derive instance genericHistoryMessage :: Generic HistoryMessage _
 derive instance genericMessageStatus :: Generic MessageStatus _
@@ -248,9 +249,9 @@ derive instance eqStats :: Eq Stats
 derive instance eqTurn :: Eq Turn
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
-instance eqWSW :: Eq WS where
-      eq (WS w) (WS s) = eqWS w s
 
+instance showMessageContent :: Show MessageContent where
+      show = DGRS.genericShow
 instance showStats :: Show Stats where
       show = DGRS.genericShow
 instance showTurn :: Show Turn where
@@ -265,8 +266,6 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
-instance showWS :: Show WS where
-      show _ = "web socket"
 instance showIMModel :: Show IMModel where
       show = DGRS.genericShow
 instance showMessageStatus :: Show MessageStatus where
@@ -274,14 +273,14 @@ instance showMessageStatus :: Show MessageStatus where
 instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
       show = DGRS.genericShow
 
+instance encodeJsonMessageContent :: EncodeJson MessageContent where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonContact :: EncodeJson Contact where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonWS :: EncodeJson WS where
-      encodeJson (WS ws) = fromWS ws
 instance encodeJsonIMUser :: EncodeJson IMUser where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonHistoryMessage :: EncodeJson HistoryMessage where
@@ -291,6 +290,8 @@ instance encodeJsonTurn :: EncodeJson Turn where
 instance encodeJsonStats :: EncodeJson Stats where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonMessageContent :: DecodeJson MessageContent where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonContact :: DecodeJson Contact where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
@@ -299,8 +300,6 @@ instance decodeJsonHistoryMessage :: DecodeJson HistoryMessage where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonWS :: DecodeJson WS where
-      decodeJson = Right <<< toWS
 instance decodeJsonIMUser :: DecodeJson IMUser where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonTurn :: DecodeJson Turn where
@@ -332,7 +331,7 @@ instance fromSQLRowContact :: FromSQLRow Contact where
             foreignKarma
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
             sender <- parsePrimaryKey foreignSender
-            firstMessageDate <- SU.fromJust "fromsql contact" <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
+            firstMessageDate <- SU.fromJust <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
             user <- parseIMUser [
                   foreignID,
                   foreignAvatar,
@@ -371,7 +370,6 @@ parseIMUser [
 ] = do
       id <- parsePrimaryKey foreignID
       maybeForeignerAvatar <- F.readNull foreignAvatar
-      --REFACTOR: all image paths
       avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
       name <- F.readString foreignName
       maybeForeignerBirthday <- F.readNull foreignBirthday
@@ -414,9 +412,9 @@ instance messageRowFromSQLRow :: FromSQLRow HistoryMessage where
             id <- parsePrimaryKey foreignID
             sender <- parsePrimaryKey foreignSender
             recipient <- parsePrimaryKey foreignRecipient
-            date <- MDateTime <<< SU.fromJust "fromSQLRow" <<< DJ.toDateTime <$> DJ.readDate foreignDate
+            date <- MDateTime <<< SU.fromJust <<< DJ.toDateTime <$> DJ.readDate foreignDate
             content <- F.readString foreignContent
-            status <- SU.fromJust "fromSQLRow" <<< DE.toEnum <$> F.readInt foreignStatus
+            status <- SU.fromJust <<< DE.toEnum <$> F.readInt foreignStatus
             pure $ HistoryMessage { id, sender, recipient, date, content, status }
       fromSQLRow _ = Left "missing or extra fields from users table"
 

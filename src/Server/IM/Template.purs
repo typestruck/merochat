@@ -29,16 +29,16 @@ template {contacts, suggestions, user} = do
             view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
             init: IMModel {
                   chatting: Nothing,
-                  webSocket: Nothing,
-                  token: Nothing,
                   temporaryID: SP.fromInt 0,
                   suggesting: if DA.null suggestions then Nothing else Just 0,
                   freeToFetchChatHistory:true,
+                  imageCaption: Nothing,
                   freeToFetchContactList: true,
                   userContextMenuVisible: false,
                   profileSettingsToggle: Hidden,
                   message: Nothing,
                   isPreviewing: false,
+                  selectedImage: Nothing,
                   contacts,
                   suggestions,
                   user

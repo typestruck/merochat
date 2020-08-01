@@ -50,4 +50,4 @@ fromRoute = RD.print routes
 
 -- | Print a route without query string
 fromRouteToPath :: Route -> String
-fromRouteToPath = SU.fromJust "fromRouteToPath" <<< DA.head <<< DS.split (Pattern "?") <<< RD.print routes
+fromRouteToPath = SU.fromJust <<< DA.head <<< DS.split (Pattern "?") <<< RD.print routes

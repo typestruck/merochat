@@ -38,7 +38,7 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettin
             SIVCN.contactList model,
             SIVP.profileSettings profileSettingsToggle
       ],
-      HE.div (HA.class' "chat-box") [
+      HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
             SIVS.profile model profileUser,
             SIVH.history model historyContact,
             SIVC.chat model

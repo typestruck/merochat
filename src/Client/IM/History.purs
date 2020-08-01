@@ -51,7 +51,7 @@ displayHistory chatHistory model@(IMModel { chatting, contacts }) =
       let   contact@(Contact { history, shouldFetchChatHistory }) = SIC.chattingContact contacts chatting
             updatedModel = SN.updateModel model $ _ {
                   freeToFetchChatHistory = true,
-                  contacts = SU.fromJust "displayHistory" do
+                  contacts = SU.fromJust do
                         index <- chatting
                         let contact' = SN.updateContact contact $ _ {
                               history = chatHistory <> history
