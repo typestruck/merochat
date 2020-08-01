@@ -83,6 +83,7 @@ update model  =
             SelectImage -> CIC.selectImage model
             ExitPreview -> CIC.exitPreview model
             ToggleImageForm maybeBase64 -> CIC.toggleImageForm model maybeBase64
+            SetImageCaption caption -> CIC.setImageCaption caption model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead model

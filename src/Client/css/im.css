@@ -801,3 +801,12 @@ svg.toolbar-action {
     background-color: #262626;
     height: 95%;
 }
+
+.send-image {
+    display: flex;
+    flex-direction: row;
+}
+
+.send-image input {
+    flex-grow: 1;
+}

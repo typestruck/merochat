@@ -21,6 +21,10 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage }) =
                   ],
                   HE.div_ [
                         HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
+                  ],
+                  HE.div (HA.class' "send-image") [
+                        HE.input [HA.placeholder "Image Caption", HA.onInput SetImageCaption ],
+                        HE.button [HA.class' "action-button", HA.onClick (BeforeSendMessage true $ DM.fromMaybe "" message)] "Send"
                   ]
             ],
             HE.div (HA.class' editorClasses) [

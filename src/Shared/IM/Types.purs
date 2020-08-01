@@ -65,12 +65,12 @@ type BasicUser fields = {
 }
 
 type BasicMessage fields = {
-      id :: PrimaryKey,
-      content :: String |
+      id :: PrimaryKey |
       fields
 }
 
 type ClientMessagePayload = (BasicMessage (
+      content :: String,
       userID :: PrimaryKey,
       date :: MDateTime
 ))
@@ -105,6 +105,7 @@ newtype IMModel = IMModel {
       freeToFetchContactList :: Boolean,
       message :: Maybe String,
       selectedImage :: Maybe String,
+      imageCaption :: Maybe String,
       --used to authenticate web socket messages
       token :: Maybe String,
       --the current logged in user
@@ -144,6 +145,10 @@ newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
 newtype SingleContactPayload = SingleContactPayload (Array Contact)
 newtype ContactsPayload = ContactsPayload (Array Contact)
 newtype ProfileSettingsPayload = ProfileSettingsPayload String
+
+data MessageContent =
+      Image (Tuple String String) |
+      Text String
 
 data ProfileSettingsToggle =
       Hidden |
@@ -196,6 +201,7 @@ data IMMessage =
       Apply Markup |
       Preview |
       ExitPreview |
+      SetImageCaption String |
       --main
       SetWebSocket WebSocket |
       SetToken String |
@@ -204,6 +210,7 @@ data IMMessage =
 data WebSocketPayloadServer =
       Connect String |
       ServerMessage (BasicMessage (
+            content :: MessageContent,
             token :: String,
             userID :: PrimaryKey,
             turn :: Maybe Turn
@@ -221,6 +228,7 @@ data WebSocketPayloadClient =
             id :: PrimaryKey
       }
 
+derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _
 derive instance genericContactsPayload :: Generic ContactsPayload _
 derive instance genericSingleContactPayload :: Generic SingleContactPayload _
@@ -254,6 +262,8 @@ derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 instance eqWSW :: Eq WS where
       eq (WS w) (WS s) = eqWS w s
 
+instance showMessageContent :: Show MessageContent where
+      show = DGRS.genericShow
 instance showStats :: Show Stats where
       show = DGRS.genericShow
 instance showTurn :: Show Turn where
@@ -277,6 +287,8 @@ instance showMessageStatus :: Show MessageStatus where
 instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
       show = DGRS.genericShow
 
+instance encodeJsonMessageContent :: EncodeJson MessageContent where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonContact :: EncodeJson Contact where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
@@ -294,6 +306,8 @@ instance encodeJsonTurn :: EncodeJson Turn where
 instance encodeJsonStats :: EncodeJson Stats where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonMessageContent :: DecodeJson MessageContent where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonContact :: DecodeJson Contact where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where

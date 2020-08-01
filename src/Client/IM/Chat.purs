@@ -7,8 +7,8 @@ import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.DOM as CCD
-import Client.Common.Network as CCNT
 import Client.Common.File as CCF
+import Client.Common.Network as CCNT
 import Client.IM.Contacts as CICN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
@@ -104,7 +104,9 @@ sendMessage date = case _ of
             chatting: Just chatting,
             temporaryID,
             contacts,
-            message: Just content
+            message,
+            selectedImage,
+            imageCaption
       }) ->
             let  recipient@(Contact { user: IMUser { id: recipientID }, history }) = contacts !@ chatting
                  newTemporaryID = temporaryID + SP.fromInt 1
@@ -115,11 +117,13 @@ sendMessage date = case _ of
                               sender: senderID,
                               recipient: recipientID,
                               date,
-                              content
+                              content: spy "cc" (DM.maybe' (\_ -> SU.fromJust message) (asMarkdownImage imageCaption) selectedImage)
                         }
                  }
                  updatedModel = SN.updateModel model $ _ {
                         temporaryID = newTemporaryID,
+                        imageCaption = Nothing,
+                        selectedImage = Nothing,
                         message = Nothing,
                         contacts = SU.fromJust $ DA.updateAt chatting updatedChatting contacts
                  }
@@ -131,10 +135,12 @@ sendMessage date = case _ of
                               id: newTemporaryID,
                               userID: recipientID,
                               token: token,
-                              content,
+                              content: asMessageContent message imageCaption selectedImage,
                               turn
                         }
-      model -> CIF.nothingNext model <<< liftEffect $ EC.log "Invalid sendMessage state"
+      model -> F.noMessages model
+      where asMarkdownImage imageCaption base64 = "![" <> DM.fromMaybe "" imageCaption  <> "](" <> base64 <> ")"
+            asMessageContent message imageCaption selectedImage = DM.maybe' (\_ -> Text $ SU.fromJust message) (Image <<< Tuple (DM.fromMaybe "" imageCaption)) selectedImage
 
 makeTurn :: Contact -> PrimaryKey -> Maybe Turn
 makeTurn (Contact { chatStarter, chatAge, history }) sender =
@@ -330,4 +336,10 @@ toggleImageForm :: IMModel -> Maybe String -> NoMessages
 toggleImageForm model base64 =
       F.noMessages <<< SN.updateModel model $ _ {
             selectedImage = base64
+      }
+
+setImageCaption :: String -> IMModel -> NoMessages
+setImageCaption caption model =
+      F.noMessages <<< SN.updateModel model $ _ {
+            imageCaption = Just caption
       }
