@@ -370,7 +370,9 @@ toggleEmojisVisible model@(IMModel { emojisVisible }) =
       }
 
 setEmoji :: IMModel -> Event -> NextMessage
-setEmoji model@(IMModel { message }) event = model :> [liftEffect do
+setEmoji model@(IMModel { message }) event = SN.updateModel model (_ {
+      emojisVisible = false
+}) :> [liftEffect do
       emoji <- CCD.innerTextFromTarget event
       textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
       end <- WHHTA.selectionEnd textarea

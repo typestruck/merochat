@@ -32,7 +32,10 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, mess
             HE.div (HA.class' emojiClasses) $ map toEmojiCategory SIE.byCategory,
             HE.div (HA.class' editorClasses) [
                   HE.div [HA.class' "chat-input-options"] [
-                        HE.button [HA.onClick ToggleEmojisVisible, HA.title "Emojis"] "Emoji",
+                        if emojisVisible then
+                              HE.button [HA.onClick ToggleEmojisVisible] "Close emojis"
+                         else
+                              HE.button [HA.onClick ToggleEmojisVisible, HA.title "Emojis"] "Emoji",
                         HE.button [HA.onClick (Apply Bold), HA.title "Bold"] "B",
                         HE.button [HA.onClick (Apply Italic), HA.title "Italic"] "I",
                         HE.button [HA.onClick (Apply Strike), HA.title "Strikethrough"] "S",
