@@ -92,14 +92,14 @@ svg {
     border-radius: 100%;
 }
 
-.avatar-contact-list{
-    background:#db5d5d;
+.avatar-contact-list {
+    background: #db5d5d;
 }
 
 .avatar-profile {
     width: 200px;
     height: 200px;
-    background:#db5d5d;
+    background: #db5d5d;
     border-radius: 100%;
 }
 
@@ -147,14 +147,14 @@ svg {
     font-size: 0.9em;
 }
 
-.contact-list-last-message > p {
+.contact-list-last-message>p {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .contact-list-last-message a {
-    color:white;
+    color: white;
 }
 
 .profile {
@@ -493,23 +493,26 @@ svg.toolbar-action {
 .svg-no-margin {
     margin: 0;
 }
+
 .chat-input-options {
     margin-bottom: 4px;
 }
+
 .chat-input-options button {
-    font-size:1.2em;
-    color:white;
+    font-size: 1.2em;
+    color: white;
     font-weight: bold;
     background: #262626;
-    border:0;
+    border: 0;
     padding: 5px;
     cursor: pointer;
 }
 
 .chat-input-area {
-    display:flex;
+    display: flex;
     flex-direction: row;
 }
+
 .chat-input-options label {
     display: inline;
 }
@@ -518,7 +521,7 @@ svg.toolbar-action {
     flex-grow: 1;
     resize: none;
     width: 100%;
-    font-size:1.2em;
+    font-size: 1.2em;
     border: 1px solid lightgray;
     cursor: text;
     border-radius: 4px;
@@ -797,15 +800,15 @@ svg.toolbar-action {
 }
 
 .karma-stats {
-    margin:10px 0;
+    margin: 10px 0;
 }
 
 .image-form {
     position: absolute;
     display: flex;
-    border:1px solid gray;
+    border: 1px solid gray;
     top: 2%;
-    z-index:4;
+    z-index: 4;
     flex-direction: column;
     background-color: #262626;
     height: 95%;
@@ -818,4 +821,17 @@ svg.toolbar-action {
 
 .send-image input {
     flex-grow: 1;
+}
+
+.emojis {
+    height: 300px;
+    position: relative;
+    margin-top: -300px;
+    overflow-y: scroll;
+    word-wrap: anywhere
+}
+
+.emojis span {
+    font-size: 2em;
+    font-family: emoji !important;
 }

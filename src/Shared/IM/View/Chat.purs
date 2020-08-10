@@ -6,13 +6,15 @@ import Shared.IM.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
+import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
 
 chat :: IMModel -> Html IMMessage
-chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, messageEnter }) =
+chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, messageEnter, emojisVisible }) =
       HE.div (HA.class' "send-box") [
             HE.input [HA.id "image-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
             HE.div (HA.class' imageFormClasses) [
@@ -27,8 +29,10 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, mess
                         HE.button [HA.class' "action-button", HA.onClick (BeforeSendMessage true $ DM.fromMaybe "" message)] "Send"
                   ]
             ],
+            HE.div (HA.class' emojiClasses) $ map toEmojiCategory SIE.byCategory,
             HE.div (HA.class' editorClasses) [
                   HE.div [HA.class' "chat-input-options"] [
+                        HE.button [HA.onClick ToggleEmojisVisible, HA.title "Emojis"] "Emoji",
                         HE.button [HA.onClick (Apply Bold), HA.title "Bold"] "B",
                         HE.button [HA.onClick (Apply Italic), HA.title "Italic"] "I",
                         HE.button [HA.onClick (Apply Strike), HA.title "Strikethrough"] "S",
@@ -65,4 +69,10 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, mess
             previewClasses = classes isPreviewing
             imageFormClasses = classes (DM.isJust selectedImage) <> "image-form"
             sendClasses = classes $ not messageEnter
+            emojiClasses = classes emojisVisible <> "emojis"
 
+            toEmojiSpan = HE.span_
+            toEmojiCategory (Tuple name hexes) = HE.div (HA.onClick' SetEmoji) [
+                  HE.text name,
+                  HE.div_ $ map toEmojiSpan hexes
+            ]

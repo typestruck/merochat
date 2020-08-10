@@ -88,11 +88,12 @@ update { webSocketRef, token, fileReader} model  =
       case _ of
             --chat
             --REFACTOR: decide if model should always be first or last parameter
+            ToggleEmojisVisible -> CIC.toggleEmojisVisible model
             DropFile event -> CIC.catchFile model fileReader event
             SetUpMessage event -> CIC.setUpMessage model event
             BeforeSendMessage sent content -> CIC.beforeSendMessage model sent content
             SendMessage date -> CIC.sendMessage webSocket token date model
-            SetMessageContent content -> CIC.setMessage content model
+            SetMessageContent cursor content -> CIC.setMessage cursor content model
             ReceiveMessage payload isFocused -> CIC.receiveMessage webSocket token isFocused model payload
             Apply markup -> CIC.applyMarkup markup model
             Preview -> CIC.preview model
@@ -101,6 +102,7 @@ update { webSocketRef, token, fileReader} model  =
             ToggleImageForm maybeBase64 -> CIC.toggleImageForm model maybeBase64
             SetImageCaption caption -> CIC.setImageCaption caption model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
+            SetEmoji event -> CIC.setEmoji model event
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket token model

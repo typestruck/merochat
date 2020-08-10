@@ -34,6 +34,7 @@ template {contacts, suggestions, user} = do
                   freeToFetchChatHistory:true,
                   messageEnter: true,
                   imageCaption: Nothing,
+                  emojisVisible: false,
                   freeToFetchContactList: true,
                   userContextMenuVisible: false,
                   profileSettingsToggle: Hidden,

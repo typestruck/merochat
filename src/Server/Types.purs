@@ -82,8 +82,6 @@ type ServerReader = BaseReader (
         session :: Session
 )
 
---needs logging strategy
-
 type BaseEffect r a = Run (
         reader :: READER r,
         except :: EXCEPT ResponseError,
