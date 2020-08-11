@@ -3,18 +3,18 @@ module Server.IM.Template where
 import Prelude
 import Shared.IM.Types
 
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.HTML.Attribute as HA
-import Shared.PrimaryKey as SP
 import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
-import Data.Array as DA
-import Shared.Trie as STI
 import Server.Template as ST
 import Shared.IM.View as SIV
+import Shared.PrimaryKey as SP
+import Shared.Trie as STI
 
 template :: {
       contacts :: Array Contact,
@@ -36,6 +36,9 @@ template {contacts, suggestions, user} = do
                   messageEnter: true,
                   imageCaption: Nothing,
                   emojisVisible: false,
+                  link: Nothing,
+                  linkText: Nothing,
+                  linkFormVisible: false,
                   freeToFetchContactList: true,
                   userContextMenuVisible: false,
                   profileSettingsToggle: Hidden,

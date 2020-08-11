@@ -9,6 +9,7 @@ import Shared.Types
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network as CCNT
+import Client.Common.Notification as CCN
 import Client.IM.Contacts as CICN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
@@ -24,6 +25,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
+import Data.Nullable (null)
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.String.Regex (Regex)
@@ -39,6 +41,7 @@ import Effect.Console as EC
 import Effect.Now as EN
 import Flame (ListUpdate, (:>))
 import Flame as F
+import Node.URL as NU
 import Shared.IM.Contact as SIC
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
@@ -375,13 +378,50 @@ toggleEmojisVisible model@(IMModel { emojisVisible }) =
             emojisVisible = not emojisVisible
       }
 
+toggleLinkForm :: IMModel -> NoMessages
+toggleLinkForm model@(IMModel { linkFormVisible }) =
+      F.noMessages <<< SN.updateModel model $ _ {
+            linkFormVisible = not linkFormVisible,
+            link = Nothing,
+            linkText = Nothing
+      }
+
 setEmoji :: IMModel -> Event -> NextMessage
 setEmoji model@(IMModel { message }) event = SN.updateModel model (_ {
       emojisVisible = false
 }) :> [liftEffect do
       emoji <- CCD.innerTextFromTarget event
+      setAtCursor message emoji
+]
+
+setLinkText :: IMModel -> String -> NoMessages
+setLinkText model text  =
+      F.noMessages <<< SN.updateModel model $ _ {
+            linkText = Just text
+      }
+
+setLink :: IMModel -> String -> NoMessages
+setLink model link =
+      F.noMessages <<< SN.updateModel model $ _ {
+            link = Just link
+      }
+
+insertLink :: IMModel -> NextMessage
+insertLink model@(IMModel { message, linkText, link }) =
+      case link of
+            Nothing -> CIF.nothingNext model <<< liftEffect $ CCN.alert "Link is required"
+            Just url ->
+                  let { protocol } = NU.parse $ DS.trim url
+                  in model :> [
+                        CIF.next ToggleLinkForm,
+                        insert $ if protocol == null then "http://" <> url else url
+                  ]
+      where markdown url = "[" <> DM.fromMaybe url linkText <> "](" <> url <> ")"
+            insert = liftEffect <<< setAtCursor message <<< markdown
+
+setAtCursor :: Maybe String -> String -> Effect (Maybe IMMessage)
+setAtCursor message text = do
       textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
       end <- WHHTA.selectionEnd textarea
       let { before, after } = DS.splitAt end $ DM.fromMaybe "" message
-      CIF.next <<< SetMessageContent (Just $ end + 2) $ before <> emoji <> after
-]
+      CIF.next <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after

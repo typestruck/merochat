@@ -45,8 +45,6 @@ import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 import Web.HTML.HTMLElement as WHH
 
-foreign import setEditorContent_ :: EffectFn2 Editor String Unit
-
 getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#avatar-file-input"
 
@@ -81,7 +79,7 @@ update { model: model@(ProfileModel { editors }), message } =
             SaveProfile -> saveProfile model
 
 setEditorContent :: Editor -> String -> Aff Unit
-setEditorContent editor = liftEffect <<< EU.runEffectFn2 setEditorContent_ editor
+setEditorContent editor s = pure unit
 
 setEditors :: Editors Editor Editor Editor -> ProfileModel -> Aff (ProfileModel -> ProfileModel)
 setEditors editor (ProfileModel { user: ProfileUser { name, headline, description } }) = do

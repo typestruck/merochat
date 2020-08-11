@@ -99,6 +99,8 @@ newtype IMModel = IMModel {
       selectedImage :: Maybe String,
       imageCaption :: Maybe String,
       messageEnter :: Boolean,
+      link :: Maybe String,
+      linkText :: Maybe String,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -108,7 +110,8 @@ newtype IMModel = IMModel {
       userContextMenuVisible :: Boolean,
       profileSettingsToggle :: ProfileSettingsToggle,
       isPreviewing :: Boolean,
-      emojisVisible :: Boolean
+      emojisVisible :: Boolean,
+      linkFormVisible :: Boolean
 }
 
 newtype HistoryMessage = HistoryMessage {
@@ -191,13 +194,17 @@ data IMMessage =
       SetMessageContent (Maybe Int) String |
       SelectImage |
       ToggleImageForm (Maybe String) |
+      ToggleLinkForm |
       Apply Markup |
+      SetLink String |
+      SetLinkText String |
       Preview |
       ExitPreview |
       SetImageCaption String |
       ToggleMessageEnter |
       ToggleEmojisVisible |
       SetEmoji Event |
+      InsertLink |
       --main
       PreventStop Event |
       SetName String

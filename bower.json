@@ -35,7 +35,8 @@
     "purescript-simple-jwt": "^1.0.2",
     "purescript-js-date": "^6.0.0",
     "purescript-uuid": "^6.1.0",
-    "purescript-node-process": "^7.0.0"
+    "purescript-node-process": "^7.0.0",
+    "purescript-node-url": "^4.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0",

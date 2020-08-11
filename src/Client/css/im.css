@@ -814,6 +814,16 @@ svg.toolbar-action {
     height: 95%;
 }
 
+.image-form {
+    position: absolute;
+    display: flex;
+    border: 1px solid gray;
+    top: 2%;
+    z-index: 4;
+    flex-direction: column;
+    background-color: #262626;
+}
+
 .send-image {
     display: flex;
     flex-direction: row;

@@ -89,6 +89,10 @@ update { webSocketRef, token, fileReader} model  =
       case _ of
             --chat
             --REFACTOR: decide if model should always be first or last parameter
+            InsertLink -> CIC.insertLink model
+            SetLink link -> CIC.setLink model link
+            SetLinkText text -> CIC.setLinkText model text
+            ToggleLinkForm -> CIC.toggleLinkForm model
             ToggleEmojisVisible -> CIC.toggleEmojisVisible model
             DropFile event -> CIC.catchFile model fileReader event
             SetUpMessage event -> CIC.setUpMessage model event
