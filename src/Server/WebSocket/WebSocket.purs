@@ -1,4 +1,4 @@
---make it its own library?
+--REFACTOR: make it its own library
 
 -- | WS node library bindings adapted from https://github.com/FruitieX/purescript-ws
 module Server.WebSocket where

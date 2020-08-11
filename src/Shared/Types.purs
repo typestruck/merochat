@@ -36,6 +36,7 @@ import Shared.Unsafe as SU
 import Unsafe.Coerce as UC
 
 foreign import data Editor :: Type
+foreign import data Trie :: Type
 
 foreign import fromEditor :: Editor -> Json
 foreign import fromJSDate :: JSDate -> Json

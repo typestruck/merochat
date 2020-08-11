@@ -55,6 +55,7 @@ import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
+import Shared.IM.Emoji as SIE
 
 main :: Effect Unit
 main = do
@@ -129,7 +130,7 @@ update { webSocketRef, token, fileReader} model  =
             --main
             SetName name -> setName name model
             PreventStop event -> preventStop model event
-      where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef
+      where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
             setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
                   user = SN.updateUser user $ _ {
                         name = name

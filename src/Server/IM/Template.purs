@@ -12,6 +12,7 @@ import Shared.PrimaryKey as SP
 import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
 import Data.Array as DA
+import Shared.Trie as STI
 import Server.Template as ST
 import Shared.IM.View as SIV
 

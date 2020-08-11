@@ -26,6 +26,10 @@ import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.String as DS
 import Data.String.CodeUnits as DSC
+import Data.String.Regex (Regex)
+import Data.String.Regex as DSR
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe as DSRU
 import Data.Time.Duration (Seconds(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
@@ -57,21 +61,23 @@ import Web.UIEvent.KeyboardEvent as WUK
 
 --purty is fucking terrible
 
-getFileInput :: Effect Element
 --REFACTOR: make selectors inside updates type safe
+getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#image-file-input"
 
 setUpMessage :: IMModel -> Event -> NextMessage
-setUpMessage model@(IMModel { messageEnter }) event = model :> [liftEffect do
-      let   keyboardEvent = SU.fromJust $ WUK.fromEvent event
-            textarea = SU.fromJust  do
-                  target <- WEE.target event
-                  WHHTA.fromEventTarget target
-      content <- WHHTA.value textarea
-      let sent = messageEnter && WUK.key keyboardEvent == "Enter" && not WUK.shiftKey keyboardEvent
-      when sent $ CCD.preventStop event
-      CIF.next $ BeforeSendMessage sent content
-]
+setUpMessage model@(IMModel { emojisVisible, messageEnter }) event = model :> [beforeSend]
+      where keyboardEvent = SU.fromJust $ WUK.fromEvent event
+            key = WUK.key keyboardEvent
+
+            beforeSend = liftEffect do
+                  let   textarea = SU.fromJust  do
+                              target <- WEE.target event
+                              WHHTA.fromEventTarget target
+                        sent = messageEnter && key == "Enter" && not WUK.shiftKey keyboardEvent
+                  content <- WHHTA.value textarea
+                  when sent $ CCD.preventStop event
+                  CIF.next $ BeforeSendMessage sent content
 
 beforeSendMessage :: IMModel -> Boolean -> String -> MoreMessages
 beforeSendMessage model@(IMModel {

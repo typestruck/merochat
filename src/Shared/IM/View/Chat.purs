@@ -2,16 +2,20 @@ module Shared.IM.View.Chat where
 
 import Prelude
 import Shared.IM.Types
+import Shared.Types
 
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Data.Tuple (Tuple(..))
+import Data.Tuple as DT
 import Flame (Html)
 import Flame.HTML.Attribute as HA
+import Flame.HTML.Element as FE
 import Flame.HTML.Element as HE
 import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
+import Shared.Trie as ST
 
 chat :: IMModel -> Html IMMessage
 chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, messageEnter, emojisVisible }) =
@@ -74,8 +78,9 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, mess
             sendClasses = classes $ not messageEnter
             emojiClasses = classes emojisVisible <> "emojis"
 
-            toEmojiSpan = HE.span_
-            toEmojiCategory (Tuple name hexes) = HE.div (HA.onClick' SetEmoji) [
+            toEmojiSpan = HE.span_ <<< _.s
+            toEmojiCategory (Tuple name pairs) = HE.div (HA.onClick' SetEmoji) [
                   HE.text name,
-                  HE.div_ $ map toEmojiSpan hexes
+                  HE.div_ $ map toEmojiSpan pairs
             ]
+

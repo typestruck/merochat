@@ -44,6 +44,7 @@
     "purty": "^6.2.0",
     "snabbdom": "^0.7.3",
     "snabbdom-to-html": "^5.1.1",
+    "trie-search": "^1.2.11",
     "uuid": "^7.0.3",
     "uuid-validate": "0.0.3",
     "webpack": "^4.43.0",
