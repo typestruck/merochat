@@ -26,6 +26,10 @@ import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.String as DS
 import Data.String.CodeUnits as DSC
+import Data.String.Regex (Regex)
+import Data.String.Regex as DSR
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe as DSRU
 import Data.Time.Duration (Seconds(..))
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
@@ -57,21 +61,23 @@ import Web.UIEvent.KeyboardEvent as WUK
 
 --purty is fucking terrible
 
-getFileInput :: Effect Element
 --REFACTOR: make selectors inside updates type safe
+getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#image-file-input"
 
 setUpMessage :: IMModel -> Event -> NextMessage
-setUpMessage model@(IMModel { messageEnter }) event = model :> [liftEffect do
-      let   keyboardEvent = SU.fromJust $ WUK.fromEvent event
-            textarea = SU.fromJust  do
-                  target <- WEE.target event
-                  WHHTA.fromEventTarget target
-      content <- WHHTA.value textarea
-      let sent = messageEnter && WUK.key keyboardEvent == "Enter" && not WUK.shiftKey keyboardEvent
-      when sent $ CCD.preventStop event
-      CIF.next $ BeforeSendMessage sent content
-]
+setUpMessage model@(IMModel { emojisVisible, messageEnter }) event = model :> [beforeSend]
+      where keyboardEvent = SU.fromJust $ WUK.fromEvent event
+            key = WUK.key keyboardEvent
+
+            beforeSend = liftEffect do
+                  let   textarea = SU.fromJust  do
+                              target <- WEE.target event
+                              WHHTA.fromEventTarget target
+                        sent = messageEnter && key == "Enter" && not WUK.shiftKey keyboardEvent
+                  content <- WHHTA.value textarea
+                  when sent $ CCD.preventStop event
+                  CIF.next $ BeforeSendMessage sent content
 
 beforeSendMessage :: IMModel -> Boolean -> String -> MoreMessages
 beforeSendMessage model@(IMModel {
@@ -308,11 +314,7 @@ apply markup value = do
             selected = DS.take (end - start) $ DS.drop start value
             afterSelection = DS.drop end value
             newValue = beforeSelection <> before <> selected <> after <> afterSelection
-      WHHTA.setValue newValue textarea
-      WHHTA.setSelectionStart (start + beforeSize) textarea
-      WHHTA.setSelectionEnd (end + beforeSize) textarea
-      WHHEL.focus $ WHHTA.toHTMLElement textarea
-      pure $ SetMessageContent newValue
+      pure $ SetMessageContent (Just $ end + beforeSize) newValue
 
 --REFACTOR: this can be abstracted (together with profile updates?)
 preview ::  IMModel -> NoMessages
@@ -327,11 +329,17 @@ exitPreview model =
             isPreviewing = false
       }
 
-setMessage :: String -> IMModel -> NoMessages
-setMessage markdown model =
-      F.noMessages <<< SN.updateModel model $ _ {
+setMessage :: Maybe Int -> String -> IMModel -> NextMessage
+setMessage cursor markdown model =
+      CIF.nothingNext (SN.updateModel model $ _ {
             message = Just markdown
-      }
+      }) <<< liftEffect $
+            case cursor of
+                  Just position -> do
+                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+                        WHHEL.focus $ WHHTA.toHTMLElement textarea
+                        WHHTA.setSelectionEnd position textarea
+                  Nothing -> pure unit
 
 selectImage :: IMModel -> NextMessage
 selectImage model = CIF.nothingNext model $ liftEffect do
@@ -360,3 +368,20 @@ toggleMessageEnter model@(IMModel { messageEnter }) =
       F.noMessages <<< SN.updateModel model $ _ {
             messageEnter = not messageEnter
       }
+
+toggleEmojisVisible :: IMModel -> NoMessages
+toggleEmojisVisible model@(IMModel { emojisVisible }) =
+      F.noMessages <<< SN.updateModel model $ _ {
+            emojisVisible = not emojisVisible
+      }
+
+setEmoji :: IMModel -> Event -> NextMessage
+setEmoji model@(IMModel { message }) event = SN.updateModel model (_ {
+      emojisVisible = false
+}) :> [liftEffect do
+      emoji <- CCD.innerTextFromTarget event
+      textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+      end <- WHHTA.selectionEnd textarea
+      let { before, after } = DS.splitAt end $ DM.fromMaybe "" message
+      CIF.next <<< SetMessageContent (Just $ end + 2) $ before <> emoji <> after
+]

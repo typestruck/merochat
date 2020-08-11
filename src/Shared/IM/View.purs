@@ -20,7 +20,7 @@ import Shared.IM.Contact as SIC
 import Shared.Avatar (defaultAvatar)
 import Shared.Avatar as SA
 import Shared.Markdown as SM
-import Shared.Types (MDateTime(..))
+import Shared.Types
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.IM.View.UserMenu as SIVU
@@ -41,7 +41,7 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettin
       HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
             SIVS.profile model profileUser,
             SIVH.history model historyContact,
-            SIVC.chat model
+            SIVC.chat  model
       ]
 ]
       where Tuple profileUser historyContact =

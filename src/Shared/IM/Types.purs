@@ -107,7 +107,8 @@ newtype IMModel = IMModel {
       --visibility switches
       userContextMenuVisible :: Boolean,
       profileSettingsToggle :: ProfileSettingsToggle,
-      isPreviewing :: Boolean
+      isPreviewing :: Boolean,
+      emojisVisible :: Boolean
 }
 
 newtype HistoryMessage = HistoryMessage {
@@ -187,7 +188,7 @@ data IMMessage =
       BeforeSendMessage Boolean String |
       SendMessage MDateTime |
       ReceiveMessage WebSocketPayloadClient Boolean |
-      SetMessageContent String |
+      SetMessageContent (Maybe Int) String |
       SelectImage |
       ToggleImageForm (Maybe String) |
       Apply Markup |
@@ -195,6 +196,8 @@ data IMMessage =
       ExitPreview |
       SetImageCaption String |
       ToggleMessageEnter |
+      ToggleEmojisVisible |
+      SetEmoji Event |
       --main
       PreventStop Event |
       SetName String
