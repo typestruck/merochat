@@ -24,8 +24,8 @@ tests = do
                         { configuration : Configuration configuration } <- RR.ask
                         Token { tokenGET, tokenPOST } <- ST.createToken id
 
-                        userIDGET <- SU.fromJust "test" <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretGET tokenGET)
+                        userIDGET <- SU.fromJust  <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretGET tokenGET)
                         R.liftAff $ TUA.equal key userIDGET
 
-                        userIDPOST <- SU.fromJust "test" <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
+                        userIDPOST <- SU.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
                         R.liftAff $ TUA.equal key userIDPOST
