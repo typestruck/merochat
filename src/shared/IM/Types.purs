@@ -8,46 +8,33 @@ import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
-import Data.Array as DA
 import Data.Bifunctor as DB
-import Data.Date (Date)
 import Data.Date as DD
-import Data.DateTime (DateTime(..))
-import Data.DateTime (DateTime, Time(..))
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
-import Data.Hashable (class Hashable)
-import Data.Hashable as DH
-import Data.Int as DIN
-import Data.Int53 (Int53)
-import Data.JSDate (JSDate)
 import Data.JSDate as DJ
-import Data.List.NonEmpty (NonEmptyList(..))
+import Data.List.NonEmpty (NonEmptyList)
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Newtype as DN
+import Data.Newtype (unwrap) as DN
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Time.Duration (Days(..), Seconds(..))
-import Data.Tuple (Tuple(..))
-import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
-import Database.PostgreSQL as DP
-import Effect.Now as DN
-import Effect.Now as EN
+import Data.Time.Duration (Days)
+import Data.Tuple (Tuple)
+import Database.PostgreSQL (class FromSQLRow)
+import Effect.Now (nowDate) as DN
 import Effect.Unsafe as EU
 import Foreign (Foreign, ForeignError(..))
 import Foreign as F
-import Partial.Unsafe as PU
 import Shared.DateTime as SDT
-import Shared.Types (MDate(..), MDateTime(..), PrimaryKey(..), parsePrimaryKey, parseInt)
+import Shared.Types (MDateTime(..), PrimaryKey, parseInt, parsePrimaryKey)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
-import Web.Socket.WebSocket (WebSocket)
 
 type Suggestion = IMUser
 
@@ -92,6 +79,8 @@ newtype Contact = Contact {
 newtype IMModel = IMModel {
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
+      --in case a message from someone blocked was already midway
+      blockedUsers :: Array PrimaryKey,
       temporaryID :: PrimaryKey,
       freeToFetchChatHistory :: Boolean,
       freeToFetchContactList :: Boolean,
@@ -185,6 +174,7 @@ data IMMessage =
       PreviousSuggestion |
       NextSuggestion |
       DisplayMoreSuggestions SuggestionsPayload |
+      BlockUser PrimaryKey |
       --chat
       DropFile Event |
       SetUpMessage Event |
@@ -221,6 +211,10 @@ data WebSocketPayloadServer =
             token :: String,
             --alternatively, update by user?
             ids :: Array PrimaryKey
+      } |
+      ToBlock {
+            token :: String,
+            id :: PrimaryKey
       }
 
 data WebSocketPayloadClient =
@@ -228,7 +222,8 @@ data WebSocketPayloadClient =
       Received {
             previousID :: PrimaryKey,
             id :: PrimaryKey
-      }
+      } |
+      BeenBlocked { id :: PrimaryKey }
 
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _

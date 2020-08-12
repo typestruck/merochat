@@ -14,7 +14,7 @@ import Shared.Avatar as SA
 profile :: IMModel -> Maybe IMUser -> Html IMMessage
 profile (IMModel { suggesting, chatting }) =
       case _ of
-            Just (IMUser { name, avatar, age, karma, headline, gender, country, languages, tags }) ->
+            Just (IMUser { id, name, avatar, age, karma, headline, gender, country, languages, tags }) ->
                   HE.div (HA.class' "suggestion") [
                         HE.a [HA.class' "skip", HA.title "See previous profile again", HA.onClick PreviousSuggestion] [
                               HE.svg [HA.id "cil-arrow-thick-from-right", HA.viewBox "0 0 24 24", HA.class' "svg-50"] [
@@ -35,7 +35,8 @@ profile (IMModel { suggesting, chatting }) =
                                     --maybe include local time?
                                     (toInfoSpan false <<< maybeLanguages $ DS.joinWith ", " languages),
                               HE.div (HA.class' "karma-stats") <<< HE.span_ $ "Karma: " <> show karma,
-                              HE.div_ $ map toTagSpan tags
+                              HE.div_ $ map toTagSpan tags,
+                              HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
                         ],
                         HE.a [HA.class' "skip green", HA.title "See next profile", HA.onClick NextSuggestion] [
                               HE.svg [HA.id "cil-arrow-thick-from-left", HA.class' "svg-50", HA.viewBox "0 0 24 24"] [

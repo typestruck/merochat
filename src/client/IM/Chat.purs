@@ -14,6 +14,7 @@ import Client.IM.Contacts as CICN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
+import Client.IM.Suggestion as CISG
 import Client.IM.WebSocket as CIW
 import Data.Array ((:), (!!))
 import Data.Array as DA
@@ -70,10 +71,7 @@ getFileInput = CCD.querySelector "#image-file-input"
 
 setUpMessage :: IMModel -> Event -> NextMessage
 setUpMessage model@(IMModel { emojisVisible, messageEnter }) event = model :> [beforeSend]
-      where keyboardEvent = SU.fromJust $ WUK.fromEvent event
-            key = WUK.key keyboardEvent
-
-            beforeSend = liftEffect do
+      where beforeSend = liftEffect do
                   let   textarea = SU.fromJust  do
                               target <- WEE.target event
                               WHHTA.fromEventTarget target
@@ -81,6 +79,9 @@ setUpMessage model@(IMModel { emojisVisible, messageEnter }) event = model :> [b
                   content <- WHHTA.value textarea
                   when sent $ CCD.preventStop event
                   CIF.next $ BeforeSendMessage sent content
+
+            keyboardEvent = SU.fromJust $ WUK.fromEvent event
+            key = WUK.key keyboardEvent
 
 beforeSendMessage :: IMModel -> Boolean -> String -> MoreMessages
 beforeSendMessage model@(IMModel {
@@ -202,31 +203,37 @@ receiveMessage :: WebSocket -> String -> Boolean -> IMModel -> WebSocketPayloadC
 receiveMessage webSocket token isFocused model@(IMModel {
       user: IMUser { id: recipientID },
       contacts,
-      suggestions
+      suggestions,
+      blockedUsers
 }) = case _ of
       Received { previousID, id } ->
             F.noMessages <<< SN.updateModel model $ _ {
                   contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
             }
-      ClientMessage payload@{ userID } -> case processIncomingMessage payload model of
-            Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.get' (SingleContact { id: userID })]
-            Right updatedModel@(IMModel {
-                  chatting: Just index,
-                  contacts
-            }) ->  --mark it as read if we received a message from the current chat
-                  let fields = {
-                        chatting: index,
-                        userID: recipientID,
-                        contacts,
-                        token,
-                        webSocket
-                  }
-                  in
-                        if isFocused && isChatting userID fields then
-                              CICN.updateReadHistory updatedModel fields
-                         else
-                              F.noMessages updatedModel
-            Right updatedModel -> F.noMessages updatedModel
+      BeenBlocked { id } ->
+            F.noMessages $ CISG.removeBlockedUser model id
+      ClientMessage payload@{ userID } ->
+            if DA.elem userID blockedUsers then
+                  F.noMessages model
+            else case processIncomingMessage payload model of
+                  Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.get' (SingleContact { id: userID })]
+                  Right updatedModel@(IMModel {
+                        chatting: Just index,
+                        contacts
+                  }) ->  --mark it as read if we received a message from the current chat
+                        let fields = {
+                              chatting: index,
+                              userID: recipientID,
+                              contacts,
+                              token,
+                              webSocket
+                        }
+                        in
+                              if isFocused && isChatting userID fields then
+                                    CICN.updateReadHistory updatedModel fields
+                              else
+                                    F.noMessages updatedModel
+                  Right updatedModel -> F.noMessages updatedModel
       where isChatting senderID { contacts, chatting } =
                   let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in
                   recipientID == senderID
@@ -259,15 +266,7 @@ processIncomingMessage { id, userID, date, content } model@(IMModel {
                               chatting = (_ + 1) <$> chatting
                         }
       Nothing -> Left userID
-      where suggestingContact = do
-                  index <- suggesting
-                  suggestions !! index
-
-            getUserID :: forall n a. Newtype n { id :: PrimaryKey | a } => Maybe n -> Maybe PrimaryKey
-            getUserID = map (_.id <<< DN.unwrap)
-            findUser (Contact { user: IMUser { id } }) = userID == id
-
-            updateHistory { id, content, date } user@(Contact { history }) =
+      where updateHistory { id, content, date } user@(Contact { history }) =
                   SN.updateContact user $ _ {
                         history = DA.snoc history $ HistoryMessage {
                               status: Unread,
@@ -282,6 +281,14 @@ processIncomingMessage { id, userID, date, content } model@(IMModel {
                   index <- DA.findIndex findUser contacts
                   Contact { history } <- contacts !! index
                   DA.modifyAt index (updateHistory { content, id, date }) contacts
+
+            suggestingContact = do
+                  index <- suggesting
+                  suggestions !! index
+
+            getUserID :: forall n a. Newtype n { id :: PrimaryKey | a } => Maybe n -> Maybe PrimaryKey
+            getUserID = map (_.id <<< DN.unwrap)
+            findUser (Contact { user: IMUser { id } }) = userID == id
 
 updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> Maybe (Array Contact)
 updateTemporaryID contacts previousID id = do

@@ -25,7 +25,7 @@ routes = RD.root $ RDG.sum {
       "Register" : "register" / RDG.noArgs,
       "Login": "login" ? { next: RD.optional <<< RD.string },
       "IM": "im" / RDG.noArgs,
-      "SingleContact": "im" / "contact" ? { id: parsePrimaryKey } ,
+      "SingleContact": "im" / "contact" ? { id: parsePrimaryKey },
       "Contacts" : "im" / "contacts" ? { skip: RD.int },
       "Suggestions" : "im" / "suggestions" / RDG.noArgs,
       "Profile": "profile" / RDG.noArgs,
@@ -36,7 +36,8 @@ routes = RD.root $ RDG.sum {
       "Recover": "recover" ? { token: RD.optional <<< RD.string },
       "AccountPassword": "settings" / "password" / RDG.noArgs,
       "Terminate": "settings" / "close" / RDG.noArgs,
-      "History" : "im" / "history" ? { skip: RD.int, with: parsePrimaryKey }
+      "History" : "im" / "history" ? { skip: RD.int, with: parsePrimaryKey },
+      "Block" : "im" / "block" ? { id: parsePrimaryKey }
 }
       where parseWhat = RD.as show (DM.maybe (Left "error parsing what parameter") Right <<< DSR.read)
             parsePrimaryKey = RD.as (DS.replace (Pattern ".0") (Replacement "") <<< show <<< DI.toNumber <<< DN.unwrap) (DM.maybe (Left "error parsing what parameter") (Right <<< PrimaryKey) <<< DI.fromString)

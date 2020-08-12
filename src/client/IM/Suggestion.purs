@@ -2,20 +2,27 @@ module Client.IM.Suggestion where
 
 import Prelude
 import Shared.IM.Types
+import Shared.Types
 
 import Client.Common.Network as CCN
 import Client.IM.Flame (NoMessages, MoreMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Client.IM.Flame as CIF
+import Client.IM.WebSocket as CIW
+import Control.Alt ((<|>))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect.Aff (Aff)
+import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
-import Shared.Types (Route(..))
+import Shared.Unsafe as SU
+import Web.Socket.WebSocket (WebSocket)
 
 nextSuggestion :: IMModel -> MoreMessages
 nextSuggestion model@(IMModel { suggestions, suggesting }) =
@@ -50,3 +57,26 @@ displayMoreSuggestions suggestions =
             chatting : Nothing,
             suggestions
       }
+
+blockUser :: WebSocket -> String -> IMModel -> PrimaryKey -> NextMessage
+blockUser webSocket token model@(IMModel { blockedUsers  }) blocked =
+      updatedModel :> [do
+            --REFACTOR: some Never instead of this type casting
+            Ok <- CCN.post' (Block { id: blocked }) (Nothing :: Maybe IMUser)
+            liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked, token }
+            pure Nothing
+      ]
+      where updatedModel = SN.updateModel (removeBlockedUser model blocked) $ _ {
+                  blockedUsers = blocked : blockedUsers
+            }
+
+removeBlockedUser :: IMModel -> PrimaryKey -> IMModel
+removeBlockedUser model@(IMModel { contacts, suggestions }) blocked =
+      SN.updateModel model $ _ {
+            contacts = DA.filter ((blocked /= _) <<< fromContact) contacts,
+            suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
+      }
+      where fromContact (Contact { user } ) = fromUser user
+            fromUser (IMUser { id }) = id
+
+

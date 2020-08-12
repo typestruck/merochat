@@ -11,20 +11,16 @@ import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
-import Client.IM.Scroll as CISR
 import Client.IM.Suggestion as CIS
 import Client.IM.UserMenu as CIU
 import Control.Monad.Except as CME
 import Data.Array as DA
-import Data.Either (Either(..))
+import Data.Either (Either)
 import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -44,18 +40,15 @@ import Shared.Unsafe as SU
 import Shared.WebSocketOptions (port)
 import Signal.Channel (Channel)
 import Signal.Channel as SC
-import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.File.FileReader as WFR
 import Web.HTML as WH
-import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.Window as WHW
 import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
-import Shared.IM.Emoji as SIE
 
 main :: Effect Unit
 main = do
@@ -118,10 +111,10 @@ update { webSocketRef, token, fileReader} model  =
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
-
             DisplayHistory (HistoryPayload history) -> CIH.displayHistory history model
             --suggestion
             PreviousSuggestion -> CIS.previousSuggestion model
+            BlockUser id -> CIS.blockUser webSocket token model id
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions (SuggestionsPayload suggestions) -> CIS.displayMoreSuggestions suggestions model
             --user menu

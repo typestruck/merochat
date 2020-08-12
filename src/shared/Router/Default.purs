@@ -26,3 +26,6 @@ recover = SR.fromRoute $ Recover { token: Nothing }
 
 singleContact :: String
 singleContact = SR.fromRouteToPath $ SingleContact { id: dummyID }
+
+blockUser :: String
+blockUser = SR.fromRouteToPath $ Block { id: dummyID }

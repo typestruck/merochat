@@ -11,8 +11,8 @@
     "test": "test"
   },
   "scripts": {
-    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & parcel watch loader/im.bundle.js",
-    "deploy": "use spago bundle-app, parcel is terrible"
+    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* # & parcel watch loader/im.bundle.js ",
+    "w": "webpack --watch --progress --inline --hot"
   },
   "author": "",
   "license": "CC-BY-4.0",
@@ -29,7 +29,6 @@
     "trie-search": "^1.2.11",
     "uuid": "^7.0.3",
     "uuid-validate": "0.0.3",
-    "webpack": "^4.43.0",
     "ws": "^7.1.2",
     "xhr2": "^0.2.0",
     "zeromq": "^6.0.0-beta.6"
@@ -39,7 +38,11 @@
     "canvas": "^2.6.1",
     "jsdom": "^15.2.1",
     "nodemon": "^2.0.4",
-    "purs-loader": "^3.7.1"
+    "purescript-psa": "^0.7.3",
+    "purs-loader": "^3.7.1",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1"

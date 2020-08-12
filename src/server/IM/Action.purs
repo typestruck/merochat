@@ -77,3 +77,8 @@ insertMessage id otherID content = do
                                else
                                     pure ""
                         _ -> pure ""
+
+blockUser :: PrimaryKey -> PrimaryKey -> ServerEffect Ok
+blockUser id otherID = do
+      SID.insertBlock id otherID
+      pure Ok

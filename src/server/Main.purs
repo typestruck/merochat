@@ -20,6 +20,7 @@ import Server.WebSocket as SW
 import Server.WebSocket.Events as SWE
 import Shared.WebSocketOptions (port)
 
+--consider using a servant like framework?
 main :: Effect Unit
 main = do
       configuration <- CF.readConfiguration
