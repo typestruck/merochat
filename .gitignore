@@ -14,4 +14,7 @@ src/Client/media/upload
 configuration.json
 old/
 fix
-server.js
+.cache/
+.spago/
+dist/
+parcel*.log

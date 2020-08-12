@@ -1,15 +1,16 @@
 module Test.Client.Model where
 
+import Prelude
+import Shared.IM.Types
+import Shared.Types
+
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Prelude
 import Shared.IM.Contact as SIC
-import Shared.IM.Types
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
-import Shared.Types
 import Unsafe.Coerce as UC
 import Web.Socket.WebSocket (WebSocket)
 
@@ -24,15 +25,20 @@ model = IMModel {
       isPreviewing: false,
       freeToFetchContactList: true,
       userContextMenuVisible: false,
+      selectedImage: Nothing,
+      imageCaption: Nothing,
+      emojisVisible: false,
+      linkFormVisible: false,
+      link: Nothing,
+      messageEnter: true,
+      linkText: Nothing,
       profileSettingsToggle: Hidden,
       user: imUser,
       suggestions: [suggestion],
       temporaryID : SP.fromInt 0,
       suggesting: Just 0,
-      token: Just "",
       freeToFetchChatHistory: true,
       contacts: [contact],
-      webSocket: Just $ WS (UC.unsafeCoerce 23 :: WebSocket),
       chatting: Just 0
 }
 
