@@ -4,16 +4,19 @@ module Server.Router (
         session
 ) where
 
+import Prelude
+import Shared.Types
+
 import Browser.Cookies.Data (Cookie(..))
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.String (Pattern(..))
 import Data.String as DS
 import Effect (Effect)
 import HTTPure (Method(..), Request, ResponseM)
 import HTTPure as H
 import HTTPure.Lookup ((!@))
-import Prelude
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
@@ -21,16 +24,15 @@ import Server.IM.Router as SIR
 import Server.Landing.Router as SLR
 import Server.Login.Router as SLIR
 import Server.Profile.Router as SPR
+import Server.Recover.Router as SRER
 import Server.Response as SRR
 import Server.Settings.Router as SSR
 import Server.Token as ST
 import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
 import Shared.Cookies (cookieName)
-import Shared.Router.Default as SRD
 import Shared.Header (xAccessToken)
-import Server.Recover.Router as SRER
 import Shared.Router as SRO
-import Shared.Types
+import Shared.Router.Default as SRD
 
 runRouter :: ServerReader -> Request -> ResponseM
 runRouter reading =
@@ -84,7 +86,7 @@ router request@{ headers, path, method } =
        else do
             { configuration : Configuration configuration } <- RR.ask
 
-            if configuration.development && path !@ 0 == "client" then
+            if configuration.development && (path !@ 0 == "client" || DS.contains (Pattern "js.map") (path !@ 0) )then
                   SRR.serveDevelopmentFile path
              else if configuration.development && path !@ 0 == "favicon.ico" then
                   SRR.serveDevelopmentFile ["media", "favicon.ico"]

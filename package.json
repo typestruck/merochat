@@ -11,7 +11,8 @@
     "test": "test"
   },
   "scripts": {
-    "watch": "export DEVELOPMENT=true && nodemon server.js --watch output/Server*/**/* --watch output/Shared*/**/* & parcel watch output/Client.IM.Main/index.js output/Client.Landing.Main/index.js"
+    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & parcel watch loader/im.bundle.js",
+    "deploy": "use spago bundle-app, parcel is terrible"
   },
   "author": "",
   "license": "CC-BY-4.0",

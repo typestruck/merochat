@@ -49,6 +49,7 @@ template {contacts, suggestions, user} = do
                   user
             }
       }
+      --REFACTOR: js css et all must have typed routes
       where javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"] ]
             css = [
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"]

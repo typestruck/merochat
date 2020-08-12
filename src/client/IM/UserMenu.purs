@@ -15,7 +15,6 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
-import Shared.Types (Route(..))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)

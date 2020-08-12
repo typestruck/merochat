@@ -2,7 +2,6 @@ module Server.Landing.Template where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -23,8 +22,7 @@ template = do
       FRS.render contents
       where javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/landing.bundle.js"],
-                  --we need a global callback for grecaptha so we need to directly call the bundled code
-                  HE.script (HA.type' "text/javascript") "window.completeRegistration = function(cpt){return Landing.completeRegistration(cpt)();}; Landing.main();",
+                  HE.script (HA.type' "text/javascript") "window.completeRegistration = function(cpt){return (PS['Client.Landing.Main'] || Landing).completeRegistration(cpt)();};",
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             css = [

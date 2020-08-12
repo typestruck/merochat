@@ -29,7 +29,6 @@ import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read as DSR
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Console as EC
 import HTTPure (Response)
@@ -63,7 +62,7 @@ json' = ok' (headerContentType $ show JSON) <<< SJ.toJSON
 
 serveDevelopmentFile :: Array String -> ResponseEffect
 serveDevelopmentFile path = do
-      contents <- R.liftAff $ NFA.readFile (spy "ff" fullPath)
+      contents <- R.liftAff $ NFA.readFile fullPath
       ok' (contentTypeFromExtension fullPath) contents
       where clientBaseFolder = "src/client/"
             distBaseFolder = "dist/"
@@ -71,9 +70,10 @@ serveDevelopmentFile path = do
                 ["client", "media", file] -> clientBaseFolder <> "media/" <> file
                 ["client", "media", "upload", file] -> clientBaseFolder <>  "media/upload/" <> file
                 --js files are expected to be named like module.bundle.js
-                ["client", "javascript", file] -> let name = SU.fromJust <<< DA.head $ DS.split (Pattern ".") file in distBaseFolder <> "Client." <> name <> ".Main/"  <> file
+                -- they are served from parcel output
+                ["client", "javascript", file] -> distBaseFolder <> file
                 ["client", folder, file] -> clientBaseFolder <> folder <> "/" <> file
-                _ -> "invalidFolder" <> "invalidFile"
+                _ -> distBaseFolder <> DS.joinWith "/" path
 
 contentTypeFromExtension :: String -> Headers
 contentTypeFromExtension = headerContentType <<< show <<< read <<< NP.extname

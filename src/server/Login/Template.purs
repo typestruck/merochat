@@ -2,7 +2,6 @@ module Server.Login.Template where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
