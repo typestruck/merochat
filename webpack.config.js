@@ -1,36 +1,21 @@
 'use strict';
 
 const path = require('path');
-//const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
-const isWebpackDevServer = process.argv.some(a => path.basename(a) === 'webpack-dev-server');
 const isWatch = process.argv.some(a => a === '--watch');
-
-const plugins =
-  isWebpackDevServer || !isWatch ? [] : [
-    function(){
-      this.plugin('done', function(stats){
-        process.stderr.write(stats.toString('errors-only'));
-      });
-    }
-  ]
-;
 
 module.exports = {
   mode: 'development',
   devtool: 'eval-source-map',
 
-  devServer: {
-    contentBase: path.resolve(__dirname, 'dist'),
-    port: 4008,
-    stats: 'errors-only'
+  entry: {
+    im: './loader/im.bundle.js',
+    landing: './loader/landing.bundle.js'
   },
-
-  entry: './loader/im.bundle.js',
 
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'im.bundle.js'
+    filename: '[name].bundle.js'
   },
 
   module: {
@@ -45,23 +30,12 @@ module.exports = {
                 'src/**/*.purs'
               ],
               spago: true,
-              watch: isWebpackDevServer || isWatch,
+              watch: isWatch,
               pscIde: true
             }
           }
         ]
-      },
-      {
-        test: /\.(png|jpg|gif)$/i,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              limit: 8192,
-            },
-          },
-        ],
-      },
+      }
     ]
   },
 
@@ -74,10 +48,10 @@ module.exports = {
     new webpack.LoaderOptionsPlugin({
       debug: true
     }),
-//     new HtmlWebpackPlugin({
-//       title: 'purescript-webpack-example',
-//       template: 'index.html',
-//       inject: false  // See stackoverflow.com/a/38292765/3067181
-//     })
-  ].concat(plugins)
+    function(){
+        this.plugin('done', function(stats){
+          process.stderr.write(stats.toString('errors-only'));
+        });
+    }
+  ]
 };

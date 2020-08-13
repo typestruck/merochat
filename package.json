@@ -11,8 +11,7 @@
     "test": "test"
   },
   "scripts": {
-    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* # & parcel watch loader/im.bundle.js ",
-    "w": "webpack --watch --progress --inline --hot"
+    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --inline --hot "
   },
   "author": "",
   "license": "CC-BY-4.0",
@@ -41,8 +40,7 @@
     "purescript-psa": "^0.7.3",
     "purs-loader": "^3.7.1",
     "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "webpack-cli": "^3.3.12"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1"

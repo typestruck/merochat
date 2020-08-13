@@ -22,7 +22,6 @@ template = do
       FRS.render contents
       where javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/landing.bundle.js"],
-                  HE.script (HA.type' "text/javascript") "window.completeRegistration = function(cpt){return (PS['Client.Landing.Main'] || Landing).completeRegistration(cpt)();};",
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             css = [
