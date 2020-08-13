@@ -52,6 +52,10 @@ type BasicUser fields = {
       fields
 }
 
+type NoPayload = Maybe Never
+
+newtype Never = Never Never
+
 newtype RegisterLoginUser = RegisterLoginUser {
       id :: PrimaryKey,
       email :: String,
@@ -145,6 +149,7 @@ data ResponseError =
 derive instance newtypeMDateTime :: Newtype MDateTime _
 derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 
+derive instance genericGenerateNever :: Generic Never _
 derive instance genericGeneratePayload :: Generic GeneratePayload _
 derive instance genericSettingsPayload :: Generic SettingsPayload _
 derive instance genericResetPassword :: Generic ResetPassword _
@@ -225,6 +230,8 @@ parseInt data_
 
 instance encodeJsonResetPassword :: EncodeJson ResetPassword where
       encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonNever :: EncodeJson Never where
+      encodeJson never = DAEGR.genericEncodeJson never
 instance encodeJsonEditor :: EncodeJson Editor where
       encodeJson editor = fromEditor editor
 instance encodeJsonGender :: EncodeJson Gender where

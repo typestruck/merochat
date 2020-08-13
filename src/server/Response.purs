@@ -18,15 +18,11 @@ import Shared.Types
 
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
-import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode as DAE
 import Data.Argonaut.Encode.Generic.Rep (class EncodeRep)
-import Data.Argonaut.Parser as DAP
-import Data.Array as DA
 import Data.Either as DET
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read as DSR
 import Effect (Effect)
@@ -37,7 +33,6 @@ import HTTPure.Body (class Body)
 import HTTPure.Headers (Headers)
 import Node.FS.Aff as NFA
 import Node.Path as NP
-import Partial.Unsafe as PU
 import Run (Run, AFF, EFFECT)
 import Run as R
 import Run.Except as RE
@@ -49,12 +44,11 @@ import Shared.Unsafe as SU
 html :: forall e. String -> Run (aff :: AFF | e) Response
 html contents = ok' (headerContentType $ show HTML) contents
 
---REFACTOR: user Shared.Json
 -- | Parses the request body as JSON, feeds it to a handler and serializes the return as a JSON response
 json :: forall a b c d. Generic a b => EncodeRep b => Generic c d => DecodeRep d => String -> (c -> ServerEffect a) -> ResponseEffect
-json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) runHandler $ DAP.jsonParser body
+json body handler = DET.either (RE.throw <<< InternalError <<< { reason : _ }) runHandler $ SJ.fromJSON body
       where runHandler arg = do
-                  response <- handler $ PU.unsafePartial (DET.fromRight $ DADGR.genericDecodeJson arg)
+                  response <- handler arg
                   json' response
 
 json' :: forall response r. Generic response r => EncodeRep r => response -> ResponseEffect

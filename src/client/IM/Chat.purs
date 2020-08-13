@@ -1,7 +1,6 @@
 -- | This module takes care of websocket plus chat editor events.
 module Client.IM.Chat where
 
-import Debug.Trace
 import Prelude
 import Shared.IM.Types
 import Shared.Types
@@ -16,11 +15,10 @@ import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.Suggestion as CISG
 import Client.IM.WebSocket as CIW
-import Data.Array ((:), (!!))
+import Data.Array ((!!))
 import Data.Array as DA
 import Data.DateTime as DT
 import Data.Either (Either(..))
-import Data.Either as DET
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -29,18 +27,12 @@ import Data.Newtype as DN
 import Data.Nullable (null)
 import Data.String as DS
 import Data.String.CodeUnits as DSC
-import Data.String.Regex (Regex)
-import Data.String.Regex as DSR
-import Data.String.Regex.Flags (noFlags)
-import Data.String.Regex.Unsafe as DSRU
-import Data.Time.Duration (Seconds(..))
+import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
-import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Console as EC
 import Effect.Now as EN
-import Flame (ListUpdate, (:>))
+import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
@@ -48,19 +40,15 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
-import Signal.Channel (Channel)
 import Web.DOM (Element)
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
-import Web.File.FileList as WFF
-import Web.File.FileReader (FileReader, fileReader)
+import Web.File.FileReader (FileReader)
 import Web.HTML.Event.DataTransfer as WHEDT
-import Web.HTML.Event.DragEvent (DragEvent)
 import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHEL
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
-import Web.UIEvent.KeyboardEvent (KeyboardEvent)
 import Web.UIEvent.KeyboardEvent as WUK
 
 --purty is fucking terrible
@@ -69,8 +57,8 @@ import Web.UIEvent.KeyboardEvent as WUK
 getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#image-file-input"
 
-setUpMessage :: IMModel -> Event -> NextMessage
-setUpMessage model@(IMModel { emojisVisible, messageEnter }) event = model :> [beforeSend]
+setUpMessage :: Event -> IMModel -> NextMessage
+setUpMessage event model@(IMModel { emojisVisible, messageEnter }) = model :> [beforeSend]
       where beforeSend = liftEffect do
                   let   textarea = SU.fromJust  do
                               target <- WEE.target event
@@ -83,15 +71,14 @@ setUpMessage model@(IMModel { emojisVisible, messageEnter }) event = model :> [b
             keyboardEvent = SU.fromJust $ WUK.fromEvent event
             key = WUK.key keyboardEvent
 
-beforeSendMessage :: IMModel -> Boolean -> String -> MoreMessages
-beforeSendMessage model@(IMModel {
+beforeSendMessage :: Boolean -> String -> IMModel -> MoreMessages
+beforeSendMessage sent content model@(IMModel {
       chatting,
       user: IMUser { id },
       contacts,
       suggesting,
       suggestions
-}) sent content
-      | sent = snocContact :> [ nextSendMessage ]
+})    | sent = snocContact :> [ nextSendMessage ]
 
       where snocContact = case Tuple chatting suggesting of
                   Tuple Nothing (Just index) ->
@@ -199,19 +186,19 @@ makeTurn (Contact { chatStarter, chatAge, history }) sender =
             countCharacters total (HistoryMessage { content }) = total + DSC.length content
             getDate = DN.unwrap <<< _.date <<< DN.unwrap
 
-receiveMessage :: WebSocket -> String -> Boolean -> IMModel -> WebSocketPayloadClient -> MoreMessages
-receiveMessage webSocket token isFocused model@(IMModel {
+receiveMessage :: WebSocket -> String -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
+receiveMessage webSocket token isFocused wsPayload model@(IMModel {
       user: IMUser { id: recipientID },
       contacts,
       suggestions,
       blockedUsers
-}) = case _ of
+}) = case wsPayload of
       Received { previousID, id } ->
             F.noMessages <<< SN.updateModel model $ _ {
                   contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
             }
       BeenBlocked { id } ->
-            F.noMessages $ CISG.removeBlockedUser model id
+            F.noMessages $ CISG.removeBlockedUser id model
       ClientMessage payload@{ userID } ->
             if DA.elem userID blockedUsers then
                   F.noMessages model
@@ -306,28 +293,25 @@ updateTemporaryID contacts previousID id = do
 
 applyMarkup :: Markup -> IMModel -> MoreMessages
 applyMarkup markup model@(IMModel { message }) = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
+      where apply markup value = do
+                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+                  let   Tuple before after = case markup of
+                              Bold -> Tuple "**" "**"
+                              Italic -> Tuple "*" "*"
+                              Strike -> Tuple "~" "~"
+                              Heading -> Tuple "## " ""
+                              OrderedList -> Tuple "1. " ""
+                              UnorderedList -> Tuple "- " ""
+                  start <- WHHTA.selectionStart textarea
+                  end <- WHHTA.selectionEnd textarea
+                  let   beforeSize = DS.length before
+                        beforeSelection = DS.take start value
+                        selected = DS.take (end - start) $ DS.drop start value
+                        afterSelection = DS.drop end value
+                        newValue = beforeSelection <> before <> selected <> after <> afterSelection
+                  pure $ SetMessageContent (Just $ end + beforeSize) newValue
 
-apply :: Markup -> String -> Effect IMMessage
-apply markup value = do
-      textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
-      let   Tuple before after = case markup of
-                  Bold -> Tuple "**" "**"
-                  Italic -> Tuple "*" "*"
-                  Strike -> Tuple "~" "~"
-                  Heading -> Tuple "## " ""
-                  OrderedList -> Tuple "1. " ""
-                  UnorderedList -> Tuple "- " ""
-      start <- WHHTA.selectionStart textarea
-      end <- WHHTA.selectionEnd textarea
-      let   beforeSize = DS.length before
-            beforeSelection = DS.take start value
-            selected = DS.take (end - start) $ DS.drop start value
-            afterSelection = DS.drop end value
-            newValue = beforeSelection <> before <> selected <> after <> afterSelection
-      pure $ SetMessageContent (Just $ end + beforeSize) newValue
-
---REFACTOR: this can be abstracted (together with profile updates?)
-preview ::  IMModel -> NoMessages
+preview :: IMModel -> NoMessages
 preview model =
       F.noMessages <<< SN.updateModel model $ _ {
             isPreviewing = true
@@ -356,8 +340,8 @@ selectImage model = CIF.nothingNext model $ liftEffect do
       input <- getFileInput
       CCF.triggerFileSelect input
 
-toggleImageForm :: IMModel -> Maybe String -> NoMessages
-toggleImageForm model base64 =
+toggleImageForm :: Maybe String -> IMModel -> NoMessages
+toggleImageForm base64 model =
       F.noMessages <<< SN.updateModel model $ _ {
             selectedImage = base64
       }
@@ -368,8 +352,8 @@ setImageCaption caption model =
             imageCaption = Just caption
       }
 
-catchFile :: IMModel -> FileReader -> Event -> NoMessages
-catchFile model fileReader event = CIF.nothingNext model $ liftEffect do
+catchFile :: FileReader -> Event -> IMModel -> NoMessages
+catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
       CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
       CCD.preventStop event
 
@@ -393,22 +377,22 @@ toggleLinkForm model@(IMModel { linkFormVisible }) =
             linkText = Nothing
       }
 
-setEmoji :: IMModel -> Event -> NextMessage
-setEmoji model@(IMModel { message }) event = SN.updateModel model (_ {
+setEmoji :: Event -> IMModel -> NextMessage
+setEmoji event model@(IMModel { message }) = SN.updateModel model (_ {
       emojisVisible = false
 }) :> [liftEffect do
       emoji <- CCD.innerTextFromTarget event
       setAtCursor message emoji
 ]
 
-setLinkText :: IMModel -> String -> NoMessages
-setLinkText model text  =
+setLinkText :: String -> IMModel -> NoMessages
+setLinkText text model =
       F.noMessages <<< SN.updateModel model $ _ {
             linkText = Just text
       }
 
-setLink :: IMModel -> String -> NoMessages
-setLink model link =
+setLink :: String -> IMModel -> NoMessages
+setLink link model =
       F.noMessages <<< SN.updateModel model $ _ {
             link = Just link
       }

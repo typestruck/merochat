@@ -81,26 +81,25 @@ update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, token, fileReader} model  =
       case _ of
             --chat
-            --REFACTOR: decide if model should always be first or last parameter
             InsertLink -> CIC.insertLink model
-            SetLink link -> CIC.setLink model link
-            SetLinkText text -> CIC.setLinkText model text
+            SetLink link -> CIC.setLink link model
+            SetLinkText text -> CIC.setLinkText text model
             ToggleLinkForm -> CIC.toggleLinkForm model
             ToggleEmojisVisible -> CIC.toggleEmojisVisible model
-            DropFile event -> CIC.catchFile model fileReader event
-            SetUpMessage event -> CIC.setUpMessage model event
-            BeforeSendMessage sent content -> CIC.beforeSendMessage model sent content
+            DropFile event -> CIC.catchFile fileReader event model
+            SetUpMessage event -> CIC.setUpMessage event model
+            BeforeSendMessage sent content -> CIC.beforeSendMessage sent content model
             SendMessage date -> CIC.sendMessage webSocket token date model
             SetMessageContent cursor content -> CIC.setMessage cursor content model
-            ReceiveMessage payload isFocused -> CIC.receiveMessage webSocket token isFocused model payload
+            ReceiveMessage payload isFocused -> CIC.receiveMessage webSocket token isFocused payload model
             Apply markup -> CIC.applyMarkup markup model
             Preview -> CIC.preview model
             SelectImage -> CIC.selectImage model
             ExitPreview -> CIC.exitPreview model
-            ToggleImageForm maybeBase64 -> CIC.toggleImageForm model maybeBase64
+            ToggleImageForm maybeBase64 -> CIC.toggleImageForm maybeBase64 model
             SetImageCaption caption -> CIC.setImageCaption caption model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
-            SetEmoji event -> CIC.setEmoji model event
+            SetEmoji event -> CIC.setEmoji event model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket token model
@@ -114,26 +113,27 @@ update { webSocketRef, token, fileReader} model  =
             DisplayHistory (HistoryPayload history) -> CIH.displayHistory history model
             --suggestion
             PreviousSuggestion -> CIS.previousSuggestion model
-            BlockUser id -> CIS.blockUser webSocket token model id
+            BlockUser id -> CIS.blockUser webSocket token id model
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions (SuggestionsPayload suggestions) -> CIS.displayMoreSuggestions suggestions model
             --user menu
             ConfirmLogout -> CIU.confirmLogout model
-            Logout confirmed -> CIU.logout model confirmed
-            ShowUserContextMenu event -> CIU.showUserContextMenu model event
-            ToggleProfileSettings toggle -> CIU.toggleProfileSettings model toggle
+            Logout confirmed -> CIU.logout confirmed model
+            ShowUserContextMenu event -> CIU.showUserContextMenu event model
+            ToggleProfileSettings toggle -> CIU.toggleProfileSettings toggle model
+            --REFACTOR: move to the apt file
             SetModalContents file root (ProfileSettingsPayload html) -> CIF.nothingNext model $ CIU.loadModal root html file
             SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
             --main
             SetName name -> setName name model
-            PreventStop event -> preventStop model event
+            PreventStop event -> preventStop event model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
             setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
                   user = SN.updateUser user $ _ {
                         name = name
                   }
             }
-            preventStop model event = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
+            preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
 windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
 windowsFocus channel = do

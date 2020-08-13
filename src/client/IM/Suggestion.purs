@@ -58,20 +58,19 @@ displayMoreSuggestions suggestions =
             suggestions
       }
 
-blockUser :: WebSocket -> String -> IMModel -> PrimaryKey -> NextMessage
-blockUser webSocket token model@(IMModel { blockedUsers  }) blocked =
+blockUser :: WebSocket -> String -> PrimaryKey -> IMModel -> NextMessage
+blockUser webSocket token blocked model@(IMModel { blockedUsers }) =
       updatedModel :> [do
-            --REFACTOR: some Never instead of this type casting
-            Ok <- CCN.post' (Block { id: blocked }) (Nothing :: Maybe IMUser)
+            Ok <- CCN.post' (Block { id: blocked }) (Nothing :: NoPayload)
             liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked, token }
             pure Nothing
       ]
-      where updatedModel = SN.updateModel (removeBlockedUser model blocked) $ _ {
+      where updatedModel = removeBlockedUser blocked <<< SN.updateModel model $ _ {
                   blockedUsers = blocked : blockedUsers
             }
 
-removeBlockedUser :: IMModel -> PrimaryKey -> IMModel
-removeBlockedUser model@(IMModel { contacts, suggestions }) blocked =
+removeBlockedUser :: PrimaryKey -> IMModel -> IMModel
+removeBlockedUser blocked model@(IMModel { contacts, suggestions }) =
       SN.updateModel model $ _ {
             contacts = DA.filter ((blocked /= _) <<< fromContact) contacts,
             suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions

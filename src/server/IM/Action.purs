@@ -20,6 +20,7 @@ import Node.FS.Sync as NFS
 import Run as R
 import Server.File (allowedMediaTypes)
 import Server.IM.Database as SID
+import Shared.File (maxImageSize)
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
 
@@ -65,7 +66,7 @@ insertMessage id otherID content = do
                               if FD.any (_ == mediaType) $ DH.keys allowedMediaTypes then do
                                     buffer <- R.liftEffect $ NB.fromString base64 Base64
                                     bufferSize <- R.liftEffect $ NB.size buffer
-                                    if bufferSize > 500 * 1024 then
+                                    if bufferSize > maxImageSize then
                                     --REFACTOR: fix when sockets have error handling
                                           pure ""
                                      else do

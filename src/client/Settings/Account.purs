@@ -17,7 +17,7 @@ import Record as R
 import Shared.Newtype as SN
 import Shared.Router as SRO
 import Shared.Settings.Types (SettingsMessage(..), SettingsModel(..))
-import Shared.Types (Ok(..), Route(..))
+import Shared.Types (Ok(..), Route(..), NoPayload)
 
 update :: AffUpdate SettingsModel SettingsMessage
 update { model, message } =
@@ -63,7 +63,7 @@ terminateAccount :: Aff (SettingsModel -> SettingsModel)
 terminateAccount = do
         confirmed <- liftEffect $ CCD.confirm "This action cannot be undone! Are you sure you want to terminate your account?"
         when confirmed do
-                Ok <- CCNT.post' Terminate (Nothing :: Maybe SettingsModel)
+                Ok <- CCNT.post' Terminate (Nothing :: NoPayload)
                 liftEffect CCL.logout
         FAE.noChanges
 

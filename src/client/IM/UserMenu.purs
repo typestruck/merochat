@@ -20,16 +20,16 @@ import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 
-logout :: IMModel -> Boolean -> MoreMessages
-logout model confirmed = CIF.nothingNext model <<< liftEffect $ when confirmed CCLO.logout
+logout :: Boolean -> IMModel -> MoreMessages
+logout confirmed model = CIF.nothingNext model <<< liftEffect $ when confirmed CCLO.logout
 
 confirmLogout :: IMModel -> NoMessages
 confirmLogout = (_ :> [Just <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
 
 --PERFORMANCE: load bundles only once
-toggleProfileSettings :: IMModel -> ProfileSettingsToggle -> MoreMessages
-toggleProfileSettings model =
-        case _ of
+toggleProfileSettings :: ProfileSettingsToggle -> IMModel -> MoreMessages
+toggleProfileSettings psToggle model =
+        case psToggle of
                 ShowProfile -> showTab Profile ShowProfile "profile.bundle.js" "#profile-edition-root"
                 ShowSettings -> showTab Settings ShowSettings "settings.bundle.js" "#settings-edition-root"
                 Hidden -> CIF.justNext (SN.updateModel model $ _ { profileSettingsToggle = Hidden }) <<< SetModalContents Nothing "#profile-edition-root" $ ProfileSettingsPayload "Loading..."
@@ -46,8 +46,8 @@ loadModal root html file = liftEffect do
                 Just name -> CCD.loadScript name
                 Nothing -> pure unit
 
-showUserContextMenu :: IMModel -> Event -> MoreMessages
-showUserContextMenu model@(IMModel { userContextMenuVisible }) event
+showUserContextMenu :: Event -> IMModel -> MoreMessages
+showUserContextMenu event model@(IMModel { userContextMenuVisible })
         | userContextMenuVisible =
                 F.noMessages <<< SN.updateModel model $ _ { userContextMenuVisible = false }
         | otherwise =

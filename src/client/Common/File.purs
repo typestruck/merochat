@@ -4,9 +4,11 @@ import Prelude
 
 import Client.Common.DOM as CCD
 import Client.Common.Notification as CCN
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Foreign as F
+import Shared.File (maxImageSize)
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
@@ -48,7 +50,7 @@ readBase64 fileReader maybeFileList = do
             Nothing -> pure unit
             Just file ->
                   --REFACTOR: single abstraction for checking file sizes
-                  if WFF.size file > 500.0 * 1024.0 then
+                  if WFF.size file > DI.toNumber maxImageSize then
                         CCN.alert "Max allowed size for images is 500kb"
                   else
                         WFR.readAsDataURL (WFF.toBlob file) fileReader
