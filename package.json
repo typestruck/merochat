@@ -14,7 +14,7 @@
     "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --inline --hot "
   },
   "author": "Eduardo Asafe<e@asafe.dev>",
-  "license": "GPL-3.0-or-later",
+  "license": "AGPL-3.0-or-later",
   "dependencies": {
     "decimal.js": "^10.2.0",
     "insane": "^2.6.2",
