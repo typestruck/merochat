@@ -46,11 +46,12 @@ presentUser id = SD.single' presentUserQuery $ presentUserParameters id
 --another thing to think is ordering by online status
 suggest :: PrimaryKey -> ServerEffect (Array IMUser)
 suggest id =
-      SD.select (Query ("select" <> userPresentationFields <> "from users u where id not in (1, $1) and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) order by random() limit 20")) $ Row1 id
+      SD.select (Query ("select" <> userPresentationFields <> "from users u where id <> $1 and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) and not exists (select 1 from blocked where blocker in ($1, u.id) and blocked in ($1, u.id)) order by random() limit 20")) $ Row1 id
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
 presentContacts id skip = SD.select (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
+                                         where not exists (select 1 from blocked where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
                                           order by date desc limit $2 offset $3""")) (id /\ contactsPerPage /\ skip)
 
 presentSingleContact :: PrimaryKey -> PrimaryKey -> ServerEffect Contact
@@ -79,3 +80,6 @@ insertMessage sender recipient content = SD.withTransaction $ \connection -> do
 --when using an array parameter, any must be used instead of in
 markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit
 markRead recipient ids = SD.execute (Query "update messages set status = 1 where recipient = $1 and id = any($2)") (recipient /\ ids)
+
+insertBlock :: PrimaryKey -> PrimaryKey -> ServerEffect Unit
+insertBlock blocker blocked= void $ SD.insert (Query "insert into blocked(blocker, blocked) values ($1, $2)") (blocker /\ blocked)

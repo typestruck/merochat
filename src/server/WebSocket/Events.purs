@@ -6,6 +6,7 @@ import Shared.IM.Types
 import Shared.Types
 
 import Data.Either (Either(..))
+import Data.Either as DE
 import Data.Int53 (Int53)
 import Data.Int53 as DI
 import Data.Map (Map)
@@ -22,11 +23,12 @@ import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Server.IM.Action as SIA
 import Node.HTTP (Request)
+import Partial.Unsafe as PU
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
@@ -44,36 +46,35 @@ handleClose (Configuration configuration) allConnections request _ _ = pure unit
 --REFACTOR: untangle the im logic from the websocket logic
 handleMessage :: WebSocketConnection -> WebSocketMessage -> WebSocketEffect
 handleMessage connection (WebSocketMessage message) = do
-      possiblePayload <- pure $ SJ.fromJSON message
-      case possiblePayload of
-            Right payload -> do
-                  { allConnections } <- RR.ask
-                  case payload of
-                        Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
-                        ReadMessages { token, ids } -> withUser token $ \userID -> SID.markRead userID ids
-                        ServerMessage {id, userID: recipient, token, content, turn} -> withUser token $ \userID -> do
-                              date <- R.liftEffect $ map MDateTime EN.nowDateTime
-                              Tuple messageID finalContent <- SIA.insertMessage userID recipient content
-                              sendMessage connection <<< SJ.toJSON $ Received {
-                                    previousID: id,
-                                    id: messageID
-                              }
+      let payload = PU.unsafePartial (DE.fromRight $ SJ.fromJSON message)
+      { allConnections } <- RR.ask
+      case payload of
+            Connect token -> withUser token $ \userID -> R.liftEffect $ ER.modify_ (DM.insert userID connection) allConnections
+            ReadMessages { token, ids } -> withUser token $ \userID -> SID.markRead userID ids
+            ToBlock { id, token } -> withUser token $ \userID -> do
+                  possibleConnection <- R.liftEffect (DM.lookup id <$> ER.read allConnections)
+                  whenJust possibleConnection $ \recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ BeenBlocked { id: userID }
+            ServerMessage {id, userID: recipient, token, content, turn} -> withUser token $ \userID -> do
+                  date <- R.liftEffect $ map MDateTime EN.nowDateTime
+                  Tuple messageID finalContent <- SIA.insertMessage userID recipient content
+                  sendMessage connection <<< SJ.toJSON $ Received {
+                        previousID: id,
+                        id: messageID
+                  }
 
-                              possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
-                              whenJust possibleRecipientConnection $ \recipientConnection ->
-                                    sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
-                                          id : messageID,
-                                          userID,
-                                          content: finalContent,
-                                          date
-                                    }
-                              --pass along karma calculation to wheel
-                              whenJust turn (R.liftEffect <<< SWL.sendMessage userID recipient)
-            Left error -> do
-                  log $ "received faulty payload " <> error
-
+                  possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
+                  whenJust possibleRecipientConnection $ \recipientConnection ->
+                        sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
+                              id : messageID,
+                              userID,
+                              content: finalContent,
+                              date
+                        }
+                  --pass along karma calculation to wheel
+                  whenJust turn (R.liftEffect <<< SWL.sendMessage userID recipient)
       where log = R.liftEffect <<< EC.log
             sendMessage connection' = R.liftEffect <<< SW.sendMessage connection' <<< WebSocketMessage
+            --REFACTOR: use assertion instead of callback
             withUser token f = do
                   {configuration: Configuration configuration} <- RR.ask
                   user <- R.liftEffect $ ST.userIDFromToken configuration.tokenSecretPOST token

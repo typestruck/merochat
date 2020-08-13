@@ -63,6 +63,8 @@ router request@{ headers, path, method } =
             SIR.history request
        else if paths == SRD.singleContact then
             SIR.singleContact request
+       else if paths == SRD.blockUser then
+            SIR.blockUser request
        --profile
        else if paths == SRO.fromRoute Profile then
             SPR.profile request
@@ -85,7 +87,6 @@ router request@{ headers, path, method } =
        --local files and 404 for development
        else do
             { configuration : Configuration configuration } <- RR.ask
-
             if configuration.development && (path !@ 0 == "client" || DS.contains (Pattern "js.map") (path !@ 0) )then
                   SRR.serveDevelopmentFile path
              else if configuration.development && path !@ 0 == "favicon.ico" then

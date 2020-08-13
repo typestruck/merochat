@@ -60,3 +60,12 @@ suggestions request = do
       userID <- SRS.checkLogin request
       suggested <- SIA.suggest userID
       SRR.json' $ SuggestionsPayload suggested
+
+blockUser :: Request -> ResponseEffect
+blockUser request = do
+      userID <- SRS.checkLogin request
+      case SR.toRoute $ H.fullPath request of
+            Right (Block { id }) -> do
+                  response <- SIA.blockUser userID id
+                  SRR.json' response
+            _ -> SRR.throwBadRequest "invalid parameters"

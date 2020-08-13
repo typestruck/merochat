@@ -116,7 +116,8 @@ data Route =
       Recover { token :: Maybe String } |
       SingleContact { id :: PrimaryKey } |
       Contacts { skip :: Int } |
-      History { skip :: Int, with :: PrimaryKey }
+      History { skip :: Int, with :: PrimaryKey } |
+      Block { id :: PrimaryKey }
 
 data Generate =
       Name |
