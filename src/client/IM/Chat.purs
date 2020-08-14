@@ -102,8 +102,8 @@ beforeSendMessage sent content model@(IMModel {
                   message = Just content
             }
 
-sendMessage :: WebSocket -> String -> MDateTime -> IMModel -> NoMessages
-sendMessage webSocket token date = case _ of
+sendMessage :: WebSocket -> MDateTime -> IMModel -> NoMessages
+sendMessage webSocket date = case _ of
       model@(IMModel {
             user: IMUser { id: senderID },
             chatting: Just chatting,
@@ -133,13 +133,12 @@ sendMessage webSocket token date = case _ of
                         contacts = SU.fromJust $ DA.updateAt chatting updatedChatting contacts
                  }
                  turn = makeTurn updatedChatting senderID
-            in --needs to handle failure!
+            in
                   CIF.nothingNext updatedModel $ liftEffect do
                         CIS.scrollLastMessage
                         CIW.sendPayload webSocket $ ServerMessage {
                               id: newTemporaryID,
                               userID: recipientID,
-                              token: token,
                               content: asMessageContent message imageCaption selectedImage,
                               turn
                         }
@@ -186,8 +185,8 @@ makeTurn (Contact { chatStarter, chatAge, history }) sender =
             countCharacters total (HistoryMessage { content }) = total + DSC.length content
             getDate = DN.unwrap <<< _.date <<< DN.unwrap
 
-receiveMessage :: WebSocket -> String -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
-receiveMessage webSocket token isFocused wsPayload model@(IMModel {
+receiveMessage :: WebSocket  -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
+receiveMessage webSocket isFocused wsPayload model@(IMModel {
       user: IMUser { id: recipientID },
       contacts,
       suggestions,
@@ -212,7 +211,6 @@ receiveMessage webSocket token isFocused wsPayload model@(IMModel {
                               chatting: index,
                               userID: recipientID,
                               contacts,
-                              token,
                               webSocket
                         }
                         in
@@ -300,8 +298,8 @@ applyMarkup markup model@(IMModel { message }) = model :> [liftEffect (Just <$> 
                               Italic -> Tuple "*" "*"
                               Strike -> Tuple "~" "~"
                               Heading -> Tuple "## " ""
-                              OrderedList -> Tuple "1. " ""
-                              UnorderedList -> Tuple "- " ""
+                              OrderedList -> Tuple "\n1. " ""
+                              UnorderedList -> Tuple "\n- " ""
                   start <- WHHTA.selectionStart textarea
                   end <- WHHTA.selectionEnd textarea
                   let   beforeSize = DS.length before

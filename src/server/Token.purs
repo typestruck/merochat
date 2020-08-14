@@ -28,7 +28,6 @@ hashPassword password = do
 createToken :: Int53 -> ServerEffect Token
 createToken id = do
       { configuration : Configuration configuration } <- RR.ask
-
       tokenGET <- map NSJ.toString <<< R.liftEffect <<< NSJ.encode configuration.tokenSecretGET NSJ.HS512 $ show id
       tokenPOST <- map NSJ.toString <<< R.liftEffect <<< NSJ.encode configuration.tokenSecretPOST NSJ.HS512 $ show id
       pure $ Token { tokenGET, tokenPOST }

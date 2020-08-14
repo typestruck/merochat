@@ -50,8 +50,8 @@ resumeChat searchID model@(IMModel { contacts, chatting }) =
                         CIF.next $ FetchHistory shouldFetchChatHistory
                   ]
 
-markRead :: WebSocket -> String -> IMModel -> MoreMessages
-markRead webSocket token =
+markRead :: WebSocket -> IMModel -> MoreMessages
+markRead webSocket =
       case _ of
             model@(IMModel {
                   user: IMUser { id: userID },
@@ -59,7 +59,6 @@ markRead webSocket token =
                   chatting: Just index
             }) -> updateReadHistory model {
                   chatting: index,
-                  token,
                   webSocket,
                   userID,
                   contacts
@@ -67,13 +66,12 @@ markRead webSocket token =
             model -> F.noMessages model
 
 updateReadHistory :: IMModel -> {
-      token :: String,
       userID :: PrimaryKey,
       webSocket :: WebSocket,
       contacts :: Array Contact,
       chatting :: Int
 } -> MoreMessages
-updateReadHistory model { token, webSocket, chatting, userID, contacts } =
+updateReadHistory model { webSocket, chatting, userID, contacts } =
       let contactRead@(Contact { history }) = contacts !@ chatting
           messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
       in if DA.null messagesRead then
@@ -95,10 +93,7 @@ updateReadHistory model { token, webSocket, chatting, userID, contacts } =
                   contacts = SU.fromJust $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
             }
 
-            confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages {
-                  ids: messages,
-                  token
-            }
+            confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages { ids: messages }
 
             scroll = liftEffect CIS.scrollLastMessage
 

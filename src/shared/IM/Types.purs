@@ -199,21 +199,20 @@ data IMMessage =
       PreventStop Event |
       SetName String
 
+data WebSocketTokenPayloadServer = WebSocketTokenPayloadServer String WebSocketPayloadServer
+
 data WebSocketPayloadServer =
-      Connect String |
+      Connect |
       ServerMessage (BasicMessage (
             content :: MessageContent,
-            token :: String,
             userID :: PrimaryKey,
             turn :: Maybe Turn
       )) |
       ReadMessages {
-            token :: String,
             --alternatively, update by user?
             ids :: Array PrimaryKey
       } |
       ToBlock {
-            token :: String,
             id :: PrimaryKey
       }
 
@@ -225,6 +224,7 @@ data WebSocketPayloadClient =
       } |
       BeenBlocked { id :: PrimaryKey }
 
+derive instance genericWebSocketTokenPayloadServer :: Generic WebSocketTokenPayloadServer _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _
 derive instance genericContactsPayload :: Generic ContactsPayload _
@@ -279,6 +279,8 @@ instance showMessageStatus :: Show MessageStatus where
 instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
       show = DGRS.genericShow
 
+instance encodeJsonWebSocketPayloadServer :: EncodeJson WebSocketPayloadServer where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageContent :: EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonContact :: EncodeJson Contact where
@@ -296,6 +298,8 @@ instance encodeJsonTurn :: EncodeJson Turn where
 instance encodeJsonStats :: EncodeJson Stats where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonContact :: DecodeJson Contact where
