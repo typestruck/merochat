@@ -17,7 +17,9 @@ import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (Pool)
 import Effect (Effect)
+import Effect.Aff as CMEC
 import Effect.Aff as EA
+import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Console as EC
 import Effect.Exception (Error)
 import Effect.Now as EN
@@ -54,18 +56,19 @@ handleMessage payload = do
             ReadMessages { ids } -> SID.markRead sessionUserID ids
             ToBlock { id } -> do
                   possibleConnection <- R.liftEffect (DM.lookup id <$> ER.read allConnections)
-                  whenJust possibleConnection $ \recipientConnection -> sendMessage recipientConnection <<< SJ.toJSON $ BeenBlocked { id: sessionUserID }
+                  whenJust possibleConnection $ \recipientConnection -> sendWebSocketMessage recipientConnection $ BeenBlocked { id: sessionUserID }
             ServerMessage {id, userID: recipient, content, turn} -> do
                   date <- R.liftEffect $ map MDateTime EN.nowDateTime
                   Tuple messageID finalContent <- SIA.insertMessage sessionUserID recipient content
-                  sendMessage connection <<< SJ.toJSON $ Received {
+                  sendWebSocketMessage connection $ Received {
                         previousID: id,
-                        id: messageID
+                        id: messageID,
+                        userID: sessionUserID
                   }
 
                   possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
                   whenJust possibleRecipientConnection $ \recipientConnection ->
-                        sendMessage recipientConnection <<< SJ.toJSON $ ClientMessage {
+                        sendWebSocketMessage recipientConnection $ ClientMessage {
                               id : messageID,
                               userID: sessionUserID,
                               content: finalContent,
@@ -73,8 +76,7 @@ handleMessage payload = do
                         }
                   --pass along karma calculation to wheel
                   whenJust turn (R.liftEffect <<< SWL.sendMessage sessionUserID recipient)
-      where sendMessage connection' = R.liftEffect <<< SW.sendMessage connection' <<< WebSocketMessage
-            whenJust :: forall v. Maybe v -> (v -> WebSocketEffect) -> WebSocketEffect
+      where whenJust :: forall v. Maybe v -> (v -> WebSocketEffect) -> WebSocketEffect
             whenJust value f = case value of
                   Nothing -> pure unit
                   Just v -> f v
@@ -91,5 +93,11 @@ handleConnection c@(Configuration configuration) pool allConnections connection 
                         Nothing -> do
                               SW.close connection
                               EC.log "closed due to auth error"
-                        Just sessionUserID ->
-                              EA.launchAff_ <<< R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader { allConnections, pool, sessionUserID, connection } $ handleMessage payload
+                        Just sessionUserID -> do
+                              let run = R.runBaseAff' <<< RE.catch (reportError payload) <<< RR.runReader { allConnections, pool, sessionUserID, connection } $ handleMessage payload
+                              EA.launchAff_ $ run `CMEC.catchError` (reportError payload)
+            reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> a -> b Unit
+            reportError = const <<< sendWebSocketMessage connection <<< PayloadError
+
+sendWebSocketMessage :: forall b. MonadEffect b => WebSocketConnection -> WebSocketPayloadClient -> b Unit
+sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJSON

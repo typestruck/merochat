@@ -20,6 +20,7 @@ import Node.FS.Sync as NFS
 import Run as R
 import Server.File (allowedMediaTypes)
 import Server.IM.Database as SID
+import Server.Response as SRR
 import Shared.File (maxImageSize)
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
@@ -67,17 +68,17 @@ insertMessage id otherID content = do
                                     buffer <- R.liftEffect $ NB.fromString base64 Base64
                                     bufferSize <- R.liftEffect $ NB.size buffer
                                     if bufferSize > maxImageSize then
-                                    --REFACTOR: fix when sockets have error handling
-                                          pure ""
+                                          invalidImage
                                      else do
                                           uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
                                           let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
-                                          R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
+                                          R.liftEffect $ NFS.writeFile ("src/client/media/upload/" <> fileName) buffer
 
                                           pure $ "/client/media/upload/" <> fileName
                                else
-                                    pure ""
-                        _ -> pure ""
+                                    invalidImage
+                        _ -> invalidImage
+            invalidImage = SRR.throwBadRequest "Invalid image"
 
 blockUser :: PrimaryKey -> PrimaryKey -> ServerEffect Ok
 blockUser id otherID = do

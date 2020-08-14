@@ -140,6 +140,7 @@ data ProfileSettingsToggle =
       ShowSettings
 
 data MessageStatus =
+      Errored |
       Unread |
       Read
 
@@ -220,9 +221,11 @@ data WebSocketPayloadClient =
       ClientMessage ClientMessagePayload |
       Received {
             previousID :: PrimaryKey,
-            id :: PrimaryKey
+            id :: PrimaryKey,
+            userID :: PrimaryKey
       } |
-      BeenBlocked { id :: PrimaryKey }
+      BeenBlocked { id :: PrimaryKey } |
+      PayloadError WebSocketPayloadServer
 
 derive instance genericWebSocketTokenPayloadServer :: Generic WebSocketTokenPayloadServer _
 derive instance genericMessageContent :: Generic MessageContent _
@@ -441,16 +444,24 @@ instance boundedMessageStatus :: Bounded MessageStatus where
 instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
       cardinality = Cardinality 1
 
-      fromEnum Unread = 0
-      fromEnum Read = 1
+      fromEnum = case _ of
+            Errored -> -1
+            Unread -> 0
+            Read -> 1
 
-      toEnum 0 = Just Unread
-      toEnum 1 = Just Read
-      toEnum _ = Nothing
+      toEnum = case _ of
+            -1 -> Just Errored
+            0 -> Just Unread
+            1 -> Just Read
+            _ -> Nothing
 
 instance enumMessageStatus :: Enum MessageStatus where
-      succ Unread = Just Read
-      succ Read = Nothing
+      succ = case _ of
+            Errored -> Just Unread
+            Unread -> Just Read
+            Read -> Nothing
 
-      pred Unread = Nothing
-      pred Read = Just Unread
+      pred = case _ of
+            Errored -> Nothing
+            Unread -> Just Errored
+            Read -> Just Unread
