@@ -46,7 +46,7 @@ presentUser id = SD.single' presentUserQuery $ presentUserParameters id
 --another thing to think is ordering by online status
 suggest :: PrimaryKey -> ServerEffect (Array IMUser)
 suggest id =
-      SD.select (Query ("select" <> userPresentationFields <> "from users u where id <> $1 and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) and not exists (select 1 from blocked where blocker in ($1, u.id) and blocked in ($1, u.id)) order by random() limit 20")) $ Row1 id
+     SD.select (Query ("select" <> userPresentationFields <> "from users u where id <> $1 and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) and not exists (select 1 from blocked where blocker in ($1, u.id) and blocked in ($1, u.id)) order by random() limit 20")) $ Row1 id
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
 presentContacts id skip = SD.select (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>

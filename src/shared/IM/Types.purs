@@ -90,6 +90,7 @@ newtype IMModel = IMModel {
       messageEnter :: Boolean,
       link :: Maybe String,
       linkText :: Maybe String,
+      isOnline :: Boolean,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -126,7 +127,6 @@ newtype Turn = Turn {
 
 newtype SuggestionsPayload = SuggestionsPayload (Array IMUser)
 newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
-newtype SingleContactPayload = SingleContactPayload (Array Contact)
 newtype ContactsPayload = ContactsPayload (Array Contact)
 newtype ProfileSettingsPayload = ProfileSettingsPayload String
 
@@ -198,7 +198,8 @@ data IMMessage =
       InsertLink |
       --main
       PreventStop Event |
-      SetName String
+      SetName String |
+      ToggleOnline
 
 data WebSocketTokenPayloadServer = WebSocketTokenPayloadServer String WebSocketPayloadServer
 
@@ -231,7 +232,6 @@ derive instance genericWebSocketTokenPayloadServer :: Generic WebSocketTokenPayl
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _
 derive instance genericContactsPayload :: Generic ContactsPayload _
-derive instance genericSingleContactPayload :: Generic SingleContactPayload _
 derive instance genericHistoryPayload :: Generic HistoryPayload _
 derive instance genericSuggestionsPayload :: Generic SuggestionsPayload _
 derive instance genericStats :: Generic Stats _

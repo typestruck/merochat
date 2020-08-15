@@ -29,6 +29,7 @@ import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -49,7 +50,6 @@ import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHEL
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
-import Web.Socket.WebSocket as WSW
 import Web.UIEvent.KeyboardEvent as WUK
 
 --purty is fucking terrible
@@ -225,7 +225,7 @@ receiveMessage webSocket isFocused wsPayload model@(IMModel {
                  contacts = updateHistoryStatus contacts userID id
             }
             --the connection might still be open and the server haven't saved the socket
-            Connect -> CIF.nothingNext model <<< liftEffect $ WSW.close webSocket
+            Connect -> CIF.nothingNext (spy "s" model) <<< liftEffect $ CIW.close webSocket
             _ -> F.noMessages model
       where isChatting senderID { contacts, chatting } =
                   let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in

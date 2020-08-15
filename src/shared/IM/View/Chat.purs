@@ -14,7 +14,7 @@ import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
 
 chat :: IMModel -> Html IMMessage
-chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, messageEnter, emojisVisible, link, linkText, linkFormVisible }) =
+chat (IMModel { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, messageEnter, emojisVisible, link, linkText, linkFormVisible }) =
       HE.div (HA.class' "send-box") [
             HE.input [HA.id "image-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
             HE.div (HA.class' imageFormClasses) [
@@ -63,8 +63,9 @@ chat (IMModel { chatting, suggesting, isPreviewing, message, selectedImage, mess
                               HA.rows 1,
                               HA.class' "chat-input",
                               HA.id "chat-input",
-                              HA.placeholder "Type a message or drag files here",
+                              HA.placeholder $ if isOnline then "Type a message or drag files here" else "Waiting for connection...",
                               HA.autofocus true,
+                              HA.disabled isOnline,
                               HA.onKeyup' SetUpMessage,
                               HA.value $ DM.fromMaybe "" message
                         ],

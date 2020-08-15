@@ -43,7 +43,7 @@ singleContact request = do
       case SR.toRoute $ H.fullPath request of
             Right (SingleContact { id }) -> do
                   contact <- DA.singleton <$> SIA.singleContact userID id
-                  SRR.json' $ SingleContactPayload contact
+                  SRR.json' $ ContactsPayload contact
             _ -> SRR.throwBadRequest "invalid parameters"
 
 history :: Request -> ResponseEffect

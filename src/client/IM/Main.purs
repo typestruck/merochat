@@ -14,6 +14,8 @@ import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Suggestion as CIS
 import Client.IM.UserMenu as CIU
+import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
+import Client.IM.WebSocket as CIW
 import Control.Monad.Except as CME
 import Data.Array as DA
 import Data.Either (Either)
@@ -44,14 +46,10 @@ import Web.File.FileReader as WFR
 import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.Window as WHW
-import Web.Socket.Event.EventTypes (onOpen, onClose, onMessage)
-import Web.Socket.Event.MessageEvent as WSEM
-import Web.Socket.WebSocket (WebSocket)
-import Web.Socket.WebSocket as WSW
 
 main :: Effect Unit
 main = do
-      webSocket <- WSW.create ("ws://localhost:" <> show port) []
+      webSocket <- CIW.create ("ws://localhost:" <> show port) []
       --web socket needs to be a ref as any time the connection can closed and recreated by events
       webSocketRef <- ER.new webSocket
       fileReader <- WFR.fileReader
@@ -124,11 +122,15 @@ update { webSocketRef, fileReader} model  =
             --main
             SetName name -> setName name model
             PreventStop event -> preventStop event model
+            ToggleOnline -> toggleOnline model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
             setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
                   user = SN.updateUser user $ _ {
                         name = name
                   }
+            }
+            toggleOnline model@(IMModel { isOnline }) = F.noMessages <<< SN.updateModel model $ _ {
+                  isOnline = not isOnline
             }
             preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
@@ -142,27 +144,31 @@ windowsFocus channel = do
 setUpWebSocket :: Ref WebSocket -> Channel (Array IMMessage) -> Effect Unit
 setUpWebSocket webSocketRef channel = do
       webSocket <- ER.read webSocketRef
-      let webSocketTarget = WSW.toEventTarget webSocket
+      let webSocketTarget = CIW.toEventTarget webSocket
       --a ref is used to track reconnections
       timerID <- ER.new Nothing
-      openListener <- WET.eventListener $ const (WSW.sendString webSocket $ SJ.toJSON Connect)
+      openListener <- WET.eventListener $ const (do
+            CIW.sendPayload webSocket Connect
+            sendChannel ToggleOnline
+            )
       messageListener <- WET.eventListener $ \event -> do
             maybeID <- ER.read timerID
             DM.maybe (pure unit) (\id -> do
                   ET.clearTimeout id
                   ER.write Nothing timerID) maybeID
-            let payload = fromRight' <<< CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust $ WSEM.fromEvent event
+            let payload = fromRight' <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
                 message = fromRight' $ SJ.fromJSON payload
             isFocused <- CCD.documentHasFocus
-            SC.send channel <<< DA.singleton $ ReceiveMessage message isFocused
+            sendChannel $ ReceiveMessage message isFocused
 
       closeListener <- WET.eventListener $ \_ -> do
+            sendChannel ToggleOnline
             maybeID <- ER.read timerID
             when (DM.isNothing maybeID) do
                   CCN.alert "Connection to the server lost. Retrying..."
                   milliseconds <- ERD.randomInt 2000 7000
                   id <- ET.setTimeout milliseconds <<< void $ do
-                        newWebSocket <- WSW.create ("ws://localhost:" <> show port) []
+                        newWebSocket <- CIW.create ("ws://localhost:" <> show port) []
                         ER.write newWebSocket webSocketRef
                         setUpWebSocket webSocketRef channel
                   ER.write (Just id) timerID
@@ -170,6 +176,6 @@ setUpWebSocket webSocketRef channel = do
       WET.addEventListener onMessage messageListener false webSocketTarget
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
-
       where fromRight' :: forall a b. Either a b -> b
             fromRight' et = UP.unsafePartial (DE.fromRight et)
+            sendChannel = SC.send channel <<< DA.singleton

@@ -5,15 +5,10 @@ import Server.Types
 import Shared.IM.Types
 import Shared.Types
 
-import Data.Either (Either(..))
 import Data.Either as DE
-import Data.Int53 (Int53)
-import Data.Int53 as DI
 import Data.Map (Map)
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
-import Data.Newtype as DN
-import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (Pool)
 import Effect (Effect)
@@ -21,12 +16,10 @@ import Effect.Aff as CMEC
 import Effect.Aff as EA
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Console as EC
-import Effect.Exception (Error)
+import Effect.Exception (Error, throw)
 import Effect.Now as EN
 import Effect.Ref (Ref)
 import Effect.Ref as ER
-import Effect.Uncurried (EffectFn1)
-import Effect.Uncurried as EU
 import Node.HTTP (Request)
 import Partial.Unsafe as PU
 import Run as R

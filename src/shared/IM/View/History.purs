@@ -29,7 +29,7 @@ history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatti
                          else Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
                   in HE.div (HA.class' $ "message " <> class') [
                         HE.img [HA.src avatar, HA.class' "avatar-message"],
-                        HE.div (HA.class' statusClasses status) [HA.innerHTML $ SM.toHTML content]
+                        HE.div' [HA.class' $ statusClasses status, HA.innerHTML $ SM.toHTML content]
                   ]
 
             statusClasses = case _ of
