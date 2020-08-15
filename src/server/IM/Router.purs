@@ -69,3 +69,12 @@ blockUser request = do
                   response <- SIA.blockUser userID id
                   SRR.json' response
             _ -> SRR.throwBadRequest "invalid parameters"
+
+missedMessages :: Request -> ResponseEffect
+missedMessages request = do
+      userID <- SRS.checkLogin request
+      case SR.toRoute $ H.fullPath request of
+            Right (MissedMessages { since }) -> do
+                  response <- SIA.missedMessages userID since
+                  SRR.json' $ MissedMessagesPayload response
+            _ -> SRR.throwBadRequest "invalid parameters"

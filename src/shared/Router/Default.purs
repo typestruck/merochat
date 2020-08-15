@@ -1,10 +1,16 @@
 module Shared.Router.Default where
 
+import Prelude
+import Shared.Types
+
+import Data.DateTime (DateTime(..), Time(..))
+import Data.DateTime as DD
+import Data.Enum (class BoundedEnum)
+import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Shared.PrimaryKey as SP
 import Shared.Router as SR
-import Shared.Types
-import Prelude
+import Shared.Unsafe as SU
 
 dummyID :: PrimaryKey
 dummyID = SP.fromInt 0
@@ -29,3 +35,10 @@ singleContact = SR.fromRouteToPath $ SingleContact { id: dummyID }
 
 blockUser :: String
 blockUser = SR.fromRouteToPath $ Block { id: dummyID }
+
+missedMessages :: String
+missedMessages = SR.fromRouteToPath $ MissedMessages {
+        since: DateTime (DD.canonicalDate (toEnum' 1970) (toEnum' 1) (toEnum' 1)) $ Time (toEnum' 0) (toEnum' 0) (toEnum' 0) (toEnum' 0)
+}
+      where toEnum' :: forall a. BoundedEnum a => Int -> a
+            toEnum' = SU.fromJust <<< DE.toEnum

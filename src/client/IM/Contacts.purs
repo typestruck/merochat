@@ -13,23 +13,28 @@ import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIM
 import Client.IM.WebSocket as CIW
+import Data.Array ((!!), (..))
 import Data.Array as DA
+import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Newtype as DN
+import Data.Tuple (Tuple(..))
+import Data.Tuple as DT
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Flame ((:>))
 import Flame as F
+import Shared.IM.Contact as SIC
 import Shared.Newtype as SN
+import Shared.Page (initialMessagesPerPage)
 import Shared.Router as SR
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Internal.Types (Event)
-import Shared.IM.Contact as SIC
 import Web.HTML.HTMLElement as WHH
-import Shared.Page(initialMessagesPerPage)
 import Web.Socket.WebSocket (WebSocket)
 import Web.UIEvent.WheelEvent (WheelEvent)
 import Web.UIEvent.WheelEvent as WUW
@@ -123,3 +128,22 @@ displayContacts newContacts model@(IMModel { contacts }) =
             contacts = contacts <> newContacts,
             freeToFetchContactList = true
       }
+
+displayMissedMessages :: Array Contact -> IMModel -> NoMessages
+displayMissedMessages missedContacts model@(IMModel { contacts }) =
+      F.noMessages <<< SN.updateModel model $ _ {
+            contacts = map getNew new <> DA.updateAtIndices (map getExisting existing) contacts
+      }
+      where indexesToIndexes = DA.zip (0 .. DA.length missedContacts) $ findContact <$> missedContacts
+            existing = DA.filter (DM.isJust <<< DT.snd) indexesToIndexes
+            new = DA.filter (DM.isNothing <<< DT.snd) indexesToIndexes
+
+            getNew (Tuple newIndex _) = missedContacts !@ newIndex
+
+            getExisting (Tuple existingIndex contactsIndex) = SU.fromJust do
+                  index <- contactsIndex
+                  contact <- missedContacts !! existingIndex
+                  pure $ Tuple index contact
+
+            findContact (Contact {user: IMUser { id }}) = DA.findIndex (sameContact id) contacts
+            sameContact userID (Contact {user: IMUser { id }}) = userID == id

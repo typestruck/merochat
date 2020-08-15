@@ -125,8 +125,11 @@ newtype Turn = Turn {
     replyDelay :: Number --Seconds
 }
 
+--these wrappers, besides being cumbersome, don't really buy that much type safety
+-- what we need is a statically enforced matching api between server and client
 newtype SuggestionsPayload = SuggestionsPayload (Array IMUser)
 newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
+newtype MissedMessagesPayload = MissedMessagesPayload (Array Contact)
 newtype ContactsPayload = ContactsPayload (Array Contact)
 newtype ProfileSettingsPayload = ProfileSettingsPayload String
 
@@ -170,7 +173,8 @@ data IMMessage =
       UpdateReadCount |
       CheckFetchContacts |
       FetchContacts Boolean |
-      DisplayContacts ContactsPayload  |
+      DisplayContacts ContactsPayload |
+      DisplayMissedMessages MissedMessagesPayload |
       --suggestion
       PreviousSuggestion |
       NextSuggestion |
@@ -199,7 +203,8 @@ data IMMessage =
       --main
       PreventStop Event |
       SetName String |
-      ToggleOnline
+      ToggleOnline |
+      CheckMissedMessages
 
 data WebSocketTokenPayloadServer = WebSocketTokenPayloadServer String WebSocketPayloadServer
 
@@ -228,6 +233,7 @@ data WebSocketPayloadClient =
       BeenBlocked { id :: PrimaryKey } |
       PayloadError WebSocketPayloadServer
 
+derive instance genericMissedMessagesPayload :: Generic MissedMessagesPayload _
 derive instance genericWebSocketTokenPayloadServer :: Generic WebSocketTokenPayloadServer _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _

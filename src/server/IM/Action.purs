@@ -5,6 +5,8 @@ import Server.Types
 import Shared.IM.Types
 import Shared.Types
 
+import Data.Array as DA
+import Data.DateTime (DateTime(..))
 import Data.Foldable as DF
 import Data.Foldable as FD
 import Data.HashMap as DH
@@ -34,13 +36,13 @@ contactList :: PrimaryKey -> Int -> ServerEffect (Array Contact)
 contactList id page = do
       contacts <- SID.presentContacts id page
       history <- SID.chatHistory id $ map (_.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
-      let userHistory = DF.foldl (intoHashMap id) DH.empty history
+      let userHistory = DF.foldl intoHashMap  DH.empty history
       pure $ intoContacts userHistory <$> contacts
 
-      where intoHashMap userID hashMap m@(HistoryMessage {sender, recipient}) =
-                  DH.insertWith (<>) (if sender == userID then recipient else sender) [m] hashMap
+      where intoHashMap hashMap m@(HistoryMessage { sender, recipient }) =
+                  DH.insertWith (<>) (if sender == id then recipient else sender) [m] hashMap
 
-            intoContacts userHistory user@(Contact { user: IMUser { id } }) = SN.updateContact user $ _ {
+            intoContacts userHistory contact@(Contact { user: IMUser { id } }) = SN.updateContact contact $ _ {
                   history = SU.fromJust $ DH.lookup id userHistory
             }
 
@@ -84,3 +86,15 @@ blockUser :: PrimaryKey -> PrimaryKey -> ServerEffect Ok
 blockUser id otherID = do
       SID.insertBlock id otherID
       pure Ok
+
+missedMessages :: PrimaryKey -> DateTime -> ServerEffect (Array Contact)
+missedMessages id since = do
+      history <- SID.chatHistorySince id since
+      contacts <- SID.presentSelectedContacts <<< DA.nubEq $ map (_.sender <<< DN.unwrap) history
+      let userHistory = DF.foldl (intoHashMap id) DH.empty history
+      pure $ intoContacts userHistory <$> contacts
+
+      where intoHashMap userID hashMap m@(HistoryMessage { recipient }) = DH.insertWith (<>) recipient [m] hashMap
+            intoContacts userHistory contact@(Contact { user: IMUser { id } }) = SN.updateContact contact $ _ {
+                  history = SU.fromJust $ DH.lookup id userHistory
+            }

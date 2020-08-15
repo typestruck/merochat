@@ -4,30 +4,30 @@ You can edit this file as you like.
 -}
 { name = "melanchat"
 , dependencies =
-  [
+  [ "affjax"
   , "argonaut-generic"
+  , "browser-cookies"
   , "console"
   , "debug"
   , "effect"
   , "enums"
   , "exceptions"
   , "flame"
+  , "formatters"
   , "http-methods"
+  , "httpure"
   , "int-53"
   , "js-date"
-  , "now"
-  , "browser-cookies"
-  , "node-process"
-  , "simple-jwt"
   , "node-fs"
-  , "httpure"
-  , "affjax"
+  , "node-process"
+  , "now"
   , "postgresql-client"
   , "prelude"
   , "psci-support"
   , "read"
   , "routing-duplex"
   , "run"
+  , "simple-jwt"
   , "test-unit"
   , "unordered-collections"
   , "uuid"
@@ -37,6 +37,5 @@ You can edit this file as you like.
   , "web-uievents"
   ]
 , packages = ./packages.dhall
--- , sources = [ "src/**/*.purs", "test/**/*.purs" ]
 , sources = [ "src/**/*.purs" ]
 }
