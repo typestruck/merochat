@@ -129,9 +129,11 @@ displayContacts newContacts model@(IMModel { contacts }) =
             freeToFetchContactList = true
       }
 
+--3. needs testing
 displayMissedMessages :: Array Contact -> IMModel -> NoMessages
 displayMissedMessages missedContacts model@(IMModel { contacts }) =
       F.noMessages <<< SN.updateModel model $ _ {
+            --wew lass
             contacts = map getNew new <> DA.updateAtIndices (map getExisting existing) contacts
       }
       where indexesToIndexes = DA.zip (0 .. DA.length missedContacts) $ findContact <$> missedContacts

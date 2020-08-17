@@ -65,7 +65,7 @@ chat (IMModel { chatting, suggesting, isOnline, isPreviewing, message, selectedI
                               HA.id "chat-input",
                               HA.placeholder $ if isOnline then "Type a message or drag files here" else "Waiting for connection...",
                               HA.autofocus true,
-                              HA.disabled isOnline,
+                              HA.disabled $ not isOnline,
                               HA.onKeyup' SetUpMessage,
                               HA.value $ DM.fromMaybe "" message
                         ],

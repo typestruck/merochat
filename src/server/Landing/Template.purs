@@ -173,9 +173,9 @@ template = do
                                     HE.text "without fear of the dreaded ASL questions or getting stalked"
                               ],
                               HE.div (HA.class' "point-2") [
-                                    HE.text "MelanChat is not affiliated with Google, Facebook, etc; nor does it track or spy on you.",
+                                    HE.text "MelanChat is not affiliated with any Big Tech companies; nor does it track or spy on you.",
                                     HE.br,
-                                    HE.text "It is also not a dating website either. Why upload duck-face pictures when you can talk about",
+                                    HE.text "Neither it is a dating website. Why upload duck-face pictures when you can talk about",
                                     HE.br,
                                     HE.text "dancing plagues of the 16th century?"
                               ],
