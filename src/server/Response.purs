@@ -100,7 +100,7 @@ requestError ohno = do
 throwInternalError :: forall whatever.  String -> ServerEffect whatever
 throwInternalError reason = RE.throw $ InternalError { reason }
 
-throwBadRequest :: forall whatever. String -> ServerEffect whatever
+throwBadRequest :: forall r whatever. String -> BaseEffect r whatever
 throwBadRequest reason = RE.throw $ BadRequest { reason }
 
 redirect :: forall e. Route -> Run (aff :: AFF | e) Response

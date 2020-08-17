@@ -90,6 +90,7 @@ newtype IMModel = IMModel {
       messageEnter :: Boolean,
       link :: Maybe String,
       linkText :: Maybe String,
+      isOnline :: Boolean,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -124,9 +125,11 @@ newtype Turn = Turn {
     replyDelay :: Number --Seconds
 }
 
+--these wrappers, besides being cumbersome, don't really buy that much type safety
+-- what we need is a statically enforced matching api between server and client
 newtype SuggestionsPayload = SuggestionsPayload (Array IMUser)
 newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
-newtype SingleContactPayload = SingleContactPayload (Array Contact)
+newtype MissedMessagesPayload = MissedMessagesPayload (Array Contact)
 newtype ContactsPayload = ContactsPayload (Array Contact)
 newtype ProfileSettingsPayload = ProfileSettingsPayload String
 
@@ -140,6 +143,7 @@ data ProfileSettingsToggle =
       ShowSettings
 
 data MessageStatus =
+      Errored |
       Unread |
       Read
 
@@ -169,7 +173,8 @@ data IMMessage =
       UpdateReadCount |
       CheckFetchContacts |
       FetchContacts Boolean |
-      DisplayContacts ContactsPayload  |
+      DisplayContacts ContactsPayload |
+      DisplayMissedMessages MissedMessagesPayload |
       --suggestion
       PreviousSuggestion |
       NextSuggestion |
@@ -197,23 +202,24 @@ data IMMessage =
       InsertLink |
       --main
       PreventStop Event |
-      SetName String
+      SetName String |
+      ToggleOnline |
+      CheckMissedMessages
+
+data WebSocketTokenPayloadServer = WebSocketTokenPayloadServer String WebSocketPayloadServer
 
 data WebSocketPayloadServer =
-      Connect String |
+      Connect |
       ServerMessage (BasicMessage (
             content :: MessageContent,
-            token :: String,
             userID :: PrimaryKey,
             turn :: Maybe Turn
       )) |
       ReadMessages {
-            token :: String,
             --alternatively, update by user?
             ids :: Array PrimaryKey
       } |
       ToBlock {
-            token :: String,
             id :: PrimaryKey
       }
 
@@ -221,14 +227,17 @@ data WebSocketPayloadClient =
       ClientMessage ClientMessagePayload |
       Received {
             previousID :: PrimaryKey,
-            id :: PrimaryKey
+            id :: PrimaryKey,
+            userID :: PrimaryKey
       } |
-      BeenBlocked { id :: PrimaryKey }
+      BeenBlocked { id :: PrimaryKey } |
+      PayloadError WebSocketPayloadServer
 
+derive instance genericMissedMessagesPayload :: Generic MissedMessagesPayload _
+derive instance genericWebSocketTokenPayloadServer :: Generic WebSocketTokenPayloadServer _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericProfileSettingsPayload :: Generic ProfileSettingsPayload _
 derive instance genericContactsPayload :: Generic ContactsPayload _
-derive instance genericSingleContactPayload :: Generic SingleContactPayload _
 derive instance genericHistoryPayload :: Generic HistoryPayload _
 derive instance genericSuggestionsPayload :: Generic SuggestionsPayload _
 derive instance genericStats :: Generic Stats _
@@ -279,6 +288,8 @@ instance showMessageStatus :: Show MessageStatus where
 instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
       show = DGRS.genericShow
 
+instance encodeJsonWebSocketPayloadServer :: EncodeJson WebSocketPayloadServer where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageContent :: EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonContact :: EncodeJson Contact where
@@ -296,6 +307,8 @@ instance encodeJsonTurn :: EncodeJson Turn where
 instance encodeJsonStats :: EncodeJson Stats where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonContact :: DecodeJson Contact where
@@ -437,16 +450,24 @@ instance boundedMessageStatus :: Bounded MessageStatus where
 instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
       cardinality = Cardinality 1
 
-      fromEnum Unread = 0
-      fromEnum Read = 1
+      fromEnum = case _ of
+            Errored -> -1
+            Unread -> 0
+            Read -> 1
 
-      toEnum 0 = Just Unread
-      toEnum 1 = Just Read
-      toEnum _ = Nothing
+      toEnum = case _ of
+            -1 -> Just Errored
+            0 -> Just Unread
+            1 -> Just Read
+            _ -> Nothing
 
 instance enumMessageStatus :: Enum MessageStatus where
-      succ Unread = Just Read
-      succ Read = Nothing
+      succ = case _ of
+            Errored -> Just Unread
+            Unread -> Just Read
+            Read -> Nothing
 
-      pred Unread = Nothing
-      pred Read = Just Unread
+      pred = case _ of
+            Errored -> Nothing
+            Unread -> Just Errored
+            Read -> Just Unread

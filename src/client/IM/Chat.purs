@@ -29,6 +29,7 @@ import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -102,8 +103,8 @@ beforeSendMessage sent content model@(IMModel {
                   message = Just content
             }
 
-sendMessage :: WebSocket -> String -> MDateTime -> IMModel -> NoMessages
-sendMessage webSocket token date = case _ of
+sendMessage :: WebSocket -> MDateTime -> IMModel -> NoMessages
+sendMessage webSocket date = case _ of
       model@(IMModel {
             user: IMUser { id: senderID },
             chatting: Just chatting,
@@ -133,13 +134,12 @@ sendMessage webSocket token date = case _ of
                         contacts = SU.fromJust $ DA.updateAt chatting updatedChatting contacts
                  }
                  turn = makeTurn updatedChatting senderID
-            in --needs to handle failure!
+            in
                   CIF.nothingNext updatedModel $ liftEffect do
                         CIS.scrollLastMessage
                         CIW.sendPayload webSocket $ ServerMessage {
                               id: newTemporaryID,
                               userID: recipientID,
-                              token: token,
                               content: asMessageContent message imageCaption selectedImage,
                               turn
                         }
@@ -186,16 +186,16 @@ makeTurn (Contact { chatStarter, chatAge, history }) sender =
             countCharacters total (HistoryMessage { content }) = total + DSC.length content
             getDate = DN.unwrap <<< _.date <<< DN.unwrap
 
-receiveMessage :: WebSocket -> String -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
-receiveMessage webSocket token isFocused wsPayload model@(IMModel {
+receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
+receiveMessage webSocket isFocused wsPayload model@(IMModel {
       user: IMUser { id: recipientID },
       contacts,
       suggestions,
       blockedUsers
 }) = case wsPayload of
-      Received { previousID, id } ->
+      Received { previousID, id, userID } ->
             F.noMessages <<< SN.updateModel model $ _ {
-                  contacts = DM.fromMaybe contacts $ updateTemporaryID contacts previousID id
+                  contacts = updateTemporaryID contacts userID previousID id
             }
       BeenBlocked { id } ->
             F.noMessages $ CISG.removeBlockedUser id model
@@ -212,7 +212,6 @@ receiveMessage webSocket token isFocused wsPayload model@(IMModel {
                               chatting: index,
                               userID: recipientID,
                               contacts,
-                              token,
                               webSocket
                         }
                         in
@@ -221,6 +220,13 @@ receiveMessage webSocket token isFocused wsPayload model@(IMModel {
                               else
                                     F.noMessages updatedModel
                   Right updatedModel -> F.noMessages updatedModel
+      PayloadError payload -> case payload of
+            ServerMessage { id, userID } -> F.noMessages <<< SN.updateModel model $ _ {
+                 contacts = updateHistoryStatus contacts userID id
+            }
+            --the connection might still be open and the server haven't saved the socket
+            Connect -> CIF.nothingNext (spy "s" model) <<< liftEffect $ CIW.close webSocket
+            _ -> F.noMessages model
       where isChatting senderID { contacts, chatting } =
                   let (Contact { user: IMUser { id: recipientID } }) = contacts !@ chatting in
                   recipientID == senderID
@@ -277,19 +283,25 @@ processIncomingMessage { id, userID, date, content } model@(IMModel {
             getUserID = map (_.id <<< DN.unwrap)
             findUser (Contact { user: IMUser { id } }) = userID == id
 
-updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> Maybe (Array Contact)
-updateTemporaryID contacts previousID id = do
-      index <- DA.findIndex (findUser previousID) contacts
-      Contact { history } <- contacts !! index
-      innerIndex <- DA.findIndex (findTemporary previousID) history
-      DA.modifyAt index (updateTemporary innerIndex id) contacts
+updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> PrimaryKey -> Array Contact
+updateTemporaryID contacts userID previousMessageID messageID = updateContactHistory contacts userID updateTemporary
+      where updateTemporary history@(HistoryMessage { id })
+                  | id == previousMessageID = SN.updateHistoryMessage history $ _ { id = messageID }
+                  | otherwise = history
 
-      where findTemporary previousID (HistoryMessage { id }) = id == previousID
-            findUser previousID (Contact { history }) = DA.any (findTemporary previousID) history
-            updateTemporary index newID user@(Contact { history }) =
-                  SN.updateContact user $ _ {
-                        history = SU.fromJust $ DA.modifyAt index (flip SN.updateHistoryMessage (_ { id = newID })) history
-                  }
+updateHistoryStatus :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact
+updateHistoryStatus contacts userID messageID = updateContactHistory contacts userID updateStatus
+      where updateStatus history@(HistoryMessage { id })
+                  | id == messageID = SN.updateHistoryMessage history $ _ { status = Errored }
+                  | otherwise = history
+
+updateContactHistory :: Array Contact -> PrimaryKey -> (HistoryMessage -> HistoryMessage) -> Array Contact
+updateContactHistory contacts userID f = updateContact <$> contacts
+      where updateContact contact@(Contact { user: IMUser { id }, history })
+                  | id == userID = SN.updateContact contact $ _ {
+                              history = f <$> history
+                        }
+                  | otherwise = contact
 
 applyMarkup :: Markup -> IMModel -> MoreMessages
 applyMarkup markup model@(IMModel { message }) = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
@@ -300,8 +312,8 @@ applyMarkup markup model@(IMModel { message }) = model :> [liftEffect (Just <$> 
                               Italic -> Tuple "*" "*"
                               Strike -> Tuple "~" "~"
                               Heading -> Tuple "## " ""
-                              OrderedList -> Tuple "1. " ""
-                              UnorderedList -> Tuple "- " ""
+                              OrderedList -> Tuple "\n1. " ""
+                              UnorderedList -> Tuple "\n- " ""
                   start <- WHHTA.selectionStart textarea
                   end <- WHHTA.selectionEnd textarea
                   let   beforeSize = DS.length before

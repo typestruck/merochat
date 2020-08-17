@@ -43,7 +43,7 @@ singleContact request = do
       case SR.toRoute $ H.fullPath request of
             Right (SingleContact { id }) -> do
                   contact <- DA.singleton <$> SIA.singleContact userID id
-                  SRR.json' $ SingleContactPayload contact
+                  SRR.json' $ ContactsPayload contact
             _ -> SRR.throwBadRequest "invalid parameters"
 
 history :: Request -> ResponseEffect
@@ -68,4 +68,13 @@ blockUser request = do
             Right (Block { id }) -> do
                   response <- SIA.blockUser userID id
                   SRR.json' response
+            _ -> SRR.throwBadRequest "invalid parameters"
+
+missedMessages :: Request -> ResponseEffect
+missedMessages request = do
+      userID <- SRS.checkLogin request
+      case SR.toRoute $ H.fullPath request of
+            Right (MissedMessages { since }) -> do
+                  response <- SIA.missedMessages userID since
+                  SRR.json' $ MissedMessagesPayload response
             _ -> SRR.throwBadRequest "invalid parameters"

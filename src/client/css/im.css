@@ -845,3 +845,7 @@ svg.toolbar-action {
     font-size: 2em;
     font-family: emoji !important;
 }
+
+.message-failed {
+    color:red;
+}

@@ -1,10 +1,14 @@
 module Shared.Router (fromRoute, fromRouteToPath , toRoute) where
 
 import Prelude
+import Shared.Types
 
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Formatter.DateTime (FormatterCommand(..))
+import Data.Formatter.DateTime as DFD
 import Data.Int53 as DI
+import Data.List as DL
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
@@ -16,7 +20,6 @@ import Routing.Duplex as RD
 import Routing.Duplex.Generic as RDG
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import Routing.Duplex.Parser (RouteError)
-import Shared.Types
 import Shared.Unsafe as SU
 
 routes :: RouteDuplex' Route
@@ -37,10 +40,14 @@ routes = RD.root $ RDG.sum {
       "AccountPassword": "settings" / "password" / RDG.noArgs,
       "Terminate": "settings" / "close" / RDG.noArgs,
       "History" : "im" / "history" ? { skip: RD.int, with: parsePrimaryKey },
-      "Block" : "im" / "block" ? { id: parsePrimaryKey }
+      "Block" : "im" / "block" ? { id: parsePrimaryKey },
+      "MissedMessages": "im" / "missed" ? { since: parseDate }
 }
       where parseWhat = RD.as show (DM.maybe (Left "error parsing what parameter") Right <<< DSR.read)
             parsePrimaryKey = RD.as (DS.replace (Pattern ".0") (Replacement "") <<< show <<< DI.toNumber <<< DN.unwrap) (DM.maybe (Left "error parsing what parameter") (Right <<< PrimaryKey) <<< DI.fromString)
+            parseDate = RD.as (DFD.format dateFormat) (DFD.unformat dateFormat)
+
+            dateFormat = DL.singleton UnixTimestamp
 
 toRoute :: String -> Either RouteError Route
 toRoute = RD.parse routes

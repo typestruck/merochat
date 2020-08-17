@@ -19,15 +19,21 @@ history (IMModel { user: (IMUser { id: senderID, avatar: senderAvatar }), chatti
             Nothing -> [HE.createEmptyElement "div"]
             Just recipient -> display recipient
 
-      where entry recipientAvatar (HistoryMessage { sender, content }) =
+      where display (Contact recipient@{history, user: IMUser { description, avatar }}) =
+                  --having the description node always present avoids snabbdom choking on the use of innerHTML
+                  HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry avatar) history
+
+            entry recipientAvatar (HistoryMessage { status, sender, content }) =
                   let Tuple class' avatar =
                         if senderID == sender then Tuple "sender-message" $ SA.avatarForSender senderAvatar
                          else Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
                   in HE.div (HA.class' $ "message " <> class') [
                         HE.img [HA.src avatar, HA.class' "avatar-message"],
-                        HE.div' [HA.innerHTML $ SM.toHTML content]
+                        HE.div' [HA.class' $ statusClasses status, HA.innerHTML $ SM.toHTML content]
                   ]
 
-            display (Contact recipient@{history, user: IMUser { description, avatar }}) =
-                  --having the description node always present avoids snabbdom choking on the use of innerHTML
-                  HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry avatar) history
+            statusClasses = case _ of
+                  Errored -> "message-failed"
+                  _ -> ""
+
+

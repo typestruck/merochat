@@ -1,4 +1,4 @@
-![logo](src/Client/media/logo.png)
+![logo](src/client/media/logo.png)
 
 MelanChat is a friendly random chat!
 

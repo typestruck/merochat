@@ -10,7 +10,7 @@ generated-docs
 .pulp_cache
 *.bundle.*
 .vscode
-src/Client/media/upload
+src/client/media/upload
 configuration.json
 old/
 fix

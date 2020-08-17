@@ -49,7 +49,7 @@ post' route data' = do
 post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => Route -> Maybe contents -> Aff (Either String response)
 post route data' = do
       --see Token in shared/Types.purs
-      token <- liftEffect $ CCS.getItem tokenKey
+      token <- liftEffect $ CCS.getToken
       response <- A.request $ (defaultRequest route POST token) {
             content = map (RB.json <<< DAEGR.genericEncodeJson) data'
       }

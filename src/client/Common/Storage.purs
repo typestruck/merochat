@@ -24,6 +24,10 @@ getItem key = do
         localStorage <- WHW.localStorage window
         DM.fromMaybe "" <$> WSS.getItem key localStorage
 
+--used to auth web socket operations
+getToken :: Effect String
+getToken = getItem tokenKey
+
 removeItem :: String -> Effect Unit
 removeItem key = do
         window <- WH.window

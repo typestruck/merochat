@@ -65,6 +65,8 @@ router request@{ headers, path, method } =
             SIR.singleContact request
        else if paths == SRD.blockUser then
             SIR.blockUser request
+       else if paths == SRD.missedMessages then
+            SIR.missedMessages request
        --profile
        else if paths == SRO.fromRoute Profile then
             SPR.profile request

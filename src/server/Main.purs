@@ -20,7 +20,7 @@ import Server.WebSocket as SW
 import Server.WebSocket.Events as SWE
 import Shared.WebSocketOptions (port)
 
---consider using a servant like framework?
+--REFACTOR: consider using a servant like framework
 main :: Effect Unit
 main = do
       configuration <- CF.readConfiguration
@@ -34,18 +34,17 @@ startWebSocketServer configuration = do
       webSocketServer <- SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "WebSocket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
       pool <- SD.newPool
-      SW.onConnection webSocketServer $ SWE.handleConnection { configuration, pool, allConnections }
+      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections)
 
 startHTTPServer :: Configuration -> Effect Unit
 startHTTPServer c@(Configuration configuration) = do
       pool <- SD.newPool
-      void $ H.serve configuration.port (router pool) $ EC.log ("Server now up on http://localhost:" <> show configuration.port)
-
-      where internalError error = do
-                  contents <- liftEffect <<< SIT.template $ EE.message error
-                  H.ok' (SRR.headerContentType $ show HTML) contents
-            router pool request@{ path } = do
+      void <<< H.serve configuration.port (router pool) <<< EC.log $ "Server now up on http://localhost:" <> show configuration.port
+      where router pool request@{ path } = do
                   session <- liftEffect $ SR.session c request
                   SR.runRouter { configuration: c, pool, session } request `CMEC.catchError` internalError
+            internalError error = do
+                  contents <- liftEffect <<< SIT.template $ EE.message error
+                  H.ok' (SRR.headerContentType $ show HTML) contents
 
 

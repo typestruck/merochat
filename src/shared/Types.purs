@@ -121,7 +121,8 @@ data Route =
       SingleContact { id :: PrimaryKey } |
       Contacts { skip :: Int } |
       History { skip :: Int, with :: PrimaryKey } |
-      Block { id :: PrimaryKey }
+      Block { id :: PrimaryKey } |
+      MissedMessages { since :: DateTime }
 
 data Generate =
       Name |

@@ -45,6 +45,7 @@ template {contacts, suggestions, user} = do
                   isPreviewing: false,
                   selectedImage: Nothing,
                   blockedUsers: [],
+                  isOnline: false,
                   contacts,
                   suggestions,
                   user
