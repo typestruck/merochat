@@ -33,7 +33,7 @@ emailAlreadyRegisteredMessage :: String
 emailAlreadyRegisteredMessage = "Email already registered"
 
 register :: String -> RegisterLogin -> ServerEffect String
-register remoteIP (RegisterLogin { captchaResponse, email, password }) = do
+register remoteIP { captchaResponse, email, password } = do
       when (DS.null email || DS.null password) $ SRR.throwBadRequest invalidUserEmailMessage
       user <- SDU.userBy $ Email email
       when (DM.isJust user) $ SRR.throwBadRequest emailAlreadyRegisteredMessage
@@ -43,7 +43,7 @@ register remoteIP (RegisterLogin { captchaResponse, email, password }) = do
       headline <- SB.generateHeadline
       description <- SB.generateDescription
       hashedPassword <- ST.hashPassword password
-      PrimaryKey id <- SLD.createUser {
+      id <- SLD.createUser {
             password: hashedPassword,
             email,
             name,

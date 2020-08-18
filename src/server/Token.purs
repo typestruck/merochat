@@ -21,13 +21,13 @@ import Run.Reader as RR
 
 hashPassword :: String -> ServerEffect String
 hashPassword password = do
-      { configuration } <- RR.ask
-      R.liftEffect $ NCH.hex NCHA.SHA512 configuration.salt password
+      { configuration: { salt } } <- RR.ask
+      R.liftEffect $ NCH.hex NCHA.SHA512 salt password
 
-createToken :: Int53 -> ServerEffect String
-createToken id = do
-      { configuration } <- RR.ask
-      NSJ.toString <$> (R.liftEffect <<< NSJ.encode configuration.tokenSecret NSJ.HS512 $ show id)
+createToken :: PrimaryKey -> ServerEffect String
+createToken (PrimaryKey id) = do
+      { configuration: { tokenSecret } } <- RR.ask
+      NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show id)
 
 userIDFromToken :: String -> String -> Effect (Maybe PrimaryKey)
 userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.decode secret <<< NSJ.fromString

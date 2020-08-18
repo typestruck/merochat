@@ -22,6 +22,7 @@ import Routing.Duplex.Generic.Syntax ((/), (?))
 import Routing.Duplex.Parser (RouteError)
 import Shared.Unsafe as SU
 
+--REFACTOR: use payload type level urls
 routes :: RouteDuplex' Route
 routes = RD.root $ RDG.sum {
       "Landing" : RDG.noArgs,

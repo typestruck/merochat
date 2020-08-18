@@ -61,6 +61,6 @@ startHTTPServer' configuration = do
       pool <- SD.newPool
       EA.launchAff_ $ PS.startGuarded (defaultOpts { port = 8001 }) spec {
             guards: guards configuration,
-            handlers: SH.handlers { configuration, pool, session: {userID: Nothing } }
+            handlers: SH.handlers { configuration, pool, session: { userID: Nothing } }
       }
       EC.log $ "Payload now up on http://localhost:8001"

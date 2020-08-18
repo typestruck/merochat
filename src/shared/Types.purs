@@ -75,7 +75,7 @@ type EmailCaptcha r = {
 }
 
 -- | Fields for registration or login
-newtype RegisterLogin = RegisterLogin (EmailCaptcha (password :: String))
+type RegisterLogin = (EmailCaptcha (password :: String))
 
 newtype RecoverAccount = RecoverAccount (EmailCaptcha ())
 
@@ -158,7 +158,6 @@ derive instance genericOk :: Generic Ok _
 derive instance genericRecover :: Generic RecoverAccount _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
-derive instance genericRegisterLogin :: Generic RegisterLogin _
 derive instance genericRoute :: Generic Route _
 derive instance genericToken :: Generic Token _
 derive instance genericResponseError :: Generic ResponseError _

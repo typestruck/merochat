@@ -25,18 +25,18 @@ register captchaResponse = do
       registerLogin <- CCE.validateEmailPassword
       case registerLogin of
             Nothing -> pure unit
-            Just (RegisterLogin rl) ->
+            Just rl ->
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
-                   else
-                        EA.launchAff_ do
-                              response <- CCNT.post Register <<< Just <<< RegisterLogin $ rl { captchaResponse = captchaResponse }
-                              case response of
-                                    Right token -> enter token
-                                    Left left -> liftEffect do
-                                          CCC.grecaptchaReset
-                                          CCN.alert left
-      where enter token = liftEffect $ CCE.login token IM
+                   else pure unit
+                        -- EA.launchAff_ do
+                        --       response <- CCNT.post Register <<< Just $ rl { captchaResponse = captchaResponse }
+                        --       case response of
+                        --             Right token -> enter token
+                        --             Left left -> liftEffect do
+                        --                   CCC.grecaptchaReset
+                        --                   CCN.alert left
+ --     where enter token = liftEffect $ CCE.login token IM
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit
