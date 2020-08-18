@@ -11,7 +11,7 @@ import HTTPure (Method(..), Request, ResponseM, Path)
 login :: Request -> ResponseEffect
 login { method, body } = do
       SRS.checkAnonymous
-      if method == Get then
-            SRR.serveTemplate SLIT.template
-       else
-            SRR.json body SLI.login
+     -- if method == Get then
+      SRR.serveTemplate SLIT.template
+      --  else
+      --       SRR.json body SLI.login

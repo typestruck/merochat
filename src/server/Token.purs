@@ -15,22 +15,19 @@ import Data.String.Regex.Unsafe as DSSU
 import Effect (Effect)
 import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
-import Node.Simple.Jwt (Jwt)
 import Node.Simple.Jwt as NSJ
 import Run as R
 import Run.Reader as RR
 
 hashPassword :: String -> ServerEffect String
 hashPassword password = do
-      { configuration : Configuration configuration } <- RR.ask
+      { configuration } <- RR.ask
       R.liftEffect $ NCH.hex NCHA.SHA512 configuration.salt password
 
-createToken :: Int53 -> ServerEffect Token
+createToken :: Int53 -> ServerEffect String
 createToken id = do
-      { configuration : Configuration configuration } <- RR.ask
-      tokenGET <- map NSJ.toString <<< R.liftEffect <<< NSJ.encode configuration.tokenSecretGET NSJ.HS512 $ show id
-      tokenPOST <- map NSJ.toString <<< R.liftEffect <<< NSJ.encode configuration.tokenSecretPOST NSJ.HS512 $ show id
-      pure $ Token { tokenGET, tokenPOST }
+      { configuration } <- RR.ask
+      NSJ.toString <$> (R.liftEffect <<< NSJ.encode configuration.tokenSecret NSJ.HS512 $ show id)
 
 userIDFromToken :: String -> String -> Effect (Maybe PrimaryKey)
 userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.decode secret <<< NSJ.fromString

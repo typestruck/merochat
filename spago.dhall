@@ -34,7 +34,8 @@ You can edit this file as you like.
   , "web-dom"
   , "web-socket"
   , "web-storage"
-  , "web-uievents"
+  , "web-uievents",
+  "payload"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]

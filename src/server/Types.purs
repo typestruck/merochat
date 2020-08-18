@@ -3,17 +3,24 @@ module Server.Types where
 
 import Prelude
 import Shared.Types
-import Data.String.Read (class Read)
+
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
-import Data.String as DS
-import Data.Maybe (Maybe(..))
+import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
 import Data.Generic.Rep (class Generic)
 import Data.Map (Map)
+import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
+import Data.Newtype as DN
+import Data.String as DS
+import Data.String.Read (class Read)
 import Database.PostgreSQL (Pool)
 import Effect.Ref (Ref)
-import Data.Enum(class BoundedEnum, Cardinality(..), class Enum)
 import HTTPure (Response)
+import Payload.ContentType (html)
+import Payload.Headers as PH
+import Payload.ResponseTypes as PR
+import Payload.Server.Response (class EncodeResponse)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
 import Run.Reader (READER)
@@ -31,19 +38,16 @@ type ProfileUserEdition = {
       birthday :: Maybe MDate
 }
 
-newtype Configuration = Configuration {
+type Configuration = {
       port :: Int,
       development :: Boolean,
       captchaSecret :: String,
-      tokenSecretGET :: String,
-      tokenSecretPOST :: String,
+      tokenSecret :: String,
       salt :: String,
       emailHost :: String,
       emailUser :: String,
       emailPassword :: String
 }
-
-derive instance genericConfiguration :: Generic Configuration _
 
 newtype CaptchaResponse = CaptchaResponse {
       success :: Boolean
@@ -148,3 +152,16 @@ instance enumBenderAction :: Enum BenderAction where
 
       pred Name = Nothing
       pred Description = Just Name
+
+-------new
+
+newtype Html = Html String
+
+derive instance newtypeHtml :: Newtype Html _
+
+instance encodeResponseHtml :: EncodeResponse Html where
+      encodeResponse (PR.Response { status, headers, body: Html contents }) = pure $ PR.Response {
+            headers: PH.setIfNotDefined "content-type" html headers,
+            body: PR.StringBody contents,
+            status
+      }

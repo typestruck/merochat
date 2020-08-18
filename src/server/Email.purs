@@ -12,6 +12,6 @@ foreign import sendEmail_ :: EffectFn3 { host :: String, user :: String, passwor
 
 sendEmail :: String -> String -> ServerEffect Unit
 sendEmail to content = do
-        {configuration: Configuration { development, emailUser, emailHost, emailPassword }} <- RR.ask
+        {configuration:{ development, emailUser, emailHost, emailPassword }} <- RR.ask
         unless development <<< R.liftEffect $ EU.runEffectFn3 sendEmail_ { user: emailUser, host: emailHost, password: emailPassword } to content
 

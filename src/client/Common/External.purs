@@ -32,6 +32,7 @@ validateEmailPassword = do
                                 captchaResponse: Nothing
                         }
 
+--REFACTOR: set this server side, with samesite and httponly
 login :: Token -> Route -> Effect Unit
 login (Token { tokenGET, tokenPOST }) redirect =  do
         BC.setCookie $ SetCookie {

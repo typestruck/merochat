@@ -16,7 +16,7 @@ invalidUserEmailMessage = "Invalid email or password"
 invalidLogin :: String
 invalidLogin = "Email not registered or incorrect password"
 
-login :: RegisterLogin -> ServerEffect Token
+login :: RegisterLogin -> ServerEffect String
 login (RegisterLogin registerLogin) = do
         when (DS.null registerLogin.email || DS.null registerLogin.password) $ SRR.throwBadRequest invalidUserEmailMessage
 

@@ -21,7 +21,7 @@ import Server.Response as SRR
 
 validateCaptcha :: Maybe String -> ServerEffect Unit
 validateCaptcha captchaResponse = do
-      { configuration : Configuration configuration } <- RR.ask
+      { configuration :configuration } <- RR.ask
 
       unless configuration.development do
             response <- R.liftAff <<< A.request $ A.defaultRequest {

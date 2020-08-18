@@ -28,7 +28,7 @@ import Server.Recover.Router as SRER
 import Server.Response as SRR
 import Server.Settings.Router as SSR
 import Server.Token as ST
-import Server.Types (Configuration(..), ResponseEffect, ServerReader, Session)
+import Server.Types
 import Shared.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Router as SRO
@@ -88,7 +88,7 @@ router request@{ headers, path, method } =
             SRER.reset request
        --local files and 404 for development
        else do
-            { configuration : Configuration configuration } <- RR.ask
+            { configuration :configuration } <- RR.ask
             if configuration.development && (path !@ 0 == "client" || DS.contains (Pattern "js.map") (path !@ 0) )then
                   SRR.serveDevelopmentFile path
              else if configuration.development && path !@ 0 == "favicon.ico" then
@@ -102,7 +102,7 @@ router request@{ headers, path, method } =
 
 -- | Extracts an user id from a json web token. GET requests should have it in cookies, otherwise in the x-access-token header
 session :: Configuration -> Request -> Effect Session
-session (Configuration configuration) { headers, method } =
+session { tokenSecret } { headers, method } =
       map { userID: _ } $
             if method == Get then
                   sessionFromCookie $ BCI.bakeCookies (headers !@ "Cookie")
@@ -110,8 +110,7 @@ session (Configuration configuration) { headers, method } =
                   sessionFromXHeader (headers !@ xAccessToken)
       where sessionFromCookie cookies =
                   case DA.find (\(Cookie { key }) -> cookieName == key) cookies of
-                        Just (Cookie {value}) -> ST.userIDFromToken configuration.tokenSecretGET value
+                        Just (Cookie {value}) -> ST.userIDFromToken tokenSecret value
                         _ -> pure Nothing
 
-            sessionFromXHeader value = ST.userIDFromToken configuration.tokenSecretPOST value
-
+            sessionFromXHeader value = ST.userIDFromToken tokenSecret value

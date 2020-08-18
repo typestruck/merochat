@@ -16,4 +16,5 @@ landing = do
 register :: Request -> ResponseEffect
 register { body } = do
       SRS.checkAnonymous
-      SRR.json body $ SLA.register ""
+      SRR.serveTemplate SLT.template
+      --SRR.json body $ SLA.register ""

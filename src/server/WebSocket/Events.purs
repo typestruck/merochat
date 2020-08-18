@@ -38,7 +38,7 @@ handleError = EC.log <<< show
 
 --here it seems like the only way is get the cookie token and transform into a post token
 handleClose :: Configuration -> Ref (Map PrimaryKey WebSocketConnection) -> Request -> CloseCode -> CloseReason -> Effect Unit
-handleClose (Configuration configuration) allConnections request _ _ = pure unit
+handleClose configuration allConnections request _ _ = pure unit
 
 --REFACTOR: untangle the im logic from the websocket logic
 handleMessage ::  WebSocketPayloadServer -> WebSocketEffect
@@ -75,13 +75,13 @@ handleMessage payload = do
                   Just v -> f v
 
 handleConnection :: Configuration -> Pool -> Ref (Map PrimaryKey WebSocketConnection) -> WebSocketConnection -> Request -> Effect Unit
-handleConnection c@(Configuration configuration) pool allConnections connection request = do
+handleConnection c@{ tokenSecret } pool allConnections connection request = do
       SW.onError connection handleError
       SW.onClose connection $ handleClose c allConnections request
       SW.onMessage connection runMessageHandler
       where runMessageHandler (WebSocketMessage message) = do
                   let WebSocketTokenPayloadServer token payload = PU.unsafePartial (DE.fromRight $ SJ.fromJSON message)
-                  maybeUserID <- ST.userIDFromToken configuration.tokenSecretPOST token
+                  maybeUserID <- ST.userIDFromToken tokenSecret token
                   case maybeUserID of
                         Nothing -> do
                               SW.close connection

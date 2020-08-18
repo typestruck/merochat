@@ -32,7 +32,7 @@ invalidUserEmailMessage = "Invalid email or password"
 emailAlreadyRegisteredMessage :: String
 emailAlreadyRegisteredMessage = "Email already registered"
 
-register :: String -> RegisterLogin -> ServerEffect Token
+register :: String -> RegisterLogin -> ServerEffect String
 register remoteIP (RegisterLogin { captchaResponse, email, password }) = do
       when (DS.null email || DS.null password) $ SRR.throwBadRequest invalidUserEmailMessage
       user <- SDU.userBy $ Email email

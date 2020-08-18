@@ -16,15 +16,14 @@ import Shared.Unsafe as SU
 -- | The process will fail if any of them are missing on production, dummy values will be used for development
 readConfiguration :: Effect Configuration
 readConfiguration = do
-      isDevelopment <- DM.maybe false (_ == "true")  <$> NP.lookupEnv "DEVELOPMENT"
+      isDevelopment <- DM.maybe false (_ == "true") <$> NP.lookupEnv "DEVELOPMENT"
       if isDevelopment then do
             EC.log "Starting development environment"
-            pure $ Configuration {
+            pure {
                   port: 8000,
                   development: true,
                   captchaSecret: "",
-                  tokenSecretGET: "I feel nice like sugar and spices",
-                  tokenSecretPOST: "so nice, so nice, I got you",
+                  tokenSecret: "so nice, so nice, I got you",
                   salt: "put it back together",
                   emailUser: "",
                   emailHost: "",
@@ -35,13 +34,12 @@ readConfiguration = do
             port <- parsePort <$> NP.lookupEnv "PORT"
             variables <- DT.traverse getVariable ["CAPTCHA_SECRET", "TOKEN_SECRET_GET", "TOKEN_SECRET_POST", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD"]
             case variables of
-                  [captchaSecret, tokenSecretGET, tokenSecretPOST, salt, emailUser, emailHost, emailPassword] ->
-                        pure $ Configuration {
+                  [captchaSecret, tokenSecretGET, tokenSecret, salt, emailUser, emailHost, emailPassword] ->
+                        pure $ {
                               development: false,
                               port,
                               captchaSecret,
-                              tokenSecretGET,
-                              tokenSecretPOST,
+                              tokenSecret,
                               salt,
                               emailUser,
                               emailHost,
