@@ -1,9 +1,4 @@
-module Client.Common.Network(
-      post,
-      post',
-      get,
-      get'
-) where
+module Client.Common.Network where
 
 import Prelude
 
@@ -12,7 +7,6 @@ import Affjax.RequestBody as RB
 import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
-import Client.Common.Cookies as CCC
 import Client.Common.Notification as CCN
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
@@ -28,12 +22,16 @@ import Data.Generic.Rep (class Generic)
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.MediaType (MediaType(..))
+import Data.Newtype as DN
 import Debug.Trace (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception as EE
 import Partial.Unsafe as PU
-import Shared.Header (xAccessToken)
+import Payload.Client (ClientError(..), ClientResponse)
+import Payload.Client as PC
+import Payload.ResponseTypes (Response(..))
+import Shared.Spec (spec)
 import Shared.Router as SR
 import Shared.Types (Route)
 
@@ -64,7 +62,7 @@ get' route = do
 
 get :: forall response r. Generic response r => DecodeRep r => Route -> Aff (Either String response)
 get route = do
-      token <- liftEffect CCC.getMelanchatCookie
+      token <- pure "" --liftEffect CCC.getMelanchatCookie
       response <- A.request $ defaultRequest route GET token
       parseBody response
 
@@ -76,7 +74,7 @@ defaultRequest route method token =
             headers = [
                   Accept $ MediaType "application/json",
                   ContentType $ MediaType "application/json",
-                  RequestHeader xAccessToken token
+                  RequestHeader "xAccessToken" token
             ]
       }
 
@@ -92,3 +90,24 @@ parseBody response =
 alertResponseError message = do
       liftEffect $ CCN.alert message
       CMEC.throwError <<< EE.error $ "Error: " <> message
+
+
+---new
+
+errorMessage :: ClientError -> String
+errorMessage = case _ of
+      DecodeError { response: Response { body } } -> "Could not parse response from server"
+      StatusError { response: Response { body } } ->  body
+      RequestError { message } -> message
+
+request :: _
+request = PC.mkGuardedClient_ spec
+
+response :: forall a. Aff (ClientResponse a) -> Aff a
+response aff = do
+      result <- aff
+      case result of
+            Right r -> pure <<< _.body $ DN.unwrap r
+            Left err -> do
+                  liftEffect <<< CCN.alert $ errorMessage err
+                  CMEC.throwError <<< EE.error $ "Response error: " <> show err

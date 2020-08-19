@@ -12,6 +12,8 @@ import Data.Bifunctor as DB
 import Data.DateTime (Date, DateTime(..), Time(..))
 import Data.Either (Either(..))
 import Data.Enum as DE
+import Data.FormURLEncoded (FormURLEncoded(..))
+import Data.FormURLEncoded as DFU
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
 import Data.Hashable (class Hashable)
@@ -28,11 +30,18 @@ import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
+import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
 import Effect.Unsafe as EU
 import Foreign (Foreign, F)
 import Foreign as F
+import Payload.ContentType (json)
+import Payload.Headers as PH
+import Payload.ResponseTypes as PR
+import Payload.Server.DecodeBody (class DecodeBody)
+import Payload.Server.Response (class EncodeResponse)
 import Shared.Unsafe as SU
+import Simple.JSON as SJ
 import Unsafe.Coerce as UC
 
 foreign import data Editor :: Type
@@ -54,6 +63,15 @@ type BasicUser fields = {
 
 type NoPayload = Maybe Never
 
+type EmailCaptcha r = {
+      email:: String,
+      captchaResponse:: Maybe String |
+      r
+}
+
+-- | Fields for registration or login
+type RegisterLogin = (EmailCaptcha (password :: String))
+
 newtype Never = Never Never
 
 newtype RegisterLoginUser = RegisterLoginUser {
@@ -67,15 +85,6 @@ newtype MDateTime = MDateTime DateTime
 newtype MDate = MDate Date
 
 newtype PrimaryKey = PrimaryKey Int53
-
-type EmailCaptcha r = {
-      email:: String,
-      captchaResponse:: Maybe String |
-      r
-}
-
--- | Fields for registration or login
-type RegisterLogin = (EmailCaptcha (password :: String))
 
 newtype RecoverAccount = RecoverAccount (EmailCaptcha ())
 
@@ -135,15 +144,6 @@ data By =
 
 -- | Errors that should be reported back to the user
 data ResponseError =
-      NotFound {
-            reason :: String,
-            isPost :: Boolean
-      } |
-      LoginRequired {
-            next :: String,
-            isPost :: Boolean
-      } |
-      AnonymousRequired |
       BadRequest { reason :: String } |
       InternalError { reason :: String }
 

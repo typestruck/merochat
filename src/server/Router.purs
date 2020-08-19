@@ -21,15 +21,13 @@ import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Server.IM.Router as SIR
-import Server.Landing.Router as SLR
-import Server.Login.Router as SLIR
 import Server.Profile.Router as SPR
 import Server.Recover.Router as SRER
 import Server.Response as SRR
 import Server.Settings.Router as SSR
 import Server.Token as ST
 import Server.Types
-import Shared.Cookies (cookieName)
+import Server.Cookies (cookieName)
 import Shared.Header (xAccessToken)
 import Shared.Router as SRO
 import Shared.Router.Default as SRD
@@ -44,18 +42,7 @@ runRouter reading =
 --move path matching to individual folders?
 router :: Request -> ResponseEffect
 router request@{ headers, path, method } =
-      --landing
-      if paths == SRO.fromRoute Landing then
-            SLR.landing
-       else if paths == SRO.fromRoute Register && method == Post then
-            SLR.register request
-       --login
-       else if paths == SRD.login then
-            SLIR.login request
-       --im
-       else if paths == SRO.fromRoute IM then
-            SIR.im request
-       else if paths == SRD.contacts then
+      if paths == SRD.contacts then
             SIR.contacts request
        else if paths == SRO.fromRoute Suggestions then
             SIR.suggestions request
@@ -94,9 +81,8 @@ router request@{ headers, path, method } =
              else if configuration.development && path !@ 0 == "favicon.ico" then
                   SRR.serveDevelopmentFile ["media", "favicon.ico"]
              else
-                  RE.throw $ NotFound {
-                       reason: "Could not find resource: " <> H.fullPath request,
-                       isPost: method == Post
+                  RE.throw $ BadRequest {
+                       reason: "Could not find resource: " <> H.fullPath request
                   }
       where paths = "/" <> DS.joinWith "/" path
 

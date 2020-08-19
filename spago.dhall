@@ -13,6 +13,7 @@ You can edit this file as you like.
   , "enums"
   , "exceptions"
   , "flame"
+  , "form-urlencoded"
   , "formatters"
   , "http-methods"
   , "httpure"
@@ -21,6 +22,7 @@ You can edit this file as you like.
   , "node-fs"
   , "node-process"
   , "now"
+  , "payload"
   , "postgresql-client"
   , "prelude"
   , "psci-support"
@@ -34,8 +36,7 @@ You can edit this file as you like.
   , "web-dom"
   , "web-socket"
   , "web-storage"
-  , "web-uievents",
-  "payload"
+  , "web-uievents"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]

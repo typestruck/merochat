@@ -20,8 +20,10 @@ import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Guards as PSG
 import Payload.Server.Response as PRS
 import Payload.Server.Response as PSR
+import Payload.Server.Response as PSR
+import Server.Cookies (cookieName)
+import Server.Domain (domain)
 import Server.Token as ST
-import Shared.Cookies (cookieName)
 import Shared.Router as SR
 
 guards :: Configuration -> _
@@ -33,28 +35,38 @@ guards configuration = {
 checkLoggedUser :: Configuration -> Request -> Aff (Either (Response Empty) PrimaryKey)
 checkLoggedUser { development, tokenSecret } request = do
       headers <- PSG.headers request
-      if NH.requestMethod request == "POST" && (not development && PH.lookup "origin" headers /= Just "https://melan.chat/" || PH.lookup "content-type" headers /= Just json) then
+      if isPost && (not development && PH.lookup "origin" headers /= Just "https://melan.chat/" || PH.lookup "content-type" headers /= Just json) then
             badRequest
        else do
             cookies <- PSG.cookies request
             maybeUserID <- liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
             case maybeUserID of
                   Just userID -> pure $ Right userID
-                  _ -> redirectLogin
-      where redirectLogin = redirect $ Login { next: Just $ NH.requestURL request }
+                  _ ->
+                        if isPost then
+                              pure <<< Left $ PSR.unauthorized Empty
+                         else
+                              redirectLogin
+      where isPost = NH.requestMethod request == "POST"
+            redirectLogin = redirect $ Login { next: Just $ NH.requestURL request }
 
 checkAnonymous :: Configuration -> Request -> Aff (Either (Response Empty) Unit)
 checkAnonymous { development, tokenSecret } request = do
       headers <- PSG.headers request
-      if NH.requestMethod request == "POST" && (not development && PH.lookup "origin" headers /= Just "https://melan.chat/" || PH.lookup "content-type" headers /= Just json) then
+      if NH.requestMethod request == "POST" && (not development && PH.lookup "origin" headers /= Just domain) then
             badRequest
        else do
             cookies <- PSG.cookies request
             maybeUserID <- liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
             case maybeUserID of
-                  Just userID -> redirectIM
+                  Just userID ->
+                        if isPost then
+                              pure <<< Left $ PSR.forbidden Empty
+                         else
+                              redirectIM
                   _ -> pure $ Right unit
-      where redirectIM = redirect $ IM
+      where isPost = NH.requestMethod request == "POST"
+            redirectIM = redirect $ IM
 
 badRequest :: forall r. Aff (Either (Response Empty) r)
 badRequest = pure <<< Left $ PSR.badRequest Empty

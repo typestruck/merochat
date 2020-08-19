@@ -2,7 +2,7 @@ module Client.Common.Logout where
 
 import Prelude
 
-import Client.Common.Cookies as CCC
+
 import Client.Common.Location as CCL
 import Client.Common.Storage (tokenKey)
 import Client.Common.Storage as CCS
@@ -14,5 +14,5 @@ import Shared.Types (Route(..))
 logout :: Effect Unit
 logout = do
         CCS.removeItem tokenKey
-        CCC.removeMelanchatCookie
+--        CCC.removeMelanchatCookie
         CCL.setLocation Landing

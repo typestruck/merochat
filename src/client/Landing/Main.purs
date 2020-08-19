@@ -6,6 +6,7 @@ import Shared.Types
 import Client.Common.Captcha as CCC
 import Client.Common.DOM as CCD
 import Client.Common.External as CCE
+import Client.Common.Location as CCL
 import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Data.Either (Either(..))
@@ -19,6 +20,7 @@ import Web.Event.Internal.Types (Event)
 import Web.UIEvent.KeyboardEvent as WUK
 import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 import Web.UIEvent.MouseEvent.EventTypes (click)
+import Client.Common.Network (request)
 
 register :: Maybe String -> Effect Unit
 register captchaResponse = do
@@ -28,15 +30,13 @@ register captchaResponse = do
             Just rl ->
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
-                   else pure unit
-                        -- EA.launchAff_ do
-                        --       response <- CCNT.post Register <<< Just $ rl { captchaResponse = captchaResponse }
-                        --       case response of
-                        --             Right token -> enter token
-                        --             Left left -> liftEffect do
-                        --                   CCC.grecaptchaReset
-                        --                   CCN.alert left
- --     where enter token = liftEffect $ CCE.login token IM
+                   else EA.launchAff_ do
+                        response <- request.register $ { body: rl { captchaResponse = captchaResponse }}
+                        case response of
+                              Right _ -> liftEffect $ CCL.setLocation IM
+                              Left left -> liftEffect do
+                                    CCC.grecaptchaReset
+                                    CCN.alert $ CCNT.errorMessage left
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit

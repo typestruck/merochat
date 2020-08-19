@@ -83,18 +83,6 @@ requestError ohno = do
       case ohno of
             BadRequest { reason } -> jsonError H.badRequest' reason
             InternalError { reason } -> jsonError H.internalServerError' reason
-            AnonymousRequired -> redirect IM
-            LoginRequired { next, isPost } ->
-                  if isPost then
-                        jsonError (const <<< H.forbidden') next
-                   else
-                        redirect $ Login { next: Just next }
-            NotFound { reason, isPost } ->
-                  if isPost then
-                        jsonError (const <<< H.notFound') reason
-                   else do
-                        contents <- R.liftEffect SNT.template
-                        html contents
       where jsonError handler = R.liftAff <<< handler (headerContentType $ show JSON) <<< DAC.stringify <<< DAE.encodeJson
 
 throwInternalError :: forall whatever.  String -> ServerEffect whatever

@@ -20,7 +20,7 @@ import Server.Handler as SH
 import Server.InternalError.Template as SIT
 import Server.Response as SRR
 import Server.Router as SR
-import Server.Spec (spec)
+import Shared.Spec (spec)
 import Server.Types (Configuration(..), ContentType(..))
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW

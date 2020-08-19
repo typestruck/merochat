@@ -155,6 +155,8 @@ instance enumBenderAction :: Enum BenderAction where
 
 -------new
 
+type AOk = Record ()
+
 newtype Html = Html String
 
 derive instance newtypeHtml :: Newtype Html _

@@ -87,12 +87,6 @@ input, textarea {
     text-decoration: none;
 }
 
-input[type="submit"], input[type="button"] {
-    border: 1px solid orange;
-    color: orange;
-    font-weight: bold;
-}
-
 ul li {
     display: inline;
 }
