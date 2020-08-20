@@ -35,7 +35,7 @@ guards configuration = {
 checkLoggedUser :: Configuration -> Request -> Aff (Either (Response Empty) PrimaryKey)
 checkLoggedUser { development, tokenSecret } request = do
       headers <- PSG.headers request
-      if isPost && (not development && PH.lookup "origin" headers /= Just "https://melan.chat/" || PH.lookup "content-type" headers /= Just json) then
+      if isPost && (not development && PH.lookup "origin" headers /= Just domain || PH.lookup "content-type" headers /= Just json) then
             badRequest
        else do
             cookies <- PSG.cookies request

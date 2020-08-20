@@ -1,8 +1,8 @@
 module Shared.Settings.View where
 
 import Prelude
-import Shared.IM.Types
-import Shared.Profile.Types
+
+
 import Shared.Types
 
 import Data.Array ((:), (..))
@@ -10,7 +10,6 @@ import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.DateTime as SDT
-import Shared.Settings.Types (SettingsMessage(..), SettingsModel(..))
 import Shared.Unsafe as SU
 
 view :: SettingsModel -> Html SettingsMessage

@@ -1,6 +1,6 @@
 module Shared.IM.View.ProfileSettings where
 
-import Shared.IM.Types
+import Shared.Types
 import Prelude
 
 import Flame (Html)

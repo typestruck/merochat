@@ -31,7 +31,7 @@ login = do
       case maybeRegisterLogin of
             Nothing -> pure unit
             Just registerLogin -> EA.launchAff_ do
-                  void <<< CCNT.response $ request.logon { body: registerLogin }
+                  void <<< CCNT.response $ request.login.post { body: registerLogin }
                   liftEffect do
                         -- the location to go after login is either the query parameter next or /im
                         redirect <- CCL.search

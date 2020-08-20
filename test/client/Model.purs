@@ -1,7 +1,7 @@
 module Test.Client.Model where
 
 import Prelude
-import Shared.IM.Types
+
 import Shared.Types
 
 import Data.Maybe (Maybe(..))

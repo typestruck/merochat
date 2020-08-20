@@ -1,15 +1,15 @@
 module Client.IM.Flame where
 
 import Prelude
+import Shared.Types
 
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple)
 import Effect.Aff (Aff)
 import Flame ((:>))
 import Flame as F
 import Flame.Application.Effectful as FAE
-import Flame.Application.Effectful as FAE
-import Shared.IM.Types (IMMessage, IMModel(..))
+
 
 -- | This action does has no further effects
 type NoMessages = Tuple IMModel (Array (Aff (Maybe IMMessage)))

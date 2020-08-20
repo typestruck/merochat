@@ -1,7 +1,7 @@
 module Client.IM.UserMenu where
 
 import Prelude
-import Shared.IM.Types
+
 import Shared.Types
 
 import Client.Common.DOM as CCD

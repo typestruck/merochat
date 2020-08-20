@@ -1,7 +1,7 @@
 module Shared.IM.View.Suggestion where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Types
 
 import Control.Alt ((<|>))
 import Data.Maybe (Maybe(..))
@@ -14,7 +14,7 @@ import Shared.Avatar as SA
 profile :: IMModel -> Maybe IMUser -> Html IMMessage
 profile (IMModel { suggesting, chatting }) =
       case _ of
-            Just (IMUser { id, name, avatar, age, karma, headline, gender, country, languages, tags }) ->
+            Just ({ id, name, avatar, age, karma, headline, gender, country, languages, tags }) ->
                   HE.div (HA.class' "suggestion") [
                         HE.a [HA.class' "skip", HA.title "See previous profile again", HA.onClick PreviousSuggestion] [
                               HE.svg [HA.id "cil-arrow-thick-from-right", HA.viewBox "0 0 24 24", HA.class' "svg-50"] [

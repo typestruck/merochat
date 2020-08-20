@@ -8,8 +8,6 @@ import Affjax.RequestHeader (RequestHeader(..))
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
 import Client.Common.Notification as CCN
-import Client.Common.Storage (tokenKey)
-import Client.Common.Storage as CCS
 import Control.Monad.Error.Class as CMEC
 import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic.Rep (class DecodeRep)
@@ -46,9 +44,7 @@ post' route data' = do
 -- | Performs a POST request
 post :: forall contents c response r. Generic contents c => EncodeRep c => Generic response r => DecodeRep r => Route -> Maybe contents -> Aff (Either String response)
 post route data' = do
-      --see Token in shared/Types.purs
-      token <- liftEffect $ CCS.getToken
-      response <- A.request $ (defaultRequest route POST token) {
+      response <- A.request $ (defaultRequest route POST "token") {
             content = map (RB.json <<< DAEGR.genericEncodeJson) data'
       }
       parseBody response

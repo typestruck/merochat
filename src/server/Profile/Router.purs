@@ -16,7 +16,7 @@ import Server.Router.Session as SRS
 import Server.Types (ResponseEffect)
 import Shared.Router as SR
 import Shared.Types
-import Shared.IM.Types
+
 import Shared.Unsafe as SU
 
 profile :: Request -> ResponseEffect

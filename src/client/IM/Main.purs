@@ -1,14 +1,13 @@
 module Client.IM.Main where
 
 import Prelude
-import Shared.IM.Types
+
 
 import Client.Common.DOM (nameChanged)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
-import Client.Common.Storage as CCS
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
 import Client.IM.Flame as CIF
@@ -22,11 +21,10 @@ import Data.Array as DA
 import Data.DateTime (DateTime(..), Time(..))
 import Data.DateTime as DD
 import Data.Either (Either)
-import Data.Either as DE
+import Data.Either (fromRight) as DE
 import Data.Enum (class BoundedEnum)
-import Data.Enum as DE
+import Data.Enum (toEnum) as DE
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Class (liftEffect)
@@ -43,8 +41,7 @@ import Partial.Unsafe as UP
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Newtype as SN
-import Shared.Types (MDateTime(..), Route(..))
-import Shared.Unsafe as SU
+import Shared.Types
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
@@ -70,7 +67,7 @@ main = do
       --for drag and drop
       CCF.setUpBase64Reader fileReader (DA.singleton <<< ToggleImageForm <<< Just) channel
       --receive profile edition changes
-      CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetName)
+      CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
       --display settings/profile page
       FE.send [FE.onClick' [ShowUserContextMenu]] channel
       --image upload
@@ -108,12 +105,12 @@ update { webSocketRef, fileReader} model  =
             UpdateReadCount -> CICN.markRead webSocket model
             CheckFetchContacts -> CICN.checkFetchContacts model
             FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
-            DisplayContacts (ContactsPayload contacts) -> CICN.displayContacts contacts model
+            DisplayContacts contacts -> CICN.displayContacts contacts model
             DisplayMissedMessages (MissedMessagesPayload contacts) -> CICN.displayMissedMessages contacts model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
-            DisplayHistory (HistoryPayload history) -> CIH.displayHistory history model
+            DisplayHistory history -> CIH.displayHistory history model
             --suggestion
             PreviousSuggestion -> CIS.previousSuggestion model
             BlockUser id -> CIS.blockUser webSocket id model
@@ -128,13 +125,13 @@ update { webSocketRef, fileReader} model  =
             SetModalContents file root (ProfileSettingsPayload html) -> CIF.nothingNext model $ CIU.loadModal root html file
             SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
             --main
-            SetName name -> setName name model
+            SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
             ToggleOnline -> toggleOnline model
             CheckMissedMessages -> checkMissedMessages model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
             setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
-                  user = SN.updateUser user $ _ {
+                  user = user {
                         name = name
                   }
             }
@@ -145,8 +142,8 @@ update { webSocketRef, fileReader} model  =
             checkMissedMessages model@(IMModel { contacts }) =
                   model :> [ Just <<< DisplayMissedMessages <$> CCNT.get' (MissedMessages {
                               since: DM.fromMaybe (DateTime (DD.canonicalDate (toEnum' 1970) (toEnum' 1) (toEnum' 1)) $ Time (toEnum' 0) (toEnum' 0) (toEnum' 0) (toEnum' 0)) $ do
-                                    Contact { history } <- DA.head contacts
-                                    HistoryMessage { date: MDateTime dt }  <- DA.head history
+                                    { history } <- DA.head contacts
+                                    { date: MDateTime dt }  <- DA.head history
                                     pure dt
                             })]
             toEnum' :: forall a. BoundedEnum a => Int -> a

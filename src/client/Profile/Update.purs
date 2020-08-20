@@ -1,7 +1,7 @@
 module Client.Profile.Update where
 
 import Prelude
-import Shared.Profile.Types
+
 import Shared.Types
 
 import Client.Common.DOM (nameChanged)

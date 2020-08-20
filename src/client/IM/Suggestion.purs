@@ -1,7 +1,7 @@
 module Client.IM.Suggestion where
 
 import Prelude
-import Shared.IM.Types
+
 import Shared.Types
 
 import Client.Common.Network as CCN
@@ -75,7 +75,7 @@ removeBlockedUser blocked model@(IMModel { contacts, suggestions }) =
             contacts = DA.filter ((blocked /= _) <<< fromContact) contacts,
             suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
       }
-      where fromContact (Contact { user } ) = fromUser user
-            fromUser (IMUser { id }) = id
+      where fromContact { user } = fromUser user
+            fromUser { id } = id
 
 

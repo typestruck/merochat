@@ -2,13 +2,12 @@ module Shared.IM.Contact where
 
 import Data.Array ((!!))
 import Data.Maybe (Maybe)
-import Shared.IM.Types (Contact(..), IMUser(..))
-import Shared.Types (PrimaryKey(..))
+import Shared.Types
 import Shared.Unsafe as SU
 import Prelude
 
 defaultContact :: PrimaryKey -> IMUser -> Contact
-defaultContact id chatted = Contact {
+defaultContact id chatted = {
         shouldFetchChatHistory: false,
         user: chatted,
         chatStarter: id,

@@ -1,21 +1,22 @@
 module Shared.Newtype where
 
-import Shared.IM.Types
-import Shared.Profile.Types
+import Shared.Types
+import Prelude
 
 import Data.Newtype as DN
-import Shared.Settings.Types (SettingsModel(..))
 
 updateModel model f = DN.over IMModel f model
 
-updateUser user f = DN.over IMUser f user
+updateUserWrapper user f = DN.over IMUserWrapper f user
 
-updateHistoryMessage historyMessage f = DN.over HistoryMessage f historyMessage
+updateHistoryMessageWrapper historyMessage f = DN.over HistoryMessageWrapper f historyMessage
 
-updateContact contact f = DN.over Contact f contact
+updateContactWrapper contact f = DN.over ContactWrapper f contact
 
 updateProfileModel model f = DN.over ProfileModel f model
 
 updateProfile profileUser f = DN.over ProfileUser f profileUser
 
 updateSettingsModel model f = DN.over SettingsModel f model
+
+unwrapAll = map (map DN.unwrap)

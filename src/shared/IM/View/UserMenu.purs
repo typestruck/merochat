@@ -1,7 +1,7 @@
 module Shared.IM.View.UserMenu where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Types
 
 import Flame (Html)
 import Flame.HTML.Attribute as HA
@@ -9,7 +9,7 @@ import Flame.HTML.Element as HE
 import Shared.Avatar as SA
 
 userMenu :: IMModel -> Html IMMessage
-userMenu (IMModel { user: IMUser { name, avatar, karma }, userContextMenuVisible }) =  HE.div [HA.id "settings", HA.class' "settings"][
+userMenu (IMModel { user: { name, avatar, karma }, userContextMenuVisible }) =  HE.div [HA.id "settings", HA.class' "settings"][
       HE.a (HA.onClick (ToggleProfileSettings ShowProfile)) $ HE.img [HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
       HE.div (HA.class' "settings-name") [
             HE.strong_ name,

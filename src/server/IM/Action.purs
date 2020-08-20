@@ -2,11 +2,11 @@ module Server.IM.Action where
 
 import Prelude
 import Server.Types
-import Shared.IM.Types
+
 import Shared.Types
 
 import Data.Array as DA
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Foldable as DF
 import Data.Foldable as FD
 import Data.HashMap as DH
@@ -30,27 +30,29 @@ import Shared.Unsafe as SU
 foreign import sanitize :: String -> String
 
 suggest :: PrimaryKey -> ServerEffect (Array IMUser)
-suggest id = SID.suggest id
+suggest id = SN.unwrapAll $ SID.suggest id
 
+--REFACTOR: dont just use id for loggedUserID
 contactList :: PrimaryKey -> Int -> ServerEffect (Array Contact)
 contactList id page = do
-      contacts <- SID.presentContacts id page
-      history <- SID.chatHistory id $ map (_.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
-      let userHistory = DF.foldl intoHashMap  DH.empty history
+      contacts <- SN.unwrapAll $ SID.presentContacts id page
+      history <- SN.unwrapAll <<< SID.chatHistory id $ map (_.id <<< _.user) contacts
+      let userHistory = DF.foldl intoHashMap DH.empty history
       pure $ intoContacts userHistory <$> contacts
 
-      where intoHashMap hashMap m@(HistoryMessage { sender, recipient }) =
+      where intoHashMap hashMap m@{ sender, recipient } =
                   DH.insertWith (<>) (if sender == id then recipient else sender) [m] hashMap
 
-            intoContacts userHistory contact@(Contact { user: IMUser { id } }) = SN.updateContact contact $ _ {
+            intoContacts userHistory contact@{ user: { id } } = contact {
                   history = SU.fromJust $ DH.lookup id userHistory
             }
 
+--REFACTOR: type synonym for second primary key parameter
 singleContact :: PrimaryKey -> PrimaryKey -> ServerEffect Contact
 singleContact id otherID = do
-      contact <- SID.presentSingleContact id otherID
-      history <- SID.chatHistoryBetween id otherID 0
-      pure <<< SN.updateContact contact $ _ {
+      contact <- DN.unwrap <$> SID.presentSingleContact id otherID
+      history <- SN.unwrapAll $ SID.chatHistoryBetween id otherID 0
+      pure $ contact {
             history = history
       }
 
@@ -89,12 +91,15 @@ blockUser id otherID = do
 
 missedMessages :: PrimaryKey -> DateTime -> ServerEffect (Array Contact)
 missedMessages id since = do
-      history <- SID.chatHistorySince id since
-      contacts <- SID.presentSelectedContacts <<< DA.nubEq $ map (_.sender <<< DN.unwrap) history
+      history <- SN.unwrapAll $ SID.chatHistorySince id since
+      contacts <- SN.unwrapAll <<< SID.presentSelectedContacts <<< DA.nubEq $ map _.sender history
       let userHistory = DF.foldl (intoHashMap id) DH.empty history
       pure $ intoContacts userHistory <$> contacts
 
-      where intoHashMap userID hashMap m@(HistoryMessage { recipient }) = DH.insertWith (<>) recipient [m] hashMap
-            intoContacts userHistory contact@(Contact { user: IMUser { id } }) = SN.updateContact contact $ _ {
+      where intoHashMap userID hashMap m@{ recipient } = DH.insertWith (<>) recipient [m] hashMap
+            intoContacts userHistory contact@{ user: { id } } = contact {
                   history = SU.fromJust $ DH.lookup id userHistory
             }
+
+history :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
+history loggedUserID with skip = SN.unwrapAll $ SID.chatHistoryBetween loggedUserID with skip

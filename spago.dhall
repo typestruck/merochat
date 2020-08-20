@@ -13,6 +13,7 @@ You can edit this file as you like.
   , "enums"
   , "exceptions"
   , "flame"
+  , "foreign-object"
   , "form-urlencoded"
   , "formatters"
   , "http-methods"

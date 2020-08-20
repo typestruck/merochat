@@ -31,7 +31,7 @@ register captchaResponse = do
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
                    else EA.launchAff_ do
-                        response <- request.register $ { body: rl { captchaResponse = captchaResponse }}
+                        response <- request.landing.register $ { body: rl { captchaResponse = captchaResponse }}
                         case response of
                               Right _ -> liftEffect $ CCL.setLocation IM
                               Left left -> liftEffect do

@@ -2,7 +2,7 @@ module Server.Profile.Action where
 
 import Prelude
 import Server.Types hiding (BenderAction(..))
-import Shared.Profile.Types
+
 import Shared.Types
 
 import Data.Array as DA

@@ -12,9 +12,8 @@ import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
 import Flame.Application.Effectful as FAE
 import Shared.DateTime as SDT
-import Shared.Profile.Types (Editors, ProfileMessage(..))
 import Shared.Profile.View as SPV
-import Shared.Types (Editor)
+import Shared.Types
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC

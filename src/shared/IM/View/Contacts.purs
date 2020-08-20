@@ -1,7 +1,7 @@
 module Shared.IM.View.Contacts where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Types
 
 import Data.Array as DA
 import Data.Enum as DE
@@ -14,21 +14,20 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.Avatar as SA
 import Shared.Markdown as SM
-import Shared.Types (MDateTime(..))
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: IMUser { id: userID } }) = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList (IMModel { contacts, user: { id: userID } }) = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
       where getDate history = do
-                  HistoryMessage { date: MDateTime md } <- DA.last history
+                  { date: MDateTime md } <- DA.last history
                   pure md
-            compareDates (Contact contact) (Contact anotherContact) = compare (getDate anotherContact.history) (getDate contact.history)
+            compareDates contact anotherContact = compare (getDate anotherContact.history) (getDate contact.history)
 
-            countUnread total (HistoryMessage { status, sender }) = total + DE.fromEnum (sender /= userID && status == Unread)
+            countUnread total { status, sender } = total + DE.fromEnum (sender /= userID && status == Unread)
             showUnreadCount history' = let count = DF.foldl countUnread 0 history' in if count == 0 then "" else show count
             --should only work for text messages!
-            lastMessage = DM.maybe "" (SM.toRestrictedHTML <<< _.content <<< DN.unwrap) <<< DA.last
+            lastMessage = DM.maybe "" (SM.toRestrictedHTML <<< _.content) <<< DA.last
 
-            contactEntry index (Contact { history, user: IMUser { id, name, avatar, headline }}) =
+            contactEntry index ({ history, user: { id, name, avatar, headline }}) =
                   HE.div [HA.class' "contact", HA.onClick $ ResumeChat id] [
                         HE.img [HA.class' "avatar-contact-list", HA.src $ SA.avatarForRecipient (Just index) avatar],
                         HE.div [HA.class' "contact-profile"] [

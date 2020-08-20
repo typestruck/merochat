@@ -1,7 +1,7 @@
 module Test.Client.IM.Chat where
 
 import Prelude
-import Shared.IM.Types
+
 import Shared.Types
 
 import Client.IM.Chat as CIC
@@ -21,7 +21,7 @@ import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
-import Test.Client.Model (anotherIMUser, anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion)
+import Test.Client.Model (anotherIMUser, anotherIMUserID, contact, contactID, , imUser, imUserID, model, suggestion)
 import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -44,12 +44,12 @@ tests = do
 
             TU.test "sendMessage adds message to history" do
                   date <- liftEffect $ map MDateTime EN.nowDateTime
-                  let IMModel { user: IMUser { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage content date model
+                  let IMModel { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage content date model
                       Contact user = SN.fromJust "test" do
                         index <- chatting
                         contacts !! index
 
-                  TUA.equal [HistoryMessage {
+                  TUA.equal [ {
                         date: _.date $ DN.unwrap (user.history !@ 0),
                         recipient: _.id $ DN.unwrap user.user,
                         status: Unread,
@@ -58,14 +58,14 @@ tests = do
                         sender: userID
                   }] user.history
 
-            let recipientMessage = SN.updateHistoryMessage historyMessage $ _ {
+            let recipientMessage = SN.update  $ _ {
                   sender = anotherIMUserID,
                   recipient = imUserID
             }
 
             TU.test "makeTurn calculate turn" do
-                  let contact' = SN.updateContact contact $ _ {
-                        history = [historyMessage, recipientMessage, historyMessage]
+                  let contact' = contact {
+                        history = [, recipientMessage, ]
                   }
                       turn = Just $ Turn {
                             chatAge: 0.0,
@@ -85,8 +85,8 @@ tests = do
                   TUA.equal Nothing <<< CIC.makeTurn contact $ SP.fromInt 90000
 
             TU.test "makeTurn don't calculate turn if last message isn't from the sender" do
-                  let contact' = SN.updateContact contact $ _ {
-                        history = [historyMessage, recipientMessage, historyMessage, recipientMessage]
+                  let contact' = contact {
+                        history = [, recipientMessage, , recipientMessage]
                   }
                   TUA.equal Nothing $ CIC.makeTurn contact' contactID
 
@@ -119,15 +119,15 @@ tests = do
                       IMModel { chatting } = DT.fst $ CIC.beforeSendMessage model' content
                   TUA.equal (Just 0) chatting
 
-            let IMUser { id: recipientID } = imUser
+            let { id: recipientID } = imUser
                 messageID = SP.fromInt 1
                 newMessageID = SP.fromInt 101
 
             TU.test "receiveMessage substitutes temporary id" do
                   date <- liftEffect $ map MDateTime EN.nowDateTime
                   let IMModel {contacts} = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
-                        contacts = [SN.updateContact contact $ _ {
-                              history = [HistoryMessage {
+                        contacts = [contact {
+                              history = [ {
                                     status: Unread,
                                     date,
                                     id: messageID,
@@ -153,7 +153,7 @@ tests = do
                               content,
                               user: Right anotherIMUserID
                         }
-                  TUA.equal (Just $ HistoryMessage {
+                  TUA.equal (Just $  {
                         status: Unread,
                         id: newMessageID,
                         content,
@@ -174,7 +174,7 @@ tests = do
                               user: Left anotherIMUser
                         }
                   TUA.equal (_.history $ DN.unwrap (contacts !@ 0)) [
-                        HistoryMessage {
+                         {
                               status: Unread,
                               id: newMessageID,
                               sender: anotherIMUserID,
@@ -211,10 +211,10 @@ tests = do
                               content,
                               date
                         }
-                      suggestionToContact = Just $ SN.updateContact contact $ _ {
+                      suggestionToContact = Just $ contact {
                         chatStarter = anotherIMUserID,
                         user = anotherIMUser,
-                        history = [HistoryMessage
+                        history = [
                         {
                               status: Read,
                               id: newMessageID,
@@ -239,7 +239,7 @@ tests = do
                               content,
                               date
                         }
-                  TUA.equal [Tuple newMessageID Read] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
+                  TUA.equal [Tuple newMessageID Read] <<< map (\( { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
 
             TU.test "receiveMessage marks messages as read if window is not focused" do
                   date <- liftEffect $ map MDateTime EN.nowDateTime
@@ -253,11 +253,11 @@ tests = do
                               content,
                               date
                         }
-                  TUA.equal [Tuple newMessageID Unread] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
+                  TUA.equal [Tuple newMessageID Unread] <<< map (\( { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
 
       where getHistory contacts = do
-                  Contact { history } <- DA.head contacts
+                  { history } <- DA.head contacts
                   DA.head history
             getMessageID contacts = do
-                  HistoryMessage { id } <- getHistory contacts
+                   { id } <- getHistory contacts
                   pure id

@@ -8,7 +8,7 @@ import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
 import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
 import Data.Generic.Rep (class Generic)
-import Data.Map (Map)
+import Data.HashMap (HashMap)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
@@ -71,7 +71,7 @@ type BaseReader extension = {
 type WebSocketReader = BaseReader (
       sessionUserID :: PrimaryKey,
       connection :: WebSocketConnection,
-      allConnections:: Ref (Map PrimaryKey WebSocketConnection)
+      allConnections:: Ref (HashMap PrimaryKey WebSocketConnection)
 )
 
 type ServerReader = BaseReader (

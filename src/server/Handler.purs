@@ -19,6 +19,7 @@ import Payload.Server.Response as PSR
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.NotFound.Handler as SNH
 import Server.InternalError.Handler as SIEH
 import Server.IM.Handler as SIH
 import Server.Landing.Handler as SLH
@@ -26,11 +27,21 @@ import Server.Login.Handler as SLGH
 
 handlers :: ServerReader -> _
 handlers reading = {
-      landing: runHTML reading SLH.landing,
-      register: runJSON reading SLH.register,
-      im: runHTML reading SIH.im,
-      login: runHTML reading SLGH.login,
-      logon: runJSON reading SLGH.logon,
+      landing: {
+            landing: runHTML reading SLH.landing,
+            register: runJSON reading SLH.register
+      },
+      im: {
+            im: runHTML reading SIH.im,
+            contacts: runJSON reading SIH.contacts,
+            singleContact: runJSON reading SIH.singleContact,
+            history: runJSON reading SIH.history
+      },
+      login: {
+            get: runHTML reading SLGH.login,
+            post: runJSON reading SLGH.logon
+      },
+      notFound: runHTML reading SNH.notFound,
       developmentFiles: developmentFiles
 }
 
@@ -51,9 +62,9 @@ runJSON reading handler =
       R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right <<< handler
       where requestError ohno = do
                   R.liftEffect <<< EC.log $ "server error " <> show ohno
-                  case ohno of
-                        BadRequest { reason } -> pure <<< Left $ PSR.badRequest reason
-                        InternalError { reason } -> pure <<< Left $ PSR.internalError reason
+                  pure <<< Left $ case ohno of
+                        BadRequest { reason } -> PSR.badRequest reason
+                        InternalError { reason } -> PSR.internalError reason
 
 developmentFiles :: { params :: { path :: List String } } -> Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}

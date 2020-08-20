@@ -20,17 +20,16 @@ import Routing.Duplex as RD
 import Routing.Duplex.Generic as RDG
 import Routing.Duplex.Generic.Syntax ((/), (?))
 import Routing.Duplex.Parser (RouteError)
+import Shared.DateTime (dateFormat)
+import Shared.DateTime as SDT
 import Shared.Unsafe as SU
 
 --REFACTOR: use payload type level urls
 routes :: RouteDuplex' Route
 routes = RD.root $ RDG.sum {
       "Landing" : RDG.noArgs,
-      "Register" : "register" / RDG.noArgs,
       "Login": "login" ? { next: RD.optional <<< RD.string },
       "IM": "im" / RDG.noArgs,
-      "SingleContact": "im" / "contact" ? { id: parsePrimaryKey },
-      "Contacts" : "im" / "contacts" ? { skip: RD.int },
       "Suggestions" : "im" / "suggestions" / RDG.noArgs,
       "Profile": "profile" / RDG.noArgs,
       "Generate":  "profile" / "generate" ? { what: parseWhat },
@@ -40,15 +39,12 @@ routes = RD.root $ RDG.sum {
       "Recover": "recover" ? { token: RD.optional <<< RD.string },
       "AccountPassword": "settings" / "password" / RDG.noArgs,
       "Terminate": "settings" / "close" / RDG.noArgs,
-      "History" : "im" / "history" ? { skip: RD.int, with: parsePrimaryKey },
       "Block" : "im" / "block" ? { id: parsePrimaryKey },
       "MissedMessages": "im" / "missed" ? { since: parseDate }
 }
       where parseWhat = RD.as show (DM.maybe (Left "error parsing what parameter") Right <<< DSR.read)
-            parsePrimaryKey = RD.as (DS.replace (Pattern ".0") (Replacement "") <<< show <<< DI.toNumber <<< DN.unwrap) (DM.maybe (Left "error parsing what parameter") (Right <<< PrimaryKey) <<< DI.fromString)
-            parseDate = RD.as (DFD.format dateFormat) (DFD.unformat dateFormat)
-
-            dateFormat = DL.singleton UnixTimestamp
+            parsePrimaryKey = RD.as (DI.toString <<< DN.unwrap) (DM.maybe (Left "error parsing what parameter") (Right <<< PrimaryKey) <<< DI.fromString)
+            parseDate = RD.as SDT.formatDateTime SDT.unformatDateTime
 
 toRoute :: String -> Either RouteError Route
 toRoute = RD.parse routes

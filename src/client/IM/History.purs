@@ -2,10 +2,10 @@ module Client.IM.History where
 
 import Client.IM.Flame
 import Prelude
-import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.DOM as CCD
+import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
@@ -36,24 +36,20 @@ checkFetchHistory model@(IMModel { freeToFetchChatHistory })
 fetchHistory :: Boolean -> IMModel -> MoreMessages
 fetchHistory shouldFetch model@(IMModel { chatting, contacts })
       | shouldFetch =
-            let Contact { history, user: IMUser { id } } = SIC.chattingContact contacts chatting
+            let { history, user: { id } } = SIC.chattingContact contacts chatting
             in (SN.updateModel model $ _ {
                   freeToFetchChatHistory = false
-            }) :> [ Just <<< DisplayHistory <$> CCN.get' (History {
-                        skip: DA.length history,
-                        with: id
-                  })
-            ]
+            }) :> [ Just <<< DisplayHistory <$> CCN.response (request.im.history { query: { with: id, skip: DA.length history  } })   ]
       | otherwise = F.noMessages model
 
 displayHistory :: Array HistoryMessage -> IMModel -> NoMessages
 displayHistory chatHistory model@(IMModel { chatting, contacts }) =
-      let   contact@(Contact { history, shouldFetchChatHistory }) = SIC.chattingContact contacts chatting
+      let   contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
             updatedModel = SN.updateModel model $ _ {
                   freeToFetchChatHistory = true,
                   contacts = SU.fromJust do
                         index <- chatting
-                        let contact' = SN.updateContact contact $ _ {
+                        let contact' = contact {
                               history = chatHistory <> history
                         }
                         DA.updateAt index contact' contacts

@@ -2,8 +2,8 @@
 module Shared.Profile.View where
 
 import Prelude
-import Shared.IM.Types
-import Shared.Profile.Types
+
+
 import Shared.Types
 
 import Shared.Avatar as SA

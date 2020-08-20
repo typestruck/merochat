@@ -1,7 +1,7 @@
 module Server.Profile.Template where
 
 import Prelude
-import Shared.Profile.Types
+
 
 import Data.Date as DD
 import Data.Enum as DE
@@ -14,7 +14,7 @@ import Flame (QuerySelector(..))
 import Flame as F
 import Shared.DateTime as SDT
 import Shared.Profile.View as SPV
-import Shared.Types (PrimaryKey(..))
+import Shared.Types
 
 template :: { user :: ProfileUser, countries :: Array (Tuple PrimaryKey String), languages :: Array (Tuple PrimaryKey String) } -> Effect String
 template {user: user@(ProfileUser { birthday }), countries, languages } = do

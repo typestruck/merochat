@@ -3,10 +3,10 @@ module Client.IM.Contacts where
 import Debug.Trace
 import Debug.Trace
 import Prelude
-import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.DOM as CCD
+import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
@@ -41,8 +41,8 @@ import Web.UIEvent.WheelEvent as WUW
 
 resumeChat :: PrimaryKey -> IMModel -> MoreMessages
 resumeChat searchID model@(IMModel { contacts, chatting }) =
-      let   index = DA.findIndex ((searchID == _) <<< _.id <<< DN.unwrap <<< _.user <<< DN.unwrap) contacts
-            Contact { shouldFetchChatHistory, history, user: IMUser { id } } = SIC.chattingContact contacts index
+      let   index = DA.findIndex ((searchID == _) <<< _.id <<< _.user) contacts
+            { shouldFetchChatHistory, history, user: { id } } = SIC.chattingContact contacts index
       in
             if index == chatting then
                   F.noMessages model
@@ -59,7 +59,7 @@ markRead :: WebSocket -> IMModel -> MoreMessages
 markRead webSocket =
       case _ of
             model@(IMModel {
-                  user: IMUser { id: userID },
+                  user: { id: userID },
                   contacts,
                   chatting: Just index
             }) -> updateReadHistory model {
@@ -77,8 +77,8 @@ updateReadHistory :: IMModel -> {
       chatting :: Int
 } -> MoreMessages
 updateReadHistory model { webSocket, chatting, userID, contacts } =
-      let contactRead@(Contact { history }) = contacts !@ chatting
-          messagesRead = DA.mapMaybe (unreadID userID) <<< _.history $ DN.unwrap contactRead
+      let contactRead@{ history } = contacts !@ chatting
+          messagesRead = DA.mapMaybe (unreadID userID) history
       in if DA.null messagesRead then
             CIF.nothingNext model scroll
           else
@@ -86,16 +86,16 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
                   confirmRead messagesRead
                   scroll
 
-      where unreadID userID (HistoryMessage { recipient, id, status })
+      where unreadID userID ( { recipient, id, status })
                   | status == Unread && recipient == userID = Just id
                   | otherwise = Nothing
 
-            read userID historyEntry@(HistoryMessage { recipient, id, status })
-                  | status == Unread && recipient == userID = SN.updateHistoryMessage historyEntry $ _ { status = Read }
+            read userID historyEntry@( { recipient, id, status })
+                  | status == Unread && recipient == userID = historyEntry { status = Read }
                   | otherwise = historyEntry
 
-            updateContacts contactRead@(Contact { history }) = SN.updateModel model $ _ {
-                  contacts = SU.fromJust $ DA.updateAt chatting (SN.updateContact contactRead $ _ { history = map (read userID) history }) contacts
+            updateContacts contactRead@{ history } = SN.updateModel model $ _ {
+                  contacts = SU.fromJust $ DA.updateAt chatting (contactRead { history = map (read userID) history }) contacts
             }
 
             confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages { ids: messages }
@@ -119,7 +119,7 @@ fetchContacts :: Boolean -> IMModel -> MoreMessages
 fetchContacts shouldFetch model@(IMModel { contacts, freeToFetchContactList })
       | shouldFetch = (SN.updateModel model $ _ {
                   freeToFetchContactList = false
-            }) :> [Just <<< DisplayContacts <$> CCN.get' (Contacts { skip: DA.length contacts })]
+            }) :> [Just <<< DisplayContacts <$> (CCN.response $ request.im.contacts { query: { skip: DA.length contacts }})]
       | otherwise =F.noMessages model
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
@@ -147,5 +147,5 @@ displayMissedMessages missedContacts model@(IMModel { contacts }) =
                   contact <- missedContacts !! existingIndex
                   pure $ Tuple index contact
 
-            findContact (Contact {user: IMUser { id }}) = DA.findIndex (sameContact id) contacts
-            sameContact userID (Contact {user: IMUser { id }}) = userID == id
+            findContact ({user: { id }}) = DA.findIndex (sameContact id) contacts
+            sameContact userID ({user: { id }}) = userID == id

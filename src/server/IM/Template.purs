@@ -1,7 +1,7 @@
 module Server.IM.Template where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))

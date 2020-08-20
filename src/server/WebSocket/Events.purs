@@ -2,15 +2,20 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Types
-import Shared.IM.Types
+
 import Shared.Types
 
+import Browser.Cookies.Internal as BCI
+import Data.Array as DA
 import Data.Either as DE
-import Data.Map (Map)
-import Data.Map as DM
+import Data.HashMap (HashMap)
+import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (Pool)
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff as CMEC
 import Effect.Aff as EA
@@ -20,7 +25,9 @@ import Effect.Exception (Error, throw)
 import Effect.Now as EN
 import Effect.Ref (Ref)
 import Effect.Ref as ER
+import Foreign.Object as FO
 import Node.HTTP (Request)
+import Node.HTTP as NH
 import Partial.Unsafe as PU
 import Run as R
 import Run.Except as RE
@@ -36,19 +43,18 @@ import Shared.JSON as SJ
 handleError :: Error -> Effect Unit
 handleError = EC.log <<< show
 
---here it seems like the only way is get the cookie token and transform into a post token
-handleClose :: Configuration -> Ref (Map PrimaryKey WebSocketConnection) -> Request -> CloseCode -> CloseReason -> Effect Unit
-handleClose configuration allConnections request _ _ = pure unit
+handleClose ::  Ref (HashMap PrimaryKey WebSocketConnection) -> PrimaryKey -> CloseCode -> CloseReason -> Effect Unit
+handleClose allConnections id _ _ = ER.modify_ (DH.delete id) allConnections
 
 --REFACTOR: untangle the im logic from the websocket logic
 handleMessage ::  WebSocketPayloadServer -> WebSocketEffect
 handleMessage payload = do
       { connection, sessionUserID, allConnections } <- RR.ask
       case payload of
-            Connect -> R.liftEffect $ ER.modify_ (DM.insert sessionUserID connection) allConnections
+            Connect -> R.liftEffect $ ER.modify_ (DH.insert sessionUserID connection) allConnections
             ReadMessages { ids } -> SID.markRead sessionUserID ids
             ToBlock { id } -> do
-                  possibleConnection <- R.liftEffect (DM.lookup id <$> ER.read allConnections)
+                  possibleConnection <- R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \recipientConnection -> sendWebSocketMessage recipientConnection $ BeenBlocked { id: sessionUserID }
             ServerMessage {id, userID: recipient, content, turn} -> do
                   date <- R.liftEffect $ map MDateTime EN.nowDateTime
@@ -59,7 +65,7 @@ handleMessage payload = do
                         userID: sessionUserID
                   }
 
-                  possibleRecipientConnection <- R.liftEffect (DM.lookup recipient <$> ER.read allConnections)
+                  possibleRecipientConnection <- R.liftEffect (DH.lookup recipient <$> ER.read allConnections)
                   whenJust possibleRecipientConnection $ \recipientConnection ->
                         sendWebSocketMessage recipientConnection $ ClientMessage {
                               id : messageID,
@@ -74,21 +80,24 @@ handleMessage payload = do
                   Nothing -> pure unit
                   Just v -> f v
 
-handleConnection :: Configuration -> Pool -> Ref (Map PrimaryKey WebSocketConnection) -> WebSocketConnection -> Request -> Effect Unit
+handleConnection :: Configuration -> Pool -> Ref (HashMap PrimaryKey WebSocketConnection) -> WebSocketConnection -> Request -> Effect Unit
 handleConnection c@{ tokenSecret } pool allConnections connection request = do
-      SW.onError connection handleError
-      SW.onClose connection $ handleClose c allConnections request
-      SW.onMessage connection runMessageHandler
-      where runMessageHandler (WebSocketMessage message) = do
-                  let WebSocketTokenPayloadServer token payload = PU.unsafePartial (DE.fromRight $ SJ.fromJSON message)
-                  maybeUserID <- ST.userIDFromToken tokenSecret token
-                  case maybeUserID of
-                        Nothing -> do
-                              SW.close connection
-                              EC.log "closed due to auth error"
-                        Just sessionUserID -> do
-                              let run = R.runBaseAff' <<< RE.catch (reportError payload) <<< RR.runReader { allConnections, pool, sessionUserID, connection } $ handleMessage payload
-                              EA.launchAff_ $ run `CMEC.catchError` (reportError payload)
+      let token = DM.fromMaybe "" do
+            value <- FO.lookup "cookie" $ NH.requestHeaders request
+            _.value <<< DN.unwrap <$> DA.head (BCI.bakeCookies value)
+      maybeUserID <- ST.userIDFromToken tokenSecret token
+      case maybeUserID of
+            Nothing -> do
+                  SW.close connection
+                  EC.log "closed due to auth error"
+            Just sessionUserID -> do
+                  SW.onError connection handleError
+                  SW.onClose connection (handleClose allConnections sessionUserID)
+                  SW.onMessage connection (runMessageHandler sessionUserID)
+      where runMessageHandler sessionUserID (WebSocketMessage message) = do
+                  let   payload = PU.unsafePartial (DE.fromRight $ SJ.fromJSON message)
+                        run = R.runBaseAff' <<< RE.catch (reportError payload) <<< RR.runReader { allConnections, pool, sessionUserID, connection } $ handleMessage payload
+                  EA.launchAff_ $ run `CMEC.catchError` (reportError payload)
             reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> a -> b Unit
             reportError = const <<< sendWebSocketMessage connection <<< PayloadError
 

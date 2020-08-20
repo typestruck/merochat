@@ -42,14 +42,9 @@ runRouter reading =
 --move path matching to individual folders?
 router :: Request -> ResponseEffect
 router request@{ headers, path, method } =
-      if paths == SRD.contacts then
-            SIR.contacts request
-       else if paths == SRO.fromRoute Suggestions then
+
+       if paths == SRO.fromRoute Suggestions then
             SIR.suggestions request
-       else if paths == SRD.history then
-            SIR.history request
-       else if paths == SRD.singleContact then
-            SIR.singleContact request
        else if paths == SRD.blockUser then
             SIR.blockUser request
        else if paths == SRD.missedMessages then

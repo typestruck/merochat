@@ -1,9 +1,8 @@
 module Client.IM.WebSocket (sendPayload, module WSW, module WSEM, module WSEE, createWebSocket) where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Types
 
-import Client.Common.Storage as CCS
 import Effect (Effect)
 import Shared.JSON as SJ
 import Shared.WebSocketOptions (port)
@@ -17,6 +16,4 @@ createWebSocket :: Effect WebSocket
 createWebSocket = WSWS.create ("ws://localhost:" <> show port) []
 
 sendPayload :: WebSocket -> WebSocketPayloadServer -> Effect Unit
-sendPayload ws payload = do
-        token <- CCS.getToken
-        WSWS.sendString ws <<< SJ.toJSON $ WebSocketTokenPayloadServer token payload
+sendPayload ws = WSWS.sendString ws <<< SJ.toJSON

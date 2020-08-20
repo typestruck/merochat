@@ -15,9 +15,7 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Record as R
 import Shared.Newtype as SN
-import Shared.Router as SRO
-import Shared.Settings.Types (SettingsMessage(..), SettingsModel(..))
-import Shared.Types (Ok(..), Route(..), NoPayload)
+import Shared.Types
 
 update :: AffUpdate SettingsModel SettingsMessage
 update { model, message } =

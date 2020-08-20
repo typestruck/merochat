@@ -1,7 +1,6 @@
 module Server.Settings.Action where
 
 import Prelude
-import Shared.Settings.Types
 import Shared.Types
 
 import Data.Maybe as DM
@@ -11,7 +10,6 @@ import Server.Response as SSR
 import Server.Settings.Database as SSD
 import Server.Token as ST
 import Server.Types (ServerEffect)
-import Shared.Settings.Types (SettingsModel(..))
 import Shared.Unsafe as SU
 
 blankEmailMessage :: String

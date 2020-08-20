@@ -4,13 +4,12 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Data.Traversable as DT
-import Data.Tuple (Tuple(..))
+import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
-import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, Pool, Query(..), Row0(..), Row1(..), Row2(..))
+import Database.PostgreSQL (Query(..), Row0(..), Row1(..), Row2(..))
 import Server.Database as SD
-import Server.Types (ProfileUserEdition, ServerEffect)
-import Shared.Profile.Types (ProfileUser(..))
-import Shared.Types (MDate(..), PrimaryKey)
+import Server.Types
+import Shared.Types
 
 profilePresentationFields :: String
 profilePresentationFields = """ u.id,

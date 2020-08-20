@@ -1,7 +1,7 @@
 module Server.Wheel where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Types
 
 import Data.Int53 as DI
 import Data.String as DS

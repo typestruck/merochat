@@ -1,7 +1,7 @@
 module Shared.IM.View where
 
 import Prelude
-import Shared.IM.Types
+
 
 import Control.Alt ((<|>))
 import Data.Array ((:))
@@ -47,10 +47,10 @@ view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettin
       where Tuple profileUser historyContact =
                   case Tuple suggesting chatting of
                         Tuple Nothing (Just index) ->
-                              let contact@(Contact { user }) = contacts !@ index
+                              let contact@{ user }= contacts !@ index
                               in Tuple (Just user) $ Just contact
                         Tuple (Just index) _ ->
-                              let user@(IMUser { id }) = suggestions !@ index
+                              let user@{ id } = suggestions !@ index
                               in Tuple (Just user) <<< Just $ SIC.defaultContact id user
                         _ -> Tuple Nothing Nothing
 
