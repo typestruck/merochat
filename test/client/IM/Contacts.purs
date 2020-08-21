@@ -8,10 +8,10 @@ import Data.Tuple as DT
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Prelude (discard, map, ($), (<<<))
-import Shared.IM.Types (Contact, HistoryMessage(..), IMModel(..), MessageStatus(..))
+ (Contact, (..), IMModel(..), MessageStatus(..))
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
-import Shared.Types (MDateTime(..), PrimaryKey(..))
+import Shared.Types (DateTimeWrapper(..), PrimaryKey(..))
 import Shared.Unsafe ((!@))
 import Test.Client.Model (contact, imUser, anotherIMUserID)
 import Test.Client.Model as TCM
@@ -31,7 +31,7 @@ tests = do
             TU.test "resumeChat sets chatting" do
                   let m@(IMModel { chatting }) = DT.fst <<< CICN.resumeChat anotherIMUserID <<< SN.updateModel model $ _ {
                         chatting = Nothing,
-                        contacts = [SN.updateContact contact $ _ { user = imUser } , contact]
+                        contacts = [contact { user = imUser } , contact]
                   }
                   TUA.equal (Just 1) chatting
 
@@ -45,7 +45,7 @@ tests = do
                   let IMModel { contacts } = DT.fst <<< CICN.markRead <<< SN.updateModel model $ _ {
                         chatting = Just 1
                   }
-                  TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\(HistoryMessage { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 1)
+                  TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\( { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 1)
 
             TU.test "displayContacts shows next page" do
                   let IMModel { contacts } = DT.fst <<< CICN.displayContacts [contact] <<< SN.updateModel model $ _ {
@@ -62,32 +62,32 @@ anotherContactID :: PrimaryKey
 anotherContactID = SP.fromInt 23
 
 anotherContact :: Contact
-anotherContact = SN.updateContact contact $ _ {
+anotherContact = contact {
       user = SN.updateUser imUser $ _ { id = anotherContactID },
       history = [
-            HistoryMessage {
+             {
                    id: SP.fromInt 1,
                    status: Unread,
                    sender: SP.fromInt 32,
                    recipient: _.id $ DN.unwrap imUser,
                    content: "1",
-                   date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
+                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
             },
-            HistoryMessage {
+             {
                    id: SP.fromInt 2,
                    status: Unread,
                    sender: _.id $ DN.unwrap imUser,
                    recipient: SP.fromInt 32,
                    content: "2",
-                   date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
+                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
             },
-            HistoryMessage {
+             {
                    id: SP.fromInt 3,
                    status: Unread,
                    sender: SP.fromInt 32,
                    recipient: _.id $ DN.unwrap imUser,
                    content: "3",
-                   date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
+                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
             }
       ]
 }

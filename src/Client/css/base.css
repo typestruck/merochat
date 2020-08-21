@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css?family=Flamenco');
+@import url('https://fonts.googleapis.com/css?family=Signika');
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Verdana", "sans serif";
+    font-size: 18px;
+    background-color: #262626;
+    color: white;
+    line-height: 1.51857143;
+    display: grid;
+    grid-template-rows: 1fr auto;
+}
+
+label {
+    display: block
+}
+
+h1, h2 {
+    font-weight: bold;
+}
+
+h3, h4 {
+    color: white;
+    font-weight: bold
+}
+
+img {
+    max-width: 100%;
+}
+
+h1, h2 {
+    font-family: "Flamenco";
+}
+
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.6em;
+}
+
+h3 {
+    font-size: 1.1em;
+}
+
+a {
+    color: orange;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a:hover {
+    color: orange;
+}
+
+.logo {
+    font-family: "Flamenco";
+    font-size: 2.8em;
+    font-weight: bold;
+}
+
+input {
+    border-radius: 3px;
+}
+
+input[type="submit"], input[type="button"] {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+input, textarea {
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    color: white;
+    background: transparent;
+}
+
+.selected a, a:hover, a:focus {
+    color: white;
+    text-decoration: none;
+}
+
+ul li {
+    display: inline;
+}
+
+ul li:hover::after, ul li.selected::after {
+    color: orange;
+}
+
+ul li:last-child::after {
+    content: "";
+}
+
+textarea:focus, input:focus {
+    border: orange 1px solid;
+}
+
+.loading {
+    display: none;
+    z-index: 200;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+.smaller {
+    font-size: smaller;
+}
+
+strong {
+    font-weight: bold;
+}
+
+svg {
+    margin: 0.4em;
+    overflow: visible;
+    stroke: white;
+}
+
+.footer {
+    text-align: center;
+    padding: 10px;
+}
+
+.footer-menu li {
+    margin: 0 30px;
+}
+
+@media (max-width:1199px) {
+    .footer-menu {
+        margin-left: 0px;
+        padding-left: 0;
+    }
+}
+
+.footer-menu a {
+    font-family: Verdana, sans-serif;
+    color: #b5b7b6;
+    font-size: 1em;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+select option {
+    background-color: #262626;
+    color:white
+}

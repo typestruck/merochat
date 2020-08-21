@@ -2,7 +2,7 @@ module Test.Server.IM.Database where
 
 import Prelude
 import Shared.Types
-import Shared.IM.Types
+
 
 import Data.Maybe (Maybe(..))
 import Database.PostgreSQL (Query(..), Row2(..))

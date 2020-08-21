@@ -1,7 +1,7 @@
 module Test.Client.IM.Suggestion where
 
 import Prelude
-import Shared.IM.Types
+
 import Shared.Types
 
 import Client.IM.Suggestion as CIS

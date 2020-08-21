@@ -21,11 +21,11 @@ tests = do
                   TS.serverAction $ \_ -> do
                         let id =  DI.fromInt 23
                             key = PrimaryKey id
-                        { configuration : Configuration configuration } <- RR.ask
+                        { configuration :configuration } <- RR.ask
                         Token { tokenGET, tokenPOST } <- ST.createToken id
 
                         userIDGET <- SU.fromJust  <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretGET tokenGET)
                         R.liftAff $ TUA.equal key userIDGET
 
-                        userIDPOST <- SU.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecretPOST tokenPOST)
+                        userIDPOST <- SU.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecret tokenPOST)
                         R.liftAff $ TUA.equal key userIDPOST

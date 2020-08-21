@@ -7,7 +7,7 @@ import Data.Either (Either(..))
 import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Shared.Router as SR
+
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -17,7 +17,7 @@ tests :: TestSuite
 tests = do
         TU.suite "routing" do
                 TU.test "fromRoute" do
-                        TUA.equal (SR.fromRoute Landing) "/"
+                        TUA.equal ("") "/"
                         TUA.equal (SR.fromRoute Register) "/register"
                         TUA.equal (SR.fromRoute $ Login {next :Nothing}) "/login"
                         --routing duplex automaticaly encodes url
