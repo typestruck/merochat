@@ -83,7 +83,7 @@ historyMessage = HistoryMessage {
       id: SP.fromInt 1,
       sender:  imUserID,
       recipient:contactID,
-      date: MDateTime <<< EU.unsafePerformEffect $ EN.nowDateTime,
+      date: DateTimeWrapper <<< EU.unsafePerformEffect $ EN.nowDateTime,
       content: "test",
       status: Unread
 }

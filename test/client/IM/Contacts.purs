@@ -11,7 +11,7 @@ import Prelude (discard, map, ($), (<<<))
  (Contact, (..), IMModel(..), MessageStatus(..))
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
-import Shared.Types (MDateTime(..), PrimaryKey(..))
+import Shared.Types (DateTimeWrapper(..), PrimaryKey(..))
 import Shared.Unsafe ((!@))
 import Test.Client.Model (contact, imUser, anotherIMUserID)
 import Test.Client.Model as TCM
@@ -71,7 +71,7 @@ anotherContact = contact {
                    sender: SP.fromInt 32,
                    recipient: _.id $ DN.unwrap imUser,
                    content: "1",
-                   date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
+                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
             },
              {
                    id: SP.fromInt 2,
@@ -79,7 +79,7 @@ anotherContact = contact {
                    sender: _.id $ DN.unwrap imUser,
                    recipient: SP.fromInt 32,
                    content: "2",
-                   date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
+                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
             },
              {
                    id: SP.fromInt 3,
@@ -87,7 +87,7 @@ anotherContact = contact {
                    sender: SP.fromInt 32,
                    recipient: _.id $ DN.unwrap imUser,
                    content: "3",
-                   date: EU.unsafePerformEffect $ map MDateTime EN.nowDateTime
+                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
             }
       ]
 }

@@ -35,7 +35,7 @@ tests = do
             let content = "test"
 
             TU.test "sendMessage bumps temporary id" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let m@(IMModel {temporaryID}) = DT.fst $ CIC.sendMessage content date model
                   TUA.equal (SP.fromInt 1) temporaryID
 
@@ -43,7 +43,7 @@ tests = do
                   TUA.equal (SP.fromInt 2) temporaryID
 
             TU.test "sendMessage adds message to history" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let IMModel { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage content date model
                       Contact user = SN.fromJust "test" do
                         index <- chatting
@@ -124,7 +124,7 @@ tests = do
                 newMessageID = SP.fromInt 101
 
             TU.test "receiveMessage substitutes temporary id" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let IMModel {contacts} = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
                         contacts = [contact {
                               history = [ {
@@ -143,7 +143,7 @@ tests = do
                   TUA.equal (Just newMessageID) $ getMessageID contacts
 
             TU.test "receiveMessage adds message to history" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let IMModel {contacts} = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
                         contacts = [contact],
                         chatting = Nothing
@@ -163,7 +163,7 @@ tests = do
                   }) $ getHistory contacts
 
             TU.test "receiveMessage adds contact if new" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let IMModel { contacts } = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
                         contacts = [],
                         chatting = Nothing
@@ -185,7 +185,7 @@ tests = do
                   ]
 
             TU.test "receiveMessage bumps chatting" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let IMModel { chatting } = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
                         contacts = [contact],
                         chatting = Just 0
@@ -198,7 +198,7 @@ tests = do
                   TUA.equal (Just 1) chatting
 
             TU.test "receiveMessage set chatting if message comes from current suggestion" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let model' = SN.updateModel model $ _ {
                         contacts = [],
                         chatting = Nothing,
@@ -228,7 +228,7 @@ tests = do
                   TUA.equal chatting $ Just 0
 
             TU.test "receiveMessage mark messages as read if coming from current chat" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let IMModel { contacts } = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
                         contacts = [contact],
                         chatting = Just 0,
@@ -242,7 +242,7 @@ tests = do
                   TUA.equal [Tuple newMessageID Read] <<< map (\( { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 0)
 
             TU.test "receiveMessage marks messages as read if window is not focused" do
-                  date <- liftEffect $ map MDateTime EN.nowDateTime
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let IMModel { contacts } = DT.fst <<< CIC.receiveMessage false (SN.updateModel model $ _ {
                         contacts = [contact],
                         chatting = Just 0,
