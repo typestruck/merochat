@@ -1,24 +1,18 @@
 module Client.Login.Main where
 
 import Prelude
-import Shared.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.External as CCE
 import Client.Common.Location as CCL
-import Client.Common.Network as CCNT
 import Client.Common.Network (request)
-import Data.Either as DE
+import Client.Common.Network as CCNT
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
+import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Flame.Types (NodeData(..))
-import Payload.Client as PC
-import Payload.ResponseTypes (Empty(..))
-
-import Shared.Spec (spec)
+import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.UIEvent.KeyboardEvent as WUK
@@ -34,9 +28,8 @@ login = do
                   void <<< CCNT.response $ request.login.post { body: registerLogin }
                   liftEffect do
                         -- the location to go after login is either the query parameter next or /im
-                        redirect <- CCL.search
-                        pure unit
-                        --CCL.setLocation $ DE.either (const IM) identity redirect
+                        redirect <- CCL.queryParameter "next"
+                        CCL.setLocation $ DM.fromMaybe (routes.im.get {}) redirect
 
 loginOnEnter :: Event -> Effect Unit
 loginOnEnter event = do

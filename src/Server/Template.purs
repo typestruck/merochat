@@ -2,6 +2,7 @@
 module Server.Template where
 
 import Prelude
+import Shared.Types
 
 import Data.Array ((:))
 import Data.Maybe (Maybe(..))
@@ -9,8 +10,7 @@ import Effect (Effect)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-
-import Shared.Types
+import Shared.Routes (routes)
 
 
 --TODO memoization, caching -- it would be nice to serve this as static files?
@@ -38,7 +38,7 @@ externalDefaultParameters = {
       ],
       content: [
             HE.div (HA.class' "header") [
-                  HE.a [HA.href $ "", HA.class' "logo"] $ HE.img [
+                  HE.a [HA.href $ routes.landing.get {}, HA.class' "logo"] $ HE.img [
                               HA.createAttribute "srcset" "/client/media/logo-2.png 350w, /client/media/logo.png 250w",
                               HA.createAttribute "sizes" "(min-width: 1299px) 350px, 250px",
                               HA.src "/client/media/logo.png"]
@@ -68,11 +68,11 @@ templateWith parameters =
 externalFooter :: forall a. Html a
 externalFooter =
       HE.div (HA.class' "footer") [
-            HE.a (HA.href $ "") <<< HE.img $ HA.src "/client/media/logo-small.png",
+            HE.a (HA.href $ routes.landing.get {}) <<< HE.img $ HA.src "/client/media/logo-small.png",
             HE.ul (HA.class' "footer-menu") [
                   HE.li_ $ HE.a (HA.href "#") "Help",
                   HE.li_ $ HE.a (HA.href "https://github.com/easafe/melanchat") "Source code",
                       HE.li_ $ HE.a (HA.href "#") "Become a backer",
-                      HE.li_ $ HE.a (HA.href "") "Login"
+                      HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login"
             ]
       ]

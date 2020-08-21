@@ -7,6 +7,7 @@ import Client.Common.Captcha as CCC
 import Client.Common.DOM as CCD
 import Client.Common.External as CCE
 import Client.Common.Location as CCL
+import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Data.Either (Either(..))
@@ -15,12 +16,12 @@ import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
+import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.UIEvent.KeyboardEvent as WUK
 import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 import Web.UIEvent.MouseEvent.EventTypes (click)
-import Client.Common.Network (request)
 
 register :: Maybe String -> Effect Unit
 register captchaResponse = do
@@ -33,7 +34,7 @@ register captchaResponse = do
                    else EA.launchAff_ do
                         response <- request.landing.register $ { body: rl { captchaResponse = captchaResponse }}
                         case response of
-                              Right _ -> pure unit -- liftEffect $ CCL.setLocation IM
+                              Right _ -> liftEffect <<< CCL.setLocation $ routes.im.get {}
                               Left left -> liftEffect do
                                     CCC.grecaptchaReset
                                     CCN.alert $ CCNT.errorMessage left

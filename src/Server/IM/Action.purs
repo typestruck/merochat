@@ -77,7 +77,7 @@ insertMessage id otherID content = do
                                      else do
                                           uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
                                           let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
-                                          R.liftEffect $ NFS.writeFile ("src/client/media/upload/" <> fileName) buffer
+                                          R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
 
                                           pure $ "/client/media/upload/" <> fileName
                                else

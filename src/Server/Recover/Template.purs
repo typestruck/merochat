@@ -9,6 +9,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.Routes (routes)
 
 template :: Maybe String -> Effect String
 template token = do
@@ -44,13 +45,13 @@ template token = do
                                                       HE.input [HA.type' "button", HA.id "reset", HA.value "Change password", HA.class' "action-button"]
                                                 ]
                                           ],
-                              HE.a [HA.href "", HA.class' "question-link forgot"] "Already have an account?",
+                              HE.a [HA.href $ routes.login.get {}, HA.class' "question-link forgot"] "Already have an account?",
                               HE.div [HA.class' "question-or"] [
                                     HE.hr' $ HA.class' "hr-or",
                                     HE.text "or",
                                     HE.hr' $ HA.class' "hr-or"
                               ],
-                              HE.a [HA.href $ "", HA.class' "question-link"] "Don't have an account?"
+                              HE.a [HA.href $ routes.landing.get {}, HA.class' "question-link"] "Don't have an account?"
 
                   ]
             ]

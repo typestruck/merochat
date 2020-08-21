@@ -18,13 +18,11 @@ import Payload.Headers (empty)
 import Payload.Headers as PH
 import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Guards as PSG
-import Payload.Server.Response as PRS
-import Payload.Server.Response as PSR
 import Payload.Server.Response as PSR
 import Server.Cookies (cookieName)
 import Server.Domain (domain)
 import Server.Token as ST
-
+import Shared.Routes (routes)
 
 guards :: Configuration -> _
 guards configuration = {
@@ -48,7 +46,7 @@ checkLoggedUser { development, tokenSecret } request = do
                          else
                               redirectLogin
       where isPost = NH.requestMethod request == "POST"
-            redirectLogin = redirect -- $ Login { next: Just $ NH.requestURL request }
+            redirectLogin = redirect $ routes.login.get { query: {next: Just $ NH.requestURL request} }
 
 checkAnonymous :: Configuration -> Request -> Aff (Either (Response Empty) Unit)
 checkAnonymous { development, tokenSecret } request = do
@@ -66,15 +64,11 @@ checkAnonymous { development, tokenSecret } request = do
                               redirectIM
                   _ -> pure $ Right unit
       where isPost = NH.requestMethod request == "POST"
-            redirectIM = redirect -- $ IM
+            redirectIM = redirect $ routes.im.get {}
 
 badRequest :: forall r. Aff (Either (Response Empty) r)
 badRequest = pure <<< Left $ PSR.badRequest Empty
 
--- redirect :: forall r. Route -> Aff (Either (Response Empty) r)
--- redirect route = pure <<< Left <<< PSR.setHeaders location $ PRS.found Empty
---       where location = PH.set "Location" (SR.fromRoute route) empty
-
-redirect :: forall r. Aff (Either (Response Empty) r)
-redirect  = pure <<< Left <<< PSR.setHeaders location $ PRS.found Empty
-      where location = PH.set "Location" "(SR.fromRoute route)" empty
+redirect :: forall r. String -> Aff (Either (Response Empty) r)
+redirect route = pure <<< Left <<< PSR.setHeaders location $ PSR.found Empty
+      where location = PH.set "Location" route empty

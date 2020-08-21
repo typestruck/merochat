@@ -6,7 +6,6 @@ import Shared.Types
 
 import Data.List (List)
 import Data.Maybe (Maybe)
-import Payload.ResponseTypes (Empty(..))
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 
@@ -116,16 +115,14 @@ spec :: Spec {
                         response :: Ok
                   }
             },
-
+            developmentFiles :: GET "/client/<..path>" {
+                  params :: { path :: List String },
+                  response :: File
+            },
             --404 can only be matched as a catch all route
             notFound :: GET "/<..notFound>" {
                   params :: { notFound :: List String },
                   response :: Html
-            },
-
-            developmentFiles :: GET "/client/<..path>" {
-                  params :: { path :: List String },
-                  response :: File
             }
       }
 }

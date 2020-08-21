@@ -93,7 +93,7 @@ runJSON reading handler =
 
 developmentFiles :: { params :: { path :: List String } } -> Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}
-      where clientBaseFolder = "src/client/"
+      where clientBaseFolder = "src/Client/"
             distBaseFolder = "dist/"
             fullPath = case path of
                   Cons "media" (Cons file Nil) -> clientBaseFolder <> "media/" <> file

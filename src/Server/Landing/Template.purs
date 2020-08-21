@@ -8,6 +8,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
+import Shared.Routes (routes)
 
 
 
@@ -30,11 +31,11 @@ template = do
             content = [
                   HE.div (HA.class' "landing") [
                         HE.div (HA.class' "header") [
-                              HE.a [HA.href $ "", HA.class' "logo"] $ HE.img [
+                              HE.a [HA.href $ routes.landing.get {}, HA.class' "logo"] $ HE.img [
                                           HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
                                           HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
                                           HA.src "/client/media/logo.png"],
-                              HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href ""] "Login"
+                              HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href $ routes.login.get {}] "Login"
                         ],
                         HE.div (HA.class' "green-area") [
                               HE.h1 (HA.id "headline") "Friendly. Random. Chat.",

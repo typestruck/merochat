@@ -19,6 +19,7 @@ import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Class.Console as EC
+import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.UIEvent.MouseEvent.EventTypes (click)
@@ -54,22 +55,23 @@ reset token = do
             CCN.alert "Fill in password and confirmation"
        else if password /= confirmPassword then
             CCN.alert "Password and confirmation do not match"
-       else do
-            EA.launchAff_  $ request.recover.reset { body: { token, password } }
-            CCN.alert "Password reset! Redirecting to login"
-            --CCL.setLocation $ Login { next: Nothing }
+       else  EA.launchAff_   do
+            void $ request.recover.reset { body: { token, password } }
+            liftEffect do
+                  CCN.alert "Password reset! Redirecting to login"
+                  CCL.setLocation $ routes.login.get {}
 
 main :: Effect Unit
 main = do
       formUpDiv <- CCD.querySelector ".form-up"
-      path <- CCL.path
-      pure unit
-      -- case path of
-      --       Right (Recover { token: Just t }) -> do
-      --             resetButton <- CCD.querySelector "#reset"
-      --             CCD.onEnter formUpDiv (reset t)
-      --             CCD.addEventListener resetButton click (const (reset t))
-      --       _ -> do
-      --             recoverButton <- CCD.querySelector "#recover"
-      --             CCD.onEnter formUpDiv (recover Nothing)
-      --             CCD.addEventListener recoverButton click (const (recover Nothing))
+      parameter <- CCL.queryParameter "token"
+      case parameter of
+            Nothing -> do
+                  recoverButton <- CCD.querySelector "#recover"
+                  CCD.onEnter formUpDiv (recover Nothing)
+                  CCD.addEventListener recoverButton click (const (recover Nothing))
+            Just token -> do
+                  resetButton <- CCD.querySelector "#reset"
+                  CCD.onEnter formUpDiv (reset token)
+                  CCD.addEventListener resetButton click (const (reset token))
+
