@@ -1,4 +1,4 @@
-module Server.Terms where
+module Server.Terms.Handler where
 
 import Server.Types
 
