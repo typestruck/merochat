@@ -115,6 +115,12 @@ spec :: Spec {
                         response :: Ok
                   }
             },
+            terms :: GET "/terms" {
+                  response :: Html
+            },
+            privacy :: GET "/privacy" {
+                  response :: Html
+            },
             developmentFiles :: GET "/client/<..path>" {
                   params :: { path :: List String },
                   response :: File

@@ -27,6 +27,7 @@ import Server.NotFound.Handler as SNH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
+import Server.Terms as STH
 
 handlers :: ServerReader -> _
 handlers reading = {
@@ -65,6 +66,8 @@ handlers reading = {
             post: runJSON reading SRH.recoverAccount,
             reset : runJSON reading SRH.reset
       },
+      terms: runHTML reading STH.terms,
+      privacy: runHTML reading (const (pure $ Html "TODO")),
       notFound: runHTML reading SNH.notFound,
 
       developmentFiles: developmentFiles

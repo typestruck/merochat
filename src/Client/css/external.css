@@ -76,6 +76,16 @@ h2 {
         height: 0px;
 }
 
+.terms {
+        text-align: left;
+        max-width: 800px;
+        align-self: center;
+}
+
+.terms h1 {
+        text-align:center ;
+}
+
 @media (max-width:1199px) {
         .ext-heading {
                 font-size: 1.4em;
