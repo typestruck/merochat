@@ -71,8 +71,6 @@ type BasicUser fields = {
       fields
 }
 
-type NoPayload = Maybe Never
-
 type EmailCaptcha r = {
       email:: String,
       captchaResponse:: Maybe String |
@@ -81,8 +79,6 @@ type EmailCaptcha r = {
 
 -- | Fields for registration or login
 type RegisterLogin = (EmailCaptcha (password :: String))
-
-newtype Never = Never Never
 
 newtype RegisterLoginUser = RegisterLoginUser {
       id :: PrimaryKey,
@@ -109,8 +105,6 @@ newtype Token = Token {
       tokenPOST :: String
 }
 
-newtype SettingsPayload = SettingsPayload String
-
 data Gender =
       Female |
       Male |
@@ -135,7 +129,6 @@ derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
 derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 derive instance newtypeMDate :: Newtype DateWrapper _
 
-derive instance genericGenerateNever :: Generic Never _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
 derive instance genericToken :: Generic Token _
@@ -204,8 +197,6 @@ parseInt data_
 
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonNever :: EncodeJson Never where
-      encodeJson never = DAEGR.genericEncodeJson never
 instance encodeJsonEditor :: EncodeJson Editor where
       encodeJson editor = fromEditor editor
 instance encodeJsonGender :: EncodeJson Gender where
@@ -311,7 +302,7 @@ newtype ContactWrapper = ContactWrapper Contact
 newtype HistoryMessageWrapper = HistoryMessageWrapper HistoryMessage
 
 --refactor: consider using lists or seqs for the fields that dont need indexes
-newtype IMModel = IMModel {
+type IMModel = {
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
       --in case a message from someone blocked was already midway
@@ -350,10 +341,6 @@ newtype Turn = Turn {
     chatAge :: Number, -- Days,
     replyDelay :: Number --Seconds
 }
-
-newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
-newtype MissedMessagesPayload = MissedMessagesPayload (Array Contact)
-newtype ProfileSettingsPayload = ProfileSettingsPayload String
 
 data MessageContent =
       Image (Tuple String String) |
@@ -453,22 +440,17 @@ data WebSocketPayloadClient =
       BeenBlocked { id :: PrimaryKey } |
       PayloadError WebSocketPayloadServer
 
-derive instance genericMissedMessagesPayload :: Generic MissedMessagesPayload _
 derive instance genericMessageContent :: Generic MessageContent _
-derive instance genericHistoryPayload :: Generic HistoryPayload _
 derive instance genericStats :: Generic Stats _
 derive instance genericTurn :: Generic Turn _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericIMModel :: Generic IMModel _
 derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
-derive instance newTypeIMModel :: Newtype IMModel _
 
-derive instance eqIMModel :: Eq IMModel
 derive instance eqStats :: Eq Stats
 derive instance eqTurn :: Eq Turn
 derive instance eqMessageStatus :: Eq MessageStatus

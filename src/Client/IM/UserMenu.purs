@@ -32,9 +32,9 @@ toggleProfileSettings psToggle model =
       case psToggle of
             ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"
             ShowSettings -> showTab request.settings.get ShowSettings "settings.bundle.js" "#settings-edition-root"
-            Hidden -> CIF.justNext (SN.updateModel model $ _ { profileSettingsToggle = Hidden }) $ SetModalContents Nothing "#profile-edition-root" "Loading..."
+            Hidden -> CIF.justNext (model { profileSettingsToggle = Hidden }) $ SetModalContents Nothing "#profile-edition-root" "Loading..."
       where showTab f toggle file root =
-                  (SN.updateModel model $ _ { profileSettingsToggle = toggle }) :> [
+                  model { profileSettingsToggle = toggle } :> [
                         Just <<< SetModalContents (Just file) root <$> CCN.response (f {})
                   ]
 
@@ -48,9 +48,9 @@ loadModal root html file = liftEffect do
             Nothing -> pure unit
 
 showUserContextMenu :: Event -> IMModel -> MoreMessages
-showUserContextMenu event model@(IMModel { userContextMenuVisible })
+showUserContextMenu event model@{ userContextMenuVisible }
       | userContextMenuVisible =
-            F.noMessages <<< SN.updateModel model $ _ { userContextMenuVisible = false }
+            F.noMessages $ model { userContextMenuVisible = false }
       | otherwise =
             model :> [
                   liftEffect <<< map (Just <<< SetUserContentMenuVisible <<< (_ == "user-context-menu")) $ WDE.id <<< SU.fromJust $ do

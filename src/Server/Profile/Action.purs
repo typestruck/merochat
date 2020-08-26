@@ -13,15 +13,14 @@ import Data.String as DS
 import Data.UUID as DU
 import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
-import Server.Response as SR
 import Node.FS.Sync as NFS
 import Run as R
 import Server.Bender as SB
 import Server.File (allowedMediaTypes)
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
-
-import Shared.File (maxImageSize)
+import Server.Response as SR
+import Shared.File (maxImageSize, maxImageSizeKB)
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
 
@@ -29,7 +28,7 @@ invalidImageMessage :: String
 invalidImageMessage = "Invalid image"
 
 imageTooBigMessage :: String
-imageTooBigMessage = "Max allowed size for avatar is 500kb"
+imageTooBigMessage = "Max allowed size for avatar is " <> maxImageSizeKB
 
 generate :: Generate -> ServerEffect String
 generate =

@@ -7,8 +7,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Prelude (discard, map, ($), (<<<))
- (Contact, (..), IMModel(..), MessageStatus(..))
+import Prelude
 import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Types (DateTimeWrapper(..), PrimaryKey(..))
@@ -23,32 +22,32 @@ tests :: TestSuite
 tests = do
       TU.suite "im contacts update" do
             TU.test "resumeChat resets suggesting" do
-                  let IMModel { suggesting } = DT.fst <<< CICN.resumeChat anotherContactID <<< SN.updateModel model $ _ {
+                  let { suggesting } = DT.fst <<< CICN.resumeChat anotherContactID $ model {
                         suggesting = Just 4455
                   }
                   TUA.equal Nothing suggesting
 
             TU.test "resumeChat sets chatting" do
-                  let m@(IMModel { chatting }) = DT.fst <<< CICN.resumeChat anotherIMUserID <<< SN.updateModel model $ _ {
+                  let m@{ chatting }) = DT.fst <<< CICN.resumeChat anotherIMUserID $ model {
                         chatting = Nothing,
                         contacts = [contact { user = imUser } , contact]
                   }
                   TUA.equal (Just 1) chatting
 
-                  let IMModel { chatting } = DT.fst $ CICN.resumeChat anotherContactID m
+                  let { chatting } = DT.fst $ CICN.resumeChat anotherContactID m
                   TUA.equal (Just 0) chatting
 
             TU.test "resumeChat marks as read" do
                   TUA.equal 2 1
 
             TU.test "markRead sets recieved messages as read" do
-                  let IMModel { contacts } = DT.fst <<< CICN.markRead <<< SN.updateModel model $ _ {
+                  let { contacts } = DT.fst <<< CICN.markRead $ model {
                         chatting = Just 1
                   }
                   TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\( { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 1)
 
             TU.test "displayContacts shows next page" do
-                  let IMModel { contacts } = DT.fst <<< CICN.displayContacts [contact] <<< SN.updateModel model $ _ {
+                  let { contacts } = DT.fst <<< CICN.displayContacts [contact] $ model {
                         contacts = []
                   }
                   TUA.equal contacts [contact]

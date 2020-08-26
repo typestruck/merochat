@@ -40,14 +40,14 @@ import Web.UIEvent.WheelEvent (WheelEvent)
 import Web.UIEvent.WheelEvent as WUW
 
 resumeChat :: PrimaryKey -> IMModel -> MoreMessages
-resumeChat searchID model@(IMModel { contacts, chatting }) =
+resumeChat searchID model@{ contacts, chatting } =
       let   index = DA.findIndex ((searchID == _) <<< _.id <<< _.user) contacts
             { shouldFetchChatHistory, history, user: { id } } = SIC.chattingContact contacts index
       in
             if index == chatting then
                   F.noMessages model
              else
-                  (SN.updateModel model $ _ {
+                  (model {
                         suggesting = Nothing,
                         chatting = index
                   }) :> [
@@ -58,11 +58,11 @@ resumeChat searchID model@(IMModel { contacts, chatting }) =
 markRead :: WebSocket -> IMModel -> MoreMessages
 markRead webSocket =
       case _ of
-            model@(IMModel {
+            model@{
                   user: { id: userID },
                   contacts,
                   chatting: Just index
-            }) -> updateReadHistory model {
+            } -> updateReadHistory model {
                   chatting: index,
                   webSocket,
                   userID,
@@ -94,7 +94,7 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
                   | status == Unread && recipient == userID = historyEntry { status = Read }
                   | otherwise = historyEntry
 
-            updateContacts contactRead@{ history } = SN.updateModel model $ _ {
+            updateContacts contactRead@{ history } = model {
                   contacts = SU.fromJust $ DA.updateAt chatting (contactRead { history = map (read userID) history }) contacts
             }
 
@@ -103,7 +103,7 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
             scroll = liftEffect CIS.scrollLastMessage
 
 checkFetchContacts :: IMModel -> MoreMessages
-checkFetchContacts model@(IMModel { contacts, freeToFetchContactList })
+checkFetchContacts model@{ contacts, freeToFetchContactList }
       | freeToFetchContactList = model :> [ Just <<< FetchContacts <$> getScrollBottom ]
 
       where getScrollBottom = liftEffect do
@@ -116,23 +116,23 @@ checkFetchContacts model@(IMModel { contacts, freeToFetchContactList })
       | otherwise = F.noMessages model
 
 fetchContacts :: Boolean -> IMModel -> MoreMessages
-fetchContacts shouldFetch model@(IMModel { contacts, freeToFetchContactList })
-      | shouldFetch = (SN.updateModel model $ _ {
+fetchContacts shouldFetch model@{ contacts, freeToFetchContactList }
+      | shouldFetch = model {
                   freeToFetchContactList = false
-            }) :> [Just <<< DisplayContacts <$> (CCN.response $ request.im.contacts { query: { skip: DA.length contacts }})]
+            } :> [Just <<< DisplayContacts <$> (CCN.response $ request.im.contacts { query: { skip: DA.length contacts }})]
       | otherwise =F.noMessages model
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
-displayContacts newContacts model@(IMModel { contacts }) =
-      F.noMessages <<< SN.updateModel model $ _ {
+displayContacts newContacts model@{ contacts } =
+      F.noMessages $ model {
             contacts = contacts <> newContacts,
             freeToFetchContactList = true
       }
 
 --3. needs testing
 displayMissedMessages :: Array Contact -> IMModel -> NoMessages
-displayMissedMessages missedContacts model@(IMModel { contacts }) =
-      F.noMessages <<< SN.updateModel model $ _ {
+displayMissedMessages missedContacts model@{ contacts } =
+      F.noMessages $ model {
             --wew lass
             contacts = map getNew new <> DA.updateAtIndices (map getExisting existing) contacts
       }

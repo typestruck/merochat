@@ -120,23 +120,23 @@ update { webSocketRef, fileReader} model  =
             ToggleProfileSettings toggle -> CIU.toggleProfileSettings toggle model
             --REFACTOR: move to the apt file
             SetModalContents file root html -> CIF.nothingNext model $ CIU.loadModal root html file
-            SetUserContentMenuVisible toggle -> F.noMessages $ SN.updateModel model $ _ {  userContextMenuVisible = toggle }
+            SetUserContentMenuVisible toggle -> F.noMessages $ model {  userContextMenuVisible = toggle }
             --main
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
             ToggleOnline -> toggleOnline model
             CheckMissedMessages -> checkMissedMessages model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
-            setName name model@(IMModel { user }) = F.noMessages <<< SN.updateModel model $ _ {
+            setName name model@{ user } = F.noMessages $ model {
                   user = user {
                         name = name
                   }
             }
-            toggleOnline model@(IMModel { isOnline }) = F.noMessages <<< SN.updateModel model $ _ {
+            toggleOnline model@{ isOnline } = F.noMessages $ model {
                   isOnline = not isOnline
             }
             preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
-            checkMissedMessages model@(IMModel { contacts }) =
+            checkMissedMessages model@{ contacts } =
                   model :> [ Just <<< DisplayMissedMessages <$> CCNT.response (request.im.missedMessages {
                                     query: {
                                           since: DateTimeWrapper <<< DM.fromMaybe epoch $ do

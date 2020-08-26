@@ -36,15 +36,15 @@ tests = do
 
             TU.test "sendMessage bumps temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let m@(IMModel {temporaryID}) = DT.fst $ CIC.sendMessage content date model
+                  let m@{temporaryID}) = DT.fst $ CIC.sendMessage content date model
                   TUA.equal (SP.fromInt 1) temporaryID
 
-                  let IMModel {temporaryID} = DT.fst $ CIC.sendMessage content date m
+                  let {temporaryID} = DT.fst $ CIC.sendMessage content date m
                   TUA.equal (SP.fromInt 2) temporaryID
 
             TU.test "sendMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let IMModel { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage content date model
+                  let { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage content date model
                       Contact user = SN.fromJust "test" do
                         index <- chatting
                         contacts !! index
@@ -90,33 +90,33 @@ tests = do
                   }
                   TUA.equal Nothing $ CIC.makeTurn contact' contactID
 
-            let IMModel { suggestions : modelSuggestions } = model
+            let { suggestions : modelSuggestions } = model
 
             TU.test "beforeSendMessage adds new contact from suggestion" do
-                  let model' = SN.updateModel model $ _ {
+                  let model' = model {
                               suggestions = suggestion : modelSuggestions,
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                      IMModel { contacts } = DT.fst $ CIC.beforeSendMessage model' content
+                      { contacts } = DT.fst $ CIC.beforeSendMessage model' content
                   TUA.equal ( _.user <<< DN.unwrap <$> DA.head contacts) $ Just suggestion
 
             TU.test "beforeSendMessage resets suggesting" do
-                  let model' = SN.updateModel model $ _ {
+                  let model' = model {
                               suggestions = suggestion : modelSuggestions,
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                      IMModel { suggesting } = DT.fst $ CIC.beforeSendMessage model' content
+                      { suggesting } = DT.fst $ CIC.beforeSendMessage model' content
                   TUA.equal Nothing suggesting
 
             TU.test "beforeSendMessage sets chatting to 0" do
-                  let model' = SN.updateModel model $ _ {
+                  let model' = model {
                               suggestions = suggestion : modelSuggestions,
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                      IMModel { chatting } = DT.fst $ CIC.beforeSendMessage model' content
+                      { chatting } = DT.fst $ CIC.beforeSendMessage model' content
                   TUA.equal (Just 0) chatting
 
             let { id: recipientID } = imUser
@@ -125,7 +125,7 @@ tests = do
 
             TU.test "receiveMessage substitutes temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let IMModel {contacts} = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
+                  let {contacts} = DT.fst <<< CIC.receiveMessage true (model {
                         contacts = [contact {
                               history = [ {
                                     status: Unread,
@@ -144,7 +144,7 @@ tests = do
 
             TU.test "receiveMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let IMModel {contacts} = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
+                  let {contacts} = DT.fst <<< CIC.receiveMessage true (model {
                         contacts = [contact],
                         chatting = Nothing
                         }) $ ClientMessage {
@@ -164,7 +164,7 @@ tests = do
 
             TU.test "receiveMessage adds contact if new" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let IMModel { contacts } = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
+                  let { contacts } = DT.fst <<< CIC.receiveMessage true (model {
                         contacts = [],
                         chatting = Nothing
                         }) $ ClientMessage {
@@ -186,7 +186,7 @@ tests = do
 
             TU.test "receiveMessage bumps chatting" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let IMModel { chatting } = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
+                  let { chatting } = DT.fst <<< CIC.receiveMessage true (model {
                         contacts = [contact],
                         chatting = Just 0
                         }) $ ClientMessage {
@@ -199,13 +199,13 @@ tests = do
 
             TU.test "receiveMessage set chatting if message comes from current suggestion" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let model' = SN.updateModel model $ _ {
+                  let model' = model {
                         contacts = [],
                         chatting = Nothing,
                         suggesting = Just 0,
                         suggestions = [anotherIMUser]
                         }
-                      IMModel { contacts, chatting } = DT.fst <<< CIC.receiveMessage true model' $ ClientMessage {
+                      { contacts, chatting } = DT.fst <<< CIC.receiveMessage true model' $ ClientMessage {
                               id: newMessageID,
                               user: Left anotherIMUser,
                               content,
@@ -229,7 +229,7 @@ tests = do
 
             TU.test "receiveMessage mark messages as read if coming from current chat" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let IMModel { contacts } = DT.fst <<< CIC.receiveMessage true (SN.updateModel model $ _ {
+                  let { contacts } = DT.fst <<< CIC.receiveMessage true (model {
                         contacts = [contact],
                         chatting = Just 0,
                         suggesting = Nothing
@@ -243,7 +243,7 @@ tests = do
 
             TU.test "receiveMessage marks messages as read if window is not focused" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let IMModel { contacts } = DT.fst <<< CIC.receiveMessage false (SN.updateModel model $ _ {
+                  let { contacts } = DT.fst <<< CIC.receiveMessage false (model {
                         contacts = [contact],
                         chatting = Just 0,
                         suggesting = Nothing

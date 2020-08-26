@@ -20,7 +20,7 @@ run model f = do
       pure $ f' model
 
 model :: IMModel
-model = IMModel {
+model = {
       message: Nothing,
       isPreviewing: false,
       freeToFetchContactList: true,

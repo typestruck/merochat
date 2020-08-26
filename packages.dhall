@@ -216,7 +216,7 @@ let additions = {
        , repo =
            "https://github.com/easafe/purescript-flame.git"
        , version =
-           "v0.6.2"
+           "v0.6.3"
        }
 }
 
