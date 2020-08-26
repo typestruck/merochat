@@ -48,12 +48,12 @@ getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#avatar-file-input"
 
 update :: AffUpdate ProfileModel ProfileMessage
-update { model: model@(ProfileModel { editors }), message } =
+update { model: model@({ editors }), message } =
       case message of
             SelectAvatar -> selectAvatar
 
             SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") $ Just base64
-            SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
+            SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ SP.fromString country
             SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
             SetYear year -> setYear $ DI.fromString year
             SetMonth month -> setMonth $ DI.fromString month
@@ -81,7 +81,7 @@ setEditorContent :: Editor -> String -> Aff Unit
 setEditorContent editor s = pure unit
 
 setEditors :: Editors Editor Editor Editor -> ProfileModel -> Aff (ProfileModel -> ProfileModel)
-setEditors editor (ProfileModel { user: { name, headline, description } }) = do
+setEditors editor ({ user: { name, headline, description } }) = do
       setEditorContent editor.name name
       setEditorContent editor.headline headline
       setEditorContent editor.description description
@@ -122,12 +122,12 @@ setDay day = updateBirthday setDay'
       where setDay' (Tuple year (Tuple month _)) = Tuple year (Tuple month day)
 
 updateBirthday :: ((Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))) -> (Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int)))) -> Aff (ProfileModel -> ProfileModel)
-updateBirthday updater = pure $ \model -> SN.updateProfileModel model $ \record ->
-      let  updatedBirthday = updater record.birthday in record {
+updateBirthday updater = pure $ \model ->
+      let  updatedBirthday = updater model.birthday in model {
             birthday = updatedBirthday,
             isAgeVisible = isAgeVisible' updatedBirthday,
-            user = record.user {
-                  birthday = setBirthday record.user.birthday updatedBirthday
+            user = model.user {
+                  birthday = setBirthday model.user.birthday updatedBirthday
             }
       }
       where toDateComponent :: forall d. BoundedEnum d => Int -> d
@@ -143,21 +143,21 @@ updateBirthday updater = pure $ \model -> SN.updateProfileModel model $ \record 
                         Tuple Nothing _ -> Nothing -- so the age can be cleared
                         _ -> birthday
 
-setModelField field value = pure $ \model -> SN.updateProfileModel model (R.set field value)
+setModelField field value = pure $ \model -> R.set field value model
 
 setProfileField field value =
-      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _ {
+      pure $ \model@({ user }) -> model {
             user = R.set field value user
       }
 
 setHideProfileField visibilityField field value =
-      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ \record ->
-            R.set visibilityField true $ record {
+      pure $ \model@({ user }) ->
+            R.set visibilityField true $ model {
                   user = R.set field value user
             }
 --REFACTOR: abstract with the tag functions bellow
 addLanguage language =
-      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+      pure $ \model@({ user }) -> model
             {
                   isLanguagesVisible = true,
                   user = user {
@@ -168,7 +168,7 @@ removeLanguage language event = do
       --I am not sure if this is correct behavior: the span which the event bubbles to is removed from the dom
       -- should the event still occur?
       liftEffect $ WEE.stopPropagation event
-      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+      pure $ \model@({ user }) -> model
             {
                   isLanguagesVisible = true,
                   user = user {
@@ -181,7 +181,7 @@ removeLanguage language event = do
 addTag key tag =
       case key of
             "Enter" ->
-                  pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+                  pure $ \model@({ user }) -> model
                         {
                               isTagsVisible = true,
                               user = user {
@@ -191,7 +191,7 @@ addTag key tag =
             _ -> FAE.noChanges
 removeTag tag event = do
       liftEffect $ WEE.stopPropagation event
-      pure $ \model@(ProfileModel { user }) -> SN.updateProfileModel model $ _
+      pure $ \model@({ user }) -> model
             {
                   isTagsVisible = true,
                   user = user {
@@ -202,7 +202,7 @@ removeTag tag event = do
             }
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
-saveProfile model@(ProfileModel { user: user@{ name }}) = do
+saveProfile model@({ user: user@{ name }}) = do
       void $ request.profile.post { body: user }
       liftEffect do
             CCNO.alert "Profile updated"

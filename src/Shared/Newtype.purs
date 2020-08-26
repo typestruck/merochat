@@ -6,9 +6,5 @@ import Shared.Types
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 
-updateProfileModel model f = DN.over ProfileModel f model
-
-updateSettingsModel model f = DN.over SettingsModel f model
-
 unwrapAll :: forall f g v w. Functor f => Functor g => Newtype w v => f (g w) -> f (g v)
 unwrapAll = map (map DN.unwrap)

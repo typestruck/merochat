@@ -30,7 +30,7 @@ update { model, message } =
             TerminateAccount -> terminateAccount
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changeEmail model@(SettingsModel { email, emailConfirmation }) = do
+changeEmail model@({ email, emailConfirmation }) = do
       if DS.null email || DS.null emailConfirmation then do
             liftEffect $ CCN.alert "Fill in email and confirmation"
             FAE.noChanges
@@ -46,7 +46,7 @@ changeEmail model@(SettingsModel { email, emailConfirmation }) = do
             }
 
 changePassword :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changePassword model@(SettingsModel { password, passwordConfirmation }) = do
+changePassword model@({ password, passwordConfirmation }) = do
       if DS.null password || DS.null passwordConfirmation then
             liftEffect $ CCN.alert "Fill in password and confirmation"
        else if password /= passwordConfirmation then
@@ -66,4 +66,4 @@ terminateAccount = do
             liftEffect CCL.logout
       FAE.noChanges
 
-setField field value = pure $ \model -> SN.updateSettingsModel model (R.set field value)
+setField field value = pure $ \model -> R.set field value model

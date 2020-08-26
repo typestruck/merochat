@@ -8,7 +8,7 @@ import Shared.Types
 
 import Shared.Avatar as SA
 import Data.Array ((:), (..))
-import Data.Date (Month(..), Year)
+import Data.Date (Month(..))
 import Data.Date as DD
 import Data.Enum (class BoundedEnum)
 import Data.Enum as DE
@@ -16,10 +16,8 @@ import Data.Foldable as DF
 import Data.HashMap as DH
 import Data.Int53 as DI
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.String.Common as DSC
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -29,7 +27,7 @@ import Web.Event.Internal.Types (Event)
 
 --REFACTOR: get field names (like for display) from the record, not hardcoded strings
 view :: Int -> ProfileModel -> Html ProfileMessage
-view minimumYear (ProfileModel {
+view minimumYear ({
       user,
       countries,
       languages,

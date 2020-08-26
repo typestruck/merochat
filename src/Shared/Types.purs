@@ -657,7 +657,7 @@ type ProfileUser = (BasicUser (
 
 
 --REFACTOR: write a generic isVisible field
-newtype ProfileModel = ProfileModel {
+type ProfileModel = {
       user :: ProfileUser,
       isCountryVisible :: Boolean,
       isGenderVisible :: Boolean,
@@ -698,10 +698,8 @@ data ProfileMessage =
       ToggleLanguages Boolean |
       SaveProfile
 
-derive instance genericProfileModel :: Generic ProfileModel _
 derive instance genericMessageStatus :: Generic MessageStatus _
 
-derive instance newtypeProfileModel :: Newtype ProfileModel _
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
 
 instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
@@ -753,7 +751,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
       fromSQLRow _ = Left "missing or extra fields from users table"
 
 
-newtype SettingsModel = SettingsModel {
+type SettingsModel = {
       email :: String,
       emailConfirmation :: String,
       password :: String,
@@ -768,10 +766,6 @@ data SettingsMessage =
       ChangeEmail |
       ChangePassword |
       TerminateAccount --very bad
-
-derive instance genericSettingsModel :: Generic SettingsModel _
-
-derive instance newtypeSettingsModel :: Newtype SettingsModel _
 
 --there is nothing simple about using purescript-simple-json with types other than record
 instance writeForeignPrimaryKey :: WriteForeign PrimaryKey where

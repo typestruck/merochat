@@ -21,7 +21,7 @@ template {user: user@{ birthday }, countries, languages } = do
         minimumYear <- SDT.getMinimumYear
         F.preMount (QuerySelector ".profile-info-edition") {
                 view: SPV.view minimumYear,
-                init: ProfileModel {
+                init: {
                         isCountryVisible: true,
                         isGenderVisible: true,
                         isAgeVisible: true,
