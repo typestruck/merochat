@@ -24,15 +24,14 @@ import Shared.Unsafe as SU
 --this will yield a wrong result in some cases, but I guess it is fair for a ASL field
 ageFrom :: Maybe Date -> Maybe Int
 ageFrom birthday = fromDays <<< DD.diff now <$> birthday
-        where   now = EU.unsafePerformEffect EN.nowDate
-                fromDays (Days d) = DIN.floor (d / 365.0)
+      where now = EU.unsafePerformEffect EN.nowDate
+            fromDays (Days d) = DIN.floor (d / 365.0)
 
-getMinimumYear :: Effect Int
-getMinimumYear = do
-        now <- EN.nowDate
-        pure $ SU.fromJust do
-                date <- DD.adjust (Days (negate (365.0 * 13.0))) now
-                pure <<< DE.fromEnum $ DD.year date
+--minimum age to sign up is 13
+getEarliestYear :: Effect Int
+getEarliestYear = do
+      now <- EN.nowDate
+      pure <<< DE.fromEnum <<< DD.year <<< SU.fromJust $ DD.adjust (Days $ negate (365.0 * 13.0)) now
 
 getYear :: forall t10. Newtype t10 Date => t10 -> Int
 getYear = DE.fromEnum <<< DD.year <<< DN.unwrap

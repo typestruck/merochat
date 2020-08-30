@@ -7,14 +7,13 @@ import Client.Common.DOM as CCD
 import Client.Common.Logout as CCLO
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.IM.Flame (MoreMessages, NoMessages)
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
-import Shared.Newtype as SN
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
@@ -57,3 +56,9 @@ showUserContextMenu event model@{ userContextMenuVisible }
                   target <- WEE.target event
                   WDE.fromEventTarget target
             ]
+
+setModalContents :: Maybe String -> String -> String -> IMModel -> NextMessage
+setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
+
+toogleUserContextMenu :: Boolean -> IMModel -> NoMessages
+toogleUserContextMenu toggle model = F.noMessages $ model {  userContextMenuVisible = toggle }

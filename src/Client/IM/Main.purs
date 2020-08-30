@@ -118,9 +118,8 @@ update { webSocketRef, fileReader} model  =
             Logout confirmed -> CIU.logout confirmed model
             ShowUserContextMenu event -> CIU.showUserContextMenu event model
             ToggleProfileSettings toggle -> CIU.toggleProfileSettings toggle model
-            --REFACTOR: move to the apt file
-            SetModalContents file root html -> CIF.nothingNext model $ CIU.loadModal root html file
-            SetUserContentMenuVisible toggle -> F.noMessages $ model {  userContextMenuVisible = toggle }
+            SetModalContents file root html -> CIU.setModalContents file root html model
+            SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
             --main
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model

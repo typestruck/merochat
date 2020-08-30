@@ -31,10 +31,11 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
-import Data.String (Pattern(..), Replacement(..))
+import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
+import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Time.Duration (Days)
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
@@ -54,13 +55,10 @@ import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
-foreign import data Editor :: Type
 foreign import data Trie :: Type
 
-foreign import fromEditor :: Editor -> Json
 foreign import fromJSDate :: JSDate -> Json
 foreign import fromInt53 :: Int53 -> Json
-foreign import toEditor :: Json -> Editor
 foreign import toInt53 :: Json -> Int53
 
 type BasicUser fields = {
@@ -197,8 +195,6 @@ parseInt data_
 
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonEditor :: EncodeJson Editor where
-      encodeJson editor = fromEditor editor
 instance encodeJsonGender :: EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
@@ -210,8 +206,6 @@ instance encodeJsonMDate :: EncodeJson DateWrapper where
 
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonEditor :: DecodeJson Editor where
-      decodeJson = Right <<< toEditor
 instance decodeJsonGender :: DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
@@ -655,33 +649,33 @@ type ProfileUser = (BasicUser (
       karma :: Int
 ))
 
-
---REFACTOR: write a generic isVisible field
-type ProfileModel = {
+type PM = (
       user :: ProfileUser,
       isCountryVisible :: Boolean,
       isGenderVisible :: Boolean,
       isLanguagesVisible :: Boolean,
       isAgeVisible :: Boolean,
-      editors :: Editors (Maybe Editor) (Maybe Editor) (Maybe Editor),
       isTagsVisible :: Boolean,
       countries :: Array (Tuple PrimaryKey String),
       languages :: Array (Tuple PrimaryKey String),
       birthday :: Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))
-}
+)
+
+--used to generically set records
+type ProfileModel = Record PM
 
 newtype ProfileUserWrapper = ProfileUserWrapper ProfileUser
 
+--REFACTOR: write a generic isVisible field
 --REFACTOR: write a generic SetField message
 --REFACTOR: write a generic Enter message
---REFACTOR: write a generic Toggle message
 data ProfileMessage =
+      SetField (ProfileModel -> ProfileModel) |
       SelectAvatar |
       SetAvatar String |
       SetName String |
       SetHeadline String |
       SetDescription String |
-      SetEditors (Editors Editor Editor Editor)  |
       SetTagEnter (Tuple Key String) |
       SetGender String |
       SetCountry String |
@@ -691,11 +685,6 @@ data ProfileMessage =
       AddLanguage String |
       RemoveLanguage PrimaryKey Event |
       RemoveTag String Event |
-      ToggleCountry Boolean |
-      ToggleAge Boolean |
-      ToggleGender Boolean | --egg_irl
-      ToggleTags Boolean |
-      ToggleLanguages Boolean |
       SaveProfile
 
 derive instance genericMessageStatus :: Generic MessageStatus _
