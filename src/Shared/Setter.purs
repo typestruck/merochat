@@ -9,5 +9,5 @@ import Shared.Types (IMUser)
 -- https://thomashoneyman.com/articles/practical-profunctor-lenses-optics/
 
 setUserField field value model = model {
-        user = R.set field value model.user
+      user = R.set field value model.user
 }

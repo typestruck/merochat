@@ -26,7 +26,7 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Record as R
 import Shared.PrimaryKey as SP
-
+import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.Event.Event as WEE
@@ -38,16 +38,17 @@ update :: AffUpdate ProfileModel ProfileMessage
 update { model, message } =
       case message of
             SelectAvatar -> selectAvatar
+
             SetField setter -> pure setter
-            SetAvatar base64 -> setProfileField (SProxy :: SProxy "avatar") $ Just base64
-            SetCountry country -> setHideProfileField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ SP.fromString country
-            SetGender gender -> setHideProfileField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
+            SetAvatar base64 -> pure <<< SS.setUserField (SProxy :: SProxy "avatar") $ Just base64
+            SetCountry country -> setAndDisplayField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ SP.fromString country
+            SetGender gender -> setAndDisplayField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
             SetYear year -> setYear $ DI.fromString year
             SetMonth month -> setMonth $ DI.fromString month
             SetDay day -> setDay $ DI.fromString day
-            SetName name -> setFieldOrGenerate Name (SProxy :: SProxy "name") 50 name
-            SetHeadline headline -> setFieldOrGenerate Headline (SProxy :: SProxy "headline") 200 headline
-            SetDescription description -> setFieldOrGenerate Description (SProxy :: SProxy "description") 10000 description
+            SetName name -> setOrGenerateField Name (SProxy :: SProxy "name") 50 name
+            SetHeadline headline -> setOrGenerateField Headline (SProxy :: SProxy "headline") 200 headline
+            SetDescription description -> setOrGenerateField Description (SProxy :: SProxy "description") 10000 description
             SetTagEnter (Tuple key tag) -> addTag key tag
 
             AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.fromJust $ DI.fromString language
@@ -56,14 +57,6 @@ update { model, message } =
             RemoveTag tag event -> removeTag tag event
 
             SaveProfile -> saveProfile model
-
-setFieldOrGenerate what field characters value = do
-      let trimmed = DS.trim value
-      toSet <- if DS.null trimmed then do
-                  CCN.response $ request.profile.generate { query: { what } }
-                else
-                  pure trimmed
-      setProfileField field $ DS.take characters toSet
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
 selectAvatar = do
@@ -86,84 +79,44 @@ setDay day = updateBirthday setDay'
 
 updateBirthday :: ((Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))) -> (Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int)))) -> Aff (ProfileModel -> ProfileModel)
 updateBirthday updater = pure $ \model ->
-      let  updatedBirthday = updater model.birthday in model {
+      let updatedBirthday = updater model.birthday
+      in model {
             birthday = updatedBirthday,
             isAgeVisible = isAgeVisible' updatedBirthday,
             user = model.user {
                   birthday = setBirthday model.user.birthday updatedBirthday
             }
       }
-      where toDateComponent :: forall d. BoundedEnum d => Int -> d
-            toDateComponent = SU.fromJust <<< DE.toEnum
-            isAgeVisible' =
+      where isAgeVisible' =
                   case _ of
                         Tuple Nothing _ -> true
                         Tuple (Just _) (Tuple (Just _) (Just _)) -> true
                         _ -> false
             setBirthday birthday =
                   case _ of
-                        Tuple (Just year) (Tuple (Just month) (Just day)) -> DateWrapper <$> DD.exactDate (toDateComponent year) (toDateComponent month) (toDateComponent day)
+                        Tuple (Just year) (Tuple (Just month) (Just day)) -> DateWrapper <$> DD.exactDate (SU.toEnum year) (SU.toEnum month) (SU.toEnum day)
                         Tuple Nothing _ -> Nothing -- so the age can be cleared
                         _ -> birthday
 
-setProfileField field value =
-      pure $ \model@({ user }) -> model {
-            user = R.set field value user
-      }
+addLanguage language = appendAndDisplayField (SProxy :: SProxy "isLanguagesVisible") (SProxy :: SProxy "languages") language
 
-setHideProfileField visibilityField field value =
-      pure $ \model@({ user }) ->
-            R.set visibilityField true $ model {
-                  user = R.set field value user
-            }
---REFACTOR: abstract with the tag functions bellow
-addLanguage language =
-      pure $ \model@({ user }) -> model
-            {
-                  isLanguagesVisible = true,
-                  user = user {
-                        languages = DA.snoc user.languages language
-                  }
-            }
 removeLanguage language event = do
       --I am not sure if this is correct behavior: the span which the event bubbles to is removed from the dom
       -- should the event still occur?
       liftEffect $ WEE.stopPropagation event
-      pure $ \model@({ user }) -> model
-            {
-                  isLanguagesVisible = true,
-                  user = user {
-                        languages = SU.fromJust  do
-                              index <- DA.findIndex ( _ == language) user.languages
-                              DA.deleteAt index user.languages
-                  }
-            }
+      filterAndDisplayField (SProxy :: SProxy "isLanguagesVisible") (SProxy :: SProxy "languages") language
 
 addTag key tag =
       case key of
-            "Enter" ->
-                  pure $ \model@({ user }) -> model
-                        {
-                              isTagsVisible = true,
-                              user = user {
-                                    tags = DA.snoc user.tags tag
-                              }
-                        }
+            "Enter" -> appendAndDisplayField (SProxy :: SProxy "isTagsVisible") (SProxy :: SProxy "tags") tag
             _ -> FAE.noChanges
+
 removeTag tag event = do
       liftEffect $ WEE.stopPropagation event
-      pure $ \model@({ user }) -> model
-            {
-                  isTagsVisible = true,
-                  user = user {
-                        tags = SU.fromJust do
-                              index <- DA.findIndex ( _ == tag) user.tags
-                              DA.deleteAt index user.tags
-                  }
-            }
+      filterAndDisplayField (SProxy :: SProxy "isTagsVisible") (SProxy :: SProxy "tags") tag
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
-saveProfile model@({ user: user@{ name }}) = do
+saveProfile { user: user@{ name }} = do
       void $ request.profile.post { body: user }
       liftEffect do
             CCNO.alert "Profile updated"
@@ -171,3 +124,22 @@ saveProfile model@({ user: user@{ name }}) = do
             CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
       FAE.noChanges
 
+setAndDisplayField visibilityField userField value = pure (R.set visibilityField true <<< SS.setUserField userField value)
+
+setOrGenerateField what userField characters value = do
+      let trimmed = DS.trim value
+      toSet <- if DS.null trimmed then do
+                  CCN.response $ request.profile.generate { query: { what } }
+                else
+                  pure trimmed
+      pure (SS.setUserField userField $ DS.take characters toSet)
+
+appendAndDisplayField visibilityField userField value =
+      pure $ \model@{user} -> R.set visibilityField true $ model {
+            user = R.set userField (DA.snoc (R.get userField user) value) user
+      }
+
+filterAndDisplayField visibilityField userField value =
+      pure $ \model@{user} -> R.set visibilityField true $ model {
+            user = R.set userField (DA.filter (_ /= value) $ R.get userField user) user
+      }

@@ -95,10 +95,10 @@ view lastYearEligible ({
                   HE.span_ " Month ",
                   HE.select [HA.onInput SetMonth] <<< displayOptionsWith "Select" (SDT.getMonth <$> user.birthday) $ map optionEntry (1 .. 12),
                   HE.span_ " Day ",
-                  HE.select [HA.onInput SetDay] <<< displayOptionsWith "Select" (SDT.getDay <$> user.birthday) $ map optionEntry $ if canSelectDay birthday then (1 .. lastDayMonth birthday) else []
+                  HE.select [HA.onInput SetDay] <<< displayOptionsWith "Select" (SDT.getDay <$> user.birthday) <<< map optionEntry $ if canSelectDay birthday then (1 .. lastDayMonth birthday) else []
             ]
             editGender = HE.select [HA.onInput SetGender] $ displayOptions user.gender [Tuple Female $ show Female, Tuple Male $ show Male, Tuple NonBinary $ show NonBinary, Tuple Other $ show Other]
-            editCountry = HE.select [HA.onInput SetCountry] <<< displayOptions (map (\(PrimaryKey pk )-> DI.toInt pk) user.country) $ map toInt countries
+            editCountry = HE.select [HA.onInput SetCountry] <<< displayOptions (map (DI.toInt <<< DN.unwrap) user.country) $ map toInt countries
             editLanguages = HE.span_ ([
                   HE.select [HA.onInput AddLanguage] <<< displayOptionsWith "Select" Nothing $ map toInt languages
                 ] <> map (\id -> tagEdition "language" RemoveLanguage <<< Tuple id $ getLanguage id) user.languages)
@@ -108,19 +108,6 @@ view lastYearEligible ({
                ] <> map (\tag -> tagEdition "tag" RemoveTag $ Tuple tag tag) user.tags)
 
             optionEntry n = Tuple n $ show n
-
-            --safe for language and countries since these have a small fixed amonut of entries
-            toInt (Tuple (PrimaryKey pk) value) = Tuple (DI.toInt pk) value
-
-            languageHM = DH.fromArray languages
-            getLanguage = SU.fromJust <<< flip DH.lookup languageHM
-
-            tagEdition :: forall a. String -> (a -> Event -> ProfileMessage) -> Tuple a String -> Html ProfileMessage
-            tagEdition title message (Tuple id text) = HE.span [HA.onClick' (message id), HA.title $ "Click to remove " <> title, HA.class' "tag"] [
-                  HE.text text,
-                  HE.a (HA.class' "remove-tag") "x"
-            ]
-
             canSelectDay =
                   case _ of
                         Tuple (Just _) (Tuple (Just _) _ ) -> true
@@ -129,6 +116,12 @@ view lastYearEligible ({
                   case _ of
                         Tuple (Just year) (Tuple (Just month) _) -> DE.fromEnum $ DD.lastDayOfMonth (SU.toEnum year) (SU.toEnum month)
                         _ -> 0
+
+            --safe for language and countries since these have a small fixed amonut of entries
+            toInt (Tuple (PrimaryKey pk) value) = Tuple (DI.toInt pk) value
+
+            languageHM = DH.fromArray languages
+            getLanguage = SU.fromJust <<< flip DH.lookup languageHM
 
 title :: String -> NodeData ProfileMessage
 title name = HA.title $ "Click to edit your " <> name
@@ -148,6 +141,12 @@ displayOptions = displayOptionsWith "Don't show"
 displayOptionsWith :: forall id. Show id => Eq id => String -> Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
 displayOptionsWith unselectedText current = (HE.option [HA.selected $ DM.isNothing current] unselectedText : _) <<< map makeOptions
       where makeOptions (Tuple id value) = HE.option [HA.value $ show id, HA.selected $ Just id == current] value
+
+tagEdition :: forall a. String -> (a -> Event -> ProfileMessage) -> Tuple a String -> Html ProfileMessage
+tagEdition title message (Tuple id text) = HE.span [HA.onClick' (message id), HA.title $ "Click to remove " <> title, HA.class' "tag"] [
+      HE.text text,
+      HE.a (HA.class' "remove-tag") "x"
+]
 
 unsetField :: forall field r. IsSymbol field => Cons field Boolean r PM => SProxy field -> ProfileMessage
 unsetField field = SetField (R.set field false)

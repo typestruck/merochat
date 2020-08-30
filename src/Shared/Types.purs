@@ -666,9 +666,6 @@ type ProfileModel = Record PM
 
 newtype ProfileUserWrapper = ProfileUserWrapper ProfileUser
 
---REFACTOR: write a generic isVisible field
---REFACTOR: write a generic SetField message
---REFACTOR: write a generic Enter message
 data ProfileMessage =
       SetField (ProfileModel -> ProfileModel) |
       SelectAvatar |
