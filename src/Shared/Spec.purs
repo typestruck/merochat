@@ -121,6 +121,9 @@ spec :: Spec {
             privacy :: GET "/privacy" {
                   response :: Html
             },
+            help :: GET "/help" {
+                  response :: Html
+            },
             developmentFiles :: GET "/client/<..path>" {
                   params :: { path :: List String },
                   response :: File

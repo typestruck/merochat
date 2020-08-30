@@ -24,7 +24,6 @@ template = do
                         HE.h2_ "Introduction and agreement",
                         HE.p_ """These terms and conditions are the entire agreement between MelanChat ("the Site", "we", "our", "us") and the user of the Site ("you", "your").""",
                         HE.p_ "By using the Site in any capacity, you accept these conditions and agree to comply with the most recent version of this agreement. We have the right to update this agreement at any time without prior notice. Your continued use of the Site implies your acceptance of the agreement as updated.",
-                        HE.p_ "By using the Site, you agree that legal disputes or causes of action involving the Site will be resolved through arbitration to be held in São Paulo, Brazil. If you are accessing the Site from outside of Brazil, you are solely responsible for compliance with all local laws.",
                         HE.h2_ "Privacy policy",
                         HE.p_ [
                               HE.text "You can view the privacy policy at ",

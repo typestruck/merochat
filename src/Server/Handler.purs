@@ -25,10 +25,11 @@ import Server.Landing.Handler as SLH
 import Server.Login.Handler as SLGH
 import Server.NotFound.Handler as SNH
 import Server.Profile.Handler as SPH
+import Server.Privacy.Handler as SPVH
 import Server.Recover.Handler as SRH
-import Server.Privacy.Handler as SPH
 import Server.Settings.Handler as SSH
 import Server.Terms.Handler as STH
+import Server.Help.Handler as SHH
 
 handlers :: ServerReader -> _
 handlers reading = {
@@ -68,7 +69,8 @@ handlers reading = {
             reset : runJSON reading SRH.reset
       },
       terms: runHTML reading STH.terms,
-      privacy: runHTML reading SPH.privacy,
+      privacy: runHTML reading SPVH.privacy,
+      help: runHTML reading SHH.help,
       notFound: runHTML reading SNH.notFound,
 
       developmentFiles: developmentFiles
