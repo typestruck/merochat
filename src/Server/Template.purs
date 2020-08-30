@@ -70,11 +70,11 @@ externalFooter =
       HE.div (HA.class' "footer") [
             HE.a (HA.href $ routes.landing.get {}) <<< HE.img $ HA.src "/client/media/logo-small.png",
             HE.ul (HA.class' "footer-menu") [
-                  HE.li_ $ HE.a (HA.href "#") "Help",
+                  HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login",
+                  HE.li_ $ HE.a (HA.href $ routes.help {}) "Help",
+                  HE.li_ $ HE.a (HA.href "#") "Become a backer",
                   HE.li_ $ HE.a (HA.href $ routes.terms {} ) "Terms and conditions",
                   HE.li_ $ HE.a (HA.href $ routes.privacy {} ) "Privacy police",
-                  HE.li_ $ HE.a (HA.href "https://github.com/melanchat/melanchat") "Source code",
-                      HE.li_ $ HE.a (HA.href "#") "Become a backer",
-                      HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login"
+                  HE.li_ $ HE.a (HA.href "https://github.com/melanchat/melanchat") "Source code"
             ]
       ]
