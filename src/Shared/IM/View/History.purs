@@ -21,6 +21,7 @@ history (IMModel { user: { id: senderID, avatar: senderAvatar }, chatting }) cha
 
       where display recipient@{history, user: { description, avatar }} =
                   --having the description node always present avoids snabbdom choking on the use of innerHTML
+                  --REFACTOR: use hooks instead of innerHtml and elsewhere
                   HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry avatar) history
 
             entry recipientAvatar { status, sender, content } =

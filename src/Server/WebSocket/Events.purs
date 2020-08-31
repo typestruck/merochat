@@ -58,7 +58,7 @@ handleMessage payload = do
                   whenJust possibleConnection $ \recipientConnection -> sendWebSocketMessage recipientConnection $ BeenBlocked { id: sessionUserID }
             ServerMessage {id, userID: recipient, content, turn} -> do
                   date <- R.liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  Tuple messageID finalContent <- SIA.insertMessage sessionUserID recipient content
+                  Tuple messageID finalContent <- SIA.processMessage sessionUserID recipient content
                   sendWebSocketMessage connection $ Received {
                         previousID: id,
                         id: messageID,
@@ -74,7 +74,7 @@ handleMessage payload = do
                               date
                         }
                   --pass along karma calculation to wheel
-                  whenJust turn (R.liftEffect <<< SWL.sendMessage sessionUserID recipient)
+                  whenJust turn (R.liftEffect <<< SIA.processKarma sessionUserID recipient)
       where whenJust :: forall v. Maybe v -> (v -> WebSocketEffect) -> WebSocketEffect
             whenJust value f = case value of
                   Nothing -> pure unit
@@ -82,10 +82,9 @@ handleMessage payload = do
 
 handleConnection :: Configuration -> Pool -> Ref (HashMap PrimaryKey WebSocketConnection) -> WebSocketConnection -> Request -> Effect Unit
 handleConnection c@{ tokenSecret } pool allConnections connection request = do
-      let token = DM.fromMaybe "" do
+      maybeUserID <- ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
             value <- FO.lookup "cookie" $ NH.requestHeaders request
             _.value <<< DN.unwrap <$> DA.head (BCI.bakeCookies value)
-      maybeUserID <- ST.userIDFromToken tokenSecret token
       case maybeUserID of
             Nothing -> do
                   SW.close connection

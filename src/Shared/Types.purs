@@ -339,12 +339,12 @@ newtype IMModel = IMModel {
       linkFormVisible :: Boolean
 }
 
-newtype Stats = Stats {
+type Stats = {
     characters :: Number,
     interest :: Number
 }
 
-newtype Turn = Turn {
+type Turn = {
     senderStats :: Stats,
     recipientStats:: Stats,
     chatAge :: Number, -- Days,
@@ -456,8 +456,6 @@ data WebSocketPayloadClient =
 derive instance genericMissedMessagesPayload :: Generic MissedMessagesPayload _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericHistoryPayload :: Generic HistoryPayload _
-derive instance genericStats :: Generic Stats _
-derive instance genericTurn :: Generic Turn _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
 derive instance genericIMModel :: Generic IMModel _
@@ -468,9 +466,6 @@ derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 derive instance newTypeIMModel :: Newtype IMModel _
 
-derive instance eqIMModel :: Eq IMModel
-derive instance eqStats :: Eq Stats
-derive instance eqTurn :: Eq Turn
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 

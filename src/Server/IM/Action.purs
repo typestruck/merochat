@@ -23,7 +23,7 @@ import Run as R
 import Server.File (allowedMediaTypes)
 import Server.IM.Database as SID
 import Server.Ok (ok)
-
+import Server.Wheel as SW
 import Shared.File (maxImageSize)
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
@@ -57,8 +57,8 @@ singleContact id otherID = do
             history = history
       }
 
-insertMessage :: forall r. PrimaryKey -> PrimaryKey -> MessageContent -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey String)
-insertMessage id otherID content = do
+processMessage :: forall r. PrimaryKey -> PrimaryKey -> MessageContent -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey String)
+processMessage id otherID content = do
       message <- case content of
             Text m -> pure m
             Image (Tuple caption base64) -> do
@@ -84,6 +84,9 @@ insertMessage id otherID content = do
                                     invalidImage
                         _ -> invalidImage
             invalidImage = SR.throwBadRequest "Invalid image"
+
+processKarma :: forall r. PrimaryKey -> PrimaryKey -> Turn -> BaseEffect { pool :: Pool | r } Unit
+processKarma id otherID turn = SID.insertKarma id otherID $ SW.karmaFrom turn
 
 blockUser :: PrimaryKey -> PrimaryKey -> ServerEffect Ok
 blockUser id otherID = do
