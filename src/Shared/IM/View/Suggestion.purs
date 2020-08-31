@@ -12,7 +12,7 @@ import Flame.HTML.Element as HE
 import Shared.Avatar as SA
 
 profile :: IMModel -> Maybe IMUser -> Html IMMessage
-profile (IMModel { suggesting, chatting }) =
+profile { suggesting, chatting } =
       case _ of
             Just ({ id, name, avatar, age, karma, headline, gender, country, languages, tags }) ->
                   HE.div (HA.class' "suggestion") [

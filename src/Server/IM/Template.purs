@@ -27,7 +27,7 @@ template {contacts, suggestions, user} = do
       }
       F.preMount (QuerySelector ".im") {
             view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
-            init: IMModel {
+            init: {
                   chatting: Nothing,
                   temporaryID: SP.fromInt 0,
                   suggesting: if DA.null suggestions then Nothing else Just 0,

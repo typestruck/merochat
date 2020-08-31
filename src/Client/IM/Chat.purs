@@ -59,7 +59,7 @@ getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#image-file-input"
 
 setUpMessage :: Event -> IMModel -> NextMessage
-setUpMessage event model@(IMModel { emojisVisible, messageEnter }) = model :> [beforeSend]
+setUpMessage event model@{ emojisVisible, messageEnter } = model :> [beforeSend]
       where beforeSend = liftEffect do
                   let   textarea = SU.fromJust  do
                               target <- WEE.target event
@@ -73,19 +73,19 @@ setUpMessage event model@(IMModel { emojisVisible, messageEnter }) = model :> [b
             key = WUK.key keyboardEvent
 
 beforeSendMessage :: Boolean -> String -> IMModel -> MoreMessages
-beforeSendMessage sent content model@(IMModel {
+beforeSendMessage sent content model@{
       chatting,
       user: { id },
       contacts,
       suggesting,
       suggestions
-})    | sent = snocContact :> [ nextSendMessage ]
+}    | sent = snocContact :> [ nextSendMessage ]
 
       where snocContact = case Tuple chatting suggesting of
                   Tuple Nothing (Just index) ->
                         let chatted = suggestions !@ index
                         in
-                              SN.updateModel model $ _ {
+                              model {
                                     message = Just content,
                                     chatting = Just 0,
                                     suggesting = Nothing,
@@ -99,13 +99,13 @@ beforeSendMessage sent content model@(IMModel {
                   CIF.next $ SendMessage date
 
       | otherwise =
-            F.noMessages <<< SN.updateModel model $ _ {
+            F.noMessages $ model {
                   message = Just content
             }
 
 sendMessage :: WebSocket -> DateTimeWrapper -> IMModel -> NoMessages
 sendMessage webSocket date = case _ of
-      model@(IMModel {
+      model@{
             user: { id: senderID },
             chatting: Just chatting,
             temporaryID,
@@ -113,7 +113,7 @@ sendMessage webSocket date = case _ of
             message,
             selectedImage,
             imageCaption
-      }) ->
+      } ->
             let  recipient@{ user: { id: recipientID }, history } = contacts !@ chatting
                  newTemporaryID = temporaryID + SP.fromInt 1
                  updatedChatting = recipient {
@@ -126,7 +126,7 @@ sendMessage webSocket date = case _ of
                               content: DM.maybe' (\_ -> SU.fromJust message) (asMarkdownImage imageCaption) selectedImage
                         }
                  }
-                 updatedModel = SN.updateModel model $ _ {
+                 updatedModel = model {
                         temporaryID = newTemporaryID,
                         imageCaption = Nothing,
                         selectedImage = Nothing,
@@ -161,12 +161,12 @@ makeTurn ({ chatStarter, chatAge, history }) sender =
                   senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
                   recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
             in
-                  Just $ Turn {
-                        senderStats: Stats {
+                  Just {
+                        senderStats: {
                               characters: senderCharacters,
                               interest: senderCharacters / recipientCharacters
                         },
-                        recipientStats: Stats {
+                        recipientStats: {
                               characters: recipientCharacters,
                               interest: recipientCharacters / senderCharacters
                         },
@@ -187,14 +187,14 @@ makeTurn ({ chatStarter, chatAge, history }) sender =
             getDate = DN.unwrap <<< _.date
 
 receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
-receiveMessage webSocket isFocused wsPayload model@(IMModel {
+receiveMessage webSocket isFocused wsPayload model@{
       user: { id: recipientID },
       contacts,
       suggestions,
       blockedUsers
-}) = case wsPayload of
+} = case wsPayload of
       Received { previousID, id, userID } ->
-            F.noMessages <<< SN.updateModel model $ _ {
+            F.noMessages $ model {
                   contacts = updateTemporaryID contacts userID previousID id
             }
       BeenBlocked { id } ->
@@ -204,10 +204,10 @@ receiveMessage webSocket isFocused wsPayload model@(IMModel {
                   F.noMessages model
             else case processIncomingMessage payload model of
                   Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.response (request.im.singleContact { query: { id: userID }})]
-                  Right updatedModel@(IMModel {
+                  Right updatedModel@{
                         chatting: Just index,
                         contacts
-                  }) ->  --mark it as read if we received a message from the current chat
+                  } ->  --mark it as read if we received a message from the current chat
                         let fields = {
                               chatting: index,
                               userID: recipientID,
@@ -221,7 +221,7 @@ receiveMessage webSocket isFocused wsPayload model@(IMModel {
                                     F.noMessages updatedModel
                   Right updatedModel -> F.noMessages updatedModel
       PayloadError payload -> case payload of
-            ServerMessage { id, userID } -> F.noMessages <<< SN.updateModel model $ _ {
+            ServerMessage { id, userID } -> F.noMessages $ model {
                  contacts = updateHistoryStatus contacts userID id
             }
             --the connection might still be open and the server haven't saved the socket
@@ -232,19 +232,19 @@ receiveMessage webSocket isFocused wsPayload model@(IMModel {
                   recipientID == senderID
 
 processIncomingMessage :: ClientMessagePayload -> IMModel -> Either PrimaryKey IMModel
-processIncomingMessage { id, userID, date, content } model@(IMModel {
+processIncomingMessage { id, userID, date, content } model@{
       user: { id: recipientID },
       suggestions,
       contacts,
       suggesting,
       chatting
-}) = case findAndUpdateContactList of
+} = case findAndUpdateContactList of
       Just contacts' ->
             --new messages bubble the contact to the top
             let added = DA.head contacts' in Right $
                   if getUserID (map _.user added) == getUserID suggestingContact then
                         --edge case of receiving a message from a suggestion
-                        SN.updateModel model $ _ {
+                        model {
                               contacts = contacts',
                               suggesting = Nothing,
                               suggestions = SU.fromJust do
@@ -253,7 +253,7 @@ processIncomingMessage { id, userID, date, content } model@(IMModel {
                               chatting = Just 0
                         }
                    else
-                        SN.updateModel model $ _ {
+                        model {
                               contacts = contacts',
                               --since the contact list is altered, the chatting index must be bumped
                               chatting = (_ + 1) <$> chatting
@@ -303,7 +303,7 @@ updateContactHistory contacts userID f = updateContact <$> contacts
                   | otherwise = contact
 
 applyMarkup :: Markup -> IMModel -> MoreMessages
-applyMarkup markup model@(IMModel { message }) = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
+applyMarkup markup model@{ message } = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
       where apply markup value = do
                   textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
                   let   Tuple before after = case markup of
@@ -324,19 +324,19 @@ applyMarkup markup model@(IMModel { message }) = model :> [liftEffect (Just <$> 
 
 preview :: IMModel -> NoMessages
 preview model =
-      F.noMessages <<< SN.updateModel model $ _ {
+      F.noMessages $ model {
             isPreviewing = true
       }
 
 exitPreview :: IMModel -> NextMessage
 exitPreview model =
-      F.noMessages <<< SN.updateModel model $ _ {
+      F.noMessages $ model {
             isPreviewing = false
       }
 
 setMessage :: Maybe Int -> String -> IMModel -> NextMessage
 setMessage cursor markdown model =
-      CIF.nothingNext (SN.updateModel model $ _ {
+      CIF.nothingNext (model {
             message = Just markdown
       }) <<< liftEffect $
             case cursor of
@@ -353,13 +353,13 @@ selectImage model = CIF.nothingNext model $ liftEffect do
 
 toggleImageForm :: Maybe String -> IMModel -> NoMessages
 toggleImageForm base64 model =
-      F.noMessages <<< SN.updateModel model $ _ {
+      F.noMessages $ model {
             selectedImage = base64
       }
 
 setImageCaption :: String -> IMModel -> NoMessages
 setImageCaption caption model =
-      F.noMessages <<< SN.updateModel model $ _ {
+      F.noMessages $ model {
             imageCaption = Just caption
       }
 
@@ -369,47 +369,47 @@ catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
       CCD.preventStop event
 
 toggleMessageEnter :: IMModel -> NoMessages
-toggleMessageEnter model@(IMModel { messageEnter }) =
-      F.noMessages <<< SN.updateModel model $ _ {
+toggleMessageEnter model@{ messageEnter } =
+      F.noMessages $ model {
             messageEnter = not messageEnter
       }
 
 toggleEmojisVisible :: IMModel -> NoMessages
-toggleEmojisVisible model@(IMModel { emojisVisible }) =
-      F.noMessages <<< SN.updateModel model $ _ {
+toggleEmojisVisible model@{ emojisVisible } =
+      F.noMessages $ model {
             emojisVisible = not emojisVisible
       }
 
 toggleLinkForm :: IMModel -> NoMessages
-toggleLinkForm model@(IMModel { linkFormVisible }) =
-      F.noMessages <<< SN.updateModel model $ _ {
+toggleLinkForm model@{ linkFormVisible } =
+      F.noMessages $ model {
             linkFormVisible = not linkFormVisible,
             link = Nothing,
             linkText = Nothing
       }
 
 setEmoji :: Event -> IMModel -> NextMessage
-setEmoji event model@(IMModel { message }) = SN.updateModel model (_ {
+setEmoji event model@{ message } = model {
       emojisVisible = false
-}) :> [liftEffect do
+} :> [liftEffect do
       emoji <- CCD.innerTextFromTarget event
       setAtCursor message emoji
 ]
 
 setLinkText :: String -> IMModel -> NoMessages
 setLinkText text model =
-      F.noMessages <<< SN.updateModel model $ _ {
+      F.noMessages $ model {
             linkText = Just text
       }
 
 setLink :: String -> IMModel -> NoMessages
 setLink link model =
-      F.noMessages <<< SN.updateModel model $ _ {
+      F.noMessages $ model {
             link = Just link
       }
 
 insertLink :: IMModel -> NextMessage
-insertLink model@(IMModel { message, linkText, link }) =
+insertLink model@{ message, linkText, link } =
       case link of
             Nothing -> CIF.nothingNext model <<< liftEffect $ CCN.alert "Link is required"
             Just url ->

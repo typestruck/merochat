@@ -1,17 +1,18 @@
 module Server.IM.Database where
 
 import Prelude
+import Server.Types
+import Shared.Types
 
 import Data.Array as DA
 import Data.DateTime (DateTime)
 import Data.JSDate as DJ
 import Data.String.Common as DS
+import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Pool, Query(..), Row1(..))
 import Server.Database as SD
-import Server.Types
 import Shared.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage)
-import Shared.Types
 
 userPresentationFields :: String
 userPresentationFields = """ u.id,
@@ -78,8 +79,11 @@ chatHistoryBetween id otherID skip = SD.select (Query ("select * from (select" <
 insertMessage :: forall r. PrimaryKey -> PrimaryKey -> String -> BaseEffect { pool :: Pool | r } PrimaryKey
 insertMessage sender recipient content = SD.withTransaction $ \connection -> do
       SD.executeWith connection (Query """select insertHistory($1, $2)""") (sender /\ recipient)
-      messageID <- SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") (sender /\ recipient /\ content)
-      pure $ messageID
+      SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") (sender /\ recipient /\ content)
+
+insertKarma :: forall r. PrimaryKey -> PrimaryKey -> Tuple Int Int -> BaseEffect { pool :: Pool | r } Unit
+insertKarma id otherID (Tuple senderKarma recipientKarma) =
+      void $ SD.insert (Query "insert into karmaHistories(amount, target) values ($1, $2), ($3, $4)") $ ( senderKarma /\ id /\ recipientKarma /\ otherID)
 
 --when using an array parameter, any must be used instead of in
 markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit

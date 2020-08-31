@@ -31,7 +31,7 @@ import Shared.IM.View.History as SIVH
 import Shared.IM.View.Chat as SIVC
 
 view :: IMModel -> Html IMMessage
-view model@(IMModel { suggestions, suggesting, chatting, contacts, profileSettingsToggle }) = HE.div (HA.class' "im") [
+view model@{ suggestions, suggesting, chatting, contacts, profileSettingsToggle } = HE.div (HA.class' "im") [
       HE.div (HA.class' "left-box") [
             SIVU.userMenu model,
             search model,

@@ -2,14 +2,12 @@ module Server.Privacy.Template where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.Routes (routes)
 
 template :: Effect String
 template = do
@@ -17,8 +15,7 @@ template = do
             content = externalDefaultParameters.content <> content
       }
       FRS.render contents
-      where
-            content = [
+      where content = [
                   HE.div (HA.class' "terms") [
                         HE.h1_ "Privacy Policy",
                         HE.h2_ "Introduction",

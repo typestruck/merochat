@@ -14,13 +14,14 @@ import Shared.Avatar as SA
 import Shared.Markdown as SM
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history (IMModel { user: { id: senderID, avatar: senderAvatar }, chatting }) chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] $
+history { user: { id: senderID, avatar: senderAvatar }, chatting } chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] $
       case chattingSuggestion of
             Nothing -> [HE.createEmptyElement "div"]
             Just recipient -> display recipient
 
       where display recipient@{history, user: { description, avatar }} =
                   --having the description node always present avoids snabbdom choking on the use of innerHTML
+                  --REFACTOR: use hooks instead of innerHtml and elsewhere
                   HE.div' [HA.class' {"message": true, "description-message" : true, "hidden": not $ DA.null history }, HA.innerHTML $ SM.toHTML description] : map (entry avatar) history
 
             entry recipientAvatar { status, sender, content } =

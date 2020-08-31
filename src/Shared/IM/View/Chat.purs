@@ -14,7 +14,7 @@ import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
 
 chat :: IMModel -> Html IMMessage
-chat (IMModel { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, messageEnter, emojisVisible, link, linkText, linkFormVisible }) =
+chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, messageEnter, emojisVisible, link, linkText, linkFormVisible } =
       HE.div (HA.class' "send-box") [
             HE.input [HA.id "image-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
             HE.div (HA.class' imageFormClasses) [

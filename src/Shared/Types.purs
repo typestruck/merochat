@@ -31,10 +31,11 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
-import Data.String (Pattern(..), Replacement(..))
+import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
+import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Time.Duration (Days)
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
@@ -54,13 +55,10 @@ import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
-foreign import data Editor :: Type
 foreign import data Trie :: Type
 
-foreign import fromEditor :: Editor -> Json
 foreign import fromJSDate :: JSDate -> Json
 foreign import fromInt53 :: Int53 -> Json
-foreign import toEditor :: Json -> Editor
 foreign import toInt53 :: Json -> Int53
 
 type BasicUser fields = {
@@ -71,8 +69,6 @@ type BasicUser fields = {
       fields
 }
 
-type NoPayload = Maybe Never
-
 type EmailCaptcha r = {
       email:: String,
       captchaResponse:: Maybe String |
@@ -81,8 +77,6 @@ type EmailCaptcha r = {
 
 -- | Fields for registration or login
 type RegisterLogin = (EmailCaptcha (password :: String))
-
-newtype Never = Never Never
 
 newtype RegisterLoginUser = RegisterLoginUser {
       id :: PrimaryKey,
@@ -109,8 +103,6 @@ newtype Token = Token {
       tokenPOST :: String
 }
 
-newtype SettingsPayload = SettingsPayload String
-
 data Gender =
       Female |
       Male |
@@ -135,7 +127,6 @@ derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
 derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 derive instance newtypeMDate :: Newtype DateWrapper _
 
-derive instance genericGenerateNever :: Generic Never _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
 derive instance genericToken :: Generic Token _
@@ -204,10 +195,6 @@ parseInt data_
 
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonNever :: EncodeJson Never where
-      encodeJson never = DAEGR.genericEncodeJson never
-instance encodeJsonEditor :: EncodeJson Editor where
-      encodeJson editor = fromEditor editor
 instance encodeJsonGender :: EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
@@ -219,8 +206,6 @@ instance encodeJsonMDate :: EncodeJson DateWrapper where
 
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonEditor :: DecodeJson Editor where
-      decodeJson = Right <<< toEditor
 instance decodeJsonGender :: DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
@@ -311,7 +296,7 @@ newtype ContactWrapper = ContactWrapper Contact
 newtype HistoryMessageWrapper = HistoryMessageWrapper HistoryMessage
 
 --refactor: consider using lists or seqs for the fields that dont need indexes
-newtype IMModel = IMModel {
+type IMModel = {
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
       --in case a message from someone blocked was already midway
@@ -339,21 +324,17 @@ newtype IMModel = IMModel {
       linkFormVisible :: Boolean
 }
 
-newtype Stats = Stats {
+type Stats = {
     characters :: Number,
     interest :: Number
 }
 
-newtype Turn = Turn {
+type Turn = {
     senderStats :: Stats,
     recipientStats:: Stats,
     chatAge :: Number, -- Days,
     replyDelay :: Number --Seconds
 }
-
-newtype HistoryPayload = HistoryPayload (Array HistoryMessage)
-newtype MissedMessagesPayload = MissedMessagesPayload (Array Contact)
-newtype ProfileSettingsPayload = ProfileSettingsPayload String
 
 data MessageContent =
       Image (Tuple String String) |
@@ -453,32 +434,19 @@ data WebSocketPayloadClient =
       BeenBlocked { id :: PrimaryKey } |
       PayloadError WebSocketPayloadServer
 
-derive instance genericMissedMessagesPayload :: Generic MissedMessagesPayload _
 derive instance genericMessageContent :: Generic MessageContent _
-derive instance genericHistoryPayload :: Generic HistoryPayload _
-derive instance genericStats :: Generic Stats _
-derive instance genericTurn :: Generic Turn _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericIMModel :: Generic IMModel _
 derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
-derive instance newTypeIMModel :: Newtype IMModel _
 
-derive instance eqIMModel :: Eq IMModel
-derive instance eqStats :: Eq Stats
-derive instance eqTurn :: Eq Turn
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 
 instance showMessageContent :: Show MessageContent where
-      show = DGRS.genericShow
-instance showStats :: Show Stats where
-      show = DGRS.genericShow
-instance showTurn :: Show Turn where
       show = DGRS.genericShow
 instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
@@ -493,20 +461,12 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonTurn :: EncodeJson Turn where
-      encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonStats :: EncodeJson Stats where
-      encodeJson = DAEGR.genericEncodeJson
 
 instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonTurn :: DecodeJson Turn where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonStats :: DecodeJson Stats where
       decodeJson = DADGR.genericDecodeJson
 
 --as it is right now, every query must have a FromSQLRow instance
@@ -673,33 +633,30 @@ type ProfileUser = (BasicUser (
       karma :: Int
 ))
 
-
---REFACTOR: write a generic isVisible field
-newtype ProfileModel = ProfileModel {
+type PM = (
       user :: ProfileUser,
       isCountryVisible :: Boolean,
       isGenderVisible :: Boolean,
       isLanguagesVisible :: Boolean,
       isAgeVisible :: Boolean,
-      editors :: Editors (Maybe Editor) (Maybe Editor) (Maybe Editor),
       isTagsVisible :: Boolean,
       countries :: Array (Tuple PrimaryKey String),
       languages :: Array (Tuple PrimaryKey String),
       birthday :: Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))
-}
+)
+
+--used to generically set records
+type ProfileModel = Record PM
 
 newtype ProfileUserWrapper = ProfileUserWrapper ProfileUser
 
---REFACTOR: write a generic SetField message
---REFACTOR: write a generic Enter message
---REFACTOR: write a generic Toggle message
 data ProfileMessage =
+      SetField (ProfileModel -> ProfileModel) |
       SelectAvatar |
       SetAvatar String |
       SetName String |
       SetHeadline String |
       SetDescription String |
-      SetEditors (Editors Editor Editor Editor)  |
       SetTagEnter (Tuple Key String) |
       SetGender String |
       SetCountry String |
@@ -709,17 +666,10 @@ data ProfileMessage =
       AddLanguage String |
       RemoveLanguage PrimaryKey Event |
       RemoveTag String Event |
-      ToggleCountry Boolean |
-      ToggleAge Boolean |
-      ToggleGender Boolean | --egg_irl
-      ToggleTags Boolean |
-      ToggleLanguages Boolean |
       SaveProfile
 
-derive instance genericProfileModel :: Generic ProfileModel _
 derive instance genericMessageStatus :: Generic MessageStatus _
 
-derive instance newtypeProfileModel :: Newtype ProfileModel _
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
 
 instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
@@ -771,7 +721,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
       fromSQLRow _ = Left "missing or extra fields from users table"
 
 
-newtype SettingsModel = SettingsModel {
+type SettingsModel = {
       email :: String,
       emailConfirmation :: String,
       password :: String,
@@ -786,10 +736,6 @@ data SettingsMessage =
       ChangeEmail |
       ChangePassword |
       TerminateAccount --very bad
-
-derive instance genericSettingsModel :: Generic SettingsModel _
-
-derive instance newtypeSettingsModel :: Newtype SettingsModel _
 
 --there is nothing simple about using purescript-simple-json with types other than record
 instance writeForeignPrimaryKey :: WriteForeign PrimaryKey where

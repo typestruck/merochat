@@ -24,7 +24,7 @@ import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 
 checkFetchHistory :: IMModel -> MoreMessages
-checkFetchHistory model@(IMModel { freeToFetchChatHistory })
+checkFetchHistory model@{ freeToFetchChatHistory }
       | freeToFetchChatHistory = model :> [ Just <<< FetchHistory <$> getScrollTop ]
 
       where getScrollTop = liftEffect do
@@ -34,18 +34,18 @@ checkFetchHistory model@(IMModel { freeToFetchChatHistory })
       | otherwise = F.noMessages model
 
 fetchHistory :: Boolean -> IMModel -> MoreMessages
-fetchHistory shouldFetch model@(IMModel { chatting, contacts })
+fetchHistory shouldFetch model@{ chatting, contacts }
       | shouldFetch =
             let { history, user: { id } } = SIC.chattingContact contacts chatting
-            in (SN.updateModel model $ _ {
+            in model {
                   freeToFetchChatHistory = false
-            }) :> [ Just <<< DisplayHistory <$> CCN.response (request.im.history { query: { with: id, skip: DA.length history  } })   ]
+            } :> [ Just <<< DisplayHistory <$> CCN.response (request.im.history { query: { with: id, skip: DA.length history  } })   ]
       | otherwise = F.noMessages model
 
 displayHistory :: Array HistoryMessage -> IMModel -> NoMessages
-displayHistory chatHistory model@(IMModel { chatting, contacts }) =
+displayHistory chatHistory model@{ chatting, contacts } =
       let   contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
-            updatedModel = SN.updateModel model $ _ {
+            updatedModel = model {
                   freeToFetchChatHistory = true,
                   contacts = SU.fromJust do
                         index <- chatting

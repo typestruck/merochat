@@ -19,7 +19,7 @@ view model =
         ]
 
 account :: SettingsModel -> Html SettingsMessage
-account (SettingsModel { email, emailConfirmation, password, passwordConfirmation}) =
+account ({ email, emailConfirmation, password, passwordConfirmation}) =
         HE.div_ [
                 HE.fieldset_ [
                         HE.legend_ "Account",
