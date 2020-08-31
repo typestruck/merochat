@@ -9,7 +9,7 @@ create table users
     id serial primary key,
     name varchar(50) not null,
     password char(128) not null,
-    joined timestamp default clock_timestamp(),
+    joined timestamp default (now() at time zone 'utc'),
     email varchar(50) not null,
     birthday timestamp,
     gender varchar(10),
@@ -27,7 +27,7 @@ create table messages
     id bigserial primary key,
     sender integer not null,
     recipient integer not null,
-    date timestamp not null default clock_timestamp(),
+    date timestamp not null default (now() at time zone 'utc'),
     content varchar(10000) not null,
     status smallint not null default 0,
     visualized timestamp,
@@ -479,7 +479,7 @@ create table recoveries
 (
     id serial primary key,
     uuid char(36) not null,
-    created timestamp default clock_timestamp(),
+    created timestamp default (now() at time zone 'utc'),
     active boolean default true,
     recoverer integer not null,
     constraint recoverer foreign key (recoverer) references users(id) on delete cascade
@@ -499,7 +499,7 @@ create table karmaHistories
     id serial primary key,
     target integer not null,
     amount integer not null,
-    date timestamp not null default clock_timestamp(),
+    date timestamp not null default (now() at time zone 'utc'),
 
     constraint targetKarmaHistory foreign key (target) references users(id) on delete cascade
 );
@@ -509,8 +509,8 @@ create table histories
     id serial primary key,
     sender integer not null,
     recipient integer not null,
-    firstMessageDate timestamp not null default clock_timestamp(),
-    date timestamp not null default clock_timestamp(),
+    firstMessageDate timestamp not null default (now() at time zone 'utc'),
+    date timestamp not null default (now() at time zone 'utc'),
     senderArchived boolean not null default false,
     recipientArchived boolean not null default false,
 
@@ -527,7 +527,7 @@ begin
     if exists(select 1
     from histories
     where sender = recipientID and recipient = senderID) then
-    update histories set senderArchived = false, recipientArchived = false, date = clock_timestamp() where sender = recipientID and recipient = senderID;
+    update histories set senderArchived = false, recipientArchived = false, date = (now() at time zone 'utc') where sender = recipientID and recipient = senderID;
     else
     insert into histories
         (sender, recipient)
@@ -535,7 +535,7 @@ begin
         (senderID, recipientID)
     on conflict
     (sender, recipient) do
-    update set senderArchived = false, recipientArchived = false, date = clock_timestamp();
+    update set senderArchived = false, recipientArchived = false, date = (now() at time zone 'utc');
 end if;
 end;
   $$

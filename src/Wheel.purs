@@ -19,13 +19,13 @@ import Data.Tuple (Tuple(..))
 -- | Fast reply tries to assert how "instantaneuous" a given conversation is, by making some assumptions about how many characters should have been typed in the time it took for a reply to be sent
 -- | The sender gets a bonus on karma earned
 karmaFrom :: Turn -> Tuple Int Int
-karmaFrom { senderStats, recipientStats, chatAge, replayDelay } =
+karmaFrom { senderStats, recipientStats, chatAge, replyDelay } =
       let grossSender = karma senderStats
       in Tuple (DI.floor $ grossSender + grossSender * 0.5)  (DI.floor $ karma recipientStats)
   where
     karma { interest, characters } =
         let newChatBonus = (days - min days chatAge) / days
-            delayMinutes = max (replayDelay / seconds) 1.0
+            delayMinutes = max (replyDelay / seconds) 1.0
             fastReplyBonus =
                     (min (characters / minCharacters) charactersRatio * delayMinutes
                         )

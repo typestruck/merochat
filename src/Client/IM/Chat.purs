@@ -161,12 +161,12 @@ makeTurn ({ chatStarter, chatAge, history }) sender =
                   senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
                   recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
             in
-                  Just $ Turn {
-                        senderStats: Stats {
+                  Just {
+                        senderStats: {
                               characters: senderCharacters,
                               interest: senderCharacters / recipientCharacters
                         },
-                        recipientStats: Stats {
+                        recipientStats: {
                               characters: recipientCharacters,
                               interest: recipientCharacters / senderCharacters
                         },

@@ -448,10 +448,6 @@ derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 
 instance showMessageContent :: Show MessageContent where
       show = DGRS.genericShow
-instance showStats :: Show Stats where
-      show = DGRS.genericShow
-instance showTurn :: Show Turn where
-      show = DGRS.genericShow
 instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
@@ -465,20 +461,12 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonTurn :: EncodeJson Turn where
-      encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonStats :: EncodeJson Stats where
-      encodeJson = DAEGR.genericEncodeJson
 
 instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonTurn :: DecodeJson Turn where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonStats :: DecodeJson Stats where
       decodeJson = DADGR.genericDecodeJson
 
 --as it is right now, every query must have a FromSQLRow instance
