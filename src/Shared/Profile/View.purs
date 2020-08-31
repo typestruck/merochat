@@ -4,9 +4,7 @@ import Prelude
 import Shared.Types
 
 import Data.Array ((:), (..))
-import Data.Date (Month(..))
 import Data.Date as DD
-import Data.Enum (class BoundedEnum)
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.HashMap as DH

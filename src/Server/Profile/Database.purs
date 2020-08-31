@@ -25,7 +25,7 @@ country,
 (select sum(amount) from karmaHistories where target = u.id) karma """
 
 presentProfile :: PrimaryKey -> ServerEffect ProfileUserWrapper
-presentProfile id = SD.single' (Query $ "select" <> profilePresentationFields <> "from users u where id = $1") $ Row1 id
+presentProfile loggedUserID = SD.single' (Query $ "select" <> profilePresentationFields <> "from users u where id = $1") $ Row1 loggedUserID
 
 presentCountries :: ServerEffect (Array (Tuple PrimaryKey String))
 presentCountries = SD.select (Query "select id, name from countries order by name") Row0

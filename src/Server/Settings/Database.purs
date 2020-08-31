@@ -9,12 +9,12 @@ import Server.Types (ServerEffect)
 import Shared.Types (PrimaryKey)
 
 changeEmail :: PrimaryKey -> String -> ServerEffect Unit
-changeEmail userID email = SD.execute (Query "update users set email = $2 where id = $1") (userID /\ email)
+changeEmail loggedUserID email = SD.execute (Query "update users set email = $2 where id = $1") (loggedUserID /\ email)
 
 changePassword :: PrimaryKey -> String -> ServerEffect Unit
-changePassword userID password = SD.execute (Query "update users set password = $2 where id = $1") (userID /\ password)
+changePassword loggedUserID password = SD.execute (Query "update users set password = $2 where id = $1") (loggedUserID /\ password)
 
 terminateAccount :: PrimaryKey -> ServerEffect Unit
-terminateAccount userID = SD.execute (Query "delete from users where id = $1") $ Row1 userID --cascades
+terminateAccount loggedUserID = SD.execute (Query "delete from users where id = $1") $ Row1 loggedUserID --cascades
 
 

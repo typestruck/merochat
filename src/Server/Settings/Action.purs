@@ -11,7 +11,6 @@ import Server.Ok (ok)
 import Server.Response as SR
 import Server.Settings.Database as SSD
 import Server.Token as ST
-import Shared.Unsafe as SU
 
 blankEmailMessage :: String
 blankEmailMessage = "Email and confirmation are required"
@@ -23,22 +22,22 @@ emailAlreadyRegisteredMessage :: String
 emailAlreadyRegisteredMessage = "Email already registered"
 
 changeEmail :: PrimaryKey -> String -> ServerEffect Ok
-changeEmail userID email = do
+changeEmail loggedUserID email = do
       when (DS.null email) $ SR.throwBadRequest blankEmailMessage
       maybeUser <- SDU.userBy $ Email email
       when (DM.isJust maybeUser) $ SR.throwBadRequest emailAlreadyRegisteredMessage
-      SSD.changeEmail userID email
+      SSD.changeEmail loggedUserID email
       pure ok
 
 changePassword :: PrimaryKey -> String -> ServerEffect Ok
-changePassword userID password = do
+changePassword loggedUserID password = do
       when (DS.null password) $ SR.throwBadRequest blankPasswordMessage
       hash <- ST.hashPassword password
-      SSD.changePassword userID hash
+      SSD.changePassword loggedUserID hash
       pure ok
 
 terminateAccount :: PrimaryKey -> ServerEffect Ok
-terminateAccount userID = do
-      SSD.terminateAccount userID
+terminateAccount loggedUserID = do
+      SSD.terminateAccount loggedUserID
       pure ok
 

@@ -22,14 +22,12 @@ import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Nullable (null)
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -37,7 +35,6 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
-import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
