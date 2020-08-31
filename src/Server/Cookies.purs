@@ -7,7 +7,7 @@ import Browser.Cookies.Data as BC
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Run.Reader as RR
-import Server.Domain (domain)
+import Shared.Options.Domain (domain)
 import Server.Types (ServerEffect)
 
 makeCookieHeader :: String -> ServerEffect (Tuple String String)

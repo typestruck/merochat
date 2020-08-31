@@ -8,7 +8,7 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Foreign as F
-import Shared.File (maxImageSize, maxImageSizeKB)
+import Shared.Options.File (maxImageSize, maxImageSizeKB)
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC

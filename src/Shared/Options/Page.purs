@@ -1,4 +1,4 @@
-module Shared.Page where
+module Shared.Options.Page where
 
 contactsPerPage :: Int
 contactsPerPage = 20

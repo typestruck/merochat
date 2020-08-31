@@ -78,8 +78,6 @@ update { webSocketRef, fileReader} model  =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
-            SetLink link -> CIC.setLink link model
-            SetLinkText text -> CIC.setLinkText text model
             ToggleLinkForm -> CIC.toggleLinkForm model
             ToggleEmojisVisible -> CIC.toggleEmojisVisible model
             DropFile event -> CIC.catchFile fileReader event model
@@ -93,7 +91,6 @@ update { webSocketRef, fileReader} model  =
             SelectImage -> CIC.selectImage model
             ExitPreview -> CIC.exitPreview model
             ToggleImageForm maybeBase64 -> CIC.toggleImageForm maybeBase64 model
-            SetImageCaption caption -> CIC.setImageCaption caption model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             SetEmoji event -> CIC.setEmoji event model
             --contacts
@@ -125,6 +122,7 @@ update { webSocketRef, fileReader} model  =
             PreventStop event -> preventStop event model
             ToggleOnline -> toggleOnline model
             CheckMissedMessages -> checkMissedMessages model
+            SetField setter -> F.noMessages $ setter model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
             setName name model@{ user } = F.noMessages $ model {
                   user = user {

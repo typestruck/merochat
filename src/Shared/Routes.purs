@@ -22,17 +22,12 @@ import Type.Proxy (Proxy(..))
 routes :: _
 routes = makeRoutes spec
 
+makeRoutes :: forall r routesSpec routesSpecList client. RowToList routesSpec routesSpecList => ToRouteList routesSpecList "" () (Record client) => Spec { routes :: Record routesSpec | r } -> Record client
+makeRoutes routesSpec = makeRouteList (RLProxy :: _ routesSpecList) (SProxy :: _ "") (Proxy :: _ (Record ()))
+
 type ToString payload = payload -> String
 
-class ToRoutes routesSpec client | routesSpec -> client where
-      makeRoutes :: forall r. Spec { routes :: routesSpec | r } -> client
-
-instance toRoutesRecord :: (
-      RowToList routesSpec routesSpecList,
-      ToRouteList routesSpecList "" () (Record client)
-) => ToRoutes (Record routesSpec) (Record client) where
-      makeRoutes routesSpec = makeRouteList (RLProxy :: _ routesSpecList) (SProxy :: _ "") (Proxy :: _ (Record ()))
-
+--REFACTOR: ignore routes that are not GET
 class ToRouteList (routesSpecList :: RowList) (basePath :: Symbol) (baseParams :: # Type) client | routesSpecList -> client where
       makeRouteList :: RLProxy routesSpecList -> SProxy basePath -> Proxy (Record baseParams) -> client
 
@@ -83,9 +78,9 @@ instance queryableGetRoute :: (
       Union route DefaultRouteSpec mergedRoute,
       Nub mergedRoute routeWithDefaults,
       TypeEquals (Record routeWithDefaults) {
-         params :: Record params,
-         query :: query
-         | r
+            params :: Record params,
+            query :: query
+            | r
       },
       Union baseParams params fullUrlParams,
       Symbol.Append basePath path fullPath,

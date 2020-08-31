@@ -9,7 +9,6 @@ import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 
---refactor: consider having a separated spec for whats client callable
 spec :: Spec {
       guards :: {
             loggedUserID :: PrimaryKey,

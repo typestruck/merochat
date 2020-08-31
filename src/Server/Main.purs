@@ -18,7 +18,7 @@ import Server.Types (Configuration)
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events as SWE
-import Shared.WebSocketOptions (port)
+import Shared.Options.WebSocket (port)
 import Server.Guard (guards)
 
 main :: Effect Unit

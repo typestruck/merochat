@@ -28,7 +28,7 @@ import Flame ((:>))
 import Flame as F
 import Shared.IM.Contact as SIC
 import Shared.Newtype as SN
-import Shared.Page (initialMessagesPerPage)
+import Shared.Options.Page (initialMessagesPerPage)
 
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU

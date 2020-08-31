@@ -16,12 +16,11 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
 import Server.Bender as SB
-import Server.File (allowedMediaTypes)
+import Shared.Options.File (allowedMediaTypes)
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
 import Server.Response as SR
-import Shared.File (maxImageSize, maxImageSizeKB)
-import Shared.Newtype as SN
+import Shared.Options.File (maxImageSize, maxImageSizeKB)
 import Shared.Unsafe as SU
 
 invalidImageMessage :: String
@@ -38,12 +37,12 @@ generate =
             Description -> SB.generateDescription
 
 saveProfile :: PrimaryKey -> ProfileUser -> ServerEffect Ok
-saveProfile id profileUser@{ name, headline, description, avatar, languages, tags } = do
+saveProfile loggedUserID profileUser@{ name, headline, description, avatar, languages, tags } = do
       when (isNull name || isNull headline || isNull description) $ SR.throwBadRequest "Missing required info fields"
 
       updatedAvatar <- base64From $ map (DS.split (Pattern ",")) avatar
       SPD.saveProfile {
-            user: profileUser { id = id },
+            user: profileUser { id = loggedUserID },
             avatar: updatedAvatar,
             languages,
             tags

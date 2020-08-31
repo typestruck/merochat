@@ -22,14 +22,12 @@ import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Nullable (null)
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -37,7 +35,6 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
-import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -351,22 +348,16 @@ selectImage model = CIF.nothingNext model $ liftEffect do
       input <- getFileInput
       CCF.triggerFileSelect input
 
+catchFile :: FileReader -> Event -> IMModel -> NoMessages
+catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
+      CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
+      CCD.preventStop event
+
 toggleImageForm :: Maybe String -> IMModel -> NoMessages
 toggleImageForm base64 model =
       F.noMessages $ model {
             selectedImage = base64
       }
-
-setImageCaption :: String -> IMModel -> NoMessages
-setImageCaption caption model =
-      F.noMessages $ model {
-            imageCaption = Just caption
-      }
-
-catchFile :: FileReader -> Event -> IMModel -> NoMessages
-catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
-      CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
-      CCD.preventStop event
 
 toggleMessageEnter :: IMModel -> NoMessages
 toggleMessageEnter model@{ messageEnter } =
@@ -395,18 +386,6 @@ setEmoji event model@{ message } = model {
       emoji <- CCD.innerTextFromTarget event
       setAtCursor message emoji
 ]
-
-setLinkText :: String -> IMModel -> NoMessages
-setLinkText text model =
-      F.noMessages $ model {
-            linkText = Just text
-      }
-
-setLink :: String -> IMModel -> NoMessages
-setLink link model =
-      F.noMessages $ model {
-            link = Just link
-      }
 
 insertLink :: IMModel -> NextMessage
 insertLink model@{ message, linkText, link } =

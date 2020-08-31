@@ -5,7 +5,7 @@ import Shared.Types
 
 import Effect (Effect)
 import Shared.JSON as SJ
-import Shared.WebSocketOptions (port)
+import Shared.Options.WebSocket (port)
 import Web.Socket.Event.EventTypes as WSEE
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)

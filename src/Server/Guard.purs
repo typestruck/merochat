@@ -20,7 +20,7 @@ import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Guards as PSG
 import Payload.Server.Response as PSR
 import Server.Cookies (cookieName)
-import Server.Domain (domain)
+import Shared.Options.Domain (domain)
 import Server.Token as ST
 import Shared.Routes (routes)
 

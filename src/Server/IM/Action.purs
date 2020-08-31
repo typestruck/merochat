@@ -20,51 +20,49 @@ import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
-import Server.File (allowedMediaTypes)
+import Shared.Options.File (allowedMediaTypes)
 import Server.IM.Database as SID
 import Server.Ok (ok)
 import Server.Wheel as SW
-import Shared.File (maxImageSize)
+import Shared.Options.File (maxImageSize)
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
 
 foreign import sanitize :: String -> String
 
 suggest :: PrimaryKey -> ServerEffect (Array Suggestion)
-suggest id = SN.unwrapAll $ SID.suggest id
+suggest = SN.unwrapAll <<< SID.suggest
 
---REFACTOR: dont just use id for loggedUserID
-contactList :: PrimaryKey -> Int -> ServerEffect (Array Contact)
-contactList id page = do
-      contacts <- SN.unwrapAll $ SID.presentContacts id page
-      history <- SN.unwrapAll <<< SID.chatHistory id $ map (_.id <<< _.user) contacts
+listContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
+listContacts loggedUserID page = do
+      contacts <- SN.unwrapAll $ SID.presentContacts loggedUserID page
+      history <- SN.unwrapAll <<< SID.chatHistoryFor loggedUserID $ map (_.id <<< _.user) contacts
       let userHistory = DF.foldl intoHashMap DH.empty history
       pure $ intoContacts userHistory <$> contacts
 
       where intoHashMap hashMap m@{ sender, recipient } =
-                  DH.insertWith (<>) (if sender == id then recipient else sender) [m] hashMap
+                  DH.insertWith (<>) (if sender == loggedUserID then recipient else sender) [m] hashMap
 
-            intoContacts userHistory contact@{ user: { id } } = contact {
-                  history = SU.fromJust $ DH.lookup id userHistory
+            intoContacts userHistory contact@{ user: { id: loggedUserID } } = contact {
+                  history = SU.fromJust $ DH.lookup loggedUserID userHistory
             }
 
---REFACTOR: type synonym for second primary key parameter
-singleContact :: PrimaryKey -> PrimaryKey -> ServerEffect Contact
-singleContact id otherID = do
-      contact <- DN.unwrap <$> SID.presentSingleContact id otherID
-      history <- SN.unwrapAll $ SID.chatHistoryBetween id otherID 0
+listSingleContact :: PrimaryKey -> PrimaryKey -> ServerEffect Contact
+listSingleContact loggedUserID userID = do
+      contact <- DN.unwrap <$> SID.presentSingleContact loggedUserID userID
+      history <- SN.unwrapAll $ SID.chatHistoryBetween loggedUserID userID 0
       pure $ contact {
             history = history
       }
 
 processMessage :: forall r. PrimaryKey -> PrimaryKey -> MessageContent -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey String)
-processMessage id otherID content = do
+processMessage loggedUserID userID content = do
       message <- case content of
             Text m -> pure m
             Image (Tuple caption base64) -> do
                   path <- base64From $ DS.split (Pattern ",") base64
                   pure $ "![" <> caption  <> "](" <> path <> ")"
-      id <- SID.insertMessage id otherID $ sanitize message
+      id <- SID.insertMessage loggedUserID userID $ sanitize message
       pure $ Tuple id message
       where base64From =
                   case _ of
@@ -86,25 +84,24 @@ processMessage id otherID content = do
             invalidImage = SR.throwBadRequest "Invalid image"
 
 processKarma :: forall r. PrimaryKey -> PrimaryKey -> Turn -> BaseEffect { pool :: Pool | r } Unit
-processKarma id otherID turn = SID.insertKarma id otherID $ SW.karmaFrom turn
+processKarma loggedUserID userID turn = SID.insertKarma loggedUserID userID $ SW.karmaFrom turn
 
 blockUser :: PrimaryKey -> PrimaryKey -> ServerEffect Ok
-blockUser id otherID = do
-      SID.insertBlock id otherID
+blockUser loggedUserID userID = do
+      SID.insertBlock loggedUserID userID
       pure ok
 
---REFACTOR: clearer names for handler and action functions
-missedMessages :: PrimaryKey -> DateTime -> ServerEffect (Array Contact)
-missedMessages id since = do
-      history <- SN.unwrapAll $ SID.chatHistorySince id since
+listMissedContacts :: PrimaryKey -> DateTime -> ServerEffect (Array Contact)
+listMissedContacts loggedUserID since = do
+      history <- SN.unwrapAll $ SID.chatHistorySince loggedUserID since
       contacts <- SN.unwrapAll <<< SID.presentSelectedContacts <<< DA.nubEq $ map _.sender history
-      let userHistory = DF.foldl (intoHashMap id) DH.empty history
+      let userHistory = DF.foldl intoHashMap DH.empty history
       pure $ intoContacts userHistory <$> contacts
 
-      where intoHashMap userID hashMap m@{ recipient } = DH.insertWith (<>) recipient [m] hashMap
+      where intoHashMap hashMap m@{ recipient } = DH.insertWith (<>) recipient [m] hashMap
             intoContacts userHistory contact@{ user: { id } } = contact {
-                  history = SU.fromJust $ DH.lookup id userHistory
+                  history = SU.fromJust $ DH.lookup loggedUserID userHistory
             }
 
-history :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
-history loggedUserID with skip = SN.unwrapAll $ SID.chatHistoryBetween loggedUserID with skip
+resumeChatHistory :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
+resumeChatHistory loggedUserID userID skip = SN.unwrapAll $ SID.chatHistoryBetween loggedUserID userID skip
