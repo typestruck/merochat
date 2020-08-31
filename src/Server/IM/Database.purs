@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Pool, Query(..), Row1(..))
 import Server.Database as SD
-import Shared.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage)
+import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage)
 
 userPresentationFields :: String
 userPresentationFields = """ u.id,

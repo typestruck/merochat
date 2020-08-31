@@ -20,11 +20,11 @@ import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
-import Server.File (allowedMediaTypes)
+import Shared.Options.File (allowedMediaTypes)
 import Server.IM.Database as SID
 import Server.Ok (ok)
 import Server.Wheel as SW
-import Shared.File (maxImageSize)
+import Shared.Options.File (maxImageSize)
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
 
@@ -104,4 +104,4 @@ listMissedContacts loggedUserID since = do
             }
 
 resumeChatHistory :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
-resumeChatHistory loggedUserID userID skip = SN.unwrapAll $ SID.chatHistoryBetween loggedUserID with skip
+resumeChatHistory loggedUserID userID skip = SN.unwrapAll $ SID.chatHistoryBetween loggedUserID userID skip

@@ -16,11 +16,11 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
 import Server.Bender as SB
-import Server.File (allowedMediaTypes)
+import Shared.Options.File (allowedMediaTypes)
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
 import Server.Response as SR
-import Shared.File (maxImageSize, maxImageSizeKB)
+import Shared.Options.File (maxImageSize, maxImageSizeKB)
 import Shared.Unsafe as SU
 
 invalidImageMessage :: String
