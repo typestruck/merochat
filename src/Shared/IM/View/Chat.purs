@@ -1,15 +1,16 @@
 module Shared.IM.View.Chat where
 
 import Prelude
-
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Symbol (SProxy(..))
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Shared.Setter as SS
 import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
 
@@ -25,7 +26,7 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                         HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
                   ],
                   HE.div (HA.class' "send-image") [
-                        HE.input [HA.placeholder "Image Caption", HA.onInput SetImageCaption ],
+                        HE.input [HA.placeholder "Image Caption", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
                         HE.button [HA.class' "action-button", HA.onClick (BeforeSendMessage true $ DM.fromMaybe "" message)] "Send"
                   ]
             ],
@@ -34,8 +35,8 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                         HE.button [HA.onClick ToggleLinkForm] "Close"
                   ],
                   HE.div_ [
-                        HE.input [HA.type' "text", HA.placeholder "Text", HA.value $ DM.fromMaybe "" linkText, HA.onInput SetLinkText],
-                        HE.input [HA.type' "text", HA.placeholder "Link", HA.value $ DM.fromMaybe "" link, HA.onInput SetLink]
+                        HE.input [HA.type' "text", HA.placeholder "Text", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
+                        HE.input [HA.type' "text", HA.placeholder "Link", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))]
                   ],
                   HE.button [HA.class' "action-button", HA.onClick InsertLink] "Insert"
             ],
@@ -92,4 +93,6 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                   HE.text name,
                   HE.div_ $ map toEmojiSpan pairs
             ]
+
+setJust field = SS.setIMField field <<< Just
 

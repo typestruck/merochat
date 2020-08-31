@@ -39,7 +39,7 @@ update { model, message } =
       case message of
             SelectAvatar -> selectAvatar
 
-            SetField setter -> pure setter
+            SetPField setter -> pure setter
             SetAvatar base64 -> pure <<< SS.setUserField (SProxy :: SProxy "avatar") $ Just base64
             SetCountry country -> setAndDisplayField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ SP.fromString country
             SetGender gender -> setAndDisplayField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)

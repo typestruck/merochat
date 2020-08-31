@@ -47,7 +47,7 @@ view lastYearEligible ({
             -- one being that on emptying the element snabbom tries to patch over the no longer existing text node
             -- (which the browser replaced with <br/>)
             HE.div [HA.class' "profile-edition-name", titleWithGenerated "name"] [
-                  HE.textarea [HA.id "profile-edition-name", HA.onInput (SetField <<< SS.setUserField (SProxy :: SProxy "name"))] user.name
+                  HE.textarea [HA.id "profile-edition-name", HA.onInput (SetPField <<< SS.setUserField (SProxy :: SProxy "name"))] user.name
             ],
             HE.div [HA.class' "profile-edition-headline", titleWithGenerated "headline"] [
                   HE.textarea [HA.id "profile-edition-headline"] user.headline
@@ -147,4 +147,4 @@ tagEdition title message (Tuple id text) = HE.span [HA.onClick' (message id), HA
 ]
 
 unsetField :: forall field r. IsSymbol field => Cons field Boolean r PM => SProxy field -> ProfileMessage
-unsetField field = SetField (R.set field false)
+unsetField field = SetPField (R.set field false)

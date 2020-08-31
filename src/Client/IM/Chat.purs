@@ -348,22 +348,16 @@ selectImage model = CIF.nothingNext model $ liftEffect do
       input <- getFileInput
       CCF.triggerFileSelect input
 
+catchFile :: FileReader -> Event -> IMModel -> NoMessages
+catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
+      CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
+      CCD.preventStop event
+
 toggleImageForm :: Maybe String -> IMModel -> NoMessages
 toggleImageForm base64 model =
       F.noMessages $ model {
             selectedImage = base64
       }
-
-setImageCaption :: String -> IMModel -> NoMessages
-setImageCaption caption model =
-      F.noMessages $ model {
-            imageCaption = Just caption
-      }
-
-catchFile :: FileReader -> Event -> IMModel -> NoMessages
-catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
-      CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
-      CCD.preventStop event
 
 toggleMessageEnter :: IMModel -> NoMessages
 toggleMessageEnter model@{ messageEnter } =
@@ -392,18 +386,6 @@ setEmoji event model@{ message } = model {
       emoji <- CCD.innerTextFromTarget event
       setAtCursor message emoji
 ]
-
-setLinkText :: String -> IMModel -> NoMessages
-setLinkText text model =
-      F.noMessages $ model {
-            linkText = Just text
-      }
-
-setLink :: String -> IMModel -> NoMessages
-setLink link model =
-      F.noMessages $ model {
-            link = Just link
-      }
 
 insertLink :: IMModel -> NextMessage
 insertLink model@{ message, linkText, link } =

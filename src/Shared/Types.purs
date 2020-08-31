@@ -179,7 +179,7 @@ newtype ContactWrapper = ContactWrapper Contact
 
 newtype HistoryMessageWrapper = HistoryMessageWrapper HistoryMessage
 
-type IMModel = {
+type IM = (
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
       --in case a message from someone blocked was already midway
@@ -205,7 +205,9 @@ type IMModel = {
       isPreviewing :: Boolean,
       emojisVisible :: Boolean,
       linkFormVisible :: Boolean
-}
+)
+
+type IMModel = Record IM
 
 data ProfileSettingsToggle =
       Hidden |
@@ -272,11 +274,8 @@ data IMMessage =
       ToggleImageForm (Maybe String) |
       ToggleLinkForm |
       Apply Markup |
-      SetLink String |
-      SetLinkText String |
       Preview |
       ExitPreview |
-      SetImageCaption String |
       ToggleMessageEnter |
       ToggleEmojisVisible |
       SetEmoji Event |
@@ -285,7 +284,8 @@ data IMMessage =
       PreventStop Event |
       SetNameFromProfile String |
       ToggleOnline |
-      CheckMissedMessages
+      CheckMissedMessages |
+      SetField (IMModel -> IMModel)
 
 data WebSocketPayloadServer =
       Connect |
@@ -330,7 +330,7 @@ type ProfileModel = Record PM
 newtype ProfileUserWrapper = ProfileUserWrapper ProfileUser
 
 data ProfileMessage =
-      SetField (ProfileModel -> ProfileModel) |
+      SetPField (ProfileModel -> ProfileModel) |
       SelectAvatar |
       SetAvatar String |
       SetName String |
