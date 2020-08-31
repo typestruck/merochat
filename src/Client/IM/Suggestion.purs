@@ -25,24 +25,24 @@ import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
 nextSuggestion :: IMModel -> MoreMessages
-nextSuggestion model@(IMModel { suggestions, suggesting }) =
+nextSuggestion model@{ suggestions, suggesting } =
       let next = DM.maybe 0 (_ + 1) suggesting
       in      if next == DA.length suggestions then
                   fetchMoreSuggestions model
              else
-                  F.noMessages <<< SN.updateModel model $ _ {
+                  F.noMessages $ model {
                         suggesting = Just next,
                         chatting = Nothing
                   }
 
 previousSuggestion :: IMModel -> MoreMessages
-previousSuggestion model@(IMModel { suggesting }) =
+previousSuggestion model@{ suggesting } =
       let previous = DM.maybe 0 (_ - 1) suggesting
       in
             if previous < 0 then
                   fetchMoreSuggestions model
              else
-                  F.noMessages <<< SN.updateModel model $ _  {
+                  F.noMessages $ model  {
                         suggesting = Just previous,
                         chatting = Nothing
                   }
@@ -59,19 +59,19 @@ displayMoreSuggestions suggestions =
       }
 
 blockUser :: WebSocket  -> PrimaryKey -> IMModel -> NextMessage
-blockUser webSocket blocked model@(IMModel { blockedUsers }) =
+blockUser webSocket blocked model@{ blockedUsers } =
       updatedModel :> [do
             void <<< CCN.response $ request.im.block { query: { id: blocked } }
             liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked }
             pure Nothing
       ]
-      where updatedModel = removeBlockedUser blocked <<< SN.updateModel model $ _ {
+      where updatedModel = removeBlockedUser blocked $ model {
                   blockedUsers = blocked : blockedUsers
             }
 
 removeBlockedUser :: PrimaryKey -> IMModel -> IMModel
-removeBlockedUser blocked model@(IMModel { contacts, suggestions }) =
-      SN.updateModel model $ _ {
+removeBlockedUser blocked model@{ contacts, suggestions } =
+      model {
             contacts = DA.filter ((blocked /= _) <<< fromContact) contacts,
             suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
       }

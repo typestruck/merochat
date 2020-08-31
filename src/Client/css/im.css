@@ -697,7 +697,10 @@ svg.toolbar-action {
 }
 
 .profile-info-edition textarea {
+    resize:none;
     border: 0;
+    width: 100%;
+text-align: center;
 }
 
 .profile-edition-headline .CodeMirror, .profile-edition-name .CodeMirror {

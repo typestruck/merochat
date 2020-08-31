@@ -221,3 +221,4 @@ let additions = {
 }
 
 in  upstream // overrides // additions
+  with flame = ../purescript-flame/spago.dhall as Location

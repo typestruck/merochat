@@ -16,7 +16,7 @@ import Shared.Avatar as SA
 import Shared.Markdown as SM
 
 contactList :: IMModel -> Html IMMessage
-contactList (IMModel { contacts, user: { id: userID } }) = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList { contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
       where getDate history = do
                   { date: DateTimeWrapper md } <- DA.last history
                   pure md
