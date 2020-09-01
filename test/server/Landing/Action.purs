@@ -28,50 +28,45 @@ email = "e@a.com"
 tests :: TestSuite
 tests = do
         TU.suite "landing actions" do
-                let     catch expected (BadRequest {reason}) = R.liftAff $ TUA.equal expected reason
-                        catch _ other = R.liftAff <<< TU.failure $ "Unexpected exception: " <> show other
+                let registerExceptionTest rl = do
+                        void $ SLA.register rl
+                        users <- userCount
+                        R.liftAff $ TUA.equal 0 users
 
-                        registerExceptionTest rl = do
-                                _ <- SLA.register "" rl
-                                users <- userCount
-                                R.liftAff $ TUA.equal 0 users
                 TU.test "register does not accept empty fields" $
-                        TS.serverActionCatch (catch invalidUserEmailMessage)
-                                $ \_ -> registerExceptionTest $ RegisterLogin {
-                                        email: "",
-                                        password: "",
-                                        captchaResponse: Nothing
-                                }
+                        TS.serverActionCatch (TS.catch invalidUserEmailMessage) $ registerExceptionTest {
+                                email: "",
+                                password: "",
+                                captchaResponse: Nothing
+                        }
 
                 TU.test "register does not accept empty password" $
-                        TS.serverActionCatch (catch invalidUserEmailMessage)
-                                $ \_ -> registerExceptionTest $ RegisterLogin {
-                                        email,
-                                        password: "",
-                                        captchaResponse: Nothing
-                                }
+                        TS.serverActionCatch (TS.catch invalidUserEmailMessage) $ registerExceptionTest {
+                                email,
+                                password: "",
+                                captchaResponse: Nothing
+                        }
 
 
                 TU.test "register does not accept existing email" $
-                        TS.serverActionCatch (catch emailAlreadyRegisteredMessage)
-                                $ \_ -> do
-                                        _ <- SLD.createUser {
-                                                email,
-                                                name: "sdsd",
-                                                password: "ss",
-                                                headline: "sd",
-                                                description: "ss"
-                                        }
-                                        registerExceptionTest $ RegisterLogin {
-                                                email,
-                                                password: "ss",
-                                                captchaResponse: Nothing
-                                        }
+                        TS.serverActionCatch (TS.catch emailAlreadyRegisteredMessage) $ do
+                                void $ SLD.createUser {
+                                        email,
+                                        name: "sdsd",
+                                        password: "ss",
+                                        headline: "sd",
+                                        description: "ss"
+                                }
+                                registerExceptionTest $ {
+                                        email,
+                                        password: "ss",
+                                        captchaResponse: Nothing
+                                }
 
                 TU.test "register creates user" $
-                        TS.serverAction $ \_ -> do
+                        TS.serverAction $ do
                                 let password = "hunter12"
-                                _ <- SLA.register "" $ RegisterLogin {
+                                _ <- SLA.register $ {
                                         email,
                                         password,
                                         captchaResponse: Nothing
@@ -84,14 +79,15 @@ tests = do
                                                 R.liftAff $ TUA.equal hashed user.password
 
                 TU.test "register creates karma" $
-                        TS.serverAction $ \_ -> do
+                        TS.serverAction $ do
                                 let password = "hunter12"
-                                _ <- SLA.register "" $ RegisterLogin {
+                                void $ SLA.register {
                                         email,
                                         password,
                                         captchaResponse: Nothing
                                 }
-                                RegisterLoginUser {id} <- SU.fromJust <$> (SDU.userBy $ Email email)
+                                RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
+                                --REFACTOR: starting karma amount should be in options
                                 count <- SD.scalar' (Query "select cast(count(1) as integer) from karmaHistories where target = $1 and amount = 5") $ Row1 id
                                 R.liftAff $ TUA.equal 1 count
 

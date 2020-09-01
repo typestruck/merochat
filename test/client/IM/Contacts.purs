@@ -1,18 +1,17 @@
 module Test.Client.IM.Contacts where
 
+import Prelude
+import Shared.Types
+
 import Client.IM.Contacts as CICN
 import Data.Maybe (Maybe(..))
-import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Prelude
-import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
-import Shared.Types (DateTimeWrapper(..), PrimaryKey(..))
 import Shared.Unsafe ((!@))
-import Test.Client.Model (contact, imUser, anotherIMUserID)
+import Test.Client.Model (anotherIMUserID, contact, imUser, webSocket)
 import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -28,7 +27,7 @@ tests = do
                   TUA.equal Nothing suggesting
 
             TU.test "resumeChat sets chatting" do
-                  let m@{ chatting }) = DT.fst <<< CICN.resumeChat anotherIMUserID $ model {
+                  let m@{ chatting } = DT.fst <<< CICN.resumeChat anotherIMUserID $ model {
                         chatting = Nothing,
                         contacts = [contact { user = imUser } , contact]
                   }
@@ -41,10 +40,10 @@ tests = do
                   TUA.equal 2 1
 
             TU.test "markRead sets recieved messages as read" do
-                  let { contacts } = DT.fst <<< CICN.markRead $ model {
+                  let { contacts } = DT.fst <<< CICN.markRead webSocket $ model {
                         chatting = Just 1
                   }
-                  TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\( { id, status}) -> Tuple id status) <<< _.history $ DN.unwrap (contacts !@ 1)
+                  TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\( { id, status}) -> Tuple id status) $ (contacts !@ 1).history
 
             TU.test "displayContacts shows next page" do
                   let { contacts } = DT.fst <<< CICN.displayContacts [contact] $ model {
@@ -53,7 +52,7 @@ tests = do
                   TUA.equal contacts [contact]
 
 model :: IMModel
-model = SN.updateModel TCM.model $ _ {
+model = TCM.model  {
       contacts = [contact, anotherContact]
 }
 
@@ -62,31 +61,27 @@ anotherContactID = SP.fromInt 23
 
 anotherContact :: Contact
 anotherContact = contact {
-      user = SN.updateUser imUser $ _ { id = anotherContactID },
-      history = [
-             {
-                   id: SP.fromInt 1,
-                   status: Unread,
-                   sender: SP.fromInt 32,
-                   recipient: _.id $ DN.unwrap imUser,
-                   content: "1",
-                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
-            },
-             {
-                   id: SP.fromInt 2,
-                   status: Unread,
-                   sender: _.id $ DN.unwrap imUser,
-                   recipient: SP.fromInt 32,
-                   content: "2",
-                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
-            },
-             {
-                   id: SP.fromInt 3,
-                   status: Unread,
-                   sender: SP.fromInt 32,
-                   recipient: _.id $ DN.unwrap imUser,
-                   content: "3",
-                   date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
-            }
-      ]
+      user = imUser { id = anotherContactID },
+      history = [{
+            id: SP.fromInt 1,
+            status: Unread,
+            sender: SP.fromInt 32,
+            recipient: imUser.id,
+            content: "1",
+            date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
+      }, {
+            id: SP.fromInt 2,
+            status: Unread,
+            sender: imUser.id,
+            recipient: SP.fromInt 32,
+            content: "2",
+            date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
+      },{
+            id: SP.fromInt 3,
+            status: Unread,
+            sender: SP.fromInt 32,
+            recipient: imUser.id,
+            content: "3",
+            date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
+      }]
 }

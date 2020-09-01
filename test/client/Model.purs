@@ -1,7 +1,6 @@
 module Test.Client.Model where
 
 import Prelude
-
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
@@ -9,7 +8,6 @@ import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.IM.Contact as SIC
-import Shared.Newtype as SN
 import Shared.PrimaryKey as SP
 import Unsafe.Coerce as UC
 import Web.Socket.WebSocket (WebSocket)
@@ -32,6 +30,7 @@ model = {
       link: Nothing,
       messageEnter: true,
       linkText: Nothing,
+      blockedUsers: [],
       profileSettingsToggle: Hidden,
       user: imUser,
       suggestions: [suggestion],
@@ -39,6 +38,7 @@ model = {
       suggesting: Just 0,
       freeToFetchChatHistory: true,
       contacts: [contact],
+      isOnline: true,
       chatting: Just 0
 }
 
@@ -46,7 +46,7 @@ imUserID :: PrimaryKey
 imUserID = SP.fromInt 23
 
 imUser :: IMUser
-imUser = IMUser {
+imUser = {
       age: Nothing,
       name: "test",
       id: imUserID,
@@ -67,7 +67,7 @@ contactID :: PrimaryKey
 contactID = anotherIMUserID
 
 anotherIMUser :: IMUser
-anotherIMUser = SN.updateUser imUser $ _ { id = anotherIMUserID }
+anotherIMUser = imUser { id = anotherIMUserID }
 
 contact :: Contact
 contact = SIC.defaultContact imUserID anotherIMUser
@@ -76,10 +76,10 @@ suggestionID :: PrimaryKey
 suggestionID = SP.fromInt 300
 
 suggestion :: Suggestion
-suggestion = SN.updateUser imUser $ _ { id = suggestionID }
+suggestion = imUser { id = suggestionID }
 
 historyMessage :: HistoryMessage
-historyMessage = HistoryMessage {
+historyMessage = {
       id: SP.fromInt 1,
       sender:  imUserID,
       recipient:contactID,
@@ -87,3 +87,6 @@ historyMessage = HistoryMessage {
       content: "test",
       status: Unread
 }
+
+webSocket :: WebSocket
+webSocket = UC.unsafeCoerce 2
