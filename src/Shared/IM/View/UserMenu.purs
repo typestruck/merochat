@@ -14,7 +14,7 @@ userMenu { user: { name, avatar, karma }, userContextMenuVisible } =  HE.div [HA
       HE.div (HA.class' "settings-name") [
             HE.strong_ name,
             HE.br,
-            HE.text $ "Karma: " <> show karma
+            HE.span (HA.class' "karma-display") $ "Karma: " <> show karma
       ],
       HE.div [HA.class' $ "menu-button outer-drop-menu" <> if userContextMenuVisible then " dropdown-wrapper-visible" else ""] [
             HE.a [HA.class' "menu-button" ] [

@@ -31,8 +31,8 @@ contactList { contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchC
                   HE.div [HA.class' "contact", HA.onClick $ ResumeChat id] [
                         HE.img [HA.class' "avatar-contact-list", HA.src $ SA.avatarForRecipient (Just index) avatar],
                         HE.div [HA.class' "contact-profile"] [
-                              HE.strong_ name,
-                              HE.br,
+                              HE.span (HA.class' "contact-name") name,
+                             -- HE.br,
                               HE.div' [HA.class' "contact-list-last-message", HA.innerHTML $ lastMessage history]
                         ],
                         HE.div (HA.class' "menu-button chat-options") [
