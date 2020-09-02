@@ -3,12 +3,12 @@ module Shared.IM.View.Contacts where
 import Prelude
 import Shared.Types
 
+import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype as DN
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -16,7 +16,7 @@ import Shared.Avatar as SA
 import Shared.Markdown as SM
 
 contactList :: IMModel -> Html IMMessage
-contactList { contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
       where getDate history = do
                   { date: DateTimeWrapper md } <- DA.last history
                   pure md
@@ -28,11 +28,13 @@ contactList { contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchC
             lastMessage = DM.maybe "" (SM.toRestrictedHTML <<< _.content) <<< DA.last
 
             contactEntry index ({ history, user: { id, name, avatar, headline }}) =
-                  HE.div [HA.class' "contact", HA.onClick $ ResumeChat id] [
-                        HE.img [HA.class' "avatar-contact-list", HA.src $ SA.avatarForRecipient (Just index) avatar],
+                  let   index' = Just index
+                        extraContactClasses = if chatting == index' then " chatting-contact" else ""
+                  in HE.div [HA.class' $ "contact" <> extraContactClasses, HA.onClick $ ResumeChat id] [
+                        HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass index', HA.src $ SA.avatarForRecipient index' avatar],
                         HE.div [HA.class' "contact-profile"] [
-                              HE.strong_ name,
-                              HE.br,
+                              HE.span (HA.class' "contact-name") name,
+                             -- HE.br,
                               HE.div' [HA.class' "contact-list-last-message", HA.innerHTML $ lastMessage history]
                         ],
                         HE.div (HA.class' "menu-button chat-options") [

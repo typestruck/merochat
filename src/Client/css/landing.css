@@ -3,7 +3,7 @@
         display: grid;
         grid-template-columns: 100%;
         justify-content: center;
-        color: #b5b7b6
+        color: white
 }
 
 .header {
@@ -50,7 +50,7 @@ h2 {
         font-weight: bold;
         margin: 0;
         margin-bottom: 30px;
-        color: #b5b7b6
+        color:#b5b7b6
 }
 
 .first-points {
