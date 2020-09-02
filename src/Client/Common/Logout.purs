@@ -11,4 +11,4 @@ import Shared.Routes (routes)
 
 logout :: Effect Unit
 logout = do
-        CCL.setLocation $ routes.landing.get {}
+        CCL.setLocation $ routes.landing {}

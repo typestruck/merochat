@@ -9,13 +9,13 @@ import Data.Newtype as DN
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Exception as EE
-import Payload.Client (ClientError(..), ClientResponse)
+import Payload.Client (ClientError(..), ClientResponse, defaultOpts)
 import Payload.Client as PC
 import Payload.ResponseTypes (Response(..))
 import Shared.Spec (spec)
 
 request :: _
-request = PC.mkGuardedClient_ spec
+request = PC.mkGuardedClient (defaultOpts { baseUrl = "http://localhost:8000/" }) spec
 
 response :: forall a. Aff (ClientResponse a) -> Aff a
 response aff = do

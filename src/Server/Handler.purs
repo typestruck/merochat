@@ -33,10 +33,8 @@ import Server.Help.Handler as SHH
 
 handlers :: ServerReader -> _
 handlers reading = {
-      landing: {
-            get: runHTML reading SLH.landing,
-            register: runJSON reading SLH.register
-      },
+      landing: runHTML reading SLH.landing,
+      register: runJSON reading SLH.register,
       im: {
             get: runHTML reading SIH.im,
             contacts: runJSON reading SIH.contacts,

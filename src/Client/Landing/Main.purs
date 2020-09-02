@@ -1,7 +1,6 @@
 module Client.Landing.Main where
 
 import Prelude
-import Shared.Types
 
 import Client.Common.Captcha as CCC
 import Client.Common.DOM as CCD
@@ -32,7 +31,7 @@ register captchaResponse = do
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
                    else EA.launchAff_ do
-                        response <- request.landing.register $ { body: rl { captchaResponse = captchaResponse }}
+                        response <- request.register $ { body: rl { captchaResponse = captchaResponse }}
                         case response of
                               Right _ -> liftEffect <<< CCL.setLocation $ routes.im.get {}
                               Left left -> liftEffect do

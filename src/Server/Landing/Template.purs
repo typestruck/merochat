@@ -10,8 +10,6 @@ import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
 import Shared.Routes (routes)
 
-
-
 template :: Effect String
 template = do
       contents <- ST.template defaultParameters {
@@ -31,7 +29,7 @@ template = do
             content = [
                   HE.div (HA.class' "landing") [
                         HE.div (HA.class' "header") [
-                              HE.a [HA.href $ routes.landing.get {}, HA.class' "logo"] $ HE.img [
+                              HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
                                           HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
                                           HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
                                           HA.src "/client/media/logo.png"],

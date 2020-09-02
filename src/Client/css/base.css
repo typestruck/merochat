@@ -91,18 +91,6 @@ ul li {
     display: inline;
 }
 
-ul li:hover::after, ul li.selected::after {
-    color: orange;
-}
-
-ul li:last-child::after {
-    content: "";
-}
-
-textarea:focus, input:focus {
-    border: orange 1px solid;
-}
-
 .loading {
     display: none;
     z-index: 200;
@@ -125,9 +113,10 @@ strong {
 }
 
 svg {
-    margin: 0.4em;
     overflow: visible;
     stroke: white;
+    fill:white;
+    cursor: pointer;
 }
 
 .footer {
@@ -158,3 +147,4 @@ select option {
     background-color: #262626;
     color:white
 }
+

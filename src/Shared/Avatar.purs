@@ -28,4 +28,11 @@ avatarForSender :: Maybe String -> String
 avatarForSender = DM.fromMaybe defaultAvatar
 
 avatarForRecipient :: Maybe Int -> Maybe String -> String
-avatarForRecipient index = DM.fromMaybe (fileName $ mod (SU.fromJust index) differentAvatarImages + 1)
+avatarForRecipient index = DM.fromMaybe (fileName <<< avatarIndex $ SU.fromJust index)
+
+avatarIndex :: Int -> Int
+avatarIndex index = mod index differentAvatarImages + 1
+
+avatarColorClass :: Maybe Int -> String
+avatarColorClass index = " avatar-color-" <> show (mod (SU.fromJust index) colorClasses + 1)
+      where colorClasses = 4

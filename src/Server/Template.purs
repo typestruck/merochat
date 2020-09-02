@@ -38,7 +38,7 @@ externalDefaultParameters = {
       ],
       content: [
             HE.div (HA.class' "header") [
-                  HE.a [HA.href $ routes.landing.get {}, HA.class' "logo"] $ HE.img [
+                  HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
                               HA.createAttribute "srcset" "/client/media/logo-2.png 350w, /client/media/logo.png 250w",
                               HA.createAttribute "sizes" "(min-width: 1299px) 350px, 250px",
                               HA.src "/client/media/logo.png"]
@@ -57,7 +57,7 @@ templateWith parameters =
                   HE.meta $ HA.charset "UTF-8",
                   HE.meta [HA.name "viewport", HA.content "width=device-width, initial-scale=1.0"],
                   HE.link [HA.rel "shortcut icon", HA.type' "image/ico", HA.href "/client/media/favicon.ico"],
-                  HE.title "MelanChat (friendly) random webchat"
+                  HE.title "MelanChat (Friendly) Random Chat"
             ] <> styleSheets <> parameters.css),
             HE.body_ (HE.div' [HA.id "loading", HA.class' "loading"] : parameters.content <> parameters.footer <> parameters.javascript)
       ]
@@ -68,7 +68,7 @@ templateWith parameters =
 externalFooter :: forall a. Html a
 externalFooter =
       HE.div (HA.class' "footer") [
-            HE.a (HA.href $ routes.landing.get {}) <<< HE.img $ HA.src "/client/media/logo-small.png",
+            HE.a (HA.href $ routes.landing {}) <<< HE.img $ HA.src "/client/media/logo-small.png",
             HE.ul (HA.class' "footer-menu") [
                   HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login",
                   HE.li_ $ HE.a (HA.href $ routes.help {}) "Help",

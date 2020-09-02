@@ -15,15 +15,14 @@ spec :: Spec {
             checkAnonymous :: Unit
       },
       routes :: {
-            landing :: Routes "/" {
+            landing :: GET "/" {
                   guards :: Guards ("checkAnonymous" : Nil),
-                  get :: GET "/" {
-                        response :: Html
-                  },
-                  register :: POST "/register" {
-                        body :: RegisterLogin,
-                        response :: Ok
-                  }
+                  response :: Html
+            },
+            register :: POST "/register" {
+                  guards :: Guards ("checkAnonymous" : Nil),
+                  body :: RegisterLogin,
+                  response :: Ok
             },
             login :: Routes "/login" {
                   guards :: Guards ("checkAnonymous" : Nil),

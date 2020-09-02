@@ -32,7 +32,6 @@
     "xhr2": "^0.2.0"
   },
   "devDependencies": {
-    "@coreui/icons": "^1.0.1",
     "canvas": "^2.6.1",
     "jsdom": "^15.2.1",
     "nodemon": "^2.0.4",

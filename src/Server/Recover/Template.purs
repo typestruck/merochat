@@ -51,7 +51,7 @@ template token = do
                                     HE.text "or",
                                     HE.hr' $ HA.class' "hr-or"
                               ],
-                              HE.a [HA.href $ routes.landing.get {}, HA.class' "question-link"] "Don't have an account?"
+                              HE.a [HA.href $ routes.landing {}, HA.class' "question-link"] "Don't have an account?"
 
                   ]
             ]
