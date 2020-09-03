@@ -921,3 +921,7 @@ svg.toolbar-action {
 .chatting-contact {
     background: #373737;
 }
+.ss  {
+    display: flex;
+    justify-content: space-around;
+}
