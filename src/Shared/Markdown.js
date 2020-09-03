@@ -1,47 +1,59 @@
 var marked = require('marked');
 
 //REFACTOR: make this all type safe
-exports.parse = function (input) {
-      marked.use({
-            renderer: {
-                  link(href, title, text) {
-                        if (!href.includes('://'))
-                              href = 'http://' + href;
+function markdown(plainMarkdown, use) {
+      return function(oldVnode, vnode) {
+            var oldPlainMarkdown = oldVnode.plainMarkdown
 
-                        return `<a href="${href}" title="${title || ""}" target="blank">${text}</a>`;
-                  },
-                  image(src, title, text) {
-                        var tag = `<img src="${src}" alt="${title || ""}" />`
+            vnode.plainMarkdown = plainMarkdown;
 
-                        if (text)
-                              tag += `<br/>${text}`;
-
-                        return tag;
-                  }
+            if (oldPlainMarkdown != plainMarkdown) {
+                  use();
+                  vnode.elm.innerHTML = marked(plainMarkdown, {
+                        smartypants: true
+                  });
             }
-      });
+      }
+}
 
-      return marked(input, {
-            smartypants: true
+exports.parse = function (plainMarkdown) {
+     return markdown(plainMarkdown, function () {
+            marked.use({
+                  renderer: {
+                        link(href, title, text) {
+                              if (!href.includes('://'))
+                                    href = 'http://' + href;
+
+                              return `<a href="${href}" title="${title || ""}" target="blank">${text}</a>`;
+                        },
+                        image(src, title, text) {
+                              var tag = `<img src="${src}" alt="${title || ""}" />`
+
+                              if (text)
+                                    tag += `<br/>${text}`;
+
+                              return tag;
+                        }
+                  }
+            });
       });
 }
 
-exports.parseRestricted = function(input) {
-      marked.use({
-            renderer: {
-                  link(href, title, text) {
-                        return `<a title="${title || ""}">${text}</a>`;
-                  },
-                  image(_, title) {
-                        var tag = '<br/>You sent an image';
-                        if (title)
-                              tag = `${tag}: ${title}`;
+exports.parseRestricted = function(plainMarkdown) {
+      return markdown(plainMarkdown, function () {
+            marked.use({
+                  renderer: {
+                        link(href, title, text) {
+                              return `<a title="${title || ""}">${text}</a>`;
+                        },
+                        image(_, title) {
+                              var tag = '<br/>You sent an image';
+                              if (title)
+                                    tag = `${tag}: ${title}`;
 
-                        return tag;
+                              return tag;
+                        }
                   }
-            }
-      });
-      return marked(input, {
-            smartypants: true
+            });
       });
 }

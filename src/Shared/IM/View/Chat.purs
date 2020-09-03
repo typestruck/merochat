@@ -10,6 +10,7 @@ import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Flame.Renderer.Hook as FRH
 import Prim.Row (class Cons)
 import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
@@ -89,7 +90,7 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                   HE.div [HA.class' "chat-input-options"] [
                         HE.button [HA.onClick ExitPreview, HA.title "Exit preview"] "Exit"
                   ],
-                  HE.div' [HA.innerHTML <<< SM.toHTML $ DM.fromMaybe "" message]
+                  HE.div' [FRH.atPostpatch (SM.toHTML $ DM.fromMaybe "" message)]
             ]
       ]
       where classes visible = if visible then "" else "hidden "

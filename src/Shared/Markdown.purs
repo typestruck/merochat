@@ -1,12 +1,15 @@
-module Shared.Markdown where
+module Shared.Markdown(toHTML, toRestrictedHTML) where
 
 import Prelude
 
-foreign import parseRestricted :: String -> String
-foreign import parse :: String -> String
+import Effect.Uncurried (EffectFn2)
+import Flame.Types (VNode)
 
-toHTML :: String -> String
+foreign import parseRestricted :: String -> EffectFn2 VNode VNode Unit
+foreign import parse :: String -> EffectFn2 VNode VNode Unit
+
+toHTML :: String -> EffectFn2 VNode VNode Unit
 toHTML = parse
 
-toRestrictedHTML :: String -> String
+toRestrictedHTML :: String -> EffectFn2 VNode VNode Unit
 toRestrictedHTML = parseRestricted

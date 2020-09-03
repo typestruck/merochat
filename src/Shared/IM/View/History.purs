@@ -3,13 +3,12 @@ module Shared.IM.View.History where
 import Prelude
 import Shared.Types
 
-import Data.Array ((:))
-import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Flame.Renderer.Hook as FHR
 import Shared.Avatar as SA
 import Shared.Markdown as SM
 
@@ -27,7 +26,7 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting } chattingSugge
                          else Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
                   in HE.div (HA.class' $ "message " <> class') [
                         HE.img [HA.src avatar, HA.class' "avatar-message"],
-                        HE.div' [HA.class' $ statusClasses status, HA.innerHTML $ SM.toHTML content]
+                        HE.div' [HA.class' $ statusClasses status, FHR.atPostpatch (SM.toHTML content)]
                   ]
 
             statusClasses = case _ of

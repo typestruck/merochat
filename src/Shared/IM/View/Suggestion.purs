@@ -11,6 +11,7 @@ import Data.String as DS
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Flame.Renderer.Hook as FRH
 import Shared.Avatar as SA
 import Shared.Markdown as SM
 
@@ -46,7 +47,7 @@ profile { suggesting, chatting } =
                         ],
                         HE.div (HA.class' "profile-rest") [
                               HE.div_ $ map toTagSpan tags,
-                              HE.div' [HA.class' "description-message", HA.innerHTML $ SM.toHTML description]
+                              HE.div' [HA.class' "description-message", FRH.atPostpatch (SM.toHTML description)]
                         ]
                         -- HE.a [HA.class' "skip green", HA.title "See next profile", HA.onClick NextSuggestion] [
                         --       HE.svg [HA.id "cil-arrow-thick-from-left", HA.class' "svg-50", HA.viewBox "0 0 24 24"] [
