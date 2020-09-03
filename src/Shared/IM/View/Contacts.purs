@@ -15,7 +15,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.Hook as FRH
 import Shared.Avatar as SA
 import Shared.Markdown as SM
-import Shared.Unsafe as SU
+
 
 contactList :: IMModel -> Html IMMessage
 contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
@@ -27,7 +27,7 @@ contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll C
             countUnread total { status, sender } = total + DE.fromEnum (sender /= userID && status == Unread)
             showUnreadCount history' = let count = DF.foldl countUnread 0 history' in if count == 0 then "" else show count
             --should only work for text messages!
-            lastMessage = SM.toRestrictedHTML <<< _.content <<< SU.fromJust <<< DA.last
+            lastMessage = SM.toRestrictedHTML <<< DM.fromMaybe "" <<< map _.content <<< DA.last
 
             contactEntry index ({ history, user: { id, name, avatar, headline }}) =
                   let   index' = Just index

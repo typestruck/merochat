@@ -97,7 +97,7 @@ body {
     border-radius: 100%;
 }
 
-.avatar-settings {
+.avatar-settings, .sender-message .avatar-message{
     background: #4d4d51
 }
 
@@ -235,7 +235,6 @@ body {
 }
 
 .message-history {
-    /* padding: 10px 30px; */
     display: flex;
     flex-flow: column;
     justify-content: flex-end;
@@ -246,8 +245,8 @@ body {
     overflow-y: auto;
     top: 10px;
     bottom: 10px;
-    left: 30px;
-    right: 0px;
+    right: 20px;
+    left:20px;
     position: absolute;
     display: flex;
     flex-flow: column;
@@ -273,7 +272,6 @@ body {
 
 .recipient-message .avatar-message {
     margin-right: 10px;
-    background: #db5d5d;
 }
 
 .text {
@@ -295,12 +293,8 @@ body {
 
 .sender-message .avatar-message {
     margin-left: 10px;
-    background: #d7e598;
 }
 
-.sender-message .text {
-    background: #dcf8c6;
-}
 
 .dropdown-wrapper-visible {
     z-index: 3;
@@ -580,12 +574,10 @@ svg.toolbar-action {
     padding: 15px;
     padding-right: 63px;
     padding-left: 42px;
-}
-
-.chat-input:focus {
     border: 1px solid #b5b7b7;
     border-top:none;
 }
+
 
 .chat-input:placeholder-shown {
     font-style: italic;

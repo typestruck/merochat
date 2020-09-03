@@ -39,6 +39,7 @@ import Data.Time.Duration (Days)
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
+import Debug.Trace (spy)
 import Effect.Now as ED
 import Effect.Unsafe as EU
 import Flame (Key)
@@ -493,7 +494,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   chatStarter: sender,
                   user
             }
-      fromSQLRow _ = Left "missing or extra fields from users table contact projection"
+      fromSQLRow a = let c = spy "a" a in Left "missing or extra fields from users table contact projection"
 
 parseIMUserWrapper :: Array Foreign -> Except (NonEmptyList ForeignError) IMUserWrapper
 parseIMUserWrapper =
