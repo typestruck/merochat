@@ -48,7 +48,7 @@ create table privileges
 create table tags
 (
     id serial primary key,
-    name varchar(30) not null,
+    name varchar(40) not null,
     constraint uniqueTag unique(name)
 );
 

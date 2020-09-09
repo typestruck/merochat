@@ -99,6 +99,7 @@ h2 {
 
 .point-2 {
         margin-top: 60px;
+        color:#b5b7b6;
 }
 
 .form-up-call {
@@ -128,7 +129,7 @@ h2 {
         #headline {
                 font-size: 3em;
         }
-        .subheadline {
+        .subheadline, .form-up label {
                 font-size: 1em;
         }
         .first-points, .third-points {
@@ -171,7 +172,7 @@ h2 {
         #headline {
                 font-size: 3.3em;
         }
-        .subheadline {
+        .subheadline, .form-up label {
                 font-size: 1.1em;
         }
         h2 {
@@ -204,7 +205,7 @@ h2 {
         #headline {
                 font-size: 3.7em;
         }
-        .subheadline {
+        .subheadline, .form-up label {
                 font-size: 1.2em;
         }
         .form-up input {

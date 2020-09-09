@@ -1,9 +1,28 @@
 body {
     margin: 0;
     font-family: "Verdana", "sans serif";
-    font-size: 17px;
-    line-height: 1.42857143;
+    font-size: 18px;
+    line-height: 1.51857143;
     height: 100%;
+    color: rgb(238, 238, 238)
+}
+
+/*
+* {
+    scrollbar-width: thin;
+} */
+
+p {
+    max-width: 55em;
+}
+
+.description-message {
+    width: 55em;
+}
+
+.description-message p {
+    text-align: justify;
+    hyphens: auto;
 }
 
 .left-box {
@@ -53,7 +72,7 @@ body {
     height: 23px;
     font-size: 1.1em;
     stroke-width: 5;
-    margin:0 10px !important;
+    margin: 0 10px !important;
     align-self: baseline;
 }
 
@@ -75,10 +94,15 @@ body {
     font-size: 4em;
 }
 
-.chat-box h1{
+.chat-box h1 {
     font-family: Verdana, "sans serif";
-    font-size:2em;
+    font-size: 1.5em;
     line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.profile-karma div, .profile-asl div {
+    margin-right: 20px;
 }
 
 .svg-more {
@@ -97,7 +121,7 @@ body {
     border-radius: 100%;
 }
 
-.avatar-settings, .sender-message .avatar-message{
+.avatar-settings, .sender-message .avatar-message {
     background: #4d4d51
 }
 
@@ -124,8 +148,8 @@ body {
     position: relative;
     justify-content: space-between;
     align-items: center;
-    padding:15px;
-    border-bottom:#161616
+    padding: 15px;
+    border-bottom: #161616
 }
 
 .svg-right {
@@ -135,7 +159,7 @@ body {
 .contact {
     align-items: center;
     cursor: pointer;
-    padding: 15px ;
+    padding: 15px;
 }
 
 .chatting {
@@ -155,16 +179,21 @@ body {
 }
 
 .settings-name {
-    font-size:1.1em;
+    font-size: 1.1em;
     margin-right: auto;
 }
 
-.karma-display {
-    font-size:1.0em;
+.karma-number {
+    font-weight: bold;
+}
+
+.karma-text {
+    color: rgb(238, 238, 238, 0.8)
 }
 
 .contact-list-last-message {
-    font-size: 1em;
+    font-size: 1.1em;
+    color: rgb(238, 238, 238, 0.8)
 }
 
 .contact-list-last-message>p {
@@ -172,10 +201,6 @@ body {
     display: inline;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.contact-list-last-message a {
-    color: white;
 }
 
 .profile {
@@ -186,18 +211,16 @@ body {
 
 .profile-info, .profile-info-edition {
     display: flex;
-
     flex-basis: 70%;
     flex-flow: column wrap;
 }
 
 .suggestion {
-    display: flex;
-    padding-top:15px;
+    display:flex;
     flex-direction: column;
-
-    padding-bottom: 50px;
     align-items: center;
+    padding: 43px 0px;
+
 }
 
 .suggestion.new {
@@ -210,15 +233,6 @@ body {
 
 .skip {
     align-self: center;
-}
-
-.green {
-    color: green;
-}
-
-.green svg {
-    stroke: green;
-    fill: green;
 }
 
 .message-box {
@@ -246,7 +260,7 @@ body {
     top: 10px;
     bottom: 10px;
     right: 20px;
-    left:20px;
+    left: 20px;
     position: absolute;
     display: flex;
     flex-flow: column;
@@ -294,7 +308,6 @@ body {
 .sender-message .avatar-message {
     margin-left: 10px;
 }
-
 
 .dropdown-wrapper-visible {
     z-index: 3;
@@ -368,7 +381,6 @@ a.menu-button {
 .contact-list a.menu-button {
     display: none;
 }
-
 
 .menu-button i {
     color: red;
@@ -509,17 +521,22 @@ svg.toolbar-action {
 }
 
 .chat-input-options {
-    background:#262626;
-    border:1px solid #b5b7b7;
-    border-bottom:none;
-    padding:5px;
+    background: #262626;
+    border: 1px solid #b5b7b7;
+    color: rgb(238, 238, 238, 0.8);
+    border-bottom: none;
+    padding: 5px;
     display: flex;
     align-items: center;
 }
 
+.chat-input-options svg {
+    fill: rgb(238, 238, 238, 0.8);
+    stroke: rgb(238, 238, 238, 0.8);
+}
+
 .chat-input-options button {
     font-size: 1.2em;
-    color: white;
     font-weight: bold;
     background: #262626;
     border: 0;
@@ -537,16 +554,15 @@ svg.toolbar-action {
     vertical-align: middle;
     height: 15px;
     border: 1px solid #b5b7b7;
-    position:relative;
+    position: relative;
 }
 
 .chat-input-options input[type=checkbox]:checked:after {
     content: '\2713 ';
     position: absolute;
-	top: -3px;
-    left:1px;
-    font-size:0.7em;
-	color: white;
+    top: -3px;
+    left: 1px;
+    font-size: 0.7em;
 }
 
 .chat-input-area {
@@ -575,13 +591,12 @@ svg.toolbar-action {
     padding-right: 63px;
     padding-left: 42px;
     border: 1px solid #b5b7b7;
-    border-top:none;
+    border-top: none;
 }
-
 
 .chat-input:placeholder-shown {
     font-style: italic;
- }
+}
 
 .message-options {
     z-index: 3;
@@ -637,15 +652,16 @@ svg.toolbar-action {
 
 .tag {
     display: inline-block;
-    margin: 20px 5px;
-    padding: 5px 25px;
-    color: white;
-    font-weight: 500;
+    margin-right: 5px;
+    margin-bottom: 10px;
+    padding: 5px 20px;
+    background: #a6b572;
+    color:#1b3a28;
     border-radius: 20px;
-    border: 1px solid #b5b7b7
+    /* border: 1px solid #b5b7b7 */
 }
 
-.hidden .editor-toolbar{
+.hidden .editor-toolbar {
     display: hidden;
 }
 
@@ -702,7 +718,6 @@ svg.toolbar-action {
 
 .action-button {
     background: red !important;
-    color: white !important;
     border: none !important;
     padding: 10px;
     border-radius: 3px;
@@ -730,7 +745,7 @@ svg.toolbar-action {
 }
 
 .profile-info-edition textarea {
-    resize:none;
+    resize: none;
     border: 0;
     width: 100%;
     text-align: center;
@@ -779,10 +794,6 @@ svg.toolbar-action {
     border-bottom-left-radius: 6px;
 }
 
-.orange-blurb a {
-    color: green;
-}
-
 .chatting {
     border: 1px solid orange;
     background: initial;
@@ -793,17 +804,15 @@ svg.toolbar-action {
     border-color: white
 }
 
-
 .message-options {
     background: rgb(38, 38, 38);
     border-color: white;
 }
 
 .headline {
-    color: white;
-    font-size:1.1em;
+    font-size: 1.1em;
     display: inline-block;
-    max-width: 500px;
+    margin-bottom: 15px;
 }
 
 .karma-stats {
@@ -854,7 +863,7 @@ svg.toolbar-action {
 }
 
 .message-failed {
-    color:red;
+    color: red;
 }
 
 .avatar-color-1 {
@@ -874,54 +883,76 @@ svg.toolbar-action {
 }
 
 .profile-basics {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
+    width: 45em;
 }
 
-.profile-asl {
+.profile-basics, .profile-rest {
     display: flex;
-    flex-direction: column;
-}
 
-.profile-name-headline {
-    margin-left: 10px;
-    align-self: baseline;
-    margin-right: 20px;
+
 }
 
 .profile-rest {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin-top: 30px;
 }
 
-.description-message {
-    max-width: 1224px;
+.profile-tags {
+    text-align: center;
+    margin:30px 0px;
+    max-width: 55em;
+
+}
+
+.profile-asl, .profile-karma {
+    display: flex;
+    /* margin-left:190px; */
+    flex-direction: row;
+}
+
+.profile-basics-column {
+    margin-left: 40px;
+}
+
+.profile-basics-column h1 {
+    margin-top: 5px;
+    font-size:1.8em;
+    letter-spacing: -0.03em;
+    margin-bottom: 15px;
 }
 
 .send-button {
     position: absolute;
-    top:10px;
+    top: 10px;
     stroke-width: 3;
     right: 13px;
-    z-index:5;
+    z-index: 5;
     background: #2d2d2d;
 }
 
 .emoji-access {
     position: absolute;
-    top:13px;
+    top: 13px;
     stroke-width: 5;
     left: 5px;
-    z-index:5;
+    z-index: 5;
     background: #2d2d2d;
 }
 
 .chatting-contact {
     background: #373737;
 }
-.ss  {
+
+.ss {
     display: flex;
     justify-content: space-around;
+    display: none;
 }
+
+.bold {
+    font-weight: bold;
+}
+
+.greyer {
+    color: rgb(238, 238, 238, 0.8)
+}
+

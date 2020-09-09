@@ -43,8 +43,10 @@ template = do
                                     HE.text "people"
                               ],
                               HE.div (HA.class' "form-up") [
-                                    HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
-                                    HE.input [HA.type' "password", HA.autocomplete false, HA.id "password", HA.placeholder "Password"] ,
+                                    HE.label_ "Email",
+                                    HE.input [HA.type' "text", HA.autocomplete false, HA.id "email", HA.autofocus true],
+                                    HE.label_ "Password",
+                                    HE.input [HA.type' "password", HA.autocomplete false, HA.id "password"] ,
                                     HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
                                     HE.input [HA.type' "button", HA.id "register", HA.value "Create account"]
                               ]

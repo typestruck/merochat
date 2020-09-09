@@ -10,12 +10,16 @@ import Shared.Avatar as SA
 
 userMenu :: IMModel -> Html IMMessage
 userMenu { user: { name, avatar, karma }, userContextMenuVisible } =  HE.div [HA.id "settings", HA.class' "settings"][
-      HE.a (HA.onClick (ToggleProfileSettings ShowProfile)) $ HE.img [HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
-      HE.div (HA.class' "settings-name") [
-            HE.strong_ name,
-            HE.br,
-            HE.span (HA.class' "karma-display") $ "Karma: " <> show karma
+      HE.a [HA.onClick (ToggleProfileSettings ShowProfile)] $ HE.img [HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
+      HE.div [HA.class' "settings-name"] [
+            -- HE.strong_ name,
+            -- HE.br,
+            HE.span [HA.class' "karma-number"] $ show karma,
+            HE.span [HA.class' "karma-text"] " karma"
       ],
+      -- HE.div [HA.class' "settings-awards", HA.title "Your trophies"] [
+
+      -- ],
       HE.div [HA.class' $ "menu-button outer-drop-menu" <> if userContextMenuVisible then " dropdown-wrapper-visible" else ""] [
             HE.a [HA.class' "menu-button" ] [
                   HE.svg [HA.id "user-context-menu", HA.class' "svg-right i-ellipsis-vertical svg-32 svg-more", HA.viewBox "0 0 32 32"][

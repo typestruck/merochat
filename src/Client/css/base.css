@@ -1,3 +1,5 @@
+
+
 @import url('https://fonts.googleapis.com/css?family=Flamenco');
 @import url('https://fonts.googleapis.com/css?family=Signika');
 html {
@@ -38,18 +40,6 @@ h1, h2 {
     font-family: "Flamenco";
 }
 
-h1 {
-    font-size: 2em;
-}
-
-h2 {
-    font-size: 1.6em;
-}
-
-h3 {
-    font-size: 1.1em;
-}
-
 a {
     color: orange;
     text-decoration: none;
@@ -60,11 +50,6 @@ a:hover {
     color: orange;
 }
 
-.logo {
-    font-family: "Flamenco";
-    font-size: 2.8em;
-    font-weight: bold;
-}
 
 input {
     border-radius: 3px;
@@ -114,8 +99,8 @@ strong {
 
 svg {
     overflow: visible;
-    stroke: white;
-    fill:white;
+    stroke: rgb(238, 238, 238);
+    fill:rgb(238, 238, 238);
     cursor: pointer;
 }
 
@@ -138,7 +123,6 @@ svg {
 .footer-menu a {
     font-family: Verdana, sans-serif;
     color: #b5b7b6;
-    font-size: 1em;
     font-weight: bold;
     flex-shrink: 0;
 }
