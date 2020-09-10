@@ -129,8 +129,8 @@ body {
 }
 
 .profile-contact .avatar-profile {
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: 80px;
 }
 
 .suggestion.avatar-profile {
@@ -226,6 +226,11 @@ body {
 
 .suggestion.new {
     background: url('/client/media/suggestions.png');
+}
+
+.suggestion.old {
+    background:#373737;
+    cursor: pointer;
 }
 
 .suggestion.new .duller {

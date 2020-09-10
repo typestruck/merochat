@@ -64,7 +64,7 @@ suggestion = fullProfile true
 
 fullProfile :: Boolean -> Maybe Int -> IMUser -> Html IMMessage
 fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
-      HE.div (HA.class' profileClasses) [
+      HE.div attrs [
             HE.div (HA.class' "ss") [
                   HE.a [HA.class' "skip", HA.title "See previous profile again", HA.onClick PreviousSuggestion] [
                   HE.svg [HA.id "cil-arrow-thick-from-right", HA.viewBox "0 0 24 24", HA.class' "svg-50"] [
@@ -116,7 +116,7 @@ fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender,
 
             HE.div' [HA.class' "description-message", HA.innerHTML (SM.toHTML description)]
       ]
-      where profileClasses = if isSuggesting then "suggestion new" else "suggestion old"
+      where attrs = if isSuggesting then [HA.class' "suggestion new"] else [HA.class' "suggestion old", HA.title "Click to hide full profile", HA.onClick ToggleContactProfile]
 
 toSpan :: Maybe String -> Html IMMessage
 toSpan =
