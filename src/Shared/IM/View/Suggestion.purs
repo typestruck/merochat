@@ -8,8 +8,6 @@ import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Semigroup.Foldable as DF
-import Data.String as DS
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -39,36 +37,36 @@ profile { suggesting, chatting } =
 
                         HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass (chatting <|> suggesting), HA.src $ SA.avatarForRecipient (chatting <|> suggesting) avatar],
                         HE.h1_ name,
-                        HE.span (HA.class' "headline") headline,
+                        HE.div (HA.class' "headline") headline,
                         HE.div (HA.class' "profile-karma") [
                               -- HE.div_ [
-                              --       HE.span [HA.class' "greyer"] "Last seen",
+                              --       HE.span [HA.class' "duller"] "Last seen",
                               --       HE.text " Yesterday"
                               -- ],
                               HE.div_ [
-                                    HE.text $ show karma,
-                                    HE.span [HA.class' "greyer"] " karma"
+                                    HE.span [HA.class' "span-info"] $ show karma,
+                                    HE.span [HA.class' "duller"] " karma"
                               ]
                         ],
 
                         HE.div (HA.class' "profile-asl") [
                               HE.div_ [
                                     toSpan $ map show age,
-                                    greyer (DM.isNothing age || DM.isNothing gender) ", ",
+                                    duller (DM.isNothing age || DM.isNothing gender) ", ",
                                     toSpan gender
                               ],
                               HE.div_ [
-                                    greyer (DM.isNothing country) "from ",
+                                    duller (DM.isNothing country) "from ",
                                     toSpan country
                               ],
                               HE.div_ ([
-                                    greyer (DA.null languages) "speaks "
-                              ] <> (DA.intercalate [greyer false ", "] $ map (DA.singleton <<< spanWith) languages))
+                                    duller (DA.null languages) "speaks "
+                              ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
                         ],
 
                         HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
 
-                        greyer false "About",
+                        duller false "About",
                               -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
 
                         HE.div' [HA.class' "description-message", FRH.atPostpatch (SM.toHTML description)]
@@ -82,7 +80,7 @@ profile { suggesting, chatting } =
                   case _ of
                         Just s -> spanWith s
                         _ -> HE.createEmptyElement "span"
-            spanWith = HE.span (HA.class' "")
+            spanWith = HE.span (HA.class' "span-info")
             toTagSpan tag = HE.span (HA.class' "tag") tag
 
-            greyer hidden t = HE.span (HA.class' { "greyer" : true, "hidden": hidden }) t
+            duller hidden t = HE.span (HA.class' { "duller" : true, "hidden": hidden }) t

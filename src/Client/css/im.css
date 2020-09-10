@@ -216,15 +216,22 @@ p {
 }
 
 .suggestion {
-    display:flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
     padding: 43px 0px;
-
 }
 
 .suggestion.new {
     background: url('/client/media/suggestions.png');
+}
+
+.suggestion.new .duller {
+    color: rgb(238, 238, 238);
+}
+
+.suggestion.new .span-info {
+    font-weight: bold;
 }
 
 .suggestion.old {
@@ -656,7 +663,7 @@ svg.toolbar-action {
     margin-bottom: 10px;
     padding: 5px 20px;
     background: #a6b572;
-    color:#1b3a28;
+    color: #1b3a28;
     border-radius: 20px;
     /* border: 1px solid #b5b7b7 */
 }
@@ -813,6 +820,26 @@ svg.toolbar-action {
     font-size: 1.1em;
     display: inline-block;
     margin-bottom: 15px;
+    font-style: italic;
+    position: relative;
+}
+
+.headline:before, .headline:after {
+    display: inline-block;
+    vertical-align: top;
+    height: 30px;
+    line-height: 44px;
+    font-size: 35px;
+    color: rgb(238, 238, 238, 0.9)
+}
+
+.headline:before {
+    content: '\201C';
+    margin-right: 4px;
+}
+
+.headline:after {
+    content: '\201D';
 }
 
 .karma-stats {
@@ -888,8 +915,6 @@ svg.toolbar-action {
 
 .profile-basics, .profile-rest {
     display: flex;
-
-
 }
 
 .profile-rest {
@@ -898,9 +923,8 @@ svg.toolbar-action {
 
 .profile-tags {
     text-align: center;
-    margin:30px 0px;
+    margin: 30px 0px;
     max-width: 55em;
-
 }
 
 .profile-asl, .profile-karma {
@@ -915,7 +939,7 @@ svg.toolbar-action {
 
 .profile-basics-column h1 {
     margin-top: 5px;
-    font-size:1.8em;
+    font-size: 1.8em;
     letter-spacing: -0.03em;
     margin-bottom: 15px;
 }
@@ -952,7 +976,6 @@ svg.toolbar-action {
     font-weight: bold;
 }
 
-.greyer {
+.duller {
     color: rgb(238, 238, 238, 0.8)
 }
-
