@@ -1,15 +1,11 @@
 module Shared.Markdown(toHTML, toRestrictedHTML) where
 
-import Prelude
+--snabbdom hooks dont work server side so just use innerHTML
+foreign import parseRestricted :: String -> String
+foreign import parse :: String -> String
 
-import Effect.Uncurried (EffectFn2)
-import Flame.Types (VNode)
-
-foreign import parseRestricted :: String -> EffectFn2 VNode VNode Unit
-foreign import parse :: String -> EffectFn2 VNode VNode Unit
-
-toHTML :: String -> EffectFn2 VNode VNode Unit
+toHTML :: String -> String
 toHTML = parse
 
-toRestrictedHTML :: String -> EffectFn2 VNode VNode Unit
+toRestrictedHTML :: String -> String
 toRestrictedHTML = parseRestricted

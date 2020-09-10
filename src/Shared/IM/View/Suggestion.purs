@@ -69,7 +69,7 @@ profile { suggesting, chatting } =
                         duller false "About",
                               -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
 
-                        HE.div' [HA.class' "description-message", FRH.atPostpatch (SM.toHTML description)]
+                        HE.div' [HA.class' "description-message", HA.innerHTML (SM.toHTML description)]
 
                   ]
 

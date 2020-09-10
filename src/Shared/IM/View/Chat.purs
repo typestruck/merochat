@@ -90,7 +90,7 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                   HE.div [HA.class' "chat-input-options"] [
                         HE.button [HA.onClick ExitPreview, HA.title "Exit preview"] "Exit"
                   ],
-                  HE.div' [FRH.atPostpatch (SM.toHTML $ DM.fromMaybe "" message)]
+                  HE.div' [HA.innerHTML (SM.toHTML $ DM.fromMaybe "" message)]
             ]
       ]
       where classes visible = if visible then "" else "hidden "

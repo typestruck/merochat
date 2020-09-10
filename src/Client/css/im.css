@@ -12,9 +12,6 @@ body {
     scrollbar-width: thin;
 } */
 
-p {
-    max-width: 55em;
-}
 
 .description-message {
     width: 55em;
@@ -246,13 +243,42 @@ p {
     margin: 20px 0px;
 }
 
-.text-message {
-    flex-grow: 2;
-    resize: none;
+.message-content {
+	padding:0 15px;
+    position: relative;
+    background: #1b3a28;
     border-radius: 5px;
-    overflow: hidden;
-    padding: 10px;
-    height: 40px;
+}
+
+.message-content::before {
+    content: "\00a0";
+    display: block;
+    height: 18px;
+    position: absolute;
+    width:  28px;
+}
+
+.recipient-message .message-content {
+    background-color: #373737 ;
+    margin-left:20px;
+}
+
+.sender-message .message-content {
+    background-color:  #1b3a28    ;
+    margin-right:20px;
+}
+
+.recipient-message .message-content::before {
+    background-color: #373737 ;
+    top: 2px;
+    left: -7px;
+    transform: rotate( 51deg ) skew( -38deg );
+}
+
+.sender-message .message-content::before {
+    background-color:  #1b3a28    ;
+    right: -7px;
+    transform: rotate( 0deg ) skew( -35deg );
 }
 
 .message-history {
@@ -771,9 +797,10 @@ svg.toolbar-action {
     display: list-item;
 }
 
-.message p {
+.message-content p {
     display: flex;
     flex-direction: column;
+    max-width: 45em;
 }
 
 .message p img {

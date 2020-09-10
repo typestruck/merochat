@@ -26,7 +26,7 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting } chattingSugge
                          else Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
                   in HE.div (HA.class' $ "message " <> class') [
                         HE.img [HA.src avatar, HA.class' $ "avatar-message" <> SA.avatarColorClass chatting],
-                        HE.div' [HA.class' $ statusClasses status, FHR.atPostpatch (SM.toHTML content)]
+                        HE.div' [HA.class' $ "message-content" <> statusClasses status, HA.innerHTML (SM.toHTML content)]
                   ]
 
             statusClasses = case _ of

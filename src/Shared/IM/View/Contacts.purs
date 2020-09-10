@@ -37,7 +37,7 @@ contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll C
                         HE.div [HA.class' "contact-profile"] [
                               HE.span (HA.class' "contact-name") name,
                              -- HE.br,
-                              HE.div' [HA.class' "contact-list-last-message", FRH.atPostpatch (lastMessage history)]
+                              HE.div' [HA.class' "contact-list-last-message", HA.innerHTML (lastMessage history)]
                         ],
                         HE.div (HA.class' "menu-button chat-options") [
                               HE.text $ showUnreadCount history,
