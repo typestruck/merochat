@@ -78,4 +78,7 @@ removeBlockedUser blocked model@{ contacts, suggestions } =
       where fromContact { user } = fromUser user
             fromUser { id } = id
 
-
+toggleContactProfile :: IMModel -> NoMessages
+toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model {
+      fullContactProfileVisible = not fullContactProfileVisible
+}

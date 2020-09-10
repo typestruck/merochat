@@ -13,7 +13,7 @@ import Shared.IM.View.Chat as SIVC
 import Shared.IM.View.Contacts as SIVCN
 import Shared.IM.View.History as SIVH
 import Shared.IM.View.ProfileSettings as SIVP
-import Shared.IM.View.Suggestion as SIVS
+import Shared.IM.View.Profile as SIVS
 import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 
@@ -28,20 +28,11 @@ view model@{ suggestions, suggesting, chatting, contacts, profileSettingsToggle 
             SIVP.profileSettings profileSettingsToggle
       ],
       HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
-            SIVS.profile model profileUser,
-            SIVH.history model historyContact,
+            SIVS.profile model,
+            SIVH.history model $ map (contacts !@ _ ) chatting,
             SIVC.chat  model
       ]
 ]
-      where Tuple profileUser historyContact =
-                  case Tuple suggesting chatting of
-                        Tuple Nothing (Just index) ->
-                              let contact@{ user }= contacts !@ index
-                              in Tuple (Just user) $ Just contact
-                        Tuple (Just index) _ ->
-                              let user@{ id } = suggestions !@ index
-                              in Tuple (Just user) <<< Just $ SIC.defaultContact id user
-                        _ -> Tuple Nothing Nothing
 
 search :: IMModel -> Html IMMessage
 search model = HE.div' $ HA.class' "search"

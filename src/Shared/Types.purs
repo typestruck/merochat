@@ -201,6 +201,7 @@ type IM = (
       suggesting :: Maybe Int,
       chatting :: Maybe Int,
       --visibility switches
+      fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
       profileSettingsToggle :: ProfileSettingsToggle,
       isPreviewing :: Boolean,
@@ -265,6 +266,7 @@ data IMMessage =
       DisplayMoreSuggestions (Array Suggestion) |
       BlockUser PrimaryKey |
       --chat
+      ToggleContactProfile |
       DropFile Event |
       SetUpMessage Event |
       BeforeSendMessage Boolean String |

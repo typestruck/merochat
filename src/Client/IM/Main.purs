@@ -106,6 +106,7 @@ update { webSocketRef, fileReader} model  =
             FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
             DisplayHistory history -> CIH.displayHistory history model
             --suggestion
+            ToggleContactProfile -> CIS.toggleContactProfile model
             PreviousSuggestion -> CIS.previousSuggestion model
             BlockUser id -> CIS.blockUser webSocket id model
             NextSuggestion -> CIS.nextSuggestion model
