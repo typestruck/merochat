@@ -7,11 +7,13 @@ import Shared.Types
 import Data.Either (Either(..))
 import Data.List (List(..))
 import Data.List as DL
+import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Class.Console as EC
+
 import Payload.ResponseTypes (Response)
 import Payload.Server.Handlers (File)
 import Payload.Server.Handlers as PSH
@@ -19,17 +21,19 @@ import Payload.Server.Response as PSR
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.Help.Handler as SHH
 import Server.IM.Handler as SIH
 import Server.InternalError.Handler as SIEH
 import Server.Landing.Handler as SLH
 import Server.Login.Handler as SLGH
 import Server.NotFound.Handler as SNH
-import Server.Profile.Handler as SPH
 import Server.Privacy.Handler as SPVH
+import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
+import Server.Logout.Handler as SLOH
 import Server.Terms.Handler as STH
-import Server.Help.Handler as SHH
+import Shared.Routes (routes)
 
 handlers :: ServerReader -> _
 handlers reading = {
@@ -74,7 +78,6 @@ handlers reading = {
       developmentFiles: developmentFiles
 }
 
---the only practical difference is that page errors should display some html back
 runHTML :: forall a. ServerReader -> (a -> ServerEffect Html) -> a -> Aff (Either (Response String) Html)
 runHTML reading handler input = run `EA.catchError` catch
       where run = R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right $ handler input
@@ -85,6 +88,7 @@ runHTML reading handler input = run `EA.catchError` catch
                         map Left $ case ohno of
                               BadRequest { reason } -> SIEH.internalError reason
                               InternalError { reason } -> SIEH.internalError reason
+                              ExpiredSession -> SLOH.logout $ routes.im.get {}
 
 runJSON :: forall a b. ServerReader -> (a -> ServerEffect b) -> a -> Aff (Either (Response String) b)
 runJSON reading handler =
@@ -94,6 +98,7 @@ runJSON reading handler =
                   pure <<< Left $ case ohno of
                         BadRequest { reason } -> PSR.badRequest reason
                         InternalError { reason } -> PSR.internalError reason
+                        ExpiredSession -> PSR.unauthorized ""
 
 developmentFiles :: { params :: { path :: List String } } -> Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}

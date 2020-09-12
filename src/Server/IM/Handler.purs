@@ -5,7 +5,9 @@ import Server.Types
 import Shared.Types
 
 import Data.Array as DA
+import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
+import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
@@ -13,10 +15,14 @@ import Server.Response as SR
 
 im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect Html
 im { guards: { loggedUserID } } = do
-      user <- DN.unwrap <$> SID.presentUser loggedUserID
-      suggestions <- SIA.suggest loggedUserID 0
-      contacts <- SIA.listContacts loggedUserID 0
-      SR.serveTemplate $ SIT.template { contacts, suggestions, user }
+      maybeUser <- SID.presentUser loggedUserID
+      case maybeUser of
+            --nothing can only happen in case the user has an invalid cookie
+            Nothing -> RE.throw ExpiredSession
+            Just user -> do
+                  suggestions <- SIA.suggest loggedUserID 0
+                  contacts <- SIA.listContacts loggedUserID 0
+                  SR.serveTemplate $ SIT.template { contacts, suggestions, user: DN.unwrap user }
 
 contacts :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int } } -> ServerEffect (Array Contact)
 contacts { guards: { loggedUserID }, query: { skip } } = SIA.listContacts loggedUserID skip

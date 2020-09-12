@@ -20,9 +20,9 @@ name,
 headline,
 description,
 country,
-(select array_agg(l.id) from languages l join languagesUsers lu on l.id = lu.language and lu.speaker = u.id ) languages,
-(select string_agg(name, '\n' order by name) from tags l join tagsUsers tu on l.id = tu.tag and tu.creator = u.id ) tags,
-(select sum(amount) from karmaHistories where target = u.id) karma """
+(select array_agg(l.id) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
+(select string_agg(name, '\n' order by name) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
+(select sum(amount) from karma_histories where target = u.id) karma """
 
 presentProfile :: PrimaryKey -> ServerEffect ProfileUserWrapper
 presentProfile loggedUserID = SD.single' (Query $ "select" <> profilePresentationFields <> "from users u where id = $1") $ Row1 loggedUserID
@@ -49,11 +49,11 @@ saveProfile {
                                  gender = $7,
                                  birthday = $8
                              where id = $1""") (id /\ avatar /\ name /\ headline /\ description /\ country /\ gender /\ (map (\(DateWrapper d) -> d) birthday))
-        SD.executeWith connection (Query """delete from languagesUsers where speaker = $1""") $ Row1 id
-        void $ DT.traverse (SD.executeWith connection (Query """insert into languagesUsers (speaker, language) values ($1, $2)""") <<< Row2 id) languages
-        SD.executeWith connection (Query """delete from tagsUsers where creator = $1""") $ Row1 id
+        SD.executeWith connection (Query """delete from languages_users where speaker = $1""") $ Row1 id
+        void $ DT.traverse (SD.executeWith connection (Query """insert into languages_users (speaker, language) values ($1, $2)""") <<< Row2 id) languages
+        SD.executeWith connection (Query """delete from tags_users where creator = $1""") $ Row1 id
         tagIDs :: Array PrimaryKey <- DT.traverse (SD.scalarWith connection (Query """
-            with ins as (insert into tags (name) values ($1) on conflict on constraint uniqueTag do nothing returning id)
+            with ins as (insert into tags (name) values ($1) on conflict on constraint unique_tag do nothing returning id)
             select coalesce ((select id from ins), (select id from tags where name = $1))""") <<< Row1) tags
-        DT.traverse (SD.executeWith connection (Query """insert into tagsUsers (creator, tag) values ($1, $2)""") <<< Row2 id) tagIDs
+        DT.traverse (SD.executeWith connection (Query """insert into tags_users (creator, tag) values ($1, $2)""") <<< Row2 id) tagIDs
 

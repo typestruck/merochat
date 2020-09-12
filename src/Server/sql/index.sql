@@ -1,153 +1,238 @@
 ﻿create table countries
 (
-    id serial primary key,
-    name varchar(100) not null
+    id integer generated always as identity primary key,
+    name text not null
 );
 
 create table users
 (
-    id serial primary key,
-    name varchar(50) not null,
+    id integer generated always as identity primary key,
+    name text not null,
     password char(128) not null,
     joined timestamp default (now() at time zone 'utc'),
-    email varchar(50) not null,
+    email text not null,
     birthday timestamp,
-    gender varchar(10),
-    headline varchar(200) not null,
-    avatar varchar(41),
-    description varchar(10000) not null,
-    recentEmoji varchar(60),
+    gender text,
+    headline text not null,
+    avatar text,
+    description text not null,
     country integer,
-    messageOnEnter boolean not null default true,
-    constraint countryUser foreign key (country) references countries(id)
+
+    constraint country_user foreign key (country) references countries(id)
 );
 
 create table messages
 (
-    id bigserial primary key,
+    id integer generated always as identity primary key,
     sender integer not null,
     recipient integer not null,
     date timestamp not null default (now() at time zone 'utc'),
-    content varchar(10000) not null,
+    content text not null,
     status smallint not null default 0,
     visualized timestamp,
 
-    constraint statusCheck check (status in (0, 1)),
-    constraint fromUserMessage foreign key (sender) references users(id) on delete cascade,
-    constraint toUserMessage foreign key (recipient) references users(id) on delete cascade
-);
-
-create table privileges
-(
-    id serial primary key,
-    feature smallint not null,
-    description varchar(100),
-    quantity integer not null
+    constraint status_check check (status in (0, 1)),
+    constraint from_user_message foreign key (sender) references users(id) on delete cascade,
+    constraint to_user_message foreign key (recipient) references users(id) on delete cascade
 );
 
 create table tags
 (
-    id serial primary key,
-    name varchar(40) not null,
-    constraint uniqueTag unique(name)
+    id integer generated always as identity primary key,
+    name text not null,
+    constraint unique_tag unique(name)
 );
 
 create table languages
 (
-    id serial primary key,
-    name varchar(30) not null
-);
-
-create table badges
-(
-    id serial primary key,
-    kind smallint not null,
-    description varchar(100)
-);
-
-create table reactions
-(
-    id serial primary key,
-    reward integer not null,
-    kind smallint not null,
-    description varchar(100)
+    id integer generated always as identity primary key,
+    name text not null
 );
 
 create table blocks
 (
-    id serial primary key,
+    id integer generated always as identity primary key,
     blocker integer not null,
     blocked integer not null,
-    constraint blockerUser foreign key (blocker) references users(id) on delete cascade,
-    constraint blockedUser foreign key (blocked) references users(id) on delete cascade
+    constraint blocker_user foreign key (blocker) references users(id) on delete cascade,
+    constraint blocked_user foreign key (blocked) references users(id) on delete cascade
 );
 
-create table reports
+create table tags_users
 (
-    id serial primary key,
-    description varchar(10000) not null,
-    offense integer not null,
-    reporter integer not null,
-    reported integer not null,
-    constraint offenseReaction foreign key (offense) references reactions(id) on delete cascade,
-    constraint reporterUser foreign key (reporter) references users(id) on delete cascade,
-    constraint reportedUser foreign key (reported) references users(id) on delete cascade
-);
-
-create table privilegesUsers
-(
-    id serial primary key,
-    privilege integer not null,
-    receiver integer not null,
-    constraint privilegeUserUser foreign key (receiver) references users(id) on delete cascade,
-    constraint privilegeUserPrivilege foreign key (privilege) references privileges(id) on delete cascade
-);
-
-create table tagsUsers
-(
-    id serial primary key,
+    id integer generated always as identity primary key,
     creator integer not null,
     tag integer not null,
-    constraint tagUserUser foreign key (creator) references users(id) on delete cascade,
-    constraint tagUserTag foreign key (tag) references tags(id)
+    constraint tags_user_user foreign key (creator) references users(id) on delete cascade,
+    constraint tag_user_tag foreign key (tag) references tags(id)
 );
 
-create table languagesUsers
+create table languages_users
 (
-    id serial primary key,
+    id integer generated always as identity primary key,
     speaker integer not null,
     language integer not null,
-    constraint languageUserUser foreign key (speaker) references users(id) on delete cascade,
-    constraint languageUserLanguage foreign key (language) references languages(id),
-    constraint uniqueUserLanguage unique(speaker, language)
+    constraint languages_user_user foreign key (speaker) references users(id) on delete cascade,
+    constraint language_user_language foreign key (language) references languages(id),
+    constraint unique_user_language unique(speaker, language)
 );
 
-create table badgesUsers
+create table recoveries
 (
-    id serial primary key,
-    receiver integer not null,
-    badge integer not null,
-    constraint badgeUserUser foreign key (receiver) references users(id) on delete cascade,
-    constraint badgeUserBadge foreign key (badge) references badges(id)
+    id integer generated always as identity primary key,
+    uuid char(36) not null,
+    created timestamp default (now() at time zone 'utc'),
+    active boolean default true,
+    recoverer integer not null,
+    constraint recoverer foreign key (recoverer) references users(id) on delete cascade
 );
 
-create table reactionsMessages
+create table karmas
 (
-    id bigserial primary key,
-    reaction integer not null,
-    message bigint not null,
-    constraint reactionMessageMessage foreign key (message) references messages(id) on delete cascade,
-    constraint reactionMessageReaction foreign key (reaction) references reactions(id) on delete cascade
+    id integer generated always as identity primary key,
+    target integer not null,
+    current integer not null,
+
+    constraint target_karma foreign key (target) references users(id) on delete cascade
 );
 
-create table reactionsUsers
+create table karma_histories
 (
-    id bigserial primary key,
-    bearer integer not null,
-    reaction integer not null,
-    constraint reactionUserUser foreign key (bearer) references users(id) on delete cascade,
-    constraint reactionUserReaction foreign key (reaction) references reactions(id) on delete cascade
+    id integer generated always as identity primary key,
+    target integer not null,
+    amount integer not null,
+    date timestamp not null default (now() at time zone 'utc'),
+
+    constraint target_karma_history foreign key (target) references users(id) on delete cascade
 );
+
+create table histories
+(
+    id integer generated always as identity primary key,
+    sender integer not null,
+    recipient integer not null,
+    first_message_date timestamp not null default (now() at time zone 'utc'),
+    date timestamp not null default (now() at time zone 'utc'),
+    sender_archived boolean not null default false,
+    recipient_archived boolean not null default false,
+
+    constraint from_user_message foreign key (sender) references users(id) on delete cascade,
+    constraint to_user_message foreign key (recipient) references users(id) on delete cascade,
+
+    unique(sender, recipient)
+);
+
+create table suggestions
+(
+    id integer generated always as identity primary key,
+    suggested integer not null,
+    score integer not null,
+
+    constraint user_suggested foreign key (suggested) references users(id) on delete cascade
+);
+
+-- create table badges
+-- (
+--     id integer generated always as identity primary key,
+--     kind smallint not null,
+--     description text
+-- );
+
+-- create table reactions
+-- (
+--     id integer generated always as identity primary key,
+--     reward integer not null,
+--     kind smallint not null,
+--     description text
+-- );
+
+-- create table privileges
+-- (
+--     id integer generated always as identity primary key,
+--     feature smallint not null,
+--     description text,
+--     quantity integer not null
+-- );
+
+-- create table reports
+-- (
+--     id integer generated always as identity primary key,
+--     description text not null,
+--     offense integer not null,
+--     reporter integer not null,
+--     reported integer not null,
+--     constraint offense_reaction foreign key (offense) references reactions(id) on delete cascade,
+--     constraint reporter_user foreign key (reporter) references users(id) on delete cascade,
+--     constraint reported_user foreign key (reported) references users(id) on delete cascade
+-- );
+
+-- create table privileges_users
+-- (
+--     id integer generated always as identity primary key,
+--     privilege integer not null,
+--     receiver integer not null,
+--     constraint privilege_user_user foreign key (receiver) references users(id) on delete cascade,
+--     constraint privilege_user_privilege foreign key (privilege) references privileges(id) on delete cascade
+-- );
+
+-- create table badges_users
+-- (
+--     id integer generated always as identity primary key,
+--     receiver integer not null,
+--     badge integer not null,
+--     constraint badge_user_user foreign key (receiver) references users(id) on delete cascade,
+--     constraint badge_user_badge foreign key (badge) references badges(id)
+-- );
+
+-- create table reactions_messages
+-- (
+--     id integer generated always as identity primary key,
+--     reaction integer not null,
+--     message bigint not null,
+--     constraint reaction_message_message foreign key (message) references messages(id) on delete cascade,
+--     constraint reaction_message_reaction foreign key (reaction) references reactions(id) on delete cascade
+-- );
+
+-- create table reactions_users
+-- (
+--     id integer generated always as identity primary key,
+--     bearer integer not null,
+--     reaction integer not null,
+--     constraint reaction_user_user foreign key (bearer) references users(id) on delete cascade,
+--     constraint reaction_user_reaction foreign key (reaction) references reactions(id) on delete cascade
+-- );
+
+create or replace function insert_history
+(sender_id int, recipient_id int) returns void as
+$$
+begin
+    if exists(select 1
+    from histories
+    where sender = recipient_id and recipient = sender_id) then
+    update histories set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc') where sender = recipient_id and recipient = sender_id;
+    else
+    insert into histories
+        (sender, recipient)
+    values
+        (sender_id, recipient_id)
+    on conflict
+    (sender, recipient) do
+    update set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc');
+end if;
+end;
+  $$
+  language plpgsql;
+
+-- create or replace function truncate_tables()
+--   returns void as
+-- $body$
+-- begin
+--         truncate table users  restart identity cascade;
+--         truncate table messages restart identity cascade ;
+--         truncate table tags restart identity cascade ;
+-- end;
+--   $body$
+--   language plpgsql;
 
 insert into languages
     (name)
@@ -158,7 +243,7 @@ values
     ('Arapaho'),
     ('Armenian'),
     ('Awadhi'),
-    ('Azerbaijani-South'),
+    ('Azerbaijani'),
     ('Basque'),
     ('Bengali'),
     ('Bhojpuri'),
@@ -174,7 +259,7 @@ values
     ('Chinese-MinNan'),
     ('Chinese-Wu'),
     ('Chinese-Xiang'),
-    ('Chinese-Yue(Cantonese)'),
+    ('Chinese-Yue (Cantonese)'),
     ('Cornish'),
     ('Croatian'),
     ('Czech'),
@@ -192,7 +277,7 @@ values
     ('Georgian'),
     ('Greek'),
     ('Gujarati'),
-    ('HaitianCreole'),
+    ('Haitian Creole'),
     ('Hausa'),
     ('Hebrew'),
     ('Hindi'),
@@ -202,7 +287,7 @@ values
     ('Igbo'),
     ('Indonesian'),
     ('Italian'),
-    ('IrishGaelic'),
+    ('Irish Gaelic'),
     ('Japanese'),
     ('Javanese'),
     ('Kannada'),
@@ -237,16 +322,14 @@ values
     ('Russian'),
     ('Sanskrit'),
     ('Sauk'),
-    ('ScotsGaelic'),
+    ('Scots Gaelic'),
     ('Serbian'),
     ('Serbo-Croatian'),
-    ('American Sign Language'),
     ('Sindhi'),
     ('Sioux'),
     ('Slovak'),
     ('Slovenian'),
     ('Spanish'),
-    ('StutteringTherapy'),
     ('Sunda'),
     ('Swahili'),
     ('Swedish'),
@@ -311,8 +394,8 @@ values
     ('China'),
     ('Colombia'),
     ('Comoros'),
-    ('Congo(Brazzaville)'),
-    ('Congo(Kinshasa)'),
+    ('Congo (Brazzaville)'),
+    ('Congo (Kinshasa)'),
     ('Costa Rica'),
     ('Cote d''Ivoire'),
     ('Croatia'),
@@ -426,7 +509,7 @@ values
     ('Saint Lucia'),
     ('St. Vincent/Grenadines'),
     ('Samoa'),
-    ('SanMarino'),
+    ('San Marino'),
     ('Sao Tome and Principe'),
     ('SaudiA rabia'),
     ('Senegal'),
@@ -473,90 +556,3 @@ values
     ('Yemen'),
     ('Zambia'),
     ('Zimbabwe');
-
-
-create table recoveries
-(
-    id serial primary key,
-    uuid char(36) not null,
-    created timestamp default (now() at time zone 'utc'),
-    active boolean default true,
-    recoverer integer not null,
-    constraint recoverer foreign key (recoverer) references users(id) on delete cascade
-);
-
-create table karmas
-(
-    id serial primary key,
-    target integer not null,
-    current integer not null,
-
-    constraint targetKarma foreign key (target) references users(id) on delete cascade
-);
-
-create table karmaHistories
-(
-    id serial primary key,
-    target integer not null,
-    amount integer not null,
-    date timestamp not null default (now() at time zone 'utc'),
-
-    constraint targetKarmaHistory foreign key (target) references users(id) on delete cascade
-);
-
-create table histories
-(
-    id serial primary key,
-    sender integer not null,
-    recipient integer not null,
-    firstMessageDate timestamp not null default (now() at time zone 'utc'),
-    date timestamp not null default (now() at time zone 'utc'),
-    senderArchived boolean not null default false,
-    recipientArchived boolean not null default false,
-
-    constraint fromUserMessage foreign key (sender) references users(id) on delete cascade,
-    constraint toUserMessage foreign key (recipient) references users(id) on delete cascade,
-
-    unique(sender, recipient)
-);
-
-create table suggestions
-(
-    id serial primary key,
-    suggested integer not null,
-    score integer not null,
-
-    constraint userSuggested foreign key (suggested) references users(id) on delete cascade
-);
-
-CREATE OR REPLACE function insertHistory
-(senderID int, recipientID int) returns void AS
-$$
-begin
-    if exists(select 1
-    from histories
-    where sender = recipientID and recipient = senderID) then
-    update histories set senderArchived = false, recipientArchived = false, date = (now() at time zone 'utc') where sender = recipientID and recipient = senderID;
-    else
-    insert into histories
-        (sender, recipient)
-    values
-        (senderID, recipientID)
-    on conflict
-    (sender, recipient) do
-    update set senderArchived = false, recipientArchived = false, date = (now() at time zone 'utc');
-end if;
-end;
-  $$
-  LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION truncatetables()
-  RETURNS void AS
-$BODY$
-begin
-        truncate table users  RESTART IDENTITY cascade;
-        truncate table messages RESTART IDENTITY cascade ;
-        truncate table tags RESTART IDENTITY cascade ;
-end;
-  $BODY$
-  LANGUAGE plpgsql;

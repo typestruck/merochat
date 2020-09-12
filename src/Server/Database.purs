@@ -70,7 +70,7 @@ single query parameters = withConnection $ \connection -> do
                   if length == 0 then
                         pure Nothing -- as opposed to impure nothing
                   else if length == 1 then
-                        pure <<< Just $ PU.unsafePartial (DAA.head rows)
+                        pure $ DA.head rows
                   else
                         EA.throwError $ EA.error "more than one row returned for single query"
 

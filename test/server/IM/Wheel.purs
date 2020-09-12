@@ -125,5 +125,5 @@ module Test.Server.Wheel where
 --     TH.describe "makeInsert" $ do
 --         TH.it "generates sql insert"
 --             $ L.makeInsert (DHS.fromList [(1, 5), (4, 4)])
---             `TH.shouldBe` "insert into karmaHistories (target, amount) values(1,5),(4,4)"
+--             `TH.shouldBe` "insert into karma_histories (target, amount) values(1,5),(4,4)"
 

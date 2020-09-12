@@ -137,7 +137,8 @@ data By =
 -- | Errors that should be reported back to the user
 data ResponseError =
       BadRequest { reason :: String } |
-      InternalError { reason :: String }
+      InternalError { reason :: String } |
+      ExpiredSession
 
 type Suggestion = IMUser
 
@@ -498,7 +499,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   chatStarter: sender,
                   user
             }
-      fromSQLRow a = let c = spy "a" a in Left "missing or extra fields from users table contact projection"
+      fromSQLRow a = Left "missing or extra fields from users table contact projection"
 
 parseIMUserWrapper :: Array Foreign -> Except (NonEmptyList ForeignError) IMUserWrapper
 parseIMUserWrapper =
