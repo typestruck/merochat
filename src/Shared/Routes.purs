@@ -13,6 +13,7 @@ import Prim.RowList (class RowToList, kind RowList, Nil, Cons)
 import Prim.Symbol as Symbol
 import Record as R
 import Shared.Spec (spec)
+import Data.String as DS
 import Prim.Symbol (class Append)
 import Type.Data.RowList (RLProxy(..))
 import Type.Equality (class TypeEquals)
@@ -91,7 +92,7 @@ instance queryableGetRoute :: (
       makeUrlString _ _ _ payload =
             let   urlPath = encodeUrlWithParams defaultOpts (SProxy :: _ fullPath) (RLProxy :: _ fullParamsList) payload
                   urlQuery = encodeOptionalQuery (SProxy :: _ fullPath) (Proxy :: _ query) payload
-            in urlPath <> urlQuery
+            in (if DS.null urlPath then "/" else urlPath) <> urlQuery
 else instance queryablePostRoute :: (
       Union route DefaultRouteSpec mergedRoute,
       Nub mergedRoute routeWithDefaults,
