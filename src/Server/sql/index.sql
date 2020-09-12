@@ -73,7 +73,7 @@ create table reactions
     description varchar(100)
 );
 
-create table blocked
+create table blocks
 (
     id serial primary key,
     blocker integer not null,
@@ -518,6 +518,15 @@ create table histories
     constraint toUserMessage foreign key (recipient) references users(id) on delete cascade,
 
     unique(sender, recipient)
+);
+
+create table suggestions
+(
+    id serial primary key,
+    suggested integer not null,
+    score integer not null,
+
+    constraint userSuggested foreign key (suggested) references users(id) on delete cascade
 );
 
 CREATE OR REPLACE function insertHistory

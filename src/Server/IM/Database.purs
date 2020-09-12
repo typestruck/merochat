@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Pool, Query(..), Row1(..))
 import Server.Database as SD
-import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage)
+import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage, suggestionsPerPage)
 
 userPresentationFields :: String
 userPresentationFields = """ u.id,
@@ -40,15 +40,15 @@ presentUserParameters = Row1
 presentUser :: PrimaryKey -> ServerEffect IMUserWrapper
 presentUser loggedUserID = SD.single' presentUserQuery $ presentUserParameters loggedUserID
 
---another thing to think is ordering by online status
-suggest :: PrimaryKey -> ServerEffect (Array IMUserWrapper)
-suggest loggedUserID =
-     SD.select (Query ("select" <> userPresentationFields <> "from users u where id <> $1 and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) and not exists (select 1 from blocked where blocker in ($1, u.id) and blocked in ($1, u.id)) order by random() limit 20")) $ Row1 loggedUserID
+--fit online status here
+suggest :: PrimaryKey -> Int -> ServerEffect (Array IMUserWrapper)
+suggest loggedUserID skip =
+     SD.select (Query ("select * from (select" <> userPresentationFields <> "from users u join suggestions s on u.id = suggested where u.id <> $1 and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()")) $ (loggedUserID /\ suggestionsPerPage /\ skip)
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array ContactWrapper)
 presentContacts loggedUserID skip = SD.select (Query ("select distinct date, sender, firstMessageDate, " <> userPresentationFields <>
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
-                                         where not exists (select 1 from blocked where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
+                                         where not exists (select 1 from blocks where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
                                           order by date desc limit $2 offset $3""")) (loggedUserID /\ contactsPerPage /\ skip)
 
 presentSingleContact :: PrimaryKey -> PrimaryKey -> ServerEffect ContactWrapper
@@ -90,4 +90,4 @@ markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Poo
 markRead loggedUserID ids = SD.execute (Query "update messages set status = 1 where recipient = $1 and id = any($2)") (loggedUserID /\ ids)
 
 insertBlock :: PrimaryKey -> PrimaryKey -> ServerEffect Unit
-insertBlock loggedUserID blocked = void $ SD.insert (Query "insert into blocked(blocker, blocked) values ($1, $2)") (loggedUserID /\ blocked)
+insertBlock loggedUserID blocked = void $ SD.insert (Query "insert into blocks(blocker, blocked) values ($1, $2)") (loggedUserID /\ blocked)

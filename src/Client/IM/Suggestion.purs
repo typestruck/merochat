@@ -21,6 +21,7 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Newtype as SN
+import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
@@ -48,14 +49,15 @@ previousSuggestion model@{ suggesting } =
                   }
 
 fetchMoreSuggestions :: IMModel -> NextMessage
-fetchMoreSuggestions = (_ :> [Just <<< DisplayMoreSuggestions <$> CCN.response (request.im.suggestions {}) ])
+fetchMoreSuggestions model@{ suggestionsPage } = model :> [Just <<< DisplayMoreSuggestions <$> CCN.response (request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }})]
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> NoMessages
-displayMoreSuggestions suggestions =
-      CIF.diff {
-            suggesting: Just 0,
-            chatting : Nothing,
-            suggestions
+displayMoreSuggestions suggestions model@{ suggestionsPage } =
+      F.noMessages $ model {
+            suggesting = Just 0,
+            chatting = Nothing,
+            suggestions = suggestions,
+            suggestionsPage = if DA.null suggestions then 0 else suggestionsPage + 1
       }
 
 blockUser :: WebSocket  -> PrimaryKey -> IMModel -> NextMessage

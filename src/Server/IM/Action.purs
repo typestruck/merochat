@@ -20,22 +20,21 @@ import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
-import Shared.Options.File (allowedMediaTypes)
+import Shared.Options.File (allowedMediaTypes, maxImageSize)
 import Server.IM.Database as SID
 import Server.Ok (ok)
 import Server.Wheel as SW
-import Shared.Options.File (maxImageSize)
 import Shared.Newtype as SN
 import Shared.Unsafe as SU
 
 foreign import sanitize :: String -> String
 
-suggest :: PrimaryKey -> ServerEffect (Array Suggestion)
-suggest = SN.unwrapAll <<< SID.suggest
+suggest :: PrimaryKey -> Int -> ServerEffect (Array Suggestion)
+suggest loggedUserID = SN.unwrapAll <<< SID.suggest loggedUserID
 
 listContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
-listContacts loggedUserID page = do
-      contacts <- SN.unwrapAll $ SID.presentContacts loggedUserID page
+listContacts loggedUserID skip = do
+      contacts <- SN.unwrapAll $ SID.presentContacts loggedUserID skip
       history <- SN.unwrapAll <<< SID.chatHistoryFor loggedUserID $ map (_.id <<< _.user) contacts
       let userHistory = DF.foldl intoHashMap DH.empty history
       pure $ intoContacts userHistory <$> contacts

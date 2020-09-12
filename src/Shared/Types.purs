@@ -193,6 +193,7 @@ type IM = (
       imageCaption :: Maybe String,
       messageEnter :: Boolean,
       link :: Maybe String,
+      suggestionsPage :: Int,
       linkText :: Maybe String,
       isOnline :: Boolean,
       --the current logged in user
@@ -492,6 +493,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
             pure $ ContactWrapper {
                   shouldFetchChatHistory: true,
                   history: [],
+                  --REFACTOR: just get this age (and user age) from the database (pg has the function age....)
                   chatAge: DN.unwrap (DD.diff (EU.unsafePerformEffect ED.nowDate) firstMessageDate :: Days),
                   chatStarter: sender,
                   user
