@@ -52,7 +52,8 @@ spec :: Spec {
                         query :: { skip :: Int, with :: PrimaryKey },
                         response :: Array HistoryMessage
                   },
-                  suggestions :: GET "/suggestions" {
+                  suggestions :: GET "/suggestions?skip=<skip>" {
+                        query :: { skip :: Int },
                         response :: Array Suggestion
                   },
                   block :: GET "/block?id=<id>" {

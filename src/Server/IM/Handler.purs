@@ -14,7 +14,7 @@ import Server.Response as SR
 im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect Html
 im { guards: { loggedUserID } } = do
       user <- DN.unwrap <$> SID.presentUser loggedUserID
-      suggestions <- SIA.suggest loggedUserID
+      suggestions <- SIA.suggest loggedUserID 0
       contacts <- SIA.listContacts loggedUserID 0
       SR.serveTemplate $ SIT.template { contacts, suggestions, user }
 
@@ -28,8 +28,8 @@ singleContact { guards: { loggedUserID }, query: { id } } = DA.singleton <$> SIA
 history :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int, with :: PrimaryKey } } -> ServerEffect (Array HistoryMessage)
 history { guards: { loggedUserID }, query: { with, skip } } = SIA.resumeChatHistory loggedUserID with skip
 
-suggestions :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect (Array Suggestion)
-suggestions { guards: { loggedUserID } } = SIA.suggest loggedUserID
+suggestions :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int } } -> ServerEffect (Array Suggestion)
+suggestions { guards: { loggedUserID }, query: { skip } } = SIA.suggest loggedUserID skip
 
 block :: { guards :: { loggedUserID :: PrimaryKey }, query :: { id :: PrimaryKey } } -> ServerEffect Ok
 block { guards: { loggedUserID }, query: { id } } = SIA.blockUser loggedUserID id

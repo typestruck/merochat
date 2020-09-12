@@ -129,8 +129,8 @@ body {
 }
 
 .profile-contact .avatar-profile {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
 }
 
 .suggestion.avatar-profile {
@@ -1037,7 +1037,7 @@ svg.toolbar-action {
 .ss {
     display: flex;
     justify-content: space-around;
-    display: none;
+    /* display: none; */
 }
 
 .bold {
