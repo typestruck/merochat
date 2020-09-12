@@ -811,13 +811,6 @@ svg.toolbar-action {
     margin: 10px 0px;
 }
 
-.profile-edition-name {
-    font-weight: bold;
-    font-family: "Flamenco";
-    font-size: 2em;
-    margin-top: 10px;
-}
-
 .profile-info-edition textarea {
     resize: none;
     border: 0;
