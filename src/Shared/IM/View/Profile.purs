@@ -7,7 +7,6 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
-import Effect.Uncurried (EffectFn1)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE

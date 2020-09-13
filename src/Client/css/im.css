@@ -328,11 +328,12 @@ body {
     top: 10px;
     bottom: 10px;
     right: 20px;
+    scrollbar-width: thin;
     left: 20px;
     position: absolute;
     display: flex;
     flex-flow: column;
-    justify-content: end;
+    /* justify-content: end; */
 }
 
 .message-history-wrapper> :first-child {

@@ -236,7 +236,7 @@ processIncomingMessage { id, userID, date, content } model@{
       suggesting,
       chatting
 } = case findAndUpdateContactList of
-      Just contacts' ->
+      Just (Tuple contacts' newChatting) ->
             --new messages bubble the contact to the top
             let added = DA.head contacts' in Right $
                   if getUserID (map _.user added) == getUserID suggestingContact then
@@ -253,7 +253,7 @@ processIncomingMessage { id, userID, date, content } model@{
                         model {
                               contacts = contacts',
                               --since the contact list is altered, the chatting index must be bumped
-                              chatting = (_ + 1) <$> chatting
+                              chatting = Just newChatting
                         }
       Nothing -> Left userID
       where updateHistory { id, content, date } user@{ history } =
@@ -270,7 +270,8 @@ processIncomingMessage { id, userID, date, content } model@{
             findAndUpdateContactList = do
                   index <- DA.findIndex findUser contacts
                   { history } <- contacts !! index
-                  DA.modifyAt index (updateHistory { content, id, date }) contacts
+                  updated <- DA.modifyAt index (updateHistory { content, id, date }) contacts
+                  pure $ Tuple updated index
 
             suggestingContact = do
                   index <- suggesting

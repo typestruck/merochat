@@ -80,7 +80,9 @@ single' query parameters = withConnection $ \connection -> singleWith connection
 singleWith connection query parameters = do
       rows <- DP.query connection query parameters
       rows' <- runLogEither "singleWith" rows
-      pure $ PU.unsafePartial (DAA.head rows')
+      case rows' of
+            [r] -> pure r
+            _ -> EA.throwError $ EA.error "single' expects only one result"
 
 execute :: forall r query parameters. ToSQLRow parameters => Query parameters query -> parameters -> BaseEffect { pool :: Pool | r } Unit
 execute query parameters = withConnection $ \connection -> executeWith connection query parameters
