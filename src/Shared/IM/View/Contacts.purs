@@ -33,7 +33,9 @@ contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll C
                   let   index' = Just index
                         extraContactClasses = if chatting == index' then " chatting-contact" else ""
                   in HE.div [HA.class' $ "contact" <> extraContactClasses, HA.onClick $ ResumeChat id] [
-                        HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass index', HA.src $ SA.avatarForRecipient index' avatar],
+                        HE.div (HA.class' "avatar-contact-list-div") [
+                              HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass index', HA.src $ SA.avatarForRecipient index' avatar]
+                        ],
                         HE.div [HA.class' "contact-profile"] [
                               HE.span (HA.class' "contact-name") name,
                              -- HE.br,

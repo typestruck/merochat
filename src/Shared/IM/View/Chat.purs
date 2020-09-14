@@ -29,7 +29,7 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                   ],
                   HE.div (HA.class' "send-image") [
                         HE.input [HA.placeholder "Image Caption", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
-                        HE.button [HA.class' "action-button", HA.onClick (BeforeSendMessage true $ DM.fromMaybe "" message)] "Send"
+                        HE.button [HA.class' "action-button", HA.onClick ForceBeforeSendMessage] "Send"
                   ]
             ],
             HE.div (HA.class' linkFormClasses) [
@@ -74,12 +74,12 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                               HA.class' "chat-input",
                               HA.id "chat-input",
                               HA.placeholder $ if isOnline then "Type a message or drag files here" else "Waiting for connection...",
-                              HA.autofocus true,
                               HA.disabled $ not isOnline,
-                              HA.onKeyup' SetUpMessage,
+                              HA.onKeydown' EnterBeforeSendMessage,
+                              HA.onInput BeforeSendMessage,
                               HA.value $ DM.fromMaybe "" message
                         ],
-                        HE.svg [HA.class' sendClasses, HA.onClick <<< BeforeSendMessage true $ DM.fromMaybe "" message, HA.viewBox "0 0 300 300"] [
+                        HE.svg [HA.class' sendClasses, HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 300 300"] [
                               HE.title "Send message",
                               HE.path' (HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"),
                               HE.polygon' (HA.points "99.76 213.29 125.13 153.56 99.76 93.81 241.34 153.56 99.76 213.29")

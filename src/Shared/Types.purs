@@ -197,6 +197,7 @@ type IM = (
       suggestionsPage :: Int,
       linkText :: Maybe String,
       isOnline :: Boolean,
+      shouldSendMessage :: Boolean,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -270,8 +271,9 @@ data IMMessage =
       --chat
       ToggleContactProfile |
       DropFile Event |
-      SetUpMessage Event |
-      BeforeSendMessage Boolean String |
+      EnterBeforeSendMessage Event |
+      ForceBeforeSendMessage |
+      BeforeSendMessage String |
       SendMessage DateTimeWrapper |
       ReceiveMessage WebSocketPayloadClient Boolean |
       SetMessageContent (Maybe Int) String |

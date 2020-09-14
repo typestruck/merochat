@@ -30,6 +30,7 @@ import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
+import Effect.Console as EC
 import Effect.Now as EN
 import Flame ((:>))
 import Flame as F
@@ -55,28 +56,34 @@ import Web.UIEvent.KeyboardEvent as WUK
 getFileInput :: Effect Element
 getFileInput = CCD.querySelector "#image-file-input"
 
-setUpMessage :: Event -> IMModel -> NextMessage
-setUpMessage event model@{ emojisVisible, messageEnter } = model :> [beforeSend]
-      where beforeSend = liftEffect do
-                  let   textarea = SU.fromJust  do
-                              target <- WEE.target event
-                              WHHTA.fromEventTarget target
-                        sent = messageEnter && key == "Enter" && not WUK.shiftKey keyboardEvent
-                  content <- WHHTA.value textarea
-                  when sent $ CCD.preventStop event
-                  CIF.next $ BeforeSendMessage sent content
-
-            keyboardEvent = SU.fromJust $ WUK.fromEvent event
+--the keydown event fires before input
+enterBeforeSendMessage :: Event -> IMModel -> NoMessages
+enterBeforeSendMessage event model@{ messageEnter } = F.noMessages $ model {
+      shouldSendMessage = messageEnter && key == "Enter" && not WUK.shiftKey keyboardEvent
+}
+      where keyboardEvent = SU.fromJust $ WUK.fromEvent event
             key = WUK.key keyboardEvent
 
-beforeSendMessage :: Boolean -> String -> IMModel -> MoreMessages
-beforeSendMessage sent content model@{
+--send message or image button click
+forceBeforeSendMessage :: IMModel -> MoreMessages
+forceBeforeSendMessage model@{ message }
+      | DM.maybe true (DS.null <<< DS.trim) message = F.noMessages model
+      | otherwise = model {
+            shouldSendMessage = true
+      } :> [
+            pure <<< Just <<< BeforeSendMessage $ SU.fromJust message
+      ]
+
+--input event, or called after clicking the send message/image button
+beforeSendMessage :: String -> IMModel -> MoreMessages
+beforeSendMessage content model@{
+      shouldSendMessage,
       chatting,
       user: { id },
       contacts,
       suggesting,
       suggestions
-}    | sent = snocContact :> [ nextSendMessage ]
+}    | shouldSendMessage = snocContact :> [ nextSendMessage ]
 
       where snocContact = case Tuple chatting suggesting of
                   Tuple Nothing (Just index) ->
@@ -87,7 +94,7 @@ beforeSendMessage sent content model@{
                                     chatting = Just 0,
                                     suggesting = Nothing,
                                     contacts = DA.cons (SIC.defaultContact id chatted) contacts,
-                                    suggestions = SU.fromJust  $ DA.deleteAt index suggestions
+                                    suggestions = SU.fromJust $ DA.deleteAt index suggestions
                               }
                   _ -> model
 
@@ -127,6 +134,7 @@ sendMessage webSocket date = case _ of
                         temporaryID = newTemporaryID,
                         imageCaption = Nothing,
                         selectedImage = Nothing,
+                        shouldSendMessage = false,
                         message = if DM.isJust selectedImage then message else Nothing,
                         contacts = SU.fromJust $ DA.updateAt chatting updatedChatting contacts
                  }
@@ -252,7 +260,6 @@ processIncomingMessage { id, userID, date, content } model@{
                    else
                         model {
                               contacts = contacts',
-                              --since the contact list is altered, the chatting index must be bumped
                               chatting = Just newChatting
                         }
       Nothing -> Left userID

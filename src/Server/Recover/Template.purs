@@ -31,7 +31,8 @@ template token = do
                                           HE.div_ [
                                                 HE.h2 (HA.class' "ext-heading") "Recover account",
                                                 HE.div (HA.class' "form-up") [
-                                                      HE.input [HA.type' "text", HA.id "email", HA.placeholder "Email"],
+                                                      HE.label_ "Email",
+                                                      HE.input [HA.type' "text", HA.id "email"],
                                                       HE.input [HA.type' "button", HA.id "recover", HA.value "Recover"],
                                                       HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible"]
                                                 ]
@@ -40,8 +41,10 @@ template token = do
                                           HE.div_ [
                                                 HE.h2 (HA.class' "ext-heading") "Reset password",
                                                 HE.div (HA.class' "form-up") [
-                                                      HE.input [HA.type' "password", HA.id "password", HA.placeholder "Password"],
-                                                      HE.input [HA.type' "password", HA.id "confirm-password", HA.placeholder "Confirm password"],
+                                                      HE.label_ "Password",
+                                                      HE.input [HA.type' "password", HA.id "password"],
+                                                      HE.label_ "Confirm password",
+                                                      HE.input [HA.type' "password", HA.id "confirm-password"],
                                                       HE.input [HA.type' "button", HA.id "reset", HA.value "Change password", HA.class' "action-button"]
                                                 ]
                                           ],
@@ -52,6 +55,5 @@ template token = do
                                     HE.hr' $ HA.class' "hr-or"
                               ],
                               HE.a [HA.href $ routes.landing {}, HA.class' "question-link"] "Don't have an account?"
-
                   ]
             ]

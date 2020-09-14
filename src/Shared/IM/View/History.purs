@@ -3,12 +3,13 @@ module Shared.IM.View.History where
 import Prelude
 import Shared.Types
 
+import Data.Array ((!!))
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.Renderer.Hook as FHR
 import Shared.Avatar as SA
 import Shared.Markdown as SM
 
@@ -18,13 +19,16 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting } chattingSugge
             Nothing -> [HE.createEmptyElement "div"]
             Just recipient -> display recipient
 
-      where display recipient@{history, user: { avatar }} = map (entry avatar) history
+      where display recipient@{history, user: { avatar }} = DA.mapWithIndex (\i -> entry avatar (map _.sender (history !! (i - 1)))) history
 
-            entry recipientAvatar { status, sender, content } =
-                  let Tuple class' avatar =
-                        if senderID == sender then Tuple "sender-message" $ SA.avatarForSender senderAvatar
-                         else Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
-                  in HE.div (HA.class' $ "message " <> class') [
+            entry recipientAvatar previousSender { status, sender, content } =
+                  let   sameSenderClass = if previousSender == Just sender then " no-avatar-message" else ""
+                        Tuple messageClass avatar =
+                              if senderID == sender then
+                                    Tuple "sender-message" $ SA.avatarForSender senderAvatar
+                              else
+                                    Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
+                  in HE.div (HA.class' $ "message " <> messageClass <> sameSenderClass) [
                         HE.img [HA.src avatar, HA.class' $ "avatar-message" <> SA.avatarColorClass chatting],
                         HE.div' [HA.class' $ "message-content" <> statusClasses status, HA.innerHTML (SM.toHTML content)]
                   ]

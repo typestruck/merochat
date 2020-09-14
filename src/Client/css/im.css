@@ -112,6 +112,15 @@ body {
     border-radius: 100%;
 }
 
+.no-avatar-message .avatar-message{
+    visibility: hidden;
+}
+
+.avatar-contact-list-div {
+    min-width: 64px;
+    min-height: 64px;
+}
+
 .avatar-contact-list, .avatar-settings {
     width: 64px;
     height: 64px;
@@ -200,7 +209,9 @@ body {
 
 .contact-list-last-message>p {
     white-space: nowrap;
-    display: inline;
+    display: inline-block;
+    margin:0;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -213,8 +224,7 @@ body {
 
 .profile-info, .profile-info-edition {
     display: flex;
-    flex-basis: 70%;
-    flex-flow: column wrap;
+    flex-flow: column;
 }
 
 .suggestion {
@@ -293,6 +303,10 @@ body {
     width:  28px;
 }
 
+.no-avatar-message .message-content::before {
+    display: none;
+}
+
 .recipient-message .message-content {
     background-color: #373737 ;
     margin-left:20px;
@@ -343,8 +357,16 @@ body {
 .message {
     flex-direction: column;
     display: flex;
-    margin: 10px;
+    margin: 2px;
     /* align-items: center; */
+}
+
+.message.recipient-message, .message.sender-message {
+    margin-top: 15px
+}
+
+.no-avatar-message.message.recipient-message, .no-avatar-message.message.sender-message {
+    margin-top: 2px
 }
 
 .recipient-message {
@@ -509,8 +531,7 @@ a.menu-button {
 }
 
 .contact-profile {
-    flex-basis: 70%;
-    display: flex;
+display: flex;
     flex-direction: column;
     min-width: 0;
 }
@@ -551,7 +572,7 @@ img.emoji {
 .contact-list {
     background-color: #2d2d2d;
     overflow-y: auto;
-    flex-grow: 1;
+    flex-grow: 1
 }
 
 .logo-contact-list {
@@ -833,9 +854,10 @@ svg.toolbar-action {
 }
 
 .message-content p {
-    display: flex;
-    flex-direction: column;
+    display: inline-block;
+    word-wrap: break-word;
     max-width: 45em;
+
 }
 
 .message p img {

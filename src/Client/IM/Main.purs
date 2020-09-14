@@ -81,8 +81,9 @@ update { webSocketRef, fileReader} model  =
             ToggleLinkForm -> CIC.toggleLinkForm model
             ToggleEmojisVisible -> CIC.toggleEmojisVisible model
             DropFile event -> CIC.catchFile fileReader event model
-            SetUpMessage event -> CIC.setUpMessage event model
-            BeforeSendMessage sent content -> CIC.beforeSendMessage sent content model
+            EnterBeforeSendMessage event -> CIC.enterBeforeSendMessage event model
+            ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
+            BeforeSendMessage content -> CIC.beforeSendMessage content model
             SendMessage date -> CIC.sendMessage webSocket date model
             SetMessageContent cursor content -> CIC.setMessage cursor content model
             ReceiveMessage payload isFocused -> CIC.receiveMessage webSocket isFocused payload model

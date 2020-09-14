@@ -1,160 +1,164 @@
+@import url('https://fonts.googleapis.com/css?family=Flamenco');
 body {
-        background-color: #262626;
-        display: flex;
-        flex-direction: column;
+      background-color: #262626;
+      display: flex;
+      flex-direction: column;
 }
 
 .form-up label {
-        color: #b5b7b6;
+      color: #b5b7b6;
 }
 
 .header {
-        display: flex;
-        justify-content: center;
-        padding: 30px 0;
+      display: flex;
+      justify-content: center;
+      padding: 30px 0;
 }
 
 a:hover, input[type=button]:hover {
-        color: #ff7b88
+      color: #ff7b88
 }
 
 .green-box {
-        margin-bottom: auto !important;
+      margin-bottom: auto !important;
 }
 
 .green-area {
-        align-self: center;
-        display: flex;
-        width: max-content;
-        flex-direction: column;
-        align-items: center;
-        background: rgba(28, 58, 41, 0.4);
-        justify-self: center;
-        padding: 100px 30px 70px;
-        margin-bottom: 100px;
+      align-self: center;
+      display: flex;
+      width: max-content;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(28, 58, 41, 0.4);
+      justify-self: center;
+      padding: 100px 30px 70px;
+      margin-bottom: 100px;
 }
 
 .form-up input {
-        height: 60px;
-        display: block;
-        padding: 20px;
-        margin-top: 10px;
-        margin-bottom: 40px;
-        font-size: 1.1em;
-        border: 1px solid #b5b7b6;
+      height: 60px;
+      display: block;
+      padding: 20px;
+      margin-top: 10px;
+      margin-bottom: 40px;
+      font-size: 1.1em;
+      border: 1px solid #b5b7b6;
 }
 
 .form-up input[type=button], .form-up input[type=submit] {
-        font-weight: bolder;
-        border: none;
-        font-size: 1.3em;
-        line-height: 1;
-        border-radius: 5px;
-        outline: none;
-        background: #db5a5d;
-        color: white;
+      font-weight: bolder;
+      border: none;
+      font-size: 1.3em;
+      line-height: 1;
+      border-radius: 5px;
+      outline: none;
+      background: #db5a5d;
+      color: white;
 }
 
 h2 {
-        font-family: Flamenco;
-        color: #db5a5d;
-        text-align: center;
+      color: #db5a5d;
+      text-align: center;
 }
 
 .question-link, .question-or {
-        color: #b5b7b6;
-        font-size: 1.1em;
+      color: #b5b7b6;
+      font-size: 1.1em;
 }
 
 .question-or {
-        margin: 15px 0;
-        display: flex;
-        align-items: center;
+      margin: 15px 0;
+      display: flex;
+      align-items: center;
 }
 
 .forgot {
-        margin-top: 25px;
-        display: inline-block;
+      margin-top: 25px;
+      display: inline-block;
 }
 
 .hr-or {
-        height: 0px;
+      height: 0px;
 }
 
 .terms {
-        text-align: left;
-        max-width: 800px;
-        align-self: center;
+      text-align: left;
+      max-width: 800px;
+      align-self: center;
+}
+
+h1, h2 {
+        font-family: Flamenco;
 }
 
 .terms h1 {
-        text-align:center ;
+      text-align:center ;
 }
 
 .terms li {
-        display: block;
+      display: block;
 }
 
 @media (max-width:1199px) {
-        .ext-heading {
-                font-size: 1.4em;
-        }
-        .footer-menu {
-                display: inline-grid;
-        }
-        .hr-or {
-                width: 120px;
-                margin: 0 10px;
-        }
-        .form-up {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-        }
-        .green-area {
-                padding: 20px 0px 70px;
-                width: 100%;
-        }
-        .form-up input {
-                width: 95%;
-                margin-top:5px;
-                margin-bottom: 15px;
-                height: 30px;
-        }
-        .form-up input[type=button], .form-up input[type=submit] {
-                font-size: 1em;
-                line-height: 0;
-        }
-        h2 {
-                font-size: 1.3em;
-        }
+      .ext-heading {
+            font-size: 1.4em;
+      }
+      .footer-menu {
+            display: inline-grid;
+      }
+      .hr-or {
+            width: 120px;
+            margin: 0 10px;
+      }
+      .form-up {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+      }
+      .green-area {
+            padding: 20px 0px 70px;
+            width: 100%;
+      }
+      .form-up input {
+            width: 95%;
+            margin-top:5px;
+            margin-bottom: 15px;
+            height: 30px;
+      }
+      .form-up input[type=button], .form-up input[type=submit] {
+            font-size: 1em;
+            line-height: 0;
+      }
+      h2 {
+            font-size: 1.3em;
+      }
 }
 
 @media (min-width:1200px) {
-        .ext-heading {
-                font-size: 1.8em;
-                line-height: 0;
-        }
-        .hr-or {
-                width: 320px;
-                margin: 0 10px;
-        }
-        .form-up input {
-                width: 530px;
-                height: 50px;
-        }
-        .form-up input[type=button], .form-up input[type=submit] {
-                font-size: 1.1em;
-                line-height: 0;
-        }
+      .ext-heading {
+            font-size: 1.8em;
+            line-height: 0;
+      }
+      .hr-or {
+            width: 320px;
+            margin: 0 10px;
+      }
+      .form-up input {
+            width: 530px;
+            height: 50px;
+      }
+      .form-up input[type=button], .form-up input[type=submit] {
+            font-size: 1.1em;
+            line-height: 0;
+      }
 }
 
 @media (min-width:1600px) {
-        .ext-heading {
-                font-size: 2em;
-                line-height: 0;
-        }
-        .form-up input {
-                width: 570px;
-        }
+      .ext-heading {
+            font-size: 2em;
+            line-height: 0;
+      }
+      .form-up input {
+            width: 570px;
+      }
 }
