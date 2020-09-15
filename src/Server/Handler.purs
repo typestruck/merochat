@@ -13,7 +13,6 @@ import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Class.Console as EC
-
 import Payload.ResponseTypes (Response)
 import Payload.Server.Handlers (File)
 import Payload.Server.Handlers as PSH
@@ -26,12 +25,13 @@ import Server.IM.Handler as SIH
 import Server.InternalError.Handler as SIEH
 import Server.Landing.Handler as SLH
 import Server.Login.Handler as SLGH
+import Server.Logout as SL
+import Server.Logout.Handler as SLOH
 import Server.NotFound.Handler as SNH
 import Server.Privacy.Handler as SPVH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
-import Server.Logout.Handler as SLOH
 import Server.Terms.Handler as STH
 import Shared.Routes (routes)
 
@@ -70,6 +70,7 @@ handlers reading = {
             post: runJSON reading SRH.recoverAccount,
             reset : runJSON reading SRH.reset
       },
+      logout: runJSON reading SLOH.logout,
       terms: runHTML reading STH.terms,
       privacy: runHTML reading SPVH.privacy,
       help: runHTML reading SHH.help,
@@ -88,7 +89,7 @@ runHTML reading handler input = run `EA.catchError` catch
                         map Left $ case ohno of
                               BadRequest { reason } -> SIEH.internalError reason
                               InternalError { reason } -> SIEH.internalError reason
-                              ExpiredSession -> SLOH.logout $ routes.im.get {}
+                              ExpiredSession -> pure $ SL.logout (routes.login.get {}) ""
 
 runJSON :: forall a b. ServerReader -> (a -> ServerEffect b) -> a -> Aff (Either (Response String) b)
 runJSON reading handler =

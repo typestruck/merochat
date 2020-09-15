@@ -29,15 +29,12 @@ changeEmail loggedUserID email = do
       SSD.changeEmail loggedUserID email
       pure ok
 
-changePassword :: PrimaryKey -> String -> ServerEffect Ok
+changePassword :: PrimaryKey -> String -> ServerEffect Unit
 changePassword loggedUserID password = do
       when (DS.null password) $ SR.throwBadRequest blankPasswordMessage
       hash <- ST.hashPassword password
       SSD.changePassword loggedUserID hash
-      pure ok
 
-terminateAccount :: PrimaryKey -> ServerEffect Ok
-terminateAccount loggedUserID = do
-      SSD.terminateAccount loggedUserID
-      pure ok
+terminateAccount :: PrimaryKey -> ServerEffect Unit
+terminateAccount loggedUserID = SSD.terminateAccount loggedUserID
 

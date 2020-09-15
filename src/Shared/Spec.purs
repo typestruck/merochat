@@ -114,6 +114,11 @@ spec :: Spec {
                         response :: Ok
                   }
             },
+            logout :: POST "/logout" {
+                  guards :: Guards ("loggedUserID" : Nil),
+                  body :: NoBody,
+                  response :: Ok
+            },
             terms :: GET "/terms" {
                   response :: Html
             },
@@ -127,6 +132,7 @@ spec :: Spec {
                   params :: { path :: List String },
                   response :: File
             },
+
             --404 can only be matched as a catch all route
             notFound :: GET "/<..notFound>" {
                   params :: { notFound :: List String },

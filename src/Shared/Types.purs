@@ -501,7 +501,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   chatStarter: sender,
                   user
             }
-      fromSQLRow a = Left "missing or extra fields from users table contact projection"
+      fromSQLRow _ = Left "missing or extra fields from users table contact projection"
 
 parseIMUserWrapper :: Array Foreign -> Except (NonEmptyList ForeignError) IMUserWrapper
 parseIMUserWrapper =

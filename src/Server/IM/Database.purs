@@ -12,6 +12,7 @@ import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Pool, Query(..), Row1(..))
+import Debug.Trace (spy)
 import Server.Database as SD
 import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage, suggestionsPerPage)
 
@@ -56,10 +57,10 @@ presentSingleContact :: PrimaryKey -> PrimaryKey -> ServerEffect ContactWrapper
 presentSingleContact loggedUserID otherID = SD.single' (Query ("select distinct date, sender, first_message_date, " <> userPresentationFields <>
                                       """from users u join histories h on (u.id = $1 and h.recipient = $2 or u.id = $2 and h.sender = $1)""")) (loggedUserID /\ otherID)
 
-presentSelectedContacts :: Array PrimaryKey -> ServerEffect (Array ContactWrapper)
-presentSelectedContacts ids
+presentSelectedContacts :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array ContactWrapper)
+presentSelectedContacts loggedUserID ids
       | DA.null ids = pure []
-      | otherwise = SD.select (Query $ "select" <> userPresentationFields <> "from users u where id = any($1)") $ Row1 ids
+      | otherwise = SD.select (Query $ "select distinct date, sender, first_message_date," <> userPresentationFields <> "from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1) where u.id = any($2)") (loggedUserID /\ ids)
 
 --there must be a better way to do this
 chatHistoryFor :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array HistoryMessageWrapper)
@@ -72,7 +73,7 @@ chatHistoryFor loggedUserID otherIDs
                   in "select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = $1 order by date desc limit $2) a"
 
 chatHistorySince :: PrimaryKey -> DateTime -> ServerEffect (Array HistoryMessageWrapper)
-chatHistorySince loggedUserID since = SD.select (Query $ "select " <> messagePresentationFields <> " from messages where recipient = $1 and date >= $2 order by date, sender") (loggedUserID /\ DJ.fromDateTime since)
+chatHistorySince loggedUserID since = SD.select (Query $ "select " <> messagePresentationFields <> " from messages where recipient = $1 and date > $2 order by date, sender") (loggedUserID /\ DJ.fromDateTime since)
 
 chatHistoryBetween :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessageWrapper)
 chatHistoryBetween loggedUserID otherID skip = SD.select (Query ("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (loggedUserID /\ otherID /\ messagesPerPage /\ skip)

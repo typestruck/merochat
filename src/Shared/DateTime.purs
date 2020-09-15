@@ -58,7 +58,7 @@ unformatDate :: String -> Either String Date
 unformatDate value = DT.date <$> DFD.unformat dateFormat value
 
 epoch :: DateTime
-epoch = DateTime (DD.canonicalDate (SU.toEnum 1970) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
+epoch = DateTime (DD.canonicalDate (SU.toEnum 3000) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
 
 zeroTime :: Time
 zeroTime = Time (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0)

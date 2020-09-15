@@ -4,7 +4,7 @@ import Prelude
 import Shared.Types
 
 import Client.Common.DOM as CCD
-import Client.Common.Logout as CCL
+import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
@@ -17,6 +17,7 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Record as R
 import Shared.Newtype as SN
+import Shared.Routes (routes)
 
 update :: AffUpdate SettingsModel SettingsMessage
 update { model, message } =
@@ -55,7 +56,7 @@ changePassword model@({ password, passwordConfirmation }) = do
             void $ request.settings.account.password { body: password }
             liftEffect do
                   CCN.alert "Password changed, you will be logged out"
-                  CCL.logout
+                  liftEffect <<< CCL.setLocation $ routes.login.get {}
       FAE.noChanges
 
 terminateAccount :: Aff (SettingsModel -> SettingsModel)
@@ -63,7 +64,7 @@ terminateAccount = do
       confirmed <- liftEffect $ CCD.confirm "This action cannot be undone! Are you sure you want to terminate your account?"
       when confirmed do
             void $ request.settings.account.terminate { body:{} }
-            liftEffect CCL.logout
+            liftEffect <<< CCL.setLocation $ routes.landing {}
       FAE.noChanges
 
 setField field value = pure $ \model -> R.set field value model

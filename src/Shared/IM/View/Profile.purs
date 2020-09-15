@@ -7,6 +7,7 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -16,14 +17,18 @@ import Shared.Unsafe ((!@))
 
 profile :: IMModel -> Html IMMessage
 profile { suggestions, contacts, suggesting, chatting, fullContactProfileVisible } =
-      case Tuple suggesting chatting of
-            Tuple (Just index) Nothing -> suggestion suggesting (suggestions !@ index)
-            Tuple Nothing (Just index) ->
-                  if fullContactProfileVisible then
-                        fullProfile false chatting (contacts !@ index).user
-                  else
-                        contact chatting (contacts !@ index).user
-            _ -> HE.div (HA.class' "suggestion") <<< HE.div_ <<< HE.img $ HA.src "/client/media/logo.png"
+      if DA.null suggestions then
+            emptySuggestions
+       else
+            case Tuple suggesting chatting of
+                  Tuple (Just index) Nothing -> suggestion suggesting (suggestions !@ index)
+                  Tuple Nothing (Just index) ->
+                        if fullContactProfileVisible then
+                              fullProfile false chatting (contacts !@ index).user
+                        else
+                              contact chatting (contacts !@ index).user
+                  _ -> emptySuggestions
+      where emptySuggestions = HE.div (HA.class' "suggestion") <<< HE.div_ <<< HE.img $ HA.src "/client/media/logo.png"
 
 contact :: Maybe Int -> IMUser -> Html IMMessage
 contact chatting { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =

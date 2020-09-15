@@ -4,7 +4,7 @@ import Prelude
 import Shared.Types
 
 import Client.Common.DOM as CCD
-import Client.Common.Logout as CCLO
+import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
@@ -14,13 +14,17 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
+import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 
 logout :: Boolean -> IMModel -> MoreMessages
-logout confirmed model = CIF.nothingNext model <<< liftEffect $ when confirmed CCLO.logout
+logout confirmed model = CIF.nothingNext model $ when confirmed out
+      where out = do
+                  void $ request.logout { body: {} }
+                  liftEffect $ CCL.setLocation $ routes.login.get {}
 
 confirmLogout :: IMModel -> NoMessages
 confirmLogout = (_ :> [Just <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])

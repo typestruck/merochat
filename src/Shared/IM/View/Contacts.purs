@@ -42,10 +42,10 @@ contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll C
                               HE.div' [HA.class' "contact-list-last-message", HA.innerHTML (lastMessage history)]
                         ],
                         HE.div (HA.class' "menu-button chat-options") [
-                              HE.text $ showUnreadCount history,
-                              HE.a (HA.class' "menu-button") $
-                                    HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $
-                                          HE.path' (HA.d "M30 12 L16 24 2 12"),
-                              HE.div' (HA.class' "drop-menu fade-in effect")
+                              HE.text $ showUnreadCount history
+                              -- HE.a (HA.class' "menu-button") $
+                              --       HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $
+                              --             HE.path' (HA.d "M30 12 L16 24 2 12"),
+                              -- HE.div' (HA.class' "drop-menu fade-in effect")
                         ]
                   ]

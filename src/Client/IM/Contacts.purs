@@ -118,7 +118,6 @@ displayContacts newContacts model@{ contacts } =
             freeToFetchContactList = true
       }
 
---3. needs testing
 displayMissedMessages :: Array Contact -> IMModel -> NoMessages
 displayMissedMessages missedContacts model@{ contacts } =
       F.noMessages $ model {
@@ -133,8 +132,11 @@ displayMissedMessages missedContacts model@{ contacts } =
 
             getExisting (Tuple existingIndex contactsIndex) = SU.fromJust do
                   index <- contactsIndex
+                  currentContact <- contacts !! index
                   contact <- missedContacts !! existingIndex
-                  pure $ Tuple index contact
+                  pure <<< Tuple index $ currentContact {
+                        history = currentContact.history <> contact.history
+                  }
 
             findContact ({user: { id }}) = DA.findIndex (sameContact id) contacts
             sameContact userID ({user: { id }}) = userID == id
