@@ -36,7 +36,7 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
-import Shared.PrimaryKey as SP
+
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
@@ -119,7 +119,7 @@ sendMessage webSocket date = case _ of
             imageCaption
       } ->
             let  recipient@{ user: { id: recipientID }, history } = contacts !@ chatting
-                 newTemporaryID = temporaryID + SP.fromInt 1
+                 newTemporaryID = temporaryID + 1
                  updatedChatting = recipient {
                         history = DA.snoc history $  {
                               id: newTemporaryID,

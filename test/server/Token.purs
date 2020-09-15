@@ -5,7 +5,7 @@ import Prelude
 import Run as R
 import Run.Reader as RR
 import Server.Token as ST
-import Shared.PrimaryKey as SP
+
 import Shared.Unsafe as SU
 import Test.Server as TS
 import Test.Unit (TestSuite)
@@ -17,7 +17,7 @@ tests = do
       TU.suite "token" do
             TU.test "encoding decoding" do
                   TS.serverAction do
-                        let id = SP.fromInt 23
+                        let id = 23
                         { configuration :configuration } <- RR.ask
                         token <- ST.createToken id
                         userID <- SU.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecret token)

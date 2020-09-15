@@ -8,7 +8,7 @@ import Data.Date as DD
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.HashMap as DH
-import Data.Int53 as DI
+
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
@@ -96,9 +96,9 @@ view lastYearEligible ({
                   HE.select [HA.onInput SetDay] <<< displayOptionsWith "Select" (SDT.getDay <$> user.birthday) <<< map optionEntry $ if canSelectDay birthday then (1 .. lastDayMonth birthday) else []
             ]
             editGender = HE.select [HA.onInput SetGender] $ displayOptions user.gender [Tuple Female $ show Female, Tuple Male $ show Male, Tuple NonBinary $ show NonBinary, Tuple Other $ show Other]
-            editCountry = HE.select [HA.onInput SetCountry] <<< displayOptions (map (DI.toInt <<< DN.unwrap) user.country) $ map toInt countries
+            editCountry = HE.select [HA.onInput SetCountry] $ displayOptions user.country countries
             editLanguages = HE.span_ ([
-                  HE.select [HA.onInput AddLanguage] <<< displayOptionsWith "Select" Nothing $ map toInt languages
+                  HE.select [HA.onInput AddLanguage] $ displayOptionsWith "Select" Nothing languages
                 ] <> map (\id -> tagEdition "language" RemoveLanguage <<< Tuple id $ getLanguage id) user.languages)
             editTags = HE.span_ ([
                   HE.span_ "Add tags to show your interests, hobbies, etc ",
@@ -114,9 +114,6 @@ view lastYearEligible ({
                   case _ of
                         Tuple (Just year) (Tuple (Just month) _) -> DE.fromEnum $ DD.lastDayOfMonth (SU.toEnum year) (SU.toEnum month)
                         _ -> 0
-
-            --safe for language and countries since these have a small fixed amonut of entries
-            toInt (Tuple (PrimaryKey pk) value) = Tuple (DI.toInt pk) value
 
             languageHM = DH.fromArray languages
             getLanguage = SU.fromJust <<< flip DH.lookup languageHM

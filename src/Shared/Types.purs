@@ -18,11 +18,7 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
-import Data.Hashable (class Hashable)
-import Data.Hashable as DH
 import Data.Int as DIN
-import Data.Int53 (Int53)
-import Data.Int53 as DI
 import Data.JSDate (JSDate)
 import Data.JSDate as DJ
 import Data.List.NonEmpty (NonEmptyList)
@@ -58,8 +54,6 @@ import Web.Event.Internal.Types (Event)
 foreign import data Trie :: Type
 
 foreign import fromJSDate :: JSDate -> Json
-foreign import fromInt53 :: Int53 -> Json
-foreign import toInt53 :: Json -> Int53
 
 type NoBody = {}
 
@@ -97,7 +91,7 @@ data Gender =
       NonBinary |
       Other
 
-newtype PrimaryKey = PrimaryKey Int53
+type PrimaryKey = Int
 
 newtype DateTimeWrapper = DateTimeWrapper DateTime
 
@@ -374,7 +368,6 @@ derive instance genericMessageStatus :: Generic MessageStatus _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
 derive instance genericResponseError :: Generic ResponseError _
-derive instance genericPrimaryKey :: Generic PrimaryKey _
 derive instance genericUser :: Generic RegisterLoginUser _
 derive instance genericMDateTime :: Generic DateTimeWrapper _
 derive instance genericMDate :: Generic DateWrapper _
@@ -385,7 +378,6 @@ derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
 derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
-derive instance newtypePrimaryKey :: Newtype PrimaryKey _
 derive instance newtypeMDate :: Newtype DateWrapper _
 derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
@@ -395,7 +387,6 @@ derive instance eqGenerate :: Eq Generate
 derive instance eqMDateTime :: Eq DateTimeWrapper
 derive instance eqMDate :: Eq DateWrapper
 derive instance eqGender :: Eq Gender
-derive instance eqPrimaryKey :: Eq PrimaryKey
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
 
@@ -413,7 +404,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             foreignTags,--REFACTOR: avoid code duplication here and on im types
             foreignKarma
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-            id <- parsePrimaryKey foreignID
+            id <- F.readInt foreignID
             maybeForeignerAvatar <- F.readNull foreignAvatar
             --REFACTOR: all image paths
             avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString)  maybeForeignerAvatar
@@ -425,11 +416,11 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             headline <- F.readString foreignHeadline
             description <- F.readString foreignDescription
             maybeCountry <- F.readNull foreignCountry
-            country <- DM.maybe (pure Nothing) (map Just <<< parsePrimaryKey) maybeCountry
+            country <- DM.maybe (pure Nothing) (map Just <<< F.readInt) maybeCountry
             maybeLanguages :: Maybe Foreign <- F.readNull foreignLanguages
             foreignIDLanguages <- DM.maybe (pure []) F.readArray maybeLanguages
-            languages <- DT.traverse parsePrimaryKey  foreignIDLanguages
-            karma <- parseInt foreignKarma
+            languages <- DT.traverse F.readInt  foreignIDLanguages
+            karma <- F.readInt foreignKarma
             maybeTags <- F.readNull foreignTags
             tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
             pure $ ProfileUserWrapper {
@@ -452,7 +443,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
 
 instance fromSQLRowResiterLoginUser :: FromSQLRow RegisterLoginUser where
       fromSQLRow [foreignID, foreignEmail, foreignPassword] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-            id <- parsePrimaryKey foreignID
+            id <- F.readInt foreignID
             email <- F.readString foreignEmail
             password <- F.readString foreignPassword
             pure $ RegisterLoginUser { id, email, password }
@@ -478,7 +469,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
             foreignTags,
             foreignKarma
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-            sender <- parsePrimaryKey foreignSender
+            sender <- F.readInt foreignSender
             firstMessageDate <- SU.fromJust <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
             IMUserWrapper user <- parseIMUserWrapper [
                   foreignID,
@@ -518,7 +509,7 @@ parseIMUserWrapper =
             foreignTags,
             foreignKarma
       ] -> do
-            id <- parsePrimaryKey foreignID
+            id <- F.readInt foreignID
             maybeForeignerAvatar <- F.readNull foreignAvatar
             avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
             name <- F.readString foreignName
@@ -529,7 +520,7 @@ parseIMUserWrapper =
             headline <- F.readString foreignHeadline
             description <- F.readString foreignDescription
             maybeCountry <- F.readNull foreignCountry
-            karma <- parseInt foreignKarma
+            karma <- F.readInt foreignKarma
             country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
             maybeLanguages <- F.readNull foreignLanguages
             languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
@@ -559,9 +550,9 @@ instance messageWrapperRowFromSQLRow :: FromSQLRow HistoryMessageWrapper where
           foreignContent,
           foreignStatus
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
-          id <- parsePrimaryKey foreignID
-          sender <- parsePrimaryKey foreignSender
-          recipient <- parsePrimaryKey foreignRecipient
+          id <- F.readInt foreignID
+          sender <- F.readInt foreignSender
+          recipient <- F.readInt foreignRecipient
           date <- DateTimeWrapper <<< SU.fromJust <<< DJ.toDateTime <$> DJ.readDate foreignDate
           content <- F.readString foreignContent
           status <- SU.fromJust <<< DE.toEnum <$> F.readInt foreignStatus
@@ -569,8 +560,6 @@ instance messageWrapperRowFromSQLRow :: FromSQLRow HistoryMessageWrapper where
       fromSQLRow _ = Left "missing or extra fields from users table"
 
 --there is nothing simple about using purescript-simple-json with types other than record
-instance writeForeignPrimaryKey :: WriteForeign PrimaryKey where
-      writeImpl (PrimaryKey id) = F.unsafeToForeign $ DI.toString id
 instance writeForeignMDateTime :: WriteForeign DateTimeWrapper where
       writeImpl (DateTimeWrapper dateTime) = F.unsafeToForeign $ SDT.formatDateTime dateTime
 instance writeForeignMessageStatus :: WriteForeign MessageStatus where
@@ -582,8 +571,6 @@ instance writeForeignMDate :: WriteForeign DateWrapper where
 
 instance readForeignMDatee :: ReadForeign DateWrapper where
       readImpl date = DateWrapper <<< SU.fromRight <<< SDT.unformatDate <$> F.readString date
-instance readForeignPrimaryKey :: ReadForeign PrimaryKey where
-      readImpl id = PrimaryKey <<< SU.fromJust <<< DI.fromString <$> F.readString id
 instance readForeignMDateTime :: ReadForeign DateTimeWrapper where
       readImpl dateTime = DateTimeWrapper <<< SU.fromRight <<< SDT.unformatDateTime <$> F.readString dateTime
 instance readForeignGender :: ReadForeign Gender where
@@ -591,12 +578,6 @@ instance readForeignGender :: ReadForeign Gender where
 instance readForeignMessageStatus :: ReadForeign MessageStatus where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
 
-instance decodeQueryParamPrimaryKey :: DecodeQueryParam PrimaryKey where
-      decodeQueryParam query key =
-            case FO.lookup key query of
-                  Nothing -> Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [value] -> DM.maybe (errorDecoding query key) (Right <<< PrimaryKey) $ DI.fromString value
-                  _ -> errorDecoding query key
 instance decodeQueryGenerate :: DecodeQueryParam Generate where
       decodeQueryParam query key =
             case FO.lookup key query of
@@ -618,8 +599,6 @@ errorDecoding queryObj key = Left $ QueryDecodeError {
       queryObj
 }
 
-instance encodeQueryParamPrimaryKey :: EncodeQueryParam PrimaryKey where
-      encodeQueryParam = Just <<< DI.toString <<< DN.unwrap
 instance encodeQueryParamMDateTime :: EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< SDT.formatDateTime <<< DN.unwrap
 instance encodeQueryGenerate :: EncodeQueryParam Generate where
@@ -631,8 +610,6 @@ instance showMessageStatus :: Show MessageStatus where
       show = DGRS.genericShow
 instance showResponseError :: Show ResponseError where
       show = DGRS.genericShow
-instance showPrimaryKey :: Show PrimaryKey where
-      show (PrimaryKey i) = DI.toString i
 instance showGender :: Show Gender where
       show Female = "Female"
       show Male = "Male"
@@ -651,43 +628,16 @@ instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
 instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
       show = DGRS.genericShow
 
-instance primaryKeySemiring :: Semiring PrimaryKey where
-      add (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a + b)
-      zero = PrimaryKey $ DI.fromInt 0
-      mul (PrimaryKey a) (PrimaryKey b) = PrimaryKey (a * b)
-      one = PrimaryKey $ DI.fromInt 1
-
-instance hashablePrimaryKey :: Hashable PrimaryKey where
-      hash (PrimaryKey key) = DH.hash $ DI.toNumber key
-
-instance toSQLValuePrimaryKey :: ToSQLValue PrimaryKey where
-      toSQLValue (PrimaryKey int53) = F.unsafeToForeign $ DI.toNumber int53
 instance toSQLValueGender :: ToSQLValue Gender where
       toSQLValue = F.unsafeToForeign <<< show
 
-instance fromSQLValuePrimaryKey :: FromSQLValue PrimaryKey where
-      fromSQLValue = DB.lmap show <<< CME.runExcept <<< parsePrimaryKey
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
-
---these functions are needed cos javascript is crap and numbers from postgresql are parsed as strings
-
-parsePrimaryKey :: Foreign -> F PrimaryKey
-parsePrimaryKey data_
-      | F.typeOf data_ == "number" = map (PrimaryKey <<< SU.fromJust <<< DI.fromNumber) $ F.readNumber data_
-      | otherwise = PrimaryKey <<< SU.fromJust <<< DI.fromString <$> F.readString data_
-
-parseInt :: Foreign -> F Int
-parseInt data_
-      | F.typeOf data_ == "number" = F.readInt data_
-      | otherwise = SU.fromJust <<< DIN.fromString <$> F.readString data_
 
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonGender :: EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonPrimaryKey :: EncodeJson PrimaryKey where
-      encodeJson (PrimaryKey id) = fromInt53 id
 instance encodeJsonMDateTime :: EncodeJson DateTimeWrapper where
       encodeJson (DateTimeWrapper dateTime) = fromJSDate $ DJ.fromDateTime dateTime
 instance encodeJsonMDate :: EncodeJson DateWrapper where
@@ -703,8 +653,6 @@ instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonGender :: DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonPrimaryKey :: DecodeJson PrimaryKey where
-      decodeJson = Right <<< PrimaryKey <<< toInt53
 instance decodeJsonMDateTime :: DecodeJson DateTimeWrapper where
       decodeJson json = Right <<< DateTimeWrapper <<< SU.fromJust <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
           where jsonString :: String
@@ -742,9 +690,6 @@ instance ordMessageStatus :: Ord MessageStatus where
       compare Unread Read = LT
       compare Read Unread = GT
       compare _ _ = EQ
-
-instance ordPrimaryKey :: Ord PrimaryKey where
-      compare (PrimaryKey pk) (PrimaryKey anotherPK) = compare pk anotherPK
 
 instance boundedMessageStatus :: Bounded MessageStatus where
       bottom = Unread

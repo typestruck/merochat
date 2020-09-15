@@ -23,6 +23,7 @@ import Data.Either (Either)
 import Data.Either (fromRight) as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -136,14 +137,15 @@ update { webSocketRef, fileReader} model  =
             }
             preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
             checkMissedMessages model@{ contacts } =
-                  model :> [ Just <<< DisplayMissedMessages <$> CCNT.response (request.im.missedMessages {
-                                    query: {
-                                          since: DateTimeWrapper <<< DM.fromMaybe epoch $ do
-                                                { history } <- DA.head contacts
-                                                { date: DateTimeWrapper dt }  <- DA.head history
-                                                pure dt
-                                    }
-                            })]
+                  model :> [do
+                        let maybeID = do
+                              { history } <- DA.head contacts
+                              { id }  <- DA.head history
+                              pure id
+                        case maybeID of
+                              Nothing -> pure Nothing
+                              Just lastID -> Just <<< DisplayMissedMessages <$> CCNT.response (request.im.missedMessages { query: { lastID } })
+                  ]
 
 windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
 windowsFocus channel = do

@@ -90,9 +90,9 @@ blockUser loggedUserID userID = do
       SID.insertBlock loggedUserID userID
       pure ok
 
-listMissedContacts :: PrimaryKey -> DateTime -> ServerEffect (Array Contact)
-listMissedContacts loggedUserID since = do
-      history <- SN.unwrapAll $ SID.chatHistorySince loggedUserID since
+listMissedContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
+listMissedContacts loggedUserID lastID = do
+      history <- SN.unwrapAll $ SID.chatHistorySince loggedUserID lastID
       contacts <- SN.unwrapAll <<< SID.presentSelectedContacts loggedUserID <<< DA.nubEq $ map _.sender history
       let userHistory = DF.foldl intoHashMap DH.empty history
       pure $ intoContacts userHistory <$> contacts

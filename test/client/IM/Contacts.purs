@@ -9,7 +9,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Shared.PrimaryKey as SP
+
 import Shared.Unsafe ((!@))
 import Test.Client.Model (anotherIMUserID, contact, imUser, webSocket)
 import Test.Client.Model as TCM
@@ -43,7 +43,7 @@ tests = do
                   let { contacts } = DT.fst <<< CICN.markRead webSocket $ model {
                         chatting = Just 1
                   }
-                  TUA.equal [Tuple (SP.fromInt 1) Read, Tuple (SP.fromInt 2) Unread, Tuple (SP.fromInt 3) Read] <<< map (\( { id, status}) -> Tuple id status) $ (contacts !@ 1).history
+                  TUA.equal [Tuple 1 Read, Tuple 2 Unread, Tuple 3 Read] <<< map (\( { id, status}) -> Tuple id status) $ (contacts !@ 1).history
 
             TU.test "displayContacts shows next page" do
                   let { contacts } = DT.fst <<< CICN.displayContacts [contact] $ model {
@@ -57,29 +57,29 @@ model = TCM.model  {
 }
 
 anotherContactID :: PrimaryKey
-anotherContactID = SP.fromInt 23
+anotherContactID = 23
 
 anotherContact :: Contact
 anotherContact = contact {
       user = imUser { id = anotherContactID },
       history = [{
-            id: SP.fromInt 1,
+            id: 1,
             status: Unread,
-            sender: SP.fromInt 32,
+            sender: 32,
             recipient: imUser.id,
             content: "1",
             date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
       }, {
-            id: SP.fromInt 2,
+            id:  2,
             status: Unread,
             sender: imUser.id,
-            recipient: SP.fromInt 32,
+            recipient:  32,
             content: "2",
             date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
       },{
-            id: SP.fromInt 3,
+            id:  3,
             status: Unread,
-            sender: SP.fromInt 32,
+            sender:  32,
             recipient: imUser.id,
             content: "3",
             date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime

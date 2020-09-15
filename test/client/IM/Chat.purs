@@ -7,7 +7,7 @@ import Client.IM.Chat as CIC
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.Int53 as DI
+
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
@@ -17,7 +17,7 @@ import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Partial.Unsafe as PU
 import Shared.Newtype as SN
-import Shared.PrimaryKey as SP
+
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
 import Test.Client.Model (anotherIMUser, anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
@@ -36,10 +36,10 @@ tests = do
             TU.test "sendMessage bumps temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let m@{ temporaryID } = DT.fst $ CIC.sendMessage webSocket date model
-                  TUA.equal (SP.fromInt 1) temporaryID
+                  TUA.equal 1 temporaryID
 
                   let { temporaryID } = DT.fst $ CIC.sendMessage webSocket date m
-                  TUA.equal (SP.fromInt 2) temporaryID
+                  TUA.equal 2 temporaryID
 
             TU.test "sendMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -52,7 +52,7 @@ tests = do
                         date: (user.history !@ 0).date,
                         recipient: user.user.id,
                         status: Unread,
-                        id: SP.fromInt 1,
+                        id: 1,
                         content,
                         sender: userID
                   }] user.history
@@ -81,7 +81,7 @@ tests = do
                   TUA.equal turn $ CIC.makeTurn contact' imUserID
 
             TU.test "makeTurn don't calculate turn for recipient " do
-                  TUA.equal Nothing <<< CIC.makeTurn contact $ SP.fromInt 90000
+                  TUA.equal Nothing $ CIC.makeTurn contact 90000
 
             TU.test "makeTurn don't calculate turn if last message isn't from the sender" do
                   let contact' = contact {
@@ -119,8 +119,8 @@ tests = do
                   TUA.equal (Just 0) chatting
 
             let { id: recipientID } = imUser
-                messageID = SP.fromInt 1
-                newMessageID = SP.fromInt 101
+                messageID = 1
+                newMessageID = 101
 
             TU.test "receiveMessage substitutes temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime

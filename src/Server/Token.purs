@@ -6,8 +6,7 @@ import Shared.Types
 
 import Data.Array.NonEmpty as DAN
 import Data.Either as DE
-import Data.Int53 (Int53)
-import Data.Int53 as DI
+
 import Data.Maybe (Maybe(..))
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
@@ -17,6 +16,7 @@ import Node.Crypto.Hash as NCHA
 import Node.Crypto.Hmac as NCH
 import Node.Simple.Jwt as NSJ
 import Run as R
+import Data.Int as DI
 import Run.Reader as RR
 
 hashPassword :: String -> ServerEffect String
@@ -25,7 +25,7 @@ hashPassword password = do
       R.liftEffect $ NCH.hex NCHA.SHA512 salt password
 
 createToken :: PrimaryKey -> ServerEffect String
-createToken (PrimaryKey id) = do
+createToken id = do
       { configuration: { tokenSecret } } <- RR.ask
       NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show id)
 
@@ -36,4 +36,4 @@ userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.deco
                   matched <- DSR.match (DSSU.unsafeRegex "(Int53 (\\d+))" noFlags) input
                   position <- DAN.index matched 2
                   match <- position
-                  PrimaryKey <$> DI.fromString match
+                  DI.fromString match

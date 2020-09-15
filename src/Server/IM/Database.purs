@@ -27,7 +27,7 @@ description,
 (select name from countries where id = country) country,
 (select string_agg(l.name, ','  order by name) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
 (select string_agg(name, '\n' order by name) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
-(select sum(amount) from karma_histories where target = u.id) karma
+(select cast(sum(amount) as integer) from karma_histories where target = u.id) karma
  """
 
 messagePresentationFields :: String
@@ -72,8 +72,8 @@ chatHistoryFor loggedUserID otherIDs
                   let parameter = show n
                   in "select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = $1 order by date desc limit $2) a"
 
-chatHistorySince :: PrimaryKey -> DateTime -> ServerEffect (Array HistoryMessageWrapper)
-chatHistorySince loggedUserID since = SD.select (Query $ "select " <> messagePresentationFields <> " from messages where recipient = $1 and date > $2 order by date, sender") (loggedUserID /\ DJ.fromDateTime since)
+chatHistorySince :: PrimaryKey -> Int -> ServerEffect (Array HistoryMessageWrapper)
+chatHistorySince loggedUserID lastID = SD.select (Query $ "select " <> messagePresentationFields <> " from messages m where recipient = $1 and m.id > $2 order by date, sender") (loggedUserID /\ lastID)
 
 chatHistoryBetween :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessageWrapper)
 chatHistoryBetween loggedUserID otherID skip = SD.select (Query ("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (loggedUserID /\ otherID /\ messagesPerPage /\ skip)

@@ -20,7 +20,6 @@ You can edit this file as you like.
   , "formatters"
   , "http-methods"
   , "httpure"
-  , "int-53"
   , "js-date"
   , "node-fs"
   , "node-process"

@@ -40,5 +40,5 @@ suggestions { guards: { loggedUserID }, query: { skip } } = SIA.suggest loggedUs
 block :: { guards :: { loggedUserID :: PrimaryKey }, query :: { id :: PrimaryKey } } -> ServerEffect Ok
 block { guards: { loggedUserID }, query: { id } } = SIA.blockUser loggedUserID id
 
-missedMessages :: { guards :: { loggedUserID :: PrimaryKey }, query :: { since :: DateTimeWrapper } } -> ServerEffect (Array Contact)
-missedMessages { guards: { loggedUserID }, query: { since: DateTimeWrapper since } } = SIA.listMissedContacts loggedUserID since
+missedMessages :: { guards :: { loggedUserID :: PrimaryKey }, query :: { lastID :: Int } } -> ServerEffect (Array Contact)
+missedMessages { guards: { loggedUserID }, query: { lastID } } = SIA.listMissedContacts loggedUserID lastID

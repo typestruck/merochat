@@ -945,7 +945,7 @@ svg.toolbar-action {
     padding: 20px 15px;
     border-radius: 3px;
     position: absolute;
-    right:0;
+    right:16px;
     top:42px;
 }
 

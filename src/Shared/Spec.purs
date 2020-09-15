@@ -60,8 +60,8 @@ spec :: Spec {
                         query :: { id :: PrimaryKey },
                         response :: Ok
                   },
-                  missedMessages :: GET "/missed?since=<since>" {
-                        query :: { since :: DateTimeWrapper },
+                  missedMessages :: GET "/missed?lastID=<lastID>" {
+                        query :: { lastID :: Int },
                         response :: Array Contact
                   }
             },

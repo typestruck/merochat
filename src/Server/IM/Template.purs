@@ -13,7 +13,7 @@ import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.View as SIV
-import Shared.PrimaryKey as SP
+
 
 template :: {
       contacts :: Array Contact,
@@ -29,7 +29,7 @@ template {contacts, suggestions, user} = do
             view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
             init: {
                   chatting: Nothing,
-                  temporaryID: SP.fromInt 0,
+                  temporaryID: 0,
                   suggesting: if DA.null suggestions then Nothing else Just 0,
                   freeToFetchChatHistory:true,
                   suggestionsPage: 0,

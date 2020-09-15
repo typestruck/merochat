@@ -8,7 +8,7 @@ import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.IM.Contact as SIC
-import Shared.PrimaryKey as SP
+
 import Unsafe.Coerce as UC
 import Web.Socket.WebSocket (WebSocket)
 
@@ -34,7 +34,7 @@ model = {
       profileSettingsToggle: Hidden,
       user: imUser,
       suggestions: [suggestion],
-      temporaryID : SP.fromInt 0,
+      temporaryID: 0,
       suggesting: Just 0,
       freeToFetchChatHistory: true,
       contacts: [contact],
@@ -43,7 +43,7 @@ model = {
 }
 
 imUserID :: PrimaryKey
-imUserID = SP.fromInt 23
+imUserID = 23
 
 imUser :: IMUser
 imUser = {
@@ -61,7 +61,7 @@ imUser = {
 }
 
 anotherIMUserID :: PrimaryKey
-anotherIMUserID = SP.fromInt 90
+anotherIMUserID = 90
 
 contactID :: PrimaryKey
 contactID = anotherIMUserID
@@ -73,14 +73,14 @@ contact :: Contact
 contact = SIC.defaultContact imUserID anotherIMUser
 
 suggestionID :: PrimaryKey
-suggestionID = SP.fromInt 300
+suggestionID =  300
 
 suggestion :: Suggestion
 suggestion = imUser { id = suggestionID }
 
 historyMessage :: HistoryMessage
 historyMessage = {
-      id: SP.fromInt 1,
+      id:  1,
       sender:  imUserID,
       recipient:contactID,
       date: DateTimeWrapper <<< EU.unsafePerformEffect $ EN.nowDateTime,

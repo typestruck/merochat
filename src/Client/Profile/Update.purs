@@ -25,7 +25,7 @@ import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Record as R
-import Shared.PrimaryKey as SP
+
 import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Web.DOM (Element)
@@ -41,7 +41,7 @@ update { model, message } =
 
             SetPField setter -> pure setter
             SetAvatar base64 -> pure <<< SS.setUserField (SProxy :: SProxy "avatar") $ Just base64
-            SetCountry country -> setAndDisplayField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ SP.fromString country
+            SetCountry country -> setAndDisplayField (SProxy :: SProxy "isCountryVisible") (SProxy :: SProxy "country") $ DI.fromString country
             SetGender gender -> setAndDisplayField (SProxy :: SProxy "isGenderVisible") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
             SetYear year -> setYear $ DI.fromString year
             SetMonth month -> setMonth $ DI.fromString month
@@ -51,7 +51,7 @@ update { model, message } =
             SetDescription description -> setOrGenerateField Description (SProxy :: SProxy "description") 10000 description
             SetTagEnter (Tuple key tag) -> addTag key tag
 
-            AddLanguage language -> addLanguage <<< SP.fromInt <<< SU.fromJust $ DI.fromString language
+            AddLanguage language -> addLanguage <<< SU.fromJust $ DI.fromString language
 
             RemoveLanguage language event -> removeLanguage language event
             RemoveTag tag event -> removeTag tag event
