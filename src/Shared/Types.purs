@@ -249,7 +249,6 @@ data IMMessage =
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
       --contact
-      DisplayLastMessageDates |
       MarkAsRead |
       ResumeChat PrimaryKey |
       UpdateReadCount |

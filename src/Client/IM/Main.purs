@@ -58,7 +58,7 @@ main = do
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view true,
-            init: [pure $ Just DisplayLastMessageDates],
+            init: [],
             update: update { fileReader, webSocketRef }
       }
 
@@ -97,7 +97,6 @@ update { webSocketRef, fileReader} model  =
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             SetEmoji event -> CIC.setEmoji event model
             --contacts
-            DisplayLastMessageDates -> F.noMessages model
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket model
             UpdateReadCount -> CICN.markRead webSocket model
