@@ -1,17 +1,17 @@
-exports.time = function (ms) {
-    var dateTime = new Date(ms),
-        hours = dateTime.getHours() + '',
-        minutes = dateTime.getMinutes() + '';
+var localDateFormat = new Intl.DateTimeFormat([], { dateStyle: 'short' }),
+    localWeekDayFormat = new Intl.DateTimeFormat([], { weekday: 'short' }),
+    localTimeFormat = new Intl.DateTimeFormat([], { timeStyle: 'short' });
 
-    return hours.padStart(2, '0') +  ':' + minutes.padStart(2, '0');
+exports.time = function (ms) {
+    return localTimeFormat.format(new Date(ms));
 }
 
 exports.dayOfTheWeek = function (ms) {
-    return new Date(ms).toString().split(' ')[0];
+    return localWeekDayFormat.format(new Date(ms));
 }
 
 exports.fullDate = function (ms) {
     var dateTime = new Date(ms);
 
-    return dateTime.toLocaleDateString() + ' ' + dateTime.toLocaleTimeString();
+    return localDateFormat.format(dateTime) + ' ' + localTimeFormat.format(dateTime);
 }
