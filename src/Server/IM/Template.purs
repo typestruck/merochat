@@ -6,7 +6,6 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Now as EN
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.HTML.Attribute as HA

@@ -27,7 +27,8 @@ description,
 (select name from countries where id = country) country,
 (select string_agg(l.name, ','  order by name) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
 (select string_agg(name, '\n' order by name) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
-(select sum(amount) from karma_histories where target = u.id) karma
+(select sum(amount) from karma_histories where target = u.id) karma,
+(select position from karma_leaderboard where karmer = u.id) karma_position
  """
 
 messagePresentationFields :: String
@@ -48,7 +49,7 @@ suggest loggedUserID skip =
      SD.select (Query ("select * from (select" <> userPresentationFields <> "from users u join suggestions s on u.id = suggested where u.id <> $1 and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()")) $ (loggedUserID /\ suggestionsPerPage /\ skip)
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array ContactWrapper)
-presentContacts loggedUserID skip = SD.select (Query ("select distinct date, sender, first_message_date, " <> userPresentationFields <>
+presentContacts loggedUserID skip = SD.select (Query ("select distinct date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
                                       """from users u join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
                                          where not exists (select 1 from blocks where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
                                           order by date desc limit $2 offset $3""")) (loggedUserID /\ contactsPerPage /\ skip)

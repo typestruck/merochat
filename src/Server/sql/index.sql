@@ -106,6 +106,16 @@ create table karma_histories
     constraint target_karma_history foreign key (target) references users(id) on delete cascade
 );
 
+create table karma_leaderboard
+(
+    id integer generated always as identity primary key,
+    karmer integer not null,
+    position integer not null,
+    date timestamp not null default (now() at time zone 'utc'),
+
+    constraint karmer_user foreign key (karmer) references users(id) on delete cascade
+);
+
 create table histories
 (
     id integer generated always as identity primary key,

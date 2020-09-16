@@ -60,28 +60,26 @@ type BasicUser fields = {
       id :: PrimaryKey,
       name :: String,
       headline :: String,
-      description :: String |
+      description :: String,
+      avatar ::  Maybe String,
+      tags :: Array String,
+      karma :: Int,
+      karmaPosition :: Maybe Int |
       fields
 }
 
 type IMUser = (BasicUser (
-      avatar :: Maybe String,
       gender :: Maybe String,
       country :: Maybe String,
       languages :: Array String,
-      tags :: Array String,
-      age :: Maybe Int,
-      karma :: Int
+      age :: Maybe Int
 ))
 
 type ProfileUser = (BasicUser (
-      avatar ::  Maybe String,
       gender :: Maybe Gender,
       country :: Maybe PrimaryKey,
       languages :: Array PrimaryKey,
-      tags :: Array String,
-      birthday :: Maybe DateWrapper,
-      karma :: Int
+      birthday :: Maybe DateWrapper
 ))
 
 data Gender =
@@ -400,13 +398,13 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             foreignDescription,
             foreignCountry,
             foreignLanguages,
-            foreignTags,--REFACTOR: avoid code duplication here and on im types
-            foreignKarma
+            foreignTags,
+            foreignKarma,
+            foreignKarmaPosition
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
             id <- F.readInt foreignID
-            maybeForeignerAvatar <- F.readNull foreignAvatar
             --REFACTOR: all image paths
-            avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString)  maybeForeignerAvatar
+            avatar <- readAvatar foreignAvatar
             name <- F.readString foreignUnread
             maybeForeignerBirthday <- F.readNull foreignBirthday
             birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
@@ -420,8 +418,8 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             foreignIDLanguages <- DM.maybe (pure []) F.readArray maybeLanguages
             languages <- DT.traverse F.readInt  foreignIDLanguages
             karma <- F.readInt foreignKarma
-            maybeTags <- F.readNull foreignTags
-            tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
+            tags <- readTags foreignTags
+            karmaPosition <- readKarmaPosition foreignKarmaPosition
             pure $ ProfileUserWrapper {
                   id,
                   avatar,
@@ -433,7 +431,8 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
                   country,
                   karma,
                   languages,
-                  tags
+                  tags,
+                  karmaPosition
             }
       fromSQLRow _ = Left "missing or extra fields from users table"
 
@@ -449,13 +448,13 @@ instance fromSQLRowResiterLoginUser :: FromSQLRow RegisterLoginUser where
       fromSQLRow _ = Left "missing/extra fields from users table"
 
 instance fromSQLRowIMUserWrapper :: FromSQLRow IMUserWrapper where
-      fromSQLRow= DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept <<< parseIMUserWrapper
+      fromSQLRow = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept <<< parseIMUserWrapper
 
 instance fromSQLRowContact :: FromSQLRow ContactWrapper where
       fromSQLRow [
             _,
             foreignSender,
-            foreignFirstMessageDate,
+            chatAge,
             foreignID,
             foreignAvatar,
             foreignGender,
@@ -466,10 +465,11 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
             foreignCountry,
             foreignLanguages,
             foreignTags,
-            foreignKarma
+            foreignKarma,
+            foreignKarmaPosition
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
             sender <- F.readInt foreignSender
-            firstMessageDate <- DTT.date <$> SDT.readDate foreignFirstMessageDate
+            chatAge <- F.readNumber chatAge
             IMUserWrapper user <- parseIMUserWrapper [
                   foreignID,
                   foreignAvatar,
@@ -481,14 +481,15 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   foreignCountry,
                   foreignLanguages,
                   foreignTags,
-                  foreignKarma
+                  foreignKarma,
+                  foreignKarmaPosition
             ]
             pure $ ContactWrapper {
                   shouldFetchChatHistory: true,
                   history: [],
-                  --REFACTOR: just get this age (and user age) from the database (pg has the function age....)
-                  chatAge: DN.unwrap (DD.diff (EU.unsafePerformEffect ED.nowDate) firstMessageDate :: Days),
                   chatStarter: sender,
+                  --REFACTOR: just get this age (and user age) from the database (pg has the function age....)
+                  chatAge,
                   user
             }
       fromSQLRow _ = Left "missing or extra fields from users table contact projection"
@@ -506,11 +507,11 @@ parseIMUserWrapper =
             foreignCountry,
             foreignLanguages,
             foreignTags,
-            foreignKarma
+            foreignKarma,
+            foreignKarmaPosition
       ] -> do
             id <- F.readInt foreignID
-            maybeForeignerAvatar <- F.readNull foreignAvatar
-            avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
+            avatar <- readAvatar foreignAvatar
             name <- F.readString foreignName
             maybeForeignerBirthday <- F.readNull foreignBirthday
             birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
@@ -520,11 +521,11 @@ parseIMUserWrapper =
             description <- F.readString foreignDescription
             maybeCountry <- F.readNull foreignCountry
             karma <- F.readInt foreignKarma
+            karmaPosition <- readKarmaPosition foreignKarmaPosition
             country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
             maybeLanguages <- F.readNull foreignLanguages
             languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
-            maybeTags <- F.readNull foreignTags
-            tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
+            tags <- readTags foreignTags
             pure $ IMUserWrapper {
                   id,
                   avatar,
@@ -536,9 +537,24 @@ parseIMUserWrapper =
                   karma,
                   country,
                   languages,
-                  tags
+                  tags,
+                  karmaPosition
             }
       _ ->  CME.throwError <<< DLN.singleton $ ForeignError "missing or extra fields from users table imuser projection"
+
+
+readAvatar foreignAvatar = do
+      maybeForeignerAvatar <- F.readNull foreignAvatar
+      DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
+
+readKarmaPosition foreignKarmaPosition = do
+      maybeKarmaPosition <- F.readNull foreignKarmaPosition
+      DM.maybe (pure Nothing) (map Just <<< F.readInt) maybeKarmaPosition
+
+--REFACTOR: just use pg arrays for tags and languages
+readTags foreignTags = do
+      maybeTags <- F.readNull foreignTags
+      DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
 
 instance messageWrapperRowFromSQLRow :: FromSQLRow HistoryMessageWrapper where
       fromSQLRow [

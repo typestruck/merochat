@@ -984,3 +984,7 @@ svg.toolbar-action {
 .invisible {
     visibility: hidden;
 }
+
+.settings-karma {
+    cursor: pointer;
+}
