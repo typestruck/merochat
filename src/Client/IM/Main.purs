@@ -26,6 +26,7 @@ import Data.Maybe as DM
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
+import Effect.Now as EN
 import Effect.Random as ERD
 import Effect.Ref (Ref)
 import Effect.Ref as ER
@@ -52,12 +53,12 @@ import Web.HTML.Window as WHW
 main :: Effect Unit
 main = do
       webSocket <- CIW.createWebSocket
-      --web socket needs to be a ref as any time the connection can closed and recreated by events
+      --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef <- ER.new webSocket
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
-            view: SIV.view,
-            init: [],
+            view: SIV.view true,
+            init: [pure $ Just DisplayLastMessageDates],
             update: update { fileReader, webSocketRef }
       }
 
@@ -96,6 +97,7 @@ update { webSocketRef, fileReader} model  =
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             SetEmoji event -> CIC.setEmoji event model
             --contacts
+            DisplayLastMessageDates -> F.noMessages model
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket model
             UpdateReadCount -> CICN.markRead webSocket model
@@ -162,8 +164,7 @@ setUpWebSocket webSocketRef channel = do
       timerID <- ER.new Nothing
       openListener <- WET.eventListener $ const (do
             CIW.sendPayload webSocket Connect
-            sendChannel ToggleOnline
-            )
+            sendChannel ToggleOnline)
       messageListener <- WET.eventListener $ \event -> do
             maybeID <- ER.read timerID
             DM.maybe (pure unit) (\id -> do

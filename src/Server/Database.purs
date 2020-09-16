@@ -4,32 +4,32 @@ import Prelude
 import Server.Types
 import Shared.Types
 
-import Control.Monad.Error.Class (class MonadThrow)
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
-import Data.Array.Partial as DAA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow, Connection, Pool(..), Query(..), Row1(..))
+import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow, Connection, Pool, Query(..), Row1)
 import Database.PostgreSQL as DP
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Exception as EE
-import Partial.Unsafe as PU
 import Run as R
 import Run.Reader as RR
 import Shared.Unsafe as SU
 
+--this makes pg interpret bigints as ints (since we don't use them) and dates as Number (to be used as epoch)
+foreign import setUpConversions :: Effect Unit
+
 newPool ∷ Effect Pool
-newPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {
-      user = Just "melanchat",
-      idleTimeoutMillis = Just 1000
-}
+newPool = do
+      setUpConversions
+      DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {
+            user = Just "melanchat",
+            idleTimeoutMillis = Just 1000
+      }
 
 insert :: forall r query parameters value. ToSQLRow value => Query query parameters -> value -> BaseEffect { pool :: Pool | r } PrimaryKey
 insert query parameters = withConnection (insertReturnID query parameters)

@@ -6,6 +6,7 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Now as EN
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.HTML.Attribute as HA
@@ -13,7 +14,6 @@ import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.View as SIV
-
 
 template :: {
       contacts :: Array Contact,
@@ -26,7 +26,7 @@ template {contacts, suggestions, user} = do
             css = css
       }
       F.preMount (QuerySelector ".im") {
-            view: \model' -> ST.templateWith $ parameters { content = [SIV.view model'] },
+            view: \model' -> ST.templateWith $ parameters { content = [SIV.view false model'] },
             init: {
                   chatting: Nothing,
                   temporaryID: 0,

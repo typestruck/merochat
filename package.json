@@ -21,7 +21,6 @@
     "marked": "^1.1.1",
     "nodemailer": "^6.4.11",
     "pg": "^8.3.3",
-    "pg-native": "^3.0.0",
     "purty": "^6.2.0",
     "snabbdom": "^0.7.3",
     "snabbdom-to-html": "^5.1.1",

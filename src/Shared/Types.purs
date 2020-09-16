@@ -4,23 +4,24 @@ import Prelude
 
 import Control.Monad.Except (Except)
 import Control.Monad.Except as CME
-import Data.Argonaut.Core (Json)
+import Data.Argonaut.Core as DAC
+import Data.Argonaut.Core as DAP
 import Data.Argonaut.Decode (class DecodeJson)
+import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
 import Data.Date as DD
-import Data.DateTime (Date, DateTime(..), Time(..))
+import Data.DateTime (Date, DateTime)
+import Data.DateTime as DTT
+import Data.DateTime.Instant as DDI
 import Data.Either (Either(..))
 import Data.Either as DET
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
-import Data.Int as DIN
-import Data.JSDate (JSDate)
-import Data.JSDate as DJ
 import Data.List.NonEmpty (NonEmptyList)
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
@@ -32,28 +33,26 @@ import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
 import Data.Time.Duration (Days)
+import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
-import Debug.Trace (spy)
 import Effect.Now as ED
 import Effect.Unsafe as EU
 import Flame (Key)
-import Foreign (F, Foreign, ForeignError(..))
+import Foreign (Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
+import Global as G
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime as SDT
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
-import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
 foreign import data Trie :: Type
-
-foreign import fromJSDate :: JSDate -> Json
 
 type NoBody = {}
 
@@ -250,6 +249,7 @@ data IMMessage =
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
       --contact
+      DisplayLastMessageDates |
       MarkAsRead |
       ResumeChat PrimaryKey |
       UpdateReadCount |
@@ -410,7 +410,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString)  maybeForeignerAvatar
             name <- F.readString foreignUnread
             maybeForeignerBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
+            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map DSR.read <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
@@ -470,7 +470,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
             foreignKarma
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
             sender <- F.readInt foreignSender
-            firstMessageDate <- SU.fromJust <<< DJ.toDate <$> DJ.readDate foreignFirstMessageDate
+            firstMessageDate <- DTT.date <$> SDT.readDate foreignFirstMessageDate
             IMUserWrapper user <- parseIMUserWrapper [
                   foreignID,
                   foreignAvatar,
@@ -514,7 +514,7 @@ parseIMUserWrapper =
             avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
             name <- F.readString foreignName
             maybeForeignerBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map DJ.toDate <<< DJ.readDate) maybeForeignerBirthday
+            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
@@ -553,7 +553,7 @@ instance messageWrapperRowFromSQLRow :: FromSQLRow HistoryMessageWrapper where
           id <- F.readInt foreignID
           sender <- F.readInt foreignSender
           recipient <- F.readInt foreignRecipient
-          date <- DateTimeWrapper <<< SU.fromJust <<< DJ.toDateTime <$> DJ.readDate foreignDate
+          date <- DateTimeWrapper <$> SDT.readDate foreignDate
           content <- F.readString foreignContent
           status <- SU.fromJust <<< DE.toEnum <$> F.readInt foreignStatus
           pure $ HistoryMessageWrapper { id, sender, recipient, date, content, status }
@@ -561,20 +561,20 @@ instance messageWrapperRowFromSQLRow :: FromSQLRow HistoryMessageWrapper where
 
 --there is nothing simple about using purescript-simple-json with types other than record
 instance writeForeignMDateTime :: WriteForeign DateTimeWrapper where
-      writeImpl (DateTimeWrapper dateTime) = F.unsafeToForeign $ SDT.formatDateTime dateTime
+      writeImpl = F.unsafeToForeign <<< SDT.dateTimeToNumber
 instance writeForeignMessageStatus :: WriteForeign MessageStatus where
       writeImpl messageStatus = F.unsafeToForeign $ DE.fromEnum messageStatus
 instance writeForeignGender :: WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
 instance writeForeignMDate :: WriteForeign DateWrapper where
-      writeImpl (DateWrapper date) = F.unsafeToForeign $ SDT.formatDate date
+      writeImpl = F.unsafeToForeign <<< SDT.dateToNumber
 
 instance readForeignMDatee :: ReadForeign DateWrapper where
-      readImpl date = DateWrapper <<< SU.fromRight <<< SDT.unformatDate <$> F.readString date
+      readImpl foreignDate = DateWrapper <<< DTT.date <<<  DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
 instance readForeignMDateTime :: ReadForeign DateTimeWrapper where
-      readImpl dateTime = DateTimeWrapper <<< SU.fromRight <<< SDT.unformatDateTime <$> F.readString dateTime
+      readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
 instance readForeignGender :: ReadForeign Gender where
-      readImpl value = SU.fromJust <<< DSR.read <$> F.readString value
+      readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
 instance readForeignMessageStatus :: ReadForeign MessageStatus where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
 
@@ -588,7 +588,7 @@ instance decodeQueryMDateTime :: DecodeQueryParam DateTimeWrapper where
       decodeQueryParam query key =
             case FO.lookup key query of
                   Nothing -> Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [value] -> DET.either (const (errorDecoding query key)) (Right <<< DateTimeWrapper) $ SDT.unformatDateTime value
+                  Just [value] -> DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DDI.instant <<< DTD.Milliseconds $ G.readFloat value
                   _ -> errorDecoding query key
 
 errorDecoding :: forall a. Object (Array String) -> String -> Either DecodeError a
@@ -600,7 +600,7 @@ errorDecoding queryObj key = Left $ QueryDecodeError {
 }
 
 instance encodeQueryParamMDateTime :: EncodeQueryParam DateTimeWrapper where
-      encodeQueryParam = Just <<< SDT.formatDateTime <<< DN.unwrap
+      encodeQueryParam = Just <<< show <<< SDT.dateTimeToNumber
 instance encodeQueryGenerate :: EncodeQueryParam Generate where
       encodeQueryParam = Just <<< show
 
@@ -639,9 +639,9 @@ instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
 instance encodeJsonGender :: EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMDateTime :: EncodeJson DateTimeWrapper where
-      encodeJson (DateTimeWrapper dateTime) = fromJSDate $ DJ.fromDateTime dateTime
+      encodeJson = DAC.fromNumber <<< SDT.dateTimeToNumber
 instance encodeJsonMDate :: EncodeJson DateWrapper where
-      encodeJson (DateWrapper date) = fromJSDate <<< DJ.fromDateTime <<< DateTime date $ Time (SU.fromJust $ DE.toEnum 0) (SU.fromJust $ DE.toEnum 0) (SU.fromJust $ DE.toEnum 0) (SU.fromJust $ DE.toEnum 0)
+      encodeJson = DAC.fromNumber <<< SDT.dateToNumber
 instance encodeJsonWebSocketPayloadServer :: EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageContent :: EncodeJson MessageContent where
@@ -654,13 +654,9 @@ instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
 instance decodeJsonGender :: DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMDateTime :: DecodeJson DateTimeWrapper where
-      decodeJson json = Right <<< DateTimeWrapper <<< SU.fromJust <<< DJ.toDateTime <<< EU.unsafePerformEffect $ DJ.parse jsonString
-          where jsonString :: String
-                jsonString = UC.unsafeCoerce json
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldnt parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 instance decodeJsonMDate :: DecodeJson DateWrapper where
-      decodeJson json = Right <<< DateWrapper <<< SU.fromJust <<< DJ.toDate <<< EU.unsafePerformEffect $ DJ.parse jsonString
-          where jsonString :: String
-                jsonString = UC.unsafeCoerce json
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldnt parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where

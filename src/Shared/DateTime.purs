@@ -4,24 +4,30 @@ import Prelude
 
 import Data.Date as DD
 import Data.DateTime (Date, DateTime(..), Time(..))
-import Data.DateTime as DT
-import Data.Either (Either)
+import Data.DateTime as DDT
+import Data.DateTime.Instant as DDI
 import Data.Enum as DE
-import Data.Formatter.DateTime (FormatterCommand(..))
-import Data.Formatter.DateTime as DFD
+import Data.Function.Uncurried (Fn6)
+import Data.Function.Uncurried as DFU
+import Data.Int as DI
 import Data.Int as DIN
-import Data.List (List)
-import Data.List as DL
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Time.Duration (Days(..))
+import Data.Time.Duration as DTD
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
+import Foreign (Foreign, ForeignError(..), F)
+import Foreign as F
 import Shared.Unsafe as SU
 
---this will yield a wrong result in some cases, but I guess it is fair for a ASL field
+foreign import time :: Number -> String
+foreign import dayOfTheWeek :: Number -> String
+foreign import fullDate :: Number -> String
+
+--REFACTOR: take now as parameter
 ageFrom :: Maybe Date -> Maybe Int
 ageFrom birthday = fromDays <<< DD.diff now <$> birthday
       where now = EU.unsafePerformEffect EN.nowDate
@@ -42,23 +48,47 @@ getMonth = DE.fromEnum <<< DD.month <<< DN.unwrap
 getDay :: forall t56. Newtype t56 Date => t56 -> Int
 getDay = DE.fromEnum <<< DD.day <<< DN.unwrap
 
-dateFormat :: List FormatterCommand
-dateFormat = DL.singleton UnixTimestamp
-
-formatDateTime :: DateTime -> String
-formatDateTime = DFD.format dateFormat
-
-unformatDateTime :: String -> Either String DateTime
-unformatDateTime = DFD.unformat dateFormat
-
-formatDate :: Date -> String
-formatDate date = DFD.format dateFormat $ DateTime date zeroTime
-
-unformatDate :: String -> Either String Date
-unformatDate value = DT.date <$> DFD.unformat dateFormat value
-
 epoch :: DateTime
 epoch = DateTime (DD.canonicalDate (SU.toEnum 3000) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
 
 zeroTime :: Time
 zeroTime = Time (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0)
+
+readDate :: Foreign -> F DateTime
+readDate foreignDateTime = do
+      milliseconds <- F.readNumber foreignDateTime
+      case DDI.instant $ DTD.Milliseconds milliseconds of
+            Nothing -> F.fail $ ForeignError "could not parse datetime"
+            Just instant -> pure $ DDI.toDateTime instant
+
+dateToNumber :: forall n. Newtype n Date => n -> Number
+dateToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDate <<< DN.unwrap
+
+dateTimeToNumber :: forall n. Newtype n DateTime => n -> Number
+dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwrap
+
+--same day
+--    hh:mm
+--yesterday
+--    yesterday, HH:mm
+--same week
+--    day of week, HH:mm
+--otherwise
+--    mdy hh:mm
+ago :: DateTime -> String
+ago dateTime =
+      let days = DI.ceil $ DN.unwrap (DDT.diff now dateTime :: Days)
+      in
+            if days == 0 then
+                  localDateTimeWith time dateTime
+             else if days == 1 then
+                  "Yesterday " <> localDateTimeWith time dateTime
+             else if days >= 2 && days <= 7 then
+                  localDateTimeWith  dayOfTheWeek dateTime <> " " <> localDateTimeWith time dateTime
+             else
+                  localDateTimeWith fullDate dateTime
+      where now :: DateTime
+            now = EU.unsafePerformEffect EN.nowDateTime
+
+localDateTimeWith :: _ -> DateTime -> String
+localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime

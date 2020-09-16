@@ -88,7 +88,7 @@ tests = do
                                 }
                                 RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
                                 --REFACTOR: starting karma amount should be in options
-                                count <- SD.scalar' (Query "select cast(count(1) as integer) from karma_histories where target = $1 and amount = 5") $ Row1 id
+                                count <- SD.scalar' (Query "select count(1) from karma_histories where target = $1 and amount = 5") $ Row1 id
                                 R.liftAff $ TUA.equal 1 count
 
 

@@ -119,6 +119,7 @@ body {
 .avatar-contact-list-div {
     min-width: 64px;
     min-height: 64px;
+    align-self: center;
 }
 
 .avatar-contact-list, .avatar-settings {
@@ -163,9 +164,10 @@ body {
 }
 
 .contact {
-    align-items: center;
+    align-items: baseline;
     cursor: pointer;
     padding: 15px;
+
 }
 
 .chatting {
@@ -421,6 +423,7 @@ body {
 .contact-profile {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     min-width: 0;
 }
 
@@ -442,11 +445,6 @@ img.emoji {
 
 .inline {
     display: inline;
-}
-
-.search-options {
-    text-align: right;
-    width: 10%;
 }
 
 .svg-top {
@@ -977,4 +975,12 @@ svg.toolbar-action {
 
 .outer-user-menu {
     position: relative;
+}
+
+.contact-options {
+
+}
+
+.invisible {
+    visibility: hidden;
 }

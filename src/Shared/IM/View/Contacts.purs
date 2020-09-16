@@ -3,22 +3,23 @@ module Shared.IM.View.Contacts where
 import Prelude
 import Shared.Types
 
-import Control.Alt ((<|>))
 import Data.Array as DA
+import Data.DateTime (DateTime)
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype as DN
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.Renderer.Hook as FRH
 import Shared.Avatar as SA
+import Shared.DateTime as SD
 import Shared.Markdown as SM
+import Shared.Unsafe as SU
 
-
-contactList :: IMModel -> Html IMMessage
-contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts,  HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
+contactList :: Boolean -> IMModel -> Html IMMessage
+contactList displayLastMessageDates { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDates contacts
       where getDate history = do
                   { date: DateTimeWrapper md } <- DA.last history
                   pure md
@@ -41,7 +42,8 @@ contactList { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll C
                              -- HE.br,
                               HE.div' [HA.class' "contact-list-last-message", HA.innerHTML (lastMessage history)]
                         ],
-                        HE.div (HA.class' "menu-button chat-options") [
+                        HE.div (HA.class' "contact-options") [
+                              HE.span (HA.class' { "duller": true, "invisible": not displayLastMessageDates }) <<< HE.text <<< SD.ago <<< DN.unwrap <<< _.date <<< SU.fromJust $ DA.last history ,
                               HE.text $ showUnreadCount history
                               -- HE.a (HA.class' "menu-button") $
                               --       HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $

@@ -27,11 +27,11 @@ description,
 (select name from countries where id = country) country,
 (select string_agg(l.name, ','  order by name) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
 (select string_agg(name, '\n' order by name) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
-(select cast(sum(amount) as integer) from karma_histories where target = u.id) karma
+(select sum(amount) from karma_histories where target = u.id) karma
  """
 
 messagePresentationFields :: String
-messagePresentationFields = " id, sender, recipient, date, content, status "
+messagePresentationFields = " id, sender, recipient, date date, content, status "
 
 presentUserQuery :: forall p v. Query p v
 presentUserQuery = Query ("select" <> userPresentationFields <> "from users u where id = $1")

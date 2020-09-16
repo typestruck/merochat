@@ -12,19 +12,20 @@ import Data.HashMap as DH
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
-import Server.Response as SR
 import Data.Tuple (Tuple(..))
 import Data.UUID as DU
 import Database.PostgreSQL (Pool)
+import Debug.Trace (spy)
 import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
-import Shared.Options.File (allowedMediaTypes, maxImageSize)
 import Server.IM.Database as SID
 import Server.Ok (ok)
+import Server.Response as SR
 import Server.Wheel as SW
 import Shared.Newtype as SN
+import Shared.Options.File (allowedMediaTypes, maxImageSize)
 import Shared.Unsafe as SU
 
 foreign import sanitize :: String -> String
