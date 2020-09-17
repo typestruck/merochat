@@ -30,10 +30,4 @@ createToken id = do
       NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show id)
 
 userIDFromToken :: String -> String -> Effect (Maybe PrimaryKey)
-userIDFromToken secret = map (DE.either (const Nothing) parseInt53) <<< NSJ.decode secret <<< NSJ.fromString
-      where parseInt53 input = do
-                  --so glad we dont have to do if err != nil
-                  matched <- DSR.match (DSSU.unsafeRegex "(Int53 (\\d+))" noFlags) input
-                  position <- DAN.index matched 2
-                  match <- position
-                  DI.fromString match
+userIDFromToken secret = map (DE.either (const Nothing) DI.fromString) <<< NSJ.decode secret <<< NSJ.fromString
