@@ -14,10 +14,10 @@ userMenu :: IMModel -> Html IMMessage
 userMenu { user: { name, avatar, karma, karmaPosition }, userContextMenuVisible } =  HE.div [HA.id "settings", HA.class' "settings"][
       HE.a [HA.onClick (ToggleProfileSettings ShowProfile)] $ HE.img [HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
       HE.div [HA.class' "settings-name"] [
-            HE.div (HA.class' "settings-karma", HA.title "See karma leaderboard") [
+            HE.div [HA.class' "settings-karma", HA.onClick ToggleKarmaLeaderBoard, HA.title "See karma leaderboard"] [
                   HE.span [HA.class' "karma-number"] $ show karma,
                   HE.span [HA.class' "karma-text"] " karma ",
-                  HE.span_ $ DM.maybe "" (\kp -> "(#" <> show kp <> ")")  karmaPosition
+                  HE.span_ $ "(#" <> show karmaPosition <> ")"
             ]
       ],
       HE.div [HA.class' "outer-user-menu"] [
@@ -34,6 +34,10 @@ userMenu { user: { name, avatar, karma, karmaPosition }, userContextMenuVisible 
                   HE.div [HA.class' "user-menu-item", HA.onClick (ToggleProfileSettings ShowSettings)] [
                         HE.div (HA.class' "menu-item-heading") "Settings",
                         HE.span (HA.class' "duller") "Change email, password, etc"
+                  ],
+                  HE.div [HA.class' "user-menu-item", HA.onClick ToggleKarmaLeaderBoard] [
+                        HE.div (HA.class' "menu-item-heading") "Karma leaderboard",
+                        HE.span (HA.class' "duller") "See your karma rank and stats"
                   ],
                   HE.a [HA.class' "user-menu-item", HA.href $ routes.help {}, HA.target "_blank" ] [
                         HE.div (HA.class' "menu-item-heading") "Help",

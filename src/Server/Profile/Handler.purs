@@ -1,17 +1,14 @@
 module  Server.Profile.Handler where
 
-
 import Prelude
 import Server.Types
 import Shared.Types
 
-import Data.Array as DA
 import Data.Newtype as DN
 import Run as R
 import Server.Profile.Action as SPA
 import Server.Profile.Database as SPD
 import Server.Profile.Template as SPT
-import Server.Response as SR
 
 profile :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect String
 profile { guards: { loggedUserID } } = do

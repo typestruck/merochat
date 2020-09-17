@@ -39,6 +39,7 @@ template {contacts, suggestions, user} = do
                   linkText: Nothing,
                   linkFormVisible: false,
                   fullContactProfileVisible: false,
+                  displayKarmaLeaderboard: false,
                   freeToFetchContactList: true,
                   shouldSendMessage: false,
                   userContextMenuVisible: false,

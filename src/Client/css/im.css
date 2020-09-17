@@ -389,7 +389,7 @@ body {
 
 .sender-message {
     flex-flow: row-reverse;
-    /* margin-left: auto; */
+
     align-self: flex-end;
 }
 
@@ -397,7 +397,7 @@ body {
     margin-left: 10px;
 }
 
-.profile-settings-placeholder {
+.modal-placeholder {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -684,13 +684,13 @@ svg.toolbar-action {
     margin-bottom: 10px;
 }
 
-.profile-settings-menu {
+.modal-menu {
     display: flex;
     flex-flow: column;
     font-size: 1.3em;
 }
 
-.profile-settings-menu div {
+.modal-menu div {
     cursor: pointer;
 }
 

@@ -12,12 +12,10 @@ import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
-import Data.Date as DD
 import Data.DateTime (Date, DateTime)
 import Data.DateTime as DTT
 import Data.DateTime.Instant as DDI
 import Data.Either (Either(..))
-import Data.Either as DET
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
@@ -27,20 +25,16 @@ import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
-import Data.Time.Duration (Days)
 import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
-import Effect.Now as ED
-import Effect.Unsafe as EU
 import Flame (Key)
-import Foreign (Foreign, ForeignError(..))
+import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
@@ -61,10 +55,10 @@ type BasicUser fields = {
       name :: String,
       headline :: String,
       description :: String,
-      avatar ::  Maybe String,
+      avatar :: Maybe String,
       tags :: Array String,
       karma :: Int,
-      karmaPosition :: Maybe Int |
+      karmaPosition :: Int |
       fields
 }
 
@@ -197,6 +191,7 @@ type IM = (
       --visibility switches
       fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
+      displayKarmaLeaderboard :: Boolean,
       profileSettingsToggle :: ProfileSettingsToggle,
       isPreviewing :: Boolean,
       emojisVisible :: Boolean,
@@ -243,6 +238,7 @@ data IMMessage =
       ConfirmLogout |
       ShowUserContextMenu Event |
       Logout Boolean |
+      ToggleKarmaLeaderBoard |
       ToggleProfileSettings ProfileSettingsToggle |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
@@ -406,8 +402,8 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             --REFACTOR: all image paths
             avatar <- readAvatar foreignAvatar
             name <- F.readString foreignUnread
-            maybeForeignerBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
+            maybeForeignBirthday <- F.readNull foreignBirthday
+            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignBirthday
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map DSR.read <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
@@ -419,7 +415,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             languages <- DT.traverse F.readInt  foreignIDLanguages
             karma <- F.readInt foreignKarma
             tags <- readTags foreignTags
-            karmaPosition <- readKarmaPosition foreignKarmaPosition
+            karmaPosition <- F.readInt foreignKarmaPosition
             pure $ ProfileUserWrapper {
                   id,
                   avatar,
@@ -458,7 +454,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
             foreignID,
             foreignAvatar,
             foreignGender,
-            foreignBirthday,
+            foreignAge,
             foreignName,
             foreignHeadline,
             foreignDescription,
@@ -474,7 +470,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   foreignID,
                   foreignAvatar,
                   foreignGender,
-                  foreignBirthday,
+                  foreignAge,
                   foreignName,
                   foreignHeadline,
                   foreignDescription,
@@ -488,19 +484,18 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   shouldFetchChatHistory: true,
                   history: [],
                   chatStarter: sender,
-                  --REFACTOR: just get this age (and user age) from the database (pg has the function age....)
                   chatAge,
                   user
             }
       fromSQLRow _ = Left "missing or extra fields from users table contact projection"
 
-parseIMUserWrapper :: Array Foreign -> Except (NonEmptyList ForeignError) IMUserWrapper
+parseIMUserWrapper :: Array Foreign -> F IMUserWrapper
 parseIMUserWrapper =
       case _ of
       [     foreignID,
             foreignAvatar,
             foreignGender,
-            foreignBirthday,
+            foreignAge,
             foreignName,
             foreignHeadline,
             foreignDescription,
@@ -513,15 +508,14 @@ parseIMUserWrapper =
             id <- F.readInt foreignID
             avatar <- readAvatar foreignAvatar
             name <- F.readString foreignName
-            maybeForeignerBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
+            age <- readAge foreignAge
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
             description <- F.readString foreignDescription
             maybeCountry <- F.readNull foreignCountry
             karma <- F.readInt foreignKarma
-            karmaPosition <- readKarmaPosition foreignKarmaPosition
+            karmaPosition <- F.readInt foreignKarmaPosition
             country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
             maybeLanguages <- F.readNull foreignLanguages
             languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
@@ -530,7 +524,7 @@ parseIMUserWrapper =
                   id,
                   avatar,
                   name,
-                  age: SDT.ageFrom birthday,
+                  age,
                   gender,
                   headline,
                   description,
@@ -543,13 +537,15 @@ parseIMUserWrapper =
       _ ->  CME.throwError <<< DLN.singleton $ ForeignError "missing or extra fields from users table imuser projection"
 
 
-readAvatar foreignAvatar = do
-      maybeForeignerAvatar <- F.readNull foreignAvatar
-      DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
+readAge :: Foreign -> F (Maybe Int)
+readAge foreignAge = do
+      maybeForeignAge <- F.readNull foreignAge
+      DM.maybe (pure Nothing) (map Just <<< F.readInt) maybeForeignAge
 
-readKarmaPosition foreignKarmaPosition = do
-      maybeKarmaPosition <- F.readNull foreignKarmaPosition
-      DM.maybe (pure Nothing) (map Just <<< F.readInt) maybeKarmaPosition
+readAvatar :: Foreign -> F (Maybe String)
+readAvatar foreignAvatar = do
+      maybeForeignAvatar <- F.readNull foreignAvatar
+      DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignAvatar
 
 --REFACTOR: just use pg arrays for tags and languages
 readTags foreignTags = do

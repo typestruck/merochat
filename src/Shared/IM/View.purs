@@ -13,20 +13,22 @@ import Shared.IM.Contact as SIC
 import Shared.IM.View.Chat as SIVC
 import Shared.IM.View.Contacts as SIVCN
 import Shared.IM.View.History as SIVH
+import Shared.IM.View.Leaderboard as SIVL
 import Shared.IM.View.Profile as SIVS
 import Shared.IM.View.ProfileSettings as SIVP
 import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 
 view :: Boolean -> IMModel -> Html IMMessage
-view displayLastMessageDates model@{ suggestions, suggesting, chatting, contacts, profileSettingsToggle } = HE.div (HA.class' "im") [
+view displayLastMessageDates model@{ displayKarmaLeaderboard, suggestions, suggesting, chatting, contacts, profileSettingsToggle } = HE.div (HA.class' "im") [
       HE.div (HA.class' "left-box") [
             SIVU.userMenu model,
             search model,
             SIVCN.contactList displayLastMessageDates model ,
             logo,
 
-            SIVP.profileSettings profileSettingsToggle
+            SIVP.profileSettings profileSettingsToggle,
+            SIVL.leaderboard displayKarmaLeaderboard
       ],
       HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
             SIVS.profile model,

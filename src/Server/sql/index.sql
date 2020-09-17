@@ -109,11 +109,13 @@ create table karma_histories
 create table karma_leaderboard
 (
     id integer generated always as identity primary key,
-    karmer integer not null,
+    ranker integer not null,
     position integer not null,
+    current_karma integer not null,
+    gained integer not null,
     date timestamp not null default (now() at time zone 'utc'),
 
-    constraint karmer_user foreign key (karmer) references users(id) on delete cascade
+    constraint ranker_user foreign key (ranker) references users(id) on delete cascade
 );
 
 create table histories

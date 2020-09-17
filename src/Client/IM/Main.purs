@@ -121,6 +121,7 @@ update { webSocketRef, fileReader} model  =
             ToggleProfileSettings toggle -> CIU.toggleProfileSettings toggle model
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
+            ToggleKarmaLeaderBoard -> CIU.toggleKarmaLeaderboard model
             --main
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
