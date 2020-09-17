@@ -22,10 +22,14 @@ description,
 country,
 (select array_agg(l.id) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
 (select string_agg(name, '\n' order by name) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
-(select sum(amount) from karma_histories where target = u.id) karma """
+k.current_karma karma,
+k.position """
+
+usersTable :: String
+usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 
 presentProfile :: PrimaryKey -> ServerEffect ProfileUserWrapper
-presentProfile loggedUserID = SD.single' (Query $ "select" <> profilePresentationFields <> "from users u where id = $1") $ Row1 loggedUserID
+presentProfile loggedUserID = SD.single' (Query $ "select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = $1") $ Row1 loggedUserID
 
 presentCountries :: ServerEffect (Array (Tuple PrimaryKey String))
 presentCountries = SD.select (Query "select id, name from countries order by name") Row0

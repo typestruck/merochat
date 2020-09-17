@@ -12,12 +12,10 @@ import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
 import Data.Bifunctor as DB
-import Data.Date as DD
 import Data.DateTime (Date, DateTime)
 import Data.DateTime as DTT
 import Data.DateTime.Instant as DDI
 import Data.Either (Either(..))
-import Data.Either as DET
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
@@ -27,20 +25,16 @@ import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
-import Data.Time.Duration (Days)
 import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
-import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
-import Effect.Now as ED
-import Effect.Unsafe as EU
+import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, fromSQLRow)
 import Flame (Key)
-import Foreign (Foreign, ForeignError(..))
+import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
@@ -60,28 +54,26 @@ type BasicUser fields = {
       id :: PrimaryKey,
       name :: String,
       headline :: String,
-      description :: String |
+      description :: String,
+      avatar :: Maybe String,
+      tags :: Array String,
+      karma :: Int,
+      karmaPosition :: Int |
       fields
 }
 
 type IMUser = (BasicUser (
-      avatar :: Maybe String,
       gender :: Maybe String,
       country :: Maybe String,
       languages :: Array String,
-      tags :: Array String,
-      age :: Maybe Int,
-      karma :: Int
+      age :: Maybe Int
 ))
 
 type ProfileUser = (BasicUser (
-      avatar ::  Maybe String,
       gender :: Maybe Gender,
       country :: Maybe PrimaryKey,
       languages :: Array PrimaryKey,
-      tags :: Array String,
-      birthday :: Maybe DateWrapper,
-      karma :: Int
+      birthday :: Maybe DateWrapper
 ))
 
 data Gender =
@@ -168,6 +160,15 @@ data MessageStatus =
       Unread |
       Read
 
+type LeaderboardUser = {
+      position :: Int,
+      karma :: Int,
+      avatar :: Maybe String,
+      name :: String
+}
+
+newtype LeaderboardUserWrapper = LeaderboardUserWrapper LeaderboardUser
+
 newtype IMUserWrapper = IMUserWrapper IMUser
 
 newtype ContactWrapper = ContactWrapper Contact
@@ -199,6 +200,7 @@ type IM = (
       --visibility switches
       fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
+      displayKarmaLeaderboard :: Boolean,
       profileSettingsToggle :: ProfileSettingsToggle,
       isPreviewing :: Boolean,
       emojisVisible :: Boolean,
@@ -245,6 +247,7 @@ data IMMessage =
       ConfirmLogout |
       ShowUserContextMenu Event |
       Logout Boolean |
+      ToggleKarmaLeaderBoard |
       ToggleProfileSettings ProfileSettingsToggle |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
@@ -363,6 +366,21 @@ data SettingsMessage =
       ChangePassword |
       TerminateAccount --very bad
 
+data ToggleBoard =
+      InBetween10 |
+      Top10
+
+type LeaderboardModel = {
+      top10 :: Array LeaderboardUser,
+      inBetween10 :: Array LeaderboardUser,
+      userPosition :: Int,
+      toggleBoard :: ToggleBoard
+}
+
+data LeaderboardMessage =
+      ToggleBoardDisplay ToggleBoard
+
+derive instance genericToggleBoard :: Generic ToggleBoard _
 derive instance genericMessageStatus :: Generic MessageStatus _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
@@ -376,6 +394,7 @@ derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer 
 derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
+derive instance newtypeLeaderboardUserWrapper :: Newtype LeaderboardUserWrapper _
 derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
 derive instance newtypeMDate :: Newtype DateWrapper _
 derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
@@ -385,9 +404,27 @@ derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 derive instance eqGenerate :: Eq Generate
 derive instance eqMDateTime :: Eq DateTimeWrapper
 derive instance eqMDate :: Eq DateWrapper
+derive instance eqToggleBoard :: Eq ToggleBoard
 derive instance eqGender :: Eq Gender
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
+
+instance fromSQLRowLeaderboardUserWrapper :: FromSQLRow LeaderboardUserWrapper where
+      fromSQLRow =
+            case _ of
+                  [foreignName, foreignAvatar, foreignPosition, foreignKarma] -> DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+                        name <- F.readString foreignName
+                        position <- F.readInt foreignPosition
+                        karma <- F.readInt foreignKarma
+                        avatar <- readAvatar foreignAvatar
+                        pure $ LeaderboardUserWrapper {
+                              position,
+                              karma,
+                              avatar,
+                              name
+                        }
+
+                  _ -> Left "missing or extra fields for karma user"
 
 instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
       fromSQLRow [
@@ -400,16 +437,16 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             foreignDescription,
             foreignCountry,
             foreignLanguages,
-            foreignTags,--REFACTOR: avoid code duplication here and on im types
-            foreignKarma
+            foreignTags,
+            foreignKarma,
+            foreignKarmaPosition
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
             id <- F.readInt foreignID
-            maybeForeignerAvatar <- F.readNull foreignAvatar
             --REFACTOR: all image paths
-            avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString)  maybeForeignerAvatar
+            avatar <- readAvatar foreignAvatar
             name <- F.readString foreignUnread
-            maybeForeignerBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
+            maybeForeignBirthday <- F.readNull foreignBirthday
+            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignBirthday
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map DSR.read <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
@@ -420,8 +457,8 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             foreignIDLanguages <- DM.maybe (pure []) F.readArray maybeLanguages
             languages <- DT.traverse F.readInt  foreignIDLanguages
             karma <- F.readInt foreignKarma
-            maybeTags <- F.readNull foreignTags
-            tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
+            tags <- readTags foreignTags
+            karmaPosition <- F.readInt foreignKarmaPosition
             pure $ ProfileUserWrapper {
                   id,
                   avatar,
@@ -433,7 +470,8 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
                   country,
                   karma,
                   languages,
-                  tags
+                  tags,
+                  karmaPosition
             }
       fromSQLRow _ = Left "missing or extra fields from users table"
 
@@ -449,96 +487,113 @@ instance fromSQLRowResiterLoginUser :: FromSQLRow RegisterLoginUser where
       fromSQLRow _ = Left "missing/extra fields from users table"
 
 instance fromSQLRowIMUserWrapper :: FromSQLRow IMUserWrapper where
-      fromSQLRow= DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept <<< parseIMUserWrapper
+      fromSQLRow = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept <<< parseIMUserWrapper
 
 instance fromSQLRowContact :: FromSQLRow ContactWrapper where
       fromSQLRow [
             _,
             foreignSender,
-            foreignFirstMessageDate,
+            chatAge,
             foreignID,
             foreignAvatar,
             foreignGender,
-            foreignBirthday,
+            foreignAge,
             foreignName,
             foreignHeadline,
             foreignDescription,
             foreignCountry,
             foreignLanguages,
             foreignTags,
-            foreignKarma
+            foreignKarma,
+            foreignKarmaPosition
       ] = DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
             sender <- F.readInt foreignSender
-            firstMessageDate <- DTT.date <$> SDT.readDate foreignFirstMessageDate
+            chatAge <- F.readNumber chatAge
             IMUserWrapper user <- parseIMUserWrapper [
                   foreignID,
                   foreignAvatar,
                   foreignGender,
-                  foreignBirthday,
+                  foreignAge,
                   foreignName,
                   foreignHeadline,
                   foreignDescription,
                   foreignCountry,
                   foreignLanguages,
                   foreignTags,
-                  foreignKarma
+                  foreignKarma,
+                  foreignKarmaPosition
             ]
             pure $ ContactWrapper {
                   shouldFetchChatHistory: true,
                   history: [],
-                  --REFACTOR: just get this age (and user age) from the database (pg has the function age....)
-                  chatAge: DN.unwrap (DD.diff (EU.unsafePerformEffect ED.nowDate) firstMessageDate :: Days),
                   chatStarter: sender,
+                  chatAge,
                   user
             }
       fromSQLRow _ = Left "missing or extra fields from users table contact projection"
 
-parseIMUserWrapper :: Array Foreign -> Except (NonEmptyList ForeignError) IMUserWrapper
+parseIMUserWrapper :: Array Foreign -> F IMUserWrapper
 parseIMUserWrapper =
       case _ of
       [     foreignID,
             foreignAvatar,
             foreignGender,
-            foreignBirthday,
+            foreignAge,
             foreignName,
             foreignHeadline,
             foreignDescription,
             foreignCountry,
             foreignLanguages,
             foreignTags,
-            foreignKarma
+            foreignKarma,
+            foreignKarmaPosition
       ] -> do
             id <- F.readInt foreignID
-            maybeForeignerAvatar <- F.readNull foreignAvatar
-            avatar <- DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignerAvatar
+            avatar <- readAvatar foreignAvatar
             name <- F.readString foreignName
-            maybeForeignerBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignerBirthday
+            age <- readAge foreignAge
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
             description <- F.readString foreignDescription
             maybeCountry <- F.readNull foreignCountry
             karma <- F.readInt foreignKarma
+            karmaPosition <- F.readInt foreignKarmaPosition
             country <- DM.maybe (pure Nothing) (map Just <<< F.readString) maybeCountry
             maybeLanguages <- F.readNull foreignLanguages
             languages <- DM.maybe (pure []) (map (DS.split (Pattern ",")) <<< F.readString) maybeLanguages
-            maybeTags <- F.readNull foreignTags
-            tags <- DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
+            tags <- readTags foreignTags
             pure $ IMUserWrapper {
                   id,
                   avatar,
                   name,
-                  age: SDT.ageFrom birthday,
+                  age,
                   gender,
                   headline,
                   description,
                   karma,
                   country,
                   languages,
-                  tags
+                  tags,
+                  karmaPosition
             }
       _ ->  CME.throwError <<< DLN.singleton $ ForeignError "missing or extra fields from users table imuser projection"
+
+
+readAge :: Foreign -> F (Maybe Int)
+readAge foreignAge = do
+      maybeForeignAge <- F.readNull foreignAge
+      DM.maybe (pure Nothing) (map Just <<< F.readInt) maybeForeignAge
+
+readAvatar :: Foreign -> F (Maybe String)
+readAvatar foreignAvatar = do
+      maybeForeignAvatar <- F.readNull foreignAvatar
+      DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignAvatar
+
+--REFACTOR: just use pg arrays for tags and languages
+readTags foreignTags = do
+      maybeTags <- F.readNull foreignTags
+      DM.maybe (pure []) (map (DS.split (Pattern "\\n")) <<< F.readString) maybeTags
 
 instance messageWrapperRowFromSQLRow :: FromSQLRow HistoryMessageWrapper where
       fromSQLRow [
@@ -633,6 +688,8 @@ instance toSQLValueGender :: ToSQLValue Gender where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonToggleBoard :: EncodeJson ToggleBoard where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonGender :: EncodeJson Gender where
@@ -648,6 +705,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonToggleBoard :: DecodeJson ToggleBoard where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonGender :: DecodeJson Gender where

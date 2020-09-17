@@ -170,14 +170,6 @@ body {
 
 }
 
-.chatting {
-    border-bottom-color: orange;
-    background: #ffd1dc;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-    border-top: none
-}
-
 .settings-name, .contact-profile {
     padding: 5px 20px;
 }
@@ -389,7 +381,7 @@ body {
 
 .sender-message {
     flex-flow: row-reverse;
-    /* margin-left: auto; */
+
     align-self: flex-end;
 }
 
@@ -397,7 +389,7 @@ body {
     margin-left: 10px;
 }
 
-.profile-settings-placeholder {
+.modal-placeholder {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -684,13 +676,13 @@ svg.toolbar-action {
     margin-bottom: 10px;
 }
 
-.profile-settings-menu {
+.modal-menu {
     display: flex;
     flex-flow: column;
     font-size: 1.3em;
 }
 
-.profile-settings-menu div {
+.modal-menu div {
     cursor: pointer;
 }
 
@@ -919,7 +911,7 @@ svg.toolbar-action {
     top: 13px;
     stroke-width: 5;
     left: 5px;
-    z-index: 5;
+    z-index: 2;
     background: #2d2d2d;
 }
 
@@ -983,4 +975,8 @@ svg.toolbar-action {
 
 .invisible {
     visibility: hidden;
+}
+
+.settings-karma {
+    cursor: pointer;
 }

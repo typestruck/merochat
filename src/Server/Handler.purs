@@ -31,6 +31,7 @@ import Server.NotFound.Handler as SNH
 import Server.Privacy.Handler as SPVH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
+import Server.Leaderboard.Handler as SLBH
 import Server.Settings.Handler as SSH
 import Server.Terms.Handler as STH
 import Shared.Routes (routes)
@@ -70,6 +71,7 @@ handlers reading = {
             post: runJSON reading SRH.recoverAccount,
             reset : runJSON reading SRH.reset
       },
+      leaderboard: runJSON reading SLBH.leaderboard,
       logout: runJSON reading SLOH.logout,
       terms: runHTML reading STH.terms,
       privacy: runHTML reading SPVH.privacy,

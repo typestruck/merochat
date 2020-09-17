@@ -1,0 +1,98 @@
+#karma-leaderboard-root {
+    flex-grow: 1;
+}
+
+.leaderboard {
+    margin: 40px 0
+}
+
+h2 {
+    margin: 15px 0
+}
+
+.karma-leaderboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.name-karma .name {
+    font-size: 1.1em;
+}
+
+.place-link {
+    cursor: pointer;
+    color: hsl(145, 80%, 28%);
+}
+
+.place-link.selected {
+    font-weight: bold;
+}
+
+.separator {
+    margin: 5px 10px;
+    display: inline-block;
+}
+
+.position-number {
+    color: rgb(238, 238, 238);
+    padding: 5px 10px;
+    border: 1px solid #b5b5b7;
+    border-radius: 100%;
+}
+
+.name-karma .karma {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.board-position {
+    display: flex;
+    margin: 15px 0;
+    align-items: center;
+}
+
+.name-karma {
+    width: 45em;
+    padding: 10px 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding-left: 15px;
+    background-color: #2d2d2d;
+    display: flex;
+}
+
+.user .name::after {
+    content: ' (You!)';
+}
+
+.avatar-leaderboard-div {
+    margin-right: -14px;
+}
+
+.avatar-leaderboard {
+    width: 100px;
+    height: 100px;
+    border-radius: 100%;
+    border: 20px solid #2d2d2d;
+}
+
+ .user .name-karma {
+    background:#1b3a28;
+}
+.user .avatar-leaderboard {
+    border-color:#1b3a28
+}
+
+.center {
+    text-align: center;
+}
+
+.position {
+    flex-grow: 1;
+    text-align: right;
+    align-self: center;
+    padding-right: 15px;
+    font-weight: bold;
+    font-size: 1.2em;
+}

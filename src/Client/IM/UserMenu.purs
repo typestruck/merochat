@@ -29,8 +29,20 @@ logout confirmed model = CIF.nothingNext model $ when confirmed out
 confirmLogout :: IMModel -> NoMessages
 confirmLogout = (_ :> [Just <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
 
+toggleKarmaLeaderboard :: IMModel -> NextMessage
+toggleKarmaLeaderboard model@{ displayKarmaLeaderboard } =
+      if displayKarmaLeaderboard then
+            model { displayKarmaLeaderboard = false } :> [
+                  pure <<< Just $ SetModalContents Nothing root "Loading..."
+            ]
+       else
+            model { displayKarmaLeaderboard = true } :> [
+                  Just <<< SetModalContents (Just "leaderboard.bundle.js") root <$> CCN.response (request.leaderboard {})
+            ]
+      where root = "#karma-leaderboard-root"
+
 --PERFORMANCE: load bundles only once
-toggleProfileSettings :: ProfileSettingsToggle -> IMModel -> MoreMessages
+toggleProfileSettings :: ProfileSettingsToggle -> IMModel -> NextMessage
 toggleProfileSettings psToggle model =
       case psToggle of
             ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"
@@ -41,14 +53,15 @@ toggleProfileSettings psToggle model =
                         Just <<< SetModalContents (Just file) root <$> CCN.response (f {})
                   ]
 
-loadModal :: String -> String -> Maybe String -> Aff Unit
-loadModal root html file = liftEffect do
-      element <- CCD.querySelector root
-      CCD.setInnerHTML element html
-      --scripts don't load when inserted via innerHTML
-      case file of
-            Just name -> CCD.loadScript name
-            Nothing -> pure unit
+setModalContents :: Maybe String -> String -> String -> IMModel -> NextMessage
+setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
+      where loadModal root html file = liftEffect do
+                  element <- CCD.querySelector root
+                  CCD.setInnerHTML element html
+                  --scripts don't load when inserted via innerHTML
+                  case file of
+                        Just name -> CCD.loadScript name
+                        Nothing -> pure unit
 
 showUserContextMenu :: Event -> IMModel -> MoreMessages
 showUserContextMenu event model@{ userContextMenuVisible }
@@ -61,8 +74,6 @@ showUserContextMenu event model@{ userContextMenuVisible }
                   WDE.fromEventTarget target
             ]
 
-setModalContents :: Maybe String -> String -> String -> IMModel -> NextMessage
-setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
 
 toogleUserContextMenu :: Boolean -> IMModel -> NoMessages
 toogleUserContextMenu toggle model = F.noMessages $ model {  userContextMenuVisible = toggle }

@@ -6,7 +6,6 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Now as EN
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.HTML.Attribute as HA
@@ -40,6 +39,7 @@ template {contacts, suggestions, user} = do
                   linkText: Nothing,
                   linkFormVisible: false,
                   fullContactProfileVisible: false,
+                  displayKarmaLeaderboard: false,
                   freeToFetchContactList: true,
                   shouldSendMessage: false,
                   userContextMenuVisible: false,

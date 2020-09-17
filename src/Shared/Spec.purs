@@ -119,6 +119,10 @@ spec :: Spec {
                   body :: NoBody,
                   response :: Ok
             },
+            leaderboard :: GET "/leaderboard" {
+                  guards :: Guards ("loggedUserID" : Nil),
+                  response :: String
+            },
             terms :: GET "/terms" {
                   response :: Html
             },
