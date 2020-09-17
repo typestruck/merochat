@@ -32,7 +32,7 @@ import Data.String.Read as DSR
 import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
-import Database.PostgreSQL (class FromSQLRow, class ToSQLValue, class FromSQLValue)
+import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, fromSQLRow)
 import Flame (Key)
 import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
@@ -159,6 +159,15 @@ data MessageStatus =
       Errored |
       Unread |
       Read
+
+type LeaderboardUser = {
+      position :: Int,
+      karma :: Int,
+      avatar :: Maybe String,
+      name :: String
+}
+
+newtype LeaderboardUserWrapper = LeaderboardUserWrapper LeaderboardUser
 
 newtype IMUserWrapper = IMUserWrapper IMUser
 
@@ -357,6 +366,21 @@ data SettingsMessage =
       ChangePassword |
       TerminateAccount --very bad
 
+data ToggleBoard =
+      InBetween10 |
+      Top10
+
+type LeaderboardModel = {
+      top10 :: Array LeaderboardUser,
+      inBetween10 :: Array LeaderboardUser,
+      userPosition :: Int,
+      toggleBoard :: ToggleBoard
+}
+
+data LeaderboardMessage =
+      ToggleBoardDisplay ToggleBoard
+
+derive instance genericToggleBoard :: Generic ToggleBoard _
 derive instance genericMessageStatus :: Generic MessageStatus _
 derive instance genericGenerate :: Generic Generate _
 derive instance genericGender :: Generic Gender _
@@ -370,6 +394,7 @@ derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer 
 derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
 
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
+derive instance newtypeLeaderboardUserWrapper :: Newtype LeaderboardUserWrapper _
 derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
 derive instance newtypeMDate :: Newtype DateWrapper _
 derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
@@ -379,9 +404,27 @@ derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 derive instance eqGenerate :: Eq Generate
 derive instance eqMDateTime :: Eq DateTimeWrapper
 derive instance eqMDate :: Eq DateWrapper
+derive instance eqToggleBoard :: Eq ToggleBoard
 derive instance eqGender :: Eq Gender
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
+
+instance fromSQLRowLeaderboardUserWrapper :: FromSQLRow LeaderboardUserWrapper where
+      fromSQLRow =
+            case _ of
+                  [foreignName, foreignAvatar, foreignPosition, foreignKarma] -> DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+                        name <- F.readString foreignName
+                        position <- F.readInt foreignPosition
+                        karma <- F.readInt foreignKarma
+                        avatar <- readAvatar foreignAvatar
+                        pure $ LeaderboardUserWrapper {
+                              position,
+                              karma,
+                              avatar,
+                              name
+                        }
+
+                  _ -> Left "missing or extra fields for karma user"
 
 instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
       fromSQLRow [
@@ -645,6 +688,8 @@ instance toSQLValueGender :: ToSQLValue Gender where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonToggleBoard :: EncodeJson ToggleBoard where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonGender :: EncodeJson Gender where
@@ -660,6 +705,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonToggleBoard :: DecodeJson ToggleBoard where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonGender :: DecodeJson Gender where

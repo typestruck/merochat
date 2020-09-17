@@ -25,7 +25,7 @@ type Parameters a = {
 defaultParameters :: forall a. Parameters a
 defaultParameters = {
       javascript: [],
-      css: [],
+      css: [], --REFACTOR: should just be a list of file names
       content: [],
       footer: []
 }

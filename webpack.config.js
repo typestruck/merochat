@@ -12,7 +12,8 @@ module.exports = {
             im: './loader/im.bundle.js',
             landing: './loader/landing.bundle.js',
             login: './loader/login.bundle.js',
-            profile: './loader/profile.bundle.js'
+            profile: './loader/profile.bundle.js',
+            leaderboard: './loader/leaderboard.bundle.js'
       },
 
       output: {

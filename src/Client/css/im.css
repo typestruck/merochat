@@ -170,14 +170,6 @@ body {
 
 }
 
-.chatting {
-    border-bottom-color: orange;
-    background: #ffd1dc;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-    border-top: none
-}
-
 .settings-name, .contact-profile {
     padding: 5px 20px;
 }
@@ -919,7 +911,7 @@ svg.toolbar-action {
     top: 13px;
     stroke-width: 5;
     left: 5px;
-    z-index: 5;
+    z-index: 2;
     background: #2d2d2d;
 }
 

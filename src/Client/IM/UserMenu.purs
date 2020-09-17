@@ -37,7 +37,7 @@ toggleKarmaLeaderboard model@{ displayKarmaLeaderboard } =
             ]
        else
             model { displayKarmaLeaderboard = true } :> [
-                  Just <<< SetModalContents Nothing root <$> CCN.response (request.leaderboard {})
+                  Just <<< SetModalContents (Just "leaderboard.bundle.js") root <$> CCN.response (request.leaderboard {})
             ]
       where root = "#karma-leaderboard-root"
 
