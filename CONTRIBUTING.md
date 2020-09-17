@@ -14,11 +14,11 @@ Don't hesitate to [contact](https://github.com/easafe) if you need help, or want
 
 ## Setup
 
-MelanChat is written in PureScript, both server-side and client-side. It uses [purescript-flame](https://github.com/easafe/purescript-flame), [httpure](https://github.com/cprussin/purescript-httpure), [purescript-run](https://github.com/natefaubion/purescript-run) and PostgreSQL. To get it running locally:
+MelanChat is written in PureScript, both server-side and client-side. PostgreSQL is used for persistance. To get it running locally:
 
-* Run `npm install && bower install`
+* Run `npm install && spago build`
 
-* Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql) (the user "melanchat" and databases "melanchat" and "melanchatTest" are expected)
+* Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql) (the user melanchat and databases melanchat and melanchat_test are expected)
 
 * Run `npm run watch` for a hot reloading server at http://localhost:8000
 
