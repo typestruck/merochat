@@ -1,13 +1,11 @@
-#karma-leaderboard-root {
-    flex-grow: 1;
-}
 
 .leaderboard {
     margin: 40px 0
 }
 
 h2 {
-    margin: 15px 0
+    margin:0;
+    margin-bottom: 15px;
 }
 
 .karma-leaderboard {

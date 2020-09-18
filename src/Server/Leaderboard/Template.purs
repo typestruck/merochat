@@ -19,10 +19,7 @@ import Shared.Avatar as SA
 template :: { top10 :: Array LeaderboardUser, userPosition :: Int, inBetween10 :: Array LeaderboardUser } -> Effect String
 template { top10, inBetween10, userPosition } =
       F.preMount (QuerySelector ".karma-leaderboard") {
-            view: \model' -> ST.templateWith defaultParameters {
-                  content = [SLV.view model'],
-                  css = [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/karma.css"]]
-            },
+            view: SLV.view,
             init: {
                   toggleBoard: InBetween10,
                   top10,

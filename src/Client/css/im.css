@@ -3,6 +3,7 @@ body {
     font-family: "Verdana", "sans serif";
     font-size: 18px;
     line-height: 1.51857143;
+
     height: 100%;
     color: rgb(238, 238, 238)
 }
@@ -385,16 +386,29 @@ body {
     margin-left: 10px;
 }
 
-.modal-placeholder {
+.modal-placeholder-overlay {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left:0;
+    right:0;
     display: flex;
-    flex-flow: row;
-    padding: 30px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+	background: rgba(55, 55, 55, 0.65);
+
     z-index: 4;
+}
+
+.modal-placeholder {
+    display: flex;
+    justify-content: center;
+    flex-flow: row;
+    padding: 50px;
+    padding-right: 100px;
+    z-index: 5;
     background: #262626;
 }
 
@@ -649,7 +663,6 @@ svg.toolbar-action {
 
 #profile-edition-root {
     text-align: center;
-    flex-grow: 1;
 }
 
 #settings-edition-root {
@@ -675,26 +688,32 @@ svg.toolbar-action {
 .modal-menu {
     display: flex;
     flex-flow: column;
-    border-right: 2px solid #1b3a28;
+    margin-right: 150px;
+    /* border-right: 2px solid #373737; */
+    /* border-right: 2px solid #1b3a28; */
 }
 
 .modal-menu .entry {
     margin: 5px 0;
     padding: 10px;
-    color: hsl(145, 80%, 28%);
     cursor: pointer;
     font-weight: bold;
 }
 
 .modal-menu .entry.selected {
-    color: rgb(238, 238, 238);
-    background: #1b3a28;
+
+    background: #373737;
 }
 
 .modal-menu .back {
-    color: rgb(238, 238, 238);
-    margin-bottom:25px;
+    color: hsl(145, 80%, 28%);
+    margin-bottom: 25px;
     cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-menu .back svg {
+    fill: hsl(145, 80%, 28%);
 }
 
 .action-button {

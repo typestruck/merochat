@@ -42,21 +42,25 @@ logo = HE.div (HA.class' "logo-contact-list") [
       HE.img $ HA.src "/client/media/logo-small.png"
 ]
 
-modals toggle = HE.div (HA.class' $ "modal-placeholder" <> if toggle /= Hidden then "" else " hidden") [
-      HE.div (HA.class' "modal-menu") [
-            HE.div [HA.onClick (ToggleModal Hidden), HA.class' "back"] [
-                  HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
-                        HE.polygon' [HA.points "496 159.961 295.983 159.961 295.976 16.024 257.698 16.024 17.364 255.706 257.313 495.941 296.001 495.976 295.993 351.961 496 351.961 496 159.961"]
+modals :: ShowModal -> Html IMMessage
+modals toggle =
+      HE.div (HA.class' $ "modal-placeholder-overlay" <> if toggle /= Hidden then "" else " hidden") [
+            HE.div (HA.class' "modal-placeholder") [
+                  HE.div (HA.class' "modal-menu") [
+                        HE.div [HA.onClick (ToggleModal Hidden), HA.class' "back"] [
+                              HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
+                                    HE.polygon' [HA.points "496 159.961 295.983 159.961 295.976 16.024 257.698 16.024 17.364 255.706 257.313 495.941 296.001 495.976 295.993 351.961 496 351.961 496 159.961"]
+                              ],
+                              HE.text " Back to chats"
+                        ],
+                        HE.div [HA.onClick (ToggleModal ShowProfile), HA.class' { entry: true, selected: toggle == ShowProfile }] "Your profile",
+                        HE.div [HA.onClick (ToggleModal ShowSettings), HA.class' {  entry: true, selected: toggle == ShowSettings }] "Your settings",
+                        HE.div [HA.onClick (ToggleModal ShowLeaderboard), HA.class' {  entry: true, selected: toggle == ShowLeaderboard }] "Karma leaderboard",
+                        HE.div [HA.onClick (ToggleModal ShowHelp), HA.class' {  entry: true, selected: toggle == ShowHelp }] "Help"
                   ],
-                  HE.text " Back to chats"
-            ],
-            HE.div [HA.onClick (ToggleModal ShowProfile), HA.class' { entry: true, selected: toggle == ShowProfile }] "Your profile",
-            HE.div [HA.onClick (ToggleModal ShowSettings), HA.class' {  entry: true, selected: toggle == ShowSettings }] "Your settings",
-            HE.div [HA.onClick (ToggleModal ShowLeaderboard), HA.class' {  entry: true, selected: toggle == ShowLeaderboard }] "Karma leaderboard",
-            HE.div [HA.onClick (ToggleModal ShowHelp), HA.class' {  entry: true, selected: toggle == ShowHelp }] "Help"
-      ],
-      HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ "Loading...",
-      HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ "Loading...",
-      HE.div [HA.id "karma-leaderboard-root", HA.class' { hidden: toggle /= ShowLeaderboard }] $ "Loading...",
-      HE.div [HA.id "help-root", HA.class' { hidden: toggle /= ShowHelp }] $ "Loading..."
-]
+                  HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ "Loading...",
+                  HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ "Loading...",
+                  HE.div [HA.id "karma-leaderboard-root", HA.class' { hidden: toggle /= ShowLeaderboard }] $ "Loading...",
+                  HE.div [HA.id "help-root", HA.class' { hidden: toggle /= ShowHelp }] $ "Loading..."
+            ]
+      ]
