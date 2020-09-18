@@ -406,10 +406,21 @@ body {
     display: flex;
     justify-content: center;
     flex-flow: row;
-    padding: 50px;
-    padding-right: 100px;
+    padding: 30px 15px;
+    padding-right: 50px;
     z-index: 5;
+    width: 70em;
+    height: 90%;
+    overflow-y: auto;
     background: #262626;
+}
+
+.modal-menu {
+    display: flex;
+    flex-flow: column;
+    padding-right: 70px;
+    /* border-right: 2px solid #373737; */
+    /* border-right: 2px solid #1b3a28; */
 }
 
 .profile-info-edition {
@@ -685,13 +696,6 @@ svg.toolbar-action {
     margin-bottom: 10px;
 }
 
-.modal-menu {
-    display: flex;
-    flex-flow: column;
-    margin-right: 150px;
-    /* border-right: 2px solid #373737; */
-    /* border-right: 2px solid #1b3a28; */
-}
 
 .modal-menu .entry {
     margin: 5px 0;
