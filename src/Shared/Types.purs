@@ -200,8 +200,7 @@ type IM = (
       --visibility switches
       fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
-      displayKarmaLeaderboard :: Boolean,
-      profileSettingsToggle :: ProfileSettingsToggle,
+      toggleModal :: ShowModal,
       isPreviewing :: Boolean,
       emojisVisible :: Boolean,
       linkFormVisible :: Boolean
@@ -209,10 +208,12 @@ type IM = (
 
 type IMModel = Record IM
 
-data ProfileSettingsToggle =
+data ShowModal =
       Hidden |
       ShowProfile |
-      ShowSettings
+      ShowSettings |
+      ShowLeaderboard |
+      ShowHelp
 
 type Stats = {
     characters :: Number,
@@ -247,8 +248,7 @@ data IMMessage =
       ConfirmLogout |
       ShowUserContextMenu Event |
       Logout Boolean |
-      ToggleKarmaLeaderBoard |
-      ToggleProfileSettings ProfileSettingsToggle |
+      ToggleModal ShowModal |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
       --contact
@@ -391,7 +391,7 @@ derive instance genericMDate :: Generic DateWrapper _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericProfileSettingsToggle :: Generic ProfileSettingsToggle _
+derive instance genericShowModal :: Generic ShowModal _
 
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
 derive instance newtypeLeaderboardUserWrapper :: Newtype LeaderboardUserWrapper _
@@ -407,7 +407,7 @@ derive instance eqMDate :: Eq DateWrapper
 derive instance eqToggleBoard :: Eq ToggleBoard
 derive instance eqGender :: Eq Gender
 derive instance eqMessageStatus :: Eq MessageStatus
-derive instance eqProfileSettingsToggle :: Eq ProfileSettingsToggle
+derive instance eqShowModal :: Eq ShowModal
 
 instance fromSQLRowLeaderboardUserWrapper :: FromSQLRow LeaderboardUserWrapper where
       fromSQLRow =
@@ -679,7 +679,7 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
-instance showProfileSettingsToggle :: Show ProfileSettingsToggle where
+instance showShowModal :: Show ShowModal where
       show = DGRS.genericShow
 
 instance toSQLValueGender :: ToSQLValue Gender where
@@ -702,7 +702,7 @@ instance encodeJsonWebSocketPayloadServer :: EncodeJson WebSocketPayloadServer w
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageContent :: EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonProfileSettingsToggle :: EncodeJson ProfileSettingsToggle where
+instance encodeJsonShowModal :: EncodeJson ShowModal where
       encodeJson = DAEGR.genericEncodeJson
 
 instance decodeJsonToggleBoard :: DecodeJson ToggleBoard where
@@ -719,7 +719,7 @@ instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer w
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonProfileSettingsToggle :: DecodeJson ProfileSettingsToggle where
+instance decodeJsonShowModal :: DecodeJson ShowModal where
       decodeJson = DADGR.genericDecodeJson
 
 instance readGender :: Read Gender where

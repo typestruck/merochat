@@ -12,7 +12,6 @@ body {
     scrollbar-width: thin;
 } */
 
-
 .description-message {
     width: 55em;
 }
@@ -112,7 +111,7 @@ body {
     border-radius: 100%;
 }
 
-.no-avatar-message .avatar-message{
+.no-avatar-message .avatar-message {
     visibility: hidden;
 }
 
@@ -167,7 +166,6 @@ body {
     align-items: baseline;
     cursor: pointer;
     padding: 15px;
-
 }
 
 .settings-name, .contact-profile {
@@ -179,7 +177,6 @@ body {
 }
 
 .settings-name {
-
     margin-right: auto;
 }
 
@@ -199,7 +196,7 @@ body {
 .contact-list-last-message>p {
     white-space: nowrap;
     display: inline-block;
-    margin:0;
+    margin: 0;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -228,7 +225,7 @@ body {
 }
 
 .suggestion.old {
-    background:#373737;
+    background: #373737;
     cursor: pointer;
 }
 
@@ -255,18 +252,18 @@ body {
 .profile-contact-deets {
     display: flex;
     flex-direction: column;
-    margin-left:auto;
+    margin-left: auto;
 }
 
 .profile-contact-header {
     display: flex;
     flex-direction: column;
-    padding-left:30px
+    padding-left: 30px
 }
 
 .profile-contact-header h1 {
-    font-size:1.2em;
-    margin:5px 0px
+    font-size: 1.2em;
+    margin: 5px 0px
 }
 
 .skip {
@@ -278,7 +275,7 @@ body {
 }
 
 .message-content {
-	padding:0 15px;
+    padding: 0 15px;
     position: relative;
     background: #1b3a28;
     border-radius: 5px;
@@ -289,7 +286,7 @@ body {
     display: block;
     height: 18px;
     position: absolute;
-    width:  28px;
+    width: 28px;
 }
 
 .no-avatar-message .message-content::before {
@@ -297,26 +294,26 @@ body {
 }
 
 .recipient-message .message-content {
-    background-color: #373737 ;
-    margin-left:20px;
+    background-color: #373737;
+    margin-left: 20px;
 }
 
 .sender-message .message-content {
-    background-color:  #1b3a28    ;
-    margin-right:20px;
+    background-color: #1b3a28;
+    margin-right: 20px;
 }
 
 .recipient-message .message-content::before {
-    background-color: #373737 ;
+    background-color: #373737;
     top: 2px;
     left: -7px;
-    transform: rotate( 51deg ) skew( -38deg );
+    transform: rotate( 51deg) skew( -38deg);
 }
 
 .sender-message .message-content::before {
-    background-color:  #1b3a28    ;
+    background-color: #1b3a28;
     right: -7px;
-    transform: rotate( 0deg ) skew( -35deg );
+    transform: rotate( 0deg) skew( -35deg);
 }
 
 .message-history {
@@ -381,7 +378,6 @@ body {
 
 .sender-message {
     flex-flow: row-reverse;
-
     align-self: flex-end;
 }
 
@@ -679,15 +675,26 @@ svg.toolbar-action {
 .modal-menu {
     display: flex;
     flex-flow: column;
-    font-size: 1.3em;
+    border-right: 2px solid #1b3a28;
 }
 
-.modal-menu div {
+.modal-menu .entry {
+    margin: 5px 0;
+    padding: 10px;
+    color: hsl(145, 80%, 28%);
     cursor: pointer;
+    font-weight: bold;
 }
 
-.back-arrow {
-    vertical-align: middle;
+.modal-menu .entry.selected {
+    color: rgb(238, 238, 238);
+    background: #1b3a28;
+}
+
+.modal-menu .back {
+    color: rgb(238, 238, 238);
+    margin-bottom:25px;
+    cursor: pointer;
 }
 
 .action-button {
@@ -735,7 +742,6 @@ svg.toolbar-action {
     display: inline-block;
     word-wrap: break-word;
     max-width: 45em;
-
 }
 
 .message p img {
@@ -766,7 +772,6 @@ svg.toolbar-action {
 
 .message-options {
     background: rgb(38, 38, 38);
-
 }
 
 .headline {
@@ -935,8 +940,8 @@ svg.toolbar-action {
     padding: 20px 15px;
     border-radius: 3px;
     position: absolute;
-    right:16px;
-    top:42px;
+    right: 16px;
+    top: 42px;
 }
 
 .user-menu.visible {
@@ -946,14 +951,12 @@ svg.toolbar-action {
 .user-menu-item {
     cursor: pointer;
     padding: 10px 0;
-
     width: max-content;
 }
 
 .logout {
     color: hsl(359, 85%, 62%) !important;
-    padding-top:20px;
-
+    padding-top: 20px;
 }
 
 .bold {
@@ -961,17 +964,15 @@ svg.toolbar-action {
 }
 
 .menu-item-heading {
-    font-size:1.1em;
-    color: rgb(238,238,238);
+    font-size: 1.1em;
+    color: rgb(238, 238, 238);
 }
 
 .outer-user-menu {
     position: relative;
 }
 
-.contact-options {
-
-}
+.contact-options {}
 
 .invisible {
     visibility: hidden;

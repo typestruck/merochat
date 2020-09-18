@@ -31,7 +31,7 @@ model = {
       messageEnter: true,
       linkText: Nothing,
       blockedUsers: [],
-      profileSettingsToggle: Hidden,
+      ToggleModal: Hidden,
       user: imUser,
       suggestions: [suggestion],
       temporaryID: 0,

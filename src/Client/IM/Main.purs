@@ -118,10 +118,9 @@ update { webSocketRef, fileReader} model  =
             ConfirmLogout -> CIU.confirmLogout model
             Logout confirmed -> CIU.logout confirmed model
             ShowUserContextMenu event -> CIU.showUserContextMenu event model
-            ToggleProfileSettings toggle -> CIU.toggleProfileSettings toggle model
+            ToggleModal toggle -> CIU.toggleModal toggle model
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
-            ToggleKarmaLeaderBoard -> CIU.toggleKarmaLeaderboard model
             --main
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model

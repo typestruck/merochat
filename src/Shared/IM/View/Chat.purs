@@ -3,6 +3,8 @@ module Shared.IM.View.Chat where
 import Prelude
 import Shared.Types
 
+import Control.Alt ((<|>))
+import Data.Array ((!!))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol (class IsSymbol, SProxy(..))
@@ -17,7 +19,7 @@ import Shared.Markdown as SM
 import Shared.Setter as SS
 
 chat :: IMModel -> Html IMMessage
-chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, messageEnter, emojisVisible, link, linkText, linkFormVisible } =
+chat { chatting, contacts, suggesting, suggestions, isOnline, isPreviewing, message, selectedImage, messageEnter, emojisVisible, link, linkText, linkFormVisible } =
       HE.div (HA.class' "send-box") [
             HE.input [HA.id "image-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
             HE.div (HA.class' imageFormClasses) [
@@ -73,7 +75,7 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                               HA.rows 1,
                               HA.class' "chat-input",
                               HA.id "chat-input",
-                              HA.placeholder $ if isOnline then "Type a message or drag files here" else "Waiting for connection...",
+                              HA.placeholder $ if isOnline then "Type here to message " <> recipientName else "Waiting for connection...",
                               HA.disabled $ not isOnline,
                               HA.onKeydown' EnterBeforeSendMessage,
                               HA.onInput BeforeSendMessage,
@@ -106,6 +108,13 @@ chat { chatting, suggesting, isOnline, isPreviewing, message, selectedImage, mes
                   HE.text name,
                   HE.div_ $ map toEmojiSpan pairs
             ]
+
+            recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name
+
+getName index list accessor = do
+      i <- index
+      entry <- list !! i
+      pure $ accessor entry
 
 setJust :: forall t7 t8 t9. IsSymbol t8 => Cons t8 (Maybe t9) t7 IM => SProxy t8 -> t9 -> IMMessage
 setJust field = SS.setIMField field <<< Just

@@ -29,27 +29,16 @@ logout confirmed model = CIF.nothingNext model $ when confirmed out
 confirmLogout :: IMModel -> NoMessages
 confirmLogout = (_ :> [Just <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
 
-toggleKarmaLeaderboard :: IMModel -> NextMessage
-toggleKarmaLeaderboard model@{ displayKarmaLeaderboard } =
-      if displayKarmaLeaderboard then
-            model { displayKarmaLeaderboard = false } :> [
-                  pure <<< Just $ SetModalContents Nothing root "Loading..."
-            ]
-       else
-            model { displayKarmaLeaderboard = true } :> [
-                  Just <<< SetModalContents (Just "leaderboard.bundle.js") root <$> CCN.response (request.leaderboard {})
-            ]
-      where root = "#karma-leaderboard-root"
-
 --PERFORMANCE: load bundles only once
-toggleProfileSettings :: ProfileSettingsToggle -> IMModel -> NextMessage
-toggleProfileSettings psToggle model =
+toggleModal :: ShowModal -> IMModel -> NextMessage
+toggleModal psToggle model =
       case psToggle of
             ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"
             ShowSettings -> showTab request.settings.get ShowSettings "settings.bundle.js" "#settings-edition-root"
-            Hidden -> CIF.justNext (model { profileSettingsToggle = Hidden }) $ SetModalContents Nothing "#profile-edition-root" "Loading..."
+            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.bundle.js" "#karma-leaderboard-root"
+            _ -> CIF.justNext (model { toggleModal = Hidden }) $ SetModalContents Nothing "#profile-edition-root" "Loading..."
       where showTab f toggle file root =
-                  model { profileSettingsToggle = toggle } :> [
+                  model { toggleModal = toggle } :> [
                         Just <<< SetModalContents (Just file) root <$> CCN.response (f {})
                   ]
 
