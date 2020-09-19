@@ -650,7 +650,7 @@ svg.toolbar-action {
 }
 
 #settings-edition-root {
-    margin: 0px 30px;
+    margin-left: -30px;
 }
 
 .settings-edition fieldset {
@@ -686,12 +686,13 @@ svg.toolbar-action {
     color: hsl(145, 80%, 28%);
     margin-bottom: 25px;
     cursor: pointer;
-    padding-top: 6px;
+
     font-weight: bold;
 }
 
 .modal-menu .back svg {
     fill: hsl(145, 80%, 28%);
+    vertical-align: middle;
 }
 
 .action-button {

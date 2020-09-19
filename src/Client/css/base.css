@@ -48,15 +48,10 @@ input[type="submit"], input[type="button"] {
 
 input, textarea {
     border-radius: 3px;
-    border: 1px solid #ccc;
-    color: white;
+    color: rgb(238, 238, 238);
     background: transparent;
 }
 
-.selected a, a:hover, a:focus {
-    color: white;
-    text-decoration: none;
-}
 
 ul li {
     display: inline;

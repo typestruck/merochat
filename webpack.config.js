@@ -15,7 +15,8 @@ module.exports = {
             profile: './loader/profile.bundle.js',
             leaderboard: './loader/leaderboard.bundle.js',
             help: './loader/help.bundle.js',
-            internalHelp: './loader/internalHelp.bundle.js'
+            internalHelp: './loader/internalHelp.bundle.js',
+            settings: './loader/settings.bundle.js'
       },
 
       output: {
