@@ -3,7 +3,6 @@ body {
     font-family: "Verdana", "sans serif";
     font-size: 18px;
     line-height: 1.51857143;
-
     height: 100%;
     color: rgb(238, 238, 238)
 }
@@ -390,21 +389,18 @@ body {
     position: absolute;
     top: 0;
     bottom: 0;
-    left:0;
-    right:0;
+    left: 0;
+    right: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
-	background: rgba(55, 55, 55, 0.65);
-
+    background: rgba(55, 55, 55, 0.65);
     z-index: 4;
 }
 
 .modal-placeholder {
     display: flex;
-    justify-content: center;
     flex-flow: row;
     padding: 30px 15px;
     padding-right: 50px;
@@ -417,10 +413,13 @@ body {
 
 .modal-menu {
     display: flex;
+    position: sticky;
+    top: 0;
+    left: 0;
+    bottom: 0;
     flex-flow: column;
-    padding-right: 70px;
-    /* border-right: 2px solid #373737; */
-    /* border-right: 2px solid #1b3a28; */
+    margin-right: 70px;
+    border-right: 1px solid #373737;
 }
 
 .profile-info-edition {
@@ -609,32 +608,6 @@ svg.toolbar-action {
     padding: 0px 10px;
 }
 
-[contenteditable=true]:empty:before {
-    content: attr(placeholder);
-    display: block;
-    /* For Firefox */
-}
-
-.loading-melon {
-    animation: rotation 2s infinite linear;
-    width: 100px;
-    z-index: 5;
-    position: absolute;
-    bottom: 50%;
-    left: 50%;
-    margin-bottom: -50px;
-    margin-left: -50px;
-}
-
-@keyframes rotation {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(359deg);
-    }
-}
-
 .inline-image {
     display: inline-block;
 }
@@ -696,7 +669,6 @@ svg.toolbar-action {
     margin-bottom: 10px;
 }
 
-
 .modal-menu .entry {
     margin: 5px 0;
     padding: 10px;
@@ -705,7 +677,8 @@ svg.toolbar-action {
 }
 
 .modal-menu .entry.selected {
-
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
     background: #373737;
 }
 
@@ -713,6 +686,7 @@ svg.toolbar-action {
     color: hsl(145, 80%, 28%);
     margin-bottom: 25px;
     cursor: pointer;
+    padding-top: 6px;
     font-weight: bold;
 }
 
@@ -995,12 +969,24 @@ svg.toolbar-action {
     position: relative;
 }
 
-.contact-options {}
-
 .invisible {
     visibility: hidden;
 }
 
 .settings-karma {
     cursor: pointer;
+}
+
+.place-link {
+    cursor: pointer;
+    color: hsl(145, 80%, 28%);
+}
+
+.place-link.selected {
+    font-weight: bold;
+}
+
+.separator {
+    margin: 5px 10px;
+    display: inline-block;
 }

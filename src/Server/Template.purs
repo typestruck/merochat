@@ -59,7 +59,7 @@ templateWith parameters =
                   HE.link [HA.rel "shortcut icon", HA.type' "image/ico", HA.href "/client/media/favicon.ico"],
                   HE.title "MelanChat (Friendly) Random Chat"
             ] <> styleSheets <> parameters.css),
-            HE.body_ (HE.div' [HA.id "loading", HA.class' "loading"] : parameters.content <> parameters.footer <> parameters.javascript)
+            HE.body_ $ parameters.content <> parameters.footer <> parameters.javascript
       ]
       where styleSheets = [
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]
@@ -71,10 +71,10 @@ externalFooter =
             HE.a (HA.href $ routes.landing {}) <<< HE.img $ HA.src "/client/media/logo-small.png",
             HE.ul (HA.class' "footer-menu") [
                   HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login",
-                  HE.li_ $ HE.a (HA.href $ routes.help {}) "Help",
+                  HE.li_ $ HE.a (HA.href $ routes.help {} <> "#faq") "FAQ",
                   HE.li_ $ HE.a (HA.href "#") "Become a backer",
-                  HE.li_ $ HE.a (HA.href $ routes.terms {} ) "Terms and conditions",
-                  HE.li_ $ HE.a (HA.href $ routes.privacy {} ) "Privacy police",
+                  HE.li_ $ HE.a (HA.href $ routes.help {} <> "#terms" ) "Terms and conditions",
+                  HE.li_ $ HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy police",
                   HE.li_ $ HE.a (HA.href "https://github.com/melanchat/melanchat") "Source code"
             ]
       ]

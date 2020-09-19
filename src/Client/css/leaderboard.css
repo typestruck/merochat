@@ -18,20 +18,6 @@ h2 {
     font-size: 1.1em;
 }
 
-.place-link {
-    cursor: pointer;
-    color: hsl(145, 80%, 28%);
-}
-
-.place-link.selected {
-    font-weight: bold;
-}
-
-.separator {
-    margin: 5px 10px;
-    display: inline-block;
-}
-
 .position-number {
     color: rgb(238, 238, 238);
     padding: 5px 10px;

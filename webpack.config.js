@@ -13,7 +13,9 @@ module.exports = {
             landing: './loader/landing.bundle.js',
             login: './loader/login.bundle.js',
             profile: './loader/profile.bundle.js',
-            leaderboard: './loader/leaderboard.bundle.js'
+            leaderboard: './loader/leaderboard.bundle.js',
+            help: './loader/help.bundle.js',
+            internalHelp: './loader/internalHelp.bundle.js'
       },
 
       output: {

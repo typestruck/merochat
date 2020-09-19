@@ -36,6 +36,7 @@ toggleModal psToggle model =
             ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"
             ShowSettings -> showTab request.settings.get ShowSettings "settings.bundle.js" "#settings-edition-root"
             ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.bundle.js" "#karma-leaderboard-root"
+            ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.bundle.js" "#help-root"
             _ -> CIF.justNext (model { toggleModal = Hidden }) $ SetModalContents Nothing "#profile-edition-root" "Loading..."
       where showTab f toggle file root =
                   model { toggleModal = toggle } :> [

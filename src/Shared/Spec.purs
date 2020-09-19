@@ -123,14 +123,12 @@ spec :: Spec {
                   guards :: Guards ("loggedUserID" : Nil),
                   response :: String
             },
-            terms :: GET "/terms" {
-                  response :: Html
-            },
-            privacy :: GET "/privacy" {
-                  response :: Html
-            },
             help :: GET "/help" {
                   response :: Html
+            },
+            internalHelp :: GET "/inhelp" {
+                  guards :: Guards ("loggedUserID" : Nil),
+                  response :: String
             },
             developmentFiles :: GET "/client/<..path>" {
                   params :: { path :: List String },

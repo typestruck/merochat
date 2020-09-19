@@ -315,6 +315,18 @@ data WebSocketPayloadClient =
       BeenBlocked { id :: PrimaryKey } |
       PayloadError WebSocketPayloadServer
 
+type InternalHelpModel = {
+      toggleHelp :: DisplayHelpSection
+}
+
+data DisplayHelpSection =
+      FAQ |
+      Terms |
+      Privacy
+
+data InternalHelpMessage =
+      ToggleHelpSection DisplayHelpSection
+
 type PM = (
       user :: ProfileUser,
       isCountryVisible :: Boolean,
@@ -380,6 +392,7 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
+derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
 derive instance genericToggleBoard :: Generic ToggleBoard _
 derive instance genericMessageStatus :: Generic MessageStatus _
 derive instance genericGenerate :: Generic Generate _
@@ -402,6 +415,7 @@ derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
 derive instance eqGenerate :: Eq Generate
+derive instance eqDisplayHelpSection :: Eq DisplayHelpSection
 derive instance eqMDateTime :: Eq DateTimeWrapper
 derive instance eqMDate :: Eq DateWrapper
 derive instance eqToggleBoard :: Eq ToggleBoard
@@ -688,6 +702,8 @@ instance toSQLValueGender :: ToSQLValue Gender where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonDisplayHelpSection :: EncodeJson DisplayHelpSection where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonToggleBoard :: EncodeJson ToggleBoard where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
@@ -705,6 +721,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonDisplayHelpSection :: DecodeJson DisplayHelpSection where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonToggleBoard :: DecodeJson ToggleBoard where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where

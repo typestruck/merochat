@@ -1,9 +1,10 @@
 module Server.Help.Handler where
 
+import Prelude
 import Server.Types
 
-import Server.Response as SR
 import Server.Help.Template as SHT
+import Server.Response as SR
 
-help :: forall r. { | r} -> ServerEffect Html
-help _ = SR.serveTemplate SHT.template
+help :: forall r. { | r  } -> ServerEffect Html
+help _ = SR.serveTemplate $ SHT.template

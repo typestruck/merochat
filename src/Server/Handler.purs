@@ -20,7 +20,6 @@ import Payload.Server.Response as PSR
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
-import Server.Help.Handler as SHH
 import Server.IM.Handler as SIH
 import Server.InternalError.Handler as SIEH
 import Server.Landing.Handler as SLH
@@ -28,12 +27,12 @@ import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH
 import Server.NotFound.Handler as SNH
-import Server.Privacy.Handler as SPVH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
+import Server.InternalHelp.Handler as SIHH
 import Server.Leaderboard.Handler as SLBH
 import Server.Settings.Handler as SSH
-import Server.Terms.Handler as STH
+import Server.Help.Handler as SHH
 import Shared.Routes (routes)
 
 handlers :: ServerReader -> _
@@ -71,10 +70,9 @@ handlers reading = {
             post: runJSON reading SRH.recoverAccount,
             reset : runJSON reading SRH.reset
       },
+      internalHelp: runJSON reading SIHH.internalHelp,
       leaderboard: runJSON reading SLBH.leaderboard,
       logout: runJSON reading SLOH.logout,
-      terms: runHTML reading STH.terms,
-      privacy: runHTML reading SPVH.privacy,
       help: runHTML reading SHH.help,
       notFound: runHTML reading SNH.notFound,
 

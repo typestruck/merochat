@@ -32,15 +32,10 @@ img {
 }
 
 a {
-    color: orange;
+    color: hsl(145, 80%, 28%);
     text-decoration: none;
     cursor: pointer;
 }
-
-a:hover {
-    color: orange;
-}
-
 
 input {
     border-radius: 3px;
@@ -65,15 +60,6 @@ input, textarea {
 
 ul li {
     display: inline;
-}
-
-.loading {
-    display: none;
-    z-index: 200;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
 }
 
 .hidden {
@@ -114,8 +100,8 @@ svg {
 .footer-menu a {
     font-family: Verdana, sans-serif;
     color: #b5b7b6;
-    font-weight: bold;
-    flex-shrink: 0;
+    font-weight: normal !important;
+
 }
 
 select option {

@@ -38,3 +38,15 @@ queryParameter name = do
       search' <- search
       let parameter = DF.runFn2 getParameter_ search' name
       pure $ if DS.null parameter then Nothing else Just parameter
+
+hash :: Effect String
+hash = do
+      window <- WH.window
+      location <- WHW.location window
+      WHL.hash location
+
+setHash :: String -> Effect Unit
+setHash hash = do
+      window <- WH.window
+      location <- WHW.location window
+      WHL.setHash hash location
