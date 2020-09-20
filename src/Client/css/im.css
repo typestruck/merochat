@@ -649,9 +649,10 @@ svg.toolbar-action {
     text-align: center;
 }
 
-#settings-edition-root {
-    margin-left: -30px;
+#profile-edition-root, #settings-edition-root, #karma-leaderboard-root, #help-root {
+    margin-top: 45px;
 }
+
 
 .settings-edition fieldset {
     padding: 15px;
@@ -686,7 +687,6 @@ svg.toolbar-action {
     color: hsl(145, 80%, 28%);
     margin-bottom: 25px;
     cursor: pointer;
-
     font-weight: bold;
 }
 
