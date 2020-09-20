@@ -6,6 +6,24 @@ body {
       flex-direction: column;
 }
 
+.error-page {
+      margin-top: 40px;
+      text-align: center;
+      line-height: 1;
+      color: #db5a5d;
+}
+
+.error-page-code {
+      font-size: 11em;
+}
+
+.reason {
+      margin:0 auto;
+      margin-top:30px;
+      width: 45em;
+      color: rgb(238,238,238, 0.8);
+}
+
 .form-up label {
       color: #b5b7b6;
 }
@@ -23,6 +41,7 @@ a:hover, input[type=button]:hover {
 .green-box {
       margin-bottom: auto !important;
 }
+
 
 .green-area {
       align-self: center;

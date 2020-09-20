@@ -7,6 +7,9 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
+import Effect.Exception (throw)
+import Effect.Exception.Unsafe (unsafeThrow)
+import Run as R
 import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
@@ -15,6 +18,7 @@ import Server.Response as SR
 
 im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect Html
 im { guards: { loggedUserID } } = do
+      void $ R.liftEffect $ throw "this is hte errr"
       maybeUser <- SID.presentUser loggedUserID
       case maybeUser of
             --nothing can only happen in case the user has an invalid cookie
