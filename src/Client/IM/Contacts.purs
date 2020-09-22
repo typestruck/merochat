@@ -12,6 +12,7 @@ import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
 import Data.Array ((!!), (..))
 import Data.Array as DA
+import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
@@ -20,7 +21,6 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.IM.Contact as SIC
-
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
@@ -76,11 +76,11 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
                   scroll
 
       where unreadID userID ( { recipient, id, status })
-                  | status == Unread && recipient == userID = Just id
+                  | status == Received && recipient == userID = Just id
                   | otherwise = Nothing
 
             read userID historyEntry@( { recipient, id, status })
-                  | status == Unread && recipient == userID = historyEntry { status = Read }
+                  | status == Received && recipient == userID = historyEntry { status = Read }
                   | otherwise = historyEntry
 
             updateContacts contactRead@{ history } = model {
@@ -109,7 +109,7 @@ fetchContacts shouldFetch model@{ contacts, freeToFetchContactList }
       | shouldFetch = model {
                   freeToFetchContactList = false
             } :> [Just <<< DisplayContacts <$> (CCN.response $ request.im.contacts { query: { skip: DA.length contacts }})]
-      | otherwise =F.noMessages model
+      | otherwise = F.noMessages model
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
 displayContacts newContacts model@{ contacts } =
@@ -118,13 +118,23 @@ displayContacts newContacts model@{ contacts } =
             freeToFetchContactList = true
       }
 
-displayMissedMessages :: Array Contact -> IMModel -> NoMessages
-displayMissedMessages missedContacts model@{ contacts } =
-      F.noMessages $ model {
+resumeMissedEvents :: MissedEvents -> IMModel -> NoMessages
+resumeMissedEvents {contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
+      let missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
+          missedFromNewContacts = map getNew new
+      in F.noMessages $ model {
             --wew lass
-            contacts = map getNew new <> DA.updateAtIndices (map getExisting existing) contacts
+            contacts = missedFromNewContacts <> missedFromExistingContacts
       }
-      where indexesToIndexes = DA.zip (0 .. DA.length missedContacts) $ findContact <$> missedContacts
+      where messageMap = DH.fromArrayBy _.temporaryID _.id messageIDs
+            markSenderError contact@{ history } = contact {
+                  history = map updateSenderError history
+            }
+            updateSenderError history@{ sender, status, id }
+                  | status == Sent && sender == senderID && not (DH.member id messageMap) = history { status = Errored } -- message that was not delivered
+                  | otherwise = history
+
+            indexesToIndexes = DA.zip (0 .. DA.length missedContacts) $ findContact <$> missedContacts
             existing = DA.filter (DM.isJust <<< DT.snd) indexesToIndexes
             new = DA.filter (DM.isNothing <<< DT.snd) indexesToIndexes
 

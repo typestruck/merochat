@@ -653,7 +653,6 @@ svg.toolbar-action {
     margin-top: 45px;
 }
 
-
 .settings-edition fieldset {
     padding: 15px;
     padding-top: 0;
@@ -693,14 +692,6 @@ svg.toolbar-action {
 .modal-menu .back svg {
     fill: hsl(145, 80%, 28%);
     vertical-align: middle;
-}
-
-.action-button {
-    background: red !important;
-    border: none !important;
-    padding: 10px;
-    border-radius: 3px;
-    width: max-content;
 }
 
 .end {
@@ -745,31 +736,6 @@ svg.toolbar-action {
 .message p img {
     width: max-content;
     margin: 10px 0;
-}
-
-.recipient-message .text {
-    border-bottom: 2px solid orange;
-    border-right: 1px solid orange;
-    background: initial;
-    border-radius: 0;
-    border-bottom-right-radius: 6px;
-}
-
-.sender-message .text {
-    background: initial;
-    border-left: 1px solid green;
-    border-bottom: 2px solid green;
-    border-radius: 0;
-    border-bottom-left-radius: 6px;
-}
-
-.chatting {
-    border: 1px solid orange;
-    background: initial;
-}
-
-.message-options {
-    background: rgb(38, 38, 38);
 }
 
 .headline {
@@ -840,13 +806,29 @@ svg.toolbar-action {
     word-wrap: anywhere
 }
 
+.contact-options {
+    display: flex;
+    flex-direction: column;
+}
+
 .emojis span {
     font-size: 2em;
     font-family: emoji !important;
 }
 
-.message-failed {
-    color: red;
+.exclamation, .error-message {
+    color: hsl(359, 85%, 62%);
+}
+
+.exclamation {
+    font-size: 1.3em;
+    border: 2px solid hsl(359, 85%, 62%);
+    border-radius: 100%;
+    padding: 2px 10px;
+    line-height: 1;
+    height: 25px;
+    margin-top: 19px;
+    font-weight: bold;
 }
 
 .avatar-color-1 {
@@ -990,4 +972,9 @@ svg.toolbar-action {
 .separator {
     margin: 5px 10px;
     display: inline-block;
+}
+
+.unread-messages {
+    font-weight: bold;
+
 }

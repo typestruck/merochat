@@ -30,10 +30,12 @@ session :: Session
 session = { userID : Nothing }
 
 newTestPool ∷ Effect Pool
-newTestPool = DP.newPool $ (DP.defaultPoolConfiguration "melanchatTest") {
-      user = Just "melanchat",
-      idleTimeoutMillis = Just 1000
-}
+newTestPool = do
+      SD.setUpConversions
+      DP.newPool $ (DP.defaultPoolConfiguration "melanchat_test") {
+            user = Just "melanchat",
+            idleTimeoutMillis = Just 1000
+      }
 
 serverAction :: forall a. ServerEffect a -> Aff Unit
 serverAction action = do
@@ -60,7 +62,7 @@ serverActionCatch catch action  = do
             void action
 
 truncateTables :: ServerEffect Unit
-truncateTables = SD.execute (Query "select truncateTables()") Row0
+truncateTables = SD.execute (Query "select truncate_tables()") Row0
 
 catch expected =
       case _ of

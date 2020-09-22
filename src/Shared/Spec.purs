@@ -60,9 +60,12 @@ spec :: Spec {
                         query :: { id :: PrimaryKey },
                         response :: Ok
                   },
-                  missedMessages :: GET "/missed?lastID=<lastID>" {
-                        query :: { lastID :: Int },
-                        response :: Array Contact
+                  missedEvents :: GET "/missed?lastSenderID=<lastSenderID>&lastRecipientID=<lastRecipientID>" {
+                        query :: {
+                              lastSenderID :: Maybe Int,
+                              lastRecipientID :: Maybe Int
+                        },
+                        response :: MissedEvents
                   }
             },
             profile :: Routes "/profile" {

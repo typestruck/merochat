@@ -14,6 +14,7 @@ src/Client/media/upload
 configuration.json
 old/
 fix
+todo
 .cache/
 .spago/
 dist/

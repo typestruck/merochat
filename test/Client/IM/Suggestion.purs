@@ -2,21 +2,16 @@ module Test.Client.IM.Suggestion where
 
 import Prelude
 
-import Shared.Types
 
 import Client.IM.Suggestion as CIS
-import Data.Array.NonEmpty (last)
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple as DT
-import Shared.Newtype as TSU
 
 import Test.Client.Model (model, imUser)
-import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-import Test.Unit.Main as TUM
 
 tests :: TestSuite
 tests = do

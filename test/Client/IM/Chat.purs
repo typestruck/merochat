@@ -6,27 +6,18 @@ import Shared.Types
 import Client.IM.Chat as CIC
 import Data.Array ((!!), (:))
 import Data.Array as DA
-import Data.Either (Either(..))
-
 import Data.Maybe (Maybe(..))
-import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
-import Partial.Unsafe as PU
-import Shared.Newtype as SN
-
 import Shared.Unsafe ((!@))
-import Shared.Unsafe as SN
+import Shared.Unsafe (fromJust) as SN
 import Test.Client.Model (anotherIMUser, anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
-import Test.Client.Model as TCM
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-import Unsafe.Coerce as UC
-import Web.Socket.WebSocket (WebSocket)
 
 tests :: TestSuite
 tests = do
@@ -38,7 +29,7 @@ tests = do
                   let m@{ temporaryID } = DT.fst $ CIC.sendMessage webSocket date model
                   TUA.equal 1 temporaryID
 
-                  let { temporaryID } = DT.fst $ CIC.sendMessage webSocket date m
+                  let { temporaryID } = DT.fst <<< CIC.sendMessage webSocket date $ m { message = Just "oi" }
                   TUA.equal 2 temporaryID
 
             TU.test "sendMessage adds message to history" do
@@ -51,7 +42,7 @@ tests = do
                   TUA.equal [ {
                         date: (user.history !@ 0).date,
                         recipient: user.user.id,
-                        status: Unread,
+                        status: Received,
                         id: 1,
                         content,
                         sender: userID
@@ -97,7 +88,7 @@ tests = do
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                        { contacts } = DT.fst $ CIC.beforeSendMessage true content model'
+                        { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal ( _.user <$> DA.head contacts) $ Just suggestion
 
             TU.test "beforeSendMessage resets suggesting" do
@@ -106,7 +97,7 @@ tests = do
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                        { suggesting } = DT.fst $ CIC.beforeSendMessage true content model'
+                        { suggesting } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal Nothing suggesting
 
             TU.test "beforeSendMessage sets chatting to 0" do
@@ -115,7 +106,7 @@ tests = do
                               chatting = Nothing,
                               suggesting = Just 0
                         }
-                        { chatting } = DT.fst $ CIC.beforeSendMessage true content model'
+                        { chatting } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (Just 0) chatting
 
             let { id: recipientID } = imUser
@@ -124,14 +115,14 @@ tests = do
 
             TU.test "receiveMessage substitutes temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   {contacts} = DT.fst <<< CIC.receiveMessage webSocket true (Received {
+                  let   {contacts} = DT.fst <<< CIC.receiveMessage webSocket true (ReceivedMessage {
                               previousID: messageID,
                               id : newMessageID,
                               userID: contactID
                         }) $ model {
                               contacts = [contact {
                                     history = [ {
-                                          status: Unread,
+                                          status: Received,
                                           date,
                                           id: messageID,
                                           recipient: recipientID,
@@ -154,7 +145,7 @@ tests = do
                               chatting = Nothing
                         }
                   TUA.equal (Just {
-                        status: Unread,
+                        status: Received,
                         id: newMessageID,
                         content,
                         sender: anotherIMUserID,
@@ -175,7 +166,7 @@ tests = do
                         }
                   TUA.equal ((contacts !@ 0).history) [
                          {
-                              status: Unread,
+                              status: Received,
                               id: newMessageID,
                               sender: anotherIMUserID,
                               recipient: recipientID,
@@ -183,19 +174,6 @@ tests = do
                               date
                         }
                   ]
-
-            TU.test "receiveMessage bumps chatting" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { chatting } = DT.fst <<< CIC.receiveMessage webSocket true (ClientMessage {
-                              date,
-                              id: newMessageID,
-                              content,
-                              userID: anotherIMUserID
-                        }) $ model {
-                              contacts = [contact],
-                              chatting = Just 0
-                        }
-                  TUA.equal (Just 1) chatting
 
             TU.test "receiveMessage set chatting if message comes from current suggestion" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -240,7 +218,7 @@ tests = do
                         }
                   TUA.equal [Tuple newMessageID Read] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
 
-            TU.test "receiveMessage marks messages as read if window is not focused" do
+            TU.test "receiveMessage does not mark messages as read if window is not focused" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let { contacts } = DT.fst <<< CIC.receiveMessage webSocket false (ClientMessage {
                               id: newMessageID,
@@ -252,7 +230,7 @@ tests = do
                               chatting = Just 0,
                               suggesting = Nothing
                         }
-                  TUA.equal [Tuple newMessageID Unread] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
+                  TUA.equal [Tuple newMessageID Received] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
 
       where getHistory contacts = do
                   { history } <- DA.head contacts

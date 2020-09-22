@@ -78,10 +78,13 @@ chatHistorySince loggedUserID lastID = SD.select (Query $ "select " <> messagePr
 chatHistoryBetween :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessageWrapper)
 chatHistoryBetween loggedUserID otherID skip = SD.select (Query ("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (loggedUserID /\ otherID /\ messagesPerPage /\ skip)
 
-insertMessage :: forall r. PrimaryKey -> PrimaryKey -> String -> BaseEffect { pool :: Pool | r } PrimaryKey
-insertMessage loggedUserID recipient content = SD.withTransaction $ \connection -> do
+messsageIDsFor :: PrimaryKey -> Int -> ServerEffect (Array MessageIDTemporaryWrapper)
+messsageIDsFor loggedUserID messageID = SD.select (Query "select id, temporary_id from messages where sender = $1 and id > $2") (loggedUserID /\ messageID)
+
+insertMessage :: forall r. PrimaryKey -> PrimaryKey -> Int -> String -> BaseEffect { pool :: Pool | r } PrimaryKey
+insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ \connection -> do
       SD.executeWith connection (Query """select insert_history($1, $2)""") (loggedUserID /\ recipient)
-      SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, content) VALUES ($1, $2, $3)""") (loggedUserID /\ recipient /\ content)
+      SD.insertWith connection (Query """INSERT INTO messages(sender, recipient, temporary_id, content) VALUES ($1, $2, $3, $4)""") (loggedUserID /\ recipient /\ temporaryID /\ content)
 
 insertKarma :: forall r. PrimaryKey -> PrimaryKey -> Tuple Int Int -> BaseEffect { pool :: Pool | r } Unit
 insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
@@ -89,7 +92,7 @@ insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
 
 --when using an array parameter, any must be used instead of in
 markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit
-markRead loggedUserID ids = SD.execute (Query "update messages set status = 1 where recipient = $1 and id = any($2)") (loggedUserID /\ ids)
+markRead loggedUserID ids = SD.execute (Query "update messages set status = $1 where recipient = $2 and id = any($3)") (Read /\ loggedUserID /\ ids)
 
 insertBlock :: PrimaryKey -> PrimaryKey -> ServerEffect Unit
 insertBlock loggedUserID blocked = void $ SD.insert (Query "insert into blocks(blocker, blocked) values ($1, $2)") (loggedUserID /\ blocked)

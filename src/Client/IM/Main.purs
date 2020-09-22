@@ -18,11 +18,13 @@ import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
 import Client.IM.WebSocket as CIW
 import Control.Monad.Except as CME
+import Data.Array ((!!))
 import Data.Array as DA
 import Data.Either (Either)
 import Data.Either (fromRight) as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
@@ -103,7 +105,7 @@ update { webSocketRef, fileReader} model  =
             CheckFetchContacts -> CICN.checkFetchContacts model
             FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
             DisplayContacts contacts -> CICN.displayContacts contacts model
-            DisplayMissedMessages contacts -> CICN.displayMissedMessages contacts model
+            ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
@@ -137,16 +139,21 @@ update { webSocketRef, fileReader} model  =
                   isOnline = not isOnline
             }
             preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
-            checkMissedMessages model@{ contacts } =
+            checkMissedMessages model@{ contacts, user : { id: senderID } } =
                   model :> [do
-                        let maybeID = do
-                              { history } <- DA.head contacts
-                              { id }  <- DA.head history
-                              pure id
-                        case maybeID of
-                              Nothing -> pure Nothing
-                              Just lastID -> Just <<< DisplayMissedMessages <$> CCNT.response (request.im.missedMessages { query: { lastID } })
+                        let lastSenderID = findLast (\h -> senderID == h.sender && h.status == Received) contacts
+                            lastRecipientID = findLast ((senderID /= _) <<< _.sender) contacts
+
+                        if DM.isNothing lastSenderID && DM.isNothing lastRecipientID then
+                              pure Nothing
+                         else
+                              Just <<< ResumeMissedEvents <$> CCNT.response (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
                   ]
+            findLast f array = do
+                  { history } <- DA.head array
+                  index <- DA.findLastIndex f history
+                  { id } <- history !! index
+                  pure id
 
 windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
 windowsFocus channel = do
@@ -169,8 +176,8 @@ setUpWebSocket webSocketRef channel = do
             DM.maybe (pure unit) (\id -> do
                   ET.clearTimeout id
                   ER.write Nothing timerID) maybeID
-            let payload = fromRight' <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
-                message = fromRight' $ SJ.fromJSON payload
+            let payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
+                message = SU.fromRight $ SJ.fromJSON payload
             isFocused <- CCD.documentHasFocus
             sendChannel $ ReceiveMessage message isFocused
 
@@ -190,6 +197,4 @@ setUpWebSocket webSocketRef channel = do
       WET.addEventListener onMessage messageListener false webSocketTarget
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
-      where fromRight' :: forall a b. Either a b -> b
-            fromRight' et = UP.unsafePartial (DE.fromRight et)
-            sendChannel = SC.send channel <<< DA.singleton
+      where sendChannel = SC.send channel <<< DA.singleton

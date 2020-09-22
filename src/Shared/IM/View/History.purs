@@ -30,11 +30,11 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting } chattingSugge
                                     Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
                   in HE.div (HA.class' $ "message " <> messageClass <> sameSenderClass) [
                         HE.img [HA.src avatar, HA.class' $ "avatar-message" <> SA.avatarColorClass chatting],
-                        HE.div' [HA.class' $ "message-content" <> statusClasses status, HA.innerHTML (SM.toHTML content)]
+                        HE.div (HA.class' {"exclamation": true, "hidden": status /= Errored}) "!",
+                        HE.div_ [
+                              HE.div' [HA.class' $ "message-content", HA.innerHTML (SM.toHTML content)],
+                              HE.span (HA.class' {"error-message": true, "hidden": status /= Errored})  "Failed to send"
+                        ]
+
                   ]
-
-            statusClasses = case _ of
-                  Errored -> "message-failed"
-                  _ -> ""
-
 

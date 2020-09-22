@@ -19,7 +19,9 @@ run model f = do
 
 model :: IMModel
 model = {
-      message: Nothing,
+      message: Just "test message",
+      suggestionsPage: 0,
+      shouldSendMessage: true,
       isPreviewing: false,
       freeToFetchContactList: true,
       userContextMenuVisible: false,
@@ -27,11 +29,12 @@ model = {
       imageCaption: Nothing,
       emojisVisible: false,
       linkFormVisible: false,
+      fullContactProfileVisible: false,
       link: Nothing,
       messageEnter: true,
       linkText: Nothing,
       blockedUsers: [],
-      ToggleModal: Hidden,
+      toggleModal: Hidden,
       user: imUser,
       suggestions: [suggestion],
       temporaryID: 0,
@@ -47,6 +50,7 @@ imUserID = 23
 
 imUser :: IMUser
 imUser = {
+      karmaPosition: 1,
       age: Nothing,
       name: "test",
       id: imUserID,
@@ -85,7 +89,7 @@ historyMessage = {
       recipient:contactID,
       date: DateTimeWrapper <<< EU.unsafePerformEffect $ EN.nowDateTime,
       content: "test",
-      status: Unread
+      status: Received
 }
 
 webSocket :: WebSocket

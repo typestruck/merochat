@@ -91,7 +91,7 @@ ul li a:hover {
 }
 
 .external-help .help, .external-help .terms,
-.external-help .faq .bulleted:first-of-type, .external-help .no-padding {
+.external-help .faq .bulleted:first-of-type, .no-padding {
     margin-top:0;
     padding-top:0;
 }

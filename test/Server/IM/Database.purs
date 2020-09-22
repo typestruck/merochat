@@ -33,7 +33,7 @@ tests = do
                               headline: "sd",
                               description: "ss"
                         }
-                        id <- SID.insertMessage userID anotherUserID "oi"
+                        id <- SID.insertMessage userID anotherUserID 2 "oi"
                         R.liftAff $ TUA.equal userID id
-                        count <- SD.scalar' (Query """select cast(count(1) as integer) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
+                        count <- SD.scalar' (Query """select count(1) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
                         R.liftAff $ TUA.equal 1 count

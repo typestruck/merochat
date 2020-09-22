@@ -29,7 +29,7 @@ tests = do
             TU.test "resumeChat sets chatting" do
                   let m@{ chatting } = DT.fst <<< CICN.resumeChat anotherIMUserID $ model {
                         chatting = Nothing,
-                        contacts = [contact { user = imUser } , contact]
+                        contacts = [contact { user = imUser }, contact]
                   }
                   TUA.equal (Just 1) chatting
 
@@ -43,7 +43,7 @@ tests = do
                   let { contacts } = DT.fst <<< CICN.markRead webSocket $ model {
                         chatting = Just 1
                   }
-                  TUA.equal [Tuple 1 Read, Tuple 2 Unread, Tuple 3 Read] <<< map (\( { id, status}) -> Tuple id status) $ (contacts !@ 1).history
+                  TUA.equal [Tuple 1 Read, Tuple 2 Received, Tuple 3 Read] <<< map (\( { id, status}) -> Tuple id status) $ (contacts !@ 1).history
 
             TU.test "displayContacts shows next page" do
                   let { contacts } = DT.fst <<< CICN.displayContacts [contact] $ model {
@@ -64,21 +64,21 @@ anotherContact = contact {
       user = imUser { id = anotherContactID },
       history = [{
             id: 1,
-            status: Unread,
+            status: Received,
             sender: 32,
             recipient: imUser.id,
             content: "1",
             date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
       }, {
             id:  2,
-            status: Unread,
+            status: Received,
             sender: imUser.id,
             recipient:  32,
             content: "2",
             date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
       },{
             id:  3,
-            status: Unread,
+            status: Received,
             sender:  32,
             recipient: imUser.id,
             content: "3",

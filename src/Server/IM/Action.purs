@@ -5,17 +5,17 @@ import Server.Types
 import Shared.Types
 
 import Data.Array as DA
-import Data.DateTime (DateTime)
 import Data.Foldable as DF
 import Data.Foldable as FD
 import Data.HashMap as DH
+import Data.Maybe (Maybe)
+import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Data.UUID as DU
 import Database.PostgreSQL (Pool)
-import Debug.Trace (spy)
 import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
@@ -55,14 +55,14 @@ listSingleContact loggedUserID userID = do
             history = history
       }
 
-processMessage :: forall r. PrimaryKey -> PrimaryKey -> MessageContent -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey String)
-processMessage loggedUserID userID content = do
+processMessage :: forall r. PrimaryKey -> PrimaryKey -> Int -> MessageContent -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey String)
+processMessage loggedUserID userID temporaryID content = do
       message <- case content of
             Text m -> pure m
             Image (Tuple caption base64) -> do
                   path <- base64From $ DS.split (Pattern ",") base64
                   pure $ "![" <> caption  <> "](" <> path <> ")"
-      id <- SID.insertMessage loggedUserID userID $ sanitize message
+      id <- SID.insertMessage loggedUserID userID temporaryID $ sanitize message
       pure $ Tuple id message
       where base64From =
                   case _ of
@@ -91,12 +91,16 @@ blockUser loggedUserID userID = do
       SID.insertBlock loggedUserID userID
       pure ok
 
-listMissedContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
-listMissedContacts loggedUserID lastID = do
-      history <- SN.unwrapAll $ SID.chatHistorySince loggedUserID lastID
+listMissedEvents :: PrimaryKey -> Maybe Int -> Maybe Int -> ServerEffect MissedEvents
+listMissedEvents loggedUserID lastSenderID lastRecipientID = do
+      messageIDs <- SN.unwrapAll $ DM.maybe (pure []) (SID.messsageIDsFor loggedUserID) lastSenderID
+      history <- SN.unwrapAll $ DM.maybe (pure []) (SID.chatHistorySince loggedUserID) lastRecipientID
       contacts <- SN.unwrapAll <<< SID.presentSelectedContacts loggedUserID <<< DA.nubEq $ map _.sender history
       let userHistory = DF.foldl intoHashMap DH.empty history
-      pure $ intoContacts userHistory <$> contacts
+      pure {
+            contacts: intoContacts userHistory <$> contacts,
+            messageIDs
+      }
 
       where intoHashMap hashMap m@{ recipient } = DH.insertWith (<>) recipient [m] hashMap
             intoContacts userHistory contact@{ user: { id } } = contact {

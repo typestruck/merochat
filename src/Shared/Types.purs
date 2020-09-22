@@ -2,7 +2,6 @@ module Shared.Types where
 
 import Prelude
 
-import Control.Monad.Except (Except)
 import Control.Monad.Except as CME
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Core as DAP
@@ -20,7 +19,6 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
-import Data.List.NonEmpty (NonEmptyList)
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -32,7 +30,7 @@ import Data.String.Read as DSR
 import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
-import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue, fromSQLRow)
+import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue)
 import Flame (Key)
 import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
@@ -157,8 +155,21 @@ type HistoryMessage = {
 
 data MessageStatus =
       Errored |
-      Unread |
+      Sent |
+      Received |
       Read
+
+type MessageIDTemporary = {
+      id :: PrimaryKey,
+      temporaryID :: Int
+}
+
+newtype MessageIDTemporaryWrapper = MessageIDTemporaryWrapper MessageIDTemporary
+
+type MissedEvents = {
+      contacts :: Array Contact,
+      messageIDs :: Array MessageIDTemporary
+}
 
 type LeaderboardUser = {
       position :: Int,
@@ -258,7 +269,7 @@ data IMMessage =
       CheckFetchContacts |
       FetchContacts Boolean |
       DisplayContacts (Array Contact) |
-      DisplayMissedMessages (Array Contact) |
+      ResumeMissedEvents MissedEvents |
       --suggestion
       PreviousSuggestion |
       NextSuggestion |
@@ -293,21 +304,21 @@ data IMMessage =
 data WebSocketPayloadServer =
       Connect |
       ServerMessage (BasicMessage (
-          content :: MessageContent,
-          userID :: PrimaryKey,
-          turn :: Maybe Turn
+            userID :: PrimaryKey,
+            content :: MessageContent,
+            turn :: Maybe Turn
       )) |
       ReadMessages {
-          --alternatively, update by user?
-          ids :: Array PrimaryKey
+            --alternatively, update by user?
+            ids :: Array PrimaryKey
       } |
       ToBlock {
-          id :: PrimaryKey
+            id :: PrimaryKey
       }
 
 data WebSocketPayloadClient =
       ClientMessage ClientMessagePayload |
-      Received {
+      ReceivedMessage {
           previousID :: PrimaryKey,
           id :: PrimaryKey,
           userID :: PrimaryKey
@@ -406,6 +417,7 @@ derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient 
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
 derive instance genericShowModal :: Generic ShowModal _
 
+derive instance newtypeMessageIDTemporaryWrapper :: Newtype MessageIDTemporaryWrapper _
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
 derive instance newtypeLeaderboardUserWrapper :: Newtype LeaderboardUserWrapper _
 derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
@@ -422,6 +434,15 @@ derive instance eqToggleBoard :: Eq ToggleBoard
 derive instance eqGender :: Eq Gender
 derive instance eqMessageStatus :: Eq MessageStatus
 derive instance eqShowModal :: Eq ShowModal
+
+instance fromSQLRowMessageIDTemporaryWrapper :: FromSQLRow MessageIDTemporaryWrapper where
+      fromSQLRow =
+            case _ of
+                  [foreignID, foreignTemporaryID] -> DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+                        id <- F.readInt foreignID
+                        temporaryID <- F.readInt foreignTemporaryID
+                        pure $ MessageIDTemporaryWrapper { id, temporaryID }
+                  _ -> Left "missing or extra fields for karma user"
 
 instance fromSQLRowLeaderboardUserWrapper :: FromSQLRow LeaderboardUserWrapper where
       fromSQLRow =
@@ -698,6 +719,8 @@ instance showShowModal :: Show ShowModal where
 
 instance toSQLValueGender :: ToSQLValue Gender where
       toSQLValue = F.unsafeToForeign <<< show
+instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
+      toSQLValue = F.unsafeToForeign <<< DE.fromEnum
 
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
@@ -759,12 +782,12 @@ instance readGenerate :: Read Generate where
 
 --thats a lot of work...
 instance ordMessageStatus :: Ord MessageStatus where
-      compare Unread Read = LT
-      compare Read Unread = GT
+      compare Received Read = LT
+      compare Read Received = GT
       compare _ _ = EQ
 
 instance boundedMessageStatus :: Bounded MessageStatus where
-      bottom = Unread
+      bottom = Received
       top = Read
 
 instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
@@ -772,22 +795,26 @@ instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
 
       fromEnum = case _ of
           Errored -> -1
-          Unread -> 0
-          Read -> 1
+          Sent -> 0
+          Received -> 1
+          Read -> 2
 
       toEnum = case _ of
           -1 -> Just Errored
-          0 -> Just Unread
-          1 -> Just Read
+          0 -> Just Sent
+          1 -> Just Received
+          2 -> Just Read
           _ -> Nothing
 
 instance enumMessageStatus :: Enum MessageStatus where
       succ = case _ of
-          Errored -> Just Unread
-          Unread -> Just Read
+          Errored -> Just Received
+          Sent -> Just Sent
+          Received -> Just Read
           Read -> Nothing
 
       pred = case _ of
           Errored -> Nothing
-          Unread -> Just Errored
-          Read -> Just Unread
+          Sent -> Just Sent
+          Received -> Just Errored
+          Read -> Just Received

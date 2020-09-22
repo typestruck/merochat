@@ -24,14 +24,14 @@ create table users
 create table messages
 (
     id integer generated always as identity primary key,
+    temporary_id integer not null,
     sender integer not null,
     recipient integer not null,
     date timestamp not null default (now() at time zone 'utc'),
     content text not null,
-    status smallint not null default 0,
+    status smallint not null default 1,
     visualized timestamp,
 
-    constraint status_check check (status in (0, 1)),
     constraint from_user_message foreign key (sender) references users(id) on delete cascade,
     constraint to_user_message foreign key (recipient) references users(id) on delete cascade
 );

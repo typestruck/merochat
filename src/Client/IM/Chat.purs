@@ -1,4 +1,3 @@
--- | This module takes care of websocket plus chat editor events.
 module Client.IM.Chat where
 
 import Prelude
@@ -30,7 +29,6 @@ import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Effect.Console as EC
 import Effect.Now as EN
 import Flame ((:>))
 import Flame as F
@@ -41,7 +39,6 @@ import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.Event.Event (Event)
-import Web.Event.Event as WEE
 import Web.File.FileReader (FileReader)
 import Web.HTML.Event.DataTransfer as WHEDT
 import Web.HTML.Event.DragEvent as WHED
@@ -123,7 +120,7 @@ sendMessage webSocket date = case _ of
                  updatedChatting = recipient {
                         history = DA.snoc history $  {
                               id: newTemporaryID,
-                              status: Unread,
+                              status: Sent,
                               sender: senderID,
                               recipient: recipientID,
                               date,
@@ -198,7 +195,7 @@ receiveMessage webSocket isFocused wsPayload model@{
       suggestions,
       blockedUsers
 } = case wsPayload of
-      Received { previousID, id, userID } ->
+      ReceivedMessage { previousID, id, userID } ->
             F.noMessages $ model {
                   contacts = updateTemporaryID contacts userID previousID id
             }
@@ -222,7 +219,7 @@ receiveMessage webSocket isFocused wsPayload model@{
                         in
                               if isFocused && isChatting userID fields then
                                     CICN.updateReadHistory updatedModel fields
-                              else
+                               else
                                     F.noMessages updatedModel
                   Right updatedModel -> F.noMessages updatedModel
       PayloadError payload -> case payload of
@@ -244,7 +241,7 @@ processIncomingMessage { id, userID, date, content } model@{
       suggesting,
       chatting
 } = case findAndUpdateContactList of
-      Just (Tuple contacts' newChatting) ->
+      Just contacts' ->
             --new messages bubble the contact to the top
             let added = DA.head contacts' in Right $
                   if getUserID (map _.user added) == getUserID suggestingContact then
@@ -259,14 +256,13 @@ processIncomingMessage { id, userID, date, content } model@{
                         }
                    else
                         model {
-                              contacts = contacts',
-                              chatting = Just newChatting
+                              contacts = contacts'
                         }
       Nothing -> Left userID
       where updateHistory { id, content, date } user@{ history } =
                   user {
                         history = DA.snoc history $  {
-                              status: Unread,
+                              status: Received,
                               sender: userID,
                               recipient: recipientID,
                               id,
@@ -278,7 +274,7 @@ processIncomingMessage { id, userID, date, content } model@{
                   index <- DA.findIndex findUser contacts
                   { history } <- contacts !! index
                   updated <- DA.modifyAt index (updateHistory { content, id, date }) contacts
-                  pure $ Tuple updated index
+                  pure updated
 
             suggestingContact = do
                   index <- suggesting
@@ -290,7 +286,7 @@ processIncomingMessage { id, userID, date, content } model@{
 updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> PrimaryKey -> Array Contact
 updateTemporaryID contacts userID previousMessageID messageID = updateContactHistory contacts userID updateTemporary
       where updateTemporary history@( { id })
-                  | id == previousMessageID = history  { id = messageID }
+                  | id == previousMessageID = history { id = messageID, status = Received }
                   | otherwise = history
 
 updateHistoryStatus :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact

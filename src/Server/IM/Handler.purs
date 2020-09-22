@@ -12,6 +12,7 @@ import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
 import Server.Response as SR
+import Web.HTML.HTMLMediaElement.CanPlayType (CanPlayType(..))
 
 im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect Html
 im { guards: { loggedUserID } } = do
@@ -40,5 +41,5 @@ suggestions { guards: { loggedUserID }, query: { skip } } = SIA.suggest loggedUs
 block :: { guards :: { loggedUserID :: PrimaryKey }, query :: { id :: PrimaryKey } } -> ServerEffect Ok
 block { guards: { loggedUserID }, query: { id } } = SIA.blockUser loggedUserID id
 
-missedMessages :: { guards :: { loggedUserID :: PrimaryKey }, query :: { lastID :: Int } } -> ServerEffect (Array Contact)
-missedMessages { guards: { loggedUserID }, query: { lastID } } = SIA.listMissedContacts loggedUserID lastID
+missedEvents :: { guards :: { loggedUserID :: PrimaryKey }, query :: { lastSenderID :: Maybe Int, lastRecipientID :: Maybe Int } } -> ServerEffect MissedEvents
+missedEvents { guards: { loggedUserID }, query: { lastSenderID, lastRecipientID } } = SIA.listMissedEvents loggedUserID lastSenderID lastRecipientID

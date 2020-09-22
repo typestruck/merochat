@@ -16,6 +16,7 @@ import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Time.Duration (Days(..))
 import Data.Time.Duration as DTD
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
@@ -77,7 +78,7 @@ dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwra
 --    mdy hh:mm
 ago :: DateTime -> String
 ago dateTime =
-      let days = DI.ceil $ DN.unwrap (DDT.diff now dateTime :: Days)
+      let days = DI.floor $ DN.unwrap (DDT.diff now dateTime :: Days)
       in
             if days == 0 then
                   localDateTimeWith time dateTime

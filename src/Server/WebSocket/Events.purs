@@ -54,11 +54,11 @@ handleMessage payload = do
             ToBlock { id } -> do
                   possibleConnection <- R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \recipientConnection -> sendWebSocketMessage recipientConnection $ BeenBlocked { id: sessionUserID }
-            ServerMessage {id, userID: recipient, content, turn} -> do
+            ServerMessage {id:temporaryID , userID: recipient, content, turn} -> do
                   date <- R.liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  Tuple messageID finalContent <- SIA.processMessage sessionUserID recipient content
-                  sendWebSocketMessage connection $ Received {
-                        previousID: id,
+                  Tuple messageID finalContent <- SIA.processMessage sessionUserID recipient temporaryID content
+                  sendWebSocketMessage connection $ ReceivedMessage {
+                        previousID: temporaryID,
                         id: messageID,
                         userID: sessionUserID
                   }

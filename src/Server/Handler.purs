@@ -46,7 +46,7 @@ handlers reading = {
             history: runJSON reading SIH.history,
             suggestions: runJSON reading SIH.suggestions,
             block: runJSON reading SIH.block,
-            missedMessages: runJSON reading SIH.missedMessages
+            missedEvents: runJSON reading SIH.missedEvents
       },
       profile: {
             get: runJSON reading SPH.profile,
