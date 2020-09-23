@@ -4,6 +4,7 @@ import Prelude
 import Shared.Types
 
 import Client.IM.Chat as CIC
+import Client.IM.Main as CIM
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -115,7 +116,7 @@ tests = do
 
             TU.test "receiveMessage substitutes temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   {contacts} = DT.fst <<< CIC.receiveMessage webSocket true (ReceivedMessage {
+                  let   {contacts} = DT.fst <<< CIM.receiveMessage webSocket true (ReceivedMessage {
                               previousID: messageID,
                               id : newMessageID,
                               userID: contactID
@@ -135,7 +136,7 @@ tests = do
 
             TU.test "receiveMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { contacts } = DT.fst <<< CIC.receiveMessage webSocket true (ClientMessage {
+                  let   { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (ClientMessage {
                               date,
                               id: newMessageID,
                               content,
@@ -155,7 +156,7 @@ tests = do
 
             TU.test "receiveMessage mark messages as read if coming from current chat" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { contacts } = DT.fst <<< CIC.receiveMessage webSocket true (ClientMessage {
+                  let   { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (ClientMessage {
                               id: newMessageID,
                               userID: contactID,
                               content,
@@ -169,7 +170,7 @@ tests = do
 
             TU.test "receiveMessage does not mark messages as read if window is not focused" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let { contacts } = DT.fst <<< CIC.receiveMessage webSocket false (ClientMessage {
+                  let { contacts } = DT.fst <<< CIM.receiveMessage webSocket false (ClientMessage {
                               id: newMessageID,
                               userID: anotherIMUserID,
                               content,

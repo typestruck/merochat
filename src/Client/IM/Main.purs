@@ -11,16 +11,18 @@ import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Suggestion as CIS
+import Client.IM.Unread as CIUC
 import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
 import Client.IM.WebSocket as CIW
 import Control.Monad.Except as CME
 import Data.Array ((!!))
 import Data.Array as DA
-import Data.Either (Either)
+import Data.Either (Either(..))
 import Data.Either (fromRight) as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -43,10 +45,12 @@ import Shared.DateTime (epoch)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Newtype as SN
+import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.Event.EventTarget as WET
+import Web.Event.Internal.Types (Event)
 import Web.File.FileReader as WFR
 import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
@@ -78,7 +82,7 @@ main = do
       windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
-update { webSocketRef, fileReader} model  =
+update { webSocketRef, fileReader} model =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
@@ -90,7 +94,6 @@ update { webSocketRef, fileReader} model  =
             BeforeSendMessage content -> CIC.beforeSendMessage content model
             SendMessage date -> CIC.sendMessage webSocket date model
             SetMessageContent cursor content -> CIC.setMessage cursor content model
-            ReceiveMessage payload isFocused -> CIC.receiveMessage webSocket isFocused payload model
             Apply markup -> CIC.applyMarkup markup model
             Preview -> CIC.preview model
             SelectImage -> CIC.selectImage model
@@ -124,38 +127,148 @@ update { webSocketRef, fileReader} model  =
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
             --main
+            AlertUnreadChats -> alertUnreadChats
+            ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
             ToggleOnline -> toggleOnline model
             CheckMissedMessages -> checkMissedMessages model
             SetField setter -> F.noMessages $ setter model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
-            setName name model@{ user } = F.noMessages $ model {
-                  user = user {
-                        name = name
-                  }
-            }
-            toggleOnline model@{ isOnline } = F.noMessages $ model {
-                  isOnline = not isOnline
-            }
-            preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
-            checkMissedMessages model@{ contacts, user : { id: senderID } } =
-                  model :> [do
-                        let lastSenderID = findLast (\h -> senderID == h.sender && h.status == Received) contacts
-                            lastRecipientID = findLast ((senderID /= _) <<< _.sender) contacts
+            alertUnreadChats = CIF.nothingNext model <<< liftEffect $ CIUC.alertUnreadChats model
 
-                        if DM.isNothing lastSenderID && DM.isNothing lastRecipientID then
-                              pure Nothing
-                         else
-                              Just <<< ResumeMissedEvents <$> CCNT.response (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
-                  ]
-            findLast f array = do
+receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
+receiveMessage webSocket isFocused wsPayload model@{
+      user: { id: recipientID },
+      contacts,
+      suggestions,
+      blockedUsers
+} = case wsPayload of
+      ReceivedMessage { previousID, id, userID } ->
+            F.noMessages $ model {
+                  contacts = updateTemporaryID contacts userID previousID id
+            }
+      BeenBlocked { id } ->
+            F.noMessages $ CIS.removeBlockedUser id model
+      ClientMessage payload@{ userID } ->
+            if DA.elem userID blockedUsers then
+                  F.noMessages model
+            else case processIncomingMessage payload model of
+                  Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.response (request.im.singleContact { query: { id: userID }})]
+                  Right updatedModel@{
+                        chatting: Just index,
+                        contacts
+                  } ->  --mark it as read if we received a message from the current chat
+                        let fields = {
+                              chatting: index,
+                              userID: recipientID,
+                              contacts,
+                              webSocket
+                        }
+                        in
+                              if isFocused && isChatting userID fields then
+                                    CICN.updateReadHistory updatedModel fields
+                               else
+                                    F.noMessages updatedModel
+                  Right updatedModel -> F.noMessages updatedModel
+      PayloadError payload -> case payload of
+            ServerMessage { id, userID } -> F.noMessages $ model {
+                 contacts = updateHistoryStatus contacts userID id
+            }
+            --the connection might still be open and the server haven't saved the socket
+            Connect -> CIF.nothingNext model <<< liftEffect $ CIW.close webSocket
+            _ -> F.noMessages model
+      where isChatting senderID { contacts, chatting } =
+                  let ({ user: { id: recipientID } }) = contacts !@ chatting in
+                  recipientID == senderID
+
+processIncomingMessage :: ClientMessagePayload -> IMModel -> Either PrimaryKey IMModel
+processIncomingMessage { id, userID, date, content } model@{
+      user: { id: recipientID },
+      suggestions,
+      contacts,
+      suggesting,
+      chatting
+} = case findAndUpdateContactList of
+      Just contacts' ->
+            Right $ model {
+                  contacts = contacts'
+            }
+      Nothing -> Left userID
+      where updateHistory { id, content, date } user@{ history } =
+                  user {
+                        history = DA.snoc history $  {
+                              status: Received,
+                              sender: userID,
+                              recipient: recipientID,
+                              id,
+                              content,
+                              date
+                        }
+                  }
+            findAndUpdateContactList = do
+                  index <- DA.findIndex findUser contacts
+                  { history } <- contacts !! index
+                  updated <- DA.modifyAt index (updateHistory { content, id, date }) contacts
+                  pure updated
+
+            findUser ({ user: { id } }) = userID == id
+
+updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> PrimaryKey -> Array Contact
+updateTemporaryID contacts userID previousMessageID messageID = updateContactHistory contacts userID updateTemporary
+      where updateTemporary history@( { id })
+                  | id == previousMessageID = history { id = messageID, status = Received }
+                  | otherwise = history
+
+updateHistoryStatus :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact
+updateHistoryStatus contacts userID messageID = updateContactHistory contacts userID updateStatus
+      where updateStatus history@( { id })
+                  | id == messageID = history { status = Errored }
+                  | otherwise = history
+
+updateContactHistory :: Array Contact -> PrimaryKey -> (HistoryMessage -> HistoryMessage) -> Array Contact
+updateContactHistory contacts userID f = updateContact <$> contacts
+      where updateContact contact@{ user: { id }, history }
+                  | id == userID = contact {
+                        history = f <$> history
+                  }
+                  | otherwise = contact
+
+checkMissedMessages :: IMModel -> MoreMessages
+checkMissedMessages model@{ contacts, user : { id: senderID } } =
+      model :> [do
+            let lastSenderID = findLast (\h -> senderID == h.sender && h.status == Received) contacts
+                lastRecipientID = findLast ((senderID /= _) <<< _.sender) contacts
+
+            if DM.isNothing lastSenderID && DM.isNothing lastRecipientID then
+                  pure Nothing
+                  else
+                  Just <<< ResumeMissedEvents <$> CCNT.response (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
+      ]
+      where findLast f array = do
                   { history } <- DA.head array
                   index <- DA.findLastIndex f history
                   { id } <- history !! index
                   pure id
 
-windowsFocus ::  Channel (Array IMMessage) -> Effect Unit
+setName :: String -> IMModel -> NoMessages
+setName name model@{ user } =
+      F.noMessages $ model {
+            user = user {
+                  name = name
+            }
+      }
+
+toggleOnline :: IMModel -> NoMessages
+toggleOnline model@{ isOnline } =
+      F.noMessages $ model {
+            isOnline = not isOnline
+      }
+
+preventStop :: Event -> IMModel -> NextMessage
+preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
+
+windowsFocus :: Channel (Array IMMessage) -> Effect Unit
 windowsFocus channel = do
       focusListener <- WET.eventListener $ const (SC.send channel $ DA.singleton UpdateReadCount)
       --focus event has to be on the window as chrome is a whiny baby about document

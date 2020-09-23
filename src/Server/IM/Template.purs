@@ -5,6 +5,7 @@ import Shared.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
@@ -12,6 +13,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Server.Template (defaultParameters)
 import Server.Template as ST
+import Shared.IM.Unread as SIU
 import Shared.IM.View as SIV
 
 template :: {
@@ -20,13 +22,7 @@ template :: {
       user :: IMUser
 } -> Effect String
 template {contacts, suggestions, user} = do
-      let parameters = defaultParameters {
-            javascript = javascript,
-            css = css
-      }
-      F.preMount (QuerySelector ".im") {
-            view: \model' -> ST.templateWith $ parameters { content = [SIV.view false model'] },
-            init: {
+      let   model = {
                   chatting: Nothing,
                   temporaryID: 0,
                   suggesting: if DA.null suggestions then Nothing else Just 0,
@@ -52,6 +48,16 @@ template {contacts, suggestions, user} = do
                   suggestions,
                   user
             }
+            unreadChats = SIU.countUnreadChats user.id contacts
+      F.preMount (QuerySelector ".im") {
+            view: \model' -> ST.templateWith $ defaultParameters {
+                  title = SIU.title unreadChats,
+                  favicon = SIU.favicon unreadChats,
+                  content = [SIV.view false model'],
+                  javascript = javascript,
+                  css = css
+            },
+            init: model
       }
       --REFACTOR: js css et all must have typed routes
       where javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"] ]

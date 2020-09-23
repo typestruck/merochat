@@ -13,5 +13,5 @@ exports.dayOfTheWeek = function (ms) {
 exports.fullDate = function (ms) {
     var dateTime = new Date(ms);
 
-    return localDateFormat.format(dateTime) + ' ' + localTimeFormat.format(dateTime);
+    return localDateFormat.format(dateTime);
 }

@@ -71,11 +71,11 @@ dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwra
 --same day
 --    hh:mm
 --yesterday
---    yesterday, HH:mm
+--    yesterday
 --same week
---    day of week, HH:mm
+--    day of week
 --otherwise
---    mdy hh:mm
+--    mdy
 ago :: DateTime -> String
 ago dateTime =
       let days = DI.floor $ DN.unwrap (DDT.diff now dateTime :: Days)
@@ -83,9 +83,9 @@ ago dateTime =
             if days == 0 then
                   localDateTimeWith time dateTime
              else if days == 1 then
-                  "Yesterday " <> localDateTimeWith time dateTime
+                  "Yesterday "
              else if days >= 2 && days <= 7 then
-                  localDateTimeWith  dayOfTheWeek dateTime <> " " <> localDateTimeWith time dateTime
+                  localDateTimeWith dayOfTheWeek dateTime
              else
                   localDateTimeWith fullDate dateTime
       where now :: DateTime

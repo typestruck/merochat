@@ -282,7 +282,6 @@ data IMMessage =
       ForceBeforeSendMessage |
       BeforeSendMessage String |
       SendMessage DateTimeWrapper |
-      ReceiveMessage WebSocketPayloadClient Boolean |
       SetMessageContent (Maybe Int) String |
       SelectImage |
       ToggleImageForm (Maybe String) |
@@ -295,6 +294,8 @@ data IMMessage =
       SetEmoji Event |
       InsertLink |
       --main
+      ReceiveMessage WebSocketPayloadClient Boolean |
+      AlertUnreadChats |
       PreventStop Event |
       SetNameFromProfile String |
       ToggleOnline |
