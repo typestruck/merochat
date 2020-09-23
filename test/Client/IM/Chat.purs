@@ -34,15 +34,15 @@ tests = do
 
             TU.test "sendMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage webSocket date model
+                  let   { user: { id: userID }, contacts, chatting } = DT.fst <<< CIC.sendMessage webSocket date $ model { message = Just content }
                         user = SN.fromJust do
                               index <- chatting
                               contacts !! index
 
-                  TUA.equal [ {
+                  TUA.equal [{
                         date: (user.history !@ 0).date,
                         recipient: user.user.id,
-                        status: Received,
+                        status: Sent,
                         id: 1,
                         content,
                         sender: userID
@@ -71,7 +71,7 @@ tests = do
                         }
                   TUA.equal turn $ CIC.makeTurn contact' imUserID
 
-            TU.test "makeTurn don't calculate turn for recipient " do
+            TU.test "makeTurn don't calculate turn for recipient" do
                   TUA.equal Nothing $ CIC.makeTurn contact 90000
 
             TU.test "makeTurn don't calculate turn if last message isn't from the sender" do
@@ -135,11 +135,11 @@ tests = do
 
             TU.test "receiveMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   {contacts} = DT.fst <<< CIC.receiveMessage webSocket true (ClientMessage {
+                  let   { contacts } = DT.fst <<< CIC.receiveMessage webSocket true (ClientMessage {
                               date,
                               id: newMessageID,
                               content,
-                              userID: anotherIMUserID
+                              userID: contact.user.id
                         }) $ model {
                               contacts = [contact],
                               chatting = Nothing
@@ -148,61 +148,10 @@ tests = do
                         status: Received,
                         id: newMessageID,
                         content,
-                        sender: anotherIMUserID,
+                        sender: contact.user.id,
                         recipient: recipientID,
                         date
                   }) $ getHistory contacts
-
-            TU.test "receiveMessage adds contact if new" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { contacts } = DT.fst <<< CIC.receiveMessage webSocket true (ClientMessage {
-                              date,
-                              id: newMessageID,
-                              content,
-                              userID: anotherIMUserID
-                        }) $ model {
-                              contacts = [],
-                              chatting = Nothing
-                        }
-                  TUA.equal ((contacts !@ 0).history) [
-                         {
-                              status: Received,
-                              id: newMessageID,
-                              sender: anotherIMUserID,
-                              recipient: recipientID,
-                              content,
-                              date
-                        }
-                  ]
-
-            TU.test "receiveMessage set chatting if message comes from current suggestion" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   model' = model {
-                              contacts = [],
-                              chatting = Nothing,
-                              suggesting = Just 0,
-                              suggestions = [anotherIMUser]
-                        }
-                        { contacts, chatting } = DT.fst $ CIC.receiveMessage webSocket true (ClientMessage {
-                              id: newMessageID,
-                              userID: anotherIMUserID,
-                              content,
-                              date
-                        }) model'
-                        suggestionToContact = Just $ contact {
-                              chatStarter = anotherIMUserID,
-                              user = anotherIMUser,
-                              history = [{
-                                    status: Read,
-                                    id: newMessageID,
-                                    sender: anotherIMUserID,
-                                    recipient: recipientID,
-                                    date,
-                                    content
-                              }]
-                        }
-                  TUA.equal suggestionToContact $ DA.head contacts
-                  TUA.equal chatting $ Just 0
 
             TU.test "receiveMessage mark messages as read if coming from current chat" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime

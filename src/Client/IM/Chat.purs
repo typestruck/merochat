@@ -27,6 +27,7 @@ import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -34,7 +35,6 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
-
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
@@ -150,7 +150,7 @@ sendMessage webSocket date = case _ of
             asMessageContent message imageCaption selectedImage = DM.maybe' (\_ -> Text $ SU.fromJust message) (Image <<< Tuple (DM.fromMaybe "" imageCaption)) selectedImage
 
 makeTurn :: Contact -> PrimaryKey -> Maybe Turn
-makeTurn ({ chatStarter, chatAge, history }) sender =
+makeTurn { chatStarter, chatAge, history } sender =
       if chatStarter == sender && isNewTurn history sender then
             let   senderEntry = SU.fromJust $ DA.last history
                   recipientEntry = SU.fromJust $ history !! (DA.length history - 2)
@@ -242,22 +242,9 @@ processIncomingMessage { id, userID, date, content } model@{
       chatting
 } = case findAndUpdateContactList of
       Just contacts' ->
-            --new messages bubble the contact to the top
-            let added = DA.head contacts' in Right $
-                  if getUserID (map _.user added) == getUserID suggestingContact then
-                        --edge case of receiving a message from a suggestion
-                        model {
-                              contacts = contacts',
-                              suggesting = Nothing,
-                              suggestions = SU.fromJust do
-                                    index <- suggesting
-                                    DA.deleteAt index suggestions,
-                              chatting = Just 0
-                        }
-                   else
-                        model {
-                              contacts = contacts'
-                        }
+            Right $ model {
+                  contacts = contacts'
+            }
       Nothing -> Left userID
       where updateHistory { id, content, date } user@{ history } =
                   user {
@@ -276,11 +263,6 @@ processIncomingMessage { id, userID, date, content } model@{
                   updated <- DA.modifyAt index (updateHistory { content, id, date }) contacts
                   pure updated
 
-            suggestingContact = do
-                  index <- suggesting
-                  suggestions !! index
-
-            getUserID = map _.id
             findUser ({ user: { id } }) = userID == id
 
 updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> PrimaryKey -> Array Contact
