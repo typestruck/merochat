@@ -8,7 +8,6 @@ generated-docs
 .purs*
 .psa*
 .pulp_cache
-*.bundle.*
 .vscode
 src/Client/media/upload
 configuration.json
