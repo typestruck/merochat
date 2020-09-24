@@ -304,7 +304,7 @@ data IMMessage =
 
 data WebSocketPayloadServer =
       Connect |
-      ServerMessage (BasicMessage (
+      OutgoingMessage (BasicMessage (
             userID :: PrimaryKey,
             content :: MessageContent,
             turn :: Maybe Turn
@@ -318,8 +318,8 @@ data WebSocketPayloadServer =
       }
 
 data WebSocketPayloadClient =
-      ClientMessage ClientMessagePayload |
-      ReceivedMessage {
+      NewIncomingMessage ClientMessagePayload |
+      ServerReceivedMessage {
           previousID :: PrimaryKey,
           id :: PrimaryKey,
           userID :: PrimaryKey

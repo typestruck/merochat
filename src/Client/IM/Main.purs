@@ -127,7 +127,7 @@ update { webSocketRef, fileReader} model =
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
             --main
-            AlertUnreadChats -> alertUnreadChats
+            AlertUnreadChats -> CIUC.alertUnreadChats model
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
@@ -135,7 +135,6 @@ update { webSocketRef, fileReader} model =
             CheckMissedMessages -> checkMissedMessages model
             SetField setter -> F.noMessages $ setter model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
-            alertUnreadChats = CIF.nothingNext model <<< liftEffect $ CIUC.alertUnreadChats model
 
 receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
 receiveMessage webSocket isFocused wsPayload model@{
@@ -144,13 +143,13 @@ receiveMessage webSocket isFocused wsPayload model@{
       suggestions,
       blockedUsers
 } = case wsPayload of
-      ReceivedMessage { previousID, id, userID } ->
+      ServerReceivedMessage { previousID, id, userID } ->
             F.noMessages $ model {
                   contacts = updateTemporaryID contacts userID previousID id
             }
       BeenBlocked { id } ->
             F.noMessages $ CIS.removeBlockedUser id model
-      ClientMessage payload@{ userID } ->
+      NewIncomingMessage payload@{ userID } ->
             if DA.elem userID blockedUsers then
                   F.noMessages model
             else case processIncomingMessage payload model of
@@ -169,10 +168,10 @@ receiveMessage webSocket isFocused wsPayload model@{
                               if isFocused && isChatting userID fields then
                                     CICN.updateReadHistory updatedModel fields
                                else
-                                    F.noMessages updatedModel
+                                    CIUC.alertUnreadChats updatedModel
                   Right updatedModel -> F.noMessages updatedModel
       PayloadError payload -> case payload of
-            ServerMessage { id, userID } -> F.noMessages $ model {
+            OutgoingMessage { id, userID } -> F.noMessages $ model {
                  contacts = updateHistoryStatus contacts userID id
             }
             --the connection might still be open and the server haven't saved the socket

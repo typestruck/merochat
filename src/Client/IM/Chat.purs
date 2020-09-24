@@ -139,7 +139,7 @@ sendMessage webSocket date = case _ of
             in
                   CIF.nothingNext updatedModel $ liftEffect do
                         CIS.scrollLastMessage
-                        CIW.sendPayload webSocket $ ServerMessage {
+                        CIW.sendPayload webSocket $ OutgoingMessage {
                               id: newTemporaryID,
                               userID: recipientID,
                               content: asMessageContent message imageCaption selectedImage,
