@@ -9,6 +9,8 @@ import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
+import Client.IM.Unread as CIU
+import Client.IM.Unread as CIUN
 import Client.IM.WebSocket as CIW
 import Data.Array ((!!), (..))
 import Data.Array as DA
@@ -68,12 +70,15 @@ updateReadHistory :: IMModel -> {
 updateReadHistory model { webSocket, chatting, userID, contacts } =
       let contactRead@{ history } = contacts !@ chatting
           messagesRead = DA.mapMaybe (unreadID userID) history
-      in if DA.null messagesRead then
-            CIF.nothingNext model scroll
-          else
-            CIF.nothingNext (updateContacts contactRead) do
-                  confirmRead messagesRead
-                  scroll
+      in
+            if DA.null messagesRead then
+                  CIF.nothingNext model $ liftEffect scroll
+             else
+                  let updatedModel@{ user: { id }, contacts } = (updateContacts contactRead)
+                  in CIF.nothingNext updatedModel $ liftEffect do
+                        confirmRead messagesRead
+                        scroll
+                        alertUnread id contacts
 
       where unreadID userID ( { recipient, id, status })
                   | status == Received && recipient == userID = Just id
@@ -87,9 +92,11 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
                   contacts = SU.fromJust $ DA.updateAt chatting (contactRead { history = map (read userID) history }) contacts
             }
 
-            confirmRead messages = liftEffect <<< CIW.sendPayload webSocket $ ReadMessages { ids: messages }
+            confirmRead messages = CIW.sendPayload webSocket $ ReadMessages { ids: messages }
 
-            scroll = liftEffect CIS.scrollLastMessage
+            scroll = CIS.scrollLastMessage
+
+            alertUnread id contacts = CIUN.setTabCount id contacts
 
 checkFetchContacts :: IMModel -> MoreMessages
 checkFetchContacts model@{ contacts, freeToFetchContactList }
@@ -113,7 +120,7 @@ fetchContacts shouldFetch model@{ contacts, freeToFetchContactList }
 
 displayContacts :: Array Contact -> IMModel -> NoMessages
 displayContacts newContacts model@{ contacts } =
-      F.noMessages $ model {
+      CIU.alertUnreadChats $ model {
             contacts = contacts <> newContacts,
             freeToFetchContactList = true
       }

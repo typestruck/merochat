@@ -119,3 +119,9 @@ preventStop :: Event -> Effect Unit
 preventStop event = do
       WEE.preventDefault event
       WEE.stopPropagation event
+
+setTitle :: String -> Effect Unit
+setTitle title = do
+      window <- WH.window
+      document <- WHW.document window
+      WHHD.setTitle title document

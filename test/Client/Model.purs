@@ -84,9 +84,9 @@ suggestion = imUser { id = suggestionID }
 
 historyMessage :: HistoryMessage
 historyMessage = {
-      id:  1,
-      sender:  imUserID,
-      recipient:contactID,
+      id: 1,
+      sender: imUserID,
+      recipient: contactID,
       date: DateTimeWrapper <<< EU.unsafePerformEffect $ EN.nowDateTime,
       content: "test",
       status: Received
