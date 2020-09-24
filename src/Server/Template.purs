@@ -2,20 +2,16 @@
 module Server.Template where
 
 import Prelude
-import Shared.Types
 
-import Data.Array ((:))
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.Routes (routes)
 
-
---TODO memoization, caching -- it would be nice to serve this as static files?
-
 type Parameters a = {
+      title :: String,
+      favicon :: String,
       javascript :: Array (Html a),
       css :: Array (Html a),
       content :: Array (Html a),
@@ -24,6 +20,8 @@ type Parameters a = {
 
 defaultParameters :: forall a. Parameters a
 defaultParameters = {
+      title: "MelanChat (Friendly) Random Chat",
+      favicon: "/client/media/favicon.ico",
       javascript: [],
       css: [], --REFACTOR: should just be a list of file names
       content: [],
@@ -31,35 +29,35 @@ defaultParameters = {
 }
 
 externalDefaultParameters :: forall a. Parameters a
-externalDefaultParameters = {
-      javascript: [],
-      css: [
+externalDefaultParameters = defaultParameters {
+      css = [
             HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/external.css"]
       ],
-      content: [
+      content = [
             HE.div (HA.class' "header") [
                   HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
-                              HA.createAttribute "srcset" "/client/media/logo-2.png 350w, /client/media/logo.png 250w",
-                              HA.createAttribute "sizes" "(min-width: 1299px) 350px, 250px",
-                              HA.src "/client/media/logo.png"]
+                        HA.createAttribute "srcset" "/client/media/logo-2.png 350w, /client/media/logo.png 250w",
+                        HA.createAttribute "sizes" "(min-width: 1299px) 350px, 250px",
+                        HA.src "/client/media/logo.png"
+                  ]
             ]
       ],
-      footer: [externalFooter]
+      footer = [externalFooter]
 }
 
 template :: forall a. Parameters a -> Effect (Html a)
 template = pure <<< templateWith
 
 templateWith :: forall a. Parameters a -> Html a
-templateWith parameters =
+templateWith { title, content, css, footer, javascript, favicon } =
       HE.html (HA.lang "en") [
             HE.head_ ([
                   HE.meta $ HA.charset "UTF-8",
                   HE.meta [HA.name "viewport", HA.content "width=device-width, initial-scale=1.0"],
-                  HE.link [HA.rel "shortcut icon", HA.type' "image/ico", HA.href "/client/media/favicon.ico"],
-                  HE.title "MelanChat (Friendly) Random Chat"
-            ] <> styleSheets <> parameters.css),
-            HE.body_ $ parameters.content <> parameters.footer <> parameters.javascript
+                  HE.link [HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href favicon],
+                  HE.title title
+            ] <> styleSheets <> css),
+            HE.body_ $ content <> footer <> javascript
       ]
       where styleSheets = [
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]

@@ -976,5 +976,11 @@ svg.toolbar-action {
 
 .unread-messages {
     font-weight: bold;
+    text-align: center;
+}
 
+.unread-messages .unread-number {
+    background: #262626;
+    padding: 5px 10px;
+    border-radius: 100%;
 }
