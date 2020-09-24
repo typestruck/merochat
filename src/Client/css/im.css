@@ -12,11 +12,11 @@ body {
     scrollbar-width: thin;
 } */
 
-.description-message {
+.description-message, .profile-edition-description {
     width: 55em;
 }
 
-.description-message p {
+.profile-edition-description p, .description-message p {
     text-align: justify;
     hyphens: auto;
 }
@@ -634,7 +634,7 @@ svg.toolbar-action {
 }
 
 #profile-edition-root {
-    max-width: 54em;
+    width: 54em;
 }
 
 #profile-edition-root, #settings-edition-root, #karma-leaderboard-root, #help-root {
@@ -940,4 +940,13 @@ svg.toolbar-action {
     background: #262626;
     padding: 5px 10px;
     border-radius: 100%;
+}
+
+.green-button {
+    margin-top: 20px;
+    display: block;
+    border-radius: 5px;
+    border: none;
+    padding: 17px;
+    background: #1b3a28;
 }

@@ -8,18 +8,13 @@ import Prelude
 import Server.Types
 
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Tuple (Tuple(..))
-import Effect.Console as EC
 import Effect.Random as ER
 import Run as R
 import Data.Enum as DE
-import Run.Reader as RR
 import Effect.Uncurried as EU
 import Effect.Uncurried(EffectFn2)
-
 
 foreign import generate_ :: EffectFn2 Int Int String
 

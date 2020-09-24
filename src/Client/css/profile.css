@@ -1,12 +1,12 @@
-.profile-edition-name {
-
-}
-
 .suggestion.contact {
     padding: 0;
 }
 
-.suggestion.contact textarea {
+.no-cursor {
+    cursor: default;
+}
+
+.profile-edition-name, .profile-edition-headline, .profile-edition-description {
     border:none;
     resize: none;
     cursor: pointer;
@@ -18,6 +18,35 @@
     margin-top:20px;
 }
 
-.profile-edition-name, .profile-edition-headline {
+h1.profile-edition-name {
+    display: inline-block;
+}
+
+.edit {
+    margin: 0 10px;
+}
+
+textarea.profile-edition-name, textarea.profile-edition-headline {
     margin-bottom:-20px;
+}
+
+.edit-description {
+    display: flex;
+}
+
+.edit-description .edit {
+    align-self: center;
+}
+
+.suggestion.contact .profile-asl {
+    margin-top:20px
+}
+
+.profile-info-add {
+    font-style: italic;
+}
+
+.profile-info-add .edit {
+    vertical-align: middle;
+    margin:0 15px 0 5px;
 }
