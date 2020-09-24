@@ -30,14 +30,6 @@ textarea.profile-edition-name, textarea.profile-edition-headline {
     margin-bottom:-20px;
 }
 
-.edit-description {
-    display: flex;
-}
-
-.edit-description .edit {
-    align-self: center;
-}
-
 .suggestion.contact .profile-asl {
     margin-top:20px
 }
@@ -49,4 +41,12 @@ textarea.profile-edition-name, textarea.profile-edition-headline {
 .profile-info-add .edit {
     vertical-align: middle;
     margin:0 15px 0 5px;
+}
+
+.about {
+    margin-bottom: 5px;
+}
+
+.about .edit {
+    vertical-align: middle;
 }

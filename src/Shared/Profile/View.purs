@@ -69,11 +69,13 @@ view lastYearEligible ({
 
             HE.div (HA.class' "profile-tags") $ if isTagsVisible then displayTags else editTags,
 
-            HE.span (HA.class' "duller no-cursor") "About",
-
-            HE.div [HA.class' "edit-description", title "description"] [
-                  HE.div [HA.class' "profile-edition-description"] user.description,
+            HE.div [title "description", HA.class' "about"] [
+                  HE.span (HA.class' "duller") "About",
                   pen
+            ],
+
+            HE.div [title "description"] [
+                  HE.div [HA.class' "profile-edition-description"] user.description
             ],
 
             HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button end"]
@@ -132,7 +134,7 @@ display itemName field =
       case _ of
             Just s -> HE.span [title itemName, HA.onClick (unsetField field)] $ s <> " "
             _ -> HE.span [HA.class' "profile-info-add", title itemName, HA.onClick (unsetField field)] [
-                  HE.text $ "Add your " <> itemName <> " ",
+                  HE.text $ "Your " <> itemName <> " ",
                   pen
             ]
 
