@@ -15,7 +15,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 main :: Effect Unit
 main = do
       minimumYear <- SDT.getEarliestYear
-      channel <- FAE.resumeMount (QuerySelector ".profile-info-edition") {
+      channel <- FAE.resumeMount (QuerySelector ".profile-edition") {
             view: SPV.view minimumYear,
             init: Nothing,
             update: CPU.update

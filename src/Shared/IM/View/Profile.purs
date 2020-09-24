@@ -88,10 +88,6 @@ fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender,
             HE.h1_ name,
             HE.div (HA.class' "headline") headline,
             HE.div (HA.class' "profile-karma") [
-                  -- HE.div_ [
-                  --       HE.span [HA.class' "duller"] "Last seen",
-                  --       HE.text " Yesterday"
-                  -- ],
                   HE.div_ [
                         HE.span [HA.class' "span-info"] $ show karma,
                         HE.span [HA.class' "duller"] " karma"

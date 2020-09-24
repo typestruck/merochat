@@ -40,17 +40,24 @@ view lastYearEligible ({
       isLanguagesVisible,
       isTagsVisible
 }) =
-      HE.div (HA.class' "profile-info-edition") [
-            HE.div_ $ HE.img [HA.class' "avatar-profile", HA.src $ SA.avatarForSender user.avatar, title "avatar", HA.onClick SelectAvatar],
+      HE.div (HA.class' "profile-edition suggestion contact") [
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/profile.css"],
+            HE.div_ $ HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, title "avatar", HA.onClick SelectAvatar],
             HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
             --contentEditable doesn't work with snabbdom in several cases
             -- one being that on emptying the element snabbom tries to patch over the no longer existing text node
             -- (which the browser replaced with <br/>)
-            HE.div [HA.class' "profile-edition-name", titleWithGenerated "name"] [
-                  HE.textarea [HA.id "profile-edition-name", HA.onInput (SetPField <<< SS.setUserField (SProxy :: SProxy "name"))] user.name
+            HE.div [titleWithGenerated "name"] [
+                  HE.textarea [HA.class' "profile-edition-name", HA.maxlength 100, HA.onInput (SetPField <<< SS.setUserField (SProxy :: SProxy "name"))] user.name
             ],
-            HE.div [HA.class' "profile-edition-headline", titleWithGenerated "headline"] [
-                  HE.textarea [HA.id "profile-edition-headline"] user.headline
+            HE.div [titleWithGenerated "headline"] [
+                  HE.textarea [HA.class' "profile-edition-headline"] user.headline
+            ],
+            HE.div (HA.class' "profile-karma") [
+                  HE.div_ [
+                        HE.span [HA.class' "span-info"] $ show user.karma,
+                        HE.span [HA.class' "duller"] " karma"
+                  ]
             ],
             HE.div (HA.class' "profile-stats") [
                   if isAgeVisible then displayAge else editAge,
@@ -61,7 +68,6 @@ view lastYearEligible ({
                   separator,
                   if isLanguagesVisible then displayLanguages else editLanguages
             ],
-            HE.div (HA.class' "karma-stats") <<< HE.span_ $ "Karma: " <> show user.karma,
             if isTagsVisible then displayTags else editTags,
             HE.br,
             HE.div [HA.class' "profile-edition-description", titleWithGenerated "description"] [

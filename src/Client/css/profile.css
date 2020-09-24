@@ -1,0 +1,23 @@
+.profile-edition-name {
+
+}
+
+.suggestion.contact {
+    padding: 0;
+}
+
+.suggestion.contact textarea {
+    border:none;
+    resize: none;
+    cursor: pointer;
+}
+
+.profile-edition-name {
+    font-weight: bold;
+    text-align: center;
+    margin-top:20px;
+}
+
+.profile-edition-name, .profile-edition-headline {
+    margin-bottom:-20px;
+}

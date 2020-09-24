@@ -13,7 +13,7 @@ import Shared.Types
 template :: { user :: ProfileUser, countries :: Array (Tuple PrimaryKey String), languages :: Array (Tuple PrimaryKey String) } -> Effect String
 template {user: user@{ birthday }, countries, languages } = do
       minimumYear <- SDT.getEarliestYear
-      F.preMount (QuerySelector ".profile-info-edition") {
+      F.preMount (QuerySelector ".profile-edition") {
             view: SPV.view minimumYear,
             init: {
                   isCountryVisible: true,

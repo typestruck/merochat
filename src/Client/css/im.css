@@ -90,7 +90,7 @@ body {
     font-size: 4em;
 }
 
-.chat-box h1 {
+.chat-box h1, .profile-edition-name {
     font-family: Verdana, "sans serif";
     font-size: 1.5em;
     line-height: 1;
@@ -127,11 +127,11 @@ body {
     border-radius: 100%;
 }
 
-.avatar-settings, .sender-message .avatar-message {
+.avatar-settings, .sender-message .avatar-message, .avatar-profile-edition {
     background: #4d4d51
 }
 
-.avatar-profile {
+.avatar-profile, .avatar-profile-edition {
     width: 150px;
     height: 150px;
     border-radius: 100%;
@@ -633,20 +633,8 @@ svg.toolbar-action {
     display: hidden;
 }
 
-.profile-edition-description {
-    text-align: justify;
-    border: none;
-    cursor: pointer;
-    margin: 10px 0px;
-    font: inherit
-}
-
-.profile-info-add {
-    font-style: italic;
-}
-
 #profile-edition-root {
-    text-align: center;
+    max-width: 54em;
 }
 
 #profile-edition-root, #settings-edition-root, #karma-leaderboard-root, #help-root {
@@ -662,12 +650,6 @@ svg.toolbar-action {
     margin: 15px 0;
 }
 
-.profile-info-alert {
-    padding: 5px;
-    border: 1px dashed yellow;
-    border-radius: 3px;
-    margin-bottom: 10px;
-}
 
 .modal-menu .entry {
     margin: 5px 0;
@@ -698,27 +680,6 @@ svg.toolbar-action {
     align-self: flex-end;
 }
 
-.remove-tag {
-    color: red;
-    padding: 0 3px;
-}
-
-.profile-stats {
-    margin: 10px 0px;
-}
-
-.profile-info-edition textarea {
-    resize: none;
-    border: 0;
-    width: 100%;
-    text-align: center;
-}
-
-.profile-edition-headline {
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
 .message ul {
     list-style-type: disc;
 }
@@ -738,7 +699,7 @@ svg.toolbar-action {
     margin: 10px 0;
 }
 
-.headline {
+.headline, .profile-edition-headline {
     font-size: 1.1em;
     display: inline-block;
     margin-bottom: 15px;
@@ -746,7 +707,7 @@ svg.toolbar-action {
     position: relative;
 }
 
-.headline:before, .headline:after {
+.headline:before, .profile-edition-headline:before, .headline:after, .profile-edition-headline:after {
     display: inline-block;
     vertical-align: top;
     height: 30px;
@@ -755,17 +716,13 @@ svg.toolbar-action {
     color: rgb(238, 238, 238, 0.9)
 }
 
-.headline:before {
+.headline:before, .profile-edition-headline:before {
     content: '\201C';
     margin-right: 4px;
 }
 
-.headline:after {
+.headline:after, .profile-edition-headline:after {
     content: '\201D';
-}
-
-.karma-stats {
-    margin: 10px 0;
 }
 
 .image-form {
