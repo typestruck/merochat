@@ -12,11 +12,11 @@ body {
     scrollbar-width: thin;
 } */
 
-.description-message, .profile-edition-description {
+.description-message, .profile-description, .profile-edition-description {
     width: 55em;
 }
 
-.profile-edition-description p, .description-message p {
+.profile-description p, .description-message p {
     text-align: justify;
     hyphens: auto;
 }
@@ -662,6 +662,13 @@ svg.toolbar-action {
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
     background: #373737;
+}
+
+
+.svg-20 {
+    font-size: 1em;
+    width: 20px;
+    height: 20px;
 }
 
 .modal-menu .back {

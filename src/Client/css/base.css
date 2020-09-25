@@ -50,8 +50,9 @@ input, textarea {
     border-radius: 3px;
     color: rgb(238, 238, 238);
     background: transparent;
+    font-family: Verdana, sans-serif;
+    font-size: inherit;
 }
-
 
 ul li {
     display: inline;

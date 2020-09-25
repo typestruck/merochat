@@ -341,11 +341,14 @@ data InternalHelpMessage =
 
 type PM = (
       user :: ProfileUser,
-      isCountryVisible :: Boolean,
-      isGenderVisible :: Boolean,
-      isLanguagesVisible :: Boolean,
-      isAgeVisible :: Boolean,
-      isTagsVisible :: Boolean,
+      nameInputed :: Maybe String,
+      descriptionInputed :: Maybe String,
+      headlineInputed :: Maybe String,
+      isEditingCountry :: Boolean,
+      isEditingGender :: Boolean,
+      isEditingLanguages :: Boolean,
+      isEditingAge :: Boolean,
+      isEditingTags :: Boolean,
       countries :: Array (Tuple PrimaryKey String),
       languages :: Array (Tuple PrimaryKey String),
       birthday :: Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))
@@ -360,9 +363,9 @@ data ProfileMessage =
       SetPField (ProfileModel -> ProfileModel) |
       SelectAvatar |
       SetAvatar String |
-      SetName String |
-      SetHeadline String |
-      SetDescription String |
+      SetName |
+      SetHeadline |
+      SetDescription |
       SetTagEnter (Tuple Key String) |
       SetGender String |
       SetCountry String |
