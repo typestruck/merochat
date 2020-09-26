@@ -1,8 +1,5 @@
 .suggestion.contact {
     padding: 0;
-}
-
-.no-cursor {
     cursor: default;
 }
 
@@ -27,10 +24,6 @@
 .profile-edition-name {
     font-weight: bold;
     margin:20px 0;
-    display: inline-block;
-}
-
-h1.profile-edition-name {
     display: inline-block;
 }
 
@@ -85,4 +78,8 @@ h1.profile-edition-name {
 .about {
     margin-bottom: 5px;
     text-align: center;
+}
+
+.profile-description, .about, .profile-edition-name, .profile-edition-headline {
+    cursor: pointer;
 }

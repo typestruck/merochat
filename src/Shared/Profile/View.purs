@@ -41,8 +41,6 @@ view lastYearEligible model@{
       countries,
       languages,
       birthday,
-      nameInputed,
-      headlineInputed,
       descriptionInputed,
       isEditingAge,
       isEditingCountry,
@@ -55,18 +53,15 @@ view lastYearEligible model@{
             HE.div_ $ HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, HA.onClick SelectAvatar],
             HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
 
-            displayGenerated (SProxy :: SProxy "name"),
-            editGenerated SetName (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" 40,
+            displayEditGenerated SetName (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" 40,
+            displayEditGenerated SetHeadline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" 100,
 
-            displayGenerated (SProxy :: SProxy "headline"),
-            editGenerated SetHeadline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" 100,
-
-            -- HE.div (HA.class' "profile-karma no-cursor") [
-            --       HE.div_ [
-            --             HE.span [HA.class' "span-info"] $ show user.karma,
-            --             HE.span [HA.class' "duller"] " karma"
-            --       ]
-            -- ],
+            HE.div (HA.class' "profile-karma") [
+                  HE.div_ [
+                        HE.span [HA.class' "span-info"] $ show user.karma,
+                        HE.span [HA.class' "duller"] " karma"
+                  ]
+            ],
             -- HE.div (HA.class' "profile-asl") [
             --       if isEditingAge then displayAge else editAge,
             --       if isEditingGender then displayGender else editGender,
@@ -105,38 +100,35 @@ view lastYearEligible model@{
 
             -- HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button end"]
       ]
-      where --fields that may be randomly generated are name, headline and description
-            displayGenerated :: forall r t s fieldInputed field. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) r PM => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) s PM => Cons field String t PU => SProxy field -> Html ProfileMessage
-            displayGenerated field =
-                  let   stringField = TDS.reflectSymbol field
-                        fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
-                  in HE.div [title stringField, HA.class' {"hidden": DM.isJust $ R.get fieldInputed model}, HA.onClick (copyFromField field fieldInputed)] [
-                        HE.span [HA.class' $ "profile-edition-" <> stringField] [HE.text $ R.get field model.user],
-                        pen
-                  ]
-
-            editGenerated :: forall field r fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) r PM => ProfileMessage -> SProxy field -> String -> Int -> Html ProfileMessage
-            editGenerated message field explanation maxLength =
+      where --fields that may be randomly generated like name or headline
+            displayEditGenerated :: forall r s field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) r PM => Cons field String s PU => ProfileMessage -> SProxy field -> String -> Int -> Html ProfileMessage
+            displayEditGenerated message field explanation maxLength =
                   let   stringField = TDS.reflectSymbol field
                         fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
                         currentInputed = R.get fieldInputed model
-                  in HE.div (HA.class' { edition: true, hidden: DM.isNothing currentInputed }) [
-                        HE.div (HA.class' "bold") $ "Your " <> stringField,
-                        HE.div (HA.class' "duller") [
-                              HE.text explanation,
-                              HE.br,
-                              HE.text "Leave it blank to generate a new random name"
+                  in HE.div_ [
+                        HE.div [title stringField, HA.class' {"hidden": DM.isJust $ currentInputed}, HA.onClick (copyFromField field fieldInputed)] [
+                              HE.span [HA.class' $ "profile-edition-" <> stringField] [HE.text $ R.get field model.user],
+                              pen
                         ],
-                        HE.input [
-                              FRH.atPostpatch focus,
-                              HA.class' "single-line-input",
-                              HA.maxlength maxLength,
-                              HA.onKeydown (exitEditGenerated message field fieldInputed),
-                              HA.onInput (setInputedField fieldInputed),
-                              HA.value $ DM.fromMaybe "" currentInputed
-                        ],
-                        checkGenerated message,
-                        cancel fieldInputed
+                        HE.div (HA.class' { edition: true, hidden: DM.isNothing currentInputed }) [
+                              HE.div (HA.class' "bold") $ "Your " <> stringField,
+                              HE.div (HA.class' "duller") [
+                                    HE.text explanation,
+                                    HE.br,
+                                    HE.text "Leave it blank to generate a new random name"
+                              ],
+                              HE.input [
+                                    FRH.atPostpatch focus,
+                                    HA.class' "single-line-input",
+                                    HA.maxlength maxLength,
+                                    HA.onKeydown (exitEditGenerated message field fieldInputed),
+                                    HA.onInput (setInputedField fieldInputed),
+                                    HA.value $ DM.fromMaybe "" currentInputed
+                              ],
+                              checkGenerated message,
+                              cancel fieldInputed
+                        ]
                   ]
       -- where displayAge = display "age" (SProxy :: SProxy "isEditingAge") <<< map show <<< SDT.ageFrom $ map DN.unwrap user.birthday
       --       displayGender = display "gender" (SProxy :: SProxy "isEditingGender") $ map show user.gender
