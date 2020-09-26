@@ -48,7 +48,7 @@ foreign import data Trie :: Type
 
 type NoBody = {}
 
-type BasicUser fields = {
+type BasicUser fields = (
       id :: PrimaryKey,
       name :: String,
       headline :: String,
@@ -58,21 +58,25 @@ type BasicUser fields = {
       karma :: Int,
       karmaPosition :: Int |
       fields
-}
+)
 
-type IMUser = (BasicUser (
+type IU = (BasicUser (
       gender :: Maybe String,
       country :: Maybe String,
       languages :: Array String,
       age :: Maybe Int
 ))
 
-type ProfileUser = (BasicUser (
+type IMUser = Record IU
+
+type PU = (BasicUser (
       gender :: Maybe Gender,
       country :: Maybe PrimaryKey,
       languages :: Array PrimaryKey,
       birthday :: Maybe DateWrapper
 ))
+
+type ProfileUser = Record PU
 
 data Gender =
       Female |

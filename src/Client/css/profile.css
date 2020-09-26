@@ -26,6 +26,8 @@
 
 .profile-edition-name {
     font-weight: bold;
+    margin:20px 0;
+    display: inline-block;
 }
 
 h1.profile-edition-name {
@@ -78,4 +80,9 @@ h1.profile-edition-name {
 .save-cancel .cancel {
     margin-right: 20px;
     vertical-align: text-top;
+}
+
+.about {
+    margin-bottom: 5px;
+    text-align: center;
 }

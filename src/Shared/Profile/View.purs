@@ -18,22 +18,25 @@ import Data.Tuple as DT
 import Effect.Uncurried (EffectFn2)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
+import Flame.HTML.Element (class ToNode)
 import Flame.HTML.Element as HE
 import Flame.Renderer.Hook as FRH
 import Flame.Types (NodeData, VNode)
 import Prim.Row (class Cons)
+import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
 import Shared.Markdown as SM
 import Shared.Setter as SS
 import Shared.Unsafe as SU
+import Type.Data.Symbol as TDS
 import Web.Event.Internal.Types (Event)
 
 foreign import focus :: EffectFn2 VNode VNode Unit
 
 view :: Int -> ProfileModel -> Html ProfileMessage
-view lastYearEligible {
+view lastYearEligible model@{
       user,
       countries,
       languages,
@@ -52,51 +55,11 @@ view lastYearEligible {
             HE.div_ $ HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, HA.onClick SelectAvatar],
             HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
 
-            HE.div [title "name", HA.class' {"hidden": DM.isJust nameInputed}, HA.onClick (toogleFieldEdition (SProxy :: SProxy "name") (SProxy :: SProxy "nameInputed"))] [
-                  HE.h1 (HA.class' "profile-edition-name") user.name,
-                  pen
-            ],
-            HE.div (HA.class' {edition: true, hidden: DM.isNothing nameInputed}) [
-                  HE.div (HA.class' "bold") "Your name",
-                  HE.div (HA.class' "duller") [
-                        HE.text "This is the name other users will see when looking at your profile",
-                        HE.br,
-                        HE.text "Leave it blank to generate a new random name"
-                  ],
-                  HE.input [
-                        FRH.atPostpatch focus,
-                        HA.class' "single-line-input",
-                        HA.maxlength 40,
-                        HA.onKeydown (exitEditionGenerated SetName (SProxy :: SProxy "name") (SProxy :: SProxy "nameInputed")),
-                        HA.onInput (setInputedField (SProxy :: SProxy "nameInputed")),
-                        HA.value $ DM.fromMaybe "" nameInputed
-                  ],
-                  checkGenerated SetName,
-                  cancel (SProxy :: SProxy "nameInputed")
-            ],
+            displayGenerated (SProxy :: SProxy "name"),
+            editGenerated SetName (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" 40,
 
-            HE.div [title "headline", HA.class' {"hidden": DM.isJust headlineInputed}, HA.onClick (toogleFieldEdition (SProxy :: SProxy "headline") (SProxy :: SProxy "headlineInputed"))] [
-                  HE.span (HA.class' "profile-edition-headline") user.headline,
-                  pen
-            ],
-            HE.div (HA.class' {edition: true, hidden: DM.isNothing headlineInputed}) [
-                  HE.div (HA.class' "bold") "Your headline",
-                  HE.div (HA.class' "duller") [
-                        HE.text "A tagline to draw attention to your profile",
-                        HE.br,
-                        HE.text "Leave it blank to generate a new random headline"
-                  ],
-                  HE.input [
-                        FRH.atPostpatch focus,
-                        HA.class' "single-line-input",
-                        HA.maxlength 100,
-                        HA.onKeydown (exitEditionGenerated SetHeadline (SProxy :: SProxy "headline") (SProxy :: SProxy "headlineInputed")),
-                        HA.onInput (setInputedField (SProxy :: SProxy "headlineInputed")),
-                        HA.value $ DM.fromMaybe "" headlineInputed
-                  ],
-                  checkGenerated SetHeadline,
-                  cancel (SProxy :: SProxy "headlineInputed")
-            ],
+            displayGenerated (SProxy :: SProxy "headline"),
+            editGenerated SetHeadline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" 100,
 
             -- HE.div (HA.class' "profile-karma no-cursor") [
             --       HE.div_ [
@@ -113,11 +76,11 @@ view lastYearEligible {
 
             -- HE.div (HA.class' "profile-tags") $ if isEditingTags then displayTags else editTags,
 
-            HE.div [title "description", HA.class' {about: true, hidden: DM.isJust descriptionInputed}, HA.onClick (toogleFieldEdition (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
-                  HE.span (HA.class' "duller") "About",
-                  pen
-            ],
-            HE.div [title "description", HA.class' { hidden: DM.isJust descriptionInputed}, HA.onClick (toogleFieldEdition (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
+            HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (copyFromField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
+                  HE.div (HA.class' "about") [
+                        HE.span (HA.class' "duller") "About",
+                        pen
+                  ],
                   HE.div' [HA.class' "profile-description", HA.innerHTML $ SM.toHTML user.description]
             ],
             HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
@@ -135,14 +98,46 @@ view lastYearEligible {
                   ] $ DM.fromMaybe "" descriptionInputed,
 
                   HE.div (HA.class' "save-cancel") [
-                        checkGenerated SetHeadline,
-                        cancel (SProxy :: SProxy "headlineInputed")
+                        checkGenerated SetDescription,
+                        cancel (SProxy :: SProxy "descriptionInputed")
                   ]
             ]
 
             -- HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button end"]
       ]
+      where --fields that may be randomly generated are name, headline and description
+            displayGenerated :: forall r t s fieldInputed field. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) r PM => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) s PM => Cons field String t PU => SProxy field -> Html ProfileMessage
+            displayGenerated field =
+                  let   stringField = TDS.reflectSymbol field
+                        fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
+                  in HE.div [title stringField, HA.class' {"hidden": DM.isJust $ R.get fieldInputed model}, HA.onClick (copyFromField field fieldInputed)] [
+                        HE.span [HA.class' $ "profile-edition-" <> stringField] [HE.text $ R.get field model.user],
+                        pen
+                  ]
 
+            editGenerated :: forall field r fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) r PM => ProfileMessage -> SProxy field -> String -> Int -> Html ProfileMessage
+            editGenerated message field explanation maxLength =
+                  let   stringField = TDS.reflectSymbol field
+                        fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
+                        currentInputed = R.get fieldInputed model
+                  in HE.div (HA.class' { edition: true, hidden: DM.isNothing currentInputed }) [
+                        HE.div (HA.class' "bold") $ "Your " <> stringField,
+                        HE.div (HA.class' "duller") [
+                              HE.text explanation,
+                              HE.br,
+                              HE.text "Leave it blank to generate a new random name"
+                        ],
+                        HE.input [
+                              FRH.atPostpatch focus,
+                              HA.class' "single-line-input",
+                              HA.maxlength maxLength,
+                              HA.onKeydown (exitEditGenerated message field fieldInputed),
+                              HA.onInput (setInputedField fieldInputed),
+                              HA.value $ DM.fromMaybe "" currentInputed
+                        ],
+                        checkGenerated message,
+                        cancel fieldInputed
+                  ]
       -- where displayAge = display "age" (SProxy :: SProxy "isEditingAge") <<< map show <<< SDT.ageFrom $ map DN.unwrap user.birthday
       --       displayGender = display "gender" (SProxy :: SProxy "isEditingGender") $ map show user.gender
       --       displayCountry = display "country" (SProxy :: SProxy "isEditingCountry") do
@@ -188,31 +183,27 @@ view lastYearEligible {
       --       languageHM = DH.fromArray languages
       --       getLanguage = SU.fromJust <<< flip DH.lookup languageHM
 
-toogleFieldEdition field inputField = SetPField (\model -> R.set inputField (Just $ R.get field model.user) model)
+-- generated field/
 
-exitEditionGenerated message field inputField (Tuple key _) =
+
+   --   editGenerated :: forall field . IsSymbol field => ProfileMessage -> SProxy field -> String -> Int -> Html ProfileMessage
+
+
+copyFromField field fieldInputed = SetPField (\model -> R.set fieldInputed (Just $ R.get field model.user) model)
+
+exitEditGenerated message field fieldInputed (Tuple key _) =
       if key == "Enter" then
             message
        else if key == "Escape" then
-            SetPField (resetEditionField inputField)
+            resetFieldInputed fieldInputed
        else
             SetPField identity
 
-exitEdition field inputField (Tuple key _) = SetPField $ \model ->
-      if key == "Enter" then
-            copyEditionToField field inputField model
-       else if key == "Escape" then
-            resetEditionField inputField model
-       else
-            model
-
 copyEditionToField field inputField model = R.set inputField Nothing $ SS.setUserField field (DM.fromMaybe "" $ R.get inputField model) model
 
-resetEditionField inputField = R.set inputField Nothing
+resetFieldInputed fieldInputed = SetPField (R.set fieldInputed Nothing)
 
-setInputedField field = SetPField <<< R.set field <<< Just
-
-setField field = SetPField <<< SS.setUserField field
+setInputedField fieldInputed = SetPField <<< R.set fieldInputed <<< Just
 
 pen :: Html ProfileMessage
 pen = HE.svg [HA.class' "svg-16 edit", HA.viewBox "0 0 512 512"] [
@@ -227,15 +218,17 @@ checkGenerated message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 51
 
 
 --check :: Html ProfileMessage
-check field inputField = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 512", HA.onClick (SetPField (copyEditionToField field inputField))] [
+check field inputField = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 512", HA.onClick (copyEditionToField field inputField)] [
       HE.title "Save edition",
       HE.polygon' [HA.points "204 445.539 35.23 276.77 108.77 203.23 204 298.461 419.23 83.23 492.77 156.77 204 445.539"]
 ]
 
-cancel inputField = HE.svg [HA.class' "svg-16 cancel", HA.viewBox "0 0 512 512", HA.onClick (SetPField (resetEditionField inputField)) ] [
+cancel inputField = HE.svg [HA.class' "svg-16 cancel", HA.viewBox "0 0 512 512", HA.onClick (resetFieldInputed inputField) ] [
       HE.title "Cancel edition",
       HE.polygon' $ HA.points "438.627 118.627 393.373 73.373 256 210.746 118.627 73.373 73.373 118.627 210.746 256 73.373 393.373 118.627 438.627 256 301.254 393.373 438.627 438.627 393.373 301.254 256 438.627 118.627"
 ]
+
+-- /generated field
 
 -- display :: forall field r. IsSymbol field => Cons field Boolean r PM => String -> SProxy field -> Maybe String -> Html ProfileMessage
 -- display itemName field =
@@ -261,3 +254,11 @@ cancel inputField = HE.svg [HA.class' "svg-16 cancel", HA.viewBox "0 0 512 512",
 
 title :: String -> NodeData ProfileMessage
 title name = HA.title $ "Click to edit your " <> name
+
+-- exitEdition field inputField (Tuple key _) = SetPField $ \model ->
+--       if key == "Enter" then
+--             copyEditionToField field inputField model
+--        else if key == "Escape" then
+--             resetFieldInputed inputField model
+--        else
+--             model
