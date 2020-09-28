@@ -73,7 +73,7 @@ type PU = (BasicUser (
       gender :: Maybe Gender,
       country :: Maybe PrimaryKey,
       languages :: Array PrimaryKey,
-      birthday :: Maybe DateWrapper
+      age :: Maybe DateWrapper
 ))
 
 type ProfileUser = Record PU
@@ -343,19 +343,20 @@ data DisplayHelpSection =
 data InternalHelpMessage =
       ToggleHelpSection DisplayHelpSection
 
+type Choice = Maybe
+
 type PM = (
       user :: ProfileUser,
       nameInputed :: Maybe String,
-      descriptionInputed :: Maybe String,
       headlineInputed :: Maybe String,
-      isEditingCountry :: Boolean,
-      isEditingGender :: Boolean,
+      ageInputed :: Choice (Maybe DateWrapper),
+      genderInputed :: Choice (Maybe Gender),
+      countryInputed :: Choice (Maybe Int),
+      descriptionInputed :: Maybe String,
       isEditingLanguages :: Boolean,
-      isEditingAge :: Boolean,
       isEditingTags :: Boolean,
       countries :: Array (Tuple PrimaryKey String),
-      languages :: Array (Tuple PrimaryKey String),
-      birthday :: Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))
+      languages :: Array (Tuple PrimaryKey String)
 )
 
 --used to generically set records
@@ -371,11 +372,9 @@ data ProfileMessage =
       SetHeadline |
       SetDescription |
       SetTagEnter (Tuple Key String) |
-      SetGender String |
-      SetCountry String |
-      SetYear String |
-      SetMonth String |
-      SetDay String |
+      -- SetYear String |
+      -- SetMonth String |
+      -- SetDay String |
       AddLanguage String |
       RemoveLanguage PrimaryKey Event |
       RemoveTag String Event |
@@ -489,7 +488,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             avatar <- readAvatar foreignAvatar
             name <- F.readString foreignUnread
             maybeForeignBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignBirthday
+            age <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignBirthday
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map DSR.read <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
@@ -506,7 +505,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
                   id,
                   avatar,
                   name,
-                  birthday: DateWrapper <$> birthday,
+                  age: DateWrapper <$> age,
                   gender,
                   headline,
                   description,

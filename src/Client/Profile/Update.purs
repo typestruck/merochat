@@ -41,11 +41,6 @@ update { model, message } =
 
             SetPField setter -> pure setter
             SetAvatar base64 -> pure <<< SS.setUserField (SProxy :: SProxy "avatar") $ Just base64
-            SetCountry country -> setAndDisplayField (SProxy :: SProxy "isEditingCountry") (SProxy :: SProxy "country") $ DI.fromString country
-            SetGender gender -> setAndDisplayField (SProxy :: SProxy "isEditingGender") (SProxy :: SProxy "gender") (DSR.read gender :: Maybe Gender)
-            SetYear year -> setYear $ DI.fromString year
-            SetMonth month -> setMonth $ DI.fromString month
-            SetDay day -> setDay $ DI.fromString day
             SetName -> setOrGenerateField Name (SProxy :: SProxy "nameInputed") (SProxy :: SProxy "name") 50 model.nameInputed
             SetHeadline  -> setOrGenerateField Headline (SProxy :: SProxy "headlineInputed") (SProxy :: SProxy "headline") 200 model.headlineInputed
             SetDescription -> setOrGenerateField Description (SProxy :: SProxy "descriptionInputed") (SProxy :: SProxy "description") 10000 model.descriptionInputed
@@ -72,39 +67,6 @@ selectAvatar = do
             input <- getFileInput
             CCF.triggerFileSelect input
       FAE.noChanges
-
-setYear :: Maybe Int -> Aff (ProfileModel -> ProfileModel)
-setYear year = updateBirthday setYear'
-      where setYear' (Tuple _ rest) = Tuple year rest
-
-setMonth :: Maybe Int -> Aff (ProfileModel -> ProfileModel)
-setMonth month = updateBirthday setMonth'
-      where setMonth' (Tuple year (Tuple _ day)) = Tuple year (Tuple month day)
-
-setDay :: Maybe Int -> Aff (ProfileModel -> ProfileModel)
-setDay day = updateBirthday setDay'
-      where setDay' (Tuple year (Tuple month _)) = Tuple year (Tuple month day)
-
-updateBirthday :: ((Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))) -> (Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int)))) -> Aff (ProfileModel -> ProfileModel)
-updateBirthday updater = pure $ \model ->
-      let updatedBirthday = updater model.birthday
-      in model {
-            birthday = updatedBirthday,
-            isEditingAge = isEditingAge' updatedBirthday,
-            user = model.user {
-                  birthday = setBirthday model.user.birthday updatedBirthday
-            }
-      }
-      where isEditingAge' =
-                  case _ of
-                        Tuple Nothing _ -> true
-                        Tuple (Just _) (Tuple (Just _) (Just _)) -> true
-                        _ -> false
-            setBirthday birthday =
-                  case _ of
-                        Tuple (Just year) (Tuple (Just month) (Just day)) -> DateWrapper <$> DD.exactDate (SU.toEnum year) (SU.toEnum month) (SU.toEnum day)
-                        Tuple Nothing _ -> Nothing -- so the age can be cleared
-                        _ -> birthday
 
 addLanguage language = appendAndDisplayField (SProxy :: SProxy "isEditingLanguages") (SProxy :: SProxy "languages") language
 

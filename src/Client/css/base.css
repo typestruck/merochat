@@ -100,8 +100,11 @@ svg {
 
 }
 
-select option {
-    background-color: #262626;
-    color:white
+select {
+    font:inherit
 }
 
+select option {
+    background-color: #262626;
+    color:rgb(238, 238, 238)
+}
