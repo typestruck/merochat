@@ -39,7 +39,7 @@ presentLanguages = SD.select (Query "select id, name from languages order by nam
 
 saveProfile :: { user :: ProfileUser, avatar :: Maybe String, languages :: Array PrimaryKey, tags :: Array String } -> ServerEffect Unit
 saveProfile {
-    user: { id, name, headline, description, country, gender, birthday },
+    user: { id, name, headline, description, country, gender, age },
     avatar,
     languages,
     tags
@@ -52,7 +52,7 @@ saveProfile {
                                  country = $6,
                                  gender = $7,
                                  birthday = $8
-                             where id = $1""") (id /\ avatar /\ name /\ headline /\ description /\ country /\ gender /\ (map (\(DateWrapper d) -> d) birthday))
+                             where id = $1""") (id /\ avatar /\ name /\ headline /\ description /\ country /\ gender /\ (map (\(DateWrapper d) -> d) age))
         SD.executeWith connection (Query """delete from languages_users where speaker = $1""") $ Row1 id
         void $ DT.traverse (SD.executeWith connection (Query """insert into languages_users (speaker, language) values ($1, $2)""") <<< Row2 id) languages
         SD.executeWith connection (Query """delete from tags_users where creator = $1""") $ Row1 id

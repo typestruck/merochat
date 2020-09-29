@@ -605,7 +605,7 @@ svg.toolbar-action {
     display: inline-block;
 }
 
-.tag {
+.list-tags, .tag {
     display: inline-block;
     margin-right: 5px;
     margin-bottom: 10px;
@@ -613,7 +613,7 @@ svg.toolbar-action {
     border-radius: 20px;
 }
 
-.profile-contact .tag {
+.profile-contact .tag, .list-tags {
     border: 1px solid #b5b7b7
 }
 

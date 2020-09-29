@@ -69,15 +69,6 @@ type IU = (BasicUser (
 
 type IMUser = Record IU
 
-type PU = (BasicUser (
-      gender :: Maybe Gender,
-      country :: Maybe PrimaryKey,
-      languages :: Array PrimaryKey,
-      age :: Maybe DateWrapper
-))
-
-type ProfileUser = Record PU
-
 data Gender =
       Female |
       Male |
@@ -343,6 +334,16 @@ data DisplayHelpSection =
 data InternalHelpMessage =
       ToggleHelpSection DisplayHelpSection
 
+
+type PU = (BasicUser (
+      gender :: Maybe Gender,
+      country :: Maybe PrimaryKey,
+      languages :: Array PrimaryKey,
+      age :: Maybe DateWrapper
+))
+
+type ProfileUser = Record PU
+
 type Choice = Maybe
 
 type PM = (
@@ -352,9 +353,11 @@ type PM = (
       ageInputed :: Choice (Maybe DateWrapper),
       genderInputed :: Choice (Maybe Gender),
       countryInputed :: Choice (Maybe Int),
+      languagesInputed :: Maybe PrimaryKey,
+      languagesInputedList :: Maybe (Array PrimaryKey),
+      tagsInputed :: Maybe String,
+      tagsInputedList :: Maybe (Array String),
       descriptionInputed :: Maybe String,
-      isEditingLanguages :: Boolean,
-      isEditingTags :: Boolean,
       countries :: Array (Tuple PrimaryKey String),
       languages :: Array (Tuple PrimaryKey String)
 )
@@ -371,13 +374,6 @@ data ProfileMessage =
       SetName |
       SetHeadline |
       SetDescription |
-      SetTagEnter (Tuple Key String) |
-      -- SetYear String |
-      -- SetMonth String |
-      -- SetDay String |
-      AddLanguage String |
-      RemoveLanguage PrimaryKey Event |
-      RemoveTag String Event |
       SaveProfile
 
 type SettingsModel = {

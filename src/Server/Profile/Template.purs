@@ -16,14 +16,16 @@ template {user: user, countries, languages } = do
       F.preMount (QuerySelector ".profile-edition") {
             view: SPV.view,
             init: {
-                  countryInputed: Nothing,
-                  genderInputed: Nothing,
-                  ageInputed: Nothing,
                   nameInputed: Nothing,
                   headlineInputed: Nothing,
+                  ageInputed: Nothing,
+                  genderInputed: Nothing,
+                  countryInputed: Nothing,
+                  languagesInputed: Nothing,
+                  languagesInputedList: Nothing,
+                  tagsInputed: Nothing,
+                  tagsInputedList: Nothing,
                   descriptionInputed: Nothing,
-                  isEditingLanguages: false,
-                  isEditingTags: false,
                   user,
                   countries,
                   languages
