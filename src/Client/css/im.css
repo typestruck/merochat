@@ -399,7 +399,7 @@ body {
     padding: 30px 15px;
     padding-right: 0px;
     z-index: 5;
-    width: 70em;
+    width: 72em;
     height: 90%;
     overflow-y: auto;
     background: #262626;
@@ -413,6 +413,7 @@ body {
     bottom: 0;
     flex-flow: column;
     border-right: 1px solid #373737;
+    min-width: max-content;
 }
 
 .profile-info-edition {
@@ -613,17 +614,21 @@ svg.toolbar-action {
     border-radius: 20px;
 }
 
-.profile-contact .tag, .list-tags {
+.profile-contact .tag {
     border: 1px solid #b5b7b7
 }
 
-.suggestion .tag {
+.suggestion .tag, .list-tags {
     background: #a6b572;
     color: #1b3a28;
 }
 
 .hidden .editor-toolbar {
     display: hidden;
+}
+
+#profile-edition-root {
+    margin: 0 20px;
 }
 
 #profile-edition-root, #settings-edition-root, #karma-leaderboard-root, #help-root {
@@ -950,10 +955,10 @@ svg.toolbar-action {
 }
 
 select {
-    padding:5px 10px;
-    background:  #262626;
+    padding: 5px 10px;
+    background: #262626;
     color: rgb(238, 238, 238);
     border: 1px solid #b5b7b7;
     border-radius: 3px;
-    margin:5px 0;
+    margin: 5px 0;
 }

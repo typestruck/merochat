@@ -17,7 +17,7 @@
 }
 
 .suggestion.contact .profile-tags {
-    margin-top:10px;
+    margin-top: 10px;
 }
 
 .suggestion.contact .profile-asl div {
@@ -60,7 +60,7 @@
 }
 
 .profile-edition-add {
-    margin: 0px 20px !important;
+    margin: 0px 5px;
 }
 
 .profile-edition-add .edit {
@@ -68,7 +68,7 @@
     margin: 0 15px 0 5px;
 }
 
-.save {
+.plus, .save {
     fill: hsl(145, 80%, 28%);
     stroke: hsl(145, 80%, 28%);
 }
@@ -117,12 +117,12 @@
     align-items: center;
 }
 
-.centered .save {
-    margin-left: 10px
+.save {
+    margin-left: -20px;
 }
 
-.save, .centered .age .save {
-    margin-left: -20px;
+select+.save {
+    margin-left: 10px
 }
 
 .profile-edition-add-list {
@@ -132,19 +132,35 @@
 }
 
 .list-languages {
-
     text-decoration: underline;
 }
 
 .list-remove {
+    visibility: hidden;
     margin: 5px;
     cursor: pointer;
     margin-right: 20px;
     font-size: 0.8em;
 }
 
+.grow div:hover>.list-remove {
+    visibility: visible;
+}
+
 .grow {
     flex-grow: 1;
     display: flex;
     flex-wrap: wrap;
+}
+
+input+.plus {
+    margin-left: -20px
+}
+
+select+.plus {
+    margin-left: 10px
+}
+
+.blocky {
+    display:inline-block
 }

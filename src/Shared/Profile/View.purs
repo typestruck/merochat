@@ -3,11 +3,8 @@ module Shared.Profile.View where
 import Prelude
 import Shared.Types
 
-import Control.Alt ((<|>))
-import Data.Array ((:), (..))
+import Data.Array ((:))
 import Data.Array as DA
-import Data.Date as DD
-import Data.Enum as DE
 import Data.Foldable as DF
 import Data.HashMap as DH
 import Data.Int as DI
@@ -15,17 +12,13 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String.Common as DS
-import Data.String.Common as DSC
-import Data.String.Read (class Read)
 import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Debug.Trace (spy)
 import Effect.Uncurried (EffectFn2)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
-import Flame.HTML.Element (class ToNode)
 import Flame.HTML.Element as HE
 import Flame.Renderer.Hook as FRH
 import Flame.Types (NodeData, VNode)
@@ -35,6 +28,7 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
 import Shared.Markdown as SM
+import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
 import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Type.Data.Symbol as TDS
@@ -72,7 +66,7 @@ view model@{
 
             HE.div (HA.class' "profile-tags") displayEditTags,
 
-            HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (copyFromField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
+            HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (editField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
                   HE.div (HA.class' "about") [
                         HE.span (HA.class' "duller") "About",
                         pen
@@ -88,7 +82,7 @@ view model@{
                   ],
                   HE.textarea [
                         HA.class' "profile-edition-description",
-                        HA.maxlength 1000,
+                        HA.maxlength descriptionMaxCharacters,
                         FRH.atPostpatch focus,
                         HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
                   ] $ DM.fromMaybe "" descriptionInputed,
@@ -97,58 +91,64 @@ view model@{
                         check SetDescription,
                         cancel (SProxy :: SProxy "descriptionInputed")
                   ]
-            ]
+            ],
 
-            -- HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button end"]
+            HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button end"]
       ]
-      where displayEditName = displayEditGenerated SetName (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" 40
-            displayEditHeadline = displayEditGenerated SetHeadline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" 100
+      where displayEditName = displayEditGenerated SetName (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
+            displayEditHeadline = displayEditGenerated SetHeadline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" headlineMaxCharacters
 
             displayEditAge =
                   let   field = SProxy :: SProxy "age"
-                        fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
+                        fieldInputed = SProxy :: SProxy "ageInputed"
                         currentFieldValue = map show <<< SDT.ageFrom $ map DN.unwrap user.age
                         parser = map DateWrapper <<< SDT.unformatISODate
-                  in displayEditOptionalField field currentFieldValue $ HE.input [
-                        HA.type' "date",
-                        HA.class' "single-line-input",
-                        HA.placeholder "yyyy-mm-dd",
-                        HA.onInput (setFieldInputed fieldInputed <<< parser),
-                        HA.value $ DM.fromMaybe "" currentFieldValue
+                        control = HE.input [
+                              HA.type' "date",
+                              HA.class' "single-line-input",
+                              HA.placeholder "yyyy-mm-dd",
+                              HA.onInput (setFieldInputed fieldInputed <<< parser),
+                              HA.value $ DM.fromMaybe "" currentFieldValue
+                        ]
+                  in displayEditOptionalField field (map HE.span_ currentFieldValue) control
+            displayEditGender = displayEditOptional DSR.read genders (SProxy :: SProxy "gender") (HE.span_ <<< show <$> user.gender)
+            displayEditCountry =
+                  let display country = HE.div (HA.class' "blocky") [
+                        HE.span (HA.class' "duller") "from ",
+                        HE.text country
                   ]
-            displayEditGender = displayEditOptional DSR.read genders (SProxy :: SProxy "gender") (show <$> user.gender)
-            displayEditCountry = displayEditOptional DI.fromString countries (SProxy :: SProxy "country") do
-                  country <- user.country
-                  map DT.snd $ DF.find ((country == _) <<< DT.fst) countries
+                  in displayEditOptional DI.fromString countries (SProxy :: SProxy "country") do
+                        country <- user.country
+                        display <<< DT.snd <$> DF.find ((country == _) <<< DT.fst) countries
 
             displayEditLanguages =
-                  let   fieldInputedList = SProxy :: SProxy "languagesInputedList"
+                  let   fieldInputed = SProxy :: SProxy "languagesInputed"
                         currentFieldValue = case map getLanguage model.user.languages of
                               [] -> Nothing
-                              languages -> Just $ HE.div_ [
+                              languages -> Just $ HE.div (HA.class' "blocky") [
                                     HE.span (HA.class' "duller") "speaks ",
                                     HE.text $ DS.joinWith ", " languages
                               ]
-                        control = HE.select [HA.onInput (appendInputedMaybe fieldInputedList <<< DI.fromString)] $ displayOptionsWith "Select" Nothing languages
+                        control = HE.select [HA.onInput (setFieldInputedMaybe fieldInputed <<< DI.fromString)] $ displayOptionsWith "Select" model.languagesInputed languages
                   in  displayEditList (SProxy :: SProxy "languages") getLanguage currentFieldValue control "You may select up to four languages"
             displayEditTags =
-                  let   fieldInputedList = SProxy :: SProxy "tagsInputedList"
+                  let   fieldInputed = SProxy :: SProxy "tagsInputed"
+                        fieldInputedList = SProxy :: SProxy "tagsInputedList"
                         currentFieldValue = case model.user.tags of
                               [] -> Nothing
-                              tags -> Just $ HE.div_ $ map (HE.span (HA.class' "tag")) tags
-                        nothingOnEmpty =
-                              case _ of
-                                    "" -> Nothing
-                                    v -> Just v
+                              tags -> Just $ HE.div (HA.class' "blocky") $ map (HE.span (HA.class' "tag")) tags
                         control = HE.input [
                               HA.type' "text",
                               HA.class' "single-line-input",
                               FRH.atPostpatch focus,
-                              HA.onInput (appendInputedMaybe fieldInputedList <<< nothingOnEmpty <<< DS.trim)
+                              HA.maxlength tagMaxCharacters,
+                              HA.value $ DM.fromMaybe "" model.tagsInputed,
+                              HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed),
+                              HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
                         ]
                   in  displayEditList (SProxy :: SProxy "tags") identity currentFieldValue control "Add tags to show your interests, hobbies, etc"
 
-            displayEditList :: forall r s t u field fieldInputed fieldInputedList. Eq t => IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Append field "InputedList" fieldInputedList => IsSymbol fieldInputedList => Cons fieldInputed (Maybe t) u PM => Cons fieldInputedList (Maybe (Array t)) r PM => Cons field (Array t) s PU => SProxy field -> (t -> String) -> Maybe (Html ProfileMessage) -> Html ProfileMessage -> String -> Html ProfileMessage
+            displayEditList :: forall r s t u field fieldInputed fieldInputedList. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Append field "InputedList" fieldInputedList => IsSymbol fieldInputedList => Cons fieldInputed (Maybe t) u PM => Cons fieldInputedList (Maybe (Array t)) r PM => Cons field (Array t) s PU => Ord t => Eq t => SProxy field -> (t -> String) -> Maybe (Html ProfileMessage) -> Html ProfileMessage -> String -> Html ProfileMessage
             displayEditList field formatter currentFieldValue control explanation =
                   let   stringField = TDS.reflectSymbol field
                         fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
@@ -160,9 +160,8 @@ view model@{
                                     HE.span (HA.class' $ "list-" <> stringField) $ formatter item,
                                     HE.span [HA.class' "list-remove", HA.onClick (removeFromInputedList fieldInputedList item)] "x"
                               ]
-
                   in HE.div (HA.class' { centered: isEditing }) [
-                        HE.div [HA.class' { "profile-edition-add": true, hidden: isEditing }, title stringField, HA.onClick (copyFromField field fieldInputedList)] $
+                        HE.div [HA.class' { "profile-edition-add": true, hidden: isEditing }, title stringField, HA.onClick (editField field fieldInputedList)] $
                               case currentFieldValue of
                                     Nothing -> HE.div (HA.class' "italics") [
                                           HE.text $ "Your " <> stringField,
@@ -177,31 +176,33 @@ view model@{
                               HE.span (HA.class' "duller") explanation,
                               HE.br,
                               control,
+                              plus (appendInputedMaybe fieldInputedList fieldInputed),
                               HE.div (HA.class' "profile-edition-add-list") [
                                     HE.div (HA.class' "grow") <<< map displayRemoveItem $ DM.fromMaybe [] currentFieldInputedList,
                                     HE.div_ [
                                           check (copyToField field fieldInputedList),
-                                          cancel fieldInputed
+                                          cancel fieldInputedList
                                     ]
                               ]
                         ]
                   ]
 
-            displayEditOptional :: forall r s t field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Choice (Maybe t)) r PM => Cons field (Maybe t) s PU => Show t => Eq t => (String -> Maybe t) -> Array (Tuple t String) -> SProxy field -> Maybe String -> Html ProfileMessage
+            displayEditOptional :: forall r s t field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Choice (Maybe t)) r PM => Cons field (Maybe t) s PU => Show t => Eq t => (String -> Maybe t) -> Array (Tuple t String) -> SProxy field -> Maybe (Html ProfileMessage) -> Html ProfileMessage
             displayEditOptional parser options field currentFieldValue =
                   let   fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
                   in displayEditOptionalField field currentFieldValue $ HE.select [HA.onInput (setFieldInputed fieldInputed <<< parser)] $ displayOptions (R.get field model.user) options
 
-            displayEditOptionalField :: forall r s t field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Choice (Maybe t)) r PM => Cons field (Maybe t) s PU => SProxy field -> Maybe String -> Html ProfileMessage -> Html ProfileMessage
+            displayEditOptionalField :: forall r s t field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Choice (Maybe t)) r PM => Cons field (Maybe t) s PU => SProxy field -> Maybe (Html ProfileMessage) -> Html ProfileMessage -> Html ProfileMessage
             displayEditOptionalField field currentFieldValue control =
                   let   stringField = TDS.reflectSymbol field
                         fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
                         isEditing = DM.isJust $ R.get fieldInputed model
                   in HE.div (HA.class' { centered: isEditing }) [
-                        HE.div [HA.class' { "profile-edition-add": true, hidden: isEditing }, title stringField, HA.onClick (copyFromField field fieldInputed)] $
+                        HE.div [HA.class' { "profile-edition-add" : true, hidden: isEditing }, title stringField, HA.onClick (editField field fieldInputed)] $
                               case currentFieldValue of
                                     Just value -> HE.div_ [
-                                          HE.text value, pen
+                                          value,
+                                          pen
                                     ]
                                     _ -> HE.div (HA.class' "italics") [
                                           HE.text $ "Your " <> stringField,
@@ -222,7 +223,7 @@ view model@{
                         currentInputed = R.get fieldInputed model
                         isEditing = DM.isJust currentInputed
                   in HE.div_ [
-                        HE.div [title stringField, HA.class' {"hidden": isEditing}, HA.onClick (copyFromField field fieldInputed)] [
+                        HE.div [title stringField, HA.class' {"hidden": isEditing}, HA.onClick (editField field fieldInputed)] [
                               HE.span [HA.class' $ "profile-edition-" <> stringField] [HE.text $ R.get field model.user],
                               pen
                         ],
@@ -231,7 +232,7 @@ view model@{
                               HE.div (HA.class' "duller") [
                                     HE.text explanation,
                                     HE.br,
-                                    HE.text "Leave it blank to generate a new random name"
+                                    HE.text $ "Leave it blank to generate a new random " <> stringField
                               ],
                               HE.input [
                                     FRH.atPostpatch focus,
@@ -249,20 +250,30 @@ view model@{
             languageHM = DH.fromArray languages
             getLanguage = SU.fromJust <<< flip DH.lookup languageHM
 
-appendInputedMaybe :: forall t r fieldInputedList. Ord t => IsSymbol fieldInputedList => Cons fieldInputedList (Maybe (Array t)) r PM => SProxy fieldInputedList -> Maybe t -> ProfileMessage
-appendInputedMaybe fieldInputedList =
-      case _ of
-            Nothing -> SetPField identity
-            Just value -> appendInputedList fieldInputedList value
-
-appendInputedList :: forall t r fieldInputedList. Ord t => IsSymbol fieldInputedList => Cons fieldInputedList (Maybe (Array t)) r PM => SProxy fieldInputedList -> t -> ProfileMessage
-appendInputedList fieldInputedList value = SetPField (\model -> R.set fieldInputedList (Just <<< DA.nub $ DA.snoc (DM.fromMaybe [] $ R.get fieldInputedList model) value) model)
+appendInputedMaybe :: forall t r u fieldInputedList fieldInputed. Ord t => IsSymbol fieldInputedList => Cons fieldInputedList (Maybe (Array t)) r PM => IsSymbol fieldInputed => Cons fieldInputed (Maybe t) u PM => SProxy fieldInputedList -> SProxy fieldInputed -> ProfileMessage
+appendInputedMaybe fieldInputedList fieldInputed =
+      SetPField $ \model ->
+            case R.get fieldInputed model of
+                  Nothing ->  model
+                  Just value -> R.set fieldInputed Nothing $ R.set fieldInputedList (Just <<< DA.nub $ DA.snoc (DM.fromMaybe [] $ R.get fieldInputedList model) value) model
 
 removeFromInputedList :: forall t r fieldInputedList. Eq t => IsSymbol fieldInputedList => Cons fieldInputedList (Maybe (Array t)) r PM => SProxy fieldInputedList -> t -> ProfileMessage
 removeFromInputedList fieldInputedList value = SetPField (\model -> R.set fieldInputedList (map (DA.delete value) $ R.get fieldInputedList model) model)
 
-copyFromField :: forall s t r field fieldInputed. IsSymbol field => Cons field t s PU => IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy field -> SProxy fieldInputed -> ProfileMessage
-copyFromField field fieldInputed = SetPField (\model -> R.set fieldInputed (Just $ R.get field model.user) model)
+editField :: forall s t r field fieldInputed. IsSymbol field => Cons field t s PU => IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy field -> SProxy fieldInputed -> ProfileMessage
+editField field fieldInputed =
+      SetPField (\model -> R.set fieldInputed (Just $ R.get field model.user) $ model {
+            nameInputed = Nothing,
+            headlineInputed = Nothing,
+            ageInputed = Nothing,
+            genderInputed = Nothing,
+            countryInputed = Nothing,
+            languagesInputed = Nothing,
+            languagesInputedList = Nothing,
+            tagsInputed = Nothing,
+            tagsInputedList = Nothing,
+            descriptionInputed = Nothing
+      })
 
 copyToField :: forall s t r field fieldInputed. IsSymbol field => Cons field (Array t) s PU => IsSymbol fieldInputed => Cons fieldInputed (Maybe (Array t)) r PM => SProxy field -> SProxy fieldInputed -> ProfileMessage
 copyToField field fieldInputed = SetPField (\model -> R.set fieldInputed Nothing $ SS.setUserField field (DM.fromMaybe [] $ R.get fieldInputed model) model)
@@ -270,11 +281,14 @@ copyToField field fieldInputed = SetPField (\model -> R.set fieldInputed Nothing
 copyFromChoice :: forall s t r field fieldInputed. IsSymbol field => Cons field (Maybe t) s PU => IsSymbol fieldInputed => Cons fieldInputed (Choice (Maybe t)) r PM => SProxy field -> SProxy fieldInputed -> ProfileMessage
 copyFromChoice field fieldInputed = SetPField (\model -> R.set fieldInputed Nothing $ SS.setUserField field (DM.fromMaybe Nothing $ R.get fieldInputed model) model)
 
-resetFieldInputed :: forall fieldInputed r t.  IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy fieldInputed  -> ProfileMessage
+resetFieldInputed :: forall fieldInputed r t.  IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy fieldInputed -> ProfileMessage
 resetFieldInputed fieldInputed = SetPField (R.set fieldInputed Nothing)
 
 setFieldInputed :: forall fieldInputed r t. IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy fieldInputed -> t -> ProfileMessage
-setFieldInputed fieldInputed v = SetPField (R.set fieldInputed (Just v))
+setFieldInputed fieldInputed = setFieldInputedMaybe fieldInputed <<< Just
+
+setFieldInputedMaybe :: forall fieldInputed r t. IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy fieldInputed -> Maybe t -> ProfileMessage
+setFieldInputedMaybe fieldInputed v = SetPField (R.set fieldInputed v)
 
 exitEditGenerated :: forall r field. IsSymbol field => Cons field (Maybe String) r PM => ProfileMessage -> SProxy field -> Tuple String String -> ProfileMessage
 exitEditGenerated message fieldInputed (Tuple key _) =
@@ -290,6 +304,9 @@ pen = HE.svg [HA.class' "svg-16 edit", HA.viewBox "0 0 512 512"] [
       HE.path' $ HA.d "M295.772,113.228,85.791,323.209,38.818,461.681a9,9,0,0,0,2.159,9.255l.087.087a9,9,0,0,0,9.255,2.159l138.472-46.973L398.772,216.228Z",
       HE.path' $ HA.d "M458.648,53.353h0a72.833,72.833,0,0,0-103,0l-34.42,34.42,103,103,34.42-34.42A72.832,72.832,0,0,0,458.648,53.353Z"
 ]
+
+plus :: ProfileMessage -> Html ProfileMessage
+plus message = HE.svg [HA.class' "svg-20 plus", HA.viewBox "0 0 512 512", HA.onClick message] $ HE.path' [HA.d "M425.706,86.294A240,240,0,0,0,86.294,425.706,240,240,0,0,0,425.706,86.294ZM384,280H280V384H232V280H128V232H232V128h48V232H384Z"]
 
 check :: ProfileMessage -> Html ProfileMessage
 check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 512", HA.onClick message] [
@@ -315,3 +332,9 @@ title name = HA.title $ "Click to edit your " <> name
 
 genders :: Array (Tuple Gender String)
 genders = [Tuple Female $ show Female, Tuple Male $ show Male, Tuple NonBinary $ show NonBinary, Tuple Other $ show Other]
+
+nothingOnEmpty :: String -> Maybe String
+nothingOnEmpty s =
+      case DS.trim s of
+            "" -> Nothing
+            v -> Just v
