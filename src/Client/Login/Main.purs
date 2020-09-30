@@ -3,7 +3,7 @@ module Client.Login.Main where
 import Prelude
 
 import Client.Common.DOM as CCD
-import Client.Common.External as CCE
+import Client.Common.Account as CCA
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
@@ -16,12 +16,10 @@ import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.UIEvent.KeyboardEvent as WUK
-import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
-import Web.UIEvent.MouseEvent.EventTypes (click)
 
 login :: Effect Unit
 login = do
-      maybeRegisterLogin  <- CCE.validateEmailPassword
+      maybeRegisterLogin <- CCA.validateEmailPassword
       case maybeRegisterLogin of
             Nothing -> pure unit
             Just registerLogin -> EA.launchAff_ do
@@ -37,8 +35,4 @@ loginOnEnter event = do
       when (pressed == "Enter") login
 
 main :: Effect Unit
-main = do
-      loginButton <- CCD.querySelector "#login"
-      signUpDiv <- CCD.querySelector ".form-up"
-      CCD.addEventListener signUpDiv keyup loginOnEnter
-      CCD.addEventListener loginButton click (const login)
+main = CCA.registerEvents login

@@ -93,7 +93,7 @@ view model@{
                   ]
             ],
 
-            HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button end"]
+            HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button center-flex"]
       ]
       where displayEditName = displayEditGenerated SetName (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
             displayEditHeadline = displayEditGenerated SetHeadline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" headlineMaxCharacters

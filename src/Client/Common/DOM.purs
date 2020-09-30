@@ -5,6 +5,7 @@ import Prelude
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
+import Data.String as DS
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Exception as EE
@@ -86,7 +87,7 @@ scrollDown element = do
       WDE.setScrollTop height element
 
 value :: Element -> Effect String
-value element = DM.maybe inputException WHHI.value $ WHHI.fromElement element
+value element = DM.maybe inputException (map DS.trim <<< WHHI.value) $ WHHI.fromElement element
       where inputException = do
                   id <- WDE.id element
                   EE.throwException <<< EE.error $ "Element is not an input type" <> id

@@ -2,8 +2,12 @@
 body {
       background-color: #262626;
       display: flex;
-      color:rgb(238,238,238);
+      color: rgb(238, 238, 238);
       flex-direction: column;
+}
+
+.form-up input:focus {
+      border: 2px solid #b5b7b7;
 }
 
 .error-page {
@@ -18,10 +22,10 @@ body {
 }
 
 .reason {
-      margin:0 auto;
-      margin-top:30px;
+      margin: 0 auto;
+      margin-top: 30px;
       width: 45em;
-      color: rgb(238,238,238, 0.8);
+      color: rgb(238, 238, 238, 0.8);
 }
 
 .form-up label {
@@ -42,7 +46,6 @@ a:hover, input[type=button]:hover {
       margin-bottom: auto !important;
 }
 
-
 .green-area {
       align-self: center;
       display: flex;
@@ -59,10 +62,30 @@ a:hover, input[type=button]:hover {
       height: 60px;
       display: block;
       padding: 20px;
-      margin-top: 10px;
-      margin-bottom: 40px;
       font-size: 1.1em;
       border: 1px solid #b5b7b6;
+      margin-top: 10px;
+}
+
+.input {
+      margin-bottom: 20px;
+}
+
+.input.error  {
+      border-color: red;
+}
+
+.input.error input {
+      color: red
+}
+
+.error-message {
+      color: red;
+      visibility: hidden;
+}
+
+.input.error .error-message {
+      visibility: visible;
 }
 
 .form-up input[type=button], .form-up input[type=submit] {
@@ -108,11 +131,11 @@ h2 {
 }
 
 h1, h2 {
-        font-family: Flamenco;
+      font-family: Flamenco;
 }
 
 .terms h1 {
-      text-align:center ;
+      text-align: center;
 }
 
 .terms li {
@@ -141,7 +164,7 @@ h1, h2 {
       }
       .form-up input {
             width: 95%;
-            margin-top:5px;
+            margin-top: 5px;
             margin-bottom: 15px;
             height: 30px;
       }

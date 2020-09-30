@@ -962,3 +962,7 @@ select {
     border-radius: 3px;
     margin: 5px 0;
 }
+
+.center-flex {
+    align-self: center;
+}

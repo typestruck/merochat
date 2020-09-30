@@ -4,7 +4,7 @@ import Prelude
 
 import Client.Common.Captcha as CCC
 import Client.Common.DOM as CCD
-import Client.Common.External as CCE
+import Client.Common.Account as CCA
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
@@ -16,15 +16,10 @@ import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Shared.Routes (routes)
-import Shared.Unsafe as SU
-import Web.Event.Internal.Types (Event)
-import Web.UIEvent.KeyboardEvent as WUK
-import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
-import Web.UIEvent.MouseEvent.EventTypes (click)
 
 register :: Maybe String -> Effect Unit
 register captchaResponse = do
-      registerLogin <- CCE.validateEmailPassword
+      registerLogin <- CCA.validateEmailPassword
       case registerLogin of
             Nothing -> pure unit
             Just rl ->
@@ -42,14 +37,6 @@ register captchaResponse = do
 completeRegistration :: String -> Effect Unit
 completeRegistration captchaResponse = register $ Just captchaResponse
 
-registerOnEnter :: Event -> Effect Unit
-registerOnEnter event = do
-      let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
-      when (pressed == "Enter") $ register Nothing
-
 main :: Effect Unit
-main = do
-      registerButton <- CCD.querySelector "#register"
-      signUpDiv <- CCD.querySelector ".form-up"
-      CCD.addEventListener signUpDiv keyup registerOnEnter
-      CCD.addEventListener registerButton click (const (register Nothing))
+main = CCA.registerEvents (register Nothing)
+

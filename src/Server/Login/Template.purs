@@ -9,6 +9,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Routes (routes)
 
 template :: Effect String
@@ -25,11 +26,17 @@ template = do
                   HE.div (HA.class' "green-area green-box") [
                         HE.h2 (HA.class' "ext-heading") "Login to MelanChat",
                         HE.div (HA.class' "form-up") [
-                              HE.label_ "Email",
-                              HE.input [HA.type' "text", HA.id "email"],
-                              HE.label_ "Password",
-                              HE.input [HA.type' "password", HA.id "password"],
-                              HE.input [HA.type' "button", HA.id "login", HA.value "Login"]
+                              HE.div [HA.id "email-input", HA.class' "input"] [
+                                    HE.label_ "Email",
+                                    HE.input [HA.type' "text", HA.id "email"],
+                                    HE.span (HA.class' "error-message") "Please enter a valid email"
+                              ],
+                              HE.div [HA.id "password-input", HA.class' "input"] [
+                                    HE.label_ "Password",
+                                    HE.input [HA.type' "password", HA.id "password"],
+                                    HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
+                              ],
+                              HE.input [HA.type' "button", HA.value "Login"]
                         ],
                         HE.a [HA.href $ routes.recover.get {query: {token: Nothing}}, HA.class' "question-link forgot"] "Forgot your password?",
                         HE.div [HA.class' "question-or"] [

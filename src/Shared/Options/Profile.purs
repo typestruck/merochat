@@ -17,3 +17,9 @@ tagMaxCharacters = 40
 
 descriptionMaxCharacters :: Int
 descriptionMaxCharacters = 1000
+
+passwordMinCharacters :: Int
+passwordMinCharacters = 5
+
+passwordMaxCharacters :: Int
+passwordMaxCharacters = 128
