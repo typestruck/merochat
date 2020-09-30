@@ -24,15 +24,6 @@
     background: #373737;
 }
 
-.settings-section input[type="button"] {
-    margin-top: 20px;
-    display: block;
-    border-radius: 5px;
-    border: none;
-    padding: 17px;
-    background: #1b3a28;
-}
-
 .danger {
     background: hsl(359, 82%, 47.6%) !important;
 }

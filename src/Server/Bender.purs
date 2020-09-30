@@ -7,35 +7,31 @@ module Server.Bender (
 import Prelude
 import Server.Types
 
+import Data.Enum as DE
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Tuple (Tuple(..))
-import Effect.Console as EC
 import Effect.Random as ER
-import Run as R
-import Data.Enum as DE
-import Run.Reader as RR
+import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Effect.Uncurried(EffectFn2)
-
+import Run as R
+import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 
 foreign import generate_ :: EffectFn2 Int Int String
 
 generateName :: ServerEffect String
 generateName = do
-        size <- R.liftEffect $ ER.randomInt 10 30
+        size <- R.liftEffect $ ER.randomInt 10 nameMaxCharacters
         generate Name size
 
 generateDescription :: ServerEffect String
 generateDescription = do
-        size <- R.liftEffect $ ER.randomInt 120 1000
+        size <- R.liftEffect $ ER.randomInt 120 descriptionMaxCharacters
         generate Description size
 
 generateHeadline :: ServerEffect String
 generateHeadline = do
-        let maxSize = 100
+        let maxSize = headlineMaxCharacters
 
         size <- R.liftEffect $ ER.randomInt 1 maxSize
         headline <- generate Description size

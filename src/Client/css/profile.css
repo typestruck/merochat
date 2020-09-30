@@ -1,0 +1,166 @@
+.suggestion.contact {
+    padding: 0;
+    cursor: default;
+}
+
+.single-line-input {
+    border: none;
+    border-bottom: 1px solid #b5b7b7;
+    padding-right: 20px;
+    margin-top: 20px;
+    width: 500px;
+}
+
+.suggestion.contact select {
+    margin-top: 20px;
+    width: 500px;
+}
+
+.suggestion.contact .profile-tags {
+    margin-top: 10px;
+}
+
+.suggestion.contact .profile-asl div {
+    margin-right: 0;
+}
+
+.suggestion.contact input:focus {
+    outline: none
+}
+
+.profile-edition-description {
+    margin-top: 20px;
+    resize: none;
+    cursor: pointer;
+    height: 300px;
+    padding: 15px;
+    padding-bottom: 35px;
+    border: 1px solid #b5b7b7;
+}
+
+.profile-edition-name {
+    font-weight: bold;
+    margin: 20px 0;
+    display: inline-block;
+}
+
+.edit {
+    margin: 0 10px;
+}
+
+.suggestion.contact .profile-asl {
+    margin: 20px 0;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+}
+
+.italics {
+    font-style: italic;
+}
+
+.profile-edition-add {
+    margin: 0px 5px;
+}
+
+.profile-edition-add .edit {
+    vertical-align: middle;
+    margin: 0 15px 0 5px;
+}
+
+.plus, .save {
+    fill: hsl(145, 80%, 28%);
+    stroke: hsl(145, 80%, 28%);
+}
+
+.cancel {
+    margin-left: 20px;
+}
+
+.description-edition, .edition {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.description-edition {
+    display: flex;
+    flex-direction: column;
+}
+
+.save-cancel {
+    margin-top: -30px;
+    margin-left: 0;
+    align-self: end;
+}
+
+.save-cancel .cancel {
+    margin-right: 20px;
+    vertical-align: text-top;
+}
+
+.about {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.profile-edition-add, .profile-description, .about, .profile-edition-name, .profile-edition-headline {
+    cursor: pointer;
+}
+
+.centered {
+    margin-bottom: 20px;
+    margin-right: 0 !important;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    order: -1;
+    align-items: center;
+}
+
+.save {
+    margin-left: -20px;
+}
+
+select+.save {
+    margin-left: 10px
+}
+
+.profile-edition-add-list {
+    margin-top: 20px;
+    width: 500px;
+    display: flex;
+}
+
+.list-languages {
+    text-decoration: underline;
+}
+
+.list-remove {
+    visibility: hidden;
+    margin: 5px;
+    cursor: pointer;
+    margin-right: 20px;
+    font-size: 0.8em;
+}
+
+.grow div:hover>.list-remove {
+    visibility: visible;
+}
+
+.grow {
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+input+.plus {
+    margin-left: -20px
+}
+
+select+.plus {
+    margin-left: 10px
+}
+
+.blocky {
+    display:inline-block
+}

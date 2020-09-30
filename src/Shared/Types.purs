@@ -48,7 +48,7 @@ foreign import data Trie :: Type
 
 type NoBody = {}
 
-type BasicUser fields = {
+type BasicUser fields = (
       id :: PrimaryKey,
       name :: String,
       headline :: String,
@@ -58,21 +58,16 @@ type BasicUser fields = {
       karma :: Int,
       karmaPosition :: Int |
       fields
-}
+)
 
-type IMUser = (BasicUser (
+type IU = (BasicUser (
       gender :: Maybe String,
       country :: Maybe String,
       languages :: Array String,
       age :: Maybe Int
 ))
 
-type ProfileUser = (BasicUser (
-      gender :: Maybe Gender,
-      country :: Maybe PrimaryKey,
-      languages :: Array PrimaryKey,
-      birthday :: Maybe DateWrapper
-))
+type IMUser = Record IU
 
 data Gender =
       Female |
@@ -339,16 +334,32 @@ data DisplayHelpSection =
 data InternalHelpMessage =
       ToggleHelpSection DisplayHelpSection
 
+
+type PU = (BasicUser (
+      gender :: Maybe Gender,
+      country :: Maybe PrimaryKey,
+      languages :: Array PrimaryKey,
+      age :: Maybe DateWrapper
+))
+
+type ProfileUser = Record PU
+
+type Choice = Maybe
+
 type PM = (
       user :: ProfileUser,
-      isCountryVisible :: Boolean,
-      isGenderVisible :: Boolean,
-      isLanguagesVisible :: Boolean,
-      isAgeVisible :: Boolean,
-      isTagsVisible :: Boolean,
+      nameInputed :: Maybe String,
+      headlineInputed :: Maybe String,
+      ageInputed :: Choice (Maybe DateWrapper),
+      genderInputed :: Choice (Maybe Gender),
+      countryInputed :: Choice (Maybe Int),
+      languagesInputed :: Maybe PrimaryKey,
+      languagesInputedList :: Maybe (Array PrimaryKey),
+      tagsInputed :: Maybe String,
+      tagsInputedList :: Maybe (Array String),
+      descriptionInputed :: Maybe String,
       countries :: Array (Tuple PrimaryKey String),
-      languages :: Array (Tuple PrimaryKey String),
-      birthday :: Tuple (Maybe Int) (Tuple (Maybe Int) (Maybe Int))
+      languages :: Array (Tuple PrimaryKey String)
 )
 
 --used to generically set records
@@ -360,18 +371,9 @@ data ProfileMessage =
       SetPField (ProfileModel -> ProfileModel) |
       SelectAvatar |
       SetAvatar String |
-      SetName String |
-      SetHeadline String |
-      SetDescription String |
-      SetTagEnter (Tuple Key String) |
-      SetGender String |
-      SetCountry String |
-      SetYear String |
-      SetMonth String |
-      SetDay String |
-      AddLanguage String |
-      RemoveLanguage PrimaryKey Event |
-      RemoveTag String Event |
+      SetName |
+      SetHeadline |
+      SetDescription |
       SaveProfile
 
 type SettingsModel = {
@@ -482,7 +484,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
             avatar <- readAvatar foreignAvatar
             name <- F.readString foreignUnread
             maybeForeignBirthday <- F.readNull foreignBirthday
-            birthday <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignBirthday
+            age <- DM.maybe (pure Nothing) (map (Just <<< DTT.date) <<< SDT.readDate) maybeForeignBirthday
             maybeGender <- F.readNull foreignGender
             gender <- DM.maybe (pure Nothing) (map DSR.read <<< F.readString) maybeGender
             headline <- F.readString foreignHeadline
@@ -499,7 +501,7 @@ instance fromSQLRowProfileUserWrapper :: FromSQLRow ProfileUserWrapper where
                   id,
                   avatar,
                   name,
-                  birthday: DateWrapper <$> birthday,
+                  age: DateWrapper <$> age,
                   gender,
                   headline,
                   description,
