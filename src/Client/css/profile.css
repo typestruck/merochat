@@ -162,5 +162,10 @@ select+.plus {
 }
 
 .blocky {
-    display:inline-block
+    display: inline-block
+}
+
+.generating {
+    font-style: italic;
+    margin: 15px 0;
 }

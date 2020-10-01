@@ -21,8 +21,6 @@ template token = do
       FRS.render contents
       where javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/recover.bundle.js"],
-                  --we need a global callback for grecaptha so we need to directly call the bundled code
-                  HE.script (HA.type' "text/javascript") "window.completeRecover = function(cpt){return Recover.completeRecover(cpt)();}; Recover.main();",
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             content = [

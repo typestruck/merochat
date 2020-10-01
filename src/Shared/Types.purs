@@ -358,6 +358,7 @@ type PM = (
       tagsInputed :: Maybe String,
       tagsInputedList :: Maybe (Array String),
       descriptionInputed :: Maybe String,
+      generating :: Maybe Generate,
       countries :: Array (Tuple PrimaryKey String),
       languages :: Array (Tuple PrimaryKey String)
 )
@@ -371,9 +372,7 @@ data ProfileMessage =
       SetPField (ProfileModel -> ProfileModel) |
       SelectAvatar |
       SetAvatar String |
-      SetName |
-      SetHeadline |
-      SetDescription |
+      SetGenerate Generate |
       SaveProfile
 
 type SettingsModel = {
@@ -728,6 +727,8 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonGenerate :: EncodeJson Generate where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonDisplayHelpSection :: EncodeJson DisplayHelpSection where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonToggleBoard :: EncodeJson ToggleBoard where
@@ -747,6 +748,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonGenerate :: DecodeJson Generate where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonDisplayHelpSection :: DecodeJson DisplayHelpSection where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonToggleBoard :: DecodeJson ToggleBoard where

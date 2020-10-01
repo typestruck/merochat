@@ -28,17 +28,20 @@ getFileInput :: Effect Element
 getFileInput = CCD.unsafeQuerySelector "#avatar-file-input"
 
 update :: AffUpdate ProfileModel ProfileMessage
-update { model, message } =
+update rc@{ model, message } =
       case message of
             SelectAvatar -> selectAvatar
             SetPField setter -> pure setter
             SetAvatar base64 -> pure <<< SS.setUserField (SProxy :: SProxy "avatar") $ Just base64
-            SetName -> setGenerated model Name (SProxy :: SProxy "name") nameMaxCharacters
-            SetHeadline  -> setGenerated model Headline (SProxy :: SProxy "headline") headlineMaxCharacters
-            SetDescription -> setGenerated model Description (SProxy :: SProxy "description") descriptionMaxCharacters
+            SetGenerate what ->
+                  case what of
+                        Name -> setGenerated rc Name (SProxy :: SProxy "name") nameMaxCharacters
+                        Headline -> setGenerated rc Headline (SProxy :: SProxy "headline") headlineMaxCharacters
+                        Description -> setGenerated rc Description (SProxy :: SProxy "description") descriptionMaxCharacters
             SaveProfile -> saveProfile model
 
-setGenerated model what field characters = do
+setGenerated { model, display } what field characters = do
+      display $ _ { generating = Just what }
       let   fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
             trimmed = DS.trim <<< DM.fromMaybe "" $ R.get fieldInputed model
 
@@ -46,7 +49,9 @@ setGenerated model what field characters = do
                   CCN.response $ request.profile.generate { query: { what } }
             else
                   pure trimmed
-      pure (R.set fieldInputed Nothing <<< SS.setUserField field (DS.take characters toSet))
+      pure (\model ->  R.set fieldInputed Nothing <<< SS.setUserField field (DS.take characters toSet) $ model {
+            generating = Nothing
+      })
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
 selectAvatar = do

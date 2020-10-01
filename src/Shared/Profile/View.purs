@@ -35,11 +35,13 @@ import Type.Data.Symbol as TDS
 
 foreign import focus :: EffectFn2 VNode VNode Unit
 
+--REFACTOR: some bits can still be abstracted
 view :: ProfileModel -> Html ProfileMessage
 view model@{
       user,
       countries,
       languages,
+      generating,
       descriptionInputed
 } =
       HE.div (HA.class' "profile-edition suggestion contact") [
@@ -66,37 +68,42 @@ view model@{
 
             HE.div (HA.class' "profile-tags") displayEditTags,
 
-            HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (editField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
-                  HE.div (HA.class' "about") [
-                        HE.span (HA.class' "duller") "About",
-                        pen
-                  ],
-                  HE.div' [HA.class' "profile-description", HA.innerHTML $ SM.toHTML user.description]
+            HE.div (HA.class' { hidden: generating /= Just Description })[
+                  HE.div (HA.class' "generating") "Generating..."
             ],
-            HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
-                  HE.div (HA.class' "bold") "Your description",
-                  HE.div (HA.class' "duller") [
-                        HE.text "Talk a little (or a lot) about yourself",
-                        HE.br,
-                        HE.text "Leave it blank to generate a new random description"
+            HE.div (HA.class' {invisible: generating == Just Description}) [
+                  HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (editField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
+                        HE.div (HA.class' "about") [
+                              HE.span (HA.class' "duller") "About",
+                              pen
+                        ],
+                        HE.div' [HA.class' "profile-description", HA.innerHTML $ SM.toHTML user.description]
                   ],
-                  HE.textarea [
-                        HA.class' "profile-edition-description",
-                        HA.maxlength descriptionMaxCharacters,
-                        FRH.atPostpatch focus,
-                        HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
-                  ] $ DM.fromMaybe "" descriptionInputed,
+                  HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
+                        HE.div (HA.class' "bold") "Your description",
+                        HE.div (HA.class' "duller") [
+                              HE.text "Talk a little (or a lot) about yourself",
+                              HE.br,
+                              HE.text "Leave it blank to generate a new random description"
+                        ],
+                        HE.textarea [
+                              HA.class' "profile-edition-description",
+                              HA.maxlength descriptionMaxCharacters,
+                              FRH.atPostpatch focus,
+                              HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
+                        ] $ DM.fromMaybe "" descriptionInputed,
 
-                  HE.div (HA.class' "save-cancel") [
-                        check SetDescription,
-                        cancel (SProxy :: SProxy "descriptionInputed")
+                        HE.div (HA.class' "save-cancel") [
+                              check (SetGenerate Description),
+                              cancel (SProxy :: SProxy "descriptionInputed")
+                        ]
                   ]
             ],
 
             HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button center-flex"]
       ]
-      where displayEditName = displayEditGenerated SetName (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
-            displayEditHeadline = displayEditGenerated SetHeadline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" headlineMaxCharacters
+      where displayEditName = displayEditGenerated Name (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
+            displayEditHeadline = displayEditGenerated Headline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" headlineMaxCharacters
 
             displayEditAge =
                   let   field = SProxy :: SProxy "age"
@@ -216,36 +223,39 @@ view model@{
                         ]
                   ]
 
-            displayEditGenerated :: forall r s field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) r PM => Cons field String s PU => ProfileMessage -> SProxy field -> String -> Int -> Html ProfileMessage
-            displayEditGenerated message field explanation maxLength =
+            displayEditGenerated :: forall r s field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Maybe String) r PM => Cons field String s PU => Generate -> SProxy field -> String -> Int -> Html ProfileMessage
+            displayEditGenerated what field explanation maxLength =
                   let   stringField = TDS.reflectSymbol field
                         fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
                         currentInputed = R.get fieldInputed model
                         isEditing = DM.isJust currentInputed
-                  in HE.div_ [
-                        HE.div [title stringField, HA.class' {"hidden": isEditing}, HA.onClick (editField field fieldInputed)] [
-                              HE.span [HA.class' $ "profile-edition-" <> stringField] [HE.text $ R.get field model.user],
-                              pen
-                        ],
-                        HE.div (HA.class' { edition: true, hidden: not isEditing}) [
-                              HE.div (HA.class' "bold") $ "Your " <> stringField,
-                              HE.div (HA.class' "duller") [
-                                    HE.text explanation,
-                                    HE.br,
-                                    HE.text $ "Leave it blank to generate a new random " <> stringField
+                  in if generating == Just what then
+                        HE.span (HA.class' "generating") "Generating..."
+                      else
+                        HE.div_ [
+                              HE.div [title stringField, HA.class' {"hidden": isEditing}, HA.onClick (editField field fieldInputed)] [
+                                    HE.span [HA.class' $ "profile-edition-" <> stringField] [HE.text $ R.get field model.user],
+                                    pen
                               ],
-                              HE.input [
-                                    FRH.atPostpatch focus,
-                                    HA.class' "single-line-input",
-                                    HA.maxlength maxLength,
-                                    HA.onKeydown (exitEditGenerated message fieldInputed),
-                                    HA.onInput (setFieldInputed fieldInputed),
-                                    HA.value $ DM.fromMaybe "" currentInputed
-                              ],
-                              check message,
-                              cancel fieldInputed
+                              HE.div (HA.class' { edition: true, hidden: not isEditing}) [
+                                    HE.div (HA.class' "bold") $ "Your " <> stringField,
+                                    HE.div (HA.class' "duller") [
+                                          HE.text explanation,
+                                          HE.br,
+                                          HE.text $ "Leave it blank to generate a new random " <> stringField
+                                    ],
+                                    HE.input [
+                                          FRH.atPostpatch focus,
+                                          HA.class' "single-line-input",
+                                          HA.maxlength maxLength,
+                                          HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed),
+                                          HA.onInput (setFieldInputed fieldInputed),
+                                          HA.value $ DM.fromMaybe "" currentInputed
+                                    ],
+                                    check (SetGenerate what),
+                                    cancel fieldInputed
+                              ]
                         ]
-                  ]
 
             languageHM = DH.fromArray languages
             getLanguage = SU.fromJust <<< flip DH.lookup languageHM
@@ -272,7 +282,8 @@ editField field fieldInputed =
             languagesInputedList = Nothing,
             tagsInputed = Nothing,
             tagsInputedList = Nothing,
-            descriptionInputed = Nothing
+            descriptionInputed = Nothing,
+            generating = Nothing
       })
 
 copyToField :: forall s t r field fieldInputed. IsSymbol field => Cons field (Array t) s PU => IsSymbol fieldInputed => Cons fieldInputed (Maybe (Array t)) r PM => SProxy field -> SProxy fieldInputed -> ProfileMessage

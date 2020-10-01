@@ -11,16 +11,17 @@ import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.UUID as DU
+import Effect.Aff (Milliseconds(..))
+import Effect.Aff as EA
 import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
 import Server.Bender as SB
-import Shared.Options.File (allowedMediaTypes)
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
 import Server.Response as SR
-import Shared.Options.File (maxImageSize, maxImageSizeKB)
+import Shared.Options.File (allowedMediaTypes, maxImageSize, maxImageSizeKB)
 import Shared.Unsafe as SU
 
 invalidImageMessage :: String
@@ -30,7 +31,7 @@ imageTooBigMessage :: String
 imageTooBigMessage = "Max allowed size for avatar is " <> maxImageSizeKB
 
 generate :: Generate -> ServerEffect String
-generate =
+generate = do
       case _ of
             Name -> SB.generateName
             Headline -> SB.generateHeadline

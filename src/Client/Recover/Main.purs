@@ -6,7 +6,6 @@ import Client.Common.Account as CCA
 import Client.Common.Captcha as CCC
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Client.Common.Notification as CCN
 import Client.Common.Types (RequestStatus(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM

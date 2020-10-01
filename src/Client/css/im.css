@@ -966,3 +966,7 @@ select {
 .center-flex {
     align-self: center;
 }
+
+.invisible {
+    visibility: hidden;
+}

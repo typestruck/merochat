@@ -3,7 +3,7 @@
 }
 
 .internal-help .hide-internal {
-    display: none;
+    display: none !important;
 }
 
 .help, .terms {
