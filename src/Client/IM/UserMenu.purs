@@ -46,7 +46,7 @@ toggleModal psToggle model =
 setModalContents :: Maybe String -> String -> String -> IMModel -> NextMessage
 setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
       where loadModal root html file = liftEffect do
-                  element <- CCD.querySelector root
+                  element <- CCD.unsafeQuerySelector root
                   CCD.setInnerHTML element html
                   --scripts don't load when inserted via innerHTML
                   case file of

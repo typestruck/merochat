@@ -84,6 +84,20 @@ a:hover, input[type=button]:hover {
       visibility: hidden;
 }
 
+#request-error-message {
+      visibility: visible;
+      margin-top:5px;
+      display: inline-block;
+}
+
+.form-up .success-message {
+      display: none;
+}
+
+.form-up.success .success-message {
+      display: block;
+}
+
 .input.error .error-message {
       visibility: visible;
 }

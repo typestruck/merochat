@@ -103,7 +103,7 @@ checkFetchContacts model@{ contacts, freeToFetchContactList }
       | freeToFetchContactList = model :> [ Just <<< FetchContacts <$> getScrollBottom ]
 
       where getScrollBottom = liftEffect do
-                  element <- CCD.querySelector "#message-history-wrapper"
+                  element <- CCD.unsafeQuerySelector "#message-history-wrapper"
                   top <- WDE.scrollTop element
                   height <- WDE.scrollHeight element
                   offset <- WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element

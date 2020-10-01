@@ -51,7 +51,7 @@ import Web.UIEvent.KeyboardEvent as WUK
 
 --REFACTOR: make selectors inside updates type safe
 getFileInput :: Effect Element
-getFileInput = CCD.querySelector "#image-file-input"
+getFileInput = CCD.unsafeQuerySelector "#image-file-input"
 
 --the keydown event fires before input
 enterBeforeSendMessage :: Event -> IMModel -> NoMessages
@@ -191,7 +191,7 @@ makeTurn { chatStarter, chatAge, history } sender =
 applyMarkup :: Markup -> IMModel -> MoreMessages
 applyMarkup markup model@{ message } = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
       where apply markup value = do
-                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
                   let   Tuple before after = case markup of
                               Bold -> Tuple "**" "**"
                               Italic -> Tuple "*" "*"
@@ -227,7 +227,7 @@ setMessage cursor markdown model =
       }) <<< liftEffect $
             case cursor of
                   Just position -> do
-                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setSelectionEnd position textarea
                   Nothing -> pure unit
@@ -291,7 +291,7 @@ insertLink model@{ message, linkText, link } =
 
 setAtCursor :: Maybe String -> String -> Effect (Maybe IMMessage)
 setAtCursor message text = do
-      textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+      textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
       end <- WHHTA.selectionEnd textarea
       let { before, after } = DS.splitAt end $ DM.fromMaybe "" message
       CIF.next <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after

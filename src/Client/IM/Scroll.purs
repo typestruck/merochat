@@ -19,5 +19,5 @@ import Web.DOM.MutationRecord as WDM
 
 scrollLastMessage :: Effect Unit
 scrollLastMessage = do
-      node <- SU.fromJust <<< WDE.fromNode <<< WDE.toNode <$> CCD.querySelector ".message-history-wrapper"
+      node <- SU.fromJust <<< WDE.fromNode <<< WDE.toNode <$> CCD.unsafeQuerySelector ".message-history-wrapper"
       CCD.scrollDown node

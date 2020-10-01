@@ -25,7 +25,7 @@ import Type.Data.Symbol as TDS
 import Web.DOM (Element)
 
 getFileInput :: Effect Element
-getFileInput = CCD.querySelector "#avatar-file-input"
+getFileInput = CCD.unsafeQuerySelector "#avatar-file-input"
 
 update :: AffUpdate ProfileModel ProfileMessage
 update { model, message } =

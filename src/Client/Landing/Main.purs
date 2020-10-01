@@ -2,14 +2,11 @@ module Client.Landing.Main where
 
 import Prelude
 
-import Client.Common.Captcha as CCC
-import Client.Common.DOM as CCD
 import Client.Common.Account as CCA
+import Client.Common.Captcha as CCC
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Client.Common.Network as CCNT
-import Client.Common.Notification as CCN
-import Data.Either (Either(..))
+import Client.Common.Types (RequestStatus(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
@@ -26,12 +23,10 @@ register captchaResponse = do
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
                    else EA.launchAff_ do
-                        response <- request.register $ { body: rl { captchaResponse = captchaResponse }}
-                        case response of
-                              Right _ -> liftEffect <<< CCL.setLocation $ routes.im.get {}
-                              Left left -> liftEffect do
-                                    CCC.grecaptchaReset
-                                    CCN.alert $ CCNT.errorMessage left
+                        status <- CCA.formRequest "Creating account..." $ request.register $ { body: rl { captchaResponse = captchaResponse }}
+                        liftEffect $ case status of
+                              Success -> CCL.setLocation $ routes.im.get {}
+                              Fail -> CCC.grecaptchaReset
 
 -- | Callback for grecaptcha
 completeRegistration :: String -> Effect Unit

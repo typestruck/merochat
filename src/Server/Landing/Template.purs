@@ -51,11 +51,12 @@ template = do
                                     ],
                                     HE.div [HA.id "password-input", HA.class' "input"] [
                                           HE.label_ "Password",
-                                          HE.input [HA.type' "password", HA.autocomplete false, HA.id "password"],
+                                          HE.input [HA.type' "password", HA.maxlength 128, HA.autocomplete false, HA.id "password"],
                                           HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                     ],
                                     HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
-                                    HE.input [HA.type' "button", HA.value "Create account"]
+                                    HE.input [HA.type' "button", HA.value "Create account"],
+                                    HE.span' [HA.id "request-error-message", HA.class' "error-message"]
                               ]
                         ],
                         HE.h2_ [

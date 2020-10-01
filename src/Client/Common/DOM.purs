@@ -5,6 +5,7 @@ import Prelude
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
+import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Debug.Trace (spy)
 import Effect (Effect)
@@ -28,7 +29,7 @@ import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WHHD
 import Web.HTML.HTMLElement as WHHE
-import Web.HTML.HTMLInputElement as WHHI
+import Web.HTML.HTMLMediaElement.CanPlayType (CanPlayType(..))
 import Web.HTML.HTMLScriptElement as WHS
 import Web.HTML.Window as HWH
 import Web.HTML.Window as WHW
@@ -40,6 +41,11 @@ foreign import innerText_ :: EffectFn1 Element String
 
 foreign import createCustomEvent_ :: Fn2 String String CustomEvent
 foreign import customEventDetail_ :: Fn1 CustomEvent String
+
+foreign import value_ :: EffectFn1 Element String
+foreign import setValue_ :: EffectFn2 Element String Unit
+
+foreign import toggleDisabled_ :: EffectFn1 Element Unit
 
 foreign import documentHasFocus :: Effect Boolean
 
@@ -74,23 +80,31 @@ addEventListener element eventType handler = do
       WET.addEventListener eventType listener false $ WDE.toEventTarget element
 
 -- | Selects a single element.
-querySelector :: String -> Effect Element
+unsafeQuerySelector :: String -> Effect Element
+unsafeQuerySelector selector = do
+      maybeElement <- querySelector selector
+      DM.maybe (EE.throwException $ EE.error $ "Selector returned no nodes:" <> selector) pure maybeElement
+
+querySelector :: String -> Effect (Maybe Element)
 querySelector selector = do
       window <- WH.window
       document <- WHHD.toDocument <$> WHW.document window
-      maybeElement <- WDP.querySelector (QuerySelector selector) $ WDD.toParentNode document
-      DM.maybe (EE.throwException $ EE.error $ "Selector returned no nodes:" <> selector) pure maybeElement
+      WDP.querySelector (QuerySelector selector) $ WDD.toParentNode document
 
 scrollDown :: Element -> Effect Unit
 scrollDown element = do
       height <- WDE.scrollHeight element
       WDE.setScrollTop height element
 
+-- | Input value property or button inner text
 value :: Element -> Effect String
-value element = DM.maybe inputException (map DS.trim <<< WHHI.value) $ WHHI.fromElement element
-      where inputException = do
-                  id <- WDE.id element
-                  EE.throwException <<< EE.error $ "Element is not an input type" <> id
+value element = EU.runEffectFn1 value_ element
+
+setValue :: Element -> String -> Effect Unit
+setValue element value = EU.runEffectFn2 setValue_ element value
+
+toggleDisabled :: Element -> Effect Unit
+toggleDisabled = EU.runEffectFn1 toggleDisabled_
 
 setInnerHTML :: Element -> String -> Effect Unit
 setInnerHTML element = EU.runEffectFn2 innerHTML_ element

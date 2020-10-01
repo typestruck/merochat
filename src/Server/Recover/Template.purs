@@ -9,6 +9,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Routes (routes)
 
 template :: Maybe String -> Effect String
@@ -31,9 +32,14 @@ template token = do
                                           HE.div_ [
                                                 HE.h2 (HA.class' "ext-heading") "Recover account",
                                                 HE.div (HA.class' "form-up") [
-                                                      HE.label_ "Email",
-                                                      HE.input [HA.type' "text", HA.id "email"],
-                                                      HE.input [HA.type' "button", HA.id "recover", HA.value "Recover"],
+                                                      HE.div [HA.id "email-input", HA.class' "input"] [
+                                                            HE.label_ "Email",
+                                                            HE.input [HA.type' "text", HA.id "email"],
+                                                            HE.span (HA.class' "error-message") "Please enter a valid email"
+                                                      ],
+                                                      HE.input [HA.type' "button", HA.value "Recover"],
+                                                      HE.span' [HA.id "request-error-message", HA.class' "error-message"],
+                                                      HE.span [HA.id "request-success-message", HA.class' "success-message"] "Recovery email sent. Please check your inbox." ,
                                                       HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible"]
                                                 ]
                                           ]
@@ -42,10 +48,18 @@ template token = do
                                                 HE.h2 (HA.class' "ext-heading") "Reset password",
                                                 HE.div (HA.class' "form-up") [
                                                       HE.label_ "Password",
-                                                      HE.input [HA.type' "password", HA.id "password"],
-                                                      HE.label_ "Confirm password",
-                                                      HE.input [HA.type' "password", HA.id "confirm-password"],
-                                                      HE.input [HA.type' "button", HA.id "reset", HA.value "Change password", HA.class' "action-button"]
+                                                      HE.div [HA.id "password-input", HA.class' "input"] [
+                                                            HE.input [HA.type' "password", HA.id "password"],
+                                                            HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
+                                                      ],
+                                                      HE.div [HA.id "confirm-password-input", HA.class' "input"] [
+                                                            HE.label_ "Confirm password",
+                                                            HE.input [HA.type' "password", HA.id "confirm-password"],
+                                                            HE.span (HA.class' "error-message") "Password and confirmation do not match"
+                                                      ],
+                                                      HE.input [HA.type' "button", HA.value "Change password", HA.class' "action-button"],
+                                                      HE.span' [HA.id "request-error-message", HA.class' "error-message"],
+                                                      HE.span [HA.class' "success-message"] $ "Password reseted. Redirecting to login..."
                                                 ]
                                           ],
                               HE.a [HA.href $ routes.login.get {}, HA.class' "question-link forgot"] "Already have an account?",

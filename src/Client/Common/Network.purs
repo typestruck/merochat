@@ -28,6 +28,6 @@ response aff = do
 
 errorMessage :: ClientError -> String
 errorMessage = case _ of
-      DecodeError { response: Response { body } } -> "Could not parse response from server"
-      StatusError { response: Response { body } } ->  body
+      DecodeError { response: Response { body } } -> "Server sent an unexpected response"
+      StatusError { response: Response { body } } -> body
       RequestError { message } -> message
