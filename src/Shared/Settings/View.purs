@@ -1,5 +1,6 @@
 module Shared.Settings.View where
 
+import Prelude
 import Shared.Types
 
 import Flame (Html)
@@ -14,7 +15,7 @@ view model =
       ]
 
 account :: SettingsModel -> Html SettingsMessage
-account { email, emailConfirmation, password, passwordConfirmation} =
+account { email, emailConfirmation, password, passwordConfirmation, confirmTermination } =
       HE.div (HA.class' "settings-section") [
             HE.div (HA.class' "section-label") [
                   HE.div (HA.class' "bold") "Account",
@@ -44,7 +45,16 @@ account { email, emailConfirmation, password, passwordConfirmation} =
                   HE.br,
 
                   HE.label_ "Permanently delete all my data and close my account",
-                  HE.input [HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick TerminateAccount]
+                  HE.input [HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount],
+                  HE.div (HA.class' {"modal-placeholder-overlay": true, hidden: not confirmTermination })[
+                        HE.div (HA.class' "confirmation") [
+                              HE.span (HA.class' "bold") "Do you really want to terminate your account? All of your data will be permanently lost.",
+                              HE.div (HA.class' "buttons") [
+                                    HE.button [HA.class' "cancel", HA.onClick ToggleTerminateAccount] "Cancel",
+                                    HE.button [HA.class' "green-button danger", HA.onClick TerminateAccount] "Terminate"
+                              ]
+                        ]
+                  ]
             ]
       ]
 

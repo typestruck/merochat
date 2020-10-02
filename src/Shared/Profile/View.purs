@@ -69,7 +69,7 @@ view model@{
             HE.div (HA.class' "profile-tags") displayEditTags,
 
             HE.div (HA.class' { hidden: generating /= Just Description })[
-                  HE.div (HA.class' "generating") "Generating..."
+                  HE.div' (HA.class' "loading")
             ],
             HE.div (HA.class' {invisible: generating == Just Description}) [
                   HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (editField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
@@ -230,7 +230,7 @@ view model@{
                         currentInputed = R.get fieldInputed model
                         isEditing = DM.isJust currentInputed
                   in if generating == Just what then
-                        HE.span (HA.class' "generating") "Generating..."
+                        HE.div' (HA.class' "loading")
                       else
                         HE.div_ [
                               HE.div [title stringField, HA.class' {"hidden": isEditing}, HA.onClick (editField field fieldInputed)] [

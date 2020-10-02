@@ -20,14 +20,11 @@ import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 
-logout :: Boolean -> IMModel -> MoreMessages
-logout confirmed model = CIF.nothingNext model $ when confirmed out
+logout :: IMModel -> MoreMessages
+logout model = CIF.nothingNext model out
       where out = do
                   void $ request.logout { body: {} }
                   liftEffect $ CCL.setLocation $ routes.login.get {}
-
-confirmLogout :: IMModel -> NoMessages
-confirmLogout = (_ :> [Just <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
 
 --PERFORMANCE: load bundles only once
 toggleModal :: ShowModal -> IMModel -> NextMessage
@@ -37,7 +34,9 @@ toggleModal psToggle model =
             ShowSettings -> showTab request.settings.get ShowSettings "settings.bundle.js" "#settings-edition-root"
             ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.bundle.js" "#karma-leaderboard-root"
             ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.bundle.js" "#help-root"
-            _ -> F.noMessages $ model { toggleModal = Hidden }
+            modal -> F.noMessages $ model {
+                  toggleModal = modal
+            }
       where showTab f toggle file root =
                   model { toggleModal = toggle } :> [
                         Just <<< SetModalContents (Just file) root <$> CCN.response (f {})

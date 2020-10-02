@@ -777,12 +777,12 @@ svg.toolbar-action {
 }
 
 .exclamation, .error-message {
-    color: hsl(359, 85%, 62%);
+    color: red;
 }
 
 .exclamation {
     font-size: 1.3em;
-    border: 2px solid hsl(359, 85%, 62%);
+    border: 2px solid red;
     border-radius: 100%;
     padding: 2px 10px;
     line-height: 1;
@@ -949,7 +949,9 @@ svg.toolbar-action {
     margin-top: 20px;
     display: block;
     border-radius: 5px;
+    color:inherit;
     border: none;
+    cursor: pointer;
     padding: 17px;
     background: #1b3a28;
 }
@@ -969,4 +971,61 @@ select {
 
 .invisible {
     visibility: hidden;
+}
+
+.loading {
+    background: url('/client/media/loading.png');
+    animation: rotating 2s linear infinite;
+    width: 46px;
+    height: 44px;
+    margin: 15px 0;
+}
+
+@keyframes rotating {
+    20% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.message-history-wrapper .loading {
+    align-self: center;
+    margin: 30px 0;
+}
+
+.confirmation {
+    z-index: 20;
+    position: absolute;
+    padding: 30px 40px;
+    background: #262626;
+    width: 500px;
+    height: 120px;
+    margin-left:-250px;
+    justify-content: center;
+    margin-top:-190px;
+    top:50%;
+    left:50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.confirmation .buttons {
+    margin-top:10px;
+    display:flex;
+    justify-content: flex-end;
+    align-items: baseline;
+}
+
+.cancel {
+    border:none;
+    background: transparent;
+    margin: 0 10px;
+    cursor: pointer;
+    color:inherit;
+}
+
+.danger {
+    background: hsl(359, 82%, 47.6%) !important;
 }

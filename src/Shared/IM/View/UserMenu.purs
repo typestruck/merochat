@@ -43,7 +43,7 @@ userMenu { user: { name, avatar, karma, karmaPosition }, userContextMenuVisible 
                         HE.div (HA.class' "menu-item-heading") "Help",
                         HE.span (HA.class' "duller") "Learn more about MelanChat"
                   ],
-                  HE.div [HA.class' "user-menu-item logout menu-item-heading", HA.onClick ConfirmLogout] "Logout"
+                  HE.div [HA.class' "user-menu-item logout menu-item-heading", HA.onClick (ToggleModal ConfirmLogout)] "Logout"
             ]
       ]
 ]

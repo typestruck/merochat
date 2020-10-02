@@ -3,13 +3,9 @@ module Shared.IM.View where
 import Prelude
 import Shared.Types
 
-import Data.DateTime (DateTime)
-import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Shared.IM.Contact as SIC
 import Shared.IM.View.Chat as SIVC
 import Shared.IM.View.Contacts as SIVCN
 import Shared.IM.View.History as SIVH
@@ -44,8 +40,15 @@ logo = HE.div (HA.class' "logo-contact-list") [
 
 modals :: ShowModal -> Html IMMessage
 modals toggle =
-      HE.div (HA.class' $ "modal-placeholder-overlay" <> if toggle /= Hidden then "" else " hidden") [
-            HE.div (HA.class' "modal-placeholder") [
+      HE.div (HA.class' {"modal-placeholder-overlay": true, "hidden" : toggle == Hidden}) [
+            HE.div (HA.class' { confirmation: true, hidden: toggle /= ConfirmLogout}) [
+                  HE.span (HA.class' "bold") "Do you really want to log out?",
+                  HE.div (HA.class' "buttons") [
+                        HE.button [HA.class' "cancel", HA.onClick (ToggleModal Hidden)] "Cancel",
+                        HE.button [HA.class' "green-button danger", HA.onClick Logout] "Logout"
+                  ]
+            ],
+            HE.div (HA.class' { "modal-placeholder": true, hidden: toggle == ConfirmLogout }) [ --snabbdom is a little shit about if and else html
                   HE.div (HA.class' "modal-menu") [
                         HE.div [HA.onClick (ToggleModal Hidden), HA.class' "back"] [
                               HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
@@ -54,13 +57,13 @@ modals toggle =
                               HE.text " Back to chats"
                         ],
                         HE.div [HA.onClick (ToggleModal ShowProfile), HA.class' { entry: true, selected: toggle == ShowProfile }] "Your profile",
-                        HE.div [HA.onClick (ToggleModal ShowSettings), HA.class' {  entry: true, selected: toggle == ShowSettings }] "Your settings",
-                        HE.div [HA.onClick (ToggleModal ShowLeaderboard), HA.class' {  entry: true, selected: toggle == ShowLeaderboard }] "Karma leaderboard",
-                        HE.div [HA.onClick (ToggleModal ShowHelp), HA.class' {  entry: true, selected: toggle == ShowHelp }] "Help"
+                        HE.div [HA.onClick (ToggleModal ShowSettings), HA.class' { entry: true, selected: toggle == ShowSettings }] "Your settings",
+                        HE.div [HA.onClick (ToggleModal ShowLeaderboard), HA.class' { entry: true, selected: toggle == ShowLeaderboard }] "Karma leaderboard",
+                        HE.div [HA.onClick (ToggleModal ShowHelp), HA.class' { entry: true, selected: toggle == ShowHelp }] "Help"
                   ],
-                  HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ "Loading...",
-                  HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ "Loading...",
-                  HE.div [HA.id "karma-leaderboard-root", HA.class' { hidden: toggle /= ShowLeaderboard }] $ "Loading...",
-                  HE.div [HA.id "help-root", HA.class' { hidden: toggle /= ShowHelp }] $ "Loading..."
+                  HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ HE.div' (HA.class' "loading"),
+                  HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ HE.div' (HA.class' "loading"),
+                  HE.div [HA.id "karma-leaderboard-root", HA.class' { hidden: toggle /= ShowLeaderboard }] $ HE.div' (HA.class' "loading"),
+                  HE.div [HA.id "help-root", HA.class' { hidden: toggle /= ShowHelp }] $ HE.div' (HA.class' "loading")
             ]
       ]

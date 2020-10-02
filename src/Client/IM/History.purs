@@ -50,6 +50,7 @@ displayHistory chatHistory model@{ chatting, contacts } =
                   contacts = SU.fromJust do
                         index <- chatting
                         let contact' = contact {
+                              shouldFetchChatHistory = false,
                               history = chatHistory <> history
                         }
                         DA.updateAt index contact' contacts

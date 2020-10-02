@@ -3,12 +3,9 @@ module Client.Settings.Account where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
-import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Data.Symbol (SProxy(..))
 import Effect.Aff (Aff)
@@ -16,7 +13,6 @@ import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Record as R
-import Shared.Newtype as SN
 import Shared.Routes (routes)
 
 update :: AffUpdate SettingsModel SettingsMessage
@@ -28,7 +24,11 @@ update { model, message } =
             SetPasswordConfirmation passwordConfirmation -> setField (SProxy :: SProxy "passwordConfirmation") passwordConfirmation
             ChangeEmail -> changeEmail model
             ChangePassword -> changePassword model
+            ToggleTerminateAccount -> toggleTerminateAccount model
             TerminateAccount -> terminateAccount
+
+toggleTerminateAccount :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
+toggleTerminateAccount _ = pure (\model -> model { confirmTermination = not model.confirmTermination})
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
 changeEmail model@({ email, emailConfirmation }) = do
@@ -61,10 +61,8 @@ changePassword model@({ password, passwordConfirmation }) = do
 
 terminateAccount :: Aff (SettingsModel -> SettingsModel)
 terminateAccount = do
-      confirmed <- liftEffect $ CCD.confirm "This action cannot be undone! Are you sure you want to terminate your account?"
-      when confirmed do
-            void $ request.settings.account.terminate { body:{} }
-            liftEffect <<< CCL.setLocation $ routes.landing {}
+      void $ request.settings.account.terminate { body:{} }
+      liftEffect <<< CCL.setLocation $ routes.landing {}
       FAE.noChanges
 
 setField field value = pure $ \model -> R.set field value model

@@ -120,8 +120,7 @@ update { webSocketRef, fileReader} model =
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
-            ConfirmLogout -> CIU.confirmLogout model
-            Logout confirmed -> CIU.logout confirmed model
+            Logout -> CIU.logout model
             ShowUserContextMenu event -> CIU.showUserContextMenu event model
             ToggleModal toggle -> CIU.toggleModal toggle model
             SetModalContents file root html -> CIU.setModalContents file root html model

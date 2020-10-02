@@ -216,6 +216,8 @@ type IMModel = Record IM
 
 data ShowModal =
       Hidden |
+      ConfirmLogout |
+      ConfirmTermination |
       ShowProfile |
       ShowSettings |
       ShowLeaderboard |
@@ -251,9 +253,8 @@ data IMMessage =
       FetchHistory Boolean |
       DisplayHistory (Array HistoryMessage)  |
       --user menu
-      ConfirmLogout |
       ShowUserContextMenu Event |
-      Logout Boolean |
+      Logout |
       ToggleModal ShowModal |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
@@ -379,7 +380,8 @@ type SettingsModel = {
       email :: String,
       emailConfirmation :: String,
       password :: String,
-      passwordConfirmation :: String
+      passwordConfirmation :: String,
+      confirmTermination :: Boolean
 }
 
 data SettingsMessage =
@@ -389,6 +391,7 @@ data SettingsMessage =
       SetPasswordConfirmation String |
       ChangeEmail |
       ChangePassword |
+      ToggleTerminateAccount |
       TerminateAccount --very bad
 
 data ToggleBoard =
