@@ -40,7 +40,8 @@ resumeChat searchID model@{ contacts, chatting } =
                   (model {
                         suggesting = Nothing,
                         chatting = index,
-                        fullContactProfileVisible = false
+                        fullContactProfileVisible = false,
+                        linkFormVisible = false
                   }) :> [
                         CIF.next UpdateReadCount ,
                         CIF.next $ FetchHistory shouldFetchChatHistory

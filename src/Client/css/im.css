@@ -949,7 +949,7 @@ svg.toolbar-action {
     margin-top: 20px;
     display: block;
     border-radius: 5px;
-    color:inherit;
+    color: inherit;
     border: none;
     cursor: pointer;
     padding: 17px;
@@ -1002,30 +1002,74 @@ select {
     background: #262626;
     width: 500px;
     height: 120px;
-    margin-left:-250px;
+    margin-left: -250px;
     justify-content: center;
-    margin-top:-190px;
-    top:50%;
-    left:50%;
+    margin-top: -190px;
+    top: 50%;
+    left: 50%;
     display: flex;
     flex-direction: column;
 }
 
-.confirmation .buttons {
-    margin-top:10px;
-    display:flex;
+.buttons {
+    margin-top: 10px;
+    display: flex;
     justify-content: flex-end;
     align-items: baseline;
 }
 
 .cancel {
-    border:none;
+    border: none;
     background: transparent;
     margin: 0 10px;
     cursor: pointer;
-    color:inherit;
+    color: inherit;
 }
 
 .danger {
     background: hsl(359, 82%, 47.6%) !important;
+}
+
+.link-form {
+    position: absolute;
+    background: #2d2d2d;
+    padding: 20px;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    z-index: 5;
+    height: 250px;
+    border-radius: 3px;
+    bottom: 160px;
+    margin-left:52px;
+    padding: 30px 40px;
+    flex-direction: column;
+}
+
+.link-form::before {
+    content: "\00a0";
+    display: block;
+    height: 31px;
+    position: absolute;
+    width: 30px;
+    background-color: #2d2d2d;
+    bottom: -15px;
+    left: 50%;
+    margin-left: -15px;
+    transform: rotate( 139deg);
+}
+
+.link-form label {
+    margin-bottom: 5px;
+}
+
+.link-form label:nth-of-type(2) {
+    margin-top: 20px;
+}
+
+.link-form input[type=text] {
+    height: 50px;
+    padding: 10px;
+    background: #262626;
+    border: none
 }

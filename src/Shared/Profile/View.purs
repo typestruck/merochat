@@ -27,13 +27,13 @@ import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
+import Shared.Focus as SF
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
 import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Type.Data.Symbol as TDS
 
-foreign import focus :: EffectFn2 VNode VNode Unit
 
 --REFACTOR: some bits can still be abstracted
 view :: ProfileModel -> Html ProfileMessage
@@ -89,7 +89,7 @@ view model@{
                         HE.textarea [
                               HA.class' "profile-edition-description",
                               HA.maxlength descriptionMaxCharacters,
-                              FRH.atPostpatch focus,
+                              SF.focus,
                               HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
                         ] $ DM.fromMaybe "" descriptionInputed,
 
@@ -147,7 +147,7 @@ view model@{
                         control = HE.input [
                               HA.type' "text",
                               HA.class' "single-line-input",
-                              FRH.atPostpatch focus,
+                              SF.focus,
                               HA.maxlength tagMaxCharacters,
                               HA.value $ DM.fromMaybe "" model.tagsInputed,
                               HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed),
@@ -245,7 +245,7 @@ view model@{
                                           HE.text $ "Leave it blank to generate a new random " <> stringField
                                     ],
                                     HE.input [
-                                          FRH.atPostpatch focus,
+                                          SF.focus,
                                           HA.class' "single-line-input",
                                           HA.maxlength maxLength,
                                           HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed),

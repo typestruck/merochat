@@ -207,6 +207,7 @@ type IM = (
       fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
       toggleModal :: ShowModal,
+      --REFACTOR: write a ShowModal like type for all chat modals (link, emoji, image upload)
       isPreviewing :: Boolean,
       emojisVisible :: Boolean,
       linkFormVisible :: Boolean

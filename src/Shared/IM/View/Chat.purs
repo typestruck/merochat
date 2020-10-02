@@ -14,6 +14,7 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Renderer.Hook as FRH
 import Prim.Row (class Cons)
+import Shared.Focus as SF
 import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
 import Shared.Setter as SS
@@ -35,14 +36,14 @@ chat { chatting, contacts, suggesting, suggestions, isOnline, isPreviewing, mess
                   ]
             ],
             HE.div (HA.class' linkFormClasses) [
-                  HE.div_ [
-                        HE.button [HA.onClick ToggleLinkForm] "Close"
-                  ],
-                  HE.div_ [
-                        HE.input [HA.type' "text", HA.placeholder "Text", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
-                        HE.input [HA.type' "text", HA.placeholder "Link", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))]
-                  ],
-                  HE.button [HA.class' "action-button", HA.onClick InsertLink] "Insert"
+                  HE.label_ "Text",
+                  HE.input [HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
+                  HE.label_ "Link",
+                  HE.input [HA.type' "text", SF.focus, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))],
+                  HE.div (HA.class' "buttons") [
+                        HE.button [HA.class' "cancel", HA.onClick ToggleLinkForm] "Cancel",
+                        HE.button [HA.class' "green-button", HA.onClick InsertLink] "Insert"
+                  ]
             ],
             HE.div (HA.class' emojiClasses) $ map toEmojiCategory SIE.byCategory,
             HE.div (HA.class' editorClasses) [
@@ -55,7 +56,6 @@ chat { chatting, contacts, suggesting, suggestions, isOnline, isPreviewing, mess
                         orderedList,
                         linkButton,
                         image,
-
                         HE.button [HA.onClick Preview, HA.title "Preview"] "Preview",
                         HE.input [HA.type' "checkbox", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
                         HE.label (HA.for "message-enter") "Send message on enter"
@@ -71,6 +71,7 @@ chat { chatting, contacts, suggesting, suggestions, isOnline, isPreviewing, mess
                                     HE.ellipse' [HA.cx "201.81", HA.cy "123.84", HA.rx "10.67", HA.ry "11.43"],
                                     HE.path' [HA.d "M148.55,245.05H147a93,93,0,0,1-54.54-19.22c-24.23-18.93-34-54.38-34.08-54.74l-.17-.63h.66l183,.38,0,.54c-1.54,21.57-25.48,44-30.26,48.34C193,236.31,171.27,245.05,148.55,245.05Zm-89.06-73.6C60.92,176.3,70.85,207.7,93,225c28.58,22.32,77.65,30,117.83-6.08,13.55-12.15,28.43-30.84,29.89-47.13Z"]
                               ],
+
                         HE.textarea' [
                               HA.rows 1,
                               HA.class' "chat-input",
