@@ -70,14 +70,14 @@ main = do
 
       setUpWebSocket webSocketRef channel
       --for drag and drop
-      CCF.setUpBase64Reader fileReader (DA.singleton <<< ToggleImageForm <<< Just) channel
+      CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
       --display settings/profile page
       FE.send [FE.onClick' [ShowUserContextMenu]] channel
       --image upload
       input <- CIC.getFileInput
-      CCF.setUpFileChange (DA.singleton <<< ToggleImageForm <<< Just) input channel
+      CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
 
       windowsFocus channel
 
@@ -86,8 +86,7 @@ update { webSocketRef, fileReader} model =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
-            ToggleLinkForm -> CIC.toggleLinkForm model
-            ToggleEmojisVisible -> CIC.toggleEmojisVisible model
+            ToggleChatModal modal -> CIC.toggleModal modal model
             DropFile event -> CIC.catchFile fileReader event model
             EnterBeforeSendMessage event -> CIC.enterBeforeSendMessage event model
             ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
@@ -95,10 +94,7 @@ update { webSocketRef, fileReader} model =
             SendMessage date -> CIC.sendMessage webSocket date model
             SetMessageContent cursor content -> CIC.setMessage cursor content model
             Apply markup -> CIC.applyMarkup markup model
-            Preview -> CIC.preview model
-            SelectImage -> CIC.selectImage model
-            ExitPreview -> CIC.exitPreview model
-            ToggleImageForm maybeBase64 -> CIC.toggleImageForm maybeBase64 model
+            SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             SetEmoji event -> CIC.setEmoji event model
             --contacts

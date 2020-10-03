@@ -27,7 +27,7 @@ logout model = CIF.nothingNext model out
                   liftEffect $ CCL.setLocation $ routes.login.get {}
 
 --PERFORMANCE: load bundles only once
-toggleModal :: ShowModal -> IMModel -> NextMessage
+toggleModal :: ShowUserMenuModal -> IMModel -> NextMessage
 toggleModal psToggle model =
       case psToggle of
             ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"

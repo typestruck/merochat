@@ -5,19 +5,14 @@ import Shared.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.Common.Network (request)
-import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
-import Client.IM.Contacts as CICN
-import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
-import Client.IM.Suggestion as CISG
 import Client.IM.WebSocket as CIW
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.DateTime as DT
-import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -27,7 +22,6 @@ import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -111,12 +105,13 @@ sendMessage webSocket date = case _ of
             chatting: Just chatting,
             temporaryID,
             contacts,
-            message,
             selectedImage,
+            message,
             imageCaption
       } ->
             let  recipient@{ user: { id: recipientID }, history } = contacts !@ chatting
                  newTemporaryID = temporaryID + 1
+
                  updatedChatting = recipient {
                         history = DA.snoc history $  {
                               id: newTemporaryID,
@@ -208,18 +203,6 @@ applyMarkup markup model@{ message } = model :> [liftEffect (Just <$> apply mark
                         newValue = beforeSelection <> before <> selected <> after <> afterSelection
                   pure $ SetMessageContent (Just $ end + beforeSize) newValue
 
-preview :: IMModel -> NoMessages
-preview model =
-      F.noMessages $ model {
-            isPreviewing = true
-      }
-
-exitPreview :: IMModel -> NextMessage
-exitPreview model =
-      F.noMessages $ model {
-            isPreviewing = false
-      }
-
 setMessage :: Maybe Int -> String -> IMModel -> NextMessage
 setMessage cursor markdown model =
       CIF.nothingNext (model {
@@ -242,35 +225,33 @@ catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
       CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
       CCD.preventStop event
 
-toggleImageForm :: Maybe String -> IMModel -> NoMessages
-toggleImageForm base64 model =
-      F.noMessages $ model {
-            selectedImage = base64
-      }
-
 toggleMessageEnter :: IMModel -> NoMessages
 toggleMessageEnter model@{ messageEnter } =
       F.noMessages $ model {
             messageEnter = not messageEnter
       }
 
-toggleEmojisVisible :: IMModel -> NoMessages
-toggleEmojisVisible model@{ emojisVisible } =
-      F.noMessages $ model {
-            emojisVisible = not emojisVisible
-      }
+setSelectedImage :: Maybe String -> IMModel -> NoMessages
+setSelectedImage maybeBase64 model = F.noMessages $ model {
+      toggleChatModal = ShowSelectedImage,
+      selectedImage = maybeBase64
+}
 
-toggleLinkForm :: IMModel -> NoMessages
-toggleLinkForm model@{ linkFormVisible } =
-      F.noMessages $ model {
-            linkFormVisible = not linkFormVisible,
-            link = Nothing,
-            linkText = Nothing
-      }
+toggleModal :: ShowChatModal -> IMModel -> MoreMessages
+toggleModal toggle model = model {
+      toggleChatModal = toggle,
+      link = Nothing,
+      selectedImage = Nothing,
+      linkText = Nothing
+} :> if toggle == ShowSelectedImage then [pickImage] else []
+      where pickImage = liftEffect do
+                  input <- getFileInput
+                  CCF.triggerFileSelect input
+                  pure Nothing
 
 setEmoji :: Event -> IMModel -> NextMessage
 setEmoji event model@{ message } = model {
-      emojisVisible = false
+      toggleChatModal = HideChatModal
 } :> [liftEffect do
       emoji <- CCD.innerTextFromTarget event
       setAtCursor message emoji
@@ -283,7 +264,7 @@ insertLink model@{ message, linkText, link } =
             Just url ->
                   let { protocol } = NU.parse $ DS.trim url
                   in model :> [
-                        CIF.next ToggleLinkForm,
+                        CIF.next $ ToggleChatModal HideChatModal,
                         insert $ if protocol == null then "http://" <> url else url
                   ]
       where markdown url = "[" <> DM.fromMaybe url linkText <> "](" <> url <> ")"

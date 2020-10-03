@@ -38,19 +38,19 @@ logo = HE.div (HA.class' "logo-contact-list") [
       HE.img $ HA.src "/client/media/logo-small.png"
 ]
 
-modals :: ShowModal -> Html IMMessage
+modals :: ShowUserMenuModal -> Html IMMessage
 modals toggle =
-      HE.div (HA.class' {"modal-placeholder-overlay": true, "hidden" : toggle == Hidden}) [
+      HE.div (HA.class' {"modal-placeholder-overlay": true, "hidden" : toggle == HideUserMenuModal}) [
             HE.div (HA.class' { confirmation: true, hidden: toggle /= ConfirmLogout}) [
                   HE.span (HA.class' "bold") "Do you really want to log out?",
                   HE.div (HA.class' "buttons") [
-                        HE.button [HA.class' "cancel", HA.onClick (ToggleModal Hidden)] "Cancel",
+                        HE.button [HA.class' "cancel", HA.onClick (ToggleModal HideUserMenuModal)] "Cancel",
                         HE.button [HA.class' "green-button danger", HA.onClick Logout] "Logout"
                   ]
             ],
             HE.div (HA.class' { "modal-placeholder": true, hidden: toggle == ConfirmLogout }) [ --snabbdom is a little shit about if and else html
                   HE.div (HA.class' "modal-menu") [
-                        HE.div [HA.onClick (ToggleModal Hidden), HA.class' "back"] [
+                        HE.div [HA.onClick (ToggleModal HideUserMenuModal), HA.class' "back"] [
                               HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
                                     HE.polygon' [HA.points "496 159.961 295.983 159.961 295.976 16.024 257.698 16.024 17.364 255.706 257.313 495.941 296.001 495.976 295.993 351.961 496 351.961 496 159.961"]
                               ],

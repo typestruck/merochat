@@ -37,7 +37,8 @@ body {
 .send-box {
     display: flex;
     flex-flow: column;
-    padding: 10px 30px;
+    padding: 10px 20px;
+    position: relative;
 }
 
 .im {
@@ -558,7 +559,6 @@ svg.toolbar-action {
 }
 
 .chat-input {
-    /* flex-grow: 1; */
     resize: none;
     width: 100%;
     font-size: 1.2em;
@@ -574,6 +574,10 @@ svg.toolbar-action {
     padding-left: 42px;
     border: 1px solid #b5b7b7;
     border-top: none;
+}
+
+.side .chat-input {
+    padding-right: 102px;
 }
 
 .chat-input:placeholder-shown {
@@ -728,27 +732,6 @@ svg.toolbar-action {
     content: '\201D';
 }
 
-.image-form {
-    position: absolute;
-    display: flex;
-    border: 1px solid gray;
-    top: 2%;
-    z-index: 4;
-    flex-direction: column;
-    background-color: #262626;
-    height: 95%;
-}
-
-.image-form {
-    position: absolute;
-    display: flex;
-    border: 1px solid gray;
-    top: 2%;
-    z-index: 4;
-    flex-direction: column;
-    background-color: #262626;
-}
-
 .send-image {
     display: flex;
     flex-direction: row;
@@ -758,22 +741,9 @@ svg.toolbar-action {
     flex-grow: 1;
 }
 
-.emojis {
-    height: 300px;
-    position: relative;
-    margin-top: -300px;
-    overflow-y: scroll;
-    word-wrap: anywhere
-}
-
 .contact-options {
     display: flex;
     flex-direction: column;
-}
-
-.emojis span {
-    font-size: 2em;
-    font-family: emoji !important;
 }
 
 .exclamation, .error-message {
@@ -842,22 +812,27 @@ svg.toolbar-action {
     margin-bottom: 15px;
 }
 
-.send-button {
+.attachment, .send-button {
     position: absolute;
     top: 10px;
     stroke-width: 3;
-    right: 13px;
     z-index: 5;
+
     background: #2d2d2d;
 }
 
-.emoji-access {
-    position: absolute;
-    top: 13px;
-    stroke-width: 5;
-    left: 5px;
-    z-index: 2;
-    background: #2d2d2d;
+
+.attachment {
+    right: 13px;
+    top:20px;
+}
+
+.side .attachment {
+    right:70px;
+}
+
+.send-button {
+    right:13px;
 }
 
 .chatting-contact {
@@ -1030,20 +1005,104 @@ select {
     background: hsl(359, 82%, 47.6%) !important;
 }
 
-.link-form {
+.emoji-wrapper {
+    background-color: #2d2d2d;
+    position: absolute;
+    border-radius: 3px;
+    color: inherit;
+    bottom: 165px;
+    margin-right:20px;
+
+    border-radius: 3px;
+    z-index: 5;
+    word-wrap: anywhere
+}
+
+.emojis {
+    position: relative;
+    padding:20px;
+    padding-top:5px;
+    max-height: 300px;
+    overflow-y: scroll;
+    word-wrap: anywhere
+}
+
+.emoji-wrapper::before {
+    content: "\00a0";
+    display: block;
+    height: 31px;
+    position: absolute;
+    width: 30px;
+    background-color: #2d2d2d;
+    bottom: -13px;
+    left: 15px;
+    margin-left: -15px;
+    transform: rotate(88deg) skew(37deg);
+}
+
+.emojis .duller {
+    margin:5px;
+    margin-top: 20px;
+}
+
+.emojis span {
+    font-size: 1.8em;
+    cursor: pointer;
+    display: inline-block;
+    margin:5px;
+    font-family: emoji !important;
+}
+
+.modal-form {
     position: absolute;
     background: #2d2d2d;
     padding: 20px;
-    color: inherit;
     display: flex;
+    color: inherit;
     flex-direction: column;
     z-index: 5;
-    height: 250px;
     border-radius: 3px;
+}
+
+.link-form {
+    height: 250px;
+
     bottom: 160px;
-    margin-left:52px;
+    margin-left: 55px;
     padding: 30px 40px;
-    flex-direction: column;
+}
+
+.image-form {
+    padding: 30px 20px;
+    max-height: 900px;
+    left:20px;
+    right: 20px;
+    bottom: 165px;
+}
+
+
+
+
+.image-form-image {
+    align-self: center;
+    margin:20px 0;
+}
+.image-form-image img{
+    max-height: 700px;
+    max-width: 90%;
+}
+
+.image-form::before {
+    content: "\00a0";
+    display: block;
+    height: 31px;
+    position: absolute;
+    width: 30px;
+    background-color: #2d2d2d;
+    bottom: -13px;
+    right: 15px;
+    margin-right: -15px;
+    transform: rotate(93deg) skew(-37deg);
 }
 
 .link-form::before {
@@ -1059,17 +1118,53 @@ select {
     transform: rotate( 139deg);
 }
 
-.link-form label {
+.modal-form label {
     margin-bottom: 5px;
 }
 
-.link-form label:nth-of-type(2) {
+.modal-form label:nth-of-type(2) {
     margin-top: 20px;
 }
 
-.link-form input[type=text] {
+.modal-form input[type=text] {
     height: 50px;
     padding: 10px;
     background: #262626;
     border: none
+}
+
+.chat {
+    display: flex;
+}
+
+.chat-combo {
+    flex-grow: 1;
+}
+
+.image-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.send-image-button {
+    rgb(238, 238, 238);
+    stroke: rgb(238, 238, 238)
+}
+
+.emoji-access {
+    position: absolute;
+    top: 13px;
+    stroke-width: 5;
+    left: 5px;
+    z-index: 2;
+    background: #2d2d2d;
+}
+
+.send-enter {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+    padding-right: 13px;
+    align-items: center;
 }

@@ -206,17 +206,21 @@ type IM = (
       --visibility switches
       fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
-      toggleModal :: ShowModal,
-      --REFACTOR: write a ShowModal like type for all chat modals (link, emoji, image upload)
-      isPreviewing :: Boolean,
-      emojisVisible :: Boolean,
-      linkFormVisible :: Boolean
+      toggleModal :: ShowUserMenuModal,
+      toggleChatModal :: ShowChatModal
 )
+
+data ShowChatModal =
+      HideChatModal |
+      ShowSelectedImage |
+      ShowPreview |
+      ShowEmojis |
+      ShowLinkForm
 
 type IMModel = Record IM
 
-data ShowModal =
-      Hidden |
+data ShowUserMenuModal =
+      HideUserMenuModal |
       ConfirmLogout |
       ConfirmTermination |
       ShowProfile |
@@ -256,7 +260,8 @@ data IMMessage =
       --user menu
       ShowUserContextMenu Event |
       Logout |
-      ToggleModal ShowModal |
+      ToggleModal ShowUserMenuModal |
+      ToggleChatModal ShowChatModal |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
       --contact
@@ -273,6 +278,7 @@ data IMMessage =
       DisplayMoreSuggestions (Array Suggestion) |
       BlockUser PrimaryKey |
       --chat
+      SetSelectedImage (Maybe String) |
       ToggleContactProfile |
       DropFile Event |
       EnterBeforeSendMessage Event |
@@ -280,14 +286,8 @@ data IMMessage =
       BeforeSendMessage String |
       SendMessage DateTimeWrapper |
       SetMessageContent (Maybe Int) String |
-      SelectImage |
-      ToggleImageForm (Maybe String) |
-      ToggleLinkForm |
       Apply Markup |
-      Preview |
-      ExitPreview |
       ToggleMessageEnter |
-      ToggleEmojisVisible |
       SetEmoji Event |
       InsertLink |
       --main
@@ -409,6 +409,7 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
+derive instance genericShowChatModal :: Generic ShowChatModal _
 derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
 derive instance genericToggleBoard :: Generic ToggleBoard _
 derive instance genericMessageStatus :: Generic MessageStatus _
@@ -421,7 +422,7 @@ derive instance genericMDate :: Generic DateWrapper _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericShowModal :: Generic ShowModal _
+derive instance genericShowModal :: Generic ShowUserMenuModal _
 
 derive instance newtypeMessageIDTemporaryWrapper :: Newtype MessageIDTemporaryWrapper _
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
@@ -433,13 +434,14 @@ derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
 derive instance eqGenerate :: Eq Generate
+derive instance eqShowChatModal :: Eq ShowChatModal
 derive instance eqDisplayHelpSection :: Eq DisplayHelpSection
 derive instance eqMDateTime :: Eq DateTimeWrapper
 derive instance eqMDate :: Eq DateWrapper
 derive instance eqToggleBoard :: Eq ToggleBoard
 derive instance eqGender :: Eq Gender
 derive instance eqMessageStatus :: Eq MessageStatus
-derive instance eqShowModal :: Eq ShowModal
+derive instance eqShowModal :: Eq ShowUserMenuModal
 
 instance fromSQLRowMessageIDTemporaryWrapper :: FromSQLRow MessageIDTemporaryWrapper where
       fromSQLRow =
@@ -720,7 +722,7 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
-instance showShowModal :: Show ShowModal where
+instance showShowModal :: Show ShowUserMenuModal where
       show = DGRS.genericShow
 
 instance toSQLValueGender :: ToSQLValue Gender where
@@ -731,6 +733,8 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonGenerate :: EncodeJson Generate where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonDisplayHelpSection :: EncodeJson DisplayHelpSection where
@@ -749,9 +753,11 @@ instance encodeJsonWebSocketPayloadServer :: EncodeJson WebSocketPayloadServer w
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageContent :: EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonShowModal :: EncodeJson ShowModal where
+instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonGenerate :: DecodeJson Generate where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonDisplayHelpSection :: DecodeJson DisplayHelpSection where
@@ -770,7 +776,7 @@ instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer w
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonShowModal :: DecodeJson ShowModal where
+instance decodeJsonShowModal :: DecodeJson ShowUserMenuModal where
       decodeJson = DADGR.genericDecodeJson
 
 instance readGender :: Read Gender where

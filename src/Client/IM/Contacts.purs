@@ -41,7 +41,8 @@ resumeChat searchID model@{ contacts, chatting } =
                         suggesting = Nothing,
                         chatting = index,
                         fullContactProfileVisible = false,
-                        linkFormVisible = false
+                        toggleChatModal = HideChatModal,
+                        selectedImage = Nothing
                   }) :> [
                         CIF.next UpdateReadCount ,
                         CIF.next $ FetchHistory shouldFetchChatHistory
