@@ -23,3 +23,17 @@
     width: 500px;
     background: #373737;
 }
+
+.error-message {
+    visibility: hidden;
+    margin-bottom: 10px;
+}
+
+.errored .error-message {
+    visibility: visible;
+}
+
+.errored input {
+    color:red;
+}
+

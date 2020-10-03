@@ -6,6 +6,9 @@ nameMaxCharacters = 40
 headlineMaxCharacters :: Int
 headlineMaxCharacters = 150
 
+emailMaxCharacters :: Int
+emailMaxCharacters = 254
+
 maxLanguages :: Int
 maxLanguages = 4
 

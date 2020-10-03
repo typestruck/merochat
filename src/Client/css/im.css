@@ -817,22 +817,20 @@ svg.toolbar-action {
     top: 10px;
     stroke-width: 3;
     z-index: 5;
-
     background: #2d2d2d;
 }
 
-
 .attachment {
     right: 13px;
-    top:20px;
+    top: 20px;
 }
 
 .side .attachment {
-    right:70px;
+    right: 70px;
 }
 
 .send-button {
-    right:13px;
+    right: 13px;
 }
 
 .chatting-contact {
@@ -1011,8 +1009,7 @@ select {
     border-radius: 3px;
     color: inherit;
     bottom: 165px;
-    margin-right:20px;
-
+    margin-right: 20px;
     border-radius: 3px;
     z-index: 5;
     word-wrap: anywhere
@@ -1020,8 +1017,8 @@ select {
 
 .emojis {
     position: relative;
-    padding:20px;
-    padding-top:5px;
+    padding: 20px;
+    padding-top: 5px;
     max-height: 300px;
     overflow-y: scroll;
     word-wrap: anywhere
@@ -1041,7 +1038,7 @@ select {
 }
 
 .emojis .duller {
-    margin:5px;
+    margin: 5px;
     margin-top: 20px;
 }
 
@@ -1049,7 +1046,7 @@ select {
     font-size: 1.8em;
     cursor: pointer;
     display: inline-block;
-    margin:5px;
+    margin: 5px;
     font-family: emoji !important;
 }
 
@@ -1066,28 +1063,25 @@ select {
 
 .link-form {
     height: 250px;
-
     bottom: 160px;
     margin-left: 55px;
     padding: 30px 40px;
 }
 
 .image-form {
-    padding: 30px 20px;
+    padding: 60px;
     max-height: 900px;
-    left:20px;
+    left: 20px;
     right: 20px;
     bottom: 165px;
 }
 
-
-
-
 .image-form-image {
     align-self: center;
-    margin:20px 0;
+    margin-bottom: 20px;
 }
-.image-form-image img{
+
+.image-form-image img {
     max-height: 700px;
     max-width: 90%;
 }
@@ -1148,8 +1142,8 @@ select {
 }
 
 .send-image-button {
-    rgb(238, 238, 238);
-    stroke: rgb(238, 238, 238)
+    fill:rgb(238, 238, 238);
+    stroke: rgb(238, 238, 238);
 }
 
 .emoji-access {

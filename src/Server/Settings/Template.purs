@@ -15,7 +15,8 @@ template =
                   emailConfirmation: "",
                   password: "",
                   passwordConfirmation: "",
-                  confirmTermination: false
+                  confirmTermination: false,
+                  erroredFields: []
             }
       }
 

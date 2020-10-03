@@ -377,19 +377,19 @@ data ProfileMessage =
       SetGenerate Generate |
       SaveProfile
 
-type SettingsModel = {
+type SM = (
       email :: String,
       emailConfirmation :: String,
       password :: String,
+      erroredFields :: Array String,
       passwordConfirmation :: String,
       confirmTermination :: Boolean
-}
+)
+
+type SettingsModel = Record SM
 
 data SettingsMessage =
-      SetEmail String |
-      SetEmailConfirmation String |
-      SetPassword String |
-      SetPasswordConfirmation String |
+      SetSField (SettingsModel -> SettingsModel) |
       ChangeEmail |
       ChangePassword |
       ToggleTerminateAccount |
