@@ -16,7 +16,8 @@ favicon :: Int -> String
 favicon =
       case _ of
             0 -> name <> extension
-            n -> name <> show (min 10 n) <> extension
+            n | n <= 10 -> name <> "-" <> show n <> extension
+            n -> name <> "-10-plus" <> extension
       where name = "/client/media/favicon"
             extension = ".ico"
 

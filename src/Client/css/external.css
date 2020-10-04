@@ -6,10 +6,6 @@ body {
       flex-direction: column;
 }
 
-.form-up input:focus {
-      border: 2px solid #b5b7b7;
-}
-
 .error-page {
       margin-top: 40px;
       text-align: center;

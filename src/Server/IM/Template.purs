@@ -36,6 +36,7 @@ template {contacts, suggestions, user} = do
                   fullContactProfileVisible: false,
                   freeToFetchContactList: true,
                   shouldSendMessage: false,
+                  erroredFields: [],
                   userContextMenuVisible: false,
                   toggleModal: HideUserMenuModal,
                   message: Nothing,

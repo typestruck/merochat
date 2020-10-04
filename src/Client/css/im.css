@@ -391,7 +391,7 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(55, 55, 55, 0.65);
-    z-index: 4;
+    z-index: 6;
 }
 
 .modal-placeholder {
@@ -399,7 +399,7 @@ body {
     flex-flow: row;
     padding: 30px 15px;
     padding-right: 0px;
-    z-index: 5;
+    z-index: 7;
     width: 72em;
     height: 90%;
     overflow-y: auto;
@@ -576,6 +576,11 @@ svg.toolbar-action {
     border-top: none;
 }
 
+.chat-input:focus {
+    border: 1px solid #b5b7b7;
+    border-top: none;
+}
+
 .side .chat-input {
     padding-right: 102px;
 }
@@ -744,6 +749,10 @@ svg.toolbar-action {
 .contact-options {
     display: flex;
     flex-direction: column;
+}
+
+input:focus {
+    border:1px solid #b5b7b7 !important
 }
 
 .exclamation, .error-message {
@@ -985,7 +994,6 @@ select {
 }
 
 .buttons {
-    margin-top: 10px;
     display: flex;
     justify-content: flex-end;
     align-items: baseline;
@@ -1062,7 +1070,7 @@ select {
 }
 
 .link-form {
-    height: 250px;
+    height: 270px;
     bottom: 160px;
     margin-left: 55px;
     padding: 30px 40px;
@@ -1161,4 +1169,8 @@ select {
     justify-content: flex-end;
     padding-right: 13px;
     align-items: center;
+}
+
+.upload-div {
+    margin-bottom:20px;
 }

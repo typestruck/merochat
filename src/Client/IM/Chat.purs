@@ -6,11 +6,11 @@ import Shared.Types
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Notification as CCN
-import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.DateTime as DT
 import Data.Int as DI
@@ -20,14 +20,18 @@ import Data.Newtype as DN
 import Data.Nullable (null)
 import Data.String as DS
 import Data.String.CodeUnits as DSC
+import Data.Symbol (SProxy(..))
+import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
+import Shared.File (maxImageSize)
 import Shared.IM.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -232,10 +236,17 @@ toggleMessageEnter model@{ messageEnter } =
       }
 
 setSelectedImage :: Maybe String -> IMModel -> NoMessages
-setSelectedImage maybeBase64 model = F.noMessages $ model {
-      toggleChatModal = ShowSelectedImage,
-      selectedImage = maybeBase64
-}
+setSelectedImage maybeBase64 model =
+      F.noMessages $ model {
+            toggleChatModal = ShowSelectedImage,
+            selectedImage = maybeBase64,
+            erroredFields =
+                  if isTooLarge $ DM.fromMaybe "" maybeBase64 then
+                        [TDS.reflectSymbol (SProxy :: SProxy "selectedImage")]
+                   else
+                        []
+      }
+      where isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
 toggleModal :: ShowChatModal -> IMModel -> MoreMessages
 toggleModal toggle model = model {
@@ -257,13 +268,17 @@ setEmoji event model@{ message } = model {
       setAtCursor message emoji
 ]
 
-insertLink :: IMModel -> NextMessage
+insertLink :: IMModel -> MoreMessages
 insertLink model@{ message, linkText, link } =
       case link of
-            Nothing -> CIF.nothingNext model <<< liftEffect $ CCN.alert "Link is required"
+            Nothing -> F.noMessages $ model {
+                  erroredFields = [ TDS.reflectSymbol (SProxy :: SProxy "link") ]
+            }
             Just url ->
                   let { protocol } = NU.parse $ DS.trim url
-                  in model :> [
+                  in model {
+                        erroredFields = []
+                  } :> [
                         CIF.next $ ToggleChatModal HideChatModal,
                         insert $ if protocol == null then "http://" <> url else url
                   ]

@@ -70,6 +70,13 @@ account model@{ erroredFields, confirmTermination } =
                         fieldConfirmationValue = R.get fieldConfirmation model
                         hasErrors = DA.elem stringField erroredFields
                         hasConfirmationErrors = DA.elem stringFieldConfirmation erroredFields
+                        messageIfValidated =
+                              if not $ validator fieldValue then
+                                    setValidatedField (const false) field fieldValue
+                               else if fieldValue /= fieldConfirmationValue then
+                                    setValidatedField (const false) fieldConfirmation fieldConfirmationValue
+                               else
+                                    message
                   in HE.div_ [
                         HE.div (HA.class' { errored: hasErrors }) [
                               HE.label_ capitalizedStringField ,
@@ -82,7 +89,7 @@ account model@{ erroredFields, confirmTermination } =
                               HE.div (HA.class' "error-message") $ capitalizedStringField <> " confirmation must match " <> stringField
                         ],
                         --needs validation on click
-                        HE.input [HA.type' "button", HA.class' "green-button", HA.disabled $ hasErrors || hasConfirmationErrors, HA.value $ "Change " <> stringField, HA.onClick message],
+                        HE.input [HA.type' "button", HA.class' "green-button", HA.disabled $ hasErrors || hasConfirmationErrors, HA.value $ "Change " <> stringField, HA.onClick messageIfValidated],
                         HE.br
                   ]
 

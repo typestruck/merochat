@@ -198,6 +198,7 @@ type IM = (
       linkText :: Maybe String,
       isOnline :: Boolean,
       shouldSendMessage :: Boolean,
+      erroredFields :: Array String,
       --the current logged in user
       user :: IMUser,
       --indexes

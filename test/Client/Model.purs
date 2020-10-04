@@ -27,6 +27,7 @@ model = {
       imageCaption: Nothing,
       fullContactProfileVisible: false,
       link: Nothing,
+      erroredFields: [],
       selectedImage: Nothing,
       messageEnter: true,
       linkText: Nothing,

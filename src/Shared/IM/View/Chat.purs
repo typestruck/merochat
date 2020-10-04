@@ -5,28 +5,33 @@ import Shared.Types
 
 import Control.Alt ((<|>))
 import Data.Array ((!!))
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Symbol (class IsSymbol, SProxy(..))
+import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Prim.Row (class Cons)
+import Shared.File (maxImageSizeKB)
 import Shared.Focus as SF
 import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
 import Shared.Setter as SS
 
 chat :: IMModel -> Html IMMessage
-chat { chatting, contacts, suggesting, suggestions, isOnline, message, messageEnter, link, linkText, toggleChatModal, selectedImage } =
+chat { chatting, contacts, suggesting, suggestions, isOnline, message, messageEnter, link, linkText, toggleChatModal, selectedImage, erroredFields } =
       HE.div (HA.class' "send-box") [
-            HE.input [HA.id "image-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
             HE.div (HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }) [
                   HE.label_ "Text",
                   HE.input [HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
                   HE.label_ "Link",
                   HE.input [HA.type' "text", HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))],
+                  HE.span [HA.class' {"error-message": true, "invisible": not (DS.null (DM.fromMaybe "" link)) || not (DA.elem (TDS.reflectSymbol (SProxy :: SProxy "link")) erroredFields) }] "Please enter a link",
                   HE.div (HA.class' "buttons") [
                         HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
                         HE.button [HA.class' "green-button", HA.onClick InsertLink] "Insert"
@@ -71,7 +76,11 @@ chat { chatting, contacts, suggesting, suggestions, isOnline, message, messageEn
                   HE.div' [HA.innerHTML (SM.toHTML $ DM.fromMaybe "" message)]
             ],
             HE.div (HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage }) [
-                  HE.div (HA.class' "image-form-image") [
+                  HE.div (HA.class' { "upload-div": true, hidden : not imageValidationFailed }) [
+                        HE.input [HA.id "image-file-input", HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
+                        HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
+                  ],
+                  HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed }) [
                         HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
                   ],
                   HE.label_ "Caption",
@@ -90,7 +99,7 @@ chat { chatting, contacts, suggesting, suggestions, isOnline, message, messageEn
                   HE.div (HA.class' "duller") name,
                   HE.div_ $ map (HE.span_ <<< _.s) pairs
             ]
-
+            imageValidationFailed = DA.elem (TDS.reflectSymbol (SProxy :: SProxy "selectedImage")) erroredFields
             recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name
 
 getName index list accessor = do
