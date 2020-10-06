@@ -36,7 +36,7 @@ template token = do
                                                             HE.span (HA.class' "error-message") "Please enter a valid email"
                                                       ],
                                                       HE.input [HA.type' "button", HA.value "Recover"],
-                                                      HE.span' [HA.id "request-error-message", HA.class' "error-message"],
+                                                      HE.span' [HA.class' "request-error-message error-message"],
                                                       HE.span [HA.id "request-success-message", HA.class' "success-message"] "Recovery email sent. Please check your inbox." ,
                                                       HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible"]
                                                 ]
@@ -56,7 +56,7 @@ template token = do
                                                             HE.span (HA.class' "error-message") "Password and confirmation do not match"
                                                       ],
                                                       HE.input [HA.type' "button", HA.value "Change password", HA.class' "action-button"],
-                                                      HE.span' [HA.id "request-error-message", HA.class' "error-message"],
+                                                      HE.span' [HA.class' "request-error-message error-message"],
                                                       HE.span [HA.class' "success-message"] $ "Password reseted. Redirecting to login..."
                                                 ]
                                           ],

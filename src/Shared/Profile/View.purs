@@ -11,17 +11,15 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
-import Data.String.Common as DS
+import Data.String as DS
 import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Effect.Uncurried (EffectFn2)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
-import Flame.Renderer.Hook as FRH
-import Flame.Types (NodeData, VNode)
+import Flame.Types (NodeData)
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
@@ -29,11 +27,13 @@ import Shared.Avatar as SA
 import Shared.DateTime as SDT
 import Shared.Focus as SF
 import Shared.Markdown as SM
-import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
+import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Type.Data.Symbol as TDS
 
+profileEditionId :: String
+profileEditionId = "profile-edition-form"
 
 --REFACTOR: some bits can still be abstracted
 view :: ProfileModel -> Html ProfileMessage
@@ -43,8 +43,8 @@ view model@{
       languages,
       generating,
       descriptionInputed
-} =
-      HE.div (HA.class' "profile-edition suggestion contact") [
+} = HE.div profileEditionId [
+      HE.div [HA.class' "profile-edition suggestion contact"] [
             HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/profile.css"],
             HE.div_ $ HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, HA.onClick SelectAvatar],
             HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
@@ -100,8 +100,11 @@ view model@{
                   ]
             ],
 
-            HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Save profile", HA.class' "green-button center-flex"]
+            HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Update profile", HA.class' "green-button center-flex"],
+            HE.span' (HA.class' "request-error-message"),
+            HE.span (HA.class' "success-message") $ "Profiled updated!"
       ]
+]
       where displayEditName = displayEditGenerated Name (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
             displayEditHeadline = displayEditGenerated Headline (SProxy :: SProxy "headline") "A tagline to draw attention to your profile" headlineMaxCharacters
 
@@ -112,7 +115,7 @@ view model@{
                         parser = map DateWrapper <<< SDT.unformatISODate
                         control = HE.input [
                               HA.type' "date",
-                              HA.class' "single-line-input",
+                              HA.class' "modal-input",
                               HA.placeholder "yyyy-mm-dd",
                               HA.onInput (setFieldInputed fieldInputed <<< parser),
                               HA.value $ DM.fromMaybe "" currentFieldValue
@@ -137,7 +140,7 @@ view model@{
                                     HE.text $ DS.joinWith ", " languages
                               ]
                         control = HE.select [HA.onInput (setFieldInputedMaybe fieldInputed <<< DI.fromString)] $ displayOptionsWith "Select" model.languagesInputed languages
-                  in  displayEditList (SProxy :: SProxy "languages") getLanguage currentFieldValue control "You may select up to four languages"
+                  in  displayEditList (SProxy :: SProxy "languages") getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
             displayEditTags =
                   let   fieldInputed = SProxy :: SProxy "tagsInputed"
                         fieldInputedList = SProxy :: SProxy "tagsInputedList"
@@ -146,17 +149,17 @@ view model@{
                               tags -> Just $ HE.div (HA.class' "blocky") $ map (HE.span (HA.class' "tag")) tags
                         control = HE.input [
                               HA.type' "text",
-                              HA.class' "single-line-input",
+                              HA.class' "modal-input",
                               SF.focus,
                               HA.maxlength tagMaxCharacters,
                               HA.value $ DM.fromMaybe "" model.tagsInputed,
                               HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed),
                               HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
                         ]
-                  in  displayEditList (SProxy :: SProxy "tags") identity currentFieldValue control "Add tags to show your interests, hobbies, etc"
+                  in  displayEditList (SProxy :: SProxy "tags") identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
 
-            displayEditList :: forall r s t u field fieldInputed fieldInputedList. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Append field "InputedList" fieldInputedList => IsSymbol fieldInputedList => Cons fieldInputed (Maybe t) u PM => Cons fieldInputedList (Maybe (Array t)) r PM => Cons field (Array t) s PU => Ord t => Eq t => SProxy field -> (t -> String) -> Maybe (Html ProfileMessage) -> Html ProfileMessage -> String -> Html ProfileMessage
-            displayEditList field formatter currentFieldValue control explanation =
+            displayEditList :: forall r s t u field fieldInputed fieldInputedList. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Append field "InputedList" fieldInputedList => IsSymbol fieldInputedList => Cons fieldInputed (Maybe t) u PM => Cons fieldInputedList (Maybe (Array t)) r PM => Cons field (Array t) s PU => Ord t => Eq t => SProxy field -> (t -> String) -> Maybe (Html ProfileMessage) -> Html ProfileMessage -> String -> Int -> Html ProfileMessage
+            displayEditList field formatter currentFieldValue control explanation maxElements =
                   let   stringField = TDS.reflectSymbol field
                         fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
                         fieldInputedList = TDS.append field (SProxy :: SProxy "InputedList")
@@ -182,8 +185,10 @@ view model@{
                               HE.div (HA.class' "bold") $ "Your " <> stringField,
                               HE.span (HA.class' "duller") explanation,
                               HE.br,
-                              control,
-                              plus (appendInputedMaybe fieldInputedList fieldInputed),
+                              HE.div_ [
+                                    control,
+                                    plus (DA.length (DM.fromMaybe [] currentFieldInputedList) == maxElements) (appendInputedMaybe fieldInputedList fieldInputed)
+                              ],
                               HE.div (HA.class' "profile-edition-add-list") [
                                     HE.div (HA.class' "grow") <<< map displayRemoveItem $ DM.fromMaybe [] currentFieldInputedList,
                                     HE.div_ [
@@ -217,9 +222,11 @@ view model@{
                                     ],
                         HE.div (HA.class' { edition: true, hidden: not isEditing }) [
                               HE.div (HA.class' "bold") $ "Your " <> stringField,
-                              control,
-                              check (copyFromChoice field fieldInputed),
-                              cancel fieldInputed
+                              HE.div_ [
+                                    control,
+                                    check (copyFromChoice field fieldInputed),
+                                    cancel fieldInputed
+                              ]
                         ]
                   ]
 
@@ -244,16 +251,18 @@ view model@{
                                           HE.br,
                                           HE.text $ "Leave it blank to generate a new random " <> stringField
                                     ],
-                                    HE.input [
-                                          SF.focus,
-                                          HA.class' "single-line-input",
-                                          HA.maxlength maxLength,
-                                          HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed),
-                                          HA.onInput (setFieldInputed fieldInputed),
-                                          HA.value $ DM.fromMaybe "" currentInputed
-                                    ],
-                                    check (SetGenerate what),
-                                    cancel fieldInputed
+                                    HE.div_ [
+                                          HE.input [
+                                                SF.focus,
+                                                HA.class' "modal-input",
+                                                HA.maxlength maxLength,
+                                                HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed),
+                                                HA.onInput (setFieldInputed fieldInputed),
+                                                HA.value $ DM.fromMaybe "" currentInputed
+                                          ],
+                                          check (SetGenerate what),
+                                          cancel fieldInputed
+                                    ]
                               ]
                         ]
 
@@ -316,8 +325,9 @@ pen = HE.svg [HA.class' "svg-16 edit", HA.viewBox "0 0 512 512"] [
       HE.path' $ HA.d "M458.648,53.353h0a72.833,72.833,0,0,0-103,0l-34.42,34.42,103,103,34.42-34.42A72.832,72.832,0,0,0,458.648,53.353Z"
 ]
 
-plus :: ProfileMessage -> Html ProfileMessage
-plus message = HE.svg [HA.class' "svg-20 plus", HA.viewBox "0 0 512 512", HA.onClick message] $ HE.path' [HA.d "M425.706,86.294A240,240,0,0,0,86.294,425.706,240,240,0,0,0,425.706,86.294ZM384,280H280V384H232V280H128V232H232V128h48V232H384Z"]
+plus :: Boolean -> ProfileMessage -> Html ProfileMessage
+plus isDisabled message = HE.svg attrs $ HE.path' [HA.d "M425.706,86.294A240,240,0,0,0,86.294,425.706,240,240,0,0,0,425.706,86.294ZM384,280H280V384H232V280H128V232H232V128h48V232H384Z"]
+      where attrs = [HA.class' {"svg-20 plus": true, disabled: isDisabled}, HA.viewBox "0 0 512 512"] <> if isDisabled then [] else [HA.onClick message]
 
 check :: ProfileMessage -> Html ProfileMessage
 check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 512", HA.onClick message] [

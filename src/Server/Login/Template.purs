@@ -36,8 +36,8 @@ template = do
                                     HE.input [HA.type' "password", HA.id "password"],
                                     HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                               ],
-                              HE.input [HA.type' "button", HA.value "Login"],
-                              HE.span' [HA.id "request-error-message", HA.class' "error-message"]
+                              HE.input [HA.type' "button", HA.value "Log in"],
+                              HE.span' [HA.class' "request-error-message error-message"]
                         ],
                         HE.a [HA.href $ routes.recover.get {query: {token: Nothing}}, HA.class' "question-link forgot"] "Forgot your password?",
                         HE.div [HA.class' "question-or"] [

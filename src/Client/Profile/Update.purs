@@ -8,6 +8,7 @@ import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
+import Client.Common.Network as CNN
 import Client.Common.Notification as CCNO
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -20,6 +21,7 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Record as R
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
+import Shared.Profile.View (profileEditionId)
 import Shared.Setter as SS
 import Type.Data.Symbol as TDS
 import Web.DOM (Element)
@@ -62,9 +64,8 @@ selectAvatar = do
 
 saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
 saveProfile { user: user@{ name }} = do
-      void $ request.profile.post { body: user }
-      liftEffect do
-            CCNO.alert "Profile updated"
+      void <<< CNN.formRequest profileEditionId $ request.profile.post { body: user }
+      liftEffect <<<
             --let im know that the name has changed
             CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
       FAE.noChanges

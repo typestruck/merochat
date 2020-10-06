@@ -25,7 +25,7 @@ login = do
             Nothing -> pure unit
             Just registerLogin ->
                   EA.launchAff_ do
-                        status <- CCA.formRequest "Logging in..." $ request.login.post { body: registerLogin }
+                        status <- CCA.formRequest $ request.login.post { body: registerLogin }
                         liftEffect $ when (status == Success) do
                               -- the location to go after login is either the query parameter next or /im
                               redirect <- CCL.queryParameter "next"

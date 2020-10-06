@@ -56,7 +56,7 @@ template = do
                                     ],
                                     HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
                                     HE.input [HA.type' "button", HA.value "Create account"],
-                                    HE.span' [HA.id "request-error-message", HA.class' "error-message"]
+                                    HE.span' [HA.class' "request-error-message error-message"]
                               ]
                         ],
                         HE.h2_ [

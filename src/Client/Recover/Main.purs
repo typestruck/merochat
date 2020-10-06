@@ -24,7 +24,7 @@ recover captchaResponse = do
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
                    else EA.launchAff_ do
-                        status <- CCA.formRequest "Recovering..." $ request.recover.post {body: { email, captchaResponse } }
+                        status <- CCA.formRequest $ request.recover.post {body: { email, captchaResponse } }
                         liftEffect $ when (status == Fail) CCC.grecaptchaReset
 
 -- | Callback for grecaptcha
@@ -38,7 +38,7 @@ reset token = do
             Nothing -> pure unit
             Just { password } ->
                   EA.launchAff_  do
-                        status <- CCA.formRequest "Reseting..." $ request.recover.reset { body: { token, password } }
+                        status <- CCA.formRequest $ request.recover.reset { body: { token, password } }
                         when (status == Success) do
                               EA.delay $ Milliseconds 3000.0
                               liftEffect <<< CCL.setLocation $ routes.login.get {}

@@ -80,15 +80,14 @@ account model@{ erroredFields, confirmTermination } =
                   in HE.div_ [
                         HE.div (HA.class' { errored: hasErrors }) [
                               HE.label_ capitalizedStringField ,
-                              HE.input [HA.type' inputType, HA.value fieldValue, onChangeValue (setValidatedField validator field)],
+                              HE.input [HA.type' inputType, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field)],
                               HE.div (HA.class' "error-message") fieldErrorMessage
                         ],
                         HE.div (HA.class' { errored: hasConfirmationErrors }) [
                               HE.label_ $ "Confirm " <> stringField,
-                              HE.input [HA.type' inputType, HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation)],
+                              HE.input [HA.type' inputType, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation)],
                               HE.div (HA.class' "error-message") $ capitalizedStringField <> " confirmation must match " <> stringField
                         ],
-                        --needs validation on click
                         HE.input [HA.type' "button", HA.class' "green-button", HA.disabled $ hasErrors || hasConfirmationErrors, HA.value $ "Change " <> stringField, HA.onClick messageIfValidated],
                         HE.br
                   ]

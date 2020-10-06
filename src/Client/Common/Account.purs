@@ -4,17 +4,15 @@ import Prelude
 
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
+import Client.Common.Network as CNN
 import Client.Common.Types (RequestStatus(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Aff as CMEC
 import Effect.Class (liftEffect)
 import Payload.Client (ClientResponse)
 import Shared.Options.Profile (passwordMinCharacters)
@@ -113,28 +111,5 @@ registerEvents callback = do
                   Nothing -> pure unit
                   Just element -> CCD.addEventListener element change (const handler)
 
-formRequest :: forall a. String -> Aff (ClientResponse a) -> Aff RequestStatus
-formRequest loadingMessage aff = do
-      previousLabel <- liftEffect do
-            button <- CCD.unsafeQuerySelector buttonSelector
-            CCD.value button
-      setLoading loadingMessage ""
-      result <- aff
-      case result of
-            Right _ -> do
-                  setLoading previousLabel ""
-                  pure Success
-            Left err -> do
-                  setLoading previousLabel $ CCN.errorMessage err
-                  notifySuccess
-                  pure Fail
-      where setLoading buttonText errorText = liftEffect do
-                  button <- liftEffect $ CCD.unsafeQuerySelector buttonSelector
-                  errorElement <- liftEffect $ CCD.unsafeQuerySelector "#request-error-message"
-                  CCD.toggleDisabled button
-                  CCD.setValue button buttonText
-                  CCD.setInnerHTML errorElement errorText
-
-            notifySuccess = liftEffect do
-                  formDiv <- CCD.unsafeQuerySelector formSelector
-                  WDE.setClassName "input success" formDiv
+formRequest :: forall a. Aff (ClientResponse a) -> Aff RequestStatus
+formRequest = CNN.formRequest formSelector

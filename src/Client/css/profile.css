@@ -3,14 +3,6 @@
     cursor: default;
 }
 
-.single-line-input {
-    border: none;
-    border-bottom: 1px solid #b5b7b7;
-    padding-right: 20px;
-    margin-top: 20px;
-    width: 500px;
-}
-
 .suggestion.contact select {
     margin-top: 20px;
     width: 500px;
@@ -73,6 +65,10 @@
     stroke: hsl(145, 80%, 28%);
 }
 
+.plus, .save, .cancel {
+    vertical-align: middle;
+}
+
 .cancel {
     margin-left: 20px;
 }
@@ -80,6 +76,11 @@
 .description-edition, .edition {
     margin: 30px 0;
     text-align: center;
+}
+
+.edition {
+    display: flex;
+    flex-direction: column;
 }
 
 .description-edition {
@@ -95,7 +96,6 @@
 
 .save-cancel .cancel {
     margin-right: 20px;
-    vertical-align: text-top;
 }
 
 .about {
@@ -118,17 +118,27 @@
 }
 
 .save {
-    margin-left: -20px;
+    margin-left: -30px;
 }
 
 select+.save {
     margin-left: 10px
 }
 
+.modal-input {
+    padding-right:30px;
+    margin-top:20px;
+}
+
+.suggestion.contact .modal-input:focus {
+    border:none !important;
+}
+
 .profile-edition-add-list {
     margin-top: 20px;
     width: 500px;
     display: flex;
+    align-self: center;
 }
 
 .list-languages {
@@ -153,8 +163,8 @@ select+.save {
     flex-wrap: wrap;
 }
 
-input+.plus {
-    margin-left: -20px
+.plus {
+    margin-left: -30px
 }
 
 select+.plus {
@@ -163,4 +173,9 @@ select+.plus {
 
 .blocky {
     display: inline-block
+}
+
+.disabled {
+    stroke:rgb(238, 238, 238, 0.5);
+    fill:rgb(238, 238, 238, 0.5)
 }

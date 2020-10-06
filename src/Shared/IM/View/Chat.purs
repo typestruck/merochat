@@ -17,7 +17,7 @@ import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Prim.Row (class Cons)
-import Shared.File (maxImageSizeKB)
+import Shared.Options.File (maxImageSizeKB)
 import Shared.Focus as SF
 import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM

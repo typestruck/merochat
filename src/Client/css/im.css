@@ -751,7 +751,7 @@ svg.toolbar-action {
     flex-direction: column;
 }
 
-input:focus {
+input:not(type=button):focus {
     border:1px solid #b5b7b7 !important
 }
 
@@ -1173,4 +1173,13 @@ select {
 
 .upload-div {
     margin-bottom:20px;
+}
+
+.modal-input {
+    border: #373737 1px solid;
+    border-radius: 3px;
+    height: 40px;
+    padding: 5px;
+    width: 500px;
+    background: #373737;
 }

@@ -15,15 +15,6 @@
     margin-top: 0px;
 }
 
-.settings-section input[type="text"], .settings-section input[type="password"] {
-    border: #373737 1px solid;
-    border-radius: 3px;
-    height: 40px;
-    padding: 5px;
-    width: 500px;
-    background: #373737;
-}
-
 .error-message {
     visibility: hidden;
     margin-bottom: 10px;

@@ -31,7 +31,7 @@ import Effect.Now as EN
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
-import Shared.File (maxImageSize)
+import Shared.Options.File (maxImageSize)
 import Shared.IM.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
