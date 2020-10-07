@@ -126,7 +126,7 @@ update { webSocketRef, fileReader} model =
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
-            ToggleConnected -> toggleConnectedWebSocket model
+            ToggleConnected isConnected -> toggleConnectedWebSocket isConnected model
             CheckMissedMessages -> checkMissedMessages model
             SetField setter -> F.noMessages $ setter model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
@@ -253,12 +253,12 @@ setName name model@{ user } =
             }
       }
 
-toggleConnectedWebSocket :: IMModel -> NoMessages
-toggleConnectedWebSocket model@{ isWebSocketConnected } =
-      F.noMessages $ model {
+toggleConnectedWebSocket :: Boolean -> IMModel -> MoreMessages
+toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketConnected } =
+      model {
             hasTriedToConnectYet = true,
-            isWebSocketConnected = not isWebSocketConnected
-      }
+            isWebSocketConnected = isConnected
+      } :> if hasTriedToConnectYet && isConnected then [pure $ Just CheckMissedMessages] else []
 
 preventStop :: Event -> IMModel -> NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
@@ -278,7 +278,7 @@ setUpWebSocket webSocketRef channel = do
       timerID <- ER.new Nothing
       openListener <- WET.eventListener $ const (do
             CIW.sendPayload webSocket Connect
-            sendChannel ToggleConnected)
+            sendChannel $ ToggleConnected true)
       messageListener <- WET.eventListener $ \event -> do
             maybeID <- ER.read timerID
             DM.maybe (pure unit) (\id -> do
@@ -290,7 +290,7 @@ setUpWebSocket webSocketRef channel = do
             sendChannel $ ReceiveMessage message isFocused
 
       closeListener <- WET.eventListener $ \_ -> do
-            sendChannel ToggleConnected
+            sendChannel $ ToggleConnected false
             maybeID <- ER.read timerID
             when (DM.isNothing maybeID) do
                   milliseconds <- ERD.randomInt 2000 7000
@@ -298,7 +298,6 @@ setUpWebSocket webSocketRef channel = do
                         newWebSocket <- CIW.createWebSocket
                         ER.write newWebSocket webSocketRef
                         setUpWebSocket webSocketRef channel
-                        sendChannel CheckMissedMessages
                   ER.write (Just id) timerID
 
       WET.addEventListener onMessage messageListener false webSocketTarget

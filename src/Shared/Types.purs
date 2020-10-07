@@ -297,7 +297,7 @@ data IMMessage =
       AlertUnreadChats |
       PreventStop Event |
       SetNameFromProfile String |
-      ToggleConnected |
+      ToggleConnected Boolean |
       CheckMissedMessages |
       SetField (IMModel -> IMModel)
 

@@ -5,9 +5,7 @@ import Prelude
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Function.Uncurried as DFU
 import Data.Maybe as DM
-import Data.Maybe (Maybe(..))
-import Data.String as DS
-import Debug.Trace (spy)
+import Data.Maybe (Maybe)
 import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
@@ -29,7 +27,6 @@ import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WHHD
 import Web.HTML.HTMLElement as WHHE
-import Web.HTML.HTMLMediaElement.CanPlayType (CanPlayType(..))
 import Web.HTML.HTMLScriptElement as WHS
 import Web.HTML.Window as HWH
 import Web.HTML.Window as WHW
