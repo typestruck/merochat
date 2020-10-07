@@ -31,6 +31,9 @@ view model =
             account model
       ]
 
+formId :: forall field. IsSymbol field => SProxy field -> String
+formId field = TDS.reflectSymbol field <> "-form"
+
 account :: SettingsModel -> Html SettingsMessage
 account model@{ erroredFields, confirmTermination } =
       HE.div (HA.class' "settings-section") [
@@ -47,14 +50,24 @@ account model@{ erroredFields, confirmTermination } =
 
                   fieldConfirmationSection (SProxy :: SProxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword,
 
-                  HE.label_ "Permanently delete all my data and close my account",
-                  HE.input [HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount],
-                  HE.div (HA.class' {"modal-placeholder-overlay": true, hidden: not confirmTermination })[
-                        HE.div (HA.class' "confirmation") [
-                              HE.span (HA.class' "bold") "Do you really want to terminate your account? All of your data will be permanently lost.",
-                              HE.div (HA.class' "buttons") [
-                                    HE.button [HA.class' "cancel", HA.onClick ToggleTerminateAccount] "Cancel",
-                                    HE.button [HA.class' "green-button danger", HA.onClick TerminateAccount] "Terminate"
+                  HE.div (formId (SProxy :: SProxy "confirmTermination")) [
+                        HE.label_ "Permanently delete all my data and close my account",
+                        HE.div (HA.class' "section-buttons margined") [
+                              HE.input [HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount],
+                              HE.span' (HA.class' "request-error-message"),
+                              HE.span (HA.class' "success-message") [
+                                    HE.text "Account terminated!",
+                                    HE.br,
+                                    HE.text "You will be logged out..."
+                              ]
+                        ],
+                        HE.div (HA.class' {"modal-placeholder-overlay": true, hidden: not confirmTermination })[
+                              HE.div (HA.class' "confirmation") [
+                                    HE.span (HA.class' "bold") "Do you really want to terminate your account? All of your data will be permanently lost.",
+                                    HE.div (HA.class' "buttons") [
+                                          HE.button [HA.class' "cancel", HA.onClick ToggleTerminateAccount] "Cancel",
+                                          HE.button [HA.class' "green-button danger", HA.onClick TerminateAccount] "Terminate"
+                                    ]
                               ]
                         ]
                   ]
@@ -77,7 +90,7 @@ account model@{ erroredFields, confirmTermination } =
                                     setValidatedField (const false) fieldConfirmation fieldConfirmationValue
                                else
                                     message
-                  in HE.div_ [
+                  in HE.div (formId field) [
                         HE.div (HA.class' { errored: hasErrors }) [
                               HE.label_ capitalizedStringField ,
                               HE.input [HA.type' inputType, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field)],
@@ -85,11 +98,18 @@ account model@{ erroredFields, confirmTermination } =
                         ],
                         HE.div (HA.class' { errored: hasConfirmationErrors }) [
                               HE.label_ $ "Confirm " <> stringField,
-                              HE.input [HA.type' inputType, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation)],
+                              HE.input [HA.type' inputType, HA.createAttribute  "autocomplete" $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation)],
                               HE.div (HA.class' "error-message") $ capitalizedStringField <> " confirmation must match " <> stringField
                         ],
-                        HE.input [HA.type' "button", HA.class' "green-button", HA.disabled $ hasErrors || hasConfirmationErrors, HA.value $ "Change " <> stringField, HA.onClick messageIfValidated],
-                        HE.br
+                        HE.div (HA.class' "section-buttons") [
+                              HE.input [HA.type' "button", HA.class' "green-button", HA.disabled $ hasErrors || hasConfirmationErrors, HA.value $ "Change " <> stringField, HA.onClick messageIfValidated],
+                              HE.span' (HA.class' "request-error-message"),
+                              HE.span (HA.class' "success-message") [
+                                    HE.text $ capitalizedStringField <> " changed!",
+                                    HE.br,
+                                    HE.text "You will be logged out..."
+                              ]
+                        ]
                   ]
 
 onChangeValue :: forall message. ToSpecialEvent message String

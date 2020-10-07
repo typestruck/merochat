@@ -5,15 +5,17 @@ import Shared.Types
 
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Client.Common.Notification as CCN
-import Data.String as DS
-import Data.Symbol (SProxy(..))
-import Effect.Aff (Aff)
+import Client.Common.Network as CNN
+import Client.Common.Types (RequestStatus(..))
+import Data.Symbol (class IsSymbol, SProxy(..))
+import Effect.Aff (Aff, Milliseconds(..))
+import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
-import Record as R
+import Payload.Client (ClientResponse)
 import Shared.Routes (routes)
+import Shared.Settings.View as SSV
 
 update :: AffUpdate SettingsModel SettingsMessage
 update { model, message } =
@@ -28,24 +30,18 @@ toggleTerminateAccount :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
 toggleTerminateAccount _ = pure (\model -> model { confirmTermination = not model.confirmTermination})
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changeEmail model@({ email, emailConfirmation }) = do
-      void $ request.settings.account.email { body: email }
-      liftEffect $ CCN.alert "Email changed"
-      FAE.diff {
-            email: "",
-            emailConfirmation: ""
-      }
+changeEmail model@({ email, emailConfirmation }) = requestAndLogout (SProxy :: SProxy "email") $ request.settings.account.email { body: email }
 
 changePassword :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changePassword model@({ password, passwordConfirmation }) = do
-      void $ request.settings.account.password { body: password }
-      liftEffect do
-            CCN.alert "Password changed, you will be logged out"
+changePassword model@({ password, passwordConfirmation }) = requestAndLogout (SProxy :: SProxy "password") $ request.settings.account.password { body: password }
+
+requestAndLogout :: forall v field. IsSymbol field => SProxy field -> Aff (ClientResponse v) -> Aff (SettingsModel -> SettingsModel)
+requestAndLogout field aff = do
+      status <- CNN.formRequest (SSV.formId field) aff
+      when (status == Success) $ do
+            EA.delay $ Milliseconds 3000.0
             liftEffect <<< CCL.setLocation $ routes.login.get {}
       FAE.noChanges
 
 terminateAccount :: Aff (SettingsModel -> SettingsModel)
-terminateAccount = do
-      void $ request.settings.account.terminate { body:{} }
-      liftEffect <<< CCL.setLocation $ routes.landing {}
-      FAE.noChanges
+terminateAccount = requestAndLogout  (SProxy :: SProxy "confirmTermination") $ request.settings.account.terminate { body:{} }

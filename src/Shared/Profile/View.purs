@@ -102,7 +102,7 @@ view model@{
 
             HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Update profile", HA.class' "green-button center-flex"],
             HE.span' (HA.class' "request-error-message"),
-            HE.span (HA.class' "success-message") $ "Profiled updated!"
+            HE.span (HA.class' "success-message") "Profiled updated!"
       ]
 ]
       where displayEditName = displayEditGenerated Name (SProxy :: SProxy "name") "This is the name other users will see when looking at your profile" nameMaxCharacters

@@ -40,7 +40,6 @@ errorMessage = case _ of
       StatusError { response: Response { body } } -> body
       RequestError { message } -> message
 
---REFACTOR: loadingMessage can be calculated here (by adding ing and ...)
 formRequest :: forall a. String -> Aff (ClientResponse a) -> Aff RequestStatus
 formRequest formSelector aff = do
       previousLabel <- liftEffect do

@@ -11,8 +11,21 @@
     margin-bottom: 5px;
 }
 
-.settings-section label:first-of-type {
+.settings-section label:first-child {
     margin-top: 0px;
+}
+
+.settings-section .error-message {
+    margin:0;
+}
+
+.settings-section .green-button {
+    margin:0;
+    margin-bottom: 40px;
+}
+
+.settings-section .margined {
+    margin-top:20px
 }
 
 .error-message {
@@ -28,3 +41,15 @@
     color:red;
 }
 
+.section-buttons {
+    display: flex;
+    width: 500px;
+}
+
+.section-buttons .success-message, .section-buttons .error-message {
+    padding-left: 10px;
+}
+
+.section-buttons .success-message {
+    font-weight: bold;
+}
