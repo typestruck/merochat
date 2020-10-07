@@ -4,47 +4,24 @@ import Prelude
 import Server.Types
 import Shared.Types
 
-import Affjax as A
-import Affjax.RequestBody as RB
-import Affjax.ResponseFormat as RF
-import Affjax.StatusCode (StatusCode(..))
-import Data.Argonaut.Decode as DAD
-import Data.Either (Either(..))
-import Data.Either as DE
-import Data.FormURLEncoded as DF
-import Data.HTTP.Method (Method(..))
-import Server.Token as ST
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.String as DS
-import Data.Tuple (Tuple(..))
-import Run as R
-import Run.Reader as RR
+import Server.AccountValidation as SA
 import Server.Bender as SB
 import Server.Captcha as SC
 import Server.Landing.Database as SLD
-import Server.Database.User as SDU
-import Server.Response as SR
-
-invalidUserEmailMessage :: String
-invalidUserEmailMessage = "Invalid email or password"
-
-emailAlreadyRegisteredMessage :: String
-emailAlreadyRegisteredMessage = "Email already registered"
+import Server.Token as ST
 
 register :: RegisterLogin -> ServerEffect String
-register { captchaResponse, email, password } = do
-      when (DS.null email || DS.null password) $ SR.throwBadRequest invalidUserEmailMessage
-      user <- SDU.userBy $ Email email
-      when (DM.isJust user) $ SR.throwBadRequest emailAlreadyRegisteredMessage
+register { captchaResponse, email: rawEmail, password } = do
       SC.validateCaptcha captchaResponse
+      email <- SA.validateEmail rawEmail
+      hash <- SA.validatePassword password
+      SA.validateExistingEmail email
 
       name <- SB.generateName
       headline <- SB.generateHeadline
       description <- SB.generateDescription
-      hashedPassword <- ST.hashPassword password
       id <- SLD.createUser {
-            password: hashedPassword,
+            password: hash,
             email,
             name,
             headline,

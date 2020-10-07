@@ -9,7 +9,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.Options.Profile (passwordMinCharacters)
+import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Routes (routes)
 
 template :: Maybe String -> Effect String
@@ -32,7 +32,7 @@ template token = do
                                                 HE.div (HA.class' "form-up") [
                                                       HE.div [HA.id "email-input", HA.class' "input"] [
                                                             HE.label_ "Email",
-                                                            HE.input [HA.type' "text", HA.id "email"],
+                                                            HE.input [HA.type' "text", HA.id "email", HA.maxlength emailMaxCharacters],
                                                             HE.span (HA.class' "error-message") "Please enter a valid email"
                                                       ],
                                                       HE.input [HA.type' "button", HA.value "Recover"],
@@ -47,12 +47,12 @@ template token = do
                                                 HE.div (HA.class' "form-up") [
                                                       HE.label_ "Password",
                                                       HE.div [HA.id "password-input", HA.class' "input"] [
-                                                            HE.input [HA.type' "password", HA.id "password"],
+                                                            HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id "password"],
                                                             HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                                       ],
                                                       HE.div [HA.id "confirm-password-input", HA.class' "input"] [
                                                             HE.label_ "Confirm password",
-                                                            HE.input [HA.type' "password", HA.id "confirm-password"],
+                                                            HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id "confirm-password"],
                                                             HE.span (HA.class' "error-message") "Password and confirmation do not match"
                                                       ],
                                                       HE.input [HA.type' "button", HA.value "Change password", HA.class' "action-button"],

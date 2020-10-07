@@ -5,9 +5,10 @@ import Server.Types
 
 import Data.Maybe (Maybe(..))
 import Database.PostgreSQL (Query(..), Row0(..))
+import Server.AccountValidation (invalidEmailMessage, invalidPasswordMessage)
 import Server.Database as SD
 import Server.Landing.Database as SLD
-import Server.Login.Action (invalidLogin, invalidUserEmailMessage)
+import Server.Login.Action (invalidLogin)
 import Server.Login.Action as SLIA
 import Server.Token as ST
 import Test.Server as TS
@@ -29,14 +30,14 @@ tests = do
             let  expectExpection rl = void $ SLIA.login rl
 
             TU.test "login does not accept empty login and password" $
-                  TS.serverActionCatch (TS.catch invalidUserEmailMessage) $ expectExpection {
+                  TS.serverActionCatch (TS.catch invalidEmailMessage) $ expectExpection {
                         email: "",
                         password: "",
                         captchaResponse: Nothing
                   }
 
             TU.test "login does not accept empty password" $
-                  TS.serverActionCatch (TS.catch invalidUserEmailMessage) $ expectExpection {
+                  TS.serverActionCatch (TS.catch invalidPasswordMessage) $ expectExpection {
                         email,
                         password: "",
                         captchaResponse: Nothing
