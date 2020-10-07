@@ -24,7 +24,7 @@ import Shared.Markdown as SM
 import Shared.Setter as SS
 
 chat :: IMModel -> Html IMMessage
-chat { chatting, contacts, suggesting, suggestions, isOnline, message, messageEnter, link, linkText, toggleChatModal, selectedImage, erroredFields } =
+chat { chatting, contacts, suggesting, suggestions, isWebSocketConnected, message, messageEnter, link, linkText, toggleChatModal, selectedImage, erroredFields } =
       HE.div (HA.class' "send-box") [
             HE.div (HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }) [
                   HE.label_ "Text",
@@ -59,8 +59,8 @@ chat { chatting, contacts, suggesting, suggestions, isOnline, message, messageEn
                               HA.rows 1,
                               HA.class' "chat-input",
                               HA.id "chat-input",
-                              HA.placeholder $ if isOnline then "Type here to message " <> recipientName else "Waiting for connection...",
-                              HA.disabled $ not isOnline,
+                              HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
+                              HA.disabled $ not isWebSocketConnected,
                               HA.onKeydown' EnterBeforeSendMessage,
                               HA.onInput BeforeSendMessage,
                               HA.value $ DM.fromMaybe "" message

@@ -14,16 +14,17 @@ import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 
 view :: Boolean -> IMModel -> Html IMMessage
-view displayLastMessageDates model@{ suggestions, suggesting, chatting, contacts, toggleModal } = HE.div (HA.class' "im") [
+view isClientRender model@{ suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div (HA.class' "im") [
       HE.div (HA.class' "left-box") [
             SIVU.userMenu model,
             search model,
-            SIVCN.contactList displayLastMessageDates model ,
+            SIVCN.contactList isClientRender model ,
             logo,
 
             modals toggleModal
       ],
       HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
+            HE.div (HA.class' {"no-connection": true, flexed: hasTriedToConnectYet && not isWebSocketConnected}) "Connection to the server lost. Attempting to automaticaly reconnect...",
             SIVS.profile model,
             SIVH.history model $ map (contacts !@ _ ) chatting,
             SIVC.chat  model

@@ -42,7 +42,8 @@ template {contacts, suggestions, user} = do
                   message: Nothing,
                   toggleChatModal: HideChatModal,
                   blockedUsers: [],
-                  isOnline: false,
+                  isWebSocketConnected: false,
+                  hasTriedToConnectYet: false,
                   contacts,
                   suggestions,
                   user

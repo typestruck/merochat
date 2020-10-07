@@ -196,7 +196,7 @@ type IM = (
       link :: Maybe String,
       suggestionsPage :: Int,
       linkText :: Maybe String,
-      isOnline :: Boolean,
+      isWebSocketConnected :: Boolean,
       shouldSendMessage :: Boolean,
       erroredFields :: Array String,
       --the current logged in user
@@ -205,11 +205,14 @@ type IM = (
       suggesting :: Maybe Int,
       chatting :: Maybe Int,
       --visibility switches
+      hasTriedToConnectYet :: Boolean,
       fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
       toggleModal :: ShowUserMenuModal,
       toggleChatModal :: ShowChatModal
 )
+
+type IMModel = Record IM
 
 data ShowChatModal =
       HideChatModal |
@@ -217,8 +220,6 @@ data ShowChatModal =
       ShowPreview |
       ShowEmojis |
       ShowLinkForm
-
-type IMModel = Record IM
 
 data ShowUserMenuModal =
       HideUserMenuModal |
@@ -296,7 +297,7 @@ data IMMessage =
       AlertUnreadChats |
       PreventStop Event |
       SetNameFromProfile String |
-      ToggleOnline |
+      ToggleConnected |
       CheckMissedMessages |
       SetField (IMModel -> IMModel)
 

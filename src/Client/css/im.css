@@ -32,6 +32,28 @@ body {
     display: grid;
     background: #262626;
     grid-template-rows: auto 1fr 140px;
+    position: relative;
+}
+
+.no-connection {
+    height:50px;
+    position: absolute;
+    left:0;
+    right: 0;
+    background: #262626;
+    font-weight: bold;
+    color: red;
+    display:none;
+    align-items: center;
+    justify-content: center;
+}
+
+.flexed {
+    display: flex;
+}
+
+.no-connection.flexed ~ .profile-contact, .no-connection.flexed ~ .suggestion {
+    margin-top: 50px;
 }
 
 .send-box {
@@ -752,7 +774,7 @@ svg.toolbar-action {
 }
 
 input:not(type=button):focus {
-    border:1px solid #b5b7b7 !important
+    border: 1px solid #b5b7b7 !important
 }
 
 .exclamation, .error-message {
@@ -1150,7 +1172,7 @@ select {
 }
 
 .send-image-button {
-    fill:rgb(238, 238, 238);
+    fill: rgb(238, 238, 238);
     stroke: rgb(238, 238, 238);
 }
 
@@ -1172,7 +1194,7 @@ select {
 }
 
 .upload-div {
-    margin-bottom:20px;
+    margin-bottom: 20px;
 }
 
 .modal-input {
@@ -1183,3 +1205,4 @@ select {
     width: 500px;
     background: #373737;
 }
+

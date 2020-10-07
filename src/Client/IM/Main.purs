@@ -126,7 +126,7 @@ update { webSocketRef, fileReader} model =
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
-            ToggleOnline -> toggleOnline model
+            ToggleConnected -> toggleConnectedWebSocket model
             CheckMissedMessages -> checkMissedMessages model
             SetField setter -> F.noMessages $ setter model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
@@ -236,7 +236,7 @@ checkMissedMessages model@{ contacts, user : { id: senderID } } =
 
             if DM.isNothing lastSenderID && DM.isNothing lastRecipientID then
                   pure Nothing
-                  else
+             else
                   Just <<< ResumeMissedEvents <$> CCNT.response (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
       ]
       where findLast f array = do
@@ -253,10 +253,11 @@ setName name model@{ user } =
             }
       }
 
-toggleOnline :: IMModel -> NoMessages
-toggleOnline model@{ isOnline } =
+toggleConnectedWebSocket :: IMModel -> NoMessages
+toggleConnectedWebSocket model@{ isWebSocketConnected } =
       F.noMessages $ model {
-            isOnline = not isOnline
+            hasTriedToConnectYet = true,
+            isWebSocketConnected = not isWebSocketConnected
       }
 
 preventStop :: Event -> IMModel -> NextMessage
@@ -277,7 +278,7 @@ setUpWebSocket webSocketRef channel = do
       timerID <- ER.new Nothing
       openListener <- WET.eventListener $ const (do
             CIW.sendPayload webSocket Connect
-            sendChannel ToggleOnline)
+            sendChannel ToggleConnected)
       messageListener <- WET.eventListener $ \event -> do
             maybeID <- ER.read timerID
             DM.maybe (pure unit) (\id -> do
@@ -289,10 +290,9 @@ setUpWebSocket webSocketRef channel = do
             sendChannel $ ReceiveMessage message isFocused
 
       closeListener <- WET.eventListener $ \_ -> do
-            sendChannel ToggleOnline
+            sendChannel ToggleConnected
             maybeID <- ER.read timerID
             when (DM.isNothing maybeID) do
-                  CCN.alert "Connection to the server lost. Retrying..."
                   milliseconds <- ERD.randomInt 2000 7000
                   id <- ET.setTimeout milliseconds <<< void $ do
                         newWebSocket <- CIW.createWebSocket

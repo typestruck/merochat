@@ -28,6 +28,7 @@ model = {
       fullContactProfileVisible: false,
       link: Nothing,
       erroredFields: [],
+      hasTriedToConnectYet: false,
       selectedImage: Nothing,
       messageEnter: true,
       linkText: Nothing,
@@ -40,7 +41,7 @@ model = {
       suggesting: Just 0,
       freeToFetchChatHistory: true,
       contacts: [contact],
-      isOnline: true,
+      isWebSocketConnected: true,
       chatting: Just 0
 }
 
