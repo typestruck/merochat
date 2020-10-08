@@ -26,6 +26,7 @@ model = {
       userContextMenuVisible: false,
       imageCaption: Nothing,
       fullContactProfileVisible: false,
+      fortune: Nothing,
       link: Nothing,
       erroredFields: [],
       hasTriedToConnectYet: false,

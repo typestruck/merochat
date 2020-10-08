@@ -37,6 +37,7 @@ template {contacts, suggestions, user} = do
                   freeToFetchContactList: true,
                   shouldSendMessage: false,
                   erroredFields: [],
+                  fortune: Nothing,
                   userContextMenuVisible: false,
                   toggleModal: HideUserMenuModal,
                   message: Nothing,

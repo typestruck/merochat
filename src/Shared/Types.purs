@@ -199,6 +199,7 @@ type IM = (
       isWebSocketConnected :: Boolean,
       shouldSendMessage :: Boolean,
       erroredFields :: Array String,
+      fortune :: Maybe String,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -299,7 +300,9 @@ data IMMessage =
       SetNameFromProfile String |
       ToggleConnected Boolean |
       CheckMissedMessages |
-      SetField (IMModel -> IMModel)
+      SetField (IMModel -> IMModel) |
+      ToggleFortune Boolean |
+      DisplayFortune String
 
 data WebSocketPayloadServer =
       Connect |

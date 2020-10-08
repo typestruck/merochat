@@ -7,11 +7,6 @@ body {
     color: rgb(238, 238, 238)
 }
 
-/*
-* {
-    scrollbar-width: thin;
-} */
-
 .description-message, .profile-description, .profile-edition-description {
     width: 55em;
 }
@@ -36,14 +31,14 @@ body {
 }
 
 .no-connection {
-    height:50px;
+    height: 50px;
     position: absolute;
-    left:0;
+    left: 0;
     right: 0;
     background: #262626;
     font-weight: bold;
     color: red;
-    display:none;
+    display: none;
     align-items: center;
     justify-content: center;
 }
@@ -52,7 +47,7 @@ body {
     display: flex;
 }
 
-.no-connection.flexed ~ .profile-contact, .no-connection.flexed ~ .suggestion {
+.no-connection.flexed~.profile-contact, .no-connection.flexed~.suggestion {
     margin-top: 50px;
 }
 
@@ -1206,3 +1201,44 @@ select {
     background: #373737;
 }
 
+.fortune {
+    background: #262626;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: -53px;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.fortune::before {
+    content: "\00a0";
+    display: block;
+    height: 17px;
+    position: absolute;
+    width: 26px;
+    background-color: #262626;
+    bottom: -6px;
+    left: 50%;
+    margin-left: -15px;
+    transform: rotate( 135deg);
+
+}
+
+.fortune svg {
+    width: 13px;
+    height: 13px;
+    align-self: center;
+}
+
+.relative {
+    position: relative;
+}
+
+.fortune-deets {
+    font-style: italic;
+    flex-grow: 1;
+    text-align: center;
+}

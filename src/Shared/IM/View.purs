@@ -3,6 +3,8 @@ module Shared.IM.View where
 import Prelude
 import Shared.Types
 
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -14,12 +16,12 @@ import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 
 view :: Boolean -> IMModel -> Html IMMessage
-view isClientRender model@{ suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div (HA.class' "im") [
+view isClientRender model@{ fortune, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div (HA.class' "im") [
       HE.div (HA.class' "left-box") [
             SIVU.userMenu model,
             search model,
-            SIVCN.contactList isClientRender model ,
-            logo,
+            SIVCN.contactList isClientRender model,
+            logo fortune,
 
             modals toggleModal
       ],
@@ -34,11 +36,22 @@ view isClientRender model@{ suggestions, suggesting, chatting, contacts, hasTrie
 search :: IMModel -> Html IMMessage
 search model = HE.div' $ HA.class' "search"
 
-logo :: Html IMMessage
-logo = HE.div (HA.class' "logo-contact-list") [
-      HE.img $ HA.src "/client/media/logo-small.png"
-]
+logo :: Maybe String -> Html IMMessage
+logo fortune = HE.div (HA.class' "relative") [
+      HE.div (HA.class' {fortune: true, hidden: DM.isNothing fortune }) [
+            HE.div (HA.class' "fortune-deets") [
+                  HE.text $ DM.fromMaybe "" fortune
+            ],
+            HE.svg [HA.viewBox "0 0 512 512", HA.onClick (ToggleFortune false) ] [
+                  HE.title "Close",
+                  HE.polygon' $ HA.points "438.627 118.627 393.373 73.373 256 210.746 118.627 73.373 73.373 118.627 210.746 256 73.373 393.373 118.627 438.627 256 301.254 393.373 438.627 438.627 393.373 301.254 256 438.627 118.627"
+            ]
+      ],
 
+      HE.div [HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true] [
+            HE.img $ HA.src "/client/media/logo-small.png"
+      ]
+]
 modals :: ShowUserMenuModal -> Html IMMessage
 modals toggle =
       HE.div (HA.class' {"modal-placeholder-overlay": true, "hidden" : toggle == HideUserMenuModal}) [

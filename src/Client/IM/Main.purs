@@ -11,7 +11,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Suggestion as CIS
@@ -129,7 +129,21 @@ update { webSocketRef, fileReader} model =
             ToggleConnected isConnected -> toggleConnectedWebSocket isConnected model
             CheckMissedMessages -> checkMissedMessages model
             SetField setter -> F.noMessages $ setter model
+            ToggleFortune isVisible -> toggleFortune isVisible model
+            DisplayFortune sequence -> displayFortune sequence model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+toggleFortune :: Boolean -> IMModel -> MoreMessages
+toggleFortune isVisible model
+      | isVisible = model :> [Just <<< DisplayFortune <$> CCNT.response (request.im.fortune {})]
+      | otherwise = F.noMessages $ model {
+            fortune = Nothing
+      }
+
+displayFortune :: String -> IMModel -> NoMessages
+displayFortune sequence model = F.noMessages $ model {
+      fortune = Just sequence
+}
 
 receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
 receiveMessage webSocket isFocused wsPayload model@{
