@@ -45,7 +45,7 @@ resumeChat searchID model@{ contacts, chatting } =
                         selectedImage = Nothing
                   }) :> [
                         CIF.next UpdateReadCount ,
-                        CIF.next $ FetchHistory shouldFetchChatHistory
+                        CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
                   ]
 
 markRead :: WebSocket -> IMModel -> MoreMessages

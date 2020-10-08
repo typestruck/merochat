@@ -60,7 +60,7 @@ body {
 
 .im {
     display: grid;
-    grid-template-columns: 25% 75%;
+    grid-template-columns: 30% 70%;
 }
 
 .svg-8 {
@@ -1241,4 +1241,23 @@ select {
     font-style: italic;
     flex-grow: 1;
     text-align: center;
+}
+
+.retry {
+    color:red;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.retry-button {
+    color:rgb(238, 238, 238);
+    cursor: pointer;
+    padding: 5px 15px;
+}
+
+.retry-button svg {
+    vertical-align: middle;
+    margin-left:5px
 }

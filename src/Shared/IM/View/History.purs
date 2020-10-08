@@ -12,16 +12,18 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.Avatar as SA
 import Shared.Markdown as SM
+import Shared.IM.View.Retry as SIVR
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history { user: { id: senderID, avatar: senderAvatar }, chatting, freeToFetchChatHistory } chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] $
+history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests, freeToFetchChatHistory } chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] $
       case chattingSuggestion of
-            Nothing -> [HE.createEmptyElement "div"]
+            Nothing -> [retry]
             Just recipient@{ shouldFetchChatHistory } ->
-                  let entries = display recipient
+                  let entries = retry : display recipient
                   in if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries else entries
 
-      where display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i -> entry avatar (map _.sender (history !! (i - 1)))) history
+      where retry = SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
+            display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i -> entry avatar (map _.sender (history !! (i - 1)))) history
 
             entry recipientAvatar previousSender { status, sender, content } =
                   let   sameSenderClass = if previousSender == Just sender then " no-avatar-message" else ""

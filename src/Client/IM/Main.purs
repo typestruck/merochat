@@ -20,7 +20,7 @@ import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
 import Client.IM.WebSocket as CIW
 import Control.Monad.Except as CME
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Either (fromRight) as DE
@@ -107,7 +107,7 @@ update { webSocketRef, fileReader} model =
             ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
-            FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
+            SpecialRequest (FetchHistory shouldFetch) -> CIH.fetchHistory shouldFetch model
             DisplayHistory history -> CIH.displayHistory history model
             --suggestion
             ToggleContactProfile -> CIS.toggleContactProfile model
@@ -131,7 +131,13 @@ update { webSocketRef, fileReader} model =
             SetField setter -> F.noMessages $ setter model
             ToggleFortune isVisible -> toggleFortune isVisible model
             DisplayFortune sequence -> displayFortune sequence model
+            RequestFailed failure -> addFailure failure model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+addFailure :: RequestFailure -> IMModel -> NoMessages
+addFailure failure model@{ failedRequests } = F.noMessages $ model {
+      failedRequests = failure : failedRequests
+}
 
 toggleFortune :: Boolean -> IMModel -> MoreMessages
 toggleFortune isVisible model

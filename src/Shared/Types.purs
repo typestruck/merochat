@@ -31,7 +31,6 @@ import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue)
-import Flame (Key)
 import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
@@ -200,6 +199,7 @@ type IM = (
       shouldSendMessage :: Boolean,
       erroredFields :: Array String,
       fortune :: Maybe String,
+      failedRequests :: Array RequestFailure,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -255,10 +255,17 @@ data Markup =
       OrderedList |
       UnorderedList
 
+type RequestFailure = {
+      request :: RetryableRequest,
+      errorMessage :: String
+}
+
+data RetryableRequest =
+      FetchHistory Boolean
+
 data IMMessage =
       --history
       CheckFetchHistory |
-      FetchHistory Boolean |
       DisplayHistory (Array HistoryMessage)  |
       --user menu
       ShowUserContextMenu Event |
@@ -294,6 +301,7 @@ data IMMessage =
       SetEmoji Event |
       InsertLink |
       --main
+      SpecialRequest RetryableRequest |
       ReceiveMessage WebSocketPayloadClient Boolean |
       AlertUnreadChats |
       PreventStop Event |
@@ -302,7 +310,8 @@ data IMMessage =
       CheckMissedMessages |
       SetField (IMModel -> IMModel) |
       ToggleFortune Boolean |
-      DisplayFortune String
+      DisplayFortune String |
+      RequestFailed RequestFailure
 
 data WebSocketPayloadServer =
       Connect |
@@ -414,6 +423,7 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
+derive instance genericRetryableRequest :: Generic RetryableRequest _
 derive instance genericShowChatModal :: Generic ShowChatModal _
 derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
 derive instance genericToggleBoard :: Generic ToggleBoard _
@@ -438,6 +448,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqRetryableRequest :: Eq RetryableRequest
 derive instance eqGenerate :: Eq Generate
 derive instance eqShowChatModal :: Eq ShowChatModal
 derive instance eqDisplayHelpSection :: Eq DisplayHelpSection
@@ -738,6 +749,8 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonGenerate :: EncodeJson Generate where
@@ -761,6 +774,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonGenerate :: DecodeJson Generate where

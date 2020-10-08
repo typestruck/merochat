@@ -9,21 +9,33 @@ import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe as DM
+import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
+import Effect.Console as EC
 import Effect.Exception as EE
 import Payload.Client (ClientError(..), ClientResponse, defaultOpts)
 import Payload.Client as PC
 import Payload.ResponseTypes (Response(..))
 import Shared.Spec (spec)
+import Shared.Types
 import Web.DOM.Element as WDE
 
 request :: _
 request = PC.mkGuardedClient (defaultOpts { baseUrl = "http://localhost:8000/" }) spec
+
+response2 :: forall response. RetryableRequest -> (response -> IMMessage) -> Aff (ClientResponse response) -> Aff (Maybe IMMessage)
+response2 requestMessage message aff = do
+      result <- aff
+      case result of
+            Right r -> pure <<< Just <<< message <<< _.body $ DN.unwrap r
+            Left err -> do
+                  liftEffect <<< EC.log $ "Response error: " <> show err
+                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage : errorMessage err }
 
 response :: forall a. Aff (ClientResponse a) -> Aff a
 response aff = do

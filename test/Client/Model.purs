@@ -23,6 +23,7 @@ model = {
       suggestionsPage: 0,
       shouldSendMessage: true,
       freeToFetchContactList: true,
+      failedRequests: [],
       userContextMenuVisible: false,
       imageCaption: Nothing,
       fullContactProfileVisible: false,
