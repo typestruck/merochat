@@ -97,17 +97,18 @@ create table karma_histories
     constraint target_karma_history foreign key (target) references users(id) on delete cascade
 );
 
+--to be run with pg cron
 create or replace function crunch_karma_history(hours_time integer)
     returns void as
 $$
 begin
-    create temporary table temp_karmas (id integer, target interger, amount integer ) on commit drop;
+    create temporary table temp_karmas (id integer, target integer, amount integer ) on commit drop;
     insert into temp_karmas
     select id,
             target,
             amount
     from karma_histories
-    where extract(epoch from (now() at time zone 'utc') - k.date ) / 3600 = hours_time;
+    where extract(epoch from (now() at time zone 'utc') - date ) / 3600 <= hours_time;
     delete from karma_histories k
     where exists(select t.id from temp_karmas t where t.id = k.id);
     insert into karma_histories(target, amount)
@@ -131,16 +132,21 @@ create table karma_leaderboard
     constraint ranker_user foreign key (ranker) references users(id) on delete cascade
 );
 
+--to be run with pg cron
 create or replace function compute_leaderboard()
     returns void as
 $$
 begin
-    truncate table karma_leaderboard;
-    insert into karma_leaderboard (ranker, current_karma, position)
+    create temporary table temp_leaderboard (ranker integer, current_karma integer, position integer, gained integer) on commit drop;
+    insert into temp_leaderboard(ranker, current_karma, position, gained)
     select  target,
             total,
-            row_number() over (order by total desc)
-    from (select target, sum(amount) total from karma_histories group by target) a;
+            row_number() over (order by total desc),
+            (select total - coalesce((select k.current_karma from karma_leaderboard k where k.ranker = target),0) )
+    from (select target, sum(amount) total from karma_histories group by target) h;
+    truncate table karma_leaderboard;
+    insert into karma_leaderboard(ranker, current_karma, position, gained)
+    select * from temp_leaderboard;
 end;
 $$
 language plpgsql;
