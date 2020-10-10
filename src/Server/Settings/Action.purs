@@ -4,37 +4,21 @@ import Prelude
 import Server.Types
 import Shared.Types
 
-import Data.Maybe as DM
-import Data.String as DS
-import Server.Database.User as SDU
+import Server.AccountValidation as SA
 import Server.Ok (ok)
-import Server.Response as SR
 import Server.Settings.Database as SSD
-import Server.Token as ST
-
-blankEmailMessage :: String
-blankEmailMessage = "Email and confirmation are required"
-
-blankPasswordMessage :: String
-blankPasswordMessage = "Password and confirmation are required"
-
-emailAlreadyRegisteredMessage :: String
-emailAlreadyRegisteredMessage = "Email already registered"
 
 changeEmail :: PrimaryKey -> String -> ServerEffect Ok
-changeEmail loggedUserID email = do
-      when (DS.null email) $ SR.throwBadRequest blankEmailMessage
-      maybeUser <- SDU.userBy $ Email email
-      when (DM.isJust maybeUser) $ SR.throwBadRequest emailAlreadyRegisteredMessage
+changeEmail loggedUserID rawEmail = do
+      email <- SA.validateEmail rawEmail
+      SA.validateExistingEmail email
       SSD.changeEmail loggedUserID email
       pure ok
 
 changePassword :: PrimaryKey -> String -> ServerEffect Unit
 changePassword loggedUserID password = do
-      when (DS.null password) $ SR.throwBadRequest blankPasswordMessage
-      hash <- ST.hashPassword password
+      hash <- SA.validatePassword password
       SSD.changePassword loggedUserID hash
 
 terminateAccount :: PrimaryKey -> ServerEffect Unit
 terminateAccount loggedUserID = SSD.terminateAccount loggedUserID
-

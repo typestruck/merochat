@@ -66,6 +66,9 @@ spec :: Spec {
                               lastRecipientID :: Maybe Int
                         },
                         response :: MissedEvents
+                  },
+                  fortune :: GET "/fortune" {
+                        response :: String
                   }
             },
             profile :: Routes "/profile" {

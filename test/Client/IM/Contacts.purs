@@ -39,6 +39,9 @@ tests = do
             TU.test "resumeChat marks as read" do
                   TUA.equal 2 1
 
+            TU.test "displayHistory unchecks shouldFetchChatHistory" do
+                  TUA.equal 2 1
+
             TU.test "markRead sets recieved messages as read" do
                   let { contacts } = DT.fst <<< CICN.markRead webSocket $ model {
                         chatting = Just 1

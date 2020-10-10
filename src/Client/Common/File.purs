@@ -6,6 +6,7 @@ import Client.Common.DOM as CCD
 import Client.Common.Notification as CCN
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Foreign as F
 import Shared.Options.File (maxImageSize, maxImageSizeKB)
@@ -14,6 +15,7 @@ import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM (Element)
 import Web.Event.EventTarget as WET
+import Web.File.File (size)
 import Web.File.File as WFF
 import Web.File.FileList (FileList)
 import Web.File.FileList as WFL
@@ -48,8 +50,4 @@ readBase64 fileReader maybeFileList = do
                   WFL.item 0 fileList
       case maybeFile of
             Nothing -> pure unit
-            Just file ->
-                  if WFF.size file > DI.toNumber maxImageSize then
-                        CCN.alert $ "Max allowed size for images is " <> maxImageSizeKB
-                  else
-                        WFR.readAsDataURL (WFF.toBlob file) fileReader
+            Just file ->  WFR.readAsDataURL (WFF.toBlob file) fileReader

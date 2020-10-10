@@ -7,11 +7,6 @@ body {
     color: rgb(238, 238, 238)
 }
 
-/*
-* {
-    scrollbar-width: thin;
-} */
-
 .description-message, .profile-description, .profile-edition-description {
     width: 55em;
 }
@@ -32,17 +27,40 @@ body {
     display: grid;
     background: #262626;
     grid-template-rows: auto 1fr 140px;
+    position: relative;
+}
+
+.no-connection {
+    height: 50px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: #262626;
+    font-weight: bold;
+    color: red;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.flexed {
+    display: flex;
+}
+
+.no-connection.flexed~.profile-contact, .no-connection.flexed~.suggestion {
+    margin-top: 50px;
 }
 
 .send-box {
     display: flex;
     flex-flow: column;
-    padding: 10px 30px;
+    padding: 10px 20px;
+    position: relative;
 }
 
 .im {
     display: grid;
-    grid-template-columns: 25% 75%;
+    grid-template-columns: 30% 70%;
 }
 
 .svg-8 {
@@ -390,7 +408,7 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(55, 55, 55, 0.65);
-    z-index: 4;
+    z-index: 6;
 }
 
 .modal-placeholder {
@@ -398,7 +416,7 @@ body {
     flex-flow: row;
     padding: 30px 15px;
     padding-right: 0px;
-    z-index: 5;
+    z-index: 7;
     width: 72em;
     height: 90%;
     overflow-y: auto;
@@ -558,7 +576,6 @@ svg.toolbar-action {
 }
 
 .chat-input {
-    /* flex-grow: 1; */
     resize: none;
     width: 100%;
     font-size: 1.2em;
@@ -574,6 +591,15 @@ svg.toolbar-action {
     padding-left: 42px;
     border: 1px solid #b5b7b7;
     border-top: none;
+}
+
+.chat-input:focus {
+    border: 1px solid #b5b7b7;
+    border-top: none;
+}
+
+.side .chat-input {
+    padding-right: 102px;
 }
 
 .chat-input:placeholder-shown {
@@ -728,27 +754,6 @@ svg.toolbar-action {
     content: '\201D';
 }
 
-.image-form {
-    position: absolute;
-    display: flex;
-    border: 1px solid gray;
-    top: 2%;
-    z-index: 4;
-    flex-direction: column;
-    background-color: #262626;
-    height: 95%;
-}
-
-.image-form {
-    position: absolute;
-    display: flex;
-    border: 1px solid gray;
-    top: 2%;
-    z-index: 4;
-    flex-direction: column;
-    background-color: #262626;
-}
-
 .send-image {
     display: flex;
     flex-direction: row;
@@ -758,31 +763,22 @@ svg.toolbar-action {
     flex-grow: 1;
 }
 
-.emojis {
-    height: 300px;
-    position: relative;
-    margin-top: -300px;
-    overflow-y: scroll;
-    word-wrap: anywhere
-}
-
 .contact-options {
     display: flex;
     flex-direction: column;
 }
 
-.emojis span {
-    font-size: 2em;
-    font-family: emoji !important;
+input:not(type=button):focus {
+    border: 1px solid #b5b7b7 !important
 }
 
 .exclamation, .error-message {
-    color: hsl(359, 85%, 62%);
+    color: red;
 }
 
 .exclamation {
     font-size: 1.3em;
-    border: 2px solid hsl(359, 85%, 62%);
+    border: 2px solid red;
     border-radius: 100%;
     padding: 2px 10px;
     line-height: 1;
@@ -842,22 +838,25 @@ svg.toolbar-action {
     margin-bottom: 15px;
 }
 
-.send-button {
+.attachment, .send-button {
     position: absolute;
     top: 10px;
     stroke-width: 3;
-    right: 13px;
     z-index: 5;
     background: #2d2d2d;
 }
 
-.emoji-access {
-    position: absolute;
-    top: 13px;
-    stroke-width: 5;
-    left: 5px;
-    z-index: 2;
-    background: #2d2d2d;
+.attachment {
+    right: 13px;
+    top: 20px;
+}
+
+.side .attachment {
+    right: 70px;
+}
+
+.send-button {
+    right: 13px;
 }
 
 .chatting-contact {
@@ -949,7 +948,9 @@ svg.toolbar-action {
     margin-top: 20px;
     display: block;
     border-radius: 5px;
+    color: inherit;
     border: none;
+    cursor: pointer;
     padding: 17px;
     background: #1b3a28;
 }
@@ -961,4 +962,311 @@ select {
     border: 1px solid #b5b7b7;
     border-radius: 3px;
     margin: 5px 0;
+}
+
+.center-flex {
+    align-self: center;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.loading {
+    background: url('/client/media/loading.png');
+    animation: rotating 2s linear infinite;
+    width: 46px;
+    height: 44px;
+    margin: 15px 0;
+}
+
+@keyframes rotating {
+    20% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.message-history-wrapper .loading {
+    align-self: center;
+    margin: 30px 0;
+}
+
+.confirmation {
+    z-index: 20;
+    position: absolute;
+    padding: 30px 40px;
+    background: #262626;
+    width: 500px;
+    height: 120px;
+    margin-left: -250px;
+    justify-content: center;
+    margin-top: -190px;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+}
+
+.cancel {
+    border: none;
+    background: transparent;
+    margin: 0 10px;
+    cursor: pointer;
+    color: inherit;
+}
+
+.danger {
+    background: hsl(359, 82%, 47.6%) !important;
+}
+
+.emoji-wrapper {
+    background-color: #2d2d2d;
+    position: absolute;
+    border-radius: 3px;
+    color: inherit;
+    bottom: 165px;
+    margin-right: 20px;
+    border-radius: 3px;
+    z-index: 5;
+    word-wrap: anywhere
+}
+
+.emojis {
+    position: relative;
+    padding: 20px;
+    padding-top: 5px;
+    max-height: 300px;
+    overflow-y: scroll;
+    word-wrap: anywhere
+}
+
+.emoji-wrapper::before {
+    content: "\00a0";
+    display: block;
+    height: 31px;
+    position: absolute;
+    width: 30px;
+    background-color: #2d2d2d;
+    bottom: -13px;
+    left: 15px;
+    margin-left: -15px;
+    transform: rotate(88deg) skew(37deg);
+}
+
+.emojis .duller {
+    margin: 5px;
+    margin-top: 20px;
+}
+
+.emojis span {
+    font-size: 1.8em;
+    cursor: pointer;
+    display: inline-block;
+    margin: 5px;
+    font-family: emoji !important;
+}
+
+.modal-form {
+    position: absolute;
+    background: #2d2d2d;
+    padding: 20px;
+    display: flex;
+    color: inherit;
+    flex-direction: column;
+    z-index: 5;
+    border-radius: 3px;
+}
+
+.link-form {
+    height: 270px;
+    bottom: 160px;
+    margin-left: 55px;
+    padding: 30px 40px;
+}
+
+.image-form {
+    padding: 60px;
+    max-height: 900px;
+    left: 20px;
+    right: 20px;
+    bottom: 165px;
+}
+
+.image-form-image {
+    align-self: center;
+    margin-bottom: 20px;
+}
+
+.image-form-image img {
+    max-height: 700px;
+    max-width: 90%;
+}
+
+.image-form::before {
+    content: "\00a0";
+    display: block;
+    height: 31px;
+    position: absolute;
+    width: 30px;
+    background-color: #2d2d2d;
+    bottom: -13px;
+    right: 15px;
+    margin-right: -15px;
+    transform: rotate(93deg) skew(-37deg);
+}
+
+.link-form::before {
+    content: "\00a0";
+    display: block;
+    height: 31px;
+    position: absolute;
+    width: 30px;
+    background-color: #2d2d2d;
+    bottom: -15px;
+    left: 50%;
+    margin-left: -15px;
+    transform: rotate( 139deg);
+}
+
+.modal-form label {
+    margin-bottom: 5px;
+}
+
+.modal-form label:nth-of-type(2) {
+    margin-top: 20px;
+}
+
+.modal-form input[type=text] {
+    height: 50px;
+    padding: 10px;
+    background: #262626;
+    border: none
+}
+
+.chat {
+    display: flex;
+}
+
+.chat-combo {
+    flex-grow: 1;
+}
+
+.image-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.send-image-button {
+    fill: rgb(238, 238, 238);
+    stroke: rgb(238, 238, 238);
+}
+
+.emoji-access {
+    position: absolute;
+    top: 13px;
+    stroke-width: 5;
+    left: 5px;
+    z-index: 2;
+    background: #2d2d2d;
+}
+
+.send-enter {
+    display: flex;
+    flex-grow: 1;
+    justify-content: flex-end;
+    padding-right: 13px;
+    align-items: center;
+}
+
+.upload-div {
+    margin-bottom: 20px;
+}
+
+.modal-input {
+    border: #373737 1px solid;
+    border-radius: 3px;
+    height: 40px;
+    padding: 5px;
+    width: 500px;
+    background: #373737;
+}
+
+.fortune {
+    background: #262626;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: -53px;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.fortune::before {
+    content: "\00a0";
+    display: block;
+    height: 17px;
+    position: absolute;
+    width: 26px;
+    background-color: #262626;
+    bottom: -6px;
+    left: 50%;
+    margin-left: -15px;
+    transform: rotate( 135deg);
+
+}
+
+.fortune svg {
+    width: 13px;
+    height: 13px;
+    align-self: center;
+}
+
+.relative {
+    position: relative;
+}
+
+.fortune-deets {
+    font-style: italic;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.retry {
+    color:red;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin:10px 0;
+}
+
+.left-box .retry.invisible {
+    display: none;
+}
+
+.retry-button {
+    color:rgb(238, 238, 238);
+    cursor: pointer;
+    padding: 5px 15px;
+}
+
+.retry-button svg {
+    vertical-align: middle;
+    margin-left:5px
+}
+
+.retry-modal .retry:not(.invisible) ~ .loading  {
+    display: none;
 }

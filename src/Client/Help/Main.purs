@@ -17,12 +17,12 @@ import Web.HTML.Event.HashChangeEvent.EventTypes (hashchange)
 main :: Effect Unit
 main = do
       hash <- CCL.hash
-      faqLink <- CCD.querySelector "#faq-link"
-      termsLink <- CCD.querySelector "#terms-link"
-      privacyLink <- CCD.querySelector "#privacy-link"
-      faq <- CCD.querySelector "#faq"
-      terms <- CCD.querySelector "#terms"
-      privacy <- CCD.querySelector "#privacy"
+      faqLink <- CCD.unsafeQuerySelector "#faq-link"
+      termsLink <- CCD.unsafeQuerySelector "#terms-link"
+      privacyLink <- CCD.unsafeQuerySelector "#privacy-link"
+      faq <- CCD.unsafeQuerySelector "#faq"
+      terms <- CCD.unsafeQuerySelector "#terms"
+      privacy <- CCD.unsafeQuerySelector "#privacy"
 
       let   unselectAll = do
                   DT.traverse_ (WDE.setAttribute "class" "entry") [faqLink, termsLink, privacyLink]

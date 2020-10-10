@@ -51,7 +51,7 @@ faq =
             HE.p_ "Think of it as a score of how much other users trust you. You gain Karma points by starting good conversations.",
             HE.p_ "As a moderation tool, some features (like sending pictures) might be locked until you have enough Karma.",
             HE.h2 [HA.id "gibberishprofile"] "What is that gibberish on my profile?",
-            HE.p_ "The app automatically fills in some fields (like name, headline for bio) for a new profile. Sometimes it is funny, sometimes just totally incoherent. You may leave as it is (or generate some new gibberish!) or edit it to your liking.",
+            HE.p_ "The app automatically fills in some fields (like name, headline for bio) for a new profile. Sometimes it is funny, sometimes just totally incoherent. You may leave as it is (also generate some new gibberish!) or edit it to your liking.",
             HE.h2 [HA.id "profileprivate"] "Is my profile private?",
             HE.p_ "Your profile can only be viewed by other users inside of the app. As for your personal data, you decide how much (or little) you want to share.",
             HE.h2 [HA.id "groupchats"] "Are group chats available?",
@@ -61,6 +61,12 @@ faq =
             HE.p_ "Chat experiments are optional to join and users are randomly invited for them.",
             HE.h2 [HA.id "melan"] "What does Melan in MelanChat stand for?",
             HE.p_ "Until someone finds a backronym, it is short for Melancia (watermelon in Portuguese). Not surprisingly, the app is full of them.",
+            HE.h2_ "Recommend me some music",
+            HE.p_ [
+                  HE.text "Listen to ",
+                  HE.a (HA.href "https://open.spotify.com/artist/2JmW0VFQ6nJ8eMc3HKPeiF") "Metá Metá",
+                  HE.text "."
+            ],
             HE.h2 [HA.id "canihelp"] "Wow, I love it. How can I help?",
             HE.p_ [
                   HE.text "Right?! If you can spare some, consider ",
@@ -70,12 +76,6 @@ faq =
                   HE.text " is also open source, in case this is your thing."
             ],
             HE.p_ "That being said, just letting others know about MelanChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated.",
-            HE.h2_ "Recommend me some music",
-            HE.p_ [
-                  HE.text "Listen to ",
-                  HE.a (HA.href "https://open.spotify.com/artist/2JmW0VFQ6nJ8eMc3HKPeiF") "Metá Metá",
-                  HE.text "."
-            ],
             HE.div (HA.class' "hide-internal") [
                   HE.h2 [HA.id "other"] "I still have questions/doubts/something else to say",
                   HE.p_ "That's easy, send an email to contact@melan.chat"

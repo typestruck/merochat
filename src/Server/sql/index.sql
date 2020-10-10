@@ -8,7 +8,7 @@ create table users
 (
     id integer generated always as identity primary key,
     name text not null,
-    password char(128) not null,
+    password text not null,
     joined timestamp default (now() at time zone 'utc'),
     email text not null,
     birthday timestamp,

@@ -20,19 +20,20 @@ import Payload.Server.Response as PSR
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.Fortune.Handler as SFTH
+import Server.Help.Handler as SHH
 import Server.IM.Handler as SIH
 import Server.InternalError.Handler as SIEH
+import Server.InternalHelp.Handler as SIHH
 import Server.Landing.Handler as SLH
+import Server.Leaderboard.Handler as SLBH
 import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH
 import Server.NotFound.Handler as SNH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
-import Server.InternalHelp.Handler as SIHH
-import Server.Leaderboard.Handler as SLBH
 import Server.Settings.Handler as SSH
-import Server.Help.Handler as SHH
 import Shared.Routes (routes)
 
 handlers :: ServerReader -> _
@@ -46,7 +47,8 @@ handlers reading = {
             history: runJSON reading SIH.history,
             suggestions: runJSON reading SIH.suggestions,
             block: runJSON reading SIH.block,
-            missedEvents: runJSON reading SIH.missedEvents
+            missedEvents: runJSON reading SIH.missedEvents,
+            fortune: runJSON reading SFTH.fortune
       },
       profile: {
             get: runJSON reading SPH.profile,

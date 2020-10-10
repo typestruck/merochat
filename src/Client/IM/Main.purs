@@ -11,7 +11,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Suggestion as CIS
@@ -20,7 +20,7 @@ import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
 import Client.IM.WebSocket as CIW
 import Control.Monad.Except as CME
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Either (fromRight) as DE
@@ -70,14 +70,14 @@ main = do
 
       setUpWebSocket webSocketRef channel
       --for drag and drop
-      CCF.setUpBase64Reader fileReader (DA.singleton <<< ToggleImageForm <<< Just) channel
+      CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
       --display settings/profile page
       FE.send [FE.onClick' [ShowUserContextMenu]] channel
       --image upload
       input <- CIC.getFileInput
-      CCF.setUpFileChange (DA.singleton <<< ToggleImageForm <<< Just) input channel
+      CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
 
       windowsFocus channel
 
@@ -86,8 +86,7 @@ update { webSocketRef, fileReader} model =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
-            ToggleLinkForm -> CIC.toggleLinkForm model
-            ToggleEmojisVisible -> CIC.toggleEmojisVisible model
+            ToggleChatModal modal -> CIC.toggleModal modal model
             DropFile event -> CIC.catchFile fileReader event model
             EnterBeforeSendMessage event -> CIC.enterBeforeSendMessage event model
             ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
@@ -95,10 +94,7 @@ update { webSocketRef, fileReader} model =
             SendMessage date -> CIC.sendMessage webSocket date model
             SetMessageContent cursor content -> CIC.setMessage cursor content model
             Apply markup -> CIC.applyMarkup markup model
-            Preview -> CIC.preview model
-            SelectImage -> CIC.selectImage model
-            ExitPreview -> CIC.exitPreview model
-            ToggleImageForm maybeBase64 -> CIC.toggleImageForm maybeBase64 model
+            SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             SetEmoji event -> CIC.setEmoji event model
             --contacts
@@ -106,12 +102,12 @@ update { webSocketRef, fileReader} model =
             MarkAsRead -> CICN.markRead webSocket model
             UpdateReadCount -> CICN.markRead webSocket model
             CheckFetchContacts -> CICN.checkFetchContacts model
-            FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
+            SpecialRequest (FetchContacts shouldFetch) -> CICN.fetchContacts shouldFetch model
             DisplayContacts contacts -> CICN.displayContacts contacts model
             ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
-            FetchHistory shouldFetch -> CIH.fetchHistory shouldFetch model
+            SpecialRequest (FetchHistory shouldFetch) -> CIH.fetchHistory shouldFetch model
             DisplayHistory history -> CIH.displayHistory history model
             --suggestion
             ToggleContactProfile -> CIS.toggleContactProfile model
@@ -120,10 +116,9 @@ update { webSocketRef, fileReader} model =
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
-            ConfirmLogout -> CIU.confirmLogout model
-            Logout confirmed -> CIU.logout confirmed model
+            Logout -> CIU.logout model
             ShowUserContextMenu event -> CIU.showUserContextMenu event model
-            ToggleModal toggle -> CIU.toggleModal toggle model
+            SpecialRequest (ToggleModal toggle) -> CIU.toggleModal toggle model
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
             --main
@@ -131,10 +126,30 @@ update { webSocketRef, fileReader} model =
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
-            ToggleOnline -> toggleOnline model
-            CheckMissedMessages -> checkMissedMessages model
+            ToggleConnected isConnected -> toggleConnectedWebSocket isConnected model
+            SpecialRequest CheckMissedEvents -> checkMissedEvents model
             SetField setter -> F.noMessages $ setter model
+            ToggleFortune isVisible -> toggleFortune isVisible model
+            DisplayFortune sequence -> displayFortune sequence model
+            RequestFailed failure -> addFailure failure model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+addFailure :: RequestFailure -> IMModel -> NoMessages
+addFailure failure model@{ failedRequests } = F.noMessages $ model {
+      failedRequests = failure : failedRequests
+}
+
+toggleFortune :: Boolean -> IMModel -> MoreMessages
+toggleFortune isVisible model
+      | isVisible = model :> [Just <<< DisplayFortune <$> CCNT.silentResponse (request.im.fortune {})]
+      | otherwise = F.noMessages $ model {
+            fortune = Nothing
+      }
+
+displayFortune :: String -> IMModel -> NoMessages
+displayFortune sequence model = F.noMessages $ model {
+      fortune = Just sequence
+}
 
 receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
 receiveMessage webSocket isFocused wsPayload model@{
@@ -153,7 +168,7 @@ receiveMessage webSocket isFocused wsPayload model@{
             if DA.elem userID blockedUsers then
                   F.noMessages model
             else case processIncomingMessage payload model of
-                  Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.response (request.im.singleContact { query: { id: userID }})]
+                  Left userID -> model :> [CCNT.retryableResponse CheckMissedEvents DisplayContacts (request.im.singleContact { query: { id: userID }})]
                   Right updatedModel@{
                         chatting: Just index,
                         contacts
@@ -233,16 +248,16 @@ updateContactHistory contacts userID f = updateContact <$> contacts
                   }
                   | otherwise = contact
 
-checkMissedMessages :: IMModel -> MoreMessages
-checkMissedMessages model@{ contacts, user : { id: senderID } } =
+checkMissedEvents :: IMModel -> MoreMessages
+checkMissedEvents model@{ contacts, user : { id: senderID } } =
       model :> [do
             let lastSenderID = findLast (\h -> senderID == h.sender && h.status == Received) contacts
                 lastRecipientID = findLast ((senderID /= _) <<< _.sender) contacts
 
             if DM.isNothing lastSenderID && DM.isNothing lastRecipientID then
                   pure Nothing
-                  else
-                  Just <<< ResumeMissedEvents <$> CCNT.response (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
+             else
+                  CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
       ]
       where findLast f array = do
                   { history } <- DA.head array
@@ -258,11 +273,12 @@ setName name model@{ user } =
             }
       }
 
-toggleOnline :: IMModel -> NoMessages
-toggleOnline model@{ isOnline } =
-      F.noMessages $ model {
-            isOnline = not isOnline
-      }
+toggleConnectedWebSocket :: Boolean -> IMModel -> MoreMessages
+toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketConnected } =
+      model {
+            hasTriedToConnectYet = true,
+            isWebSocketConnected = isConnected
+      } :> if hasTriedToConnectYet && isConnected then [pure <<< Just $ SpecialRequest CheckMissedEvents] else []
 
 preventStop :: Event -> IMModel -> NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
@@ -282,7 +298,7 @@ setUpWebSocket webSocketRef channel = do
       timerID <- ER.new Nothing
       openListener <- WET.eventListener $ const (do
             CIW.sendPayload webSocket Connect
-            sendChannel ToggleOnline)
+            sendChannel $ ToggleConnected true)
       messageListener <- WET.eventListener $ \event -> do
             maybeID <- ER.read timerID
             DM.maybe (pure unit) (\id -> do
@@ -294,16 +310,14 @@ setUpWebSocket webSocketRef channel = do
             sendChannel $ ReceiveMessage message isFocused
 
       closeListener <- WET.eventListener $ \_ -> do
-            sendChannel ToggleOnline
+            sendChannel $ ToggleConnected false
             maybeID <- ER.read timerID
             when (DM.isNothing maybeID) do
-                  CCN.alert "Connection to the server lost. Retrying..."
                   milliseconds <- ERD.randomInt 2000 7000
                   id <- ET.setTimeout milliseconds <<< void $ do
                         newWebSocket <- CIW.createWebSocket
                         ER.write newWebSocket webSocketRef
                         setUpWebSocket webSocketRef channel
-                        sendChannel CheckMissedMessages
                   ER.write (Just id) timerID
 
       WET.addEventListener onMessage messageListener false webSocketTarget

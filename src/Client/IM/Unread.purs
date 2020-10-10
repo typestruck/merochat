@@ -19,6 +19,6 @@ setTabCount :: PrimaryKey -> Array Contact -> Effect Unit
 setTabCount id contacts = do
       let unreadChats = SIU.countUnreadChats id contacts
       CCD.setTitle $ SIU.title unreadChats
-      faviconElement <- CCD.querySelector "#favicon"
+      faviconElement <- CCD.unsafeQuerySelector "#favicon"
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
 

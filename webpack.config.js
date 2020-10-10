@@ -16,7 +16,8 @@ module.exports = {
             leaderboard: './loader/leaderboard.bundle.js',
             help: './loader/help.bundle.js',
             internalHelp: './loader/internalHelp.bundle.js',
-            settings: './loader/settings.bundle.js'
+            settings: './loader/settings.bundle.js',
+            recover: './loader/recover.bundle.js'
       },
 
       output: {

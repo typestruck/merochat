@@ -31,7 +31,6 @@ import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue)
-import Flame (Key)
 import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
@@ -196,26 +195,37 @@ type IM = (
       link :: Maybe String,
       suggestionsPage :: Int,
       linkText :: Maybe String,
-      isOnline :: Boolean,
+      isWebSocketConnected :: Boolean,
       shouldSendMessage :: Boolean,
+      erroredFields :: Array String,
+      fortune :: Maybe String,
+      failedRequests :: Array RequestFailure,
       --the current logged in user
       user :: IMUser,
       --indexes
       suggesting :: Maybe Int,
       chatting :: Maybe Int,
       --visibility switches
+      hasTriedToConnectYet :: Boolean,
       fullContactProfileVisible :: Boolean,
       userContextMenuVisible :: Boolean,
-      toggleModal :: ShowModal,
-      isPreviewing :: Boolean,
-      emojisVisible :: Boolean,
-      linkFormVisible :: Boolean
+      toggleModal :: ShowUserMenuModal,
+      toggleChatModal :: ShowChatModal
 )
 
 type IMModel = Record IM
 
-data ShowModal =
-      Hidden |
+data ShowChatModal =
+      HideChatModal |
+      ShowSelectedImage |
+      ShowPreview |
+      ShowEmojis |
+      ShowLinkForm
+
+data ShowUserMenuModal =
+      HideUserMenuModal |
+      ConfirmLogout |
+      ConfirmTermination |
       ShowProfile |
       ShowSettings |
       ShowLeaderboard |
@@ -245,16 +255,26 @@ data Markup =
       OrderedList |
       UnorderedList
 
+type RequestFailure = {
+      request :: RetryableRequest,
+      errorMessage :: String
+}
+
+data RetryableRequest =
+      FetchHistory Boolean |
+      FetchContacts Boolean |
+      CheckMissedEvents |
+      ToggleModal ShowUserMenuModal
+
 data IMMessage =
       --history
       CheckFetchHistory |
-      FetchHistory Boolean |
       DisplayHistory (Array HistoryMessage)  |
       --user menu
-      ConfirmLogout |
       ShowUserContextMenu Event |
-      Logout Boolean |
-      ToggleModal ShowModal |
+      Logout |
+
+      ToggleChatModal ShowChatModal |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
       --contact
@@ -262,7 +282,6 @@ data IMMessage =
       ResumeChat PrimaryKey |
       UpdateReadCount |
       CheckFetchContacts |
-      FetchContacts Boolean |
       DisplayContacts (Array Contact) |
       ResumeMissedEvents MissedEvents |
       --suggestion
@@ -271,6 +290,7 @@ data IMMessage =
       DisplayMoreSuggestions (Array Suggestion) |
       BlockUser PrimaryKey |
       --chat
+      SetSelectedImage (Maybe String) |
       ToggleContactProfile |
       DropFile Event |
       EnterBeforeSendMessage Event |
@@ -278,24 +298,21 @@ data IMMessage =
       BeforeSendMessage String |
       SendMessage DateTimeWrapper |
       SetMessageContent (Maybe Int) String |
-      SelectImage |
-      ToggleImageForm (Maybe String) |
-      ToggleLinkForm |
       Apply Markup |
-      Preview |
-      ExitPreview |
       ToggleMessageEnter |
-      ToggleEmojisVisible |
       SetEmoji Event |
       InsertLink |
       --main
+      SpecialRequest RetryableRequest |
       ReceiveMessage WebSocketPayloadClient Boolean |
       AlertUnreadChats |
       PreventStop Event |
       SetNameFromProfile String |
-      ToggleOnline |
-      CheckMissedMessages |
-      SetField (IMModel -> IMModel)
+      ToggleConnected Boolean |
+      SetField (IMModel -> IMModel) |
+      ToggleFortune Boolean |
+      DisplayFortune String |
+      RequestFailed RequestFailure
 
 data WebSocketPayloadServer =
       Connect |
@@ -358,6 +375,7 @@ type PM = (
       tagsInputed :: Maybe String,
       tagsInputedList :: Maybe (Array String),
       descriptionInputed :: Maybe String,
+      generating :: Maybe Generate,
       countries :: Array (Tuple PrimaryKey String),
       languages :: Array (Tuple PrimaryKey String)
 )
@@ -371,25 +389,25 @@ data ProfileMessage =
       SetPField (ProfileModel -> ProfileModel) |
       SelectAvatar |
       SetAvatar String |
-      SetName |
-      SetHeadline |
-      SetDescription |
+      SetGenerate Generate |
       SaveProfile
 
-type SettingsModel = {
+type SM = (
       email :: String,
       emailConfirmation :: String,
       password :: String,
-      passwordConfirmation :: String
-}
+      erroredFields :: Array String,
+      passwordConfirmation :: String,
+      confirmTermination :: Boolean
+)
+
+type SettingsModel = Record SM
 
 data SettingsMessage =
-      SetEmail String |
-      SetEmailConfirmation String |
-      SetPassword String |
-      SetPasswordConfirmation String |
+      SetSField (SettingsModel -> SettingsModel) |
       ChangeEmail |
       ChangePassword |
+      ToggleTerminateAccount |
       TerminateAccount --very bad
 
 data ToggleBoard =
@@ -406,6 +424,8 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
+derive instance genericRetryableRequest :: Generic RetryableRequest _
+derive instance genericShowChatModal :: Generic ShowChatModal _
 derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
 derive instance genericToggleBoard :: Generic ToggleBoard _
 derive instance genericMessageStatus :: Generic MessageStatus _
@@ -418,7 +438,7 @@ derive instance genericMDate :: Generic DateWrapper _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericShowModal :: Generic ShowModal _
+derive instance genericShowModal :: Generic ShowUserMenuModal _
 
 derive instance newtypeMessageIDTemporaryWrapper :: Newtype MessageIDTemporaryWrapper _
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
@@ -429,14 +449,16 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqRetryableRequest :: Eq RetryableRequest
 derive instance eqGenerate :: Eq Generate
+derive instance eqShowChatModal :: Eq ShowChatModal
 derive instance eqDisplayHelpSection :: Eq DisplayHelpSection
 derive instance eqMDateTime :: Eq DateTimeWrapper
 derive instance eqMDate :: Eq DateWrapper
 derive instance eqToggleBoard :: Eq ToggleBoard
 derive instance eqGender :: Eq Gender
 derive instance eqMessageStatus :: Eq MessageStatus
-derive instance eqShowModal :: Eq ShowModal
+derive instance eqShowModal :: Eq ShowUserMenuModal
 
 instance fromSQLRowMessageIDTemporaryWrapper :: FromSQLRow MessageIDTemporaryWrapper where
       fromSQLRow =
@@ -717,7 +739,7 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
-instance showShowModal :: Show ShowModal where
+instance showShowModal :: Show ShowUserMenuModal where
       show = DGRS.genericShow
 
 instance toSQLValueGender :: ToSQLValue Gender where
@@ -728,6 +750,12 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonGenerate :: EncodeJson Generate where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonDisplayHelpSection :: EncodeJson DisplayHelpSection where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonToggleBoard :: EncodeJson ToggleBoard where
@@ -744,9 +772,15 @@ instance encodeJsonWebSocketPayloadServer :: EncodeJson WebSocketPayloadServer w
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonMessageContent :: EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonShowModal :: EncodeJson ShowModal where
+instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonGenerate :: DecodeJson Generate where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonDisplayHelpSection :: DecodeJson DisplayHelpSection where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonToggleBoard :: DecodeJson ToggleBoard where
@@ -763,7 +797,7 @@ instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer w
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageContent :: DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonShowModal :: DecodeJson ShowModal where
+instance decodeJsonShowModal :: DecodeJson ShowUserMenuModal where
       decodeJson = DADGR.genericDecodeJson
 
 instance readGender :: Read Gender where

@@ -5,19 +5,14 @@ import Shared.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.Common.Network (request)
-import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
-import Client.IM.Contacts as CICN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
-import Client.IM.Suggestion as CISG
 import Client.IM.WebSocket as CIW
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.DateTime as DT
-import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -25,6 +20,8 @@ import Data.Newtype as DN
 import Data.Nullable (null)
 import Data.String as DS
 import Data.String.CodeUnits as DSC
+import Data.Symbol (SProxy(..))
+import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
@@ -34,6 +31,7 @@ import Effect.Now as EN
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
+import Shared.Options.File (maxImageSize)
 import Shared.IM.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -51,7 +49,7 @@ import Web.UIEvent.KeyboardEvent as WUK
 
 --REFACTOR: make selectors inside updates type safe
 getFileInput :: Effect Element
-getFileInput = CCD.querySelector "#image-file-input"
+getFileInput = CCD.unsafeQuerySelector "#image-file-input"
 
 --the keydown event fires before input
 enterBeforeSendMessage :: Event -> IMModel -> NoMessages
@@ -111,12 +109,13 @@ sendMessage webSocket date = case _ of
             chatting: Just chatting,
             temporaryID,
             contacts,
-            message,
             selectedImage,
+            message,
             imageCaption
       } ->
             let  recipient@{ user: { id: recipientID }, history } = contacts !@ chatting
                  newTemporaryID = temporaryID + 1
+
                  updatedChatting = recipient {
                         history = DA.snoc history $  {
                               id: newTemporaryID,
@@ -191,7 +190,7 @@ makeTurn { chatStarter, chatAge, history } sender =
 applyMarkup :: Markup -> IMModel -> MoreMessages
 applyMarkup markup model@{ message } = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
       where apply markup value = do
-                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
                   let   Tuple before after = case markup of
                               Bold -> Tuple "**" "**"
                               Italic -> Tuple "*" "*"
@@ -208,18 +207,6 @@ applyMarkup markup model@{ message } = model :> [liftEffect (Just <$> apply mark
                         newValue = beforeSelection <> before <> selected <> after <> afterSelection
                   pure $ SetMessageContent (Just $ end + beforeSize) newValue
 
-preview :: IMModel -> NoMessages
-preview model =
-      F.noMessages $ model {
-            isPreviewing = true
-      }
-
-exitPreview :: IMModel -> NextMessage
-exitPreview model =
-      F.noMessages $ model {
-            isPreviewing = false
-      }
-
 setMessage :: Maybe Int -> String -> IMModel -> NextMessage
 setMessage cursor markdown model =
       CIF.nothingNext (model {
@@ -227,7 +214,7 @@ setMessage cursor markdown model =
       }) <<< liftEffect $
             case cursor of
                   Just position -> do
-                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setSelectionEnd position textarea
                   Nothing -> pure unit
@@ -242,48 +229,57 @@ catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
       CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
       CCD.preventStop event
 
-toggleImageForm :: Maybe String -> IMModel -> NoMessages
-toggleImageForm base64 model =
-      F.noMessages $ model {
-            selectedImage = base64
-      }
-
 toggleMessageEnter :: IMModel -> NoMessages
 toggleMessageEnter model@{ messageEnter } =
       F.noMessages $ model {
             messageEnter = not messageEnter
       }
 
-toggleEmojisVisible :: IMModel -> NoMessages
-toggleEmojisVisible model@{ emojisVisible } =
+setSelectedImage :: Maybe String -> IMModel -> NoMessages
+setSelectedImage maybeBase64 model =
       F.noMessages $ model {
-            emojisVisible = not emojisVisible
+            toggleChatModal = ShowSelectedImage,
+            selectedImage = maybeBase64,
+            erroredFields =
+                  if isTooLarge $ DM.fromMaybe "" maybeBase64 then
+                        [TDS.reflectSymbol (SProxy :: SProxy "selectedImage")]
+                   else
+                        []
       }
+      where isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
-toggleLinkForm :: IMModel -> NoMessages
-toggleLinkForm model@{ linkFormVisible } =
-      F.noMessages $ model {
-            linkFormVisible = not linkFormVisible,
-            link = Nothing,
-            linkText = Nothing
-      }
+toggleModal :: ShowChatModal -> IMModel -> MoreMessages
+toggleModal toggle model = model {
+      toggleChatModal = toggle,
+      link = Nothing,
+      selectedImage = Nothing,
+      linkText = Nothing
+} :> if toggle == ShowSelectedImage then [pickImage] else []
+      where pickImage = liftEffect do
+                  input <- getFileInput
+                  CCF.triggerFileSelect input
+                  pure Nothing
 
 setEmoji :: Event -> IMModel -> NextMessage
 setEmoji event model@{ message } = model {
-      emojisVisible = false
+      toggleChatModal = HideChatModal
 } :> [liftEffect do
       emoji <- CCD.innerTextFromTarget event
       setAtCursor message emoji
 ]
 
-insertLink :: IMModel -> NextMessage
+insertLink :: IMModel -> MoreMessages
 insertLink model@{ message, linkText, link } =
       case link of
-            Nothing -> CIF.nothingNext model <<< liftEffect $ CCN.alert "Link is required"
+            Nothing -> F.noMessages $ model {
+                  erroredFields = [ TDS.reflectSymbol (SProxy :: SProxy "link") ]
+            }
             Just url ->
                   let { protocol } = NU.parse $ DS.trim url
-                  in model :> [
-                        CIF.next ToggleLinkForm,
+                  in model {
+                        erroredFields = []
+                  } :> [
+                        CIF.next $ ToggleChatModal HideChatModal,
                         insert $ if protocol == null then "http://" <> url else url
                   ]
       where markdown url = "[" <> DM.fromMaybe url linkText <> "](" <> url <> ")"
@@ -291,7 +287,7 @@ insertLink model@{ message, linkText, link } =
 
 setAtCursor :: Maybe String -> String -> Effect (Maybe IMMessage)
 setAtCursor message text = do
-      textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.querySelector "#chat-input"
+      textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
       end <- WHHTA.selectionEnd textarea
       let { before, after } = DS.splitAt end $ DM.fromMaybe "" message
       CIF.next <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after

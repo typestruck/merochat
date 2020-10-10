@@ -108,3 +108,41 @@ select option {
     background-color: #262626;
     color:rgb(238, 238, 238)
 }
+
+.success-message {
+    display: none;
+}
+
+.success .success-message {
+    display: block;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.request-error-message {
+    visibility: visible;
+    margin-top:5px;
+    display: inline-block;
+    color: red;
+}
+
+.input {
+    margin-bottom: 20px;
+}
+
+.input.error  {
+    border-color: red;
+}
+
+.input.error input {
+    color: red
+}
+
+.error-message {
+    color: red;
+    visibility: hidden;
+}
+
+.input.error .error-message {
+    visibility: visible;
+}

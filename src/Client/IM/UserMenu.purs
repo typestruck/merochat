@@ -20,33 +20,35 @@ import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
 
-logout :: Boolean -> IMModel -> MoreMessages
-logout confirmed model = CIF.nothingNext model $ when confirmed out
+logout :: IMModel -> MoreMessages
+logout model = CIF.nothingNext model out
       where out = do
                   void $ request.logout { body: {} }
                   liftEffect $ CCL.setLocation $ routes.login.get {}
 
-confirmLogout :: IMModel -> NoMessages
-confirmLogout = (_ :> [Just <<< Logout <$> liftEffect (CCD.confirm "Really log out?")])
-
 --PERFORMANCE: load bundles only once
-toggleModal :: ShowModal -> IMModel -> NextMessage
-toggleModal psToggle model =
-      case psToggle of
+toggleModal :: ShowUserMenuModal -> IMModel -> NextMessage
+toggleModal mToggle model =
+      case mToggle of
             ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"
             ShowSettings -> showTab request.settings.get ShowSettings "settings.bundle.js" "#settings-edition-root"
             ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.bundle.js" "#karma-leaderboard-root"
             ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.bundle.js" "#help-root"
-            _ -> CIF.justNext (model { toggleModal = Hidden }) $ SetModalContents Nothing "#profile-edition-root" "Loading..."
+            modal -> F.noMessages $ model {
+                  toggleModal = modal
+            }
       where showTab f toggle file root =
-                  model { toggleModal = toggle } :> [
-                        Just <<< SetModalContents (Just file) root <$> CCN.response (f {})
+                  model {
+                        toggleModal = toggle,
+                        failedRequests = []
+                  } :> [
+                        CCN.retryableResponse (ToggleModal toggle) (SetModalContents (Just file) root) (f {})
                   ]
 
 setModalContents :: Maybe String -> String -> String -> IMModel -> NextMessage
 setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
       where loadModal root html file = liftEffect do
-                  element <- CCD.querySelector root
+                  element <- CCD.unsafeQuerySelector root
                   CCD.setInnerHTML element html
                   --scripts don't load when inserted via innerHTML
                   case file of

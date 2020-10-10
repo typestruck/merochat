@@ -8,6 +8,7 @@ import Flame.HTML.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
+import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Routes (routes)
 
 template :: Effect String
@@ -43,12 +44,19 @@ template = do
                                     HE.text "people"
                               ],
                               HE.div (HA.class' "form-up") [
-                                    HE.label_ "Email",
-                                    HE.input [HA.type' "text", HA.autocomplete false, HA.id "email", HA.autofocus true],
-                                    HE.label_ "Password",
-                                    HE.input [HA.type' "password", HA.autocomplete false, HA.id "password"] ,
+                                    HE.div [HA.id "email-input", HA.class' "input"] [
+                                          HE.label_ "Email",
+                                          HE.input [HA.type' "text", HA.id "email", HA.maxlength emailMaxCharacters],
+                                          HE.span (HA.class' "error-message") "Please enter a valid email"
+                                    ],
+                                    HE.div [HA.id "password-input", HA.class' "input"] [
+                                          HE.label_ "Password",
+                                          HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete false, HA.id "password"],
+                                          HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
+                                    ],
                                     HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
-                                    HE.input [HA.type' "button", HA.id "register", HA.value "Create account"]
+                                    HE.input [HA.type' "button", HA.value "Create account"],
+                                    HE.span' [HA.class' "request-error-message error-message"]
                               ]
                         ],
                         HE.h2_ [

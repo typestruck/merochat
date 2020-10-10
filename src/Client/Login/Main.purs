@@ -2,11 +2,12 @@ module Client.Login.Main where
 
 import Prelude
 
+import Client.Common.Account as CCA
 import Client.Common.DOM as CCD
-import Client.Common.External as CCE
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
+import Client.Common.Types (RequestStatus(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
@@ -16,20 +17,19 @@ import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.UIEvent.KeyboardEvent as WUK
-import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
-import Web.UIEvent.MouseEvent.EventTypes (click)
 
 login :: Effect Unit
 login = do
-      maybeRegisterLogin  <- CCE.validateEmailPassword
+      maybeRegisterLogin <- CCA.validateEmailPassword
       case maybeRegisterLogin of
             Nothing -> pure unit
-            Just registerLogin -> EA.launchAff_ do
-                  void <<< CCNT.response $ request.login.post { body: registerLogin }
-                  liftEffect do
-                        -- the location to go after login is either the query parameter next or /im
-                        redirect <- CCL.queryParameter "next"
-                        CCL.setLocation $ DM.fromMaybe (routes.im.get {}) redirect
+            Just registerLogin ->
+                  EA.launchAff_ do
+                        status <- CCA.formRequest $ request.login.post { body: registerLogin }
+                        liftEffect $ when (status == Success) do
+                              -- the location to go after login is either the query parameter next or /im
+                              redirect <- CCL.queryParameter "next"
+                              CCL.setLocation $ DM.fromMaybe (routes.im.get {}) redirect
 
 loginOnEnter :: Event -> Effect Unit
 loginOnEnter event = do
@@ -37,8 +37,4 @@ loginOnEnter event = do
       when (pressed == "Enter") login
 
 main :: Effect Unit
-main = do
-      loginButton <- CCD.querySelector "#login"
-      signUpDiv <- CCD.querySelector ".form-up"
-      CCD.addEventListener signUpDiv keyup loginOnEnter
-      CCD.addEventListener loginButton click (const login)
+main = CCA.registerEvents login
