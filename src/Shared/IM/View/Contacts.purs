@@ -3,7 +3,7 @@ module Shared.IM.View.Contacts where
 import Prelude
 import Shared.Types
 
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
@@ -15,13 +15,16 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.Avatar as SA
 import Shared.DateTime as SD
+import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
---the ordering of the contact list is only done for the dom nodes
--- model.contacts is left unchanged
 contactList :: Boolean -> IMModel -> Html IMMessage
-contactList displayLastMessageDates { chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list"] <<< DA.mapWithIndex contactEntry $ DA.sortBy compareDateUnread contacts
-      where getDate history = do
+contactList displayLastMessageDates { failedRequests, chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list"] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
+      where --the ordering of the contact list is only done for the dom nodes
+            -- model.contacts is left unchanged
+            allContacts = DA.mapWithIndex contactEntry $ DA.sortBy compareDateUnread contacts
+
+            getDate history = do
                   { date: DateTimeWrapper md } <- DA.last history
                   pure md
             compareDateUnread contact anotherContact = compare (getDate anotherContact.history) (getDate contact.history)
@@ -57,3 +60,6 @@ contactList displayLastMessageDates { chatting, contacts, user: { id: userID } }
                               -- HE.div' (HA.class' "drop-menu fade-in effect")
                         ]
                   ]
+
+            retryMissedEvents = SIVR.retry "Failed to sync contacts. You might have missed messages." CheckMissedEvents failedRequests
+            retryFetchContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) failedRequests

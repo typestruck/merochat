@@ -1249,6 +1249,11 @@ select {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin:10px 0;
+}
+
+.left-box .retry.invisible {
+    display: none;
 }
 
 .retry-button {
@@ -1260,4 +1265,8 @@ select {
 .retry-button svg {
     vertical-align: middle;
     margin-left:5px
+}
+
+.retry-modal .retry:not(.invisible) ~ .loading  {
+    display: none;
 }

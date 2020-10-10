@@ -21,6 +21,7 @@ import Run as R
 import Server.Bender as SB
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
+import Server.Response (throwBadRequest)
 import Server.Response as SR
 import Shared.DateTime as SDT
 import Shared.Options.File (allowedMediaTypes, maxImageSize, maxImageSizeKB)
@@ -49,7 +50,7 @@ fieldTooBigMessage :: String
 fieldTooBigMessage = "Field exceeded max value"
 
 generate :: Generate -> ServerEffect String
-generate = do
+generate =
       case _ of
             Name -> SB.generateName
             Headline -> SB.generateHeadline

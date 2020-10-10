@@ -37,13 +37,14 @@ resumeChat searchID model@{ contacts, chatting } =
             if index == chatting then
                   F.noMessages model
              else
-                  (model {
+                  model {
                         suggesting = Nothing,
                         chatting = index,
                         fullContactProfileVisible = false,
                         toggleChatModal = HideChatModal,
-                        selectedImage = Nothing
-                  }) :> [
+                        selectedImage = Nothing,
+                        failedRequests = []
+                  } :> [
                         CIF.next UpdateReadCount ,
                         CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
                   ]
@@ -102,7 +103,7 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
 
 checkFetchContacts :: IMModel -> MoreMessages
 checkFetchContacts model@{ contacts, freeToFetchContactList }
-      | freeToFetchContactList = model :> [ Just <<< FetchContacts <$> getScrollBottom ]
+      | freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
       where getScrollBottom = liftEffect do
                   element <- CCD.unsafeQuerySelector "#message-history-wrapper"
@@ -117,7 +118,7 @@ fetchContacts :: Boolean -> IMModel -> MoreMessages
 fetchContacts shouldFetch model@{ contacts, freeToFetchContactList }
       | shouldFetch = model {
                   freeToFetchContactList = false
-            } :> [Just <<< DisplayContacts <$> (CCN.response $ request.im.contacts { query: { skip: DA.length contacts }})]
+            } :> [CCN.retryableResponse (FetchContacts true) DisplayContacts $ request.im.contacts { query: { skip: DA.length contacts }}]
       | otherwise = F.noMessages model
 
 displayContacts :: Array Contact -> IMModel -> NoMessages

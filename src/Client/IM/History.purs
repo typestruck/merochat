@@ -34,7 +34,7 @@ fetchHistory shouldFetch model@{ chatting, contacts }
             let { history, user: { id } } = SIC.chattingContact contacts chatting
             in model {
                   freeToFetchChatHistory = false
-            } :> [ CCN.response2 (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history  } })   ]
+            } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history  } })   ]
       | otherwise = F.noMessages model
 
 displayHistory :: Array HistoryMessage -> IMModel -> NoMessages

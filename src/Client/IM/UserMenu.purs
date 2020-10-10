@@ -28,8 +28,8 @@ logout model = CIF.nothingNext model out
 
 --PERFORMANCE: load bundles only once
 toggleModal :: ShowUserMenuModal -> IMModel -> NextMessage
-toggleModal psToggle model =
-      case psToggle of
+toggleModal mToggle model =
+      case mToggle of
             ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"
             ShowSettings -> showTab request.settings.get ShowSettings "settings.bundle.js" "#settings-edition-root"
             ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.bundle.js" "#karma-leaderboard-root"
@@ -38,8 +38,11 @@ toggleModal psToggle model =
                   toggleModal = modal
             }
       where showTab f toggle file root =
-                  model { toggleModal = toggle } :> [
-                        Just <<< SetModalContents (Just file) root <$> CCN.response (f {})
+                  model {
+                        toggleModal = toggle,
+                        failedRequests = []
+                  } :> [
+                        CCN.retryableResponse (ToggleModal toggle) (SetModalContents (Just file) root) (f {})
                   ]
 
 setModalContents :: Maybe String -> String -> String -> IMModel -> NextMessage

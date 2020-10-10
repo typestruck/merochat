@@ -261,7 +261,10 @@ type RequestFailure = {
 }
 
 data RetryableRequest =
-      FetchHistory Boolean
+      FetchHistory Boolean |
+      FetchContacts Boolean |
+      CheckMissedEvents |
+      ToggleModal ShowUserMenuModal
 
 data IMMessage =
       --history
@@ -270,7 +273,7 @@ data IMMessage =
       --user menu
       ShowUserContextMenu Event |
       Logout |
-      ToggleModal ShowUserMenuModal |
+
       ToggleChatModal ShowChatModal |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
@@ -279,7 +282,6 @@ data IMMessage =
       ResumeChat PrimaryKey |
       UpdateReadCount |
       CheckFetchContacts |
-      FetchContacts Boolean |
       DisplayContacts (Array Contact) |
       ResumeMissedEvents MissedEvents |
       --suggestion
@@ -307,7 +309,6 @@ data IMMessage =
       PreventStop Event |
       SetNameFromProfile String |
       ToggleConnected Boolean |
-      CheckMissedMessages |
       SetField (IMModel -> IMModel) |
       ToggleFortune Boolean |
       DisplayFortune String |

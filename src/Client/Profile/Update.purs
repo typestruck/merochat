@@ -7,18 +7,20 @@ import Client.Common.DOM (nameChanged)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
-import Client.Common.Network as CCN
 import Client.Common.Network as CNN
-import Client.Common.Notification as CCNO
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Newtype as DN
 import Data.String as DS
-import Data.Symbol (SProxy(..))
+import Data.Symbol (class IsSymbol, SProxy(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
+import Prim.Symbol (class Append)
 import Effect.Class (liftEffect)
-import Flame.Application.Effectful (AffUpdate)
+import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
+import Prim.Row (class Cons)
 import Record as R
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 import Shared.Profile.View (profileEditionId)
@@ -42,13 +44,17 @@ update rc@{ model, message } =
                         Description -> setGenerated rc Description (SProxy :: SProxy "description") descriptionMaxCharacters
             SaveProfile -> saveProfile model
 
+setGenerated :: forall field fieldInputed r u . IsSymbol field => Cons field String r PU => IsSymbol fieldInputed => Append field "Inputed" fieldInputed => Cons fieldInputed (Maybe String) u PM => Environment ProfileModel ProfileMessage -> Generate -> SProxy field -> Int -> Aff (ProfileModel -> ProfileModel)
 setGenerated { model, display } what field characters = do
       display $ _ { generating = Just what }
       let   fieldInputed = TDS.append field (SProxy :: SProxy "Inputed")
             trimmed = DS.trim <<< DM.fromMaybe "" $ R.get fieldInputed model
 
       toSet <- if DS.null trimmed then do
-                  CCN.response $ request.profile.generate { query: { what } }
+                  result <- request.profile.generate { query: { what } }
+                  case result of
+                        Right r -> pure <<< _.body $ DN.unwrap r
+                        _ -> pure $ R.get field model.user --if the request fails, just pretend it generated the same field
             else
                   pure trimmed
       pure (\model ->  R.set fieldInputed Nothing <<< SS.setUserField field (DS.take characters toSet) $ model {

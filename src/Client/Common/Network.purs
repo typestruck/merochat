@@ -13,8 +13,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
-import Effect.Aff (Aff, Milliseconds(..))
-import Effect.Aff as EA
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Exception as EE
@@ -28,30 +27,7 @@ import Web.DOM.Element as WDE
 request :: _
 request = PC.mkGuardedClient (defaultOpts { baseUrl = "http://localhost:8000/" }) spec
 
-response2 :: forall response. RetryableRequest -> (response -> IMMessage) -> Aff (ClientResponse response) -> Aff (Maybe IMMessage)
-response2 requestMessage message aff = do
-      result <- aff
-      case result of
-            Right r -> pure <<< Just <<< message <<< _.body $ DN.unwrap r
-            Left err -> do
-                  liftEffect <<< EC.log $ "Response error: " <> show err
-                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage : errorMessage err }
-
-response :: forall a. Aff (ClientResponse a) -> Aff a
-response aff = do
-      result <- aff
-      case result of
-            Right r -> pure <<< _.body $ DN.unwrap r
-            Left err -> do
-                  liftEffect <<< CCN.alert $ errorMessage err
-                  CMEC.throwError <<< EE.error $ "Response error: " <> show err
-
-errorMessage :: ClientError -> String
-errorMessage = case _ of
-      DecodeError { response: Response { body } } -> "Server sent an unexpected response"
-      StatusError { response: Response { body } } -> body
-      RequestError { message } -> message
-
+-- | Performs a request that has loading UI and possible error/success messages
 formRequest :: forall a. String -> Aff (ClientResponse a) -> Aff RequestStatus
 formRequest formSelector aff = do
       previousLabel <- liftEffect do
@@ -98,3 +74,38 @@ formRequest formSelector aff = do
             notifySuccess = liftEffect do
                   formDiv <- CCD.unsafeQuerySelector formSelectorID
                   WDE.setClassName "input success" formDiv
+
+-- | Performs a request that has can be retried through the UI in case of errors
+retryableResponse :: forall response. RetryableRequest -> (response -> IMMessage) -> Aff (ClientResponse response) -> Aff (Maybe IMMessage)
+retryableResponse requestMessage message aff = do
+      result <- aff
+      case result of
+            Right r -> pure <<< Just <<< message <<< _.body $ DN.unwrap r
+            Left err -> do
+                  liftEffect <<< EC.log $ "Response error: " <> show err
+                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage : errorMessage err }
+
+-- | Perform a request, throwing on errors
+silentResponse :: forall a. Aff (ClientResponse a) -> Aff a
+silentResponse aff = do
+      result <- aff
+      case result of
+            Right r -> pure <<< _.body $ DN.unwrap r
+            Left err -> CMEC.throwError <<< EE.error $ "Response error: " <> show err
+
+-- | this will be removed in favor of better ui than alert for errors
+response :: forall a. Aff (ClientResponse a) -> Aff a
+response aff = do
+      result <- aff
+      case result of
+            Right r -> pure <<< _.body $ DN.unwrap r
+            Left err -> do
+                  liftEffect <<< CCN.alert $ errorMessage err
+                  CMEC.throwError <<< EE.error $ "Response error: " <> show err
+
+errorMessage :: ClientError -> String
+errorMessage = case _ of
+      DecodeError { response: Response { body } } -> "Server sent an unexpected response"
+      StatusError { response: Response { body } } -> body
+      RequestError { message } -> message
+

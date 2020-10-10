@@ -102,7 +102,7 @@ update { webSocketRef, fileReader} model =
             MarkAsRead -> CICN.markRead webSocket model
             UpdateReadCount -> CICN.markRead webSocket model
             CheckFetchContacts -> CICN.checkFetchContacts model
-            FetchContacts shouldFetch -> CICN.fetchContacts shouldFetch model
+            SpecialRequest (FetchContacts shouldFetch) -> CICN.fetchContacts shouldFetch model
             DisplayContacts contacts -> CICN.displayContacts contacts model
             ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
             --history
@@ -118,7 +118,7 @@ update { webSocketRef, fileReader} model =
             --user menu
             Logout -> CIU.logout model
             ShowUserContextMenu event -> CIU.showUserContextMenu event model
-            ToggleModal toggle -> CIU.toggleModal toggle model
+            SpecialRequest (ToggleModal toggle) -> CIU.toggleModal toggle model
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
             --main
@@ -127,7 +127,7 @@ update { webSocketRef, fileReader} model =
             SetNameFromProfile name -> setName name model
             PreventStop event -> preventStop event model
             ToggleConnected isConnected -> toggleConnectedWebSocket isConnected model
-            CheckMissedMessages -> checkMissedMessages model
+            SpecialRequest CheckMissedEvents -> checkMissedEvents model
             SetField setter -> F.noMessages $ setter model
             ToggleFortune isVisible -> toggleFortune isVisible model
             DisplayFortune sequence -> displayFortune sequence model
@@ -141,7 +141,7 @@ addFailure failure model@{ failedRequests } = F.noMessages $ model {
 
 toggleFortune :: Boolean -> IMModel -> MoreMessages
 toggleFortune isVisible model
-      | isVisible = model :> [Just <<< DisplayFortune <$> CCNT.response (request.im.fortune {})]
+      | isVisible = model :> [Just <<< DisplayFortune <$> CCNT.silentResponse (request.im.fortune {})]
       | otherwise = F.noMessages $ model {
             fortune = Nothing
       }
@@ -168,7 +168,7 @@ receiveMessage webSocket isFocused wsPayload model@{
             if DA.elem userID blockedUsers then
                   F.noMessages model
             else case processIncomingMessage payload model of
-                  Left userID -> model :> [Just <<< DisplayContacts <$> CCNT.response (request.im.singleContact { query: { id: userID }})]
+                  Left userID -> model :> [CCNT.retryableResponse CheckMissedEvents DisplayContacts (request.im.singleContact { query: { id: userID }})]
                   Right updatedModel@{
                         chatting: Just index,
                         contacts
@@ -248,8 +248,8 @@ updateContactHistory contacts userID f = updateContact <$> contacts
                   }
                   | otherwise = contact
 
-checkMissedMessages :: IMModel -> MoreMessages
-checkMissedMessages model@{ contacts, user : { id: senderID } } =
+checkMissedEvents :: IMModel -> MoreMessages
+checkMissedEvents model@{ contacts, user : { id: senderID } } =
       model :> [do
             let lastSenderID = findLast (\h -> senderID == h.sender && h.status == Received) contacts
                 lastRecipientID = findLast ((senderID /= _) <<< _.sender) contacts
@@ -257,7 +257,7 @@ checkMissedMessages model@{ contacts, user : { id: senderID } } =
             if DM.isNothing lastSenderID && DM.isNothing lastRecipientID then
                   pure Nothing
              else
-                  Just <<< ResumeMissedEvents <$> CCNT.response (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
+                  CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
       ]
       where findLast f array = do
                   { history } <- DA.head array
@@ -278,7 +278,7 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketCo
       model {
             hasTriedToConnectYet = true,
             isWebSocketConnected = isConnected
-      } :> if hasTriedToConnectYet && isConnected then [pure $ Just CheckMissedMessages] else []
+      } :> if hasTriedToConnectYet && isConnected then [pure <<< Just $ SpecialRequest CheckMissedEvents] else []
 
 preventStop :: Event -> IMModel -> NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
