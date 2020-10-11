@@ -1,11 +1,10 @@
 module Test.Server.Landing.Action where
 
 import Prelude
-import Server.Types
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Query(..), Row0(..), Row1(..))
+import Database.PostgreSQL (Query(..), Row1(..))
 import Run as R
 import Server.AccountValidation (emailAlreadyRegisteredMessage, invalidEmailMessage, invalidPasswordMessage)
 import Server.Database as SD
@@ -15,22 +14,18 @@ import Server.Landing.Database as SLD
 import Server.Token as ST
 import Shared.Unsafe as SU
 import Test.Server as TS
+import Test.Server.User (email, password)
+import Test.Server.User as STU
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
-
-userCount :: ServerEffect Int
-userCount = SD.scalar' (Query "select count(1) from users") Row0
-
-email :: String
-email = "e@a.com"
 
 tests :: TestSuite
 tests = do
       TU.suite "landing actions" do
             let registerExceptionTest rl = do
                   void $ SLA.register rl
-                  users <- userCount
+                  users <- STU.userCount
                   R.liftAff $ TUA.equal 0 users
 
             TU.test "register does not accept empty fields" $
@@ -47,25 +42,23 @@ tests = do
                         captchaResponse: Nothing
                   }
 
-
             TU.test "register does not accept existing email" $
                   TS.serverActionCatch (TS.catch emailAlreadyRegisteredMessage) $ do
                         void $ SLD.createUser {
                               email,
                               name: "sdsd",
-                              password: "ss",
+                              password,
                               headline: "sd",
                               description: "ss"
                         }
                         registerExceptionTest $ {
                               email,
-                              password: "ss",
+                              password,
                               captchaResponse: Nothing
                         }
 
             TU.test "register creates user" $
                   TS.serverAction $ do
-                        let password = "hunter12"
                         _ <- SLA.register $ {
                               email,
                               password,
@@ -80,16 +73,16 @@ tests = do
 
             TU.test "register creates karma" $
                   TS.serverAction $ do
-                        let password = "hunter12"
                         void $ SLA.register {
                               email,
                               password,
                               captchaResponse: Nothing
                         }
                         RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
-                        --REFACTOR: starting karma amount should be in options
-                        count <- SD.scalar' (Query "select count(1) from karma_histories where target = $1 and amount = 5") $ Row1 id
-                        R.liftAff $ TUA.equal 1 count
+                        history <- SD.scalar' (Query "select count(1) from karma_histories where target = $1") $ Row1 id
+                        R.liftAff $ TUA.equal 1 history
+                        leaderboard <- SD.scalar' (Query "select count(1) from karma_leaderboard where ranker = $1") $ Row1 id
+                        R.liftAff $ TUA.equal 1 leaderboard
 
 
 

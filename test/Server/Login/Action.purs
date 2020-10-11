@@ -1,28 +1,17 @@
 module Test.Server.Login.Action where
 
 import Prelude
-import Server.Types
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Query(..), Row0(..))
 import Server.AccountValidation (invalidEmailMessage, invalidPasswordMessage)
-import Server.Database as SD
 import Server.Landing.Database as SLD
 import Server.Login.Action (invalidLogin)
 import Server.Login.Action as SLIA
 import Server.Token as ST
 import Test.Server as TS
+import Test.Server.User (email, password)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
-
-userCount :: ServerEffect Int
-userCount = SD.scalar' (Query "select count(1) from users") Row0
-
-email :: String
-email = "e@a.com"
-
-password :: String
-password = "hunter12"
 
 tests :: TestSuite
 tests = do

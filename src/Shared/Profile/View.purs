@@ -66,39 +66,8 @@ view model@{
                   displayEditLanguages
             ],
 
-            HE.div (HA.class' "profile-tags") displayEditTags,
-
-            HE.div (HA.class' { hidden: generating /= Just Description })[
-                  HE.div' (HA.class' "loading")
-            ],
-            HE.div (HA.class' {invisible: generating == Just Description}) [
-                  HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (editField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
-                        HE.div (HA.class' "about") [
-                              HE.span (HA.class' "duller") "About",
-                              pen
-                        ],
-                        HE.div' [HA.class' "profile-description", HA.innerHTML $ SM.toHTML user.description]
-                  ],
-                  HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
-                        HE.div (HA.class' "bold") "Your description",
-                        HE.div (HA.class' "duller") [
-                              HE.text "Talk a little (or a lot) about yourself",
-                              HE.br,
-                              HE.text "Leave it blank to generate a new random description"
-                        ],
-                        HE.textarea [
-                              HA.class' "profile-edition-description",
-                              HA.maxlength descriptionMaxCharacters,
-                              SF.focus,
-                              HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
-                        ] $ DM.fromMaybe "" descriptionInputed,
-
-                        HE.div (HA.class' "save-cancel") [
-                              check (SetGenerate Description),
-                              cancel (SProxy :: SProxy "descriptionInputed")
-                        ]
-                  ]
-            ],
+            displayEditTags,
+            displayEditDescription,
 
             HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Update profile", HA.class' "green-button center-flex"],
             HE.span' (HA.class' "request-error-message"),
@@ -156,7 +125,41 @@ view model@{
                               HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed),
                               HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
                         ]
-                  in  displayEditList (SProxy :: SProxy "tags") identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
+                  in  HE.div (HA.class' "profile-tags") $ displayEditList (SProxy :: SProxy "tags") identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
+
+            displayEditDescription = HE.div_ [
+                  HE.div (HA.class' { hidden: generating /= Just Description })[
+                        HE.div' (HA.class' "loading")
+                  ],
+                  HE.div (HA.class' {invisible: generating == Just Description}) [
+                        HE.div [title "description", HA.class' {hidden: DM.isJust descriptionInputed}, HA.onClick (editField (SProxy :: SProxy "description") (SProxy :: SProxy "descriptionInputed"))] [
+                              HE.div (HA.class' "about") [
+                                    HE.span (HA.class' "duller") "About",
+                                    pen
+                              ],
+                              HE.div' [HA.class' "profile-description", HA.innerHTML $ SM.toHTML user.description]
+                        ],
+                        HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
+                              HE.div (HA.class' "bold") "Your description",
+                              HE.div (HA.class' "duller") [
+                                    HE.text "Talk a little (or a lot) about yourself",
+                                    HE.br,
+                                    HE.text "Leave it blank to generate a new random description"
+                              ],
+                              HE.textarea [
+                                    HA.class' "profile-edition-description",
+                                    HA.maxlength descriptionMaxCharacters,
+                                    SF.focus,
+                                    HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
+                              ] $ DM.fromMaybe "" descriptionInputed,
+
+                              HE.div (HA.class' "save-cancel") [
+                                    check (SetGenerate Description),
+                                    cancel (SProxy :: SProxy "descriptionInputed")
+                              ]
+                        ]
+                  ]
+            ]
 
             displayEditList :: forall r s t u field fieldInputed fieldInputedList. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Append field "InputedList" fieldInputedList => IsSymbol fieldInputedList => Cons fieldInputed (Maybe t) u PM => Cons fieldInputedList (Maybe (Array t)) r PM => Cons field (Array t) s PU => Ord t => Eq t => SProxy field -> (t -> String) -> Maybe (Html ProfileMessage) -> Html ProfileMessage -> String -> Int -> Html ProfileMessage
             displayEditList field formatter currentFieldValue control explanation maxElements =
