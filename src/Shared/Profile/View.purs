@@ -16,6 +16,7 @@ import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
@@ -137,7 +138,7 @@ view model@{
                                     HE.span (HA.class' "duller") "About",
                                     pen
                               ],
-                              HE.div' [HA.class' "profile-description", HA.innerHTML $ SM.toHTML user.description]
+                              SM.displayMarkdown { extraClasses: "profile-description", markdown: user.description, useHooks: false }
                         ],
                         HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
                               HE.div (HA.class' "bold") "Your description",

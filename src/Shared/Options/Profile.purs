@@ -22,7 +22,7 @@ descriptionMaxCharacters :: Int
 descriptionMaxCharacters = 1000
 
 tagsSmallCard :: Int
-tagsSmallCard = 3
+tagsSmallCard = 4
 
 passwordMinCharacters :: Int
 passwordMinCharacters = 5

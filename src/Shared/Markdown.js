@@ -1,8 +1,30 @@
 var marked = require('marked');
 
 //REFACTOR: make this all type safe
+function markdown(plainMarkdown, use) {
+      return function(oldVnode, vnode) {
+            var oldPlainMarkdown = oldVnode.plainMarkdown
 
-exports.parse = function (plainMarkdown) {
+            vnode.plainMarkdown = plainMarkdown;
+
+            if (oldPlainMarkdown != plainMarkdown) {
+                  use();
+                  vnode.elm.innerHTML = marked(plainMarkdown, {
+                        smartypants: true
+                  });
+            }
+      }
+}
+
+exports.parseHook = function (plainMarkdown) {
+      return markdown(plainMarkdown, defaultOptions);
+}
+
+exports.parseRestrictedHook = function(plainMarkdown) {
+      return markdown(plainMarkdown, restrictedoptions);
+}
+
+function defaultOptions() {
       marked.use({
             renderer: {
                   link(href, title, text) {
@@ -21,13 +43,9 @@ exports.parse = function (plainMarkdown) {
                   }
             }
       });
-
-      return marked(plainMarkdown, {
-            smartypants: true
-      });
 }
 
-exports.parseRestricted = function(plainMarkdown) {
+function restrictedoptions() {
       marked.use({
             renderer: {
                   link(href, title, text) {
@@ -42,6 +60,18 @@ exports.parseRestricted = function(plainMarkdown) {
                   }
             }
       });
+}
+
+exports.parse = function (plainMarkdown) {
+      defaultOptions();
+
+      return marked(plainMarkdown, {
+            smartypants: true
+      });
+}
+
+exports.parseRestricted = function(plainMarkdown) {
+     restrictedoptions();
 
       return marked(plainMarkdown, {
             smartypants: true

@@ -17,7 +17,6 @@ import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Flame.Types (NodeData)
-import Web.UIEvent.KeyboardEvent as WUK
 import Prim.Row (class Cons)
 import Shared.Focus as SF
 import Shared.IM.Emoji as SIE
@@ -25,6 +24,7 @@ import Shared.Markdown as SM
 import Shared.Options.File (maxImageSizeKB)
 import Shared.Setter as SS
 import Shared.Unsafe as SU
+import Web.UIEvent.KeyboardEvent as WUK
 
 chat :: IMModel -> Html IMMessage
 chat {
@@ -55,43 +55,45 @@ chat {
                   ]
             ],
             HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory,
-            HE.div (HA.class' { hidden: DM.isNothing chatting && DM.isNothing suggesting || toggleChatModal == ShowPreview || suggestionCard == SmallCard }) [
-                  HE.div [HA.class' "chat-input-options"] [
-                        bold,
-                        italic,
-                        strikethrough,
-                        heading,
-                        unorderedList,
-                        orderedList,
-                        linkButton toggleChatModal,
-                        HE.button [HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
-                        HE.div (HA.class' "send-enter") [
-                              HE.input [HA.type' "checkbox", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
-                              HE.label (HA.for "message-enter") "Send message on enter"
+            if toggleChatModal == ShowPreview then
+                  HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview }) [
+                        HE.div [HA.class' "chat-input-options"] [
+                              HE.button [HA.onClick $ ToggleChatModal HideChatModal, HA.title "Exit preview"] "Exit"
+                        ],
+                        SM.displayMarkdown { extraClasses: "", markdown: DM.fromMaybe "" message, useHooks: true}
+                  ]
+             else
+                  HE.div (HA.class' { hidden: DM.isNothing chatting && (DM.isNothing suggesting || suggestionCard == SmallCard) }) [
+                        HE.div [HA.class' "chat-input-options"] [
+                              bold,
+                              italic,
+                              strikethrough,
+                              heading,
+                              unorderedList,
+                              orderedList,
+                              linkButton toggleChatModal,
+                              HE.button [HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
+                              HE.div (HA.class' "send-enter") [
+                                    HE.input [HA.type' "checkbox", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
+                                    HE.label (HA.for "message-enter") "Send message on enter"
+                              ]
+                        ],
+                        HE.div [HA.class' { "chat-input-area": true, side: not messageEnter }] [
+                              emojis toggleChatModal,
+                              HE.textarea' [
+                                    HA.rows 1,
+                                    HA.class' "chat-input",
+                                    HA.id "chat-input",
+                                    HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
+                                    HA.disabled $ not isWebSocketConnected,
+                                    enterKeyDown EnterBeforeSendMessage,
+                                    HA.onInput BeforeSendMessage,
+                                    HA.value $ DM.fromMaybe "" message
+                              ],
+                              image,
+                              sendButton messageEnter
                         ]
                   ],
-                  HE.div [HA.class' { "chat-input-area": true, side: not messageEnter }] [
-                        emojis toggleChatModal,
-                        HE.textarea' [
-                              HA.rows 1,
-                              HA.class' "chat-input",
-                              HA.id "chat-input",
-                              HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
-                              HA.disabled $ not isWebSocketConnected,
-                              enterKeyDown EnterBeforeSendMessage,
-                              HA.onInput BeforeSendMessage,
-                              HA.value $ DM.fromMaybe "" message
-                        ],
-                        image,
-                        sendButton messageEnter
-                  ]
-            ],
-            HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview }) [
-                  HE.div [HA.class' "chat-input-options"] [
-                        HE.button [HA.onClick $ ToggleChatModal HideChatModal, HA.title "Exit preview"] "Exit"
-                  ],
-                  HE.div' [HA.innerHTML (SM.toHTML $ DM.fromMaybe "" message)]
-            ],
             HE.div (HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage }) [
                   HE.div (HA.class' { "upload-div": true, hidden : not imageValidationFailed }) [
                         HE.input [HA.id "image-file-input", HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
@@ -125,6 +127,7 @@ getName index list accessor = do
       entry <- list !! i
       pure $ accessor entry
 
+--REFACTOR: move this somewhere appropriate
 enterKeyDown :: IMMessage -> NodeData IMMessage
 enterKeyDown message = HA.createRawEvent "keydown" handler
       where handler event = do

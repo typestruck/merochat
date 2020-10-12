@@ -36,7 +36,7 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests
                         HE.img [HA.src avatar, HA.class' $ "avatar-message" <> SA.avatarColorClass chatting],
                         HE.div (HA.class' {"exclamation": true, "hidden": status /= Errored}) "!",
                         HE.div_ [
-                              HE.div' [HA.class' $ "message-content", HA.innerHTML (SM.toHTML content)],
+                              SM.displayMarkdown { extraClasses: "message-content", markdown: content, useHooks: false },
                               HE.span (HA.class' {"error-message": true, "hidden": status /= Errored})  "Failed to send"
                         ]
 

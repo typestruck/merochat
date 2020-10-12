@@ -3,7 +3,7 @@ module Shared.IM.View where
 import Prelude
 import Shared.Types
 
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Flame (Html)
 import Flame.HTML.Attribute as HA
@@ -28,9 +28,9 @@ view isClientRender model@{ fortune, suggestions, suggesting, chatting, contacts
       ],
       HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
             HE.div (HA.class' {"no-connection": true, flexed: hasTriedToConnectYet && not isWebSocketConnected}) "Connection to the server lost. Attempting to automaticaly reconnect...",
-            SIVS.profile model,
+            SIVS.profile isClientRender model,
             SIVH.history model $ map (contacts !@ _ ) chatting,
-            SIVC.chat  model
+            SIVC.chat model
       ]
 ]
 
