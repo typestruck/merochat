@@ -52,12 +52,10 @@ getFileInput :: Effect Element
 getFileInput = CCD.unsafeQuerySelector "#image-file-input"
 
 --the keydown event fires before input
-enterBeforeSendMessage :: Event -> IMModel -> NoMessages
-enterBeforeSendMessage event model@{ messageEnter } = F.noMessages $ model {
-      shouldSendMessage = messageEnter && key == "Enter" && not WUK.shiftKey keyboardEvent
+enterBeforeSendMessage :: IMModel -> NoMessages
+enterBeforeSendMessage model@{ messageEnter } = F.noMessages $ model {
+      shouldSendMessage = messageEnter
 }
-      where keyboardEvent = SU.fromJust $ WUK.fromEvent event
-            key = WUK.key keyboardEvent
 
 --send message or image button click
 forceBeforeSendMessage :: IMModel -> MoreMessages

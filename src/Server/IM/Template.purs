@@ -39,6 +39,7 @@ template {contacts, suggestions, user} = do
                   erroredFields: [],
                   fortune: Nothing,
                   userContextMenuVisible: false,
+                  suggestionCard: SmallCard,
                   toggleModal: HideUserMenuModal,
                   message: Nothing,
                   toggleChatModal: HideChatModal,

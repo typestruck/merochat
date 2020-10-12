@@ -114,7 +114,7 @@ account model@{ erroredFields, confirmTermination } =
 
 onChangeValue :: forall message. ToSpecialEvent message String
 onChangeValue constructor = HA.createRawEvent "change" handler
-      where handler event = constructor <$> CCD.value (extractElement event)
+      where handler event = Just <<< constructor <$> CCD.value (extractElement event)
             extractElement event = SU.fromJust do
                   target <- WEE.target event
                   WDE.fromEventTarget target

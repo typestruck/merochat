@@ -25,6 +25,7 @@ model = {
       freeToFetchContactList: true,
       failedRequests: [],
       userContextMenuVisible: false,
+      suggestionCard: SmallCard,
       imageCaption: Nothing,
       fullContactProfileVisible: false,
       fortune: Nothing,

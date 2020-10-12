@@ -113,6 +113,10 @@ body {
     margin-right: 20px;
 }
 
+.profile-asl div:last-child {
+    margin-right: 0;
+}
+
 .svg-more {
     cursor: pointer;
 }
@@ -644,7 +648,7 @@ svg.toolbar-action {
     border: 1px solid #b5b7b7
 }
 
-.suggestion .tag, .list-tags {
+.suggestion .tag, .list-tags, .card .tag {
     background: #a6b572;
     color: #1b3a28;
 }
@@ -1224,7 +1228,6 @@ select {
     left: 50%;
     margin-left: -15px;
     transform: rotate( 135deg);
-
 }
 
 .fortune svg {
@@ -1244,12 +1247,12 @@ select {
 }
 
 .retry {
-    color:red;
+    color: red;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin:10px 0;
+    margin: 10px 0;
 }
 
 .left-box .retry.invisible {
@@ -1257,16 +1260,108 @@ select {
 }
 
 .retry-button {
-    color:rgb(238, 238, 238);
+    color: rgb(238, 238, 238);
     cursor: pointer;
     padding: 5px 15px;
 }
 
 .retry-button svg {
     vertical-align: middle;
-    margin-left:5px
+    margin-left: 5px
 }
 
-.retry-modal .retry:not(.invisible) ~ .loading  {
+.retry-modal .retry:not(.invisible)~.loading {
     display: none;
+}
+
+.suggestion-cards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+}
+
+.card-top-header {
+    color: #db5a5d;
+    text-align: center;
+}
+
+.welcome {
+    font-size: 2em;
+}
+
+.welcome-new {
+    font-size: 1.4em;
+}
+
+.small-cards {
+    display: flex;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.card {
+    cursor: pointer;
+    border: 1px solid #b5b7b7;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 40px 30px 15px 30px;
+    min-width: 25em;
+    background-color: #262626;
+    background-attachment: fixed;
+}
+
+.card-top {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card .headline {
+    max-width: 25em;
+    text-align: justify;
+    hyphens: auto;
+}
+
+.card .avatar-profile {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 15px;
+}
+
+.card .name {
+    font-size: 1.3em;
+}
+
+.card .profile-tags {
+    max-width: 25em;
+}
+
+.card-center {
+    height: 850px;
+    z-index: 2;
+}
+
+.card-sides {
+    cursor: default;
+    opacity: 0.6;
+}
+
+.card-sides:first-child {
+    margin-right: -40px;
+    padding-right: 0;
+}
+
+.card-sides:last-child {
+    margin-left: -30px;
+    padding-left: 0
+}
+
+.card-more {
+    text-decoration: underline;
+    font-weight: bold;
+    color: #a6b572;
 }

@@ -88,7 +88,7 @@ update { webSocketRef, fileReader} model =
             InsertLink -> CIC.insertLink model
             ToggleChatModal modal -> CIC.toggleModal modal model
             DropFile event -> CIC.catchFile fileReader event model
-            EnterBeforeSendMessage event -> CIC.enterBeforeSendMessage event model
+            EnterBeforeSendMessage -> CIC.enterBeforeSendMessage model
             ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
             BeforeSendMessage content -> CIC.beforeSendMessage content model
             SendMessage date -> CIC.sendMessage webSocket date model
@@ -113,6 +113,7 @@ update { webSocketRef, fileReader} model =
             ToggleContactProfile -> CIS.toggleContactProfile model
             PreviousSuggestion -> CIS.previousSuggestion model
             BlockUser id -> CIS.blockUser webSocket id model
+            ToggleSuggestionCard index -> CIS.toggleSuggestionCard index model
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu

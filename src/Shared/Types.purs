@@ -180,6 +180,8 @@ newtype ContactWrapper = ContactWrapper Contact
 
 newtype HistoryMessageWrapper = HistoryMessageWrapper HistoryMessage
 
+data SuggestionCard = SmallCard | BigCard
+
 type IM = (
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
@@ -194,6 +196,7 @@ type IM = (
       messageEnter :: Boolean,
       link :: Maybe String,
       suggestionsPage :: Int,
+      suggestionCard :: SuggestionCard,
       linkText :: Maybe String,
       isWebSocketConnected :: Boolean,
       shouldSendMessage :: Boolean,
@@ -273,7 +276,6 @@ data IMMessage =
       --user menu
       ShowUserContextMenu Event |
       Logout |
-
       ToggleChatModal ShowChatModal |
       SetUserContentMenuVisible Boolean |
       SetModalContents (Maybe String) String String |
@@ -285,6 +287,7 @@ data IMMessage =
       DisplayContacts (Array Contact) |
       ResumeMissedEvents MissedEvents |
       --suggestion
+      ToggleSuggestionCard (Maybe Int) |
       PreviousSuggestion |
       NextSuggestion |
       DisplayMoreSuggestions (Array Suggestion) |
@@ -293,7 +296,7 @@ data IMMessage =
       SetSelectedImage (Maybe String) |
       ToggleContactProfile |
       DropFile Event |
-      EnterBeforeSendMessage Event |
+      EnterBeforeSendMessage |
       ForceBeforeSendMessage |
       BeforeSendMessage String |
       SendMessage DateTimeWrapper |
@@ -425,6 +428,7 @@ data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
 derive instance genericRetryableRequest :: Generic RetryableRequest _
+derive instance genericSuggestionCard :: Generic SuggestionCard _
 derive instance genericShowChatModal :: Generic ShowChatModal _
 derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
 derive instance genericToggleBoard :: Generic ToggleBoard _
@@ -449,6 +453,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqSuggestionCard :: Eq SuggestionCard
 derive instance eqRetryableRequest :: Eq RetryableRequest
 derive instance eqGenerate :: Eq Generate
 derive instance eqShowChatModal :: Eq ShowChatModal
@@ -750,6 +755,8 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonSuggestionCard :: EncodeJson SuggestionCard where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
@@ -775,6 +782,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonSuggestionCard :: DecodeJson SuggestionCard where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where

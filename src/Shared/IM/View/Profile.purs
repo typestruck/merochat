@@ -3,6 +3,7 @@ module Shared.IM.View.Profile where
 import Prelude
 import Shared.Types
 
+import Data.Array ((!!), (..))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -13,15 +14,16 @@ import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
 import Shared.Avatar as SA
 import Shared.Markdown as SM
+import Shared.Options.Profile (tagsSmallCard)
 import Shared.Unsafe ((!@))
 
 profile :: IMModel -> Html IMMessage
-profile { suggestions, contacts, suggesting, chatting, fullContactProfileVisible } =
+profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, suggestionCard } =
       if DA.null suggestions then
             emptySuggestions
        else
             case Tuple suggesting chatting of
-                  Tuple (Just index) Nothing -> suggestion suggesting (suggestions !@ index)
+                  Tuple (Just index) Nothing -> suggestion model index
                   Tuple Nothing (Just index) ->
                         if fullContactProfileVisible then
                               fullProfile false chatting (contacts !@ index).user
@@ -63,8 +65,49 @@ contact chatting { id, name, avatar, age, karma, headline, gender, country, lang
             HE.div' [HA.class' "description-message hidden", HA.innerHTML (SM.toHTML description)]
       ]
 
-suggestion :: Maybe Int -> Suggestion -> Html IMMessage
-suggestion = fullProfile true
+suggestion :: IMModel -> Int -> Html IMMessage
+suggestion { suggestionCard, user, suggestions } index =
+      HE.div_ [
+            HE.div (HA.class' {"suggestion-cards": true, hidden: suggestionCard == BigCard}) [
+                  HE.div (HA.class' "card-top-header") [
+                        HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
+                        HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
+                  ],
+                  HE.div (HA.class' "small-cards") $ map (\i -> card (suggestions !! i) i) (index .. (index + 2))
+            ],
+            HE.div (HA.class' { hidden: suggestionCard == SmallCard }) $ fullProfile true (Just index) (suggestions !@ index)
+      ]
+      where card suggestion suggestionIndex =
+                  case suggestion of
+                        Nothing -> HE.createEmptyElement "div"
+                        Just { name, avatar, age, headline, gender, country, tags } ->
+                              let   isCenter = suggestionIndex == index + 1
+                                    maybeSuggestionIndex = Just suggestionIndex
+                                    attrs
+                                          | isCenter = [ HA.class' "card card-center", HA.onClick $ ToggleSuggestionCard maybeSuggestionIndex]
+                                          | otherwise = [HA.class' "card card-sides"]
+                              in HE.div attrs [
+                                    HE.div (HA.class' "card-top") [
+                                          HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass maybeSuggestionIndex, HA.src $ SA.avatarForRecipient maybeSuggestionIndex avatar],
+                                          HE.h1 (HA.class' "name") name,
+                                          HE.div (HA.class' "headline") headline,
+                                          HE.div (HA.class' "profile-asl") [
+                                                HE.div_ [
+                                                      toSpan $ map show age,
+                                                      duller (DM.isNothing age || DM.isNothing gender) ", ",
+                                                      toSpan gender
+                                                ],
+                                                HE.div_ [
+                                                      duller (DM.isNothing country) "from ",
+                                                      toSpan country
+                                                ]
+                                          ],
+                                          HE.div (HA.class' "profile-tags") $ map toTagSpan tags
+
+                                    ],
+
+                                    HE.div (HA.class' {"card-more": true, hidden: not isCenter}) "View complete profile"
+                              ]
 
 fullProfile :: Boolean -> Maybe Int -> IMUser -> Html IMMessage
 fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =

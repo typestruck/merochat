@@ -16,15 +16,32 @@ import Debug.Trace (spy)
 import Flame (Html)
 import Flame.HTML.Attribute as HA
 import Flame.HTML.Element as HE
+import Flame.Types (NodeData)
+import Web.UIEvent.KeyboardEvent as WUK
 import Prim.Row (class Cons)
-import Shared.Options.File (maxImageSizeKB)
 import Shared.Focus as SF
 import Shared.IM.Emoji as SIE
 import Shared.Markdown as SM
+import Shared.Options.File (maxImageSizeKB)
 import Shared.Setter as SS
+import Shared.Unsafe as SU
 
 chat :: IMModel -> Html IMMessage
-chat { chatting, contacts, suggesting, suggestions, isWebSocketConnected, message, messageEnter, link, linkText, toggleChatModal, selectedImage, erroredFields } =
+chat {
+      chatting,
+      contacts,
+      suggesting,
+      suggestions,
+      isWebSocketConnected,
+      message,
+      messageEnter,
+      link,
+      linkText,
+      toggleChatModal,
+      selectedImage,
+      erroredFields,
+      suggestionCard
+} =
       HE.div (HA.class' "send-box") [
             HE.div (HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }) [
                   HE.label_ "Text",
@@ -38,7 +55,7 @@ chat { chatting, contacts, suggesting, suggestions, isWebSocketConnected, messag
                   ]
             ],
             HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory,
-            HE.div (HA.class' { hidden: DM.isNothing chatting && DM.isNothing suggesting || toggleChatModal == ShowPreview }) [
+            HE.div (HA.class' { hidden: DM.isNothing chatting && DM.isNothing suggesting || toggleChatModal == ShowPreview || suggestionCard == SmallCard }) [
                   HE.div [HA.class' "chat-input-options"] [
                         bold,
                         italic,
@@ -61,7 +78,7 @@ chat { chatting, contacts, suggesting, suggestions, isWebSocketConnected, messag
                               HA.id "chat-input",
                               HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
                               HA.disabled $ not isWebSocketConnected,
-                              HA.onKeydown' EnterBeforeSendMessage,
+                              enterKeyDown EnterBeforeSendMessage,
                               HA.onInput BeforeSendMessage,
                               HA.value $ DM.fromMaybe "" message
                         ],
@@ -102,10 +119,18 @@ chat { chatting, contacts, suggesting, suggestions, isWebSocketConnected, messag
             imageValidationFailed = DA.elem (TDS.reflectSymbol (SProxy :: SProxy "selectedImage")) erroredFields
             recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name
 
+getName :: forall a b. Maybe Int -> Array b -> (b -> a) -> Maybe a
 getName index list accessor = do
       i <- index
       entry <- list !! i
       pure $ accessor entry
+
+enterKeyDown :: IMMessage -> NodeData IMMessage
+enterKeyDown message = HA.createRawEvent "keydown" handler
+      where handler event = do
+                  let   keyboardEvent = SU.fromJust $ WUK.fromEvent event
+                        key = WUK.key keyboardEvent
+                  pure $ if key == "Enter" && not WUK.shiftKey keyboardEvent then Just message else Nothing
 
 setJust :: forall t7 t8 t9. IsSymbol t8 => Cons t8 (Maybe t9) t7 IM => SProxy t8 -> t9 -> IMMessage
 setJust field = SS.setIMField field <<< Just
