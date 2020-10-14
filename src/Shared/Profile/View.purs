@@ -47,7 +47,15 @@ view model@{
 } = HE.div profileEditionId [
       HE.div [HA.class' "profile-edition suggestion contact"] [
             HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/profile.css"],
-            HE.div_ $ HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, HA.onClick SelectAvatar],
+            HE.div_ [
+                  HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, HA.onClick SelectAvatar],
+                  pen,
+                  HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
+                        HE.title "Unset profile picture",
+                        HE.path' $ HA.d "M96,472.205A23.715,23.715,0,0,0,119.579,496H392.421A23.715,23.715,0,0,0,416,472.205V168H96Z",
+                        HE.path' $ HA.d "M333,91V48c0-16.262-11.684-29-26.6-29H205.6C190.684,19,179,31.738,179,48V91H64v42H448V91ZM221,61h70V91H221Z"
+                  ]
+            ],
             HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
 
             displayEditName,
@@ -332,6 +340,7 @@ pen = HE.svg [HA.class' "svg-16 edit", HA.viewBox "0 0 512 512"] [
 plus :: Boolean -> ProfileMessage -> Html ProfileMessage
 plus isDisabled message = HE.svg attrs $ HE.path' [HA.d "M425.706,86.294A240,240,0,0,0,86.294,425.706,240,240,0,0,0,425.706,86.294ZM384,280H280V384H232V280H128V232H232V128h48V232H384Z"]
       where attrs = [HA.class' {"svg-20 plus": true, disabled: isDisabled}, HA.viewBox "0 0 512 512"] <> if isDisabled then [] else [HA.onClick message]
+
 
 check :: ProfileMessage -> Html ProfileMessage
 check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 512", HA.onClick message] [

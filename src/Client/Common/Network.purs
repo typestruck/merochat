@@ -2,18 +2,20 @@ module Client.Common.Network where
 
 import Client.Common.Types
 import Prelude
+import Shared.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Notification as CCN
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.Maybe as DM
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
-import Effect.Aff (Aff)
+import Effect.Aff (Aff, Milliseconds(..))
+import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Exception as EE
@@ -21,7 +23,6 @@ import Payload.Client (ClientError(..), ClientResponse, defaultOpts)
 import Payload.Client as PC
 import Payload.ResponseTypes (Response(..))
 import Shared.Spec (spec)
-import Shared.Types
 import Web.DOM.Element as WDE
 
 request :: _
@@ -73,7 +74,8 @@ formRequest formSelector aff = do
 
             notifySuccess = liftEffect do
                   formDiv <- CCD.unsafeQuerySelector formSelectorID
-                  WDE.setClassName "input success" formDiv
+                  existingClasses <- WDE.className formDiv
+                  WDE.setClassName (existingClasses <> " input success") formDiv
 
 -- | Performs a request that has can be retried through the UI in case of errors
 retryableResponse :: forall response. RetryableRequest -> (response -> IMMessage) -> Aff (ClientResponse response) -> Aff (Maybe IMMessage)
