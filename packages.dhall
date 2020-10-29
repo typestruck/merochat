@@ -216,9 +216,9 @@ let additions = {
        , repo =
            "https://github.com/easafe/purescript-flame.git"
        , version =
-           "v0.6.3"
+           "v0.7.0"
        }
 }
 
 in  upstream // overrides // additions
-with flame = ../purescript-flame/spago.dhall as Location
+      with flame = ../purescript-flame/spago.dhall as Location

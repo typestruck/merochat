@@ -179,3 +179,13 @@ select+.plus {
     stroke:rgb(238, 238, 238, 0.5);
     fill:rgb(238, 238, 238, 0.5)
 }
+
+.avatar-edition {
+    cursor: pointer;
+    display: flex;
+    align-items: end;
+}
+
+.avatar-edition svg {
+    margin-bottom: 10px;
+}

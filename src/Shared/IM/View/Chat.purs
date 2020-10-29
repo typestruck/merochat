@@ -14,8 +14,8 @@ import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 import Prim.Row (class Cons)
 import Shared.Focus as SF

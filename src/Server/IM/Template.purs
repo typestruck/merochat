@@ -9,8 +9,8 @@ import Debug.Trace (spy)
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.Unread as SIU

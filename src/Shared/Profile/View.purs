@@ -18,8 +18,8 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug.Trace (spy)
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
@@ -47,11 +47,13 @@ view model@{
 } = HE.div profileEditionId [
       HE.div [HA.class' "profile-edition suggestion contact"] [
             HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/profile.css"],
-            HE.div_ [
-                  HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, HA.onClick SelectAvatar],
-                  pen,
-                  HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
-                        HE.title "Unset profile picture",
+            HE.div (HA.class' "avatar-edition") [
+                  HE.div (HA.onClick SelectAvatar) [
+                        HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar],
+                        pen
+                  ],
+                  HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512", HA.onClick resetAvatar] [
+                        HE.title "Reset profile picture",
                         HE.path' $ HA.d "M96,472.205A23.715,23.715,0,0,0,119.579,496H392.421A23.715,23.715,0,0,0,416,472.205V168H96Z",
                         HE.path' $ HA.d "M333,91V48c0-16.262-11.684-29-26.6-29H205.6C190.684,19,179,31.738,179,48V91H64v42H448V91ZM221,61h70V91H221Z"
                   ]
@@ -128,7 +130,7 @@ view model@{
                         control = HE.input [
                               HA.type' "text",
                               HA.class' "modal-input",
-                              SF.focus,
+                              -- SF.focus,
                               HA.maxlength tagMaxCharacters,
                               HA.value $ DM.fromMaybe "" model.tagsInputed,
                               HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed),
@@ -158,7 +160,7 @@ view model@{
                               HE.textarea [
                                     HA.class' "profile-edition-description",
                                     HA.maxlength descriptionMaxCharacters,
-                                    SF.focus,
+                                   -- SF.focus,
                                     HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
                               ] $ DM.fromMaybe "" descriptionInputed,
 
@@ -265,7 +267,7 @@ view model@{
                                     ],
                                     HE.div_ [
                                           HE.input [
-                                                SF.focus,
+                                                -- SF.focus,
                                                 HA.class' "modal-input",
                                                 HA.maxlength maxLength,
                                                 HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed),
@@ -372,3 +374,10 @@ nothingOnEmpty s =
       case DS.trim s of
             "" -> Nothing
             v -> Just v
+
+resetAvatar :: ProfileMessage
+resetAvatar = SetPField $ \model -> model {
+      user = model.user {
+            avatar = Nothing
+      }
+}

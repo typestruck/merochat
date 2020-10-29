@@ -3,8 +3,8 @@ module Server.Landing.Template where
 import Prelude
 
 import Effect (Effect)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
@@ -51,7 +51,7 @@ template = do
                                     ],
                                     HE.div [HA.id "password-input", HA.class' "input"] [
                                           HE.label_ "Password",
-                                          HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete false, HA.id "password"],
+                                          HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.id "password"],
                                           HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                     ],
                                     HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],

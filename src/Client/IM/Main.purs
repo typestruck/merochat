@@ -38,7 +38,7 @@ import Effect.Timer as ET
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
-import Flame.External as FE
+import Flame.Html.Signal as FE
 import Foreign as FO
 import Partial.Unsafe as UP
 import Shared.DateTime (epoch)

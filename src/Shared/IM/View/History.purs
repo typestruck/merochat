@@ -8,8 +8,8 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Markdown as SM
 import Shared.IM.View.Retry as SIVR

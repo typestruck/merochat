@@ -11,8 +11,8 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.IM.View.Retry as SIVR

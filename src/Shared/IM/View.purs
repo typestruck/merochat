@@ -6,8 +6,8 @@ import Shared.Types
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.IM.View.Chat as SIVC
 import Shared.IM.View.Contacts as SIVCN
 import Shared.IM.View.History as SIVH

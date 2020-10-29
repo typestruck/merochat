@@ -6,8 +6,8 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.Avatar as SA
 
 view :: LeaderboardModel -> Html LeaderboardMessage

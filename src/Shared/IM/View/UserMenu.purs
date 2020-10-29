@@ -4,8 +4,8 @@ import Prelude
 import Shared.Types
 
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.Avatar as SA
 
 userMenu :: IMModel -> Html IMMessage

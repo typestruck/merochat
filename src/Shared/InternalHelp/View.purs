@@ -4,8 +4,8 @@ import Prelude
 import Shared.Types
 
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Server.Faq as SH
 import Server.Terms as ST
 import Server.Privacy  as SP
