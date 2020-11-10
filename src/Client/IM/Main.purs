@@ -113,7 +113,6 @@ update { webSocketRef, fileReader} model =
             ToggleContactProfile -> CIS.toggleContactProfile model
             PreviousSuggestion -> CIS.previousSuggestion model
             BlockUser id -> CIS.blockUser webSocket id model
-            ToggleSuggestionCard index -> CIS.toggleSuggestionCard index model
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu

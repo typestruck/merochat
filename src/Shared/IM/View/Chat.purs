@@ -39,8 +39,7 @@ chat {
       linkText,
       toggleChatModal,
       selectedImage,
-      erroredFields,
-      suggestionCard
+      erroredFields
 } =
       HE.div (HA.class' "send-box") [
             HE.div (HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }) [
@@ -60,10 +59,10 @@ chat {
                         HE.div [HA.class' "chat-input-options"] [
                               HE.button [HA.onClick $ ToggleChatModal HideChatModal, HA.title "Exit preview"] "Exit"
                         ],
-                        SM.displayMarkdown { extraClasses: "", markdown: DM.fromMaybe "" message, useHooks: true}
+                        HE.div' [HA.innerHtml <<< SM.parse $ DM.fromMaybe "" message]
                   ]
              else
-                  HE.div (HA.class' { hidden: DM.isNothing chatting && (DM.isNothing suggesting || suggestionCard == SmallCard) }) [
+                  HE.div (HA.class' { hidden: DM.isNothing chatting && DM.isNothing suggesting }) [
                         HE.div [HA.class' "chat-input-options"] [
                               bold,
                               italic,

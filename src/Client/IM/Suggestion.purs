@@ -84,9 +84,3 @@ toggleContactProfile :: IMModel -> NoMessages
 toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model {
       fullContactProfileVisible = not fullContactProfileVisible
 }
-
-toggleSuggestionCard :: Maybe Int -> IMModel -> NoMessages
-toggleSuggestionCard index model@{ suggestionCard } = F.noMessages $ model {
-      suggesting = index,
-      suggestionCard = if suggestionCard == SmallCard then BigCard else SmallCard
-}

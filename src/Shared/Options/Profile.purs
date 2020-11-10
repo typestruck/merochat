@@ -4,7 +4,7 @@ nameMaxCharacters :: Int
 nameMaxCharacters = 40
 
 headlineMaxCharacters :: Int
-headlineMaxCharacters = 150
+headlineMaxCharacters = 100
 
 emailMaxCharacters :: Int
 emailMaxCharacters = 254
@@ -13,7 +13,7 @@ maxLanguages :: Int
 maxLanguages = 4
 
 maxTags :: Int
-maxTags = 12
+maxTags = 10
 
 tagMaxCharacters :: Int
 tagMaxCharacters = 40

@@ -16,16 +16,16 @@ import Shared.Markdown as SM
 import Shared.Options.Profile (tagsSmallCard)
 import Shared.Unsafe ((!@))
 
-profile :: Boolean -> IMModel -> Html IMMessage
-profile isClientRender model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, suggestionCard } =
+profile :: IMModel -> Html IMMessage
+profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible } =
       if DA.null suggestions then
             emptySuggestions
        else
             case suggesting, chatting of
-                  (Just index), Nothing -> suggestion isClientRender model index
+                  (Just index), Nothing -> suggestion model index
                   Nothing, (Just index) ->
                         if fullContactProfileVisible then
-                              fullProfile isClientRender false chatting (contacts !@ index).user
+                              fullProfile false chatting (contacts !@ index).user
                         else
                               contact chatting (contacts !@ index).user
                   _, _ -> emptySuggestions
@@ -62,65 +62,24 @@ contact chatting { id, name, avatar, age, karma, headline, gender, country, lang
             ]
       ]
 
-suggestion :: Boolean -> IMModel -> Int -> Html IMMessage
-suggestion isClientRender { suggestionCard, user, suggestions } index =
-      case suggestionCard of
-            SmallCard ->
-                  HE.div (HA.class' "suggestion-cards") [
-                        HE.div (HA.class' "card-top-header") [
-                              HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
-                              HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
-                        ],
-                        HE.div (HA.class' "small-cards") $ map (\i -> smallCard (suggestions !! i) i) (index .. (index + 2))
-                  ]
-            BigCard -> HE.div (HA.class' "big-cards") $ map (\i -> bigCard (suggestions !! i) i) (index .. (index + 2))
-
-      where bigCard suggestion suggestionIndex =
+suggestion :: IMModel -> Int -> Html IMMessage
+suggestion { user, suggestions } index =
+      HE.div (HA.class' "suggestion-cards") [
+            HE.div (HA.class' "card-top-header") [
+                  HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
+                  HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
+            ],
+            HE.div (HA.class' "cards") $ map (\i -> card (suggestions !! i) i) (index .. (index + 2))
+      ]
+      where card suggestion suggestionIndex =
                   case suggestion of
                         Nothing -> HE.createEmptyElement "div"
                         Just suggestion ->
                               let   isCenter = suggestionIndex == index + 1
                                     attrs
-                                          | isCenter = [ HA.class' "card-full card-full-center"]
-                                          | otherwise = [HA.class' "card-full card-full-sides"]
-                              in HE.div attrs $ fullProfile isClientRender true (Just suggestionIndex) suggestion
-
-            smallCard suggestion suggestionIndex =
-                  case suggestion of
-                        Nothing -> HE.createEmptyElement "div"
-                        Just { name, avatar, age, headline, karma, gender, country, tags } ->
-                              let   isCenter = suggestionIndex == index + 1
-                                    maybeSuggestionIndex = Just suggestionIndex
-                                    attrs
-                                          | isCenter = [ HA.class' "card card-center", HA.onClick $ ToggleSuggestionCard maybeSuggestionIndex]
+                                          | isCenter = [ HA.class' "card card-center"]
                                           | otherwise = [HA.class' "card card-sides"]
-                              in HE.div attrs [
-                                    HE.div (HA.class' "card-top") [
-                                          HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass maybeSuggestionIndex, HA.src $ SA.avatarForRecipient maybeSuggestionIndex avatar],
-                                          HE.h1 (HA.class' "name") name,
-                                          HE.div (HA.class' "headline") headline,
-                                          HE.div_ [
-                                                HE.span [HA.class' "span-info"] $ show karma,
-                                                HE.span [HA.class' "duller"] " karma"
-                                          ],
-                                          HE.div (HA.class' "profile-asl") [
-
-                                                HE.div_ [
-                                                      toSpan $ map show age,
-                                                      duller (DM.isNothing age || DM.isNothing gender) ", ",
-                                                      toSpan gender
-                                                ],
-                                                HE.div_ [
-                                                      duller (DM.isNothing country) "from ",
-                                                      toSpan country
-                                                ]
-                                          ],
-                                          HE.div (HA.class' "profile-tags") <<< map toTagSpan $ DA.take tagsSmallCard tags,
-                                          arrow PreviousSuggestion,
-                                          arrow NextSuggestion
-                                    ],
-                                    HE.div (HA.class' {"card-more": true, hidden: not isCenter}) "View complete profile"
-                              ]
+                              in HE.div attrs $ fullProfile true (Just suggestionIndex) suggestion
 
 arrow :: IMMessage -> Html IMMessage
 arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
@@ -137,11 +96,11 @@ arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
                   ]
 ]
 
-fullProfile :: Boolean -> Boolean -> Maybe Int -> IMUser -> Html IMMessage
-fullProfile isClientRender isSuggesting index { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
+fullProfile :: Boolean -> Maybe Int -> IMUser -> Html IMMessage
+fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
       HE.div attrs [
             HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar],
-            HE.h1_ name,
+            HE.h1 (HA.class' "profile-name") name,
             HE.div (HA.class' "headline") headline,
             HE.div (HA.class' "profile-karma") [
                   HE.div_ [
@@ -167,10 +126,10 @@ fullProfile isClientRender isSuggesting index { id, name, avatar, age, karma, he
 
             HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
 
-            duller false "About",
+            HE.span (HA.class' "duller profile-description-about" ) "About",
                   -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
 
-            SM.displayMarkdown { extraClasses: "description-message", markdown: description, useHooks: isClientRender },
+            HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description],
             arrow PreviousSuggestion,
             arrow NextSuggestion
       ]

@@ -148,7 +148,7 @@ view model@{
                                     HE.span (HA.class' "duller") "About",
                                     pen
                               ],
-                              SM.displayMarkdown { extraClasses: "profile-description", markdown: user.description, useHooks: false }
+                              HE.div' [HA.class' "profile-description", HA.innerHtml $ SM.parse user.description]
                         ],
                         HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
                               HE.div (HA.class' "bold") "Your description",

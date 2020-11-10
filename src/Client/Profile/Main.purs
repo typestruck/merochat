@@ -13,7 +13,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 main :: Effect Unit
 main = do
-      channel <- FAE.resumeMount (QuerySelector ".profile-edition") {
+      channel <- FAE.resumeMount (QuerySelector "#profile-edition-form") {
             view: SPV.view,
             init: Nothing,
             update: CPU.update

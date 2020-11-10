@@ -12,7 +12,7 @@ import Shared.Profile.View as SPV
 
 template :: { user :: ProfileUser, countries :: Array (Tuple PrimaryKey String), languages :: Array (Tuple PrimaryKey String) } -> Effect String
 template {user: user, countries, languages } = do
-      F.preMount (QuerySelector ".profile-edition") {
+      F.preMount (QuerySelector "#profile-edition-form") {
             view: SPV.view,
             init: {
                   nameInputed: Nothing,

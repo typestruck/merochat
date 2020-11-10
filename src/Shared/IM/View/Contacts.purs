@@ -48,7 +48,7 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
                         ],
                         HE.div [HA.class' "contact-profile"] [
                               HE.span (HA.class' "contact-name") name,
-                              SM.displayRestrictedMarkdown { extraClasses: "contact-list-last-message", markdown: lastMessage history, useHooks: isClientRender }
+                              HE.div' [HA.class' "contact-list-last-message", HA.innerHtml <<< SM.parseRestricted $ lastMessage history]
                         ],
                         HE.div (HA.class' "contact-options") [
                               HE.span (HA.class' { "duller": true, "invisible": not isClientRender }) <<< HE.text <<< DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date) $ DA.last history ,
