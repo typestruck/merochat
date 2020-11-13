@@ -113,12 +113,12 @@ body {
     font-family: Verdana, "sans serif";
     font-size: 1.12em;
     letter-spacing: -0.02em;
-    margin:0;
-    margin-top:11px
+    margin: 0;
+    margin-top: 11px
 }
 
 .profile-asl {
-    font-size:1.12em;
+    font-size: 1.12em;
     max-width: 872px;
     margin-bottom: 20px;
 }
@@ -247,7 +247,6 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-
 }
 
 .suggestion.new {
@@ -661,7 +660,7 @@ svg.toolbar-action {
 .list-tags, .tag {
     display: inline-block;
     margin: 0 5px;
-    font-size:1.1em;
+    font-size: 1.1em;
     margin-bottom: 10px;
     padding: 0px 10px;
     border-radius: 20px;
@@ -839,7 +838,7 @@ input:not(type=button):focus {
 }
 
 .profile-karma {
-    font-size:1.12em;
+    font-size: 1.12em;
     margin-bottom: 7px;
 }
 
@@ -1335,6 +1334,7 @@ select {
 .cards {
     overflow-x: hidden;
     display: flex;
+    flex-direction: row-reverse;
     flex-grow: 1;
     justify-content: center;
 }
@@ -1348,7 +1348,7 @@ select {
 .card-center {
     z-index: 2;
     background: #262626;
-    width:1040px;
+    width: 1040px;
     height: 858px;
 }
 
@@ -1369,13 +1369,11 @@ select {
 }
 
 .card-sides:first-child {
-    margin-right: -50%;
-    padding-right: 0;
+    margin-left: -50%;
 }
 
 .card-sides:last-child {
-    margin-left: -50%;
-    padding-left: 0
+    margin-right: -50%;
 }
 
 @media (min-width:1920px) {
@@ -1387,6 +1385,6 @@ select {
 .profile-description-about {
     display: inline-block;
     margin-top: 50px;
-    font-size:1.12em;
+    font-size: 1.12em;
     font-weight: bold;
 }

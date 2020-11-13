@@ -68,18 +68,18 @@ main = do
             update: update { fileReader, webSocketRef }
       }
 
-      setUpWebSocket webSocketRef channel
+    --  setUpWebSocket webSocketRef channel
       --for drag and drop
       CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
       --display settings/profile page
-      FE.send [FE.onClick' [ShowUserContextMenu]] channel
+     -- FE.send [FE.onClick' [ShowUserContextMenu]] channel
       --image upload
       input <- CIC.getFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
 
-      windowsFocus channel
+     -- windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader} model =

@@ -7,7 +7,7 @@ import Data.Array ((!!), (..))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-
+import Debug.Trace (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -55,7 +55,7 @@ contact chatting { id, name, avatar, age, karma, headline, gender, country, lang
                               duller (DM.isNothing country) "from ",
                               toSpan country
                         ],
-                        HE.div_ ([
+                        HE.div_  ([
                               duller (DA.null languages) "speaks "
                         ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
                   ]
@@ -100,7 +100,7 @@ fullProfile :: Boolean -> Maybe Int -> IMUser -> Html IMMessage
 fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
       HE.div attrs [
             HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar],
-            HE.h1 (HA.class' "profile-name") name,
+            HE.h1 (HA.class' "profile-name") (spy (show index) name),
             HE.div (HA.class' "headline") headline,
             HE.div (HA.class' "profile-karma") [
                   HE.div_ [
@@ -119,7 +119,7 @@ fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender,
                         duller (DM.isNothing country) "from ",
                         toSpan country
                   ],
-                  HE.div_ ([
+                  HE.div ((HA.class' "abc")) ([
                         duller (DA.null languages) "speaks "
                   ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
             ],
