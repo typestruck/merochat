@@ -103,6 +103,11 @@ body {
     font-size: 3em;
 }
 
+.svg-55 {
+    width: 55px;
+    height: 55px;
+}
+
 .svg-64 {
     width: 64px;
     height: 64px;
@@ -1310,8 +1315,8 @@ select {
 }
 
 .suggestion-arrow {
-    margin-top: -50px;
-    left: -25px;
+    margin-top: -55px;
+    left: 20px;
     top: 50%;
     padding: 0;
 }
@@ -1323,8 +1328,8 @@ select {
 
 .suggestion-arrow:last-child {
     left: 100%;
-    margin-left: -25px;
     top: 50%;
+    margin-left: -75px;
 }
 
 .card-sides .suggestion-arrow {
@@ -1346,10 +1351,9 @@ select {
 }
 
 .card-center {
+    border-bottom: none;
     z-index: 2;
     background: #262626;
-    width: 1040px;
-    height: 858px;
 }
 
 .card-sides .suggestion {
@@ -1385,6 +1389,45 @@ select {
 .profile-description-about {
     display: inline-block;
     margin-top: 50px;
-    font-size: 1.12em;
+    font-size: 1.1em;
     font-weight: bold;
+}
+
+.strokeless {
+    stroke: none;
+}
+
+.filless {
+    fill: none
+}
+
+.suggestion-center {
+    width: 1040px;
+    height: 858px;
+    display: flex;
+    border-radius: 15px;
+    background: url('/client/media/suggestions.png');
+    position: relative;
+    flex-direction: column;
+}
+
+.suggestion-center .suggestion.new {
+    height: 698px;
+    background: none;
+}
+
+.suggestion-center .suggestion.new .description-message {
+    overflow-y: auto;
+}
+
+
+.suggestion-input {
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.suggestion-input .svg-32.attachment {
+    display: none;
 }

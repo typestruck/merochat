@@ -243,6 +243,11 @@ type Turn = {
     replyDelay :: Number --Seconds
 }
 
+data ProfilePresentation =
+      FullContactProfile |
+      CurrentSuggestion |
+      OtherSuggestion
+
 data MessageContent =
       Image (Tuple String String) |
       Text String
@@ -448,6 +453,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqFullContactProfile :: Eq ProfilePresentation
 derive instance eqRetryableRequest :: Eq RetryableRequest
 derive instance eqGenerate :: Eq Generate
 derive instance eqShowChatModal :: Eq ShowChatModal

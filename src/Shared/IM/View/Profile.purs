@@ -12,6 +12,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
+import Shared.IM.View.Chat as SIVC
 import Shared.Markdown as SM
 import Shared.Options.Profile (tagsSmallCard)
 import Shared.Unsafe ((!@))
@@ -23,9 +24,9 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
        else
             case suggesting, chatting of
                   (Just index), Nothing -> suggestion model index
-                  Nothing, (Just index) ->
+                  Nothing, i@(Just index) ->
                         if fullContactProfileVisible then
-                              fullProfile false chatting (contacts !@ index).user
+                              fullProfile FullContactProfile i model (contacts !@ index).user
                         else
                               contact chatting (contacts !@ index).user
                   _, _ -> emptySuggestions
@@ -63,7 +64,7 @@ contact chatting { id, name, avatar, age, karma, headline, gender, country, lang
       ]
 
 suggestion :: IMModel -> Int -> Html IMMessage
-suggestion { user, suggestions } index =
+suggestion model@{ user, suggestions } index =
       HE.div (HA.class' "suggestion-cards") [
             HE.div (HA.class' "card-top-header") [
                   HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
@@ -79,61 +80,67 @@ suggestion { user, suggestions } index =
                                     attrs
                                           | isCenter = [ HA.class' "card card-center"]
                                           | otherwise = [HA.class' "card card-sides"]
-                              in HE.div attrs $ fullProfile true (Just suggestionIndex) suggestion
+                              in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just suggestionIndex) model suggestion
 
 arrow :: IMMessage -> Html IMMessage
 arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
       case message of
             PreviousSuggestion ->
-                  HE.svg [HA.class' "svg-50", HA.viewBox "0 0 512 512"] [
-                        HE.circle' [HA.cx "256", HA.cy "256", HA.r "240", HA.opacity "0.25"],
-                        HE.polygon' [HA.points "276.149 343.518 209.63 276.999 385 276.999 385 235 209.631 235 276.149 168.482 246.45 138.784 129.234 256 246.45 373.217 276.149 343.518"]
+                  HE.svg [HA.class' "svg-55", HA.viewBox "0 0 55 55"] [
+                        HE.path' [HA.class' "strokeless", HA.d "M54.6758 27.4046C54.6758 42.456 42.483 54.6576 27.4423 54.6576C12.4016 54.6576 0.20874 42.456 0.20874 27.4046C0.20874 12.3532 12.4016 0.151611 27.4423 0.151611C42.483 0.151611 54.6758 12.3532 54.6758 27.4046Z", HA.fill "#1B2921"],
+                        HE.path' [HA.class' "filless", HA.strokeWidth "2.91996", HA.d "M32.2858 13.3713L19.6558 27.6094L32.2858 40.2293"]
                   ]
             _ ->
-                  HE.svg [HA.class' "svg-50", HA.viewBox "0 0 512 512"] [
-                        HE.circle' [HA.cx "256", HA.cy "256", HA.r "240", HA.opacity "0.25"],
-                        HE.polygon' [HA.points "235.851 343.518 265.55 373.217 382.766 256 265.55 138.784 235.851 168.482 302.369 235 127.887 235 127.887 276.999 302.37 276.999 235.851 343.518"]
+                  HE.svg [HA.class' "svg-55", HA.viewBox "0 0 38 38"] [
+                        HE.path' [HA.class' "strokeless", HA.d "M4.57764e-05 19.0296C4.57764e-05 29.4062 8.41191 37.8181 18.7885 37.8181C29.165 37.8181 37.5769 29.4062 37.5769 19.0296C37.5769 8.65308 29.165 0.241211 18.7885 0.241211C8.41191 0.241211 4.57764e-05 8.65308 4.57764e-05 19.0296Z", HA.fill "#1B2921"],
+                        HE.path' [HA.class' "filless",  HA.strokeWidth "2.01305", HA.d "M15.4472 9.35498L24.1606 19.1708L15.4472 27.8711"]
                   ]
 ]
 
-fullProfile :: Boolean -> Maybe Int -> IMUser -> Html IMMessage
-fullProfile isSuggesting index { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
-      HE.div attrs [
-            HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar],
-            HE.h1 (HA.class' "profile-name") (spy (show index) name),
-            HE.div (HA.class' "headline") headline,
-            HE.div (HA.class' "profile-karma") [
-                  HE.div_ [
-                        HE.span [HA.class' "span-info"] $ show karma,
-                        HE.span [HA.class' "duller"] " karma"
-                  ]
-            ],
-
-            HE.div (HA.class' "profile-asl") [
-                  HE.div_ [
-                        toSpan $ map show age,
-                        duller (DM.isNothing age || DM.isNothing gender) ", ",
-                        toSpan gender
+fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
+fullProfile presentation index model { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
+      case presentation of
+            FullContactProfile -> HE.div [HA.class' "suggestion old", HA.title "Click to hide full profile", HA.onClick ToggleContactProfile] profile
+            CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
+                  HE.div [HA.class' "suggestion new"]  profile,
+                  HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput model
+            ]
+            OtherSuggestion ->  HE.div [HA.class' "suggestion new"] profile
+      where profile = [
+                  HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar],
+                  HE.h1 (HA.class' "profile-name") name,
+                  HE.div (HA.class' "headline") headline,
+                  HE.div (HA.class' "profile-karma") [
+                        HE.div_ [
+                              HE.span [HA.class' "span-info"] $ show karma,
+                              HE.span [HA.class' "duller"] " karma"
+                        ]
                   ],
-                  HE.div_ [
-                        duller (DM.isNothing country) "from ",
-                        toSpan country
+
+                  HE.div (HA.class' "profile-asl") [
+                        HE.div (HA.class' "a") [
+                              toSpan $ map show age,
+                              duller (DM.isNothing age || DM.isNothing gender) ", ",
+                              toSpan gender
+                        ],
+                        HE.div (HA.class' "b") [
+                              duller (DM.isNothing country) "from ",
+                              toSpan country
+                        ],
+                        HE.div (HA.class' ("c")) ([
+                              duller (DA.null languages) "speaks "
+                        ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
                   ],
-                  HE.div ((HA.class' "abc")) ([
-                        duller (DA.null languages) "speaks "
-                  ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
-            ],
 
-            HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
+                  HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
 
-            HE.span (HA.class' "duller profile-description-about" ) "About",
-                  -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
+                  HE.span (HA.class' "duller profile-description-about" ) "About",
+                        -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
 
-            HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description],
-            arrow PreviousSuggestion,
-            arrow NextSuggestion
-      ]
-      where attrs = if isSuggesting then [HA.class' "suggestion new"] else [HA.class' "suggestion old", HA.title "Click to hide full profile", HA.onClick ToggleContactProfile]
+                  HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description],
+                  arrow PreviousSuggestion,
+                  arrow NextSuggestion
+            ]
 
 toSpan :: Maybe String -> Html IMMessage
 toSpan =

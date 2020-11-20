@@ -27,7 +27,7 @@ import Shared.Unsafe as SU
 import Web.UIEvent.KeyboardEvent as WUK
 
 chat :: IMModel -> Html IMMessage
-chat {
+chat model@{
       chatting,
       contacts,
       suggesting,
@@ -41,7 +41,7 @@ chat {
       selectedImage,
       erroredFields
 } =
-      HE.div (HA.class' "send-box") [
+      HE.div (HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }) [
             HE.div (HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }) [
                   HE.label_ "Text",
                   HE.input [HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
@@ -53,46 +53,7 @@ chat {
                         HE.button [HA.class' "green-button", HA.onClick InsertLink] "Insert"
                   ]
             ],
-            HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory,
-            if toggleChatModal == ShowPreview then
-                  HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview }) [
-                        HE.div [HA.class' "chat-input-options"] [
-                              HE.button [HA.onClick $ ToggleChatModal HideChatModal, HA.title "Exit preview"] "Exit"
-                        ],
-                        HE.div' [HA.innerHtml <<< SM.parse $ DM.fromMaybe "" message]
-                  ]
-             else
-                  HE.div (HA.class' { hidden: DM.isNothing chatting && DM.isNothing suggesting }) [
-                        HE.div [HA.class' "chat-input-options"] [
-                              bold,
-                              italic,
-                              strikethrough,
-                              heading,
-                              unorderedList,
-                              orderedList,
-                              linkButton toggleChatModal,
-                              HE.button [HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
-                              HE.div (HA.class' "send-enter") [
-                                    HE.input [HA.type' "checkbox", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
-                                    HE.label (HA.for "message-enter") "Send message on enter"
-                              ]
-                        ],
-                        HE.div [HA.class' { "chat-input-area": true, side: not messageEnter }] [
-                              emojis toggleChatModal,
-                              HE.textarea' [
-                                    HA.rows 1,
-                                    HA.class' "chat-input",
-                                    HA.id "chat-input",
-                                    HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
-                                    HA.disabled $ not isWebSocketConnected,
-                                    enterKeyDown EnterBeforeSendMessage,
-                                    HA.onInput BeforeSendMessage,
-                                    HA.value $ DM.fromMaybe "" message
-                              ],
-                              image,
-                              sendButton messageEnter
-                        ]
-                  ],
+            chatBarInput model,
             HE.div (HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage }) [
                   HE.div (HA.class' { "upload-div": true, hidden : not imageValidationFailed }) [
                         HE.input [HA.id "image-file-input", HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
@@ -113,12 +74,7 @@ chat {
                   ]
             ]
       ]
-      where toEmojiCategory (Tuple name pairs) = HE.div_ [
-                  HE.div (HA.class' "duller") name,
-                  HE.div_ $ map (HE.span_ <<< _.s) pairs
-            ]
-            imageValidationFailed = DA.elem (TDS.reflectSymbol (SProxy :: SProxy "selectedImage")) erroredFields
-            recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name
+      where imageValidationFailed = DA.elem (TDS.reflectSymbol (SProxy :: SProxy "selectedImage")) erroredFields
 
 getName :: forall a b. Maybe Int -> Array b -> (b -> a) -> Maybe a
 getName index list accessor = do
@@ -212,3 +168,61 @@ sendButton messageEnter = HE.svg [HA.class' { "send-button svg-50": true, hidden
       HE.path' (HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"),
       HE.polygon' (HA.points "99.76 213.29 125.13 153.56 99.76 93.81 241.34 153.56 99.76 213.29")
 ]
+
+chatBarInput :: IMModel -> Html IMMessage
+chatBarInput {
+      chatting,
+      contacts,
+      suggesting,
+      isWebSocketConnected,
+      message,
+      messageEnter,
+      suggestions,
+      toggleChatModal
+ } = HE.fragment [
+      HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory,
+      if toggleChatModal == ShowPreview then
+            HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview }) [
+                  HE.div [HA.class' "chat-input-options"] [
+                        HE.button [HA.onClick $ ToggleChatModal HideChatModal, HA.title "Exit preview"] "Exit"
+                  ],
+                  HE.div' [HA.innerHtml <<< SM.parse $ DM.fromMaybe "" message]
+            ]
+       else
+            HE.div (HA.class' { hidden: DM.isNothing chatting && DM.isNothing suggesting }) [
+                  HE.div [HA.class' "chat-input-options"] [
+                        bold,
+                        italic,
+                        strikethrough,
+                        heading,
+                        unorderedList,
+                        orderedList,
+                        linkButton toggleChatModal,
+                        HE.button [HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
+                        HE.div (HA.class' "send-enter") [
+                              HE.input [HA.type' "checkbox", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
+                              HE.label (HA.for "message-enter") "Send message on enter"
+                        ]
+                  ],
+                  HE.div [HA.class' { "chat-input-area": true, side: not messageEnter }] [
+                        emojis toggleChatModal,
+                        HE.textarea' [
+                              HA.rows 1,
+                              HA.class' "chat-input",
+                              HA.id "chat-input",
+                              HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
+                              HA.disabled $ not isWebSocketConnected,
+                              enterKeyDown EnterBeforeSendMessage,
+                              HA.onInput BeforeSendMessage,
+                              HA.value $ DM.fromMaybe "" message
+                        ],
+                        image,
+                        sendButton messageEnter
+                  ]
+            ]
+]
+      where toEmojiCategory (Tuple name pairs) = HE.div_ [
+                  HE.div (HA.class' "duller") name,
+                  HE.div_ $ map (HE.span_ <<< _.s) pairs
+            ]
+            recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name
