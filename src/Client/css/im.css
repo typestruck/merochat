@@ -8,7 +8,6 @@ body {
 }
 
 .description-message, .profile-description, .profile-edition-description {
-    width: 872px;
     font-size: 1.12em;
 }
 
@@ -23,7 +22,7 @@ body {
 
 .im {
     display: grid;
-    grid-template-columns: 30% 70%;
+    grid-template-columns: 25% 75%;
 }
 
 .left-box {
@@ -103,11 +102,6 @@ body {
     font-size: 3em;
 }
 
-.svg-55 {
-    width: 55px;
-    height: 55px;
-}
-
 .svg-64 {
     width: 64px;
     height: 64px;
@@ -117,15 +111,11 @@ body {
 .profile-name {
     font-family: Verdana, "sans serif";
     font-size: 1.12em;
-    letter-spacing: -0.02em;
     margin: 0;
-    margin-top: 11px
 }
 
 .profile-asl {
     font-size: 1.12em;
-    max-width: 872px;
-    margin-bottom: 20px;
 }
 
 .profile-asl div {
@@ -167,8 +157,6 @@ body {
 }
 
 .avatar-profile, .avatar-profile-edition {
-    width: 94px;
-    height: 91px;
     border-radius: 100%;
 }
 
@@ -256,7 +244,6 @@ body {
 
 .suggestion.new {
     background: url('/client/media/suggestions.png');
-    padding-top: 41px;
     border-radius: 15px;
 }
 
@@ -303,7 +290,6 @@ body {
 }
 
 .profile-contact-header h1 {
-    font-size: 1.2em;
     margin: 5px 0px
 }
 
@@ -760,15 +746,10 @@ svg.toolbar-action {
 }
 
 .headline, .profile-edition-headline {
-    font-size: 1.24em;
+    font-size: 1.23em;
     display: inline-block;
-    margin: 7px 0;
     font-style: italic;
     text-align: center;
-}
-
-.suggestion.new .headline {
-    max-width: 670px;
 }
 
 .send-image {
@@ -834,17 +815,17 @@ input:not(type=button):focus {
 
 .profile-tags {
     text-align: center;
-    max-width: 872px;
 }
 
 .profile-asl, .profile-karma {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .profile-karma {
     font-size: 1.12em;
-    margin-bottom: 7px;
 }
 
 .profile-basics-column {
@@ -1299,15 +1280,6 @@ select {
 .card-top-header {
     color: #C4D367;
     text-align: center;
-    margin: 50px 0px;
-}
-
-.welcome {
-    font-size: 1.7em;
-}
-
-.welcome-new {
-    font-size: 1.1em;
 }
 
 .suggestion-arrow {
@@ -1315,8 +1287,6 @@ select {
 }
 
 .suggestion-arrow {
-    margin-top: -55px;
-    left: 20px;
     top: 50%;
     padding: 0;
 }
@@ -1329,7 +1299,6 @@ select {
 .suggestion-arrow:last-child {
     left: 100%;
     top: 50%;
-    margin-left: -75px;
 }
 
 .card-sides .suggestion-arrow {
@@ -1337,7 +1306,7 @@ select {
 }
 
 .cards {
-    overflow-x: hidden;
+    overflow: hidden;
     display: flex;
     flex-direction: row-reverse;
     flex-grow: 1;
@@ -1351,7 +1320,7 @@ select {
 }
 
 .card-center {
-    border-bottom: none;
+    border: none;
     z-index: 2;
     background: #262626;
 }
@@ -1367,9 +1336,6 @@ select {
 
 .card-sides {
     overflow: hidden;
-    margin: 46px 0;
-    height: 766px;
-    width: 1100px;
 }
 
 .card-sides:first-child {
@@ -1380,17 +1346,10 @@ select {
     margin-right: -50%;
 }
 
-@media (min-width:1920px) {
-    .im {
-        grid-template-columns: 25% 75%;
-    }
-}
-
 .profile-description-about {
     display: inline-block;
-    margin-top: 50px;
-    font-size: 1.1em;
     font-weight: bold;
+    font-size: 1.1em;
 }
 
 .strokeless {
@@ -1402,27 +1361,20 @@ select {
 }
 
 .suggestion-center {
-    width: 1040px;
-    height: 858px;
     display: flex;
     border-radius: 15px;
     background: url('/client/media/suggestions.png');
     position: relative;
     flex-direction: column;
+    cursor: pointer;
+    border: 2px solid #4E4E4E;
 }
 
 .suggestion-center .suggestion.new {
-    height: 698px;
     background: none;
 }
 
-.suggestion-center .suggestion.new .description-message {
-    overflow-y: auto;
-}
-
-
 .suggestion-input {
-    height: 160px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -1430,4 +1382,180 @@ select {
 
 .suggestion-input .svg-32.attachment {
     display: none;
+}
+
+.profile-contact-top .headline {
+    text-align: left;
+}
+
+.profile-contact-top .tag:first-of-type {
+    margin-left: 0;
+}
+
+.tags-description {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.suggestion-center .suggestion.new .tags-description {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding:0 5px
+}
+
+.description-message {
+    padding:0 5px;
+}
+
+.suggestion-center .suggestion.new {
+    overflow: auto;
+}
+
+/* dry this shite  */
+@media (min-width:1366px) and (max-width:1919px) {
+    html, body {
+        font-size: max(14.5px, 1vw);
+        line-height: 1.41857143;
+    }
+    .welcome {
+        font-size: 1.5em;
+    }
+    .card-top-header {
+        margin: 16px 0px;
+    }
+    .card-sides {
+        margin: 10px 0;
+        width: calc(100vw * 0.6398243045387994);
+        height: calc(100vh * 0.81640625) ;
+    }
+    .profile-description-about {
+        margin-top: 33px;
+    }
+    .card-center, .suggestion-center {
+        width: calc(100vw * 0.55344070278184475);
+        height: calc(100vh * 0.8450520833333334);
+    }
+    .suggestion-center .suggestion.new {
+        height: 596px;
+    }
+    .suggestion-input {
+        height: 160px;
+    }
+    .avatar-profile, .avatar-profile-edition {
+        width: 68px;
+        height: 69px;
+    }
+    .profile-name {
+        margin-top: 9px;
+    }
+    .suggestion.new {
+        padding-top: 31px;
+    }
+    .headline, .profile-edition-headline {
+        margin: 5px 0;
+    }
+    .profile-karma {
+        margin-bottom: 5px;
+    }
+    .profile-asl {
+        max-width: 595px;
+        margin-bottom: 16px;
+    }
+    .suggestion .headline {
+        max-width: 483px;
+    }
+    .profile-tags {
+        max-width: 595px;
+    }
+    .suggestion-arrow .svg-55 {
+        width: 38px;
+        height: 38px;
+    }
+    .suggestion-arrow {
+        margin-top: -38px;
+        left: 10px;
+    }
+    .suggestion-arrow:last-child {
+        margin-left: -48px;
+    }
+    .description-message, .profile-description, .profile-edition-description {
+        width: 595px;
+    }
+}
+
+/*  use percentages here too */
+@media (min-width:1920px) {
+    html, body {
+        font-size: 18px;
+        line-height: 1.51857143;
+    }
+    .welcome {
+        font-size: 1.7em;
+    }
+    .welcome-new {
+        font-size: 1.1em;
+    }
+    .card-top-header {
+        margin: 15px 0px;
+    }
+    .card-sides {
+        margin: 46px 0;
+        height: 766px;
+        width: 1100px;
+    }
+    .profile-description-about {
+        margin-top: 50px;
+    }
+    .suggestion-center {
+        width: 1040px;
+        height: 858px;
+    }
+    .suggestion-center .suggestion.new {
+        height: 698px;
+    }
+    .avatar-profile, .avatar-profile-edition {
+        width: 94px;
+        height: 91px;
+    }
+    .profile-name {
+        margin-top: 11px;
+        letter-spacing: -0.02em;
+    }
+    .suggestion.new {
+        padding-top: 41px;
+    }
+    .headline, .profile-edition-headline {
+        margin: 7px 0;
+    }
+    .profile-karma {
+        margin-bottom: 7px;
+    }
+    .profile-asl {
+        max-width: 872px;
+        margin-bottom: 20px;
+    }
+    .suggestion .headline {
+        max-width: 670px;
+    }
+    .profile-tags {
+        max-width: 872px;
+    }
+    .suggestion-arrow .svg-55 {
+        width: 55px;
+        height: 55px
+    }
+    .suggestion-arrow {
+        margin-top: -55px;
+        left: 10px;
+    }
+    .suggestion-arrow:last-child {
+        margin-left: -65px;
+    }
+    .description-message, .profile-description, .profile-edition-description {
+        width: 872px;
+    }
+    .suggestion-input {
+        height: 160px;
+    }
 }

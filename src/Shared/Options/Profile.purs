@@ -21,9 +21,6 @@ tagMaxCharacters = 40
 descriptionMaxCharacters :: Int
 descriptionMaxCharacters = 1000
 
-tagsSmallCard :: Int
-tagsSmallCard = 4
-
 passwordMinCharacters :: Int
 passwordMinCharacters = 5
 

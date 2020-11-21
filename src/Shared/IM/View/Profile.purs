@@ -14,7 +14,6 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.IM.View.Chat as SIVC
 import Shared.Markdown as SM
-import Shared.Options.Profile (tagsSmallCard)
 import Shared.Unsafe ((!@))
 
 profile :: IMModel -> Html IMMessage
@@ -38,7 +37,7 @@ contact chatting { id, name, avatar, age, karma, headline, gender, country, lang
             HE.div (HA.class' "profile-contact-top") [
                   HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar],
                   HE.div (HA.class' "profile-contact-header") [
-                        HE.h1_ name,
+                        HE.h1 (HA.class' "contact-name") name,
                         HE.div (HA.class' "headline") headline,
                         HE.div (HA.class' "contact-profile-tags") $ map toTagSpan tags
                   ],
@@ -105,7 +104,7 @@ fullProfile presentation index model { id, name, avatar, age, karma, headline, g
                   HE.div [HA.class' "suggestion new"]  profile,
                   HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput model
             ]
-            OtherSuggestion ->  HE.div [HA.class' "suggestion new"] profile
+            OtherSuggestion -> HE.div [HA.class' "suggestion new"] profile
       where profile = [
                   HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar],
                   HE.h1 (HA.class' "profile-name") name,
@@ -132,12 +131,14 @@ fullProfile presentation index model { id, name, avatar, age, karma, headline, g
                         ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
                   ],
 
-                  HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
+                  HE.div (HA.class' "tags-description") [
+                        HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
 
-                  HE.span (HA.class' "duller profile-description-about" ) "About",
-                        -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
+                        HE.span (HA.class' "duller profile-description-about" ) "About",
+                              -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
 
-                  HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description],
+                        HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]
+                  ],
                   arrow PreviousSuggestion,
                   arrow NextSuggestion
             ]
