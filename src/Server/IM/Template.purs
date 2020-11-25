@@ -22,7 +22,8 @@ template :: {
       user :: IMUser
 } -> Effect String
 template {contacts, suggestions, user} = do
-      let unreadChats = SIU.countUnreadChats user.id contacts
+      let   unreadChats = SIU.countUnreadChats user.id contacts
+            suggestionsCount = DA.length suggestions
       F.preMount (QuerySelector ".im") {
             view: \model -> ST.templateWith $ defaultParameters {
                   title = SIU.title unreadChats,
@@ -34,7 +35,7 @@ template {contacts, suggestions, user} = do
             init: {
                   chatting: Nothing,
                   temporaryID: 0,
-                  suggesting: if DA.null suggestions then Nothing else Just 0,
+                  suggesting: if suggestionsCount == 0 then Nothing else if suggestionsCount == 1 then Just 0 else Just 1,
                   freeToFetchChatHistory:true,
                   suggestionsPage: 0,
                   messageEnter: true,

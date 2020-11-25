@@ -74,12 +74,12 @@ main = do
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
       --display settings/profile page
-      --FE.send [FE.onClick' [ShowUserContextMenu]] channel
+      FE.send [FE.onClick' [ShowUserContextMenu]] channel
       --image upload
       input <- CIC.getFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
 
-     -- windowsFocus channel
+      windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader} model =
@@ -110,6 +110,7 @@ update { webSocketRef, fileReader} model =
             SpecialRequest (FetchHistory shouldFetch) -> CIH.fetchHistory shouldFetch model
             DisplayHistory history -> CIH.displayHistory history model
             --suggestion
+            ResumeSuggesting -> CIS.resumeSuggesting model
             ToggleContactProfile -> CIS.toggleContactProfile model
             PreviousSuggestion -> CIS.previousSuggestion model
             BlockUser id -> CIS.blockUser webSocket id model

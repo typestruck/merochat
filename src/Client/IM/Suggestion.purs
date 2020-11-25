@@ -5,7 +5,7 @@ import Shared.Types
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.IM.Flame (NoMessages, MoreMessages, NextMessage)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Flame as CIF
 import Client.IM.WebSocket as CIW
@@ -83,4 +83,10 @@ removeBlockedUser blocked model@{ contacts, suggestions } =
 toggleContactProfile :: IMModel -> NoMessages
 toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model {
       fullContactProfileVisible = not fullContactProfileVisible
+}
+
+resumeSuggesting :: IMModel -> NoMessages
+resumeSuggesting model = F.noMessages $ model {
+      suggesting = Just 1,
+      chatting = Nothing
 }

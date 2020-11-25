@@ -11,8 +11,9 @@ import Flame.Html.Element as HE
 import Shared.IM.View.Chat as SIVC
 import Shared.IM.View.Contacts as SIVCN
 import Shared.IM.View.History as SIVH
-import Shared.IM.View.Profile as SIVS
+import Shared.IM.View.Profile as SIVP
 import Shared.IM.View.Retry as SIVR
+import Shared.IM.View.Suggestions as SIVS
 import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 
@@ -20,6 +21,7 @@ view :: Boolean -> IMModel -> Html IMMessage
 view isClientRender model@{ fortune, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div (HA.class' "im") [
       HE.div (HA.class' "left-box") [
             SIVU.userMenu model,
+            SIVS.suggestions model,
             search model,
             SIVCN.contactList isClientRender model,
             logo fortune,
@@ -28,7 +30,7 @@ view isClientRender model@{ fortune, suggestions, suggesting, chatting, contacts
       ],
       HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
             HE.div (HA.class' {"no-connection": true, flexed: hasTriedToConnectYet && not isWebSocketConnected}) "Connection to the server lost. Attempting to automaticaly reconnect...",
-            SIVS.profile model,
+            SIVP.profile model,
             SIVH.history model $ map (contacts !@ _ ) chatting,
             SIVC.chat model
       ]

@@ -289,6 +289,7 @@ data IMMessage =
       DisplayContacts (Array Contact) |
       ResumeMissedEvents MissedEvents |
       --suggestion
+      ResumeSuggesting |
       PreviousSuggestion |
       NextSuggestion |
       DisplayMoreSuggestions (Array Suggestion) |

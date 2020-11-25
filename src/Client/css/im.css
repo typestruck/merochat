@@ -20,6 +20,10 @@ body {
     margin-top: 0px;
 }
 
+.profile-description p:last-of-type, .description-message p:last-of-type {
+    margin-bottom: 0px;
+}
+
 .im {
     display: grid;
     grid-template-columns: 25% 75%;
@@ -55,6 +59,19 @@ body {
 
 .flexed {
     display: flex;
+}
+
+.side-suggestions-container {
+    background: #2d2d2d;
+}
+
+.side-suggestion {
+    display: flex;
+    background: #213027;
+    font-weight: bold;
+    padding: 15px;
+    align-items: center;
+    border-bottom:1px solid #4E4E4E;
 }
 
 .no-connection.flexed~.profile-contact, .no-connection.flexed~.suggestion {
@@ -138,6 +155,25 @@ body {
 
 .no-avatar-message .avatar-message {
     visibility: hidden;
+}
+
+.svg-back-suggestions {
+    width: 30px;
+    height: 30px;
+    margin-right: 40px;
+    stroke: none;
+}
+
+.back-side-suggestion {
+    padding: 25px 0;
+    padding-left: 35px;
+    cursor: pointer;
+}
+
+.back-suggestions {
+    font-size: 1.3em;
+    letter-spacing: 1px;
+
 }
 
 .avatar-contact-list-div {
@@ -1366,8 +1402,8 @@ select {
     background: url('/client/media/suggestions.png');
     position: relative;
     flex-direction: column;
-    cursor: pointer;
     border: 2px solid #4E4E4E;
+    border-bottom: none;
 }
 
 .suggestion-center .suggestion.new {
@@ -1401,18 +1437,35 @@ select {
 .suggestion-center .suggestion.new .tags-description {
     overflow-y: auto;
     overflow-x: hidden;
-    padding:0 5px
+    padding: 0 5px
 }
 
 .description-message {
-    padding:0 5px;
+    padding: 0 5px;
 }
 
 .suggestion-center .suggestion.new {
     overflow: auto;
 }
 
+.suggestion.old .suggestion-arrow {
+    display: none;
+}
+
+.margin-less, .margin-less-z {
+    margin-left:-20px
+}
+
+.margin-less-z {
+    z-index: 2;
+}
+
+.faded {
+    opacity: 0.6;
+}
+
 /* dry this shite  */
+
 @media (min-width:1366px) and (max-width:1919px) {
     html, body {
         font-size: max(14.5px, 1vw);
@@ -1426,15 +1479,15 @@ select {
     }
     .card-sides {
         margin: 10px 0;
-        width: calc(100vw * 0.6398243045387994);
-        height: calc(100vh * 0.81640625) ;
+        width: max(874px, calc(100vw * 0.6398243045387994));
+        height: max(627px, calc(100vh * 0.81640625));
     }
     .profile-description-about {
         margin-top: 33px;
     }
     .card-center, .suggestion-center {
-        width: calc(100vw * 0.55344070278184475);
-        height: calc(100vh * 0.8450520833333334);
+        width: max(751px, calc(100vw * 0.55344070278184475));
+        height: max(649px, calc(100vh * 0.8450520833333334));
     }
     .suggestion-center .suggestion.new {
         height: 596px;
@@ -1485,6 +1538,7 @@ select {
 }
 
 /*  use percentages here too */
+
 @media (min-width:1920px) {
     html, body {
         font-size: 18px;
@@ -1497,11 +1551,11 @@ select {
         font-size: 1.1em;
     }
     .card-top-header {
-        margin: 15px 0px;
+        margin: 45px 0px;
     }
     .card-sides {
         margin: 46px 0;
-        height: 766px;
+        height: max(766px, calc(100vh * 0.7092592592592592));
         width: 1100px;
     }
     .profile-description-about {
@@ -1509,10 +1563,10 @@ select {
     }
     .suggestion-center {
         width: 1040px;
-        height: 858px;
+        height: max(858px, calc(100vh * 0.7944444444444444));
     }
     .suggestion-center .suggestion.new {
-        height: 698px;
+        height: max(698px, calc(100vh * 0.6462962962962962));
     }
     .avatar-profile, .avatar-profile-edition {
         width: 94px;

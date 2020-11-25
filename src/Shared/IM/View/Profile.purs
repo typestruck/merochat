@@ -69,16 +69,16 @@ suggestion model@{ user, suggestions } index =
                   HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
                   HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
             ],
-            HE.div (HA.class' "cards") $ map (\i -> card (suggestions !! i) i) (index .. (index + 2))
+            HE.div (HA.class' "cards") $ map (\i -> card (suggestions !! i) i) ((index - 1) .. (index + 1))
       ]
       where card suggestion suggestionIndex =
                   case suggestion of
                         Nothing -> HE.createEmptyElement "div"
                         Just suggestion ->
-                              let   isCenter = suggestionIndex == index + 1
+                              let   isCenter = suggestionIndex == index
                                     attrs
                                           | isCenter = [ HA.class' "card card-center"]
-                                          | otherwise = [HA.class' "card card-sides"]
+                                          | otherwise = [HA.class' "card card-sides faded"]
                               in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just suggestionIndex) model suggestion
 
 arrow :: IMMessage -> Html IMMessage
