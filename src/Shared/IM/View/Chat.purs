@@ -12,83 +12,67 @@ import Data.String as DS
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Types (NodeData)
 import Prim.Row (class Cons)
 import Shared.Focus as SF
 import Shared.IM.Emoji as SIE
+import Shared.Keydown as SK
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSizeKB)
 import Shared.Setter as SS
-import Shared.Unsafe as SU
-import Web.UIEvent.KeyboardEvent as WUK
 
 chat :: IMModel -> Html IMMessage
-chat model@{
-      chatting,
-      contacts,
-      suggesting,
-      suggestions,
-      isWebSocketConnected,
-      message,
-      messageEnter,
-      link,
-      linkText,
-      toggleChatModal,
-      selectedImage,
-      erroredFields
-} =
-      HE.div (HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }) [
-            HE.div (HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }) [
-                  HE.label_ "Text",
-                  HE.input [HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
-                  HE.label_ "Link",
-                  HE.input [HA.type' "text", HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))],
-                  HE.span [HA.class' {"error-message": true, "invisible": not (DS.null (DM.fromMaybe "" link)) || not (DA.elem (TDS.reflectSymbol (SProxy :: SProxy "link")) erroredFields) }] "Please enter a link",
-                  HE.div (HA.class' "buttons") [
-                        HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
-                        HE.button [HA.class' "green-button", HA.onClick InsertLink] "Insert"
-                  ]
-            ],
+chat model@{ chatting } =
+      HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, HA.tabindex 0, SK.keydDownOn "Escape" $ ToggleChatModal HideChatModal] [
+            linkModal model,
             chatBarInput model,
-            HE.div (HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage }) [
-                  HE.div (HA.class' { "upload-div": true, hidden : not imageValidationFailed }) [
-                        HE.input [HA.id "image-file-input", HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
-                        HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
-                  ],
-                  HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed }) [
-                        HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
-                  ],
-                  HE.label_ "Caption",
-                  HE.input [HA.placeholder "optional title", HA.type' "text", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
-                  HE.div (HA.class' "image-buttons") [
-                        HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
-                        HE.svg [HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 300 300"] [
-                              HE.title "Send image",
-                              HE.path' (HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"),
-                              HE.polygon' (HA.points "99.76 213.29 125.13 153.56 99.76 93.81 241.34 153.56 99.76 213.29")
-                        ]
+            imageModal model
+      ]
+
+imageModal :: IMModel -> Html IMMessage
+imageModal {selectedImage, erroredFields} =
+      HE.div (HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage }) [
+            HE.div (HA.class' { "upload-div": true, hidden : not imageValidationFailed }) [
+                  HE.input [HA.id "image-file-input", HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
+                  HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
+            ],
+            HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed }) [
+                  HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
+            ],
+            HE.label_ "Caption",
+            HE.input [HA.placeholder "optional title", HA.type' "text", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
+            HE.div (HA.class' "image-buttons") [
+                  HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
+                  HE.svg [HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 300 300"] [
+                        HE.title "Send image",
+                        HE.path' (HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"),
+                        HE.polygon' (HA.points "99.76 213.29 125.13 153.56 99.76 93.81 241.34 153.56 99.76 213.29")
                   ]
             ]
       ]
       where imageValidationFailed = DA.elem (TDS.reflectSymbol (SProxy :: SProxy "selectedImage")) erroredFields
+
+linkModal :: IMModel -> Html IMMessage
+linkModal {toggleChatModal, linkText, link, erroredFields} =
+      HE.div [HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }] [
+            HE.label_ "Text",
+            HE.input [HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
+            HE.label_ "Link",
+            HE.input [HA.type' "text", HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))],
+            HE.span [HA.class' {"error-message": true, "invisible": not (DS.null (DM.fromMaybe "" link)) || not (DA.elem (TDS.reflectSymbol (SProxy :: SProxy "link")) erroredFields) }] "Please enter a link",
+            HE.div (HA.class' "buttons") [
+                  HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
+                  HE.button [HA.class' "green-button", HA.onClick InsertLink] "Insert"
+            ]
+      ]
 
 getName :: forall a b. Maybe Int -> Array b -> (b -> a) -> Maybe a
 getName index list accessor = do
       i <- index
       entry <- list !! i
       pure $ accessor entry
-
---REFACTOR: move this somewhere appropriate
-enterKeyDown :: IMMessage -> NodeData IMMessage
-enterKeyDown message = HA.createRawEvent "keydown" handler
-      where handler event = do
-                  let   keyboardEvent = SU.fromJust $ WUK.fromEvent event
-                        key = WUK.key keyboardEvent
-                  pure $ if key == "Enter" && not WUK.shiftKey keyboardEvent then Just message else Nothing
 
 setJust :: forall t7 t8 t9. IsSymbol t8 => Cons t8 (Maybe t9) t7 IM => SProxy t8 -> t9 -> IMMessage
 setJust field = SS.setIMField field <<< Just
@@ -149,7 +133,7 @@ linkButton toggle = HE.svg [HA.class' "svg-other", HA.onClick <<< ToggleChatModa
 ]
 
 emojis :: ShowChatModal -> Html IMMessage
-emojis toggle = HE.svg [HA.onClick <<< ToggleChatModal $ if toggle == ShowEmojis then HideChatModal else ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 300 300"] [
+emojis toggle = HE.svg [HA.onClick <<< ToggleChatModal $ if toggle == ShowEmojis then HideChatModal else ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 300 300", SK.keydDownOn "Escape" $ ToggleChatModal HideChatModal] [
       HE.title "Emojis",
       HE.path' [HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"],
       HE.ellipse' [HA.cx "97.68", HA.cy "125.87", HA.rx "10.67", HA.ry "11.43"],
@@ -212,8 +196,9 @@ chatBarInput {
                               HA.id "chat-input",
                               HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
                               HA.disabled $ not isWebSocketConnected,
-                              enterKeyDown EnterBeforeSendMessage,
+                              SK.keydDownOn "Enter" EnterBeforeSendMessage,
                               HA.onInput BeforeSendMessage,
+                              HA.autocomplete "off",
                               HA.value $ DM.fromMaybe "" message
                         ],
                         image,

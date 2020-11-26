@@ -69,17 +69,20 @@ suggestion model@{ user, suggestions } index =
                   HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
                   HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
             ],
-            HE.div (HA.class' "cards") $ map (\i -> card (suggestions !! i) i) ((index - 1) .. (index + 1))
+            HE.div (HA.class' "cards") <<< map (\i -> card i $ suggestions !! i) $ (index - 1) .. (index + 1)
       ]
-      where card suggestion suggestionIndex =
-                  case suggestion of
-                        Nothing -> HE.createEmptyElement "div"
+      where noSuggestion i = suggestions !! i == Nothing
+
+            card suggestionIndex =
+                  case _ of
+                        Nothing -> HE.div' [HA.class' "card card-sides faded invisible"]
                         Just suggestion ->
                               let   isCenter = suggestionIndex == index
                                     attrs
-                                          | isCenter = [ HA.class' "card card-center"]
-                                          | otherwise = [HA.class' "card card-sides faded"]
+                                          | isCenter = [ HA.class' {"card card-center" : true, "hide-previous-arrow" : noSuggestion (index - 1), "hide-next-arrow": noSuggestion (index + 1)}]
+                                          | otherwise = [HA.class' "card card-sides faded" ]
                               in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just suggestionIndex) model suggestion
+
 
 arrow :: IMMessage -> Html IMMessage
 arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
@@ -117,16 +120,16 @@ fullProfile presentation index model { id, name, avatar, age, karma, headline, g
                   ],
 
                   HE.div (HA.class' "profile-asl") [
-                        HE.div (HA.class' "a") [
+                        HE.div_ [
                               toSpan $ map show age,
                               duller (DM.isNothing age || DM.isNothing gender) ", ",
                               toSpan gender
                         ],
-                        HE.div (HA.class' "b") [
+                        HE.div_ [
                               duller (DM.isNothing country) "from ",
                               toSpan country
                         ],
-                        HE.div (HA.class' ("c")) ([
+                        HE.div_ ([
                               duller (DA.null languages) "speaks "
                         ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
                   ],

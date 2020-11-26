@@ -63,6 +63,7 @@ body {
 
 .side-suggestions-container {
     background: #2d2d2d;
+    padding-bottom: 10px;
 }
 
 .side-suggestion {
@@ -72,6 +73,7 @@ body {
     padding: 15px;
     align-items: center;
     border-bottom:1px solid #4E4E4E;
+    border-top:1px solid #4E4E4E;
 }
 
 .no-connection.flexed~.profile-contact, .no-connection.flexed~.suggestion {
@@ -82,6 +84,7 @@ body {
     display: flex;
     flex-flow: column;
     padding: 10px 20px;
+    padding-bottom: 0px;
     position: relative;
     height: 140px;
 }
@@ -162,18 +165,19 @@ body {
     height: 30px;
     margin-right: 40px;
     stroke: none;
+    fill:#b9c658
 }
 
 .back-side-suggestion {
-    padding: 25px 0;
+    padding: 29px 0;
     padding-left: 35px;
     cursor: pointer;
+    color:#b9c658
 }
 
 .back-suggestions {
     font-size: 1.3em;
     letter-spacing: 1px;
-
 }
 
 .avatar-contact-list-div {
@@ -252,7 +256,7 @@ body {
     color: rgb(238, 238, 238, 0.8)
 }
 
-.contact-list-last-message>p {
+.contact-name, .contact-list-last-message>p {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
@@ -1005,10 +1009,6 @@ select {
     align-self: center;
 }
 
-.invisible {
-    visibility: hidden;
-}
-
 .loading {
     background: url('/client/media/loading.png');
     animation: rotating 2s linear infinite;
@@ -1337,8 +1337,12 @@ select {
     top: 50%;
 }
 
-.card-sides .suggestion-arrow {
+.hide-next-arrow .suggestion-arrow:last-of-type, .hide-previous-arrow .suggestion-arrow, .card-sides .suggestion-arrow {
     display: none;
+}
+
+.hide-previous-arrow .suggestion-arrow:last-of-type {
+    display: block;
 }
 
 .cards {
