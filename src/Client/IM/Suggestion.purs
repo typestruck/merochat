@@ -6,29 +6,21 @@ import Shared.Types
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
-import Client.IM.Flame as CIF
-import Client.IM.Flame as CIF
 import Client.IM.WebSocket as CIW
-import Control.Alt ((<|>))
-import Data.Array ((!!), (:))
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
-import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
-import Shared.Newtype as SN
 import Shared.Options.Page (suggestionsPerPage)
-import Shared.Unsafe as SU
 import Web.Socket.WebSocket (WebSocket)
 
 nextSuggestion :: IMModel -> MoreMessages
 nextSuggestion model@{ suggestions, suggesting } =
       let next = DM.maybe 0 (_ + 1) suggesting
-      in      if next == DA.length suggestions then
+      in    if next == DA.length suggestions then
                   fetchMoreSuggestions model
              else
                   F.noMessages $ model {
@@ -87,6 +79,5 @@ toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model 
 
 resumeSuggesting :: IMModel -> NoMessages
 resumeSuggesting model = F.noMessages $ model {
-      suggesting = Just 1,
       chatting = Nothing
 }

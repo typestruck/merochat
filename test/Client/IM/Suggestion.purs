@@ -2,12 +2,9 @@ module Test.Client.IM.Suggestion where
 
 import Prelude
 
-
 import Client.IM.Suggestion as CIS
-
 import Data.Maybe (Maybe(..))
 import Data.Tuple as DT
-
 import Test.Client.Model (model, imUser)
 import Test.Unit (TestSuite)
 import Test.Unit as TU

@@ -70,7 +70,7 @@ body {
     display: flex;
     background: #213027;
     font-weight: bold;
-    padding: 15px;
+    padding: 5px 15px;
     align-items: center;
     border-bottom:1px solid #4E4E4E;
     border-top:1px solid #4E4E4E;
@@ -169,7 +169,7 @@ body {
 }
 
 .back-side-suggestion {
-    padding: 29px 0;
+    padding: 19px 0;
     padding-left: 35px;
     cursor: pointer;
     color:#b9c658

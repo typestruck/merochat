@@ -202,7 +202,6 @@ processIncomingMessage { id, userID, date, content } model@{
       user: { id: recipientID },
       suggestions,
       contacts,
-      suggesting,
       chatting
 } = case findAndUpdateContactList of
       Just contacts' ->

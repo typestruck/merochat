@@ -5,12 +5,11 @@ import Shared.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.Common.Notification as CCN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
-import Data.Array ((!!), (:))
+import Data.Array ((!!))
 import Data.Array as DA
 import Data.DateTime as DT
 import Data.Int as DI
@@ -24,7 +23,6 @@ import Data.Symbol (SProxy(..))
 import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -43,7 +41,6 @@ import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHEL
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
-import Web.UIEvent.KeyboardEvent as WUK
 
 --purty is fucking terrible
 
@@ -78,18 +75,17 @@ beforeSendMessage content model@{
       suggestions
 }    | shouldSendMessage = snocContact :> [ nextSendMessage ]
 
-      where snocContact = case Tuple chatting suggesting of
-                  Tuple Nothing (Just index) ->
+      where snocContact = case chatting, suggesting of
+                  Nothing, (Just index) ->
                         let chatted = suggestions !@ index
                         in
                               model {
                                     message = Just content,
                                     chatting = Just 0,
-                                    suggesting = Nothing,
                                     contacts = DA.cons (SIC.defaultContact id chatted) contacts,
                                     suggestions = SU.fromJust $ DA.deleteAt index suggestions
                               }
-                  _ -> model
+                  _, _ -> model
 
             nextSendMessage = do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -259,12 +255,15 @@ toggleModal toggle model = model {
                   pure Nothing
 
 setEmoji :: Event -> IMModel -> NextMessage
-setEmoji event model@{ message } = model {
-      toggleChatModal = HideChatModal
-} :> [liftEffect do
-      emoji <- CCD.innerTextFromTarget event
-      setAtCursor message emoji
-]
+setEmoji event model@{ message } = model :>
+      if CCD.tagNameFromTarget event == "SPAN" then
+            [liftEffect  do
+                  emoji <- CCD.innerTextFromTarget event
+                  setAtCursor message emoji,
+            pure <<< Just $ ToggleChatModal HideChatModal
+            ]
+       else
+            []
 
 insertLink :: IMModel -> MoreMessages
 insertLink model@{ message, linkText, link } =

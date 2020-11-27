@@ -154,7 +154,7 @@ sendButton messageEnter = HE.svg [HA.class' { "send-button svg-50": true, hidden
 ]
 
 chatBarInput :: IMModel -> Html IMMessage
-chatBarInput {
+chatBarInput model@{
       chatting,
       contacts,
       suggesting,
@@ -164,7 +164,7 @@ chatBarInput {
       suggestions,
       toggleChatModal
  } = HE.fragment [
-      HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory,
+      emojiModal model,
       if toggleChatModal == ShowPreview then
             HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview }) [
                   HE.div [HA.class' "chat-input-options"] [
@@ -206,8 +206,11 @@ chatBarInput {
                   ]
             ]
 ]
+      where recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name
+
+emojiModal  :: IMModel -> Html IMMessage
+emojiModal { toggleChatModal }= HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory
       where toEmojiCategory (Tuple name pairs) = HE.div_ [
                   HE.div (HA.class' "duller") name,
                   HE.div_ $ map (HE.span_ <<< _.s) pairs
             ]
-            recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name

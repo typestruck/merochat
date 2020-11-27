@@ -10,12 +10,11 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Unsafe ((!@))
 import Shared.Unsafe (fromJust) as SN
-import Test.Client.Model (anotherIMUser, anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
+import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -91,15 +90,6 @@ tests = do
                         }
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal ( _.user <$> DA.head contacts) $ Just suggestion
-
-            TU.test "beforeSendMessage resets suggesting" do
-                  let   model' = model {
-                              suggestions = suggestion : modelSuggestions,
-                              chatting = Nothing,
-                              suggesting = Just 0
-                        }
-                        { suggesting } = DT.fst $ CIC.beforeSendMessage content model'
-                  TUA.equal Nothing suggesting
 
             TU.test "beforeSendMessage sets chatting to 0" do
                   let   model' = model {

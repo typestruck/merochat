@@ -7,7 +7,6 @@ import Data.Array ((!!), (..))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug.Trace (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -21,13 +20,13 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
       if DA.null suggestions then
             emptySuggestions
        else
-            case suggesting, chatting of
-                  (Just index), Nothing -> suggestion model index
-                  Nothing, i@(Just index) ->
+            case chatting, suggesting of
+                  i@(Just index), _ ->
                         if fullContactProfileVisible then
                               fullProfile FullContactProfile i model (contacts !@ index).user
                         else
                               contact chatting (contacts !@ index).user
+                  Nothing, (Just index) -> suggestion model index
                   _, _ -> emptySuggestions
       where emptySuggestions = HE.div (HA.class' "suggestion") <<< HE.div_ <<< HE.img $ HA.src "/client/media/logo.png"
 

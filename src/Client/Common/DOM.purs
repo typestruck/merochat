@@ -4,8 +4,8 @@ import Prelude
 
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Function.Uncurried as DFU
-import Data.Maybe as DM
 import Data.Maybe (Maybe)
+import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
@@ -108,6 +108,11 @@ setInnerHTML element = EU.runEffectFn2 innerHTML_ element
 
 innerTextFromTarget :: Event -> Effect String
 innerTextFromTarget event = EU.runEffectFn1 innerText_ $ SU.fromJust do
+      target <- WEE.target event
+      WDE.fromEventTarget target
+
+tagNameFromTarget :: Event -> String
+tagNameFromTarget event = WDE.tagName $ SU.fromJust do
       target <- WEE.target event
       WDE.fromEventTarget target
 

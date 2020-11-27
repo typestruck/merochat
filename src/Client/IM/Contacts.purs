@@ -38,7 +38,6 @@ resumeChat searchID model@{ contacts, chatting } =
                   F.noMessages model
              else
                   model {
-                        suggesting = Nothing,
                         chatting = index,
                         fullContactProfileVisible = false,
                         toggleChatModal = HideChatModal,
