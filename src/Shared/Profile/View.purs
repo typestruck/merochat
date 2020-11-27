@@ -26,7 +26,6 @@ import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
-import Shared.Focus as SF
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Setter as SS

@@ -78,7 +78,7 @@ suggestion model@{ user, suggestions } index =
                         Just suggestion ->
                               let   isCenter = suggestionIndex == index
                                     attrs
-                                          | isCenter = [ HA.class' {"card card-center" : true, "hide-previous-arrow" : noSuggestion (index - 1), "hide-next-arrow": noSuggestion (index + 1)}]
+                                          | isCenter = [ HA.class' {"card card-center" : true, "hide-previous-arrow" : noSuggestion (index - 1), "hide-next-arrow": noSuggestion (index + 1)} ]
                                           | otherwise = [HA.class' "card card-sides faded" ]
                               in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just suggestionIndex) model suggestion
 

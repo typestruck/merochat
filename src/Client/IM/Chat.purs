@@ -29,8 +29,8 @@ import Effect.Now as EN
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
-import Shared.Options.File (maxImageSize)
 import Shared.IM.Contact as SIC
+import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
@@ -229,9 +229,9 @@ toggleMessageEnter model@{ messageEnter } =
             messageEnter = not messageEnter
       }
 
-setSelectedImage :: Maybe String -> IMModel -> NoMessages
+setSelectedImage :: Maybe String -> IMModel -> NextMessage
 setSelectedImage maybeBase64 model =
-      F.noMessages $ model {
+      model {
             toggleChatModal = ShowSelectedImage,
             selectedImage = maybeBase64,
             erroredFields =
@@ -239,7 +239,7 @@ setSelectedImage maybeBase64 model =
                         [TDS.reflectSymbol (SProxy :: SProxy "selectedImage")]
                    else
                         []
-      }
+      } :> [CIF.next $ FocusInput "#image-form-caption"]
       where isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
 toggleModal :: ShowChatModal -> IMModel -> MoreMessages
@@ -248,7 +248,12 @@ toggleModal toggle model = model {
       link = Nothing,
       selectedImage = Nothing,
       linkText = Nothing
-} :> if toggle == ShowSelectedImage then [pickImage] else []
+} :>  if toggle == ShowSelectedImage then
+            [pickImage]
+       else if toggle == ShowLinkForm then
+            [CIF.next $ FocusInput "#link-form-url"]
+       else
+            []
       where pickImage = liftEffect do
                   input <- getFileInput
                   CCF.triggerFileSelect input

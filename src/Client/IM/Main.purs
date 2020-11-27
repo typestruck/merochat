@@ -11,7 +11,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Notification as CCN
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Suggestion as CIS
@@ -30,6 +30,7 @@ import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
+import Effect.Class.Console as EC
 import Effect.Now as EN
 import Effect.Random as ERD
 import Effect.Ref (Ref)
@@ -54,6 +55,7 @@ import Web.Event.Internal.Types (Event)
 import Web.File.FileReader as WFR
 import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
+import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
 
 main :: Effect Unit
@@ -97,6 +99,7 @@ update { webSocketRef, fileReader} model =
             SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             SetEmoji event -> CIC.setEmoji event model
+            FocusInput selector -> focusInput selector model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket model
@@ -134,6 +137,16 @@ update { webSocketRef, fileReader} model =
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+focusInput :: String -> IMModel -> NextMessage
+focusInput selector model = model :> [
+      liftEffect do
+            element <- CCD.querySelector selector
+            WHHE.focus $ SU.fromJust do
+                  e <- element
+                  WHHE.fromElement e
+            pure Nothing
+]
 
 addFailure :: RequestFailure -> IMModel -> NoMessages
 addFailure failure model@{ failedRequests } = F.noMessages $ model {

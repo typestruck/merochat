@@ -298,6 +298,8 @@ data IMMessage =
       SetSelectedImage (Maybe String) |
       ToggleContactProfile |
       DropFile Event |
+      --REFACTOR: dont use string selectors
+      FocusInput String |
       EnterBeforeSendMessage |
       ForceBeforeSendMessage |
       BeforeSendMessage String |

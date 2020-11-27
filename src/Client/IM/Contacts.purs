@@ -45,7 +45,8 @@ resumeChat searchID model@{ contacts, chatting } =
                         failedRequests = []
                   } :> [
                         CIF.next UpdateReadCount ,
-                        CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
+                        CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory,
+                        CIF.next $ FocusInput "#chat-input"
                   ]
 
 markRead :: WebSocket -> IMModel -> MoreMessages

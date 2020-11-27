@@ -125,6 +125,12 @@ loadScript name = do
       body <- SU.fromJust <$> WHHD.body document
       void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body
 
+createElement :: String -> Effect Element
+createElement tag = do
+      window <- WH.window
+      document <- WHW.document window
+      WDD.createElement tag $ WHHD.toDocument document
+
 onEnter :: Element -> Effect Unit -> Effect Unit
 onEnter element action = do
       addEventListener element keyup go
