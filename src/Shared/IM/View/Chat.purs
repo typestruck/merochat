@@ -24,7 +24,7 @@ import Shared.Setter as SS
 
 chat :: IMModel -> Html IMMessage
 chat model@{ chatting } =
-      HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, HA.tabindex 0, SK.keydDownOn "Escape" $ ToggleChatModal HideChatModal] [
+      HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, HA.tabindex 0, SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
             linkModal model,
             imageModal model,
             chatBarInput model
@@ -110,8 +110,9 @@ chatBarInput model@{
                               HA.id "chat-input",
                               HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
                               HA.disabled $ not isWebSocketConnected,
-                              SK.keydDownOn "Enter" EnterBeforeSendMessage,
+                              SK.keyDownOn "Enter" EnterBeforeSendMessage,
                               HA.onInput BeforeSendMessage,
+                              HA.onInput' ResizeChatInput,
                               HA.autocomplete "off",
                               HA.value $ DM.fromMaybe "" message,
                               HA.autofocus true
@@ -188,7 +189,7 @@ linkButton toggle = HE.svg [HA.class' "svg-other", HA.onClick <<< ToggleChatModa
 ]
 
 emojiButton :: ShowChatModal -> Html IMMessage
-emojiButton toggle = HE.svg [HA.onClick <<< ToggleChatModal $ if toggle == ShowEmojis then HideChatModal else ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 300 300", SK.keydDownOn "Escape" $ ToggleChatModal HideChatModal] [
+emojiButton toggle = HE.svg [HA.onClick <<< ToggleChatModal $ if toggle == ShowEmojis then HideChatModal else ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 300 300", SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
       HE.title "Emojis",
       HE.path' [HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"],
       HE.ellipse' [HA.cx "97.68", HA.cy "125.87", HA.rx "10.67", HA.ry "11.43"],
@@ -209,7 +210,7 @@ sendButton messageEnter = HE.svg [HA.class' { "send-button svg-50": true, hidden
 ]
 
 emojiModal  :: IMModel -> Html IMMessage
-emojiModal { toggleChatModal }= HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojiButton", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory
+emojiModal { toggleChatModal }= HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory
       where toEmojiCategory (Tuple name pairs) = HE.div_ [
                   HE.div (HA.class' "duller") name,
                   HE.div_ $ map (HE.span_ <<< _.s) pairs

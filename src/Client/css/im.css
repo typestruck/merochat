@@ -83,10 +83,10 @@ body {
 .send-box {
     display: flex;
     flex-flow: column;
-    padding: 10px 20px;
-    padding-bottom: 0px;
+    margin: 10px 20px;
     position: relative;
-    height: 140px;
+    min-height: 140px;
+    justify-content: end;
 }
 
 .svg-8 {
@@ -636,9 +636,11 @@ svg.toolbar-action {
     width: 100%;
     font-size: 1.2em;
     border: none;
+    box-sizing: padding-box;
     cursor: text;
     border-radius: 5px;
     min-height: 55px;
+    max-height: 150px;
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     background: #2d2d2d;

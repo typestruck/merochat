@@ -8,7 +8,6 @@ import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
-import Client.Common.Notification as CCN
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
 import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
@@ -23,15 +22,10 @@ import Control.Monad.Except as CME
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.Either (fromRight) as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Effect.Class.Console as EC
-import Effect.Now as EN
 import Effect.Random as ERD
 import Effect.Ref (Ref)
 import Effect.Ref as ER
@@ -41,11 +35,8 @@ import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
 import Flame.Html.Signal as FE
 import Foreign as FO
-import Partial.Unsafe as UP
-import Shared.DateTime (epoch)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
-import Shared.Newtype as SN
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
@@ -84,7 +75,7 @@ main = do
       windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
-update { webSocketRef, fileReader} model =
+update { webSocketRef, fileReader } model =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
@@ -92,6 +83,7 @@ update { webSocketRef, fileReader} model =
             DropFile event -> CIC.catchFile fileReader event model
             EnterBeforeSendMessage -> CIC.enterBeforeSendMessage model
             ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
+            ResizeChatInput event -> CIC.resizeChatInput event model
             BeforeSendMessage content -> CIC.beforeSendMessage content model
             SendMessage date -> CIC.sendMessage webSocket date model
             SetMessageContent cursor content -> CIC.setMessage cursor content model

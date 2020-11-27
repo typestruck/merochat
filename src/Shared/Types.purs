@@ -302,7 +302,8 @@ data IMMessage =
       FocusInput String |
       EnterBeforeSendMessage |
       ForceBeforeSendMessage |
-      BeforeSendMessage String |
+      ResizeChatInput Event |
+      BeforeSendMessage String  |
       SendMessage DateTimeWrapper |
       SetMessageContent (Maybe Int) String |
       Apply Markup |
