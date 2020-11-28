@@ -114,7 +114,7 @@ data By =
 -- | Errors that should be reported back to the user
 data ResponseError =
       BadRequest { reason :: String } |
-      InternalError { reason :: String } |
+      InternalError { reason :: String, context :: Maybe DatabaseError } |
       ExpiredSession
 
 type Suggestion = IMUser
@@ -345,7 +345,9 @@ data WebSocketPayloadClient =
           userID :: PrimaryKey
       } |
       BeenBlocked { id :: PrimaryKey } |
-      PayloadError WebSocketPayloadServer
+      PayloadError { origin :: WebSocketPayloadServer, context :: Maybe DatabaseError }
+
+data DatabaseError = MissingForeignKey
 
 type InternalHelpModel = {
       toggleHelp :: DisplayHelpSection
@@ -432,6 +434,7 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
+derive instance genericPayloadErrorContext :: Generic DatabaseError _
 derive instance genericRetryableRequest :: Generic RetryableRequest _
 derive instance genericShowChatModal :: Generic ShowChatModal _
 derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
@@ -746,6 +749,8 @@ instance showMessageContent :: Show MessageContent where
       show = DGRS.genericShow
 instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
+instance showPayloadErrorContext :: Show DatabaseError where
+      show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
 instance showShowModal :: Show ShowUserMenuModal where
@@ -759,6 +764,8 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonPayloadErrorContext :: EncodeJson DatabaseError where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
@@ -784,7 +791,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
-
+instance decodeJsonPayloadErrorContext :: DecodeJson DatabaseError where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where

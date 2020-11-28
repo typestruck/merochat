@@ -4,20 +4,21 @@ import Prelude
 import Server.Types
 import Shared.Types
 
-import Control.Monad.Error.Class as CMEC
+import Control.Monad.Except as CME
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow, Connection, Pool, Query(..), Row1)
-import Database.PostgreSQL as DP
+import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow, Connection, PGError(..), Pool, Query(..), Row1)
+import Database.PostgreSQL.PG as DP
+import Debug.Trace (spy)
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Effect.Exception as EE
+import Effect.Exception.Unsafe as EEU
 import Run as R
+import Run.Except as RE
 import Run.Reader as RR
+import Shared.Types as ST
 import Shared.Unsafe as SU
 
 --this makes pg interpret bigints as ints (since we don't use them) and dates as Number (to be used as epoch)
@@ -34,87 +35,74 @@ newPool = do
 insert :: forall r query parameters value. ToSQLRow value => Query query parameters -> value -> BaseEffect { pool :: Pool | r } PrimaryKey
 insert query parameters = withConnection (insertReturnID query parameters)
 
+insertWith :: forall value result query parameters. ToSQLRow value => FromSQLValue result => Connection -> Query query parameters -> value -> PG result
 insertWith connection query parameters = insertReturnID query parameters connection
 
-insertReturnID query parameters connection = do
-      rows <- DP.scalar connection (addReturnID query) parameters
-      rows' <- runLogEither "insertReturnID" rows
-      pure $ SU.fromJust rows'
+insertReturnID :: forall parameters query result value. ToSQLRow value => FromSQLValue result => Query query parameters -> value -> Connection -> PG result
+insertReturnID query parameters connection = SU.fromJust <$>  DP.scalar connection (addReturnID query) parameters
       where addReturnID (Query text) = Query $ text <> " returning id"
 
 scalar :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } (Maybe value)
-scalar query parameters = withConnection $ \connection -> do
-      rows <- DP.scalar connection query parameters
-      runLogEither "scalar" rows
+scalar query parameters = withConnection $ \connection -> DP.scalar connection query parameters
 
 scalar' :: forall r query value. ToSQLRow query => FromSQLValue value => Query query (Row1 value) -> query -> BaseEffect { pool :: Pool | r } value
 scalar' query parameters = withConnection $ \connection -> scalarWith connection query parameters
 
-scalarWith connection query parameters = do
-      rows <- DP.scalar connection query parameters
-      rows' <- runLogEither "scalarWith" rows
-      pure $ SU.fromJust rows'
+scalarWith :: forall value query. ToSQLRow query => FromSQLValue value => Connection -> Query query (Row1 value) -> query -> PG value
+scalarWith connection query parameters = SU.fromJust <$> DP.scalar connection query parameters
 
 select :: forall r query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> BaseEffect { pool :: Pool | r } (Array row)
-select query parameters = withConnection $ \connection -> do
-      rows <- DP.query connection query parameters
-      runLogEither "select" rows
+select query parameters = withConnection $ \connection -> DP.query connection query parameters
 
-single :: forall r query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> BaseEffect { pool :: Pool | r }  (Maybe row)
-single query parameters = withConnection $ \connection -> do
-      rows <- DP.query connection query parameters
-      rows' <- runLogEither "single" rows
-      toMaybe rows'
+single :: forall r query row. ToSQLRow query => FromSQLRow row => Query query row -> query -> BaseEffect { pool :: Pool | r } (Maybe row)
+single query parameters = withConnection $ \connection -> toMaybe <$> DP.query connection query parameters
       where toMaybe rows = do
                   let length = DA.length rows
                   if length == 0 then
-                        pure Nothing -- as opposed to impure nothing
+                        Nothing -- as opposed to impure nothing
                   else if length == 1 then
-                        pure $ DA.head rows
+                        DA.head rows
                   else
-                        EA.throwError $ EA.error "more than one row returned for single query"
+                        tooManyResults unit
+
+tooManyResults :: forall error. Unit -> error
+tooManyResults _ = EEU.unsafeThrow "more than one row returned for single query"
 
 single' :: forall r query row. ToSQLRow query ⇒ FromSQLRow row ⇒ Query query row → query → BaseEffect { pool :: Pool | r } row
 single' query parameters = withConnection $ \connection -> singleWith connection query parameters
 
-singleWith connection query parameters = do
-      rows <- DP.query connection query parameters
-      rows' <- runLogEither "singleWith" rows
-      case rows' of
-            [r] -> pure r
-            _ -> EA.throwError $ EA.error "single' expects only one result"
+singleWith :: forall query row. ToSQLRow query => FromSQLRow row => Connection -> Query query row -> query -> PG row
+singleWith connection query parameters = extract <$> DP.query connection query parameters
+      where extract = case _ of
+                  [r] -> r
+                  _ -> tooManyResults unit
 
 execute :: forall r query parameters. ToSQLRow parameters => Query parameters query -> parameters -> BaseEffect { pool :: Pool | r } Unit
 execute query parameters = withConnection $ \connection -> executeWith connection query parameters
 
-executeWith connection query parameters = do
-      result <- DP.execute connection query parameters
-      runLogMaybe result
+executeWith :: forall row query. ToSQLRow query => Connection -> Query query row -> query -> PG Unit
+executeWith connection query parameters =  DP.execute connection query parameters
 
-withConnection :: forall r result. (Connection -> Aff result) -> BaseEffect { pool :: Pool | r } result
+withConnection :: forall r result. (Connection -> PG result) -> BaseEffect { pool :: Pool | r } result
 withConnection runner = do
       { pool } <- RR.ask
-      R.liftAff $ DP.withConnection pool runLogPGError
-      where runLogPGError =
-                  case _ of
-                        Right connection -> runner connection
-                        Left error -> throwError "internal connection error" error
+      eitherResult <- R.liftAff <<< CME.runExceptT $ DP.withConnection CME.runExceptT pool runner
+      finish eitherResult
+      where finish = case _ of
+                  Right result ->
+                        pure result
+                  Left error ->
+                        throwError error
 
---REFACTOR: clean this shit up
-runLogMaybe =
-      case _ of
-           Nothing -> pure unit
-           Just error -> throwError "internal maybe error" error
+withTransaction :: forall result r. (Connection -> PG result) -> BaseEffect { pool :: Pool | r } result
+withTransaction runner = withConnection $ \connection -> DP.withTransaction CME.runExceptT connection (runner connection)
 
-runLogEither from =
-      case _ of
-           Right r -> pure r
-           Left error -> throwError ("internal either error " <> from) error
+throwError :: forall r error. PGError -> BaseEffect { pool :: Pool | r } error
+throwError error = do
+      liftEffect $ EC.log errorMessage
+      RE.throw $ ST.InternalError { reason: errorMessage, context: checkRevelanceError error }
+      where errorMessage = show error
+            checkRevelanceError = case _ of
+                  IntegrityError _ -> Just MissingForeignKey
+                  _ -> Nothing
 
-throwError log error = do
-      liftEffect <<< EC.log  $ log <> show error
-      CMEC.throwError <<< EE.error $ show error
-
-withTransaction runner = withConnection $ \connection -> do
-      result <- DP.withTransaction connection (runner connection)
-      runLogEither "transaction" result

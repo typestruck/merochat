@@ -191,7 +191,7 @@ receiveMessage webSocket isFocused wsPayload model@{
                                else
                                     CIUC.alertUnreadChats updatedModel
                   Right updatedModel -> F.noMessages updatedModel
-      PayloadError payload -> case payload of
+      PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
                  contacts = updateHistoryStatus contacts userID id
             }
