@@ -22,13 +22,27 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
        else
             case chatting, suggesting of
                   i@(Just index), _ ->
-                        if fullContactProfileVisible then
-                              fullProfile FullContactProfile i model (contacts !@ index).user
-                        else
-                              contact chatting (contacts !@ index).user
+                        let cnt = contacts !@ index in
+                              if not cnt.available then
+                                    unavailable cnt.user.name
+                               else if fullContactProfileVisible then
+                                    fullProfile FullContactProfile i model cnt.user
+                               else
+                                    contact chatting cnt.user
                   Nothing, (Just index) -> suggestion model index
                   _, _ -> emptySuggestions
       where emptySuggestions = HE.div (HA.class' "suggestion") <<< HE.div_ <<< HE.img $ HA.src "/client/media/logo.png"
+
+unavailable :: String -> Html IMMessage
+unavailable name =
+      HE.div [HA.class' "profile-contact"] [
+            HE.div (HA.class' "profile-contact-top") [
+                  HE.div (HA.class' "profile-unavailable-header") [
+                        HE.h1 (HA.class' "contact-name") name,
+                        HE.span (HA.class' "unavailable-message") " is no longer available"
+                  ]
+            ]
+]
 
 contact :: Maybe Int -> IMUser -> Html IMMessage
 contact chatting { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =

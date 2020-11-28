@@ -8,6 +8,7 @@ import Prelude
 
 defaultContact :: PrimaryKey -> IMUser -> Contact
 defaultContact id chatted = {
+      available: true,
       shouldFetchChatHistory: false,
       user: chatted,
       chatStarter: id,

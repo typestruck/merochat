@@ -133,6 +133,7 @@ type ClientMessagePayload = (BasicMessage (
 type Contact = {
       shouldFetchChatHistory :: Boolean, -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
       user :: IMUser,
+      available :: Boolean,
       chatAge :: Number, --Days,
       chatStarter :: PrimaryKey,
       history :: Array HistoryMessage
@@ -434,7 +435,7 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
-derive instance genericPayloadErrorContext :: Generic DatabaseError _
+derive instance genericDatabaseError :: Generic DatabaseError _
 derive instance genericRetryableRequest :: Generic RetryableRequest _
 derive instance genericShowChatModal :: Generic ShowChatModal _
 derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
@@ -460,6 +461,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqDatabaseError :: Eq DatabaseError
 derive instance eqFullContactProfile :: Eq ProfilePresentation
 derive instance eqRetryableRequest :: Eq RetryableRequest
 derive instance eqGenerate :: Eq Generate
@@ -596,6 +598,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   foreignKarmaPosition
             ]
             pure $ ContactWrapper {
+                  available: true,
                   shouldFetchChatHistory: true,
                   history: [],
                   chatStarter: sender,

@@ -87,7 +87,7 @@ chatBarInput model@{
                   HE.div' [HA.innerHtml <<< SM.parse $ DM.fromMaybe "" message]
             ]
        else
-            HE.div [HA.class' { hidden: DM.isNothing chatting && DM.isNothing suggesting }] [
+            HE.div [HA.class' { hidden: not available || DM.isNothing chatting && DM.isNothing suggesting }] [
                   HE.div [HA.class' "chat-input-options"] [
                         bold,
                         italic,
@@ -122,10 +122,14 @@ chatBarInput model@{
                   ]
             ]
 ]
-      where recipientName = DM.fromMaybe "" $ getName chatting contacts (_.name <<< _.user) <|> getName suggesting suggestions _.name
+      where available = DM.fromMaybe true $ getContact _.available
+            recipientName = DM.fromMaybe "" $ getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
 
-            getName :: forall a b. Maybe Int -> Array b -> (b -> a) -> Maybe a
-            getName index list accessor = do
+            getContact :: forall a. (Contact -> a) -> Maybe a
+            getContact = getProperty chatting contacts
+
+            getProperty :: forall a b. Maybe Int -> Array b -> (b -> a) -> Maybe a
+            getProperty index list accessor = do
                   i <- index
                   entry <- list !! i
                   pure $ accessor entry

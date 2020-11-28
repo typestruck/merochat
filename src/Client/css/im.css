@@ -72,8 +72,8 @@ body {
     font-weight: bold;
     padding: 5px 15px;
     align-items: center;
-    border-bottom:1px solid #4E4E4E;
-    border-top:1px solid #4E4E4E;
+    border-bottom: 1px solid #4E4E4E;
+    border-top: 1px solid #4E4E4E;
 }
 
 .no-connection.flexed~.profile-contact, .no-connection.flexed~.suggestion {
@@ -165,14 +165,14 @@ body {
     height: 30px;
     margin-right: 40px;
     stroke: none;
-    fill:#b9c658
+    fill: #b9c658
 }
 
 .back-side-suggestion {
     padding: 19px 0;
     padding-left: 35px;
     cursor: pointer;
-    color:#b9c658
+    color: #b9c658
 }
 
 .back-suggestions {
@@ -327,6 +327,17 @@ body {
     display: flex;
     flex-direction: column;
     padding-left: 30px
+}
+
+.profile-unavailable-header {
+    display: flex;
+    width: 100%;
+    padding-left: 30px;
+    align-items: baseline;
+}
+
+.unavailable-message {
+    padding-left: 5px;
 }
 
 .profile-contact-header h1 {
@@ -788,7 +799,7 @@ svg.toolbar-action {
 }
 
 .headline, .profile-edition-headline {
-    font-size: 1.23em;
+    font-size: 1.20em;
     display: inline-block;
     font-style: italic;
     text-align: center;
@@ -1459,7 +1470,7 @@ select {
 }
 
 .margin-less, .margin-less-z {
-    margin-left:-20px
+    margin-left: -20px
 }
 
 .margin-less-z {

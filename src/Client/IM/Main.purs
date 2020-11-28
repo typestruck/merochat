@@ -193,7 +193,12 @@ receiveMessage webSocket isFocused wsPayload model@{
                   Right updatedModel -> F.noMessages updatedModel
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
-                 contacts = updateHistoryStatus contacts userID id
+                 contacts =
+                        --assume that it is because the other use no longer exists
+                        if payload.context == Just MissingForeignKey then
+                              markContactUnavailable contacts userID
+                         else
+                              markErroredMessage contacts userID id
             }
             --the connection might still be open and the server haven't saved the socket
             Connect -> CIF.nothingNext model <<< liftEffect $ CIW.close webSocket
@@ -239,8 +244,8 @@ updateTemporaryID contacts userID previousMessageID messageID = updateContactHis
                   | id == previousMessageID = history { id = messageID, status = Received }
                   | otherwise = history
 
-updateHistoryStatus :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact
-updateHistoryStatus contacts userID messageID = updateContactHistory contacts userID updateStatus
+markErroredMessage :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact
+markErroredMessage contacts userID messageID = updateContactHistory contacts userID updateStatus
       where updateStatus history@( { id })
                   | id == messageID = history { status = Errored }
                   | otherwise = history
@@ -250,6 +255,14 @@ updateContactHistory contacts userID f = updateContact <$> contacts
       where updateContact contact@{ user: { id }, history }
                   | id == userID = contact {
                         history = f <$> history
+                  }
+                  | otherwise = contact
+
+markContactUnavailable :: Array Contact -> PrimaryKey -> Array Contact
+markContactUnavailable contacts userID = updateContact <$> contacts
+      where updateContact contact@{ user: { id }, history }
+                  | id == userID = contact {
+                        available = false
                   }
                   | otherwise = contact
 

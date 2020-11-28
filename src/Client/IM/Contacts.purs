@@ -44,7 +44,7 @@ resumeChat searchID model@{ contacts, chatting } =
                         selectedImage = Nothing,
                         failedRequests = []
                   } :> [
-                        CIF.next UpdateReadCount ,
+                        CIF.next UpdateReadCount,
                         CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory,
                         CIF.next $ FocusInput "#chat-input"
                   ]

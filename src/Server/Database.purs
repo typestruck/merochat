@@ -105,4 +105,3 @@ throwError error = do
             checkRevelanceError = case _ of
                   IntegrityError _ -> Just MissingForeignKey
                   _ -> Nothing
-
