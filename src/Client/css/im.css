@@ -1047,7 +1047,8 @@ select {
 .confirmation {
     z-index: 20;
     position: absolute;
-    padding: 30px 40px;
+    padding: 50px;
+padding-bottom: 10px;
     background: #262626;
     width: 500px;
     height: 120px;
@@ -1064,6 +1065,7 @@ select {
     display: flex;
     justify-content: flex-end;
     align-items: baseline;
+    margin-top:15px;
 }
 
 .cancel {

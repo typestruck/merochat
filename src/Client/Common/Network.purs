@@ -14,6 +14,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
+import Debug.Trace (spy)
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)

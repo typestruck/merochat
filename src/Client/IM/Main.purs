@@ -24,6 +24,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -173,24 +174,25 @@ receiveMessage webSocket isFocused wsPayload model@{
       NewIncomingMessage payload@{ userID } ->
             if DA.elem userID blockedUsers then
                   F.noMessages model
-            else case processIncomingMessage payload model of
-                  Left userID -> model :> [CCNT.retryableResponse CheckMissedEvents DisplayContacts (request.im.singleContact { query: { id: userID }})]
-                  Right updatedModel@{
-                        chatting: Just index,
-                        contacts
-                  } ->  --mark it as read if we received a message from the current chat
-                        let fields = {
-                              chatting: index,
-                              userID: recipientID,
-                              contacts,
-                              webSocket
-                        }
-                        in
-                              if isFocused && isChatting userID fields then
-                                    CICN.updateReadHistory updatedModel fields
-                               else
-                                    CIUC.alertUnreadChats updatedModel
-                  Right updatedModel -> F.noMessages updatedModel
+            else let model' = unsuggest userID model in
+                  case processIncomingMessage payload model'  of
+                        Left userID -> model' :> [CCNT.retryableResponse CheckMissedEvents DisplayContacts (request.im.singleContact { query: { id: userID }})]
+                        Right updatedModel@{
+                              chatting: Just index,
+                              contacts
+                        } ->  --mark it as read if we received a message from the current chat
+                              let fields = {
+                                    chatting: index,
+                                    userID: recipientID,
+                                    contacts,
+                                    webSocket
+                              }
+                              in
+                                    if isFocused && isChatting userID fields then
+                                          CICN.updateReadHistory updatedModel fields
+                                    else
+                                          CIUC.alertUnreadChats updatedModel
+                        Right updatedModel -> F.noMessages updatedModel
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
                  contacts =
@@ -206,6 +208,12 @@ receiveMessage webSocket isFocused wsPayload model@{
       where isChatting senderID { contacts, chatting } =
                   let ({ user: { id: recipientID } }) = contacts !@ chatting in
                   recipientID == senderID
+
+unsuggest :: PrimaryKey -> IMModel -> IMModel
+unsuggest userID model@{ suggestions, suggesting } = model {
+      suggestions = DA.filter ((userID /= _) <<< _.id) suggestions,
+      suggesting = (\i -> if i == 0 then 0  else i - 1) <$> suggesting
+}
 
 processIncomingMessage :: ClientMessagePayload -> IMModel -> Either PrimaryKey IMModel
 processIncomingMessage { id, userID, date, content } model@{

@@ -19,6 +19,7 @@ import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
+--REFACTOR: some of these tests should be for client/IM/Main.purs
 tests :: TestSuite
 tests = do
       TU.suite "im chat update" do
@@ -123,6 +124,9 @@ tests = do
                               }]
                         }
                   TUA.equal (Just newMessageID) $ getMessageID contacts
+
+            TU.test "receiveMessage removes user from suggestions" do
+                  TUA.equal 2 44
 
             TU.test "receiveMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
