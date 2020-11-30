@@ -45,29 +45,19 @@ unavailable name =
 ]
 
 contact :: Maybe Int -> IMUser -> Html IMMessage
-contact chatting { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
+contact chatting { name, avatar } =
       HE.div [HA.class' "profile-contact", HA.title "Click to see full profile", HA.onClick ToggleContactProfile] [
             HE.div (HA.class' "profile-contact-top") [
                   HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar],
                   HE.div (HA.class' "profile-contact-header") [
-                        HE.h1 (HA.class' "contact-name") name,
-                        HE.div (HA.class' "headline") headline
+                        HE.h1 (HA.class' "contact-name") name
                   ],
-                  HE.div (HA.class' "profile-contact-deets") [
-                        HE.div_ [
-                              HE.span [HA.class' "span-info"] $ show karma,
-                              HE.span [HA.class' "duller"] " karma"
-                        ],
-                        HE.div_ [
-                              toSpan $ map show age,
-                              duller (DM.isNothing age || DM.isNothing gender) ", ",
-                              toSpan gender
-                        ],
-                        HE.div_ [
-                              duller (DM.isNothing country) "from ",
-                              toSpan country
+                  HE.div (HA.class' "profile-contact-deets") $
+                        HE.svg [HA.class' "svg-32", HA.viewBox "0 0 32 32"][
+                              HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
+                              HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
+                              HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
                         ]
-                  ]
             ]
       ]
 
@@ -109,7 +99,7 @@ arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
 ]
 
 fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
-fullProfile presentation index model { id, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
+fullProfile presentation index model { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
       case presentation of
             FullContactProfile -> HE.div [HA.class' "suggestion old", HA.title "Click to hide full profile", HA.onClick ToggleContactProfile] profile
             CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
@@ -124,10 +114,10 @@ fullProfile presentation index model { id, name, avatar, age, karma, headline, g
                   HE.div (HA.class' "profile-karma") [
                         HE.div_ [
                               HE.span [HA.class' "span-info"] $ show karma,
-                              HE.span [HA.class' "duller"] " karma"
+                              HE.span [HA.class' "duller"] " karma",
+                              HE.span_ $ " (#" <> show karmaPosition <> ")"
                         ]
                   ],
-
                   HE.div (HA.class' "profile-asl") [
                         HE.div_ [
                               toSpan $ map show age,
@@ -143,12 +133,19 @@ fullProfile presentation index model { id, name, avatar, age, karma, headline, g
                         ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
                   ],
 
+                  --HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block",
+
                   HE.div (HA.class' "tags-description") [
                         HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
 
-                        HE.span (HA.class' "duller profile-description-about" ) "About",
-                         HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block",
+                        HE.div [HA.class' "profile-context", HA.id "suggestion-context-menu"] $
+                              HE.svg [HA.class' "svg-32", HA.viewBox "0 0 32 32"][
+                                    HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
+                                    HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
+                                    HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
+                              ],
 
+                        HE.span (HA.class' "duller profile-description-about" ) "About",
                         HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]
                   ],
                   arrow PreviousSuggestion,

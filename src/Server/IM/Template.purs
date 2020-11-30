@@ -48,7 +48,7 @@ template {contacts, suggestions, user} = do
                   shouldSendMessage: false,
                   erroredFields: [],
                   fortune: Nothing,
-                  userContextMenuVisible: false,
+                  toggleContextMenu: HideContextMenu,
                   toggleModal: HideUserMenuModal,
                   message: Nothing,
                   toggleChatModal: HideChatModal,

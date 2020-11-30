@@ -209,7 +209,7 @@ type IM = (
       --visibility switches
       hasTriedToConnectYet :: Boolean,
       fullContactProfileVisible :: Boolean,
-      userContextMenuVisible :: Boolean,
+      toggleContextMenu :: ShowContextMenu,
       toggleModal :: ShowUserMenuModal,
       toggleChatModal :: ShowChatModal
 )
@@ -222,6 +222,13 @@ data ShowChatModal =
       ShowPreview |
       ShowEmojis |
       ShowLinkForm
+
+data ShowContextMenu =
+      HideContextMenu |
+      ShowUserContextMenu |
+      ShowSuggestionContextMenu |
+      ShowCompactProfileContextMenu |
+      ShowFullProfileContextMenu
 
 data ShowUserMenuModal =
       HideUserMenuModal |
@@ -277,10 +284,8 @@ data IMMessage =
       CheckFetchHistory |
       DisplayHistory (Array HistoryMessage)  |
       --user menu
-      ShowUserContextMenu Event |
       Logout |
-      ToggleChatModal ShowChatModal |
-      SetUserContentMenuVisible Boolean |
+      SetContextMenuToggle ShowContextMenu |
       SetModalContents (Maybe String) String String |
       --contact
       MarkAsRead |
@@ -312,6 +317,7 @@ data IMMessage =
       SetEmoji Event |
       InsertLink |
       --main
+      ToggleUserContextMenu Event |
       SpecialRequest RetryableRequest |
       ReceiveMessage WebSocketPayloadClient Boolean |
       AlertUnreadChats |
@@ -321,7 +327,8 @@ data IMMessage =
       SetField (IMModel -> IMModel) |
       ToggleFortune Boolean |
       DisplayFortune String |
-      RequestFailed RequestFailure
+      RequestFailed RequestFailure |
+      ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer =
       Connect |
@@ -435,6 +442,7 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
+derive instance genericShowContextMenu :: Generic ShowContextMenu _
 derive instance genericDatabaseError :: Generic DatabaseError _
 derive instance genericRetryableRequest :: Generic RetryableRequest _
 derive instance genericShowChatModal :: Generic ShowChatModal _
@@ -461,6 +469,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqShowContextMenu :: Eq ShowContextMenu
 derive instance eqDatabaseError :: Eq DatabaseError
 derive instance eqFullContactProfile :: Eq ProfilePresentation
 derive instance eqRetryableRequest :: Eq RetryableRequest
@@ -767,6 +776,8 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPayloadErrorContext :: EncodeJson DatabaseError where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
@@ -794,6 +805,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonShowContextMenu :: DecodeJson ShowContextMenu where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPayloadErrorContext :: DecodeJson DatabaseError where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where

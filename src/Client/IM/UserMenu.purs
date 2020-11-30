@@ -10,15 +10,10 @@ import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Data.Maybe (Maybe(..))
-import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Routes (routes)
-import Shared.Unsafe as SU
-import Web.DOM.Element as WDE
-import Web.Event.Event (Event)
-import Web.Event.Event as WEE
 
 logout :: IMModel -> MoreMessages
 logout model = CIF.nothingNext model out
@@ -55,17 +50,5 @@ setModalContents file root html model = CIF.nothingNext model $ loadModal root h
                         Just name -> CCD.loadScript name
                         Nothing -> pure unit
 
-showUserContextMenu :: Event -> IMModel -> MoreMessages
-showUserContextMenu event model@{ userContextMenuVisible }
-      | userContextMenuVisible =
-            F.noMessages $ model { userContextMenuVisible = false }
-      | otherwise =
-            model :> [
-                  liftEffect <<< map (Just <<< SetUserContentMenuVisible <<< (_ == "user-context-menu")) $ WDE.id <<< SU.fromJust $ do
-                  target <- WEE.target event
-                  WDE.fromEventTarget target
-            ]
-
-
-toogleUserContextMenu :: Boolean -> IMModel -> NoMessages
-toogleUserContextMenu toggle model = F.noMessages $ model {  userContextMenuVisible = toggle }
+toogleUserContextMenu :: ShowContextMenu -> IMModel -> NoMessages
+toogleUserContextMenu toggle model = F.noMessages $ model { toggleContextMenu = toggle }

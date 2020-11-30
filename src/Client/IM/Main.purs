@@ -24,7 +24,6 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -42,6 +41,8 @@ import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
+import Web.DOM.Element as WDE
+import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.File.FileReader as WFR
@@ -68,7 +69,7 @@ main = do
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
       --display settings/profile page
-      FE.send [FE.onClick' [ShowUserContextMenu]] channel
+      FE.send [FE.onClick' [ToggleUserContextMenu]] channel
       --image upload
       input <- CIC.getFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
@@ -114,10 +115,10 @@ update { webSocketRef, fileReader } model =
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
             Logout -> CIU.logout model
-            ShowUserContextMenu event -> CIU.showUserContextMenu event model
+            ToggleUserContextMenu event -> toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) -> CIU.toggleModal toggle model
             SetModalContents file root html -> CIU.setModalContents file root html model
-            SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
+            SetContextMenuToggle toggle -> CIU.toogleUserContextMenu toggle model
             --main
             AlertUnreadChats -> CIUC.alertUnreadChats model
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
@@ -130,6 +131,21 @@ update { webSocketRef, fileReader } model =
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+toggleUserContextMenu :: Event -> IMModel -> MoreMessages
+toggleUserContextMenu event model@{ toggleContextMenu }
+      | toggleContextMenu /= HideContextMenu =
+            F.noMessages $ model { toggleContextMenu = HideContextMenu }
+      | otherwise =
+            model :> [
+                  liftEffect <<< map (Just <<< SetContextMenuToggle <<< toggle) $ WDE.id <<< SU.fromJust $ do
+                  target <- WEE.target event
+                  WDE.fromEventTarget target
+            ]
+      where toggle = case _ of
+                  "user-context-menu" -> ShowUserContextMenu
+                  "suggestion-context-menu" -> ShowSuggestionContextMenu
+                  _ -> HideContextMenu
 
 focusInput :: String -> IMModel -> NextMessage
 focusInput selector model = model :> [
