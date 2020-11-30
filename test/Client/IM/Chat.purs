@@ -128,6 +128,15 @@ tests = do
             TU.test "receiveMessage removes user from suggestions" do
                   TUA.equal 2 44
 
+            TU.test "receiveMessage marks deleted users as unavailable" do
+                  TUA.equal 22 4
+
+            TU.test "receiveMessage marks blockee users as unaviable" do
+                  TUA.equal 22 4
+
+            TU.test "receiveMessage removes blockee users from suggestions" do
+                  TUA.equal 0 7
+
             TU.test "receiveMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let   { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (NewIncomingMessage {

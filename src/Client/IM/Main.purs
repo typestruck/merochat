@@ -170,7 +170,7 @@ receiveMessage webSocket isFocused wsPayload model@{
                   contacts = updateTemporaryID contacts userID previousID id
             }
       BeenBlocked { id } ->
-            F.noMessages $ CIS.removeBlockedUser id model
+            F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable contacts id }
       NewIncomingMessage payload@{ userID } ->
             if DA.elem userID blockedUsers then
                   F.noMessages model

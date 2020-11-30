@@ -51,8 +51,7 @@ contact chatting { id, name, avatar, age, karma, headline, gender, country, lang
                   HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar],
                   HE.div (HA.class' "profile-contact-header") [
                         HE.h1 (HA.class' "contact-name") name,
-                        HE.div (HA.class' "headline") headline,
-                        HE.div (HA.class' "contact-profile-tags") $ map toTagSpan tags
+                        HE.div (HA.class' "headline") headline
                   ],
                   HE.div (HA.class' "profile-contact-deets") [
                         HE.div_ [
@@ -67,10 +66,7 @@ contact chatting { id, name, avatar, age, karma, headline, gender, country, lang
                         HE.div_ [
                               duller (DM.isNothing country) "from ",
                               toSpan country
-                        ],
-                        HE.div_  ([
-                              duller (DA.null languages) "speaks "
-                        ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
+                        ]
                   ]
             ]
       ]
@@ -151,7 +147,7 @@ fullProfile presentation index model { id, name, avatar, age, karma, headline, g
                         HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
 
                         HE.span (HA.class' "duller profile-description-about" ) "About",
-                              -- HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block"
+                         HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block",
 
                         HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]
                   ],

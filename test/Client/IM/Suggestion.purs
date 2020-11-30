@@ -34,6 +34,12 @@ tests = do
                   }
                   TUA.equal (Just 2) suggesting
 
+            TU.test "blockUser removes user from suggestions" do
+                  TUA.equal 1 555
+
+            TU.test "blockUser removes user from contacts" do
+                  TUA.equal 21 5558
+
             TU.test "nextSuggestion clears chatting" do
                   let { chatting } = DT.fst <<< CIS.nextSuggestion $ model  {
                         chatting = Just 2,
