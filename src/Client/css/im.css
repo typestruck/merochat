@@ -66,14 +66,15 @@ body {
 
 .side-suggestions-container {
     background: #2d2d2d;
-    padding-bottom: 10px;
+
 }
 
 .side-suggestion {
     display: flex;
+    justify-content: center;
     background: #213027;
     font-weight: bold;
-    padding: 5px 15px;
+    padding: 5px 6px;
     align-items: center;
     border-bottom: 1px solid #4E4E4E;
     border-top: 1px solid #4E4E4E;
@@ -154,8 +155,8 @@ body {
 }
 
 .avatar-message {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
     border-radius: 100%;
 }
 
@@ -164,34 +165,32 @@ body {
 }
 
 .svg-back-suggestions {
-    width: 30px;
-    height: 30px;
-    margin-right: 40px;
+    width: 25px;
+    height: 25px;
+    margin-right: 15px;
     stroke: none;
     fill: #b9c658
 }
 
 .back-side-suggestion {
-    padding: 19px 0;
-    padding-left: 35px;
+    padding: 19px 6px;
     cursor: pointer;
     color: #b9c658
 }
 
 .back-suggestions {
-    font-size: 1.3em;
-    letter-spacing: 1px;
+    font-size: 1.2em;
 }
 
 .avatar-contact-list-div {
-    min-width: 64px;
-    min-height: 64px;
+    min-width: 54px;
+    min-height: 54px;
     align-self: center;
 }
 
 .avatar-contact-list, .avatar-settings {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
     border-radius: 100%;
 }
 
@@ -224,18 +223,22 @@ body {
     background-color: #212120;
     position: relative;
     align-items: center;
-    padding: 15px;
+    padding: 10px 5px;
     border-bottom: #161616
 }
 
 .contact {
     align-items: baseline;
     cursor: pointer;
-    padding: 15px;
+    padding:9px 6px;
 }
 
-.settings-name, .contact-profile {
+.settings-name {
     padding: 5px 20px;
+}
+
+.contact-profile {
+    padding: 5px 10px 5px 10px;
 }
 
 .contact-name {
@@ -366,9 +369,9 @@ body {
 .message-content::before {
     content: "\00a0";
     display: block;
-    height: 18px;
+    height: 16px;
     position: absolute;
-    width: 28px;
+    width: 20px;
 }
 
 .no-avatar-message .message-content::before {
@@ -387,14 +390,14 @@ body {
 
 .recipient-message .message-content::before {
     background-color: #373737;
-    top: 2px;
+    top: 0px;
     left: -7px;
-    transform: rotate( 51deg) skew( -38deg);
+    transform: rotate( 50deg) skew( -38deg);
 }
 
 .sender-message .message-content::before {
     background-color: #1b3a28;
-    right: -7px;
+    right: -5px;
     transform: rotate( 0deg) skew( -35deg);
 }
 
@@ -554,7 +557,8 @@ img.emoji {
 .contact-list {
     background-color: #2d2d2d;
     overflow-y: auto;
-    flex-grow: 1
+    flex-grow: 1;
+    padding-top:5px;
 }
 
 .logo-contact-list {
@@ -1526,6 +1530,7 @@ select {
     .suggestion-center .suggestion.new {
         height: 596px;
     }
+
     .suggestion-input {
         height: 160px;
     }
@@ -1578,6 +1583,14 @@ select {
     }
     .welcome {
         font-size: 1.7em;
+    }
+    .avatar-contact-list, .avatar-settings, .avatar-message {
+        width: 64px;
+        height: 64px;
+    }
+    .avatar-contact-list-div {
+        min-width: 64px;
+        min-height: 64px;
     }
     .welcome-new {
         font-size: 1.1em;
@@ -1644,5 +1657,17 @@ select {
     }
     .suggestion-input {
         height: 160px;
+    }
+    .contact {
+        padding: 10px;
+    }
+    .svg-back-suggestions {
+        margin-right: 28px;
+    }
+    .contact-profile {
+        padding: 5px 15px;
+    }
+    .settings {
+        padding: 10px;
     }
 }

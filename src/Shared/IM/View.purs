@@ -51,9 +51,12 @@ logo fortune = HE.div (HA.class' "relative") [
             ]
       ],
 
-      HE.div [HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true] [
-            HE.img $ HA.src "/client/media/logo-small.png"
-      ]
+      HE.div [HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true] $
+            HE.img [
+                  HA.createAttribute "srcset" "/client/media/logo-3-small.png 180w, /client/media/logo-small.png 210w",
+                  HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px",
+                  HA.src "/client/media/logo.png"
+            ]
 ]
 
 modals :: IMModel -> Html IMMessage
