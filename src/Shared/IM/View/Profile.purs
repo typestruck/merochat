@@ -3,10 +3,11 @@ module Shared.IM.View.Profile where
 import Prelude
 import Shared.Types
 
-import Data.Array ((!!), (..))
+import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -28,7 +29,7 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
                                else if fullContactProfileVisible then
                                     fullProfile FullContactProfile i model cnt.user
                                else
-                                    contact chatting cnt.user
+                                    contact model cnt.user
                   Nothing, (Just index) -> suggestion model index
                   _, _ -> emptySuggestions
       where emptySuggestions = HE.div (HA.class' "suggestion") <<< HE.div_ <<< HE.img $ HA.src "/client/media/logo.png"
@@ -44,22 +45,27 @@ unavailable name =
             ]
 ]
 
-contact :: Maybe Int -> IMUser -> Html IMMessage
-contact chatting { name, avatar } =
-      HE.div [HA.class' "profile-contact", HA.title "Click to see full profile", HA.onClick ToggleContactProfile] [
+contact :: IMModel -> IMUser -> Html IMMessage
+contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
+      HE.div (HA.class' "profile-contact") [
             HE.div (HA.class' "profile-contact-top") [
-                  HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar],
-                  HE.div (HA.class' "profile-contact-header") [
+                  HE.img $ [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar] <> showProfile,
+                  HE.div (HA.class' "profile-contact-header" : showProfile) [
                         HE.h1 (HA.class' "contact-name") name
                   ],
-                  HE.div (HA.class' "profile-contact-deets") $
-                        HE.svg [HA.class' "svg-32", HA.viewBox "0 0 32 32"][
-                              HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
-                              HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
-                              HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
-                        ]
+                  HE.div [HA.class' "profile-contact-deets"] $
+                        HE.div [HA.class' "outer-user-menu"] $
+                              HE.svg [HA.id "compact-profile-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
+                                    HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
+                                    HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
+                                    HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
+                              ],
+                              HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu }][
+                                    HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
+                              ]
             ]
       ]
+      where showProfile = [HA.title "Click to see full profile", HA.onClick ToggleContactProfile]
 
 suggestion :: IMModel -> Int -> Html IMMessage
 suggestion model@{ user, suggestions } index =
@@ -99,7 +105,7 @@ arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
 ]
 
 fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
-fullProfile presentation index model { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
+fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
       case presentation of
             FullContactProfile -> HE.div [HA.class' "suggestion old", HA.title "Click to hide full profile", HA.onClick ToggleContactProfile] profile
             CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
@@ -133,17 +139,21 @@ fullProfile presentation index model { id, karmaPosition, name, avatar, age, kar
                         ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
                   ],
 
-                  --HE.div_ $ HE.button [HA.class' "action-button", HA.onClick $ BlockUser id] "Block",
-
                   HE.div (HA.class' "tags-description") [
                         HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
 
-                        HE.div [HA.class' "profile-context", HA.id "suggestion-context-menu"] $
-                              HE.svg [HA.class' "svg-32", HA.viewBox "0 0 32 32"][
-                                    HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
-                                    HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
-                                    HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
-                              ],
+                        HE.div [HA.class' "profile-context outer-user-menu"] $
+                              if presentation == CurrentSuggestion then [
+                                    HE.svg [HA.id "suggestion-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
+                                          HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
+                                          HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
+                                          HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
+                                    ],
+                                    HE.div [HA.class' {"user-menu ": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
+                                          HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
+                                    ]
+                              ]
+                               else [HE.createEmptyElement "div"],
 
                         HE.span (HA.class' "duller profile-description-about" ) "About",
                         HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]

@@ -24,6 +24,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -110,7 +111,7 @@ update { webSocketRef, fileReader } model =
             ResumeSuggesting -> CIS.resumeSuggesting model
             ToggleContactProfile -> CIS.toggleContactProfile model
             PreviousSuggestion -> CIS.previousSuggestion model
-            BlockUser id -> CIS.blockUser webSocket id model
+            SpecialRequest (BlockUser id) -> CIS.blockUser webSocket id model
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
@@ -145,6 +146,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
       where toggle = case _ of
                   "user-context-menu" -> ShowUserContextMenu
                   "suggestion-context-menu" -> ShowSuggestionContextMenu
+                  "compact-profile-context-menu" -> ShowCompactProfileContextMenu
                   _ -> HideContextMenu
 
 focusInput :: String -> IMModel -> NextMessage

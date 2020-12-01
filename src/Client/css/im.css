@@ -318,19 +318,19 @@ body {
 
 .profile-contact-top {
     display: flex;
-align-items: center;
+    align-items: center;
 }
 
 .profile-contact-deets {
     display: flex;
     flex-direction: column;
-    margin-left: auto;
 }
 
 .profile-contact-header {
     display: flex;
     flex-direction: column;
-    padding-left: 15px
+    padding-left: 15px;
+    flex-grow: 1
 }
 
 .profile-unavailable-header {
@@ -953,6 +953,11 @@ input:not(type=button):focus {
     width: max-content;
 }
 
+.profile-contact-top .user-menu {
+    background: #373737;
+    top: 62px;
+}
+
 .logout {
     color: hsl(359, 85%, 62%) !important;
     padding-top: 20px;
@@ -1054,7 +1059,7 @@ select {
     z-index: 20;
     position: absolute;
     padding: 50px;
-padding-bottom: 10px;
+    padding-bottom: 10px;
     background: #262626;
     width: 500px;
     height: 120px;
@@ -1071,7 +1076,7 @@ padding-bottom: 10px;
     display: flex;
     justify-content: flex-end;
     align-items: baseline;
-    margin-top:15px;
+    margin-top: 15px;
 }
 
 .cancel {
@@ -1489,6 +1494,10 @@ padding-bottom: 10px;
     opacity: 0.6;
 }
 
+.profile-context .user-menu {
+    background: #2d2d2d;
+}
+
 /* dry this shite  */
 
 @media (min-width:1366px) and (max-width:1919px) {
@@ -1496,7 +1505,6 @@ padding-bottom: 10px;
         font-size: max(14.5px, 1vw);
         line-height: 1.41857143;
     }
-
     .welcome {
         font-size: 1.5em;
     }

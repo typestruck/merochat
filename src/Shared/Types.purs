@@ -277,7 +277,8 @@ data RetryableRequest =
       FetchHistory Boolean |
       FetchContacts Boolean |
       CheckMissedEvents |
-      ToggleModal ShowUserMenuModal
+      ToggleModal ShowUserMenuModal |
+      BlockUser PrimaryKey
 
 data IMMessage =
       --history
@@ -299,7 +300,6 @@ data IMMessage =
       PreviousSuggestion |
       NextSuggestion |
       DisplayMoreSuggestions (Array Suggestion) |
-      BlockUser PrimaryKey |
       --chat
       SetSelectedImage (Maybe String) |
       ToggleContactProfile |
