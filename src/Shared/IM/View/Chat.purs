@@ -98,7 +98,7 @@ chatBarInput model@{
                         linkButton toggleChatModal,
                         HE.button [HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
                         HE.div (HA.class' "send-enter") [
-                              HE.input [HA.type' "checkbox", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
+                              HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
                               HE.label (HA.for "message-enter") "Send message on enter"
                         ]
                   ],

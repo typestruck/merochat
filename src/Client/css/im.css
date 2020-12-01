@@ -66,7 +66,6 @@ body {
 
 .side-suggestions-container {
     background: #2d2d2d;
-
 }
 
 .side-suggestion {
@@ -203,8 +202,8 @@ body {
 }
 
 .profile-contact .avatar-profile {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
 }
 
 .suggestion.avatar-profile {
@@ -230,7 +229,7 @@ body {
 .contact {
     align-items: baseline;
     cursor: pointer;
-    padding:9px 6px;
+    padding: 9px 6px;
 }
 
 .settings-name {
@@ -315,7 +314,7 @@ body {
     background: #373737;
     display: flex;
     flex-direction: column;
-    padding: 15px 20px;
+    padding: 10px 20px;
     cursor: pointer;
 }
 
@@ -448,10 +447,6 @@ body {
     align-self: flex-start;
 }
 
-.recipient-message .avatar-message {
-    margin-right: 10px;
-}
-
 .text {
     align-self: center;
     position: relative;
@@ -466,10 +461,6 @@ body {
 .sender-message {
     flex-flow: row-reverse;
     align-self: flex-end;
-}
-
-.sender-message .avatar-message {
-    margin-left: 10px;
 }
 
 .modal-placeholder-overlay {
@@ -558,7 +549,7 @@ img.emoji {
     background-color: #2d2d2d;
     overflow-y: auto;
     flex-grow: 1;
-    padding-top:5px;
+    padding-top: 5px;
 }
 
 .logo-contact-list {
@@ -1530,7 +1521,6 @@ select {
     .suggestion-center .suggestion.new {
         height: 596px;
     }
-
     .suggestion-input {
         height: 160px;
     }
@@ -1574,6 +1564,26 @@ select {
     .description-message, .profile-description, .profile-edition-description {
         width: 595px;
     }
+    .svg-32 {
+        width: 25px;
+        height: 25px;
+    }
+    .svg-20 {
+        width: 15px;
+        height: 15px;
+    }
+    .svg-50 {
+        width: 40px;
+        height: 40px;
+    }
+    .svg-16 {
+        width: 13px;
+        height: 13px;
+    }
+    .svg-other {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 @media (min-width:1920px) {
@@ -1584,7 +1594,7 @@ select {
     .welcome {
         font-size: 1.7em;
     }
-    .avatar-contact-list, .avatar-settings, .avatar-message {
+    .profile-contact .avatar-profile, .avatar-contact-list, .avatar-settings, .avatar-message {
         width: 64px;
         height: 64px;
     }
@@ -1669,5 +1679,11 @@ select {
     }
     .settings {
         padding: 10px;
+    }
+    .recipient-message .avatar-message {
+        margin-right: 10px;
+    }
+    .sender-message .avatar-message {
+        margin-left: 10px;
     }
 }
