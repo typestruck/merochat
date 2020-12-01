@@ -60,6 +60,14 @@ body {
     justify-content: center;
 }
 
+.show-profile-icon {
+    align-self: center;
+    width: 13px;
+    height: 4px;
+    align-self: center;
+    margin-bottom: -4px;
+}
+
 .flexed {
     display: flex;
 }
@@ -1685,5 +1693,10 @@ select {
     }
     .sender-message .avatar-message {
         margin-left: 10px;
+    }
+    .show-profile-icon {
+        width: 16px;
+        height: 5px;
+        margin-bottom: -5px;
     }
 }

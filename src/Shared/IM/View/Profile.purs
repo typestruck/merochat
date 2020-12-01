@@ -63,7 +63,9 @@ contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
                               HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu }][
                                     HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                               ]
-            ]
+            ],
+            HE.svg [HA.class' "show-profile-icon", HA.viewBox "0 0 16 5", HA.fill "none"] $
+                  HE.path' [HA.d "M5.33333 4.8H10.6667V3.42857H5.33333V4.8ZM0 1.37143H16V0H0V1.37143Z"]
       ]
       where showProfile = [HA.title "Click to see full profile", HA.onClick ToggleContactProfile]
 
