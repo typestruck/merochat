@@ -109,7 +109,7 @@ body {
 .svg-other {
     font-size: 1.1em;
     stroke-width: 5;
-    margin: 2px 10px 0 10px  !important;
+    margin: 4px 10px 0 10px  !important;
     align-self: baseline;
 }
 
@@ -588,7 +588,7 @@ svg.toolbar-action {
     border: 1px solid #b5b7b7;
     color: rgb(238, 238, 238, 0.8);
     border-bottom: none;
-    padding: 5px;
+    padding: 0px 5px;
     display: flex;
     align-items: center;
 }
@@ -646,13 +646,13 @@ svg.toolbar-action {
     box-sizing: padding-box;
     cursor: text;
     border-radius: 5px;
-    min-height: 55px;
+    min-height: 50px;
     max-height: 150px;
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     background: #2d2d2d;
-    padding: 15px;
-    padding-right: 63px;
+    padding: 10px;
+    padding-right: 53px;
     padding-left: 42px;
     border: 1px solid #b5b7b7;
     border-top: none;
@@ -1228,7 +1228,7 @@ select {
 
 .emoji-access {
     position: absolute;
-    top: 15px;
+    top: 10px;
     stroke-width: 5;
     left: 5px;
     z-index: 2;
@@ -1521,8 +1521,8 @@ select {
     height: 25px;
 }
 .svg-20 {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
 }
 .svg-50 {
     width: 40px;
@@ -1533,8 +1533,8 @@ select {
     height: 13px;
 }
 .svg-other {
-    width: 20px;
-    height: 20px;
+    width: 17px;
+    height: 17px;
 }
 
 /* dry this shite  */
@@ -1549,15 +1549,15 @@ select {
     }
     .card-sides {
         margin: 10px 0;
-        width: max(874px, calc(100vw * 0.6398243045387994));
-        height: max(627px, calc(100vh * 0.81640625));
+        width: calc(100vw * 0.6398243045387994);
+        height: calc(100vh * 0.81640625);
     }
     .profile-description-about {
         margin-top: 16px;
     }
     .card-center, .suggestion-center {
-        width: max(751px, calc(100vw * 0.55344070278184475));
-        height: max(649px, calc(100vh * 0.8450520833333334));
+        width: calc(100vw * 0.55344070278184475);
+        height: calc(100vh * 0.8450520833333334);
     }
     .suggestion-center .suggestion.new {
         height: 596px;
@@ -1622,7 +1622,7 @@ select {
     }
     .card-sides {
         margin: 46px 0;
-        height: max(766px, calc(100vh * 0.7092592592592592));
+        height: calc(100vh * 0.7092592592592592);
         width: 1100px;
     }
     .profile-description-about {
@@ -1630,10 +1630,10 @@ select {
     }
     .suggestion-center {
         width: 1040px;
-        height: max(858px, calc(100vh * 0.7944444444444444));
+        height: calc(100vh * 0.7944444444444444);
     }
     .suggestion-center .suggestion.new {
-        height: max(698px, calc(100vh * 0.6462962962962962));
+        height: calc(100vh * 0.6462962962962962);
     }
     .avatar-profile, .avatar-profile-edition {
         width: 94px;
