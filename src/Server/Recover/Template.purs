@@ -4,8 +4,8 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST

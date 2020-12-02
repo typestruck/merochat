@@ -9,8 +9,8 @@ import Debug.Trace (spy)
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.Unread as SIU
@@ -22,10 +22,20 @@ template :: {
       user :: IMUser
 } -> Effect String
 template {contacts, suggestions, user} = do
-      let   model = {
+      let   unreadChats = SIU.countUnreadChats user.id contacts
+            suggestionsCount = DA.length suggestions
+      F.preMount (QuerySelector ".im") {
+            view: \model -> ST.templateWith $ defaultParameters {
+                  title = SIU.title unreadChats,
+                  favicon = SIU.favicon unreadChats,
+                  content = [SIV.view false model],
+                  javascript = javascript,
+                  css = css
+            },
+            init: {
                   chatting: Nothing,
                   temporaryID: 0,
-                  suggesting: if DA.null suggestions then Nothing else Just 0,
+                  suggesting: if suggestionsCount == 0 then Nothing else if suggestionsCount == 1 then Just 0 else Just 1,
                   freeToFetchChatHistory:true,
                   suggestionsPage: 0,
                   messageEnter: true,
@@ -38,7 +48,7 @@ template {contacts, suggestions, user} = do
                   shouldSendMessage: false,
                   erroredFields: [],
                   fortune: Nothing,
-                  userContextMenuVisible: false,
+                  toggleContextMenu: HideContextMenu,
                   toggleModal: HideUserMenuModal,
                   message: Nothing,
                   toggleChatModal: HideChatModal,
@@ -50,16 +60,6 @@ template {contacts, suggestions, user} = do
                   suggestions,
                   user
             }
-            unreadChats = SIU.countUnreadChats user.id contacts
-      F.preMount (QuerySelector ".im") {
-            view: \model' -> ST.templateWith $ defaultParameters {
-                  title = SIU.title unreadChats,
-                  favicon = SIU.favicon unreadChats,
-                  content = [SIV.view false model'],
-                  javascript = javascript,
-                  css = css
-            },
-            init: model
       }
       --REFACTOR: js css et all must have typed routes
       where javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"] ]

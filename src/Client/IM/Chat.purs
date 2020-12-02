@@ -5,12 +5,11 @@ import Shared.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.Common.Notification as CCN
-import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
-import Data.Array ((!!), (:))
+import Data.Array ((!!))
 import Data.Array as DA
 import Data.DateTime as DT
 import Data.Int as DI
@@ -24,26 +23,31 @@ import Data.Symbol (SProxy(..))
 import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
+import Effect.Class.Console as EC
 import Effect.Now as EN
+import Effect.Uncurried (EffectFn1)
+import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
-import Shared.Options.File (maxImageSize)
 import Shared.IM.Contact as SIC
+import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM (Element)
+import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
+import Web.Event.Event as WEE
 import Web.File.FileReader (FileReader)
 import Web.HTML.Event.DataTransfer as WHEDT
 import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHEL
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
-import Web.UIEvent.KeyboardEvent as WUK
+
+foreign import resizeTextarea_ :: EffectFn1 Element Unit
 
 --purty is fucking terrible
 
@@ -52,12 +56,10 @@ getFileInput :: Effect Element
 getFileInput = CCD.unsafeQuerySelector "#image-file-input"
 
 --the keydown event fires before input
-enterBeforeSendMessage :: Event -> IMModel -> NoMessages
-enterBeforeSendMessage event model@{ messageEnter } = F.noMessages $ model {
-      shouldSendMessage = messageEnter && key == "Enter" && not WUK.shiftKey keyboardEvent
+enterBeforeSendMessage :: IMModel -> NoMessages
+enterBeforeSendMessage model@{ messageEnter } = F.noMessages $ model {
+      shouldSendMessage = messageEnter
 }
-      where keyboardEvent = SU.fromJust $ WUK.fromEvent event
-            key = WUK.key keyboardEvent
 
 --send message or image button click
 forceBeforeSendMessage :: IMModel -> MoreMessages
@@ -68,6 +70,15 @@ forceBeforeSendMessage model@{ message }
       } :> [
             pure <<< Just <<< BeforeSendMessage $ SU.fromJust message
       ]
+
+resizeTextarea :: Element -> Effect Unit
+resizeTextarea = EU.runEffectFn1 resizeTextarea_
+
+resizeChatInput :: Event -> IMModel -> NextMessage
+resizeChatInput event model = CIF.nothingNext model resize
+      where resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
+                  target <- WEE.target event
+                  WDE.fromEventTarget target
 
 --input event, or called after clicking the send message/image button
 beforeSendMessage :: String -> IMModel -> MoreMessages
@@ -80,18 +91,17 @@ beforeSendMessage content model@{
       suggestions
 }    | shouldSendMessage = snocContact :> [ nextSendMessage ]
 
-      where snocContact = case Tuple chatting suggesting of
-                  Tuple Nothing (Just index) ->
+      where snocContact = case chatting, suggesting of
+                  Nothing, (Just index) ->
                         let chatted = suggestions !@ index
                         in
                               model {
                                     message = Just content,
                                     chatting = Just 0,
-                                    suggesting = Nothing,
                                     contacts = DA.cons (SIC.defaultContact id chatted) contacts,
                                     suggestions = SU.fromJust $ DA.deleteAt index suggestions
                               }
-                  _ -> model
+                  _, _ -> model
 
             nextSendMessage = do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -235,9 +245,9 @@ toggleMessageEnter model@{ messageEnter } =
             messageEnter = not messageEnter
       }
 
-setSelectedImage :: Maybe String -> IMModel -> NoMessages
+setSelectedImage :: Maybe String -> IMModel -> NextMessage
 setSelectedImage maybeBase64 model =
-      F.noMessages $ model {
+      model {
             toggleChatModal = ShowSelectedImage,
             selectedImage = maybeBase64,
             erroredFields =
@@ -245,7 +255,7 @@ setSelectedImage maybeBase64 model =
                         [TDS.reflectSymbol (SProxy :: SProxy "selectedImage")]
                    else
                         []
-      }
+      } :> [CIF.next $ FocusInput "#image-form-caption"]
       where isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
 toggleModal :: ShowChatModal -> IMModel -> MoreMessages
@@ -254,19 +264,27 @@ toggleModal toggle model = model {
       link = Nothing,
       selectedImage = Nothing,
       linkText = Nothing
-} :> if toggle == ShowSelectedImage then [pickImage] else []
+} :>  if toggle == ShowSelectedImage then
+            [pickImage]
+       else if toggle == ShowLinkForm then
+            [CIF.next $ FocusInput "#link-form-url"]
+       else
+            []
       where pickImage = liftEffect do
                   input <- getFileInput
                   CCF.triggerFileSelect input
                   pure Nothing
 
 setEmoji :: Event -> IMModel -> NextMessage
-setEmoji event model@{ message } = model {
-      toggleChatModal = HideChatModal
-} :> [liftEffect do
-      emoji <- CCD.innerTextFromTarget event
-      setAtCursor message emoji
-]
+setEmoji event model@{ message } = model :>
+      if CCD.tagNameFromTarget event == "SPAN" then
+            [liftEffect  do
+                  emoji <- CCD.innerTextFromTarget event
+                  setAtCursor message emoji,
+            pure <<< Just $ ToggleChatModal HideChatModal
+            ]
+       else
+            []
 
 insertLink :: IMModel -> MoreMessages
 insertLink model@{ message, linkText, link } =

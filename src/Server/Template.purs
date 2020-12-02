@@ -5,8 +5,8 @@ import Prelude
 
 import Effect (Effect)
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.Routes (routes)
 
 type Parameters a = {
@@ -20,7 +20,7 @@ type Parameters a = {
 
 defaultParameters :: forall a. Parameters a
 defaultParameters = {
-      title: "MelanChat (Friendly) Random Chat",
+      title: "MelanChat - Friendly Random Chat",
       favicon: "/client/media/favicon.ico",
       javascript: [],
       css: [], --REFACTOR: should just be a list of file names

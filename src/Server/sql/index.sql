@@ -251,19 +251,14 @@ create or replace function insert_history
 (sender_id int, recipient_id int) returns void as
 $$
 begin
-    if exists(select 1
-    from histories
-    where sender = recipient_id and recipient = sender_id) then
-    update histories set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc') where sender = recipient_id and recipient = sender_id;
+    if exists(select 1 from histories where sender = recipient_id and recipient = sender_id) then
+        update histories set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc') where sender = recipient_id and recipient = sender_id;
     else
-    insert into histories
-        (sender, recipient)
-    values
-        (sender_id, recipient_id)
-    on conflict
-    (sender, recipient) do
-    update set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc');
-end if;
+        insert into histories (sender, recipient)
+        values (sender_id, recipient_id)
+        on conflict (sender, recipient) do
+        update set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc');
+    end if;
 end;
   $$
   language plpgsql;

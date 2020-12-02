@@ -1,8 +1,6 @@
 var marked = require('marked');
 
-//REFACTOR: make this all type safe
-
-exports.parse = function (plainMarkdown) {
+function defaultOptions() {
       marked.use({
             renderer: {
                   link(href, title, text) {
@@ -21,16 +19,12 @@ exports.parse = function (plainMarkdown) {
                   }
             }
       });
-
-      return marked(plainMarkdown, {
-            smartypants: true
-      });
 }
 
-exports.parseRestricted = function(plainMarkdown) {
+function restrictedoptions() {
       marked.use({
             renderer: {
-                  link(href, title, text) {
+                  link(_, title, text) {
                         return `<a title="${title || ""}">${text}</a>`;
                   },
                   image(_, title) {
@@ -42,6 +36,18 @@ exports.parseRestricted = function(plainMarkdown) {
                   }
             }
       });
+}
+
+exports.parse = function (plainMarkdown) {
+      defaultOptions();
+
+      return marked(plainMarkdown, {
+            smartypants: true
+      });
+}
+
+exports.parseRestricted = function(plainMarkdown) {
+     restrictedoptions();
 
       return marked(plainMarkdown, {
             smartypants: true

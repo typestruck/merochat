@@ -35,14 +35,14 @@ validateEmailPassword = do
       maybeEmail <- validateEmail
       maybePassword <- validatePassword
 
-      case Tuple maybeEmail maybePassword of
-            Tuple (Just email) (Just password) ->
+      case maybeEmail, maybePassword of
+            (Just email), (Just password) ->
                   pure $ Just {
                         email: email,
                         password: password,
                         captchaResponse: Nothing
                   }
-            _ -> pure Nothing
+            _, _ -> pure Nothing
 
 validateEmail :: Effect (Maybe String)
 validateEmail = do

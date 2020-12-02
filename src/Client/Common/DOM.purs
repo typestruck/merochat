@@ -4,8 +4,8 @@ import Prelude
 
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Function.Uncurried as DFU
-import Data.Maybe as DM
 import Data.Maybe (Maybe)
+import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
@@ -111,6 +111,11 @@ innerTextFromTarget event = EU.runEffectFn1 innerText_ $ SU.fromJust do
       target <- WEE.target event
       WDE.fromEventTarget target
 
+tagNameFromTarget :: Event -> String
+tagNameFromTarget event = WDE.tagName $ SU.fromJust do
+      target <- WEE.target event
+      WDE.fromEventTarget target
+
 loadScript :: String -> Effect Unit
 loadScript name = do
       window <- WH.window
@@ -119,6 +124,12 @@ loadScript name = do
       WHS.setSrc ("/client/javascript/"<>name) <<< SU.fromJust $ WHS.fromElement script
       body <- SU.fromJust <$> WHHD.body document
       void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body
+
+createElement :: String -> Effect Element
+createElement tag = do
+      window <- WH.window
+      document <- WHW.document window
+      WDD.createElement tag $ WHHD.toDocument document
 
 onEnter :: Element -> Effect Unit -> Effect Unit
 onEnter element action = do

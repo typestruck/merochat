@@ -4,12 +4,12 @@ import Prelude
 import Shared.Types
 
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.Avatar as SA
 
 userMenu :: IMModel -> Html IMMessage
-userMenu { user: { name, avatar, karma, karmaPosition }, userContextMenuVisible } =  HE.div [HA.id "settings", HA.class' "settings"][
+userMenu { user: { name, avatar, karma, karmaPosition }, toggleContextMenu } =  HE.div [HA.id "settings", HA.class' "settings"][
       HE.a [HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile] $ HE.img [HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
       HE.div [HA.class' "settings-name"] [
             HE.div [HA.class' "settings-karma", HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.title "See karma leaderboard"] [
@@ -24,7 +24,7 @@ userMenu { user: { name, avatar, karma, karmaPosition }, userContextMenuVisible 
                   HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
                   HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
             ],
-            HE.div [HA.class' $ "user-menu " <> if userContextMenuVisible then "visible" else ""][
+            HE.div [HA.class' {"user-menu ": true, visible: toggleContextMenu == ShowUserContextMenu }][
                   HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile] [
                         HE.div (HA.class' "menu-item-heading") "Profile",
                         HE.span (HA.class' "duller") "Set your profile picture, name"

@@ -38,15 +38,15 @@ resumeChat searchID model@{ contacts, chatting } =
                   F.noMessages model
              else
                   model {
-                        suggesting = Nothing,
                         chatting = index,
                         fullContactProfileVisible = false,
                         toggleChatModal = HideChatModal,
                         selectedImage = Nothing,
                         failedRequests = []
                   } :> [
-                        CIF.next UpdateReadCount ,
-                        CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
+                        CIF.next UpdateReadCount,
+                        CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory,
+                        CIF.next $ FocusInput "#chat-input"
                   ]
 
 markRead :: WebSocket -> IMModel -> MoreMessages

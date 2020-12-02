@@ -7,7 +7,6 @@ import Shared.Types
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.Either as DE
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
@@ -27,7 +26,6 @@ import Effect.Ref as ER
 import Foreign.Object as FO
 import Node.HTTP (Request)
 import Node.HTTP as NH
-import Partial.Unsafe as PU
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
@@ -37,9 +35,6 @@ import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.JSON as SJ
-
-handleError :: Error -> Effect Unit
-handleError = EC.log <<< show
 
 handleClose ::  Ref (HashMap PrimaryKey WebSocketConnection) -> PrimaryKey -> CloseCode -> CloseReason -> Effect Unit
 handleClose allConnections id _ _ = ER.modify_ (DH.delete id) allConnections
@@ -54,7 +49,7 @@ handleMessage payload = do
             ToBlock { id } -> do
                   possibleConnection <- R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \recipientConnection -> sendWebSocketMessage recipientConnection $ BeenBlocked { id: sessionUserID }
-            OutgoingMessage {id:temporaryID , userID: recipient, content, turn} -> do
+            OutgoingMessage { id: temporaryID , userID: recipient, content, turn } -> do
                   date <- R.liftEffect $ map DateTimeWrapper EN.nowDateTime
                   Tuple messageID finalContent <- SIA.processMessage sessionUserID recipient temporaryID content
                   sendWebSocketMessage connection $ ServerReceivedMessage {
@@ -94,14 +89,21 @@ handleConnection c@{ tokenSecret } pool allConnections connection request = do
       where runMessageHandler sessionUserID (WebSocketMessage message) = do
                   case SJ.fromJSON message of
                         Right payload -> do
-                              let run = R.runBaseAff' <<< RE.catch (reportError payload) <<< RR.runReader { allConnections, pool, sessionUserID, connection } $ handleMessage payload
-                              EA.launchAff_ $ run `CMEC.catchError` (reportError payload)
+                              let run = R.runBaseAff' <<< RE.catch (\e -> reportError payload (checkInternalError e) e) <<< RR.runReader { allConnections, pool, sessionUserID, connection } $ handleMessage payload
+                              EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
                         Left error -> do
                               SW.close connection
                               EC.log $ "closed due to seriliazation error: " <> error
 
-            reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> a -> b Unit
-            reportError = const <<< sendWebSocketMessage connection <<< PayloadError
+            reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> Maybe DatabaseError -> a -> b Unit
+            reportError origin context _ = sendWebSocketMessage connection $ PayloadError { origin, context }
+
+            checkInternalError = case _ of
+                  InternalError { context } -> context
+                  _ -> Nothing
 
 sendWebSocketMessage :: forall b. MonadEffect b => WebSocketConnection -> WebSocketPayloadClient -> b Unit
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJSON
+
+handleError :: Error -> Effect Unit
+handleError = EC.log <<< show

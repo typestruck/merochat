@@ -5,8 +5,8 @@ import Shared.Types
 
 import Data.Foldable as DA
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 
 retry :: String -> RetryableRequest -> Array RequestFailure -> Html IMMessage
 retry failedText requestMessage failedRequests = HE.div [HA.class' { retry: true, invisible: not $ DA.any ((requestMessage == _) <<< _.request) failedRequests }] [

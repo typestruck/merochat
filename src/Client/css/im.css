@@ -8,7 +8,7 @@ body {
 }
 
 .description-message, .profile-description, .profile-edition-description {
-    width: 55em;
+    font-size: 1.12em;
 }
 
 .profile-description p, .description-message p {
@@ -16,17 +16,34 @@ body {
     hyphens: auto;
 }
 
+.profile-description p:first-of-type, .description-message p:first-of-type {
+    margin-top: 0px;
+}
+
+.profile-description p:last-of-type, .description-message p:last-of-type {
+    margin-bottom: 0px;
+}
+
+.im {
+    display: grid;
+    grid-template-columns: 25% 75%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
 .left-box {
-    overflow-x: hidden;
+    scrollbar-width: thin;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .chat-box {
+    overflow: hidden;
     height: 100%;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     background: #262626;
-    grid-template-rows: auto 1fr 140px;
     position: relative;
 }
 
@@ -43,8 +60,31 @@ body {
     justify-content: center;
 }
 
+.show-profile-icon {
+    align-self: center;
+    width: 13px;
+    height: 4px;
+    align-self: center;
+    margin-bottom: -4px;
+}
+
 .flexed {
     display: flex;
+}
+
+.side-suggestions-container {
+    background: #2d2d2d;
+}
+
+.side-suggestion {
+    display: flex;
+    justify-content: center;
+    background: #213027;
+    font-weight: bold;
+    padding: 5px 6px;
+    align-items: center;
+    border-bottom: 1px solid #4E4E4E;
+    border-top: 1px solid #4E4E4E;
 }
 
 .no-connection.flexed~.profile-contact, .no-connection.flexed~.suggestion {
@@ -54,13 +94,10 @@ body {
 .send-box {
     display: flex;
     flex-flow: column;
-    padding: 10px 20px;
+    margin: 0px 20px 10px 20px;
     position: relative;
-}
-
-.im {
-    display: grid;
-    grid-template-columns: 30% 70%;
+    /* min-height: 130px; */
+    justify-content: end;
 }
 
 .svg-8 {
@@ -102,15 +139,22 @@ body {
     font-size: 4em;
 }
 
-.chat-box h1, .profile-edition-name {
+.profile-name {
     font-family: Verdana, "sans serif";
-    font-size: 1.5em;
-    line-height: 1;
-    letter-spacing: -0.02em;
+    font-size: 1.12em;
+    margin: 0;
+}
+
+.profile-asl {
+    font-size: 1.12em;
 }
 
 .profile-asl div {
-    margin-right: 20px;
+    margin-right: 10px;
+}
+
+.profile-asl div:last-child {
+    margin-right: 0;
 }
 
 .svg-more {
@@ -118,8 +162,8 @@ body {
 }
 
 .avatar-message {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
     border-radius: 100%;
 }
 
@@ -127,15 +171,34 @@ body {
     visibility: hidden;
 }
 
+.svg-back-suggestions {
+    width: 25px;
+    height: 25px;
+    stroke: none;
+
+    fill: #b9c658;
+    margin-right: 15px;
+}
+
+.back-side-suggestion {
+    padding: 19px 6px;
+    cursor: pointer;
+    color: #b9c658
+}
+
+.back-suggestions {
+    font-size: 1.2em;
+}
+
 .avatar-contact-list-div {
-    min-width: 64px;
-    min-height: 64px;
+    min-width: 54px;
+    min-height: 54px;
     align-self: center;
 }
 
 .avatar-contact-list, .avatar-settings {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
     border-radius: 100%;
 }
 
@@ -144,14 +207,12 @@ body {
 }
 
 .avatar-profile, .avatar-profile-edition {
-    width: 150px;
-    height: 150px;
     border-radius: 100%;
 }
 
 .profile-contact .avatar-profile {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
 }
 
 .suggestion.avatar-profile {
@@ -170,18 +231,22 @@ body {
     background-color: #212120;
     position: relative;
     align-items: center;
-    padding: 15px;
+    padding: 10px 5px;
     border-bottom: #161616
 }
 
 .contact {
     align-items: baseline;
     cursor: pointer;
-    padding: 15px;
+    padding: 9px 6px;
 }
 
-.settings-name, .contact-profile {
+.settings-name {
     padding: 5px 20px;
+}
+
+.contact-profile {
+    padding: 5px 10px 5px 10px;
 }
 
 .contact-name {
@@ -205,7 +270,7 @@ body {
     color: rgb(238, 238, 238, 0.8)
 }
 
-.contact-list-last-message>p {
+.contact-name, .contact-list-last-message>p {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
@@ -229,16 +294,33 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 43px 0px;
 }
 
 .suggestion.new {
     background: url('/client/media/suggestions.png');
+    border-radius: 15px;
+}
+
+.suggestion.new~.message-history {
+    display: none;
+}
+
+.svg-back-profile {
+
+    stroke:none;
+    width: 20px;
+    height: 20px;
+}
+
+#full-profile-context-menu, .svg-back-profile {
+    padding: 10px;
 }
 
 .suggestion.old {
     background: #373737;
-    cursor: pointer;
+    padding: 5px 0px 43px 0px;
+    overflow: hidden;
+    overflow-y: auto;
 }
 
 .suggestion.new .duller {
@@ -253,28 +335,39 @@ body {
     background: #373737;
     display: flex;
     flex-direction: column;
-    padding: 15px 20px;
+    padding: 10px 20px;
     cursor: pointer;
 }
 
 .profile-contact-top {
     display: flex;
+    align-items: center;
 }
 
 .profile-contact-deets {
     display: flex;
     flex-direction: column;
-    margin-left: auto;
 }
 
 .profile-contact-header {
     display: flex;
     flex-direction: column;
-    padding-left: 30px
+    padding-left: 15px;
+    flex-grow: 1
+}
+
+.profile-unavailable-header {
+    display: flex;
+    width: 100%;
+    padding-left: 30px;
+    align-items: baseline;
+}
+
+.unavailable-message {
+    padding-left: 5px;
 }
 
 .profile-contact-header h1 {
-    font-size: 1.2em;
     margin: 5px 0px
 }
 
@@ -296,9 +389,9 @@ body {
 .message-content::before {
     content: "\00a0";
     display: block;
-    height: 18px;
+    height: 16px;
     position: absolute;
-    width: 28px;
+    width: 20px;
 }
 
 .no-avatar-message .message-content::before {
@@ -317,19 +410,21 @@ body {
 
 .recipient-message .message-content::before {
     background-color: #373737;
-    top: 2px;
+    top: 0px;
     left: -7px;
-    transform: rotate( 51deg) skew( -38deg);
+    transform: rotate( 50deg) skew( -38deg);
 }
 
 .sender-message .message-content::before {
     background-color: #1b3a28;
-    right: -7px;
+    right: -5px;
     transform: rotate( 0deg) skew( -35deg);
 }
 
 .message-history {
     display: flex;
+    flex-grow: 1;
+    scrollbar-width: thin;
     flex-flow: column;
     justify-content: flex-end;
     position: relative;
@@ -338,7 +433,7 @@ body {
 .message-history-wrapper {
     overflow-y: auto;
     top: 10px;
-    bottom: 10px;
+    bottom: 15px;
     right: 20px;
     scrollbar-width: thin;
     left: 20px;
@@ -373,10 +468,6 @@ body {
     align-self: flex-start;
 }
 
-.recipient-message .avatar-message {
-    margin-right: 10px;
-}
-
 .text {
     align-self: center;
     position: relative;
@@ -391,10 +482,6 @@ body {
 .sender-message {
     flex-flow: row-reverse;
     align-self: flex-end;
-}
-
-.sender-message .avatar-message {
-    margin-left: 10px;
 }
 
 .modal-placeholder-overlay {
@@ -482,7 +569,8 @@ img.emoji {
 .contact-list {
     background-color: #2d2d2d;
     overflow-y: auto;
-    flex-grow: 1
+    flex-grow: 1;
+    padding-top: 5px;
 }
 
 .logo-contact-list {
@@ -580,9 +668,11 @@ svg.toolbar-action {
     width: 100%;
     font-size: 1.2em;
     border: none;
+    box-sizing: padding-box;
     cursor: text;
     border-radius: 5px;
     min-height: 55px;
+    max-height: 150px;
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     background: #2d2d2d;
@@ -634,9 +724,10 @@ svg.toolbar-action {
 
 .list-tags, .tag {
     display: inline-block;
-    margin-right: 5px;
+    margin: 0 5px;
+    font-size: 1.1em;
     margin-bottom: 10px;
-    padding: 5px 20px;
+    padding: 0px 10px;
     border-radius: 20px;
 }
 
@@ -644,7 +735,7 @@ svg.toolbar-action {
     border: 1px solid #b5b7b7
 }
 
-.suggestion .tag, .list-tags {
+.suggestion .tag, .list-tags, .card .tag {
     background: #a6b572;
     color: #1b3a28;
 }
@@ -729,29 +820,10 @@ svg.toolbar-action {
 }
 
 .headline, .profile-edition-headline {
-    font-size: 1.1em;
+    font-size: 1.20em;
     display: inline-block;
-    margin-bottom: 15px;
     font-style: italic;
-    position: relative;
-}
-
-.headline:before, .profile-edition-headline:before, .headline:after, .profile-edition-headline:after {
-    display: inline-block;
-    vertical-align: top;
-    height: 30px;
-    line-height: 44px;
-    font-size: 35px;
-    color: rgb(238, 238, 238, 0.9)
-}
-
-.headline:before, .profile-edition-headline:before {
-    content: '\201C';
-    margin-right: 4px;
-}
-
-.headline:after, .profile-edition-headline:after {
-    content: '\201D';
+    text-align: center;
 }
 
 .send-image {
@@ -765,6 +837,7 @@ svg.toolbar-action {
 
 .contact-options {
     display: flex;
+    text-align: right;
     flex-direction: column;
 }
 
@@ -817,14 +890,17 @@ input:not(type=button):focus {
 
 .profile-tags {
     text-align: center;
-    margin: 30px 0px;
-    max-width: 55em;
 }
 
 .profile-asl, .profile-karma {
     display: flex;
-    /* margin-left:190px; */
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.profile-karma {
+    font-size: 1.12em;
 }
 
 .profile-basics-column {
@@ -891,6 +967,11 @@ input:not(type=button):focus {
     cursor: pointer;
     padding: 10px 0;
     width: max-content;
+}
+
+.profile-contact-top .user-menu {
+    background: #373737;
+    top: 62px;
 }
 
 .logout {
@@ -968,10 +1049,6 @@ select {
     align-self: center;
 }
 
-.invisible {
-    visibility: hidden;
-}
-
 .loading {
     background: url('/client/media/loading.png');
     animation: rotating 2s linear infinite;
@@ -997,7 +1074,8 @@ select {
 .confirmation {
     z-index: 20;
     position: absolute;
-    padding: 30px 40px;
+    padding: 50px;
+    padding-bottom: 10px;
     background: #262626;
     width: 500px;
     height: 120px;
@@ -1014,6 +1092,7 @@ select {
     display: flex;
     justify-content: flex-end;
     align-items: baseline;
+    margin-top: 15px;
 }
 
 .cancel {
@@ -1224,7 +1303,6 @@ select {
     left: 50%;
     margin-left: -15px;
     transform: rotate( 135deg);
-
 }
 
 .fortune svg {
@@ -1244,12 +1322,12 @@ select {
 }
 
 .retry {
-    color:red;
+    color: red;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin:10px 0;
+    margin: 10px 0;
 }
 
 .left-box .retry.invisible {
@@ -1257,16 +1335,393 @@ select {
 }
 
 .retry-button {
-    color:rgb(238, 238, 238);
+    color: rgb(238, 238, 238);
     cursor: pointer;
     padding: 5px 15px;
 }
 
 .retry-button svg {
     vertical-align: middle;
-    margin-left:5px
+    margin-left: 5px
 }
 
-.retry-modal .retry:not(.invisible) ~ .loading  {
+.retry-modal .retry:not(.invisible)~.loading {
     display: none;
+}
+
+.suggestion-cards {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-top-header {
+    color: #C4D367;
+    text-align: center;
+    margin: 15px 0px;
+}
+
+.profile-top-menu {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    position: sticky;
+    top:0
+}
+
+.suggestion-arrow {
+    position: absolute;
+}
+
+.show-profile-icon-div {
+    display: flex;
+    justify-content: center;
+}
+
+.suggestion-arrow {
+    top: 50%;
+    padding: 0;
+}
+
+.suggestion-arrow svg {
+    background: #2d2d2d;
+    border-radius: 100%;
+}
+
+.suggestion-arrow:last-child {
+    left: 100%;
+    top: 50%;
+}
+
+.hide-next-arrow .suggestion-arrow:last-of-type, .hide-previous-arrow .suggestion-arrow, .card-sides .suggestion-arrow {
+    display: none;
+}
+
+.hide-previous-arrow .suggestion-arrow:last-of-type {
+    display: block;
+}
+
+.cards {
+    overflow: hidden;
+    display: flex;
+    flex-direction: row-reverse;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.card {
+    border: 2px solid #4E4E4E;
+    position: relative;
+    border-radius: 15px;
+}
+
+.card-center {
+    border: none;
+    z-index: 2;
+    background: #262626;
+}
+
+.card-sides .suggestion {
+    height: 100%;
+}
+
+.card-center .suggestion {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.card-sides {
+    overflow: hidden;
+}
+
+.card-sides:first-child {
+    margin-left: -50%;
+}
+
+.card-sides:last-child {
+    margin-right: -50%;
+}
+
+.profile-description-about {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.strokeless {
+    stroke: none;
+}
+
+.filless {
+    fill: none
+}
+
+.suggestion-center {
+    display: flex;
+    border-radius: 15px;
+    background: url('/client/media/suggestions.png');
+    position: relative;
+    flex-direction: column;
+    border: 2px solid #4E4E4E;
+    border-bottom: none;
+}
+
+.suggestion-center .suggestion.new {
+    background: none;
+}
+
+.suggestion-input {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.suggestion-input .svg-32.attachment {
+    display: none;
+}
+
+.profile-contact-top .headline {
+    text-align: left;
+}
+
+.contact-profile-tags {
+    margin-left: -5px;
+}
+
+.tags-description {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.suggestion-center .suggestion.new .tags-description {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 5px
+}
+
+.description-message {
+    padding: 0 5px;
+}
+
+.suggestion-center .suggestion.new {
+    overflow: auto;
+}
+
+.suggestion.old .suggestion-arrow {
+    display: none;
+}
+
+.margin-less, .margin-less-z {
+    margin-left: -20px
+}
+
+.margin-less-z {
+    z-index: 2;
+}
+
+.faded {
+    opacity: 0.6;
+}
+
+.profile-context .user-menu {
+    background: #2d2d2d;
+}
+
+/* dry this shite  */
+
+@media (min-width:1366px) and (max-width:1919px) {
+    html, body {
+        font-size: max(14.5px, 1vw);
+        line-height: 1.41857143;
+    }
+    .welcome {
+        font-size: 1.5em;
+    }
+    .card-sides {
+        margin: 10px 0;
+        width: max(874px, calc(100vw * 0.6398243045387994));
+        height: max(627px, calc(100vh * 0.81640625));
+    }
+    .profile-context {
+        margin: 16px 0px;
+    }
+    .card-center, .suggestion-center {
+        width: max(751px, calc(100vw * 0.55344070278184475));
+        height: max(649px, calc(100vh * 0.8450520833333334));
+    }
+    .suggestion-center .suggestion.new {
+        height: 596px;
+    }
+    .suggestion-input {
+        height: 160px;
+    }
+    .avatar-profile, .avatar-profile-edition {
+        width: 68px;
+        height: 69px;
+    }
+    .profile-name {
+        margin-top: 9px;
+    }
+    .suggestion.new {
+        padding-top: 31px;
+    }
+    .headline, .profile-edition-headline {
+        margin: 5px 0;
+    }
+    .profile-karma {
+        margin-bottom: 5px;
+    }
+    .profile-asl {
+        max-width: 595px;
+        margin-bottom: 16px;
+    }
+    .suggestion .headline {
+        max-width: 483px;
+    }
+    .profile-tags {
+        max-width: 595px;
+    }
+    .suggestion-arrow .svg-55 {
+        width: 38px;
+        height: 38px;
+    }
+    .suggestion-arrow {
+        margin-top: -38px;
+        left: 10px;
+    }
+    .suggestion-arrow:last-child {
+        margin-left: -48px;
+    }
+    .description-message, .profile-description, .profile-edition-description {
+        width: 595px;
+    }
+    .svg-32 {
+        width: 25px;
+        height: 25px;
+    }
+    .svg-20 {
+        width: 15px;
+        height: 15px;
+    }
+    .svg-50 {
+        width: 40px;
+        height: 40px;
+    }
+    .svg-16 {
+        width: 13px;
+        height: 13px;
+    }
+    .svg-other {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (min-width:1920px) {
+    html, body {
+        font-size: 18px;
+        line-height: 1.51857143;
+    }
+    .welcome {
+        font-size: 1.7em;
+    }
+    .profile-contact .avatar-profile, .avatar-contact-list, .avatar-settings, .avatar-message {
+        width: 64px;
+        height: 64px;
+    }
+    .avatar-contact-list-div {
+        min-width: 64px;
+        min-height: 64px;
+    }
+    .welcome-new {
+        font-size: 1.1em;
+    }
+    .card-sides {
+        margin: 46px 0;
+        height: max(766px, calc(100vh * 0.7092592592592592));
+        width: 1100px;
+    }
+    .profile-context {
+        margin: 25px 0;
+    }
+    .suggestion-center {
+        width: 1040px;
+        height: max(858px, calc(100vh * 0.7944444444444444));
+    }
+    .suggestion-center .suggestion.new {
+        height: max(698px, calc(100vh * 0.6462962962962962));
+    }
+    .avatar-profile, .avatar-profile-edition {
+        width: 94px;
+        height: 91px;
+    }
+    .profile-name {
+        margin-top: 11px;
+        letter-spacing: -0.02em;
+    }
+    .suggestion.new {
+        padding-top: 41px;
+    }
+    .headline, .profile-edition-headline {
+        margin: 7px 0;
+        font-size: 1.15em;
+    }
+    .profile-karma {
+        margin-bottom: 7px;
+    }
+    .profile-asl {
+        max-width: 872px;
+        margin-bottom: 20px;
+    }
+    .suggestion .headline {
+        max-width: 670px;
+    }
+    .profile-tags {
+        max-width: 872px;
+    }
+    .suggestion-arrow .svg-55 {
+        width: 55px;
+        height: 55px
+    }
+    .suggestion-arrow {
+        margin-top: -55px;
+        left: 10px;
+    }
+    .suggestion-arrow:last-child {
+        margin-left: -65px;
+    }
+    .description-message, .profile-description, .profile-edition-description {
+        width: 872px;
+    }
+    .suggestion-input {
+        height: 160px;
+    }
+    .contact {
+        padding: 10px;
+    }
+    .svg-back-suggestions {
+        margin-right: 28px;
+    }
+    .contact-profile {
+        padding: 5px 15px;
+    }
+    .settings {
+        padding: 10px;
+    }
+    .recipient-message .avatar-message {
+        margin-right: 10px;
+    }
+    .sender-message .avatar-message {
+        margin-left: 10px;
+    }
+    .show-profile-icon {
+        width: 16px;
+        height: 5px;
+        margin-bottom: -5px;
+    }
+    .svg-back-profile {
+        width: 25px;
+        height: 25px;
+    }
 }

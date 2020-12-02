@@ -10,16 +10,16 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Unsafe ((!@))
 import Shared.Unsafe (fromJust) as SN
-import Test.Client.Model (anotherIMUser, anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
+import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
+--REFACTOR: some of these tests should be for client/IM/Main.purs
 tests :: TestSuite
 tests = do
       TU.suite "im chat update" do
@@ -92,15 +92,6 @@ tests = do
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal ( _.user <$> DA.head contacts) $ Just suggestion
 
-            TU.test "beforeSendMessage resets suggesting" do
-                  let   model' = model {
-                              suggestions = suggestion : modelSuggestions,
-                              chatting = Nothing,
-                              suggesting = Just 0
-                        }
-                        { suggesting } = DT.fst $ CIC.beforeSendMessage content model'
-                  TUA.equal Nothing suggesting
-
             TU.test "beforeSendMessage sets chatting to 0" do
                   let   model' = model {
                               suggestions = suggestion : modelSuggestions,
@@ -133,6 +124,18 @@ tests = do
                               }]
                         }
                   TUA.equal (Just newMessageID) $ getMessageID contacts
+
+            TU.test "receiveMessage removes user from suggestions" do
+                  TUA.equal 2 44
+
+            TU.test "receiveMessage marks deleted users as unavailable" do
+                  TUA.equal 22 4
+
+            TU.test "receiveMessage marks blockee users as unaviable" do
+                  TUA.equal 22 4
+
+            TU.test "receiveMessage removes blockee users from suggestions" do
+                  TUA.equal 0 7
 
             TU.test "receiveMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
