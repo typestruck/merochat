@@ -44,4 +44,4 @@ requestAndLogout field aff = do
       FAE.noChanges
 
 terminateAccount :: Aff (SettingsModel -> SettingsModel)
-terminateAccount = requestAndLogout  (SProxy :: SProxy "confirmTermination") $ request.settings.account.terminate { body:{} }
+terminateAccount = requestAndLogout (SProxy :: SProxy "confirmTermination") $ request.settings.account.terminate { body:{} }

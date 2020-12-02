@@ -16,16 +16,16 @@ import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Debug.Trace (spy)
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
-import Shared.Focus as SF
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Setter as SS
@@ -46,7 +46,17 @@ view model@{
 } = HE.div profileEditionId [
       HE.div [HA.class' "profile-edition suggestion contact"] [
             HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/profile.css"],
-            HE.div_ $ HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar, HA.onClick SelectAvatar],
+            HE.div (HA.class' "avatar-edition") [
+                  HE.div (HA.onClick SelectAvatar) [
+                        HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar],
+                        pen
+                  ],
+                  HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512", HA.onClick resetAvatar] [
+                        HE.title "Reset profile picture",
+                        HE.path' $ HA.d "M96,472.205A23.715,23.715,0,0,0,119.579,496H392.421A23.715,23.715,0,0,0,416,472.205V168H96Z",
+                        HE.path' $ HA.d "M333,91V48c0-16.262-11.684-29-26.6-29H205.6C190.684,19,179,31.738,179,48V91H64v42H448V91ZM221,61h70V91H221Z"
+                  ]
+            ],
             HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
 
             displayEditName,
@@ -119,7 +129,7 @@ view model@{
                         control = HE.input [
                               HA.type' "text",
                               HA.class' "modal-input",
-                              SF.focus,
+                              -- SF.focus,
                               HA.maxlength tagMaxCharacters,
                               HA.value $ DM.fromMaybe "" model.tagsInputed,
                               HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed),
@@ -137,7 +147,7 @@ view model@{
                                     HE.span (HA.class' "duller") "About",
                                     pen
                               ],
-                              HE.div' [HA.class' "profile-description", HA.innerHTML $ SM.toHTML user.description]
+                              HE.div' [HA.class' "profile-description", HA.innerHtml $ SM.parse user.description]
                         ],
                         HE.div [title "description", HA.class' {"description-edition": true, hidden: DM.isNothing descriptionInputed}] [
                               HE.div (HA.class' "bold") "Your description",
@@ -149,7 +159,7 @@ view model@{
                               HE.textarea [
                                     HA.class' "profile-edition-description",
                                     HA.maxlength descriptionMaxCharacters,
-                                    SF.focus,
+                                   -- SF.focus,
                                     HA.onInput (setFieldInputed (SProxy :: SProxy "descriptionInputed"))
                               ] $ DM.fromMaybe "" descriptionInputed,
 
@@ -256,7 +266,7 @@ view model@{
                                     ],
                                     HE.div_ [
                                           HE.input [
-                                                SF.focus,
+                                                -- SF.focus,
                                                 HA.class' "modal-input",
                                                 HA.maxlength maxLength,
                                                 HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed),
@@ -332,6 +342,7 @@ plus :: Boolean -> ProfileMessage -> Html ProfileMessage
 plus isDisabled message = HE.svg attrs $ HE.path' [HA.d "M425.706,86.294A240,240,0,0,0,86.294,425.706,240,240,0,0,0,425.706,86.294ZM384,280H280V384H232V280H128V232H232V128h48V232H384Z"]
       where attrs = [HA.class' {"svg-20 plus": true, disabled: isDisabled}, HA.viewBox "0 0 512 512"] <> if isDisabled then [] else [HA.onClick message]
 
+
 check :: ProfileMessage -> Html ProfileMessage
 check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 512", HA.onClick message] [
       HE.title "Save edition",
@@ -362,3 +373,10 @@ nothingOnEmpty s =
       case DS.trim s of
             "" -> Nothing
             v -> Just v
+
+resetAvatar :: ProfileMessage
+resetAvatar = SetPField $ \model -> model {
+      user = model.user {
+            avatar = Nothing
+      }
+}

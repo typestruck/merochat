@@ -114,7 +114,7 @@ data By =
 -- | Errors that should be reported back to the user
 data ResponseError =
       BadRequest { reason :: String } |
-      InternalError { reason :: String } |
+      InternalError { reason :: String, context :: Maybe DatabaseError } |
       ExpiredSession
 
 type Suggestion = IMUser
@@ -133,6 +133,7 @@ type ClientMessagePayload = (BasicMessage (
 type Contact = {
       shouldFetchChatHistory :: Boolean, -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
       user :: IMUser,
+      available :: Boolean,
       chatAge :: Number, --Days,
       chatStarter :: PrimaryKey,
       history :: Array HistoryMessage
@@ -208,7 +209,7 @@ type IM = (
       --visibility switches
       hasTriedToConnectYet :: Boolean,
       fullContactProfileVisible :: Boolean,
-      userContextMenuVisible :: Boolean,
+      toggleContextMenu :: ShowContextMenu,
       toggleModal :: ShowUserMenuModal,
       toggleChatModal :: ShowChatModal
 )
@@ -221,6 +222,13 @@ data ShowChatModal =
       ShowPreview |
       ShowEmojis |
       ShowLinkForm
+
+data ShowContextMenu =
+      HideContextMenu |
+      ShowUserContextMenu |
+      ShowSuggestionContextMenu |
+      ShowCompactProfileContextMenu |
+      ShowFullProfileContextMenu
 
 data ShowUserMenuModal =
       HideUserMenuModal |
@@ -243,6 +251,11 @@ type Turn = {
     replyDelay :: Number --Seconds
 }
 
+data ProfilePresentation =
+      FullContactProfile |
+      CurrentSuggestion |
+      OtherSuggestion
+
 data MessageContent =
       Image (Tuple String String) |
       Text String
@@ -264,18 +277,16 @@ data RetryableRequest =
       FetchHistory Boolean |
       FetchContacts Boolean |
       CheckMissedEvents |
-      ToggleModal ShowUserMenuModal
+      ToggleModal ShowUserMenuModal |
+      BlockUser PrimaryKey
 
 data IMMessage =
       --history
       CheckFetchHistory |
       DisplayHistory (Array HistoryMessage)  |
       --user menu
-      ShowUserContextMenu Event |
       Logout |
-
-      ToggleChatModal ShowChatModal |
-      SetUserContentMenuVisible Boolean |
+      SetContextMenuToggle ShowContextMenu |
       SetModalContents (Maybe String) String String |
       --contact
       MarkAsRead |
@@ -285,17 +296,20 @@ data IMMessage =
       DisplayContacts (Array Contact) |
       ResumeMissedEvents MissedEvents |
       --suggestion
+      ResumeSuggesting |
       PreviousSuggestion |
       NextSuggestion |
       DisplayMoreSuggestions (Array Suggestion) |
-      BlockUser PrimaryKey |
       --chat
       SetSelectedImage (Maybe String) |
       ToggleContactProfile |
       DropFile Event |
-      EnterBeforeSendMessage Event |
+      --REFACTOR: dont use string selectors
+      FocusInput String |
+      EnterBeforeSendMessage |
       ForceBeforeSendMessage |
-      BeforeSendMessage String |
+      ResizeChatInput Event |
+      BeforeSendMessage String  |
       SendMessage DateTimeWrapper |
       SetMessageContent (Maybe Int) String |
       Apply Markup |
@@ -303,6 +317,7 @@ data IMMessage =
       SetEmoji Event |
       InsertLink |
       --main
+      ToggleUserContextMenu Event |
       SpecialRequest RetryableRequest |
       ReceiveMessage WebSocketPayloadClient Boolean |
       AlertUnreadChats |
@@ -312,7 +327,8 @@ data IMMessage =
       SetField (IMModel -> IMModel) |
       ToggleFortune Boolean |
       DisplayFortune String |
-      RequestFailed RequestFailure
+      RequestFailed RequestFailure |
+      ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer =
       Connect |
@@ -337,7 +353,9 @@ data WebSocketPayloadClient =
           userID :: PrimaryKey
       } |
       BeenBlocked { id :: PrimaryKey } |
-      PayloadError WebSocketPayloadServer
+      PayloadError { origin :: WebSocketPayloadServer, context :: Maybe DatabaseError }
+
+data DatabaseError = MissingForeignKey
 
 type InternalHelpModel = {
       toggleHelp :: DisplayHelpSection
@@ -424,6 +442,8 @@ type LeaderboardModel = {
 data LeaderboardMessage =
       ToggleBoardDisplay ToggleBoard
 
+derive instance genericShowContextMenu :: Generic ShowContextMenu _
+derive instance genericDatabaseError :: Generic DatabaseError _
 derive instance genericRetryableRequest :: Generic RetryableRequest _
 derive instance genericShowChatModal :: Generic ShowChatModal _
 derive instance genericDisplayHelpSection :: Generic DisplayHelpSection _
@@ -449,6 +469,9 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqShowContextMenu :: Eq ShowContextMenu
+derive instance eqDatabaseError :: Eq DatabaseError
+derive instance eqFullContactProfile :: Eq ProfilePresentation
 derive instance eqRetryableRequest :: Eq RetryableRequest
 derive instance eqGenerate :: Eq Generate
 derive instance eqShowChatModal :: Eq ShowChatModal
@@ -584,6 +607,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   foreignKarmaPosition
             ]
             pure $ ContactWrapper {
+                  available: true,
                   shouldFetchChatHistory: true,
                   history: [],
                   chatStarter: sender,
@@ -737,6 +761,8 @@ instance showMessageContent :: Show MessageContent where
       show = DGRS.genericShow
 instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
       show = DGRS.genericShow
+instance showPayloadErrorContext :: Show DatabaseError where
+      show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
 instance showShowModal :: Show ShowUserMenuModal where
@@ -750,6 +776,10 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
+instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonPayloadErrorContext :: EncodeJson DatabaseError where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
@@ -775,6 +805,10 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonShowContextMenu :: DecodeJson ShowContextMenu where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonPayloadErrorContext :: DecodeJson DatabaseError where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where

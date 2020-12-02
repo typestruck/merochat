@@ -20,12 +20,6 @@ import Test.Unit.Assert as TUA
 tests :: TestSuite
 tests = do
       TU.suite "im contacts update" do
-            TU.test "resumeChat resets suggesting" do
-                  let { suggesting } = DT.fst <<< CICN.resumeChat anotherContactID $ model {
-                        suggesting = Just 4455
-                  }
-                  TUA.equal Nothing suggesting
-
             TU.test "resumeChat sets chatting" do
                   let m@{ chatting } = DT.fst <<< CICN.resumeChat anotherIMUserID $ model {
                         chatting = Nothing,

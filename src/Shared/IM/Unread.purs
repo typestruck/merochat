@@ -10,7 +10,7 @@ title =
       case _ of
             0 -> defaultTitle
             n -> "(" <> show n <> ") " <> defaultTitle
-      where defaultTitle = "Melanchat (Friendly) Random Chat"
+      where defaultTitle = "Melanchat - Friendly Random Chat"
 
 favicon :: Int -> String
 favicon =

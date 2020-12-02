@@ -12,9 +12,9 @@ import Data.String as DS
 import Data.String.CodePoints as DSC
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Flame (Html)
-import Flame.HTML.Attribute (ToSpecialEvent)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute (ToSpecialEvent)
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
@@ -46,6 +46,7 @@ account model@{ erroredFields, confirmTermination } =
                   ]
             ],
             HE.div_ [
+                  --REFACTOR: this be ugly
                   fieldConfirmationSection (SProxy :: SProxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail,
 
                   fieldConfirmationSection (SProxy :: SProxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword,
@@ -98,7 +99,7 @@ account model@{ erroredFields, confirmTermination } =
                         ],
                         HE.div (HA.class' { errored: hasConfirmationErrors }) [
                               HE.label_ $ "Confirm " <> stringField,
-                              HE.input [HA.type' inputType, HA.createAttribute  "autocomplete" $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation)],
+                              HE.input [HA.type' inputType, HA.autocomplete $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation)],
                               HE.div (HA.class' "error-message") $ capitalizedStringField <> " confirmation must match " <> stringField
                         ],
                         HE.div (HA.class' "section-buttons") [
@@ -114,7 +115,7 @@ account model@{ erroredFields, confirmTermination } =
 
 onChangeValue :: forall message. ToSpecialEvent message String
 onChangeValue constructor = HA.createRawEvent "change" handler
-      where handler event = constructor <$> CCD.value (extractElement event)
+      where handler event = Just <<< constructor <$> CCD.value (extractElement event)
             extractElement event = SU.fromJust do
                   target <- WEE.target event
                   WDE.fromEventTarget target

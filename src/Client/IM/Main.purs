@@ -8,10 +8,9 @@ import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
-import Client.Common.Notification as CCN
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Suggestion as CIS
@@ -23,14 +22,11 @@ import Control.Monad.Except as CME
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.Either (fromRight) as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Effect.Now as EN
 import Effect.Random as ERD
 import Effect.Ref (Ref)
 import Effect.Ref as ER
@@ -38,22 +34,22 @@ import Effect.Timer as ET
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
-import Flame.External as FE
+import Flame.Html.Signal as FE
 import Foreign as FO
-import Partial.Unsafe as UP
-import Shared.DateTime (epoch)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
-import Shared.Newtype as SN
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
+import Web.DOM.Element as WDE
+import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.File.FileReader as WFR
 import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
+import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
 
 main :: Effect Unit
@@ -69,12 +65,12 @@ main = do
       }
 
       setUpWebSocket webSocketRef channel
-      --for drag and drop
+      ----for drag and drop
       CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
       --display settings/profile page
-      FE.send [FE.onClick' [ShowUserContextMenu]] channel
+      FE.send [FE.onClick' [ToggleUserContextMenu]] channel
       --image upload
       input <- CIC.getFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
@@ -82,14 +78,15 @@ main = do
       windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
-update { webSocketRef, fileReader} model =
+update { webSocketRef, fileReader } model =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
             ToggleChatModal modal -> CIC.toggleModal modal model
             DropFile event -> CIC.catchFile fileReader event model
-            EnterBeforeSendMessage event -> CIC.enterBeforeSendMessage event model
+            EnterBeforeSendMessage -> CIC.enterBeforeSendMessage model
             ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
+            ResizeChatInput event -> CIC.resizeChatInput event model
             BeforeSendMessage content -> CIC.beforeSendMessage content model
             SendMessage date -> CIC.sendMessage webSocket date model
             SetMessageContent cursor content -> CIC.setMessage cursor content model
@@ -97,6 +94,7 @@ update { webSocketRef, fileReader} model =
             SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             SetEmoji event -> CIC.setEmoji event model
+            FocusInput selector -> focusInput selector model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket model
@@ -110,17 +108,18 @@ update { webSocketRef, fileReader} model =
             SpecialRequest (FetchHistory shouldFetch) -> CIH.fetchHistory shouldFetch model
             DisplayHistory history -> CIH.displayHistory history model
             --suggestion
+            ResumeSuggesting -> CIS.resumeSuggesting model
             ToggleContactProfile -> CIS.toggleContactProfile model
             PreviousSuggestion -> CIS.previousSuggestion model
-            BlockUser id -> CIS.blockUser webSocket id model
+            SpecialRequest (BlockUser id) -> CIS.blockUser webSocket id model
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
             Logout -> CIU.logout model
-            ShowUserContextMenu event -> CIU.showUserContextMenu event model
+            ToggleUserContextMenu event -> toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) -> CIU.toggleModal toggle model
             SetModalContents file root html -> CIU.setModalContents file root html model
-            SetUserContentMenuVisible toggle -> CIU.toogleUserContextMenu toggle model
+            SetContextMenuToggle toggle -> CIU.toogleUserContextMenu toggle model
             --main
             AlertUnreadChats -> CIUC.alertUnreadChats model
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
@@ -133,6 +132,33 @@ update { webSocketRef, fileReader} model =
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+toggleUserContextMenu :: Event -> IMModel -> MoreMessages
+toggleUserContextMenu event model@{ toggleContextMenu }
+      | toggleContextMenu /= HideContextMenu =
+            F.noMessages $ model { toggleContextMenu = HideContextMenu }
+      | otherwise =
+            model :> [
+                  liftEffect <<< map (Just <<< SetContextMenuToggle <<< toggle) $ WDE.id <<< SU.fromJust $ do
+                  target <- WEE.target event
+                  WDE.fromEventTarget target
+            ]
+      where toggle = case _ of
+                  "user-context-menu" -> ShowUserContextMenu
+                  "suggestion-context-menu" -> ShowSuggestionContextMenu
+                  "compact-profile-context-menu" -> ShowCompactProfileContextMenu
+                  "full-profile-context-menu" -> ShowFullProfileContextMenu
+                  _ -> HideContextMenu
+
+focusInput :: String -> IMModel -> NextMessage
+focusInput selector model = model :> [
+      liftEffect do
+            element <- CCD.querySelector selector
+            WHHE.focus $ SU.fromJust do
+                  e <- element
+                  WHHE.fromElement e
+            pure Nothing
+]
 
 addFailure :: RequestFailure -> IMModel -> NoMessages
 addFailure failure model@{ failedRequests } = F.noMessages $ model {
@@ -163,31 +189,37 @@ receiveMessage webSocket isFocused wsPayload model@{
                   contacts = updateTemporaryID contacts userID previousID id
             }
       BeenBlocked { id } ->
-            F.noMessages $ CIS.removeBlockedUser id model
+            F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable contacts id }
       NewIncomingMessage payload@{ userID } ->
             if DA.elem userID blockedUsers then
                   F.noMessages model
-            else case processIncomingMessage payload model of
-                  Left userID -> model :> [CCNT.retryableResponse CheckMissedEvents DisplayContacts (request.im.singleContact { query: { id: userID }})]
-                  Right updatedModel@{
-                        chatting: Just index,
-                        contacts
-                  } ->  --mark it as read if we received a message from the current chat
-                        let fields = {
-                              chatting: index,
-                              userID: recipientID,
-                              contacts,
-                              webSocket
-                        }
-                        in
-                              if isFocused && isChatting userID fields then
-                                    CICN.updateReadHistory updatedModel fields
-                               else
-                                    CIUC.alertUnreadChats updatedModel
-                  Right updatedModel -> F.noMessages updatedModel
-      PayloadError payload -> case payload of
+            else let model' = unsuggest userID model in
+                  case processIncomingMessage payload model'  of
+                        Left userID -> model' :> [CCNT.retryableResponse CheckMissedEvents DisplayContacts (request.im.singleContact { query: { id: userID }})]
+                        Right updatedModel@{
+                              chatting: Just index,
+                              contacts
+                        } ->  --mark it as read if we received a message from the current chat
+                              let fields = {
+                                    chatting: index,
+                                    userID: recipientID,
+                                    contacts,
+                                    webSocket
+                              }
+                              in
+                                    if isFocused && isChatting userID fields then
+                                          CICN.updateReadHistory updatedModel fields
+                                    else
+                                          CIUC.alertUnreadChats updatedModel
+                        Right updatedModel -> F.noMessages updatedModel
+      PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
-                 contacts = updateHistoryStatus contacts userID id
+                 contacts =
+                        --assume that it is because the other use no longer exists
+                        if payload.context == Just MissingForeignKey then
+                              markContactUnavailable contacts userID
+                         else
+                              markErroredMessage contacts userID id
             }
             --the connection might still be open and the server haven't saved the socket
             Connect -> CIF.nothingNext model <<< liftEffect $ CIW.close webSocket
@@ -196,12 +228,17 @@ receiveMessage webSocket isFocused wsPayload model@{
                   let ({ user: { id: recipientID } }) = contacts !@ chatting in
                   recipientID == senderID
 
+unsuggest :: PrimaryKey -> IMModel -> IMModel
+unsuggest userID model@{ suggestions, suggesting } = model {
+      suggestions = DA.filter ((userID /= _) <<< _.id) suggestions,
+      suggesting = (\i -> if i == 0 then 0  else i - 1) <$> suggesting
+}
+
 processIncomingMessage :: ClientMessagePayload -> IMModel -> Either PrimaryKey IMModel
 processIncomingMessage { id, userID, date, content } model@{
       user: { id: recipientID },
       suggestions,
       contacts,
-      suggesting,
       chatting
 } = case findAndUpdateContactList of
       Just contacts' ->
@@ -234,8 +271,8 @@ updateTemporaryID contacts userID previousMessageID messageID = updateContactHis
                   | id == previousMessageID = history { id = messageID, status = Received }
                   | otherwise = history
 
-updateHistoryStatus :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact
-updateHistoryStatus contacts userID messageID = updateContactHistory contacts userID updateStatus
+markErroredMessage :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact
+markErroredMessage contacts userID messageID = updateContactHistory contacts userID updateStatus
       where updateStatus history@( { id })
                   | id == messageID = history { status = Errored }
                   | otherwise = history
@@ -245,6 +282,14 @@ updateContactHistory contacts userID f = updateContact <$> contacts
       where updateContact contact@{ user: { id }, history }
                   | id == userID = contact {
                         history = f <$> history
+                  }
+                  | otherwise = contact
+
+markContactUnavailable :: Array Contact -> PrimaryKey -> Array Contact
+markContactUnavailable contacts userID = updateContact <$> contacts
+      where updateContact contact@{ user: { id }, history }
+                  | id == userID = contact {
+                        available = false
                   }
                   | otherwise = contact
 

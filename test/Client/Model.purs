@@ -24,7 +24,7 @@ model = {
       shouldSendMessage: true,
       freeToFetchContactList: true,
       failedRequests: [],
-      userContextMenuVisible: false,
+      toggleContextMenu: HideContextMenu,
       imageCaption: Nothing,
       fullContactProfileVisible: false,
       fortune: Nothing,

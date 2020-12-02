@@ -11,15 +11,15 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Flame (Html)
-import Flame.HTML.Attribute as HA
-import Flame.HTML.Element as HE
+import Flame.Html.Attribute as HA
+import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
 contactList :: Boolean -> IMModel -> Html IMMessage
-contactList displayLastMessageDates { failedRequests, chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list"] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
+contactList isClientRender { failedRequests, chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list"] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
       where --the ordering of the contact list is only done for the dom nodes
             -- model.contacts is left unchanged
             allContacts = DA.mapWithIndex contactEntry $ DA.sortBy compareDateUnread contacts
@@ -32,7 +32,7 @@ contactList displayLastMessageDates { failedRequests, chatting, contacts, user: 
             unread total { status, sender } = total + DE.fromEnum (sender /= userID && status == Received)
             countUnread = DF.foldl unread 0
             --should only work for text messages!
-            lastMessage = SM.toRestrictedHTML <<< DM.fromMaybe "" <<< map _.content <<< DA.last
+            lastMessage = DM.fromMaybe "" <<< map _.content <<< DA.last
             chattingID = do
                   index <- chatting
                   contact <- contacts !! index
@@ -48,11 +48,10 @@ contactList displayLastMessageDates { failedRequests, chatting, contacts, user: 
                         ],
                         HE.div [HA.class' "contact-profile"] [
                               HE.span (HA.class' "contact-name") name,
-                             -- HE.br,
-                              HE.div' [HA.class' "contact-list-last-message", HA.innerHTML (lastMessage history)]
+                              HE.div' [HA.class' "contact-list-last-message", HA.innerHtml <<< SM.parseRestricted $ lastMessage history]
                         ],
                         HE.div (HA.class' "contact-options") [
-                              HE.span (HA.class' { "duller": true, "invisible": not displayLastMessageDates }) <<< HE.text <<< DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date) $ DA.last history ,
+                              HE.span (HA.class' { "duller": true, "invisible": not isClientRender }) <<< HE.text <<< DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date) $ DA.last history ,
                               HE.div (HA.class' {"unread-messages" :true, "hidden" : numberUnreadMessages == 0}) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
                               -- HE.a (HA.class' "menu-button") $
                               --       HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $

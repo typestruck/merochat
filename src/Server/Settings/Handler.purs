@@ -20,11 +20,11 @@ accountEmail { guards: { loggedUserID }, body } = SSA.changeEmail loggedUserID b
 
 accountPassword :: { guards :: { loggedUserID :: PrimaryKey }, body :: String } -> ServerEffect (Response Ok)
 accountPassword { guards: { loggedUserID }, body } = do
-    SSA.changePassword loggedUserID body
-    pure $ SL.logout (routes.login.get { }) ok
+      SSA.changePassword loggedUserID body
+      pure $ SL.logout (routes.login.get { }) ok
 
 accountTerminate :: forall r. { guards :: { loggedUserID :: PrimaryKey } | r } -> ServerEffect (Response Ok)
 accountTerminate { guards: { loggedUserID } } = do
-    SSA.terminateAccount loggedUserID
-    pure $ SL.logout (routes.landing {}) ok
+      SSA.terminateAccount loggedUserID
+      pure $ SL.logout (routes.landing {}) ok
 

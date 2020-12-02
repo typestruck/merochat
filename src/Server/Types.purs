@@ -4,6 +4,7 @@ module Server.Types where
 import Prelude
 import Shared.Types
 
+import Control.Monad.Except (ExceptT)
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
 import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
@@ -14,7 +15,8 @@ import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.String as DS
 import Data.String.Read (class Read)
-import Database.PostgreSQL (Pool)
+import Database.PostgreSQL (PGError, Pool)
+import Effect.Aff (Aff)
 import Effect.Ref (Ref)
 import HTTPure (Response)
 import Payload.ContentType (html)
@@ -62,6 +64,8 @@ instance decodeCaptchaResponse :: DecodeJson CaptchaResponse where
 type Session = {
       userID :: Maybe PrimaryKey
 }
+
+type PG result = ExceptT PGError Aff result
 
 type BaseReader extension = {
       pool :: Pool |
