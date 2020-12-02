@@ -50,7 +50,7 @@ a:hover, input[type=button]:hover {
       align-items: center;
       background: rgba(28, 58, 41, 0.4);
       justify-self: center;
-      padding: 100px 30px 70px;
+      padding: 30px 30px 70px;
       margin-bottom: 100px;
 }
 
@@ -117,7 +117,16 @@ h1, h2 {
       display: block;
 }
 
-@media (max-width:1199px) {
+.form-up input[type=button], .form-up input[type=submit] {
+      font-size: 1.1em;
+      line-height: 0;
+}
+
+footer {
+      font-size:0.9em;
+}
+
+@media (max-width:1365px) {
       .ext-heading {
             font-size: 1.4em;
       }
@@ -143,16 +152,12 @@ h1, h2 {
             margin-bottom: 15px;
             height: 30px;
       }
-      .form-up input[type=button], .form-up input[type=submit] {
-            font-size: 1em;
-            line-height: 0;
-      }
       h2 {
             font-size: 1.3em;
       }
 }
 
-@media (min-width:1200px) {
+@media (min-width:1366px) {
       .ext-heading {
             font-size: 1.8em;
             line-height: 0;
@@ -162,16 +167,12 @@ h1, h2 {
             margin: 0 10px;
       }
       .form-up input {
-            width: 530px;
-            height: 50px;
-      }
-      .form-up input[type=button], .form-up input[type=submit] {
-            font-size: 1.1em;
-            line-height: 0;
+            width: 430px;
+            height: 30px;
       }
 }
 
-@media (min-width:1600px) {
+@media (min-width:1920px) {
       .ext-heading {
             font-size: 2em;
             line-height: 0;

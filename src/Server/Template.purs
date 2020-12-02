@@ -36,8 +36,6 @@ externalDefaultParameters = defaultParameters {
       content = [
             HE.div (HA.class' "header") [
                   HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
-                        HA.createAttribute "srcset" "/client/media/logo-2.png 350w, /client/media/logo.png 250w",
-                        HA.createAttribute "sizes" "(min-width: 1299px) 350px, 250px",
                         HA.src "/client/media/logo.png"
                   ]
             ]

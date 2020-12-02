@@ -24,7 +24,7 @@ template = do
             ]
             content = [
                   HE.div (HA.class' "green-area green-box") [
-                        HE.h2 (HA.class' "ext-heading") "Login to MelanChat",
+                        HE.h2 (HA.class' "ext-heading") "Login",
                         HE.div (HA.class' "form-up") [
                               HE.div [HA.id "email-input", HA.class' "input"] [
                                     HE.label_ "Email",
