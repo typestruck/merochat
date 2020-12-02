@@ -433,7 +433,7 @@ body {
 .message-history-wrapper {
     overflow-y: auto;
     top: 10px;
-    bottom: 10px;
+    bottom: 15px;
     right: 20px;
     scrollbar-width: thin;
     left: 20px;

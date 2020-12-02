@@ -36,7 +36,6 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests
                               else
                                     Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
                   in HE.div (HA.class' $ "message " <> messageClass <> sameSenderClass) [
-                        HE.img [HA.src avatar, HA.class' $ "avatar-message" <> SA.avatarColorClass chatting],
                         HE.div (HA.class' {"exclamation": true, "hidden": status /= Errored}) "!",
                         HE.div_ [
                               HE.div' [HA.class' "message-content", HA.innerHtml $ SM.parse content],
