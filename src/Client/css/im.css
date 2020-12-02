@@ -174,9 +174,10 @@ body {
 .svg-back-suggestions {
     width: 25px;
     height: 25px;
-    margin-right: 15px;
     stroke: none;
-    fill: #b9c658
+
+    fill: #b9c658;
+    margin-right: 15px;
 }
 
 .back-side-suggestion {
@@ -304,10 +305,20 @@ body {
     display: none;
 }
 
+.svg-back-profile {
+
+    stroke:none;
+    width: 20px;
+    height: 20px;
+}
+
+#full-profile-context-menu, .svg-back-profile {
+    padding: 10px;
+}
+
 .suggestion.old {
     background: #373737;
-    cursor: pointer;
-    padding: 43px 0px;
+    padding: 5px 0px 43px 0px;
 }
 
 .suggestion.new .duller {
@@ -1345,10 +1356,23 @@ select {
 .card-top-header {
     color: #C4D367;
     text-align: center;
+    margin: 15px 0px;
+}
+
+.profile-top-menu {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 5px;
 }
 
 .suggestion-arrow {
     position: absolute;
+}
+
+.show-profile-icon-div {
+    display: flex;
+    justify-content: center;
 }
 
 .suggestion-arrow {
@@ -1511,9 +1535,6 @@ select {
     .welcome {
         font-size: 1.5em;
     }
-    .card-top-header {
-        margin: 16px 0px;
-    }
     .card-sides {
         margin: 10px 0;
         width: max(874px, calc(100vw * 0.6398243045387994));
@@ -1613,9 +1634,6 @@ select {
     .welcome-new {
         font-size: 1.1em;
     }
-    .card-top-header {
-        margin: 45px 0px;
-    }
     .card-sides {
         margin: 46px 0;
         height: max(766px, calc(100vh * 0.7092592592592592));
@@ -1698,5 +1716,9 @@ select {
         width: 16px;
         height: 5px;
         margin-bottom: -5px;
+    }
+    .svg-back-profile {
+        width: 25px;
+        height: 25px;
     }
 }

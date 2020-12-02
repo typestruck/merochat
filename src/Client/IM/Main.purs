@@ -147,6 +147,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
                   "user-context-menu" -> ShowUserContextMenu
                   "suggestion-context-menu" -> ShowSuggestionContextMenu
                   "compact-profile-context-menu" -> ShowCompactProfileContextMenu
+                  "full-profile-context-menu" -> ShowFullProfileContextMenu
                   _ -> HideContextMenu
 
 focusInput :: String -> IMModel -> NextMessage
