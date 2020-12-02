@@ -60,7 +60,8 @@ blockUser webSocket blocked model@{ blockedUsers } =
             pure Nothing
       ]
       where updatedModel = removeBlockedUser blocked $ model {
-                  blockedUsers = blocked : blockedUsers
+                  blockedUsers = blocked : blockedUsers,
+                  chatting = Nothing
             }
 
 removeBlockedUser :: PrimaryKey -> IMModel -> IMModel

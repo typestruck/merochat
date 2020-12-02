@@ -972,6 +972,7 @@ input:not(type=button):focus {
 .profile-contact-top .user-menu {
     background: #373737;
     top: 62px;
+    z-index: 6;
 }
 
 .logout {

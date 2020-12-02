@@ -40,6 +40,9 @@ tests = do
             TU.test "blockUser removes user from contacts" do
                   TUA.equal 21 5558
 
+            TU.test "blockUser resets chatting" do
+                  TUA.equal 333 1
+
             TU.test "nextSuggestion clears chatting" do
                   let { chatting } = DT.fst <<< CIS.nextSuggestion $ model  {
                         chatting = Just 2,
