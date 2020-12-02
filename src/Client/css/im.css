@@ -1525,8 +1525,21 @@ select {
     opacity: 0.6;
 }
 
+.profile-context {
+    align-self: end;
+}
+
 .profile-context .user-menu {
     background: #2d2d2d;
+}
+
+.suggestion.new {
+    padding-top: 11px;
+}
+
+#suggestion-context-menu {
+    padding-right: 5px;
+
 }
 
 /* dry this shite  */
@@ -1544,8 +1557,8 @@ select {
         width: max(874px, calc(100vw * 0.6398243045387994));
         height: max(627px, calc(100vh * 0.81640625));
     }
-    .profile-context {
-        margin: 16px 0px;
+    .profile-description-about {
+        margin-top: 16px;
     }
     .card-center, .suggestion-center {
         width: max(751px, calc(100vw * 0.55344070278184475));
@@ -1563,9 +1576,6 @@ select {
     }
     .profile-name {
         margin-top: 9px;
-    }
-    .suggestion.new {
-        padding-top: 31px;
     }
     .headline, .profile-edition-headline {
         margin: 5px 0;
@@ -1643,8 +1653,8 @@ select {
         height: max(766px, calc(100vh * 0.7092592592592592));
         width: 1100px;
     }
-    .profile-context {
-        margin: 25px 0;
+    .profile-description-about {
+        margin-top: 25px;
     }
     .suggestion-center {
         width: 1040px;
@@ -1661,9 +1671,7 @@ select {
         margin-top: 11px;
         letter-spacing: -0.02em;
     }
-    .suggestion.new {
-        padding-top: 41px;
-    }
+
     .headline, .profile-edition-headline {
         margin: 7px 0;
         font-size: 1.15em;

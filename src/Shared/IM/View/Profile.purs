@@ -111,9 +111,9 @@ arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
 fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
 fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
       case presentation of
-            FullContactProfile -> HE.div [HA.class' "suggestion old"] $ topMenu : profile
+            FullContactProfile -> HE.div [HA.class' "suggestion old"] $ fullProfileMenu : profile
             CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
-                  HE.div [HA.class' "suggestion new"] profile,
+                  HE.div [HA.class' "suggestion new"] $ currentSuggestionMenu : profile,
                   HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput model
             ]
             OtherSuggestion -> HE.div [HA.class' "suggestion new"] profile
@@ -145,20 +145,6 @@ fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, 
 
                   HE.div (HA.class' "tags-description") [
                         HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
-
-                        HE.div [HA.class' "profile-context outer-user-menu"] $
-                              if presentation == CurrentSuggestion then [
-                                    HE.svg [HA.id "suggestion-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
-                                          HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
-                                          HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
-                                          HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
-                                    ],
-                                    HE.div [HA.class' {"user-menu ": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
-                                          HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
-                                    ]
-                              ]
-                               else [HE.createEmptyElement "div"],
-
                         HE.span (HA.class' "duller profile-description-about" ) "About",
                         HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]
                   ],
@@ -166,7 +152,7 @@ fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, 
                   arrow NextSuggestion
             ]
 
-            topMenu = HE.div (HA.class' "profile-top-menu") [
+            fullProfileMenu = HE.div (HA.class' "profile-top-menu") [
                   HE.svg [HA.class' "svg-back-profile", HA.viewBox "0 0 30 30", HA.onClick ToggleContactProfile] $
                         HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
                         HE.div [HA.class' "outer-user-menu"] $
@@ -178,6 +164,17 @@ fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, 
                         HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu }][
                               HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                         ]
+            ]
+
+            currentSuggestionMenu = HE.div [HA.class' "profile-context outer-user-menu"] [
+                  HE.svg [HA.id "suggestion-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
+                        HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
+                        HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
+                        HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
+                  ],
+                  HE.div [HA.class' {"user-menu ": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
+                        HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
+                  ]
             ]
 
 toSpan :: Maybe String -> Html IMMessage

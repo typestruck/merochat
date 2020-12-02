@@ -146,7 +146,7 @@ let additions = {
        , repo =
            "https://github.com/hoodunit/purescript-payload.git"
        , version =
-           "v0.3.0"
+           "v0.3.1"
        },
      postgresql-client =
        { dependencies =
