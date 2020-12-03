@@ -19,6 +19,7 @@ run model f = do
 
 model :: IMModel
 model = {
+      freeToFetchSuggestions: true,
       message: Just "test message",
       suggestionsPage: 0,
       shouldSendMessage: true,

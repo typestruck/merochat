@@ -109,7 +109,7 @@ body {
 .svg-other {
     font-size: 1.1em;
     stroke-width: 5;
-    margin: 4px 10px 0 10px  !important;
+    margin: 4px 10px 0 10px !important;
     align-self: baseline;
 }
 
@@ -149,7 +149,6 @@ body {
     width: 25px;
     height: 25px;
     stroke: none;
-
     fill: #b9c658;
     margin-right: 15px;
 }
@@ -281,8 +280,7 @@ body {
 }
 
 .svg-back-profile {
-
-    stroke:none;
+    stroke: none;
     width: 20px;
     height: 20px;
 }
@@ -641,7 +639,7 @@ svg.toolbar-action {
 .chat-input {
     resize: none;
     width: 100%;
-    font-size: 1.2em;
+    font-size: 1.1em;
     border: none;
     box-sizing: padding-box;
     cursor: text;
@@ -899,7 +897,7 @@ input:not(type=button):focus {
 
 .attachment {
     right: 13px;
-    top: 20px;
+    top: 14px;
 }
 
 .side .attachment {
@@ -1241,6 +1239,7 @@ select {
     justify-content: flex-end;
     padding-right: 13px;
     align-items: center;
+    font-size: 0.9em
 }
 
 .upload-div {
@@ -1254,6 +1253,12 @@ select {
     padding: 5px;
     width: 500px;
     background: #373737;
+}
+
+.card-center .suggestion.new .loading {
+    position: absolute;
+    top:50%;
+    margin-top:-50px;
 }
 
 .fortune {
@@ -1342,7 +1347,7 @@ select {
     width: 100%;
     justify-content: space-between;
     position: sticky;
-    top:0
+    top: 0
 }
 
 .suggestion-arrow {
@@ -1369,12 +1374,8 @@ select {
     top: 50%;
 }
 
-.hide-next-arrow .suggestion-arrow:last-of-type, .hide-previous-arrow .suggestion-arrow, .card-sides .suggestion-arrow {
+.card-sides .suggestion-arrow {
     display: none;
-}
-
-.hide-previous-arrow .suggestion-arrow:last-of-type {
-    display: block;
 }
 
 .cards {
@@ -1512,6 +1513,10 @@ select {
     padding-top: 11px;
 }
 
+.card-sides .suggestion.new {
+    padding-top: 26px;
+}
+
 #suggestion-context-menu {
     padding-right: 5px;
 }
@@ -1520,18 +1525,22 @@ select {
     width: 25px;
     height: 25px;
 }
+
 .svg-20 {
     width: 12px;
     height: 12px;
 }
+
 .svg-50 {
     width: 40px;
     height: 40px;
 }
+
 .svg-16 {
     width: 13px;
     height: 13px;
 }
+
 .svg-other {
     width: 17px;
     height: 17px;
@@ -1643,7 +1652,6 @@ select {
         margin-top: 11px;
         letter-spacing: -0.02em;
     }
-
     .headline, .profile-edition-headline {
         margin: 7px 0;
         font-size: 1.15em;
@@ -1662,15 +1670,15 @@ select {
         max-width: 872px;
     }
     .suggestion-arrow .svg-55 {
-        width: 55px;
-        height: 55px
+        width: 50px;
+        height: 50px
     }
     .suggestion-arrow {
-        margin-top: -55px;
+        margin-top: -50px;
         left: 10px;
     }
     .suggestion-arrow:last-child {
-        margin-left: -65px;
+        margin-left: -60px;
     }
     .description-message, .profile-description, .profile-edition-description {
         width: 872px;
@@ -1686,5 +1694,17 @@ select {
     }
     .settings {
         padding: 10px;
+    }
+    .svg-20 {
+        width: 15px;
+        height: 15px;
+    }
+    .svg-other {
+        width: 20px;
+        height: 20px;
+        margin-top: 2px !important;
+    }
+    .card-top-header {
+        margin: 40px 0px;
     }
 }

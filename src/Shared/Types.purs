@@ -189,6 +189,7 @@ type IM = (
       temporaryID :: PrimaryKey,
       freeToFetchChatHistory :: Boolean,
       freeToFetchContactList :: Boolean,
+      freeToFetchSuggestions :: Boolean,
       message :: Maybe String,
       selectedImage :: Maybe String,
       imageCaption :: Maybe String,

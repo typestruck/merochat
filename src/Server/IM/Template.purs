@@ -34,6 +34,7 @@ template {contacts, suggestions, user} = do
             },
             init: {
                   chatting: Nothing,
+                  freeToFetchSuggestions: true,
                   temporaryID: 0,
                   suggesting: if suggestionsCount == 0 then Nothing else if suggestionsCount == 1 then Just 0 else Just 1,
                   freeToFetchChatHistory:true,

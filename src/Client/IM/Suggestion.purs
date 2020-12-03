@@ -24,6 +24,7 @@ nextSuggestion model@{ suggestions, suggesting } =
                   fetchMoreSuggestions model
              else
                   F.noMessages $ model {
+                        freeToFetchSuggestions = true,
                         suggesting = Just next,
                         chatting = Nothing
                   }
@@ -36,18 +37,20 @@ previousSuggestion model@{ suggesting } =
                   fetchMoreSuggestions model
              else
                   F.noMessages $ model  {
+                        freeToFetchSuggestions = true,
                         suggesting = Just previous,
                         chatting = Nothing
                   }
 
 fetchMoreSuggestions :: IMModel -> NextMessage
-fetchMoreSuggestions model@{ suggestionsPage } = model :> [Just <<< DisplayMoreSuggestions <$> CCN.response (request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }})]
+fetchMoreSuggestions model@{ suggestionsPage } = model { freeToFetchSuggestions = false } :> [Just <<< DisplayMoreSuggestions <$> CCN.response (request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }})]
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> NoMessages
 displayMoreSuggestions suggestions model@{ suggestionsPage } =
       F.noMessages $ model {
-            suggesting = Just 0,
+            suggesting = Just 1,
             chatting = Nothing,
+            freeToFetchSuggestions = true,
             suggestions = suggestions,
             suggestionsPage = if DA.null suggestions then 0 else suggestionsPage + 1
       }

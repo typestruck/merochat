@@ -12,7 +12,6 @@ import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
 import Server.Response as SR
-import Web.HTML.HTMLMediaElement.CanPlayType (CanPlayType(..))
 
 im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect Html
 im { guards: { loggedUserID } } = do

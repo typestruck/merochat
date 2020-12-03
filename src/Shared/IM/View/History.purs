@@ -15,17 +15,20 @@ import Shared.Markdown as SM
 import Shared.IM.View.Retry as SIVR
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests, freeToFetchChatHistory } chattingSuggestion = HE.div [HA.class' "message-history" ] <<< HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] $
-      case chattingSuggestion of
-            Nothing -> [retry]
-            Just recipient@{ shouldFetchChatHistory, available } ->
-                  if available then
-                        let entries = retry : display recipient
-                        in if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries else entries
-                  else
-                        []
+history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests, freeToFetchChatHistory } chattingSuggestion =
+      HE.div [HA.class' "message-history" ] $
+            HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] chatHistory
+      where chatHistory =
+                  case chattingSuggestion of
+                        Nothing -> [retry]
+                        Just recipient@{ shouldFetchChatHistory, available } ->
+                              if available then
+                                    let entries = retry : display recipient
+                                    in if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries else entries
+                              else
+                                    []
 
-      where retry = SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
+            retry = SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
             display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i -> entry avatar (map _.sender (history !! (i - 1)))) history
 
             entry recipientAvatar previousSender { status, sender, content } =

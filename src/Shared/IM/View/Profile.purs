@@ -7,7 +7,6 @@ import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug.Trace (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -78,23 +77,45 @@ suggestion model@{ user, suggestions } index =
                   HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
                   HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
             ],
-            HE.div (HA.class' "cards") <<< map (\i -> card i $ suggestions !! i) $ (index - 1) .. (index + 1)
+            HE.div (HA.class' "cards") cards
       ]
-      where noSuggestion i = suggestions !! i == Nothing
+      where cards =
+                  let available = DA.catMaybes <<< map (\i -> map (card model index i) $ suggestions !! i) $ (index - 1) .. (index + 1)
+                  in case DA.length available of
+                        1 -> dummyCard model : DA.snoc available (dummyCard model)
+                        2 | index == 0 -> dummyCard model : available
+                        2 | index > 0 -> DA.snoc available (dummyCard model)
+                        _ -> available
 
-            card suggestionIndex =
-                  case _ of
-                        Nothing -> HE.div' [HA.class' "card card-sides faded invisible"]
-                        Just suggestion ->
-                              let   isCenter = suggestionIndex == index
-                                    attrs
-                                          | isCenter = [ HA.class' {"card card-center" : true, "hide-previous-arrow" : noSuggestion (index - 1), "hide-next-arrow": noSuggestion (index + 1)} ]
-                                          | otherwise = [HA.class' "card card-sides faded" ]
-                              in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just suggestionIndex) model suggestion
+card :: IMModel -> Int -> Int -> Suggestion -> Html IMMessage
+card model suggesting index suggestion =
+      let   isCenter = index == suggesting
+            attrs
+                  | isCenter = [ HA.class' "card card-center"  ]
+                  | otherwise = [HA.class' "card card-sides faded" ]
+      in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just index) model suggestion
 
+dummyCard :: IMModel -> Html IMMessage
+dummyCard model = card model (-1) 0 dummySuggestion
 
-arrow :: IMMessage -> Html IMMessage
-arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
+dummySuggestion :: Suggestion
+dummySuggestion = {
+      id: 0,
+      name: "Maria Navarro",
+      headline: "This is my headline, there are many like it, but this one is mine",
+      description: "Many years later, as he faced the firing squad, Colonel Aureliano Buendía was to remember that distant afternoon when his father took him to discover ice. At that time Macondo was a village of twenty adobe houses, built on the bank of a river of clear water that ran along a bed of polished stones, which were white and enormous, like prehistoric eggs. The world was so recent that many things lacked names, and in order to indicate them it was necessary to point. Every year during the month of March a family of ragged gypsies would set up their tents near the village, and with a great uproar of pipes and kettledrums they would display new inventions. First they brought the magnet.",
+      avatar : Nothing,
+      tags: [],
+      karma: 321,
+      karmaPosition : 90,
+      gender: Just $ show Female,
+      country: Just "Cali",
+      languages: ["English", "Spanish"],
+      age: Just 18
+}
+
+arrow :: Boolean -> IMMessage -> Html IMMessage
+arrow freeToFetchSuggestions message = HE.div (HA.class' "suggestion-arrow" : clickMessage) [
       case message of
             PreviousSuggestion ->
                   HE.svg [HA.class' "svg-55", HA.viewBox "0 0 55 55"] [
@@ -107,13 +128,16 @@ arrow message = HE.div [HA.class' "suggestion-arrow", HA.onClick message] [
                         HE.path' [HA.class' "filless",  HA.strokeWidth "2.01305", HA.d "M15.4472 9.35498L24.1606 19.1708L15.4472 27.8711"]
                   ]
 ]
+      where clickMessage
+                  | freeToFetchSuggestions = [HA.onClick message]
+                  | otherwise = []
 
 fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
-fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
+fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
       case presentation of
             FullContactProfile -> HE.div [HA.class' "suggestion old"] $ fullProfileMenu : profile
             CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
-                  HE.div [HA.class' "suggestion new"] $ currentSuggestionMenu : profile,
+                  HE.div [HA.class' "suggestion new"] $ loading : currentSuggestionMenu : profile,
                   HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput model
             ]
             OtherSuggestion -> HE.div [HA.class' "suggestion new"] profile
@@ -148,8 +172,8 @@ fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, 
                         HE.span (HA.class' "duller profile-description-about" ) "About",
                         HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]
                   ],
-                  arrow PreviousSuggestion,
-                  arrow NextSuggestion
+                  arrow freeToFetchSuggestions PreviousSuggestion,
+                  arrow freeToFetchSuggestions NextSuggestion
             ]
 
             fullProfileMenu = HE.div (HA.class' "profile-top-menu") [
@@ -176,6 +200,8 @@ fullProfile presentation index model@{ toggleContextMenu } { id, karmaPosition, 
                         HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                   ]
             ]
+
+            loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
 toSpan :: Maybe String -> Html IMMessage
 toSpan =
