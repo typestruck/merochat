@@ -9,9 +9,12 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 
 retry :: String -> RetryableRequest -> Array RequestFailure -> Html IMMessage
-retry failedText requestMessage failedRequests = HE.div [HA.class' { retry: true, invisible: not $ DA.any ((requestMessage == _) <<< _.request) failedRequests }] [
+retry failedText requestMessage failedRequests = HE.div [HA.class' { retry: true, invisible: not $ DA.any ((requestMessage == _) <<< _.request) failedRequests }] <<< retryForm failedText $ SpecialRequest requestMessage
+
+retryForm :: String -> IMMessage -> Array (Html IMMessage)
+retryForm failedText message = [
       HE.text failedText,
-      HE.span [HA.class' "retry-button", HA.onClick $ SpecialRequest requestMessage] [
+      HE.span [HA.class' "retry-button", HA.onClick message ] [
             HE.text "Retry",
             HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
                   HE.circle' [HA.cx "256", HA.cy "256", HA.r "240", HA.opacity "0.5"],

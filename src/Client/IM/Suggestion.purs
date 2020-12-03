@@ -5,7 +5,7 @@ import Shared.Types
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.WebSocket as CIW
 import Data.Array ((:))
 import Data.Array as DA
@@ -45,15 +45,18 @@ previousSuggestion model@{ suggesting } =
 fetchMoreSuggestions :: IMModel -> NextMessage
 fetchMoreSuggestions model@{ suggestionsPage } = model { freeToFetchSuggestions = false } :> [Just <<< DisplayMoreSuggestions <$> CCN.response (request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }})]
 
-displayMoreSuggestions :: Array Suggestion -> IMModel -> NoMessages
-displayMoreSuggestions suggestions model@{ suggestionsPage } =
-      F.noMessages $ model {
-            suggesting = Just 1,
-            chatting = Nothing,
-            freeToFetchSuggestions = true,
-            suggestions = suggestions,
-            suggestionsPage = if DA.null suggestions then 0 else suggestionsPage + 1
-      }
+displayMoreSuggestions :: Array Suggestion -> IMModel -> MoreMessages
+displayMoreSuggestions suggestions model@{ suggestionsPage }
+      --if we looped through all the suggestions, retry
+      | DA.null suggestions && suggestionsPage > 0 = fetchMoreSuggestions $ model { suggestionsPage = 0 }
+      | otherwise =
+            F.noMessages $ model {
+                  suggesting = Just 1,
+                  chatting = Nothing,
+                  freeToFetchSuggestions = true,
+                  suggestions = suggestions,
+                  suggestionsPage = if DA.null suggestions then 0 else suggestionsPage + 1
+            }
 
 blockUser :: WebSocket  -> PrimaryKey -> IMModel -> NextMessage
 blockUser webSocket blocked model@{ blockedUsers } =

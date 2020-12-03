@@ -1471,10 +1471,15 @@ select {
     align-items: center;
 }
 
+.empty {
+    padding-top: 20px ;
+}
+
 .suggestion-center .suggestion.new .tags-description {
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 0 5px
+    padding: 0 5px;
+    scrollbar-width: thin;
 }
 
 .description-message {

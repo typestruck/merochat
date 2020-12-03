@@ -11,13 +11,13 @@ import Flame as F
 import Flame.Application.Effectful as FAE
 
 
--- | This action does has no further effects
+-- | This action has no further effects
 type NoMessages = Tuple IMModel (Array (Aff (Maybe IMMessage)))
 
--- | This action does has further effects
+-- | This action has further effects
 type MoreMessages = Tuple IMModel (Array (Aff (Maybe IMMessage)))
 
--- | This action does has a single further effect
+-- | This action has a single further effect
 type NextMessage = Tuple IMModel (Array (Aff (Maybe IMMessage)))
 
 -- | Helper to clean up updating a model when no new messages will be raised

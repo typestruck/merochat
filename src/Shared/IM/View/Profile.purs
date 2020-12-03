@@ -12,6 +12,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.IM.View.Chat as SIVC
+import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
 
@@ -31,7 +32,8 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
                                     contact model cnt.user
                   Nothing, (Just index) -> suggestion model index
                   _, _ -> emptySuggestions
-      where emptySuggestions = HE.div (HA.class' "suggestion") <<< HE.div_ <<< HE.img $ HA.src "/client/media/logo.png"
+      --this will need improvement
+      where emptySuggestions = HE.div (HA.class' "suggestion empty retry") $ SIVR.retryForm "Could not find new suggestions" NextSuggestion
 
 unavailable :: String -> Html IMMessage
 unavailable name =

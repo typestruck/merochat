@@ -6,20 +6,21 @@ import Shared.Types
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.Markdown as SM
 import Shared.IM.View.Retry as SIVR
+import Shared.Markdown as SM
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests, freeToFetchChatHistory } chattingSuggestion =
+history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests, freeToFetchChatHistory } contact =
       HE.div [HA.class' "message-history" ] $
-            HE.div [HA.class' "message-history-wrapper", HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] chatHistory
+            HE.div [HA.class' {"message-history-wrapper" : true, hidden: DM.isNothing contact }, HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] chatHistory
       where chatHistory =
-                  case chattingSuggestion of
+                  case contact of
                         Nothing -> [retry]
                         Just recipient@{ shouldFetchChatHistory, available } ->
                               if available then
