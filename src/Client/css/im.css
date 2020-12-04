@@ -1,8 +1,8 @@
 body {
     margin: 0;
     font-family: "Verdana", "sans serif";
-    font-size: 18px;
-    line-height: 1.51857143;
+    font-size: 14.5px;
+    line-height: 1.41857143;
     height: 100%;
     color: rgb(238, 238, 238)
 }
@@ -31,14 +31,14 @@ body {
     scrollbar-width: thin;
 }
 
-.left-box {
+.contact-box {
     scrollbar-width: thin;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
 }
 
-.chat-box {
+.suggestion-box {
     overflow: hidden;
     height: 100%;
     display: flex;
@@ -215,7 +215,7 @@ body {
 }
 
 .settings-name {
-    padding: 5px 20px;
+    padding: 5px 15px;
 }
 
 .contact-profile {
@@ -1257,8 +1257,8 @@ select {
 
 .card-center .suggestion.new .loading {
     position: absolute;
-    top:50%;
-    margin-top:-50px;
+    top: 50%;
+    margin-top: -50px;
 }
 
 .fortune {
@@ -1311,7 +1311,7 @@ select {
     margin: 10px 0;
 }
 
-.left-box .retry.invisible {
+.contact-box .retry.invisible {
     display: none;
 }
 
@@ -1472,7 +1472,7 @@ select {
 }
 
 .empty {
-    padding-top: 20px ;
+    padding-top: 20px;
 }
 
 .suggestion-center .suggestion.new .tags-description {
@@ -1551,13 +1551,87 @@ select {
     height: 17px;
 }
 
+.suggestions-button, .mobile-profile-header {
+    display: none;
+}
+
+.avatar-settings {
+    cursor: pointer;
+}
+
 /* dry this shite  */
 
-@media (min-width:1366px) and (max-width:1919px) {
-    html, body {
-        font-size: max(14.5px, 1vw);
-        line-height: 1.41857143;
+@media (max-width:1365px) {
+    .im {
+        display: flex;
+        overflow-x: hidden
     }
+    .contact-box.current-mobile-screen {
+        min-height: 100%;
+        min-width: 100%;
+    }
+    .contact-box {
+        min-width: 0;
+        order: 1;
+    }
+    .suggestion-box.current-mobile-screen {
+        order: 0;
+        min-width: 100%;
+        min-height: 100%;
+    }
+    .profile-contact .avatar-profile, .avatar-contact-list, .avatar-message {
+        width: 36px;
+        height: 36px;
+    }
+    .avatar-contact-list-div {
+        min-width: 36px;
+        min-height: 36px;
+    }
+    .settings-mobile {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px;
+    }
+    .contact {
+        padding: 5px
+    }
+    .avatar-settings, .settings-name {
+        display: none;
+    }
+    .mobile-profile-header {
+        display: flex;
+        padding: 5px;
+        margin-bottom: 5px;
+        border-bottom: 1px solid black;
+    }
+    .mobile-profile-header .avatar-settings, .mobile-profile-header .settings-name {
+        display: block;
+    }
+    .avatar-settings {
+        width: 43px;
+        height: 43px;
+        align-self: center;
+    }
+    .side-suggestions-container {
+        display: none;
+    }
+    .settings .user-menu {
+        left: 0px;
+        top: 40px;
+        right: auto;
+        padding: 0px;
+        padding-bottom: 5px;
+    }
+    .settings .user-menu .user-menu-item{
+        padding: 10px
+    }
+    .suggestions-button {
+        display: block;
+        margin-left: auto;
+    }
+}
+
+@media (min-width:1366px) and (max-width:1919px) {
     .welcome {
         font-size: 1.5em;
     }

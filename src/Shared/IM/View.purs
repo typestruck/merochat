@@ -18,8 +18,8 @@ import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 
 view :: Boolean -> IMModel -> Html IMMessage
-view isClientRender model@{ fortune, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div (HA.class' "im") [
-      HE.div (HA.class' "left-box") [
+view isClientRender model@{ fortune, initialScreen, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div (HA.class' "im") [
+      HE.div (HA.class' {"contact-box": true, "current-mobile-screen": initialScreen} ) [
             SIVU.userMenu model,
             SIVS.suggestions model,
             search model,
@@ -28,7 +28,7 @@ view isClientRender model@{ fortune, suggestions, suggesting, chatting, contacts
 
             modals model
       ],
-      HE.div [HA.class' "chat-box", HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
+      HE.div [HA.class' {"suggestion-box" : true, "current-mobile-screen": not initialScreen } , HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
             HE.div (HA.class' {"no-connection": true, flexed: hasTriedToConnectYet && not isWebSocketConnected}) "Connection to the server lost. Attempting to automaticaly reconnect...",
             SIVP.profile model,
             SIVH.history model $ map (contacts !@ _ ) chatting,
@@ -74,8 +74,8 @@ modals { toggleModal: toggle, failedRequests} =
                   HE.div (HA.class' "modal-placeholder") [
                         HE.div (HA.class' "modal-menu") [
                               HE.div [HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal, HA.class' "back"] [
-                                    HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
-                                          HE.polygon' [HA.points "496 159.961 295.983 159.961 295.976 16.024 257.698 16.024 17.364 255.706 257.313 495.941 296.001 495.976 295.993 351.961 496 351.961 496 159.961"]
+                                    HE.svg [HA.class' "svg-16", HA.viewBox "0 0 30 30"][
+                                          HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"]
                                     ],
                                     HE.text " Back to chats"
                               ],

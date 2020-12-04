@@ -208,6 +208,7 @@ type IM = (
       suggesting :: Maybe Int,
       chatting :: Maybe Int,
       --visibility switches
+      initialScreen :: Boolean, --used on mobile to switch screens
       hasTriedToConnectYet :: Boolean,
       fullContactProfileVisible :: Boolean,
       toggleContextMenu :: ShowContextMenu,
@@ -286,6 +287,7 @@ data IMMessage =
       CheckFetchHistory |
       DisplayHistory (Array HistoryMessage)  |
       --user menu
+      --ToggleMobileSettings |
       Logout |
       SetContextMenuToggle ShowContextMenu |
       SetModalContents (Maybe String) String String |

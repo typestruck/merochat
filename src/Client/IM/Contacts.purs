@@ -41,6 +41,7 @@ resumeChat searchID model@{ contacts, chatting } =
                         chatting = index,
                         fullContactProfileVisible = false,
                         toggleChatModal = HideChatModal,
+                        initialScreen = false,
                         selectedImage = Nothing,
                         failedRequests = []
                   } :> [
