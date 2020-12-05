@@ -36,3 +36,7 @@ exports.setValue_ = function(element, value) {
 exports.toggleDisabled_ = function(element) {
       element.disabled = !element.disabled;
 }
+
+exports.screenWidth = function() {
+      return screen.width;
+}

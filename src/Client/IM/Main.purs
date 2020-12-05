@@ -51,6 +51,7 @@ import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
+import Shared.Breakpoint(mobileBreakpoint)
 
 main :: Effect Unit
 main = do
@@ -74,7 +75,9 @@ main = do
       --image upload
       input <- CIC.getFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
-
+      --for "mobile" screens, the send button is mandatory
+      width <- CCD.screenWidth
+      when (width < mobileBreakpoint) $ SC.send channel [ToggleMessageEnter]
       windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
@@ -115,6 +118,7 @@ update { webSocketRef, fileReader } model =
             NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
+            ToggleInitialScreen -> CIU.toggleInitialScreen model
             Logout -> CIU.logout model
             ToggleUserContextMenu event -> toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) -> CIU.toggleModal toggle model

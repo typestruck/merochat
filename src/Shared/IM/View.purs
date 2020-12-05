@@ -24,7 +24,7 @@ view isClientRender model@{ fortune, initialScreen, suggestions, suggesting, cha
             SIVS.suggestions model,
             search model,
             SIVCN.contactList isClientRender model,
-            logo fortune,
+            logoMenu fortune,
 
             modals model
       ],
@@ -39,8 +39,14 @@ view isClientRender model@{ fortune, initialScreen, suggestions, suggesting, cha
 search :: IMModel -> Html IMMessage
 search model = HE.div' $ HA.class' "search"
 
-logo :: Maybe String -> Html IMMessage
-logo fortune = HE.div (HA.class' "relative") [
+logoMenu :: Maybe String -> Html IMMessage
+logoMenu fortune = HE.div (HA.class' "relative") [
+      HE.div (HA.class' "tabs") [
+            HE.div_ [
+                 HE.text "Contacts"
+            ],
+            HE.div (HA.onClick ToggleInitialScreen) "Suggestions"
+      ],
       HE.div (HA.class' {fortune: true, hidden: DM.isNothing fortune }) [
             HE.div (HA.class' "fortune-deets") [
                   HE.text $ DM.fromMaybe "" fortune

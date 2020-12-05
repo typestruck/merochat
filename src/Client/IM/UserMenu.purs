@@ -7,13 +7,16 @@ import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Routes (routes)
+
+toggleInitialScreen :: IMModel -> NoMessages
+toggleInitialScreen model@{ initialScreen } = F.noMessages $ model { initialScreen = not initialScreen }
 
 logout :: IMModel -> MoreMessages
 logout model = CIF.nothingNext model out

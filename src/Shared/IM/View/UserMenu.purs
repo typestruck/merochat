@@ -39,7 +39,7 @@ userMenu model@{ toggleContextMenu } =
                         HE.div [HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmLogout] "Logout"
                   ]
             ],
-            HE.span (HA.class' "suggestions-button") "+"
+            HE.span [HA.class' "suggestions-button", HA.onClick ToggleInitialScreen] "+"
       ]
 
 header :: IMModel -> Html IMMessage

@@ -68,7 +68,7 @@ contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
             ],
             HE.div (HA.class' "show-profile-icon-div" : showProfile) $
                   HE.svg [HA.class' "show-profile-icon", HA.viewBox "0 0 16 5", HA.fill "none"] $
-                        HE.path' [HA.d "M5.33333 4.8H10.6667V3.42857H5.33333V4.8ZM0 1.37143H16V0H0V1.37143Z"]
+                        HE.path' [HA.d "M5.33333 4.8H10.6667V3.42857H5.33333V4.8ZM0 1.37143H16V0H0V1.371x43Z"]
       ]
       where showProfile = [HA.title "Click to see full profile", HA.onClick ToggleContactProfile]
 
@@ -140,7 +140,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             FullContactProfile -> HE.div [HA.class' "suggestion old"] $ fullProfileMenu : profile
             CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
                   HE.div [HA.class' "suggestion new"] $ loading : currentSuggestionMenu : profile,
-                  HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput model
+                  HE.div [HA.class' "suggestion-input", HA.tabindex 0] $ SIVC.chatBarInput model
             ]
             OtherSuggestion -> HE.div [HA.class' "suggestion new"] profile
       where profile = [
@@ -181,7 +181,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             fullProfileMenu = HE.div (HA.class' "profile-top-menu") [
                   HE.svg [HA.class' "svg-back-profile", HA.viewBox "0 0 30 30", HA.onClick ToggleContactProfile] $
                         HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
-                        HE.div [HA.class' "outer-user-menu"] $
+                  HE.div [HA.class' "outer-user-menu"] $
                         HE.svg [HA.id "full-profile-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
                               HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
                               HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
@@ -193,6 +193,8 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             ]
 
             currentSuggestionMenu = HE.div [HA.class' "profile-context outer-user-menu"] [
+                  HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick ToggleInitialScreen] $
+                        HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
                   HE.svg [HA.id "suggestion-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
                         HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
                         HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],

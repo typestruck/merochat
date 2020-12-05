@@ -279,7 +279,7 @@ body {
     display: none;
 }
 
-.svg-back-profile {
+.svg-back-card, .svg-back-profile {
     stroke: none;
     width: 20px;
     height: 20px;
@@ -640,11 +640,9 @@ svg.toolbar-action {
     resize: none;
     width: 100%;
     font-size: 1.1em;
-    border: none;
     box-sizing: padding-box;
     cursor: text;
     border-radius: 5px;
-    min-height: 50px;
     max-height: 150px;
     border-top-right-radius: 0;
     border-top-left-radius: 0;
@@ -696,6 +694,7 @@ svg.toolbar-action {
 }
 
 .list-tags, .tag {
+    width: max-content;
     display: inline-block;
     margin: 0 5px;
     font-size: 1.1em;
@@ -889,7 +888,8 @@ input:not(type=button):focus {
 
 .attachment, .send-button {
     position: absolute;
-    top: 10px;
+    top: 50%;
+    margin-top: -20px;
     stroke-width: 3;
     z-index: 5;
     background: #2d2d2d;
@@ -897,7 +897,6 @@ input:not(type=button):focus {
 
 .attachment {
     right: 13px;
-    top: 14px;
 }
 
 .side .attachment {
@@ -1226,7 +1225,8 @@ select {
 
 .emoji-access {
     position: absolute;
-    top: 10px;
+    top: 50%;
+    margin-top: -13px;
     stroke-width: 5;
     left: 5px;
     z-index: 2;
@@ -1371,7 +1371,6 @@ select {
 
 .suggestion-arrow:last-child {
     left: 100%;
-    top: 50%;
 }
 
 .card-sides .suggestion-arrow {
@@ -1551,12 +1550,51 @@ select {
     height: 17px;
 }
 
-.suggestions-button, .mobile-profile-header {
+.suggestions-button, .tabs, .mobile-profile-header {
     display: none;
 }
 
 .avatar-settings {
     cursor: pointer;
+}
+
+.suggestion-arrow .svg-55 {
+    width: 38px;
+    height: 38px;
+}
+
+.profile-name {
+    margin-top: 9px;
+}
+
+.headline, .profile-edition-headline {
+    margin: 5px 0;
+}
+
+.profile-karma {
+    margin-bottom: 5px;
+}
+
+.profile-asl {
+    margin-bottom: 16px;
+}
+
+.profile-description-about {
+    margin-top: 16px;
+}
+
+.suggestion-arrow {
+    margin-top: -38px;
+    left: 10px;
+}
+
+.suggestion-arrow:last-child {
+    margin-left: -48px;
+}
+
+.svg-back-card {
+    display: none;
+    fill: #b9c658;
 }
 
 /* dry this shite  */
@@ -1595,7 +1633,7 @@ select {
     .contact {
         padding: 5px
     }
-    .avatar-settings, .settings-name {
+    .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
         display: none;
     }
     .mobile-profile-header {
@@ -1607,13 +1645,16 @@ select {
     .mobile-profile-header .avatar-settings, .mobile-profile-header .settings-name {
         display: block;
     }
+    .tabs {
+        display: flex;
+        justify-content: space-around;
+        padding: 5px;
+        cursor: pointer;
+    }
     .avatar-settings {
         width: 43px;
         height: 43px;
         align-self: center;
-    }
-    .side-suggestions-container {
-        display: none;
     }
     .settings .user-menu {
         left: 0px;
@@ -1622,12 +1663,91 @@ select {
         padding: 0px;
         padding-bottom: 5px;
     }
-    .settings .user-menu .user-menu-item{
+    .settings .user-menu .user-menu-item {
         padding: 10px
     }
     .suggestions-button {
         display: block;
+        cursor: pointer;
         margin-left: auto;
+    }
+    .avatar-profile {
+        width: 64px;
+        height: 64px;
+    }
+    .suggestion.new, .suggestion.old {
+        padding: 10px 15px;
+    }
+    .suggestion-cards, .cards, .card, .card-center {
+        max-width: 100%;
+        min-height: 100%;
+        overflow: hidden;
+    }
+    .profile-name, .profile-asl {
+        text-align: center;
+    }
+    .suggestion-center .suggestion.new .tags-description {
+        padding: 0;
+        overflow: unset;
+    }
+    .suggestion-center {
+        height: 100%;
+        overflow-y: hidden;
+        border: none;
+        scrollbar-width: thin;
+    }
+    .suggestion.new {
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+    .svg-back-card {
+        display: block
+    }
+    .profile-context {
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        position: sticky;
+        top: 0;
+    }
+    #suggestion-context-menu {
+        padding: 0;
+    }
+    .send-enter {
+        display: none;
+    }
+    .suggestion-input {
+        margin: 5px
+    }
+    .chat-input {
+        min-height: 0;
+        max-height: 100px;
+        border-top: 1px solid #b5b7b7;
+        border-radius: 5px;
+        padding-left: 34px;
+    }
+    .attachment, .send-button {
+        width: 30px;
+        height: 30px;
+        margin-top: -15px
+    }
+    .send-button {
+        display: block;
+        right: 5px;
+    }
+    .chat-input-options {
+        display: none;
+    }
+    .suggestion-input:focus-within .chat-input-options {
+        display: flex;
+    }
+
+    .chat-input:focus {
+        border-top:none;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
     }
 }
 
@@ -1640,9 +1760,6 @@ select {
         width: calc(100vw * 0.6398243045387994);
         height: calc(100vh * 0.81640625);
     }
-    .profile-description-about {
-        margin-top: 16px;
-    }
     .card-center, .suggestion-center {
         width: calc(100vw * 0.55344070278184475);
         height: calc(100vh * 0.8450520833333334);
@@ -1654,17 +1771,7 @@ select {
         width: 68px;
         height: 69px;
     }
-    .profile-name {
-        margin-top: 9px;
-    }
-    .headline, .profile-edition-headline {
-        margin: 5px 0;
-    }
-    .profile-karma {
-        margin-bottom: 5px;
-    }
     .profile-asl {
-        max-width: 595px;
         margin-bottom: 16px;
     }
     .suggestion .headline {
@@ -1672,17 +1779,6 @@ select {
     }
     .profile-tags {
         max-width: 595px;
-    }
-    .suggestion-arrow .svg-55 {
-        width: 38px;
-        height: 38px;
-    }
-    .suggestion-arrow {
-        margin-top: -38px;
-        left: 10px;
-    }
-    .suggestion-arrow:last-child {
-        margin-left: -48px;
     }
     .description-message, .profile-description, .profile-edition-description {
         width: 595px;
@@ -1785,5 +1881,8 @@ select {
     }
     .card-top-header {
         margin: 40px 0px;
+    }
+    .emoji-access {
+        margin-top: -16px
     }
 }

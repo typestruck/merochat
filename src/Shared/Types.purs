@@ -287,7 +287,7 @@ data IMMessage =
       CheckFetchHistory |
       DisplayHistory (Array HistoryMessage)  |
       --user menu
-      --ToggleMobileSettings |
+      ToggleInitialScreen |
       Logout |
       SetContextMenuToggle ShowContextMenu |
       SetModalContents (Maybe String) String String |
