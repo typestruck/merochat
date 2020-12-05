@@ -283,6 +283,7 @@ body {
     stroke: none;
     width: 20px;
     height: 20px;
+    fill: #b9c658;
 }
 
 #full-profile-context-menu, .svg-back-profile {
@@ -384,7 +385,7 @@ body {
 .recipient-message .message-content::before {
     background-color: #373737;
     top: 0px;
-    left: -7px;
+    left: -5px;
     transform: rotate( 50deg) skew( -38deg);
 }
 
@@ -1594,7 +1595,6 @@ select {
 
 .svg-back-card {
     display: none;
-    fill: #b9c658;
 }
 
 /* dry this shite  */
@@ -1721,7 +1721,7 @@ select {
     .suggestion-input {
         margin: 5px
     }
-    .chat-input {
+    .suggestion-input .chat-input {
         min-height: 0;
         max-height: 100px;
         border-top: 1px solid #b5b7b7;
@@ -1737,17 +1737,64 @@ select {
         display: block;
         right: 5px;
     }
-    .chat-input-options {
+    .suggestion-input .chat-input-options {
         display: none;
     }
-    .suggestion-input:focus-within .chat-input-options {
+    .send-box .chat-input-options, .suggestion-input:focus-within .chat-input-options {
         display: flex;
     }
-
     .chat-input:focus {
-        border-top:none;
+        border-top: none;
         border-top-left-radius: 0px;
         border-top-right-radius: 0px;
+    }
+    #message-history-wrapper {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 0px;
+    }
+    .side .attachment {
+        right: 38px
+    }
+    .profile-contact-top .svg-back-card {
+        margin-right: 10px;
+    }
+    .send-box {
+        margin: 0;
+        padding: 10px;
+    }
+    .message-content {
+        padding: 0px 10px;
+    }
+    .message-content p {
+        width: 100%;
+        margin: 5px 0;
+    }
+    .message {
+        margin: 0
+    }
+    .message {
+        width: 85%;
+    }
+    .message div {
+        max-width: 100%;
+    }
+    .message.recipient-message, .message.sender-message {
+        margin-top: 8px
+    }
+    .recipient-message .message-content {
+        margin-left: 10px;
+    }
+    .sender-message .message-content {
+        margin-right: 10px;
+    }
+    .message-content::before {
+        height: 10px;
+        width: 11px;
+    }
+    .recipient-message .message-content::before {
+        transform: rotate( 55deg) skew( -35deg);
     }
 }
 

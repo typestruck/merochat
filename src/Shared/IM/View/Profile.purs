@@ -40,6 +40,8 @@ unavailable name =
       HE.div [HA.class' "profile-contact"] [
             HE.div (HA.class' "profile-contact-top") [
                   HE.div (HA.class' "profile-unavailable-header") [
+                        HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick ToggleInitialScreen] $
+                              HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
                         HE.h1 (HA.class' "contact-name") name,
                         HE.span (HA.class' "unavailable-message") " is no longer available"
                   ]
@@ -50,6 +52,8 @@ contact :: IMModel -> IMUser -> Html IMMessage
 contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
       HE.div (HA.class' "profile-contact") [
             HE.div (HA.class' "profile-contact-top") [
+                  HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick ToggleInitialScreen] $
+                        HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
                   HE.img $ [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar] <> showProfile,
                   HE.div (HA.class' "profile-contact-header" : showProfile) [
                         HE.h1 (HA.class' "contact-name") name
