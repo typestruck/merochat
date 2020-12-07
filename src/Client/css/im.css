@@ -20,6 +20,12 @@ body {
     margin-top: 0px;
 }
 
+.notification {
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
 .profile-description p:last-of-type, .description-message p:last-of-type {
     margin-bottom: 0px;
 }
@@ -662,6 +668,7 @@ svg.toolbar-action {
 .chat-input:focus {
     border: 1px solid #b5b7b7;
     border-top: none;
+    outline: none;
 }
 
 .side .chat-input {

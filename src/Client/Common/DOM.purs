@@ -48,6 +48,9 @@ foreign import documentHasFocus :: Effect Boolean
 
 foreign import screenWidth :: Effect Int
 
+foreign import requestNotificationPermission :: Effect Unit
+foreign import notificationPermission :: Effect String
+
 nameChanged :: EventType
 nameChanged = EventType "nameChanged"
 

@@ -10,11 +10,11 @@ import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Suggestion as CIS
-import Client.IM.Unread as CIUC
+import Client.IM.Notification as CIUC
 import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
 import Client.IM.WebSocket as CIW
@@ -36,6 +36,7 @@ import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
 import Flame.Html.Signal as FE
 import Foreign as FO
+import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Unsafe ((!@))
@@ -51,7 +52,6 @@ import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
-import Shared.Breakpoint(mobileBreakpoint)
 
 main :: Effect Unit
 main = do
@@ -66,7 +66,7 @@ main = do
       }
 
       setUpWebSocket webSocketRef channel
-      ----for drag and drop
+      --for drag and drop
       CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
@@ -78,6 +78,7 @@ main = do
       --for "mobile" screens, the send button is mandatory
       width <- CCD.screenWidth
       when (width < mobileBreakpoint) $ SC.send channel [ToggleMessageEnter]
+      checkNotifications channel
       windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
@@ -105,6 +106,7 @@ update { webSocketRef, fileReader } model =
             CheckFetchContacts -> CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) -> CICN.fetchContacts shouldFetch model
             DisplayContacts contacts -> CICN.displayContacts contacts model
+            DisplayNewContacts contacts -> CICN.displayNewContacts contacts model
             ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
@@ -125,9 +127,10 @@ update { webSocketRef, fileReader } model =
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetContextMenuToggle toggle -> CIU.toogleUserContextMenu toggle model
             --main
-            AlertUnreadChats -> CIUC.alertUnreadChats model
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
+            AskNotification -> askNotification model
+            ToggleAskNotification -> toggleAskNotification model
             PreventStop event -> preventStop event model
             ToggleConnected isConnected -> toggleConnectedWebSocket isConnected model
             SpecialRequest CheckMissedEvents -> checkMissedEvents model
@@ -136,6 +139,15 @@ update { webSocketRef, fileReader } model =
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
       where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+askNotification :: IMModel -> MoreMessages
+askNotification model = CIF.nothingNext (model { enableNotificationsVisible = false }) $ liftEffect CCD.requestNotificationPermission
+
+--refactor: all messages like this can be dryed into a single function
+toggleAskNotification :: IMModel -> NoMessages
+toggleAskNotification model@{ enableNotificationsVisible } = F.noMessages $ model {
+      enableNotificationsVisible = not enableNotificationsVisible
+}
 
 toggleUserContextMenu :: Event -> IMModel -> MoreMessages
 toggleUserContextMenu event model@{ toggleContextMenu }
@@ -199,7 +211,7 @@ receiveMessage webSocket isFocused wsPayload model@{
                   F.noMessages model
             else let model' = unsuggest userID model in
                   case processIncomingMessage payload model'  of
-                        Left userID -> model' :> [CCNT.retryableResponse CheckMissedEvents DisplayContacts (request.im.singleContact { query: { id: userID }})]
+                        Left userID -> model' :> [CCNT.retryableResponse CheckMissedEvents DisplayNewContacts (request.im.singleContact { query: { id: userID }})]
                         Right updatedModel@{
                               chatting: Just index,
                               contacts
@@ -214,7 +226,7 @@ receiveMessage webSocket isFocused wsPayload model@{
                                     if isFocused && isChatting userID fields then
                                           CICN.updateReadHistory updatedModel fields
                                     else
-                                          CIUC.alertUnreadChats updatedModel
+                                          CIUC.notifyUnreadChats updatedModel [payload.userID]
                         Right updatedModel -> F.noMessages updatedModel
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
@@ -331,6 +343,11 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketCo
 
 preventStop :: Event -> IMModel -> NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
+
+checkNotifications :: Channel (Array IMMessage) -> Effect Unit
+checkNotifications channel = do
+      status <- CCD.notificationPermission
+      when (status /= "granted") $ SC.send channel [ToggleAskNotification]
 
 windowsFocus :: Channel (Array IMMessage) -> Effect Unit
 windowsFocus channel = do
