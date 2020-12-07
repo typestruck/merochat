@@ -16,7 +16,10 @@ import Flame as F
 import Shared.Routes (routes)
 
 toggleInitialScreen :: IMModel -> NoMessages
-toggleInitialScreen model@{ initialScreen } = F.noMessages $ model { initialScreen = not initialScreen }
+toggleInitialScreen model@{ initialScreen } = F.noMessages $ model {
+      initialScreen = not initialScreen,
+      chatting = Nothing
+ }
 
 logout :: IMModel -> MoreMessages
 logout model = CIF.nothingNext model out

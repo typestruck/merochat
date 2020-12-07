@@ -1804,17 +1804,27 @@ select {
     .modal-placeholder {
         height: 100%;
         width: 100%;
-        padding:0
+        padding: 0
     }
     .modal-menu {
         display: none;
     }
-
     #profile-edition-root {
-        margin:0;
+        margin: 0;
         width: 100%;
     }
-
+    .profile-contact-header {
+        max-width: 65%;
+    }
+    .profile-contact-deets {
+        margin-left: auto;
+    }
+    .profile-contact-deets .outer-user-menu {
+        margin-right: -10px;
+    }
+    .profile-contact {
+        padding: 10px;
+    }
 }
 
 @media (min-width:1366px) and (max-width:1919px) {
