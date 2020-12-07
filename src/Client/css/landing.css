@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css?family=Signika');
-
 .landing {
       position: relative;
       display: grid;
@@ -108,6 +107,7 @@ h2 {
 #headline {
       font-size: 3em;
 }
+
 .subheadline, .form-up label {
       font-size: 1em;
 }
@@ -124,13 +124,27 @@ h2 {
       .login {
             font-size: 1em;
       }
+      .error-message {
+            display: none;
+      }
+      .input.error .error-message {
+            display: inline-block;
+      }
+      .form-up label {
+            align-self: self-end;
+            padding-left: 2.5%;
+      }
+      .input {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+      }
       .green-area {
-            padding: 200px 0px 100px;
+            padding: 150px 0px 100px;
             text-align: center;
             align-items: center;
             margin-bottom: 50px;
       }
-
       .first-points, .third-points {
             flex-direction: column;
       }
@@ -156,7 +170,7 @@ h2 {
       body {
             background: url('/client/media/landing-medium.png') no-repeat fixed;
             background-size: cover;
-            font-size:16px;
+            font-size: 16px;
       }
       .header {
             left: 1.0%;
@@ -169,7 +183,6 @@ h2 {
             padding: 130px 45px 50px;
             margin-bottom: 10px;
       }
-
       h2 {
             margin-bottom: 90px;
             font-size: 1.6em;

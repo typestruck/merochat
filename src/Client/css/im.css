@@ -1597,6 +1597,11 @@ select {
     display: none;
 }
 
+.avatar-profile, .avatar-profile-edition {
+    width: 68px;
+    height: 69px;
+}
+
 /* dry this shite  */
 
 @media (max-width:1365px) {
@@ -1675,7 +1680,7 @@ select {
         width: 64px;
         height: 64px;
     }
-    .suggestion.new, .suggestion.old {
+    #profile-edition-form, .suggestion.new, .suggestion.old {
         padding: 10px 15px;
     }
     .suggestion-cards, .cards, .card, .card-center {
@@ -1796,6 +1801,20 @@ select {
     .recipient-message .message-content::before {
         transform: rotate( 55deg) skew( -35deg);
     }
+    .modal-placeholder {
+        height: 100%;
+        width: 100%;
+        padding:0
+    }
+    .modal-menu {
+        display: none;
+    }
+
+    #profile-edition-root {
+        margin:0;
+        width: 100%;
+    }
+
 }
 
 @media (min-width:1366px) and (max-width:1919px) {
@@ -1813,10 +1832,6 @@ select {
     }
     .suggestion-center .suggestion.new {
         height: 596px;
-    }
-    .avatar-profile, .avatar-profile-edition {
-        width: 68px;
-        height: 69px;
     }
     .profile-asl {
         margin-bottom: 16px;

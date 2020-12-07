@@ -71,7 +71,6 @@ strong {
 }
 
 svg {
-    overflow: visible;
     stroke: rgb(238, 238, 238);
     fill:rgb(238, 238, 238);
     cursor: pointer;
@@ -127,7 +126,7 @@ select option {
 }
 
 .input {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .input.error  {
