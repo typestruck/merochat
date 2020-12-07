@@ -1,10 +1,9 @@
-
 .leaderboard {
     margin: 40px 0
 }
 
 h2 {
-    margin:0;
+    margin: 0;
     margin-bottom: 15px;
 }
 
@@ -61,11 +60,12 @@ h2 {
     border: 20px solid #2d2d2d;
 }
 
- .user .name-karma {
-    background:#1b3a28;
+.user .name-karma {
+    background: #1b3a28;
 }
+
 .user .avatar-leaderboard {
-    border-color:#1b3a28
+    border-color: #1b3a28
 }
 
 .center {
@@ -79,4 +79,18 @@ h2 {
     padding-right: 15px;
     font-weight: bold;
     font-size: 1.2em;
+}
+
+@media (max-width:1365px) {
+    .avatar-leaderboard {
+        width: 64px;
+        height: 64px;
+    }
+    .karma-leaderboard {
+        padding: 10px
+    }
+    .name-karma {
+        width: auto;
+        flex-grow: 1;
+    }
 }

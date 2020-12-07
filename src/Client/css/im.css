@@ -472,6 +472,10 @@ body {
     z-index: 6;
 }
 
+.modal-menu-mobile {
+    display: none;
+}
+
 .modal-placeholder {
     display: flex;
     flex-flow: row;
@@ -1777,9 +1781,7 @@ select {
         margin: 5px 0;
     }
     .message {
-        margin: 0
-    }
-    .message {
+        margin: 0;
         width: 85%;
     }
     .message div {
@@ -1803,15 +1805,17 @@ select {
     }
     .modal-placeholder {
         height: 100%;
+        flex-direction: column;
         width: 100%;
         padding: 0
     }
     .modal-menu {
         display: none;
     }
-    #profile-edition-root {
+    #help-root, #karma-leaderboard-root, #settings-edition-root, #profile-edition-root {
         margin: 0;
         width: 100%;
+        overflow-x: hidden;
     }
     .profile-contact-header {
         max-width: 65%;
@@ -1824,6 +1828,19 @@ select {
     }
     .profile-contact {
         padding: 10px;
+    }
+    .settings-section {
+        flex-direction: column;
+    }
+    .modal-input {
+        width: auto;
+    }
+    .modal-menu-mobile {
+        display: flex;
+        padding: 10px
+    }
+    .modal-menu-mobile .svg-back-card {
+        margin-right: 15px;
     }
 }
 

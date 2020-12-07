@@ -78,6 +78,11 @@ modals { toggleModal: toggle, failedRequests} =
                   ]
             else
                   HE.div (HA.class' "modal-placeholder") [
+                        HE.div (HA.class' "modal-menu-mobile") [
+                              HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal] $
+                                    HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
+                              HE.strong_ tabName
+                        ],
                         HE.div (HA.class' "modal-menu") [
                               HE.div [HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal, HA.class' "back"] [
                                     HE.svg [HA.class' "svg-16", HA.viewBox "0 0 30 30"][
@@ -85,10 +90,10 @@ modals { toggleModal: toggle, failedRequests} =
                                     ],
                                     HE.text " Back to chats"
                               ],
-                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' { entry: true, selected: toggle == ShowProfile }] "Your profile",
-                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings, HA.class' { entry: true, selected: toggle == ShowSettings }] "Your settings",
-                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggle == ShowLeaderboard }] "Karma leaderboard",
-                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggle == ShowHelp }] "Help"
+                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' { entry: true, selected: toggle == ShowProfile }] tabName,
+                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings, HA.class' { entry: true, selected: toggle == ShowSettings }] tabName,
+                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggle == ShowLeaderboard }] tabName,
+                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggle == ShowHelp }] tabName
                         ],
                         HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ retry ShowProfile,
                         HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ retry ShowSettings,
@@ -100,3 +105,4 @@ modals { toggleModal: toggle, failedRequests} =
             SIVR.retry "Failed to load contents" (ToggleModal toggle) failedRequests,
             HE.div' (HA.class' "loading")
       ]
+            tabName = show toggle

@@ -90,8 +90,14 @@ ul li a:hover {
     border-right: 1px solid #373737;
 }
 
-.external-help .help, .external-help .terms,
-.external-help .faq .bulleted:first-of-type, .no-padding {
-    margin-top:0;
-    padding-top:0;
+.external-help .help, .external-help .terms, .external-help .faq .bulleted:first-of-type, .no-padding {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+@media (max-width:1365px) {
+    .internal-help {
+        max-width: 100%;
+        padding: 10px
+    }
 }

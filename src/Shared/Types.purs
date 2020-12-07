@@ -756,6 +756,14 @@ instance showGender :: Show Gender where
       show Male = "Male"
       show NonBinary = "Non binary"
       show Other = "Other"
+instance showShowUserMenuModal :: Show ShowUserMenuModal where
+      show = case _ of
+            ShowProfile -> "Your profile"
+            ShowSettings -> "Your settings"
+            ShowLeaderboard -> "Karma leaderboard"
+            ShowHelp -> "Help"
+            _ -> ""
+
 instance showMDateTime :: Show DateTimeWrapper where
       show = DGRS.genericShow
 instance showMDate :: Show DateWrapper where
@@ -767,8 +775,6 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
 instance showPayloadErrorContext :: Show DatabaseError where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
-      show = DGRS.genericShow
-instance showShowModal :: Show ShowUserMenuModal where
       show = DGRS.genericShow
 
 instance toSQLValueGender :: ToSQLValue Gender where

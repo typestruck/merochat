@@ -16,16 +16,16 @@
 }
 
 .settings-section .error-message {
-    margin:0;
+    margin: 0;
 }
 
 .settings-section .green-button {
-    margin:0;
+    margin: 0;
     margin-bottom: 40px;
 }
 
 .settings-section .margined {
-    margin-top:20px
+    margin-top: 20px
 }
 
 .error-message {
@@ -38,7 +38,7 @@
 }
 
 .errored input {
-    color:red;
+    color: red;
 }
 
 .section-buttons {
@@ -52,4 +52,17 @@
 
 .section-buttons .success-message {
     font-weight: bold;
+}
+
+@media (max-width:1365px) {
+    .settings-edition {
+        width: 100%;
+    }
+    .section-label {
+        margin-right: 0;
+        margin-bottom: 10px
+    }
+    .settings-section {
+        padding: 15px
+    }
 }
