@@ -39,6 +39,7 @@ model = {
       blockedUsers: [],
       toggleModal: HideUserMenuModal,
       toggleChatModal: HideChatModal,
+      enableNotificationsVisible: false,
       user: imUser,
       suggestions: [suggestion],
       temporaryID: 0,

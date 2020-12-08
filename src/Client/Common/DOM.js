@@ -6,10 +6,10 @@ exports.innerText_ = function(element) {
       return element.innerText;
 }
 
-exports.createCustomEvent_ = function(name, stringDetail) {
+exports.createCustomEvent_ = function(name, value) {
       return new CustomEvent(name, {
             detail: {
-                  value: stringDetail
+                  value: value
             }
       });
 }
@@ -39,4 +39,12 @@ exports.toggleDisabled_ = function(element) {
 
 exports.screenWidth = function() {
       return screen.width;
+}
+
+exports.requestNotificationPermission = function () {
+      Notification.requestPermission();
+}
+
+exports.notificationPermission = function() {
+      return Notification.permission;
 }

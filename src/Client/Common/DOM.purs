@@ -36,8 +36,8 @@ import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 foreign import innerHTML_ :: EffectFn2 Element String Unit
 foreign import innerText_ :: EffectFn1 Element String
 
-foreign import createCustomEvent_ :: Fn2 String String CustomEvent
-foreign import customEventDetail_ :: Fn1 CustomEvent String
+foreign import createCustomEvent_ :: forall value. Fn2 String value CustomEvent
+foreign import customEventDetail_ :: forall value. Fn1 CustomEvent value
 
 foreign import value_ :: EffectFn1 Element String
 foreign import setValue_ :: EffectFn2 Element String Unit
@@ -48,8 +48,14 @@ foreign import documentHasFocus :: Effect Boolean
 
 foreign import screenWidth :: Effect Int
 
+foreign import requestNotificationPermission :: Effect Unit
+foreign import notificationPermission :: Effect String
+
 nameChanged :: EventType
 nameChanged = EventType "nameChanged"
+
+notificationClick :: EventType
+notificationClick = EventType "notificationClick"
 
 dispatchCustomEvent :: CustomEvent -> Effect Unit
 dispatchCustomEvent event = do
@@ -57,10 +63,10 @@ dispatchCustomEvent event = do
       document <- WHHD.toDocument <$> WHW.document window
       void $ WET.dispatchEvent (WEC.toEvent event) $ WDD.toEventTarget document
 
-createCustomEvent :: EventType -> String -> CustomEvent
+createCustomEvent :: forall value. EventType -> value -> CustomEvent
 createCustomEvent (EventType name) = DFU.runFn2 createCustomEvent_ name
 
-addCustomEventListener :: EventType -> (String -> Effect Unit) -> Effect Unit
+addCustomEventListener :: forall value. EventType -> (value -> Effect Unit) -> Effect Unit
 addCustomEventListener eventType handler = do
       window <- WH.window
       document <- WHHD.toDocument <$> WHW.document window

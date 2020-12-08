@@ -72,7 +72,7 @@ strong {
 
 svg {
     stroke: rgb(238, 238, 238);
-    fill:rgb(238, 238, 238);
+    fill: rgb(238, 238, 238);
     cursor: pointer;
 }
 
@@ -96,16 +96,15 @@ svg {
     font-family: Verdana, sans-serif;
     color: #b5b7b6;
     font-weight: normal !important;
-
 }
 
 select {
-    font:inherit
+    font: inherit
 }
 
 select option {
     background-color: #262626;
-    color:rgb(238, 238, 238)
+    color: rgb(238, 238, 238)
 }
 
 .success-message {
@@ -120,7 +119,7 @@ select option {
 
 .request-error-message {
     visibility: visible;
-    margin-top:5px;
+    margin-top: 5px;
     display: inline-block;
     color: red;
 }
@@ -129,7 +128,7 @@ select option {
     margin-bottom: 10px;
 }
 
-.input.error  {
+.input.error {
     border-color: red;
 }
 
@@ -144,4 +143,27 @@ select option {
 
 .input.error .error-message {
     visibility: visible;
+}
+
+@media (max-width:1365px) {
+    .error-message {
+        display: none;
+    }
+    .input.error .error-message {
+        display: inline-block;
+    }
+    .form-up label {
+        align-self: self-end;
+        padding-left: 2.5%;
+    }
+    .input {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+    }
+    .request-error-message {
+        visibility: visible;
+        text-align: center;
+        display: inline-block;
+    }
 }

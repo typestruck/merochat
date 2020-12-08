@@ -211,6 +211,7 @@ type IM = (
       initialScreen :: Boolean, --used on mobile to switch screens
       hasTriedToConnectYet :: Boolean,
       fullContactProfileVisible :: Boolean,
+      enableNotificationsVisible :: Boolean,
       toggleContextMenu :: ShowContextMenu,
       toggleModal :: ShowUserMenuModal,
       toggleChatModal :: ShowChatModal
@@ -297,6 +298,7 @@ data IMMessage =
       UpdateReadCount |
       CheckFetchContacts |
       DisplayContacts (Array Contact) |
+      DisplayNewContacts (Array Contact) |
       ResumeMissedEvents MissedEvents |
       --suggestion
       ResumeSuggesting |
@@ -323,8 +325,9 @@ data IMMessage =
       ToggleUserContextMenu Event |
       SpecialRequest RetryableRequest |
       ReceiveMessage WebSocketPayloadClient Boolean |
-      AlertUnreadChats |
       PreventStop Event |
+      AskNotification |
+      ToggleAskNotification |
       SetNameFromProfile String |
       ToggleConnected Boolean |
       SetField (IMModel -> IMModel) |

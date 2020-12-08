@@ -6,11 +6,11 @@ import Shared.Types
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.IM.Flame (MoreMessages, NoMessages)
+import Client.IM.Flame (MoreMessages)
 import Client.IM.Flame as CIF
+import Client.IM.Notification as CIU
+import Client.IM.Notification as CIUN
 import Client.IM.Scroll as CIS
-import Client.IM.Unread as CIU
-import Client.IM.Unread as CIUN
 import Client.IM.WebSocket as CIW
 import Data.Array ((!!), (..))
 import Data.Array as DA
@@ -73,34 +73,34 @@ updateReadHistory :: IMModel -> {
 } -> MoreMessages
 updateReadHistory model { webSocket, chatting, userID, contacts } =
       let contactRead@{ history } = contacts !@ chatting
-          messagesRead = DA.mapMaybe (unreadID userID) history
+          messagesRead = DA.mapMaybe unreadID  history
       in
             if DA.null messagesRead then
                   CIF.nothingNext model $ liftEffect scroll
              else
-                  let updatedModel@{ user: { id }, contacts } = (updateContacts contactRead)
+                  let updatedModel@{ contacts } = updateContacts contactRead
                   in CIF.nothingNext updatedModel $ liftEffect do
                         confirmRead messagesRead
                         scroll
-                        alertUnread id contacts
+                        alertUnread contacts
 
-      where unreadID userID ( { recipient, id, status })
+      where unreadID { recipient, id, status }
                   | status == Received && recipient == userID = Just id
                   | otherwise = Nothing
 
-            read userID historyEntry@( { recipient, id, status })
+            read historyEntry@( { recipient, id, status })
                   | status == Received && recipient == userID = historyEntry { status = Read }
                   | otherwise = historyEntry
 
             updateContacts contactRead@{ history } = model {
-                  contacts = SU.fromJust $ DA.updateAt chatting (contactRead { history = map (read userID) history }) contacts
+                  contacts = SU.fromJust $ DA.updateAt chatting (contactRead { history = map read  history }) contacts
             }
 
             confirmRead messages = CIW.sendPayload webSocket $ ReadMessages { ids: messages }
 
             scroll = CIS.scrollLastMessage
 
-            alertUnread id contacts = CIUN.setTabCount id contacts
+            alertUnread contacts = CIUN.updateTabCount userID contacts
 
 checkFetchContacts :: IMModel -> MoreMessages
 checkFetchContacts model@{ contacts, freeToFetchContactList }
@@ -122,21 +122,21 @@ fetchContacts shouldFetch model@{ contacts, freeToFetchContactList }
             } :> [CCN.retryableResponse (FetchContacts true) DisplayContacts $ request.im.contacts { query: { skip: DA.length contacts }}]
       | otherwise = F.noMessages model
 
-displayContacts :: Array Contact -> IMModel -> NoMessages
-displayContacts newContacts model@{ contacts } =
-      CIU.alertUnreadChats $ model {
-            contacts = contacts <> newContacts,
-            freeToFetchContactList = true
-      }
+--paginated contacts
+displayContacts :: Array Contact -> IMModel -> MoreMessages
+displayContacts newContacts model@{ contacts } = updateDisplayContacts newContacts [] model
 
-resumeMissedEvents :: MissedEvents -> IMModel -> NoMessages
+--new chats
+displayNewContacts :: Array Contact -> IMModel -> MoreMessages
+displayNewContacts newContacts model@{ contacts } = updateDisplayContacts newContacts (map (_.id <<< _.user) newContacts) model
+
+resumeMissedEvents :: MissedEvents -> IMModel -> MoreMessages
 resumeMissedEvents {contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
       let missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
           missedFromNewContacts = map getNew new
-      in F.noMessages $ model {
-            --wew lass
-            contacts = missedFromNewContacts <> missedFromExistingContacts
-      }
+          --wew lass
+      in displayNewContacts (missedFromNewContacts <> missedFromExistingContacts) (model { contacts = [] })
+
       where messageMap = DH.fromArrayBy _.temporaryID _.id messageIDs
             markSenderError contact@{ history } = contact {
                   history = map updateSenderError history
@@ -159,5 +159,12 @@ resumeMissedEvents {contacts: missedContacts, messageIDs } model@{ contacts, use
                         history = currentContact.history <> contact.history
                   }
 
-            findContact ({user: { id }}) = DA.findIndex (sameContact id) contacts
-            sameContact userID ({user: { id }}) = userID == id
+            findContact {user: { id }} = DA.findIndex (sameContact id) contacts
+            sameContact userID {user: { id }} = userID == id
+
+updateDisplayContacts :: Array Contact -> Array PrimaryKey -> IMModel -> MoreMessages
+updateDisplayContacts newContacts userIDs model@{ contacts } =
+      CIU.notifyUnreadChats (model {
+            contacts = contacts <> newContacts,
+            freeToFetchContactList = true
+      }) userIDs
