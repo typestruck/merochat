@@ -123,20 +123,22 @@ dummySuggestion = {
 arrow :: Boolean -> IMMessage -> Html IMMessage
 arrow freeToFetchSuggestions message = HE.div (HA.class' "suggestion-arrow" : clickMessage) [
       case message of
-            PreviousSuggestion ->
-                  HE.svg [HA.class' "svg-55", HA.viewBox "0 0 55 55"] [
-                        HE.path' [HA.class' "strokeless", HA.d "M54.6758 27.4046C54.6758 42.456 42.483 54.6576 27.4423 54.6576C12.4016 54.6576 0.20874 42.456 0.20874 27.4046C0.20874 12.3532 12.4016 0.151611 27.4423 0.151611C42.483 0.151611 54.6758 12.3532 54.6758 27.4046Z", HA.fill "#1B2921"],
-                        HE.path' [HA.class' "filless", HA.strokeWidth "2.91996", HA.d "M32.2858 13.3713L19.6558 27.6094L32.2858 40.2293"]
-                  ]
-            _ ->
-                  HE.svg [HA.class' "svg-55", HA.viewBox "0 0 38 38"] [
-                        HE.path' [HA.class' "strokeless", HA.d "M4.57764e-05 19.0296C4.57764e-05 29.4062 8.41191 37.8181 18.7885 37.8181C29.165 37.8181 37.5769 29.4062 37.5769 19.0296C37.5769 8.65308 29.165 0.241211 18.7885 0.241211C8.41191 0.241211 4.57764e-05 8.65308 4.57764e-05 19.0296Z", HA.fill "#1B2921"],
-                        HE.path' [HA.class' "filless",  HA.strokeWidth "2.01305", HA.d "M15.4472 9.35498L24.1606 19.1708L15.4472 27.8711"]
-                  ]
+            PreviousSuggestion -> backArrow
+            _ -> nextArrow
 ]
       where clickMessage
                   | freeToFetchSuggestions = [HA.onClick message]
                   | otherwise = []
+
+backArrow = HE.svg [HA.class' "svg-55", HA.viewBox "0 0 55 55"] [
+      HE.path' [HA.class' "strokeless", HA.d "M54.6758 27.4046C54.6758 42.456 42.483 54.6576 27.4423 54.6576C12.4016 54.6576 0.20874 42.456 0.20874 27.4046C0.20874 12.3532 12.4016 0.151611 27.4423 0.151611C42.483 0.151611 54.6758 12.3532 54.6758 27.4046Z", HA.fill "#1B2921"],
+      HE.path' [HA.class' "filless", HA.strokeWidth "2.91996", HA.d "M32.2858 13.3713L19.6558 27.6094L32.2858 40.2293"]
+]
+
+nextArrow = HE.svg [HA.class' "svg-55", HA.viewBox "0 0 38 38"] [
+      HE.path' [HA.class' "strokeless", HA.d "M4.57764e-05 19.0296C4.57764e-05 29.4062 8.41191 37.8181 18.7885 37.8181C29.165 37.8181 37.5769 29.4062 37.5769 19.0296C37.5769 8.65308 29.165 0.241211 18.7885 0.241211C8.41191 0.241211 4.57764e-05 8.65308 4.57764e-05 19.0296Z", HA.fill "#1B2921"],
+      HE.path' [HA.class' "filless",  HA.strokeWidth "2.01305", HA.d "M15.4472 9.35498L24.1606 19.1708L15.4472 27.8711"]
+]
 
 fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
 fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =

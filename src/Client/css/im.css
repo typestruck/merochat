@@ -671,6 +671,10 @@ svg.toolbar-action {
     outline: none;
 }
 
+.suggestions-call {
+    display: none;
+}
+
 .side .chat-input {
     padding-right: 102px;
 }
@@ -1570,7 +1574,7 @@ select {
     cursor: pointer;
 }
 
-.suggestion-arrow .svg-55 {
+.svg-55 {
     width: 38px;
     height: 38px;
 }
@@ -1849,6 +1853,30 @@ select {
     .modal-menu-mobile .svg-back-card {
         margin-right: 15px;
     }
+    .suggestions-call {
+        display: flex;
+        color: #b9c658;
+        min-height: 90%;
+        align-items: center;
+        padding: 0px 10px;
+        justify-content: space-between;
+    }
+    .suggestions-call-middle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        font-size: 1.1em
+    }
+    .welcome-suggestions-call {
+        font-size: 1.2em;
+        font-weight: 600;
+    }
+    .suggestions-call .svg-55 {
+        width: 30px;
+        height: 30px
+    }
+
 }
 
 @media (min-width:1366px) and (max-width:1919px) {
@@ -1940,7 +1968,7 @@ select {
     .profile-tags {
         max-width: 872px;
     }
-    .suggestion-arrow .svg-55 {
+    .svg-55 {
         width: 50px;
         height: 50px
     }

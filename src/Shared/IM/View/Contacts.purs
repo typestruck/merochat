@@ -15,6 +15,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.DateTime as SD
+import Shared.IM.View.Profile as SIVP
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
@@ -22,7 +23,19 @@ contactList :: Boolean -> IMModel -> Html IMMessage
 contactList isClientRender { failedRequests, chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list"] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
       where --the ordering of the contact list is only done for the dom nodes
             -- model.contacts is left unchanged
-            allContacts = DA.mapWithIndex contactEntry $ DA.sortBy compareDateUnread contacts
+            allContacts
+                  | DA.null contacts = [suggestionsCall]
+                  | otherwise = DA.mapWithIndex contactEntry $ DA.sortBy compareDateUnread contacts
+
+            suggestionsCall = HE.div (HA.class' "suggestions-call") [
+                  HE.div (HA.onClick ToggleInitialScreen) $ SIVP.backArrow,
+                  HE.div (HA.class' "suggestions-call-middle") [
+                        HE.div (HA.class' "welcome-suggestions-call") $ "Welcome!",
+                        HE.div_ "Tap on either of the arrows to see ",
+                        HE.div_ "your chat suggestions"
+                  ],
+                  HE.div (HA.onClick ToggleInitialScreen) $ SIVP.nextArrow
+            ]
 
             getDate history = do
                   { date: DateTimeWrapper md } <- DA.last history
