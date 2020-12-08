@@ -3,7 +3,7 @@ module Client.IM.Main where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM (nameChanged)
+import Client.Common.DOM (nameChanged, notificationClick)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
@@ -13,8 +13,8 @@ import Client.IM.Contacts as CICN
 import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
-import Client.IM.Suggestion as CIS
 import Client.IM.Notification as CIUC
+import Client.IM.Suggestion as CIS
 import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
 import Client.IM.WebSocket as CIW
@@ -70,6 +70,8 @@ main = do
       CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
       --receive profile edition changes
       CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
+      --move to given chat when clicking on system notification
+      CCD.addCustomEventListener notificationClick (SC.send channel <<< DA.singleton <<< ResumeChat)
       --display settings/profile page
       FE.send [FE.onClick' [ToggleUserContextMenu]] channel
       --image upload
@@ -107,7 +109,7 @@ update { webSocketRef, fileReader } model =
             SpecialRequest (FetchContacts shouldFetch) -> CICN.fetchContacts shouldFetch model
             DisplayContacts contacts -> CICN.displayContacts contacts model
             DisplayNewContacts contacts -> CICN.displayNewContacts contacts model
-            ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
+            ResumeMissedEvents missed -> F.noMessages model --CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             SpecialRequest (FetchHistory shouldFetch) -> CIH.fetchHistory shouldFetch model
@@ -210,24 +212,19 @@ receiveMessage webSocket isFocused wsPayload model@{
             if DA.elem userID blockedUsers then
                   F.noMessages model
             else let model' = unsuggest userID model in
-                  case processIncomingMessage payload model'  of
+                  case processIncomingMessage payload model' of
                         Left userID -> model' :> [CCNT.retryableResponse CheckMissedEvents DisplayNewContacts (request.im.singleContact { query: { id: userID }})]
                         Right updatedModel@{
                               chatting: Just index,
                               contacts
-                        } ->  --mark it as read if we received a message from the current chat
-                              let fields = {
+                        } | isFocused && isChatting userID updatedModel ->  --mark it as read if we received a message from the current chat
+                              CICN.updateReadHistory updatedModel {
                                     chatting: index,
                                     userID: recipientID,
                                     contacts,
                                     webSocket
                               }
-                              in
-                                    if isFocused && isChatting userID fields then
-                                          CICN.updateReadHistory updatedModel fields
-                                    else
-                                          CIUC.notifyUnreadChats updatedModel [payload.userID]
-                        Right updatedModel -> F.noMessages updatedModel
+                        Right updatedModel -> CIUC.notifyUnreadChats updatedModel [payload.userID]
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
                  contacts =
@@ -241,7 +238,7 @@ receiveMessage webSocket isFocused wsPayload model@{
             Connect -> CIF.nothingNext model <<< liftEffect $ CIW.close webSocket
             _ -> F.noMessages model
       where isChatting senderID { contacts, chatting } =
-                  let ({ user: { id: recipientID } }) = contacts !@ chatting in
+                  let ({ user: { id: recipientID } }) = contacts !@ (SU.fromJust chatting) in
                   recipientID == senderID
 
 unsuggest :: PrimaryKey -> IMModel -> IMModel

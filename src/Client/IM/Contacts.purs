@@ -6,7 +6,7 @@ import Shared.Types
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.IM.Flame (MoreMessages, NoMessages)
+import Client.IM.Flame (MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Notification as CIU
 import Client.IM.Notification as CIUN
@@ -123,28 +123,20 @@ fetchContacts shouldFetch model@{ contacts, freeToFetchContactList }
       | otherwise = F.noMessages model
 
 --paginated contacts
-displayContacts :: Array Contact -> IMModel -> NoMessages
+displayContacts :: Array Contact -> IMModel -> MoreMessages
 displayContacts newContacts model@{ contacts } = updateDisplayContacts newContacts [] model
 
 --new chats
-displayNewContacts :: Array Contact -> IMModel -> NoMessages
+displayNewContacts :: Array Contact -> IMModel -> MoreMessages
 displayNewContacts newContacts model@{ contacts } = updateDisplayContacts newContacts (map (_.id <<< _.user) newContacts) model
 
-updateDisplayContacts :: Array Contact -> Array PrimaryKey -> IMModel -> NoMessages
-updateDisplayContacts newContacts userIDs model@{ contacts } =
-      CIU.notifyUnreadChats (model {
-            contacts = contacts <> newContacts,
-            freeToFetchContactList = true
-      }) userIDs
-
-resumeMissedEvents :: MissedEvents -> IMModel -> NoMessages
+resumeMissedEvents :: MissedEvents -> IMModel -> MoreMessages
 resumeMissedEvents {contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
       let missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
           missedFromNewContacts = map getNew new
-      in F.noMessages $ model {
-            --wew lass
-            contacts = missedFromNewContacts <> missedFromExistingContacts
-      }
+          --wew lass
+      in displayNewContacts (missedFromNewContacts <> missedFromExistingContacts) (model { contacts = [] })
+
       where messageMap = DH.fromArrayBy _.temporaryID _.id messageIDs
             markSenderError contact@{ history } = contact {
                   history = map updateSenderError history
@@ -167,5 +159,12 @@ resumeMissedEvents {contacts: missedContacts, messageIDs } model@{ contacts, use
                         history = currentContact.history <> contact.history
                   }
 
-            findContact ({user: { id }}) = DA.findIndex (sameContact id) contacts
-            sameContact userID ({user: { id }}) = userID == id
+            findContact {user: { id }} = DA.findIndex (sameContact id) contacts
+            sameContact userID {user: { id }} = userID == id
+
+updateDisplayContacts :: Array Contact -> Array PrimaryKey -> IMModel -> MoreMessages
+updateDisplayContacts newContacts userIDs model@{ contacts } =
+      CIU.notifyUnreadChats (model {
+            contacts = contacts <> newContacts,
+            freeToFetchContactList = true
+      }) userIDs

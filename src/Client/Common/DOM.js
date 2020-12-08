@@ -6,10 +6,10 @@ exports.innerText_ = function(element) {
       return element.innerText;
 }
 
-exports.createCustomEvent_ = function(name, stringDetail) {
+exports.createCustomEvent_ = function(name, value) {
       return new CustomEvent(name, {
             detail: {
-                  value: stringDetail
+                  value: value
             }
       });
 }

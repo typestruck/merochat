@@ -1,3 +1,7 @@
-exports.createNotification_ = function (name) {
-    new Notification('MelanChat', { tag: name, body: `New message from ${name}`, icon: '/client/media/loading.png' });
-}
+exports.createNotification_ = function (options) {
+    let n = new Notification('MelanChat', { body: options.body, icon: options.icon });
+
+    n.onclick = function() {
+        options.handler();
+    };
+};
