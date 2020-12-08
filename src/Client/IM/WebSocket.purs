@@ -3,6 +3,7 @@ module Client.IM.WebSocket (sendPayload, module WSW, module WSEM, module WSEE, c
 import Prelude
 import Shared.Types
 
+import Client.Common.Location as CCD
 import Effect (Effect)
 import Shared.JSON as SJ
 import Shared.Options.WebSocket (port)
@@ -13,7 +14,9 @@ import Web.Socket.WebSocket as WSWS
 import Web.Socket.WebSocket hiding (sendString,create) as WSW
 
 createWebSocket :: Effect WebSocket
-createWebSocket = WSWS.create ("ws://localhost:" <> show port) []
+createWebSocket = do
+      hostName <- CCD.hostName
+      WSWS.create ("ws://" <> hostName <> ":" <> show port) []
 
 sendPayload :: WebSocket -> WebSocketPayloadServer -> Effect Unit
 sendPayload ws = WSWS.sendString ws <<< SJ.toJSON

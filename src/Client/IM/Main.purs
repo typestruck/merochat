@@ -24,7 +24,6 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD

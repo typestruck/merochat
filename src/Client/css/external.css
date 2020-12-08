@@ -81,7 +81,6 @@ h2 {
 
 .question-link, .question-or {
       color: #b5b7b6;
-      font-size: 1.1em;
 }
 
 .question-or {
@@ -118,7 +117,7 @@ h1, h2 {
 }
 
 .form-up input[type=button], .form-up input[type=submit] {
-      font-size: 1.1em;
+      font-size: 1em;
       line-height: 0;
 }
 

@@ -120,27 +120,14 @@ h2 {
       .header {
             left: 0%;
             right: 0%;
+            margin: 20px 0px;
       }
       .login {
             font-size: 1em;
       }
-      .error-message {
-            display: none;
-      }
-      .input.error .error-message {
-            display: inline-block;
-      }
-      .form-up label {
-            align-self: self-end;
-            padding-left: 2.5%;
-      }
-      .input {
-            display: flex;
-            align-items: center;
-            flex-direction: column;
-      }
+
       .green-area {
-            padding: 150px 0px 100px;
+            padding: 120px 0px 100px;
             text-align: center;
             align-items: center;
             margin-bottom: 50px;
@@ -163,6 +150,20 @@ h2 {
       }
       .footer-menu li {
             margin: 0 5px
+      }
+
+      .form-up input {
+            height:25px;
+            font-size:1em;
+      }
+
+      .form-up input[type="button"], .form-up input[type="submit"] {
+            font-size:1em
+      }
+
+      #headline {
+            line-height: 1.1;
+            margin-bottom: 10px;
       }
 }
 

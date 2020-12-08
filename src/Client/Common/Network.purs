@@ -14,9 +14,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
-import Debug.Trace (spy)
-import Effect.Aff (Aff, Milliseconds(..))
-import Effect.Aff as EA
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Exception as EE
@@ -27,7 +25,7 @@ import Shared.Spec (spec)
 import Web.DOM.Element as WDE
 
 request :: _
-request = PC.mkGuardedClient (defaultOpts { baseUrl = "http://localhost:8000/" }) spec
+request = PC.mkGuardedClient (defaultOpts { baseUrl = "/" }) spec
 
 -- | Performs a request that has loading UI and possible error/success messages
 formRequest :: forall a. String -> Aff (ClientResponse a) -> Aff RequestStatus

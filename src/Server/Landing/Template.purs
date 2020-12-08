@@ -31,8 +31,8 @@ template = do
                   HE.div (HA.class' "landing") [
                         HE.div (HA.class' "header") [
                               HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
-                                          HA.createAttribute "srcset" "/client/media/logo.png 250w, /client/media/logo-small.png 210w",
-                                          HA.createAttribute "sizes" "(max-width: 1599px) 210px, 250px",
+                                          HA.createAttribute "srcset" "/client/media/logo-3-small.png 180w, /client/media/logo.png 250w, /client/media/logo-small.png 210w",
+                                          HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
                                           HA.src "/client/media/logo.png"],
                               HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href $ routes.login.get {}] "Login"
                         ],

@@ -50,3 +50,9 @@ setHash hash = do
       window <- WH.window
       location <- WHW.location window
       WHL.setHash hash location
+
+hostName :: Effect String
+hostName = do
+      window <- WH.window
+      location <- WHW.location window
+      WHL.hostname location
