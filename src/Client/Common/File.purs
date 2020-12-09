@@ -3,19 +3,14 @@ module Client.Common.File where
 import Prelude
 
 import Client.Common.DOM as CCD
-import Client.Common.Notification as CCN
-import Data.Int as DI
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Foreign as F
-import Shared.Options.File (maxImageSize, maxImageSizeKB)
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM (Element)
 import Web.Event.EventTarget as WET
-import Web.File.File (size)
 import Web.File.File as WFF
 import Web.File.FileList (FileList)
 import Web.File.FileList as WFL

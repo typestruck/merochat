@@ -53,7 +53,7 @@ body {
     position: relative;
 }
 
-.no-connection {
+.suggestion-box-error {
     height: 50px;
     position: absolute;
     left: 0;
@@ -93,7 +93,7 @@ body {
     border-top: 1px solid #4E4E4E;
 }
 
-.no-connection.flexed~.profile-contact, .no-connection.flexed~.suggestion {
+.suggestion-box-error.flexed~.profile-contact, .suggestion-box-error.flexed~.suggestion {
     margin-top: 50px;
 }
 

@@ -5,7 +5,6 @@ import Prelude
 import Shared.Types
 
 import Client.Common.DOM as CCD
-import Client.Common.Notification as CCN
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -83,7 +82,7 @@ retryableResponse requestMessage message aff = do
       case result of
             Right r -> pure <<< Just <<< message <<< _.body $ DN.unwrap r
             Left err -> do
-                  liftEffect <<< EC.log $ "Response error: " <> show err
+                  logError err
                   pure <<< Just $ RequestFailed { request: requestMessage, errorMessage : errorMessage err }
 
 -- | Perform a request, throwing on errors
@@ -94,15 +93,11 @@ silentResponse aff = do
             Right r -> pure <<< _.body $ DN.unwrap r
             Left err -> CMEC.throwError <<< EE.error $ "Response error: " <> show err
 
--- | this will be removed in favor of better ui than alert for errors
-response :: forall a. Aff (ClientResponse a) -> Aff a
-response aff = do
-      result <- aff
-      case result of
-            Right r -> pure <<< _.body $ DN.unwrap r
-            Left err -> do
-                  liftEffect <<< CCN.alert $ errorMessage err
-                  CMEC.throwError <<< EE.error $ "Response error: " <> show err
+defaultResponse :: forall r . Aff (ClientResponse r) -> Aff (Either ClientError r)
+defaultResponse aff = map (_.body <<< DN.unwrap) <$> aff
+
+logError :: forall e. Show e => e -> Aff Unit
+logError err = liftEffect <<< EC.log $ "Response error: " <> show err
 
 errorMessage :: ClientError -> String
 errorMessage = case _ of

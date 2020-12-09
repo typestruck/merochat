@@ -6,7 +6,7 @@ import Shared.Types
 import Client.Common.DOM (nameChanged, notificationClick)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.Common.Network (request)
+import Client.Common.Network (errorMessage, request)
 import Client.Common.Network as CCNT
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
@@ -108,7 +108,7 @@ update { webSocketRef, fileReader } model =
             SpecialRequest (FetchContacts shouldFetch) -> CICN.fetchContacts shouldFetch model
             DisplayContacts contacts -> CICN.displayContacts contacts model
             DisplayNewContacts contacts -> CICN.displayNewContacts contacts model
-            ResumeMissedEvents missed -> F.noMessages model --CICN.resumeMissedEvents missed model
+            ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             SpecialRequest (FetchHistory shouldFetch) -> CIH.fetchHistory shouldFetch model
@@ -116,9 +116,9 @@ update { webSocketRef, fileReader } model =
             --suggestion
             ResumeSuggesting -> CIS.resumeSuggesting model
             ToggleContactProfile -> CIS.toggleContactProfile model
-            PreviousSuggestion -> CIS.previousSuggestion model
+            SpecialRequest PreviousSuggestion -> CIS.previousSuggestion model
+            SpecialRequest NextSuggestion -> CIS.nextSuggestion model
             SpecialRequest (BlockUser id) -> CIS.blockUser webSocket id model
-            NextSuggestion -> CIS.nextSuggestion model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
             ToggleInitialScreen -> CIU.toggleInitialScreen model
@@ -178,9 +178,15 @@ focusInput selector model = model :> [
 ]
 
 addFailure :: RequestFailure -> IMModel -> NoMessages
-addFailure failure model@{ failedRequests } = F.noMessages $ model {
-      failedRequests = failure : failedRequests
+addFailure failure@{ request } model@{ failedRequests, errorMessage } = F.noMessages $ model {
+      failedRequests = failure : failedRequests,
+      errorMessage = case request of
+            BlockUser _ -> "Could not block user. Please try again"
+            PreviousSuggestion -> suggestionsError
+            NextSuggestion -> suggestionsError
+            _ -> errorMessage
 }
+      where suggestionsError = "Could not fetch suggestions. Please try again"
 
 toggleFortune :: Boolean -> IMModel -> MoreMessages
 toggleFortune isVisible model
@@ -331,11 +337,13 @@ setName name model@{ user } =
       }
 
 toggleConnectedWebSocket :: Boolean -> IMModel -> MoreMessages
-toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketConnected } =
+toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketConnected, errorMessage } =
       model {
             hasTriedToConnectYet = true,
-            isWebSocketConnected = isConnected
+            isWebSocketConnected = isConnected,
+            errorMessage = if not isConnected then lostConnectionMessage else if errorMessage == lostConnectionMessage then "" else errorMessage
       } :> if hasTriedToConnectYet && isConnected then [pure <<< Just $ SpecialRequest CheckMissedEvents] else []
+      where lostConnectionMessage = "Connection to the server lost. Attempting to automaticaly reconnect..."
 
 preventStop :: Event -> IMModel -> NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event

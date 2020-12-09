@@ -9,6 +9,7 @@ import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.WebSocket as CIW
 import Data.Array ((:))
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect.Class (liftEffect)
@@ -43,7 +44,10 @@ previousSuggestion model@{ suggesting } =
                   }
 
 fetchMoreSuggestions :: IMModel -> NextMessage
-fetchMoreSuggestions model@{ suggestionsPage } = model { freeToFetchSuggestions = false } :> [Just <<< DisplayMoreSuggestions <$> CCN.response (request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }})]
+fetchMoreSuggestions model@{ suggestionsPage } = model {
+      freeToFetchSuggestions = false,
+      failedRequests = []
+} :> [CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }}]
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> MoreMessages
 displayMoreSuggestions suggestions model@{ suggestionsPage }
@@ -61,13 +65,17 @@ displayMoreSuggestions suggestions model@{ suggestionsPage }
 blockUser :: WebSocket  -> PrimaryKey -> IMModel -> NextMessage
 blockUser webSocket blocked model@{ blockedUsers } =
       updatedModel :> [do
-            void <<< CCN.response $ request.im.block { query: { id: blocked } }
-            liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked }
-            pure Nothing
+            result <- CCN.defaultResponse $ request.im.block { query: { id: blocked } }
+            case result of
+                  Left _ -> pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage : "" }
+                  _ -> do
+                        liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked }
+                        pure Nothing
       ]
       where updatedModel = removeBlockedUser blocked $ model {
                   blockedUsers = blocked : blockedUsers,
-                  chatting = Nothing
+                  chatting = Nothing,
+                  failedRequests = []
             }
 
 removeBlockedUser :: PrimaryKey -> IMModel -> IMModel

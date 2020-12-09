@@ -39,6 +39,7 @@ template {contacts, suggestions, user} = do
                   suggesting: if suggestionsCount == 0 then Nothing else if suggestionsCount == 1 then Just 0 else Just 1,
                   freeToFetchChatHistory:true,
                   suggestionsPage: 0,
+                  errorMessage: "",
                   initialScreen: true,
                   enableNotificationsVisible: false,
                   messageEnter: true,

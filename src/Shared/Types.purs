@@ -202,6 +202,7 @@ type IM = (
       erroredFields :: Array String,
       fortune :: Maybe String,
       failedRequests :: Array RequestFailure,
+      errorMessage :: String,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -281,7 +282,9 @@ data RetryableRequest =
       FetchContacts Boolean |
       CheckMissedEvents |
       ToggleModal ShowUserMenuModal |
-      BlockUser PrimaryKey
+      BlockUser PrimaryKey |
+      PreviousSuggestion |
+      NextSuggestion
 
 data IMMessage =
       --history
@@ -302,8 +305,6 @@ data IMMessage =
       ResumeMissedEvents MissedEvents |
       --suggestion
       ResumeSuggesting |
-      PreviousSuggestion |
-      NextSuggestion |
       DisplayMoreSuggestions (Array Suggestion) |
       --chat
       SetSelectedImage (Maybe String) |

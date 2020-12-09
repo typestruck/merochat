@@ -25,6 +25,7 @@ model = {
       suggestionsPage: 0,
       shouldSendMessage: true,
       freeToFetchContactList: true,
+      errorMessage: "",
       failedRequests: [],
       toggleContextMenu: HideContextMenu,
       imageCaption: Nothing,

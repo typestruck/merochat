@@ -131,12 +131,13 @@ displayNewContacts :: Array Contact -> IMModel -> MoreMessages
 displayNewContacts newContacts model@{ contacts } = updateDisplayContacts newContacts (map (_.id <<< _.user) newContacts) model
 
 resumeMissedEvents :: MissedEvents -> IMModel -> MoreMessages
-resumeMissedEvents {contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
+resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
       let missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
           missedFromNewContacts = map getNew new
-          --wew lass
-      in displayNewContacts (missedFromNewContacts <> missedFromExistingContacts) (model { contacts = [] })
-
+      in CIU.notifyUnreadChats (model {
+            --wew lass
+            contacts = missedFromNewContacts <> missedFromExistingContacts
+      }) $ map (_.id <<< _.user) missedContacts
       where messageMap = DH.fromArrayBy _.temporaryID _.id messageIDs
             markSenderError contact@{ history } = contact {
                   history = map updateSenderError history
