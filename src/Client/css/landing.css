@@ -42,7 +42,7 @@ h2 {
 }
 
 .subheadline {
-      line-height: 1;
+      line-height: 1.3;
       font-weight: bold;
       margin: 0;
       margin-bottom: 30px;
@@ -112,22 +112,23 @@ h2 {
       font-size: 1em;
 }
 
-@media (max-width:1365px) {
+@media (max-width:1279px) {
       body {
             background: url('/client/media/landing-small.png') no-repeat fixed;
             background-size: cover;
+            font-size:17px
       }
       .header {
             left: 0%;
             right: 0%;
             margin: 20px 0px;
+            border-width: 1px;
       }
       .login {
-            font-size: 1em;
+            font-size: 0.9em;
       }
-
       .green-area {
-            padding: 120px 0px 100px;
+            padding: 120px 0px 50px;
             text-align: center;
             align-items: center;
             margin-bottom: 50px;
@@ -152,22 +153,13 @@ h2 {
             margin: 0 5px
       }
 
-      .form-up input {
-            height:25px;
-            font-size:1em;
-      }
-
-      .form-up input[type="button"], .form-up input[type="submit"] {
-            font-size:1em
-      }
-
       #headline {
             line-height: 1.1;
             margin-bottom: 10px;
       }
 }
 
-@media (min-width:1366px) {
+@media (min-width:1280px) {
       body {
             background: url('/client/media/landing-medium.png') no-repeat fixed;
             background-size: cover;
@@ -177,16 +169,13 @@ h2 {
             left: 1.0%;
             right: 1.0%;
       }
-      .login {
-            font-size: 1.1em;
-      }
       .green-area {
             padding: 130px 45px 50px;
             margin-bottom: 10px;
       }
       h2 {
             margin-bottom: 90px;
-            font-size: 1.6em;
+            font-size: 1.4em;
       }
       .point {
             font-size: 1em;
@@ -204,12 +193,10 @@ h2 {
       body {
             background: url('/client/media/landing-big.png') no-repeat fixed;
             background-size: cover;
+            font-size: 18px;
       }
       .landing {
             grid-template-columns: 90%;
-      }
-      .login {
-            font-size: 1.4em;
       }
       #headline {
             font-size: 3.7em;
@@ -221,8 +208,7 @@ h2 {
             width: 570px;
       }
       h2 {
-            font-size: 1.9em;
-            font-size: 1.9em;
+            font-size: 1.8em;
       }
       .point {
             font-size: 1.2em;

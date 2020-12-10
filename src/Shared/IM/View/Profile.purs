@@ -110,7 +110,7 @@ dummySuggestion = {
       name: "Maria Navarro",
       headline: "This is my headline, there are many like it, but this one is mine",
       description: "Many years later, as he faced the firing squad, Colonel Aureliano Buendía was to remember that distant afternoon when his father took him to discover ice. At that time Macondo was a village of twenty adobe houses, built on the bank of a river of clear water that ran along a bed of polished stones, which were white and enormous, like prehistoric eggs. The world was so recent that many things lacked names, and in order to indicate them it was necessary to point. Every year during the month of March a family of ragged gypsies would set up their tents near the village, and with a great uproar of pipes and kettledrums they would display new inventions. First they brought the magnet.",
-      avatar : Nothing,
+      avatar: Nothing,
       tags: [],
       karma: 321,
       karmaPosition : 90,
@@ -208,7 +208,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                         HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
                         HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
                   ],
-                  HE.div [HA.class' {"user-menu ": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
+                  HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
                         HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                   ]
             ]

@@ -95,7 +95,28 @@ ul li a:hover {
     padding-top: 0;
 }
 
-@media (max-width:1365px) {
+@media (max-width:1279px) {
+    .external-help {
+        flex-direction: column;
+        max-width: 100%;
+        width: auto;
+        padding: 10px;
+        margin:5px auto;
+    }
+
+    .external-help .modal-menu {
+        position: unset;
+        margin-right: 0;
+        align-items: center;
+        margin-bottom: 30px;
+        color: rgb(14, 129, 62);
+    }
+
+    .entry {
+        text-align: center;
+        width: 100%;
+    }
+
     .internal-help {
         max-width: 100%;
         padding: 10px

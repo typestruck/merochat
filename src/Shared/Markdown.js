@@ -47,7 +47,7 @@ exports.parse = function (plainMarkdown) {
 }
 
 exports.parseRestricted = function(plainMarkdown) {
-     restrictedoptions();
+      restrictedoptions();
 
       return marked(plainMarkdown, {
             smartypants: true

@@ -119,106 +119,99 @@ let additions =
 
 
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20200724/packages.dhall sha256:bb941d30820a49345a0e88937094d2b9983d939c9fd3a46969b85ce44953d7d9
+      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20201206/packages.dhall sha256:c9ffd7577fb8ee2197309591d7ccc0f506ee37b9078866f0ef159f5abbb1b32b
 
 let overrides = {=}
 
-let additions = {
-    payload =
-       { dependencies =
-           ["aff"
-    , "affjax"
-    , "console"
-    , "debug"
-    , "effect"
-    , "foreign-generic"
-    , "node-fs"
-    , "node-fs-aff"
-    , "node-http"
-    , "prelude"
-    , "psci-support"
-    , "record"
-    , "simple-json"
-    , "stringutils"
-    , "test-unit"
-    , "typelevel-prelude"
-           ]
-       , repo =
-           "https://github.com/hoodunit/purescript-payload.git"
-       , version =
-           "v0.3.1"
-       },
-     postgresql-client =
-       { dependencies =
-           [ "aff"
-  , "argonaut"
-  , "arrays"
-  , "assert"
-  , "bifunctors"
-  , "bytestrings"
-  , "console"
-  , "datetime"
-  , "decimals"
-  , "effect"
-  , "either"
-  , "exceptions"
-  , "foldable-traversable"
-  , "foreign"
-  , "foreign-generic"
-  , "foreign-object"
-  , "js-date"
-  , "lists"
-  , "maybe"
-  , "newtype"
-  , "nullable"
-  , "prelude"
-  , "psci-support"
-  , "string-parsers"
-  , "test-unit"
-  , "transformers"
-  , "tuples"
-           ]
-       , repo =
-           "https://github.com/rightfold/purescript-postgresql-client.git"
-       , version =
-           "v3.0.2"
-       },
-        browser-cookies =
-       { dependencies =
-           [
- "prelude",
-    "console",
-    "effect",
-    "maybe",
-    "foldable-traversable",
-    "strings",
-    "js-date"
-           ]
-       , repo =
-           "https://github.com/vilu/purescript-browser-cookies.git"
-       , version =
-           "v0.0.1"
-       },
-     flame =
-       { dependencies =
-           [ "prelude",
-    "console",
-    "effect",
-    "web-events",
-    "web-dom",
-    "web-html",
-    "nullable",
-    "aff",
-    "signal",
-    "foreign-object",
-    "argonaut-generic"
-           ]
-       , repo =
-           "https://github.com/easafe/purescript-flame.git"
-       , version =
-           "v0.9.0"
-       }
-}
+let additions =
+      { payload =
+        { dependencies =
+          [ "aff"
+          , "affjax"
+          , "console"
+          , "debug"
+          , "effect"
+          , "foreign-generic"
+          , "node-fs"
+          , "node-fs-aff"
+          , "node-http"
+          , "prelude"
+          , "psci-support"
+          , "record"
+          , "simple-json"
+          , "stringutils"
+          , "test-unit"
+          , "typelevel-prelude"
+          ]
+        , repo = "https://github.com/hoodunit/purescript-payload.git"
+        , version = "v0.3.1"
+        }
+      , postgresql-client =
+        { dependencies =
+          [ "aff"
+          , "argonaut"
+          , "arrays"
+          , "assert"
+          , "bifunctors"
+          , "bytestrings"
+          , "console"
+          , "datetime"
+          , "decimals"
+          , "effect"
+          , "either"
+          , "exceptions"
+          , "foldable-traversable"
+          , "foreign"
+          , "foreign-generic"
+          , "foreign-object"
+          , "js-date"
+          , "lists"
+          , "maybe"
+          , "newtype"
+          , "nullable"
+          , "prelude"
+          , "psci-support"
+          , "string-parsers"
+          , "test-unit"
+          , "transformers"
+          , "tuples"
+          ]
+        , repo = "https://github.com/rightfold/purescript-postgresql-client.git"
+        , version = "v3.0.2"
+        }
+      , browser-cookies =
+        { dependencies =
+          [ "prelude"
+          , "console"
+          , "effect"
+          , "maybe"
+          , "foldable-traversable"
+          , "strings"
+          , "js-date"
+          ]
+        , repo = "https://github.com/vilu/purescript-browser-cookies.git"
+        , version = "v0.0.1"
+        }
+      , flame =
+        { dependencies =
+          [ "prelude"
+          , "console"
+          , "effect"
+          , "web-events"
+          , "web-dom"
+          , "web-html"
+          , "nullable"
+          , "aff"
+          , "signal"
+          , "foreign-object"
+          , "argonaut-generic"
+          ]
+        , repo = "https://github.com/easafe/purescript-flame.git"
+        , version = "v0.9.0"
+        }
+      }
 
-in  upstream // overrides // additions
+in      upstream
+    //  overrides
+    //  additions
       with flame = ../purescript-flame/spago.dhall as Location

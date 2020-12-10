@@ -96,13 +96,13 @@ chatBarInput model@{
                         unorderedList,
                         orderedList,
                         linkButton toggleChatModal,
-                        HE.button [HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
+                        HE.button [HA.class' "preview", HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
                         HE.div (HA.class' "send-enter") [
                               HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
                               HE.label (HA.for "message-enter") "Send message on enter"
                         ]
                   ],
-                  HE.div [HA.class' { "chat-input-area": true, side: not messageEnter }] [
+                  HE.div [HA.class' "chat-input-area" ] [
                         emojiButton toggleChatModal,
                         HE.textarea' [
                               HA.rows 1,
@@ -163,7 +163,7 @@ heading = HE.svg [HA.class' "svg-20", HA.onClick (Apply Heading), HA.viewBox "0 
 ]
 
 unorderedList :: Html IMMessage
-unorderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply UnorderedList), HA.viewBox "0 0 200 200" ] [
+unorderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply UnorderedList), HA.viewBox "0 0 250 250" ] [
       HE.title "Bulleted list",
       HE.circle' [HA.cx "37.35", HA.cy "98.39", HA.r "15"],
       HE.rect' [HA.x "78.65", HA.y "91.52", HA.width "200", HA.height "8"],
@@ -174,7 +174,7 @@ unorderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply UnorderedList),
 ]
 
 orderedList :: Html IMMessage
-orderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply OrderedList), HA.viewBox "0 0 200 200" ] [
+orderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply OrderedList), HA.viewBox "0 0 250 250" ] [
       HE.title "Ordered list",
       HE.rect' [HA.x "76", HA.y "92", HA.width "200", HA.height "8"],
       HE.rect' [HA.x "76", HA.y "190", HA.width "200", HA.height "8"],
@@ -185,7 +185,7 @@ orderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply OrderedList), HA.
 ]
 
 linkButton :: ShowChatModal -> Html IMMessage
-linkButton toggle = HE.svg [HA.class' "svg-other", HA.onClick <<< ToggleChatModal $ if toggle == ShowLinkForm then HideChatModal else ShowLinkForm, HA.viewBox "0 0 300 300" ] [
+linkButton toggle = HE.svg [HA.class' "svg-other link-button", HA.onClick <<< ToggleChatModal $ if toggle == ShowLinkForm then HideChatModal else ShowLinkForm, HA.viewBox "0 0 300 300" ] [
       HE.title "Add link",
       HE.path' [HA.d "M127.14,181.74H44.08A22.1,22.1,0,0,1,22,159.66V140.34a22.1,22.1,0,0,1,22.08-22.08h83.06a22.12,22.12,0,0,1,22.1,22.08v19.32A22.12,22.12,0,0,1,127.14,181.74ZM44.08,123.1a17.25,17.25,0,0,0-17.23,17.24v19.32A17.25,17.25,0,0,0,44.08,176.9h83.06a17.26,17.26,0,0,0,17.25-17.24V140.34a17.26,17.26,0,0,0-17.25-17.24Z"],
       HE.path' [HA.d "M255.92,181.74H172.86a22.12,22.12,0,0,1-22.1-22.08V140.34a22.12,22.12,0,0,1,22.1-22.08h83.06A22.1,22.1,0,0,1,278,140.34v19.32A22.1,22.1,0,0,1,255.92,181.74ZM172.86,123.1a17.26,17.26,0,0,0-17.25,17.24v19.32a17.26,17.26,0,0,0,17.25,17.24h83.06a17.25,17.25,0,0,0,17.23-17.24V140.34a17.25,17.25,0,0,0-17.23-17.24Z"],

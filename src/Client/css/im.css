@@ -7,13 +7,21 @@ body {
     color: rgb(238, 238, 238)
 }
 
-.description-message, .profile-description, .profile-edition-description {
-    font-size: 1.12em;
-}
-
 .profile-description p, .description-message p {
     text-align: justify;
     hyphens: auto;
+}
+
+.settings .outer-user-menu {
+    margin-left: auto;
+}
+
+.profile-description ul, .description-message ul, .message ul {
+    list-style-type: disc;
+}
+
+.profile-description ul li, .description-message ul li, .message ul li {
+    display: list-item;
 }
 
 .profile-description p:first-of-type, .description-message p:first-of-type {
@@ -102,31 +110,24 @@ body {
     flex-flow: column;
     margin: 0px 20px 10px 20px;
     position: relative;
-    /* min-height: 130px; */
     justify-content: end;
 }
 
 .svg-8 {
     width: 8px;
     height: 8px;
-    font-size: 0.5em;
 }
 
 .svg-other {
-    font-size: 1.1em;
     stroke-width: 5;
-    margin: 4px 10px 0 10px !important;
+    margin: 0px 5px !important;
     align-self: baseline;
 }
 
 .profile-name {
     font-family: Verdana, "sans serif";
-    font-size: 1.12em;
+    font-size: 1.1em;
     margin: 0;
-}
-
-.profile-asl {
-    font-size: 1.12em;
 }
 
 .profile-asl div {
@@ -249,7 +250,7 @@ body {
     color: rgb(238, 238, 238, 0.8)
 }
 
-.contact-name, .contact-list-last-message>p {
+.contact-name, .contact-list-last-message>*, .chat-input::placeholder, .settings-name {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
@@ -597,7 +598,7 @@ svg.toolbar-action {
     border: 1px solid #b5b7b7;
     color: rgb(238, 238, 238, 0.8);
     border-bottom: none;
-    padding: 0px 5px;
+    padding: 5px;
     display: flex;
     align-items: center;
 }
@@ -608,7 +609,6 @@ svg.toolbar-action {
 }
 
 .chat-input-options button {
-    font-size: 1.2em;
     font-weight: bold;
     background: #262626;
     border: 0;
@@ -618,23 +618,6 @@ svg.toolbar-action {
 
 .chat-input-options svg {
     margin: 0 5px;
-}
-
-.chat-input-options input[type=checkbox] {
-    appearance: none;
-    width: 15px;
-    vertical-align: middle;
-    height: 15px;
-    border: 1px solid #b5b7b7;
-    position: relative;
-}
-
-.chat-input-options input[type=checkbox]:checked:after {
-    content: '\2713 ';
-    position: absolute;
-    top: -3px;
-    left: 1px;
-    font-size: 0.7em;
 }
 
 .chat-input-area {
@@ -650,7 +633,6 @@ svg.toolbar-action {
 .chat-input {
     resize: none;
     width: 100%;
-    font-size: 1.1em;
     box-sizing: padding-box;
     cursor: text;
     border-radius: 5px;
@@ -713,7 +695,6 @@ svg.toolbar-action {
     width: max-content;
     display: inline-block;
     margin: 0 5px;
-    font-size: 1.1em;
     margin-bottom: 10px;
     padding: 0px 10px;
     border-radius: 20px;
@@ -767,7 +748,6 @@ svg.toolbar-action {
 }
 
 .svg-20 {
-    font-size: 1em;
     width: 20px;
     height: 20px;
 }
@@ -808,7 +788,7 @@ svg.toolbar-action {
 }
 
 .headline, .profile-edition-headline {
-    font-size: 1.20em;
+    font-size: 1.12em;
     display: inline-block;
     font-style: italic;
     text-align: center;
@@ -838,7 +818,7 @@ input:not(type=button):focus {
 }
 
 .exclamation {
-    font-size: 1.3em;
+    font-size: 1.1em;
     border: 2px solid red;
     border-radius: 100%;
     padding: 2px 10px;
@@ -885,10 +865,6 @@ input:not(type=button):focus {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-}
-
-.profile-karma {
-    font-size: 1.12em;
 }
 
 .profile-basics-column {
@@ -1101,8 +1077,8 @@ select {
     position: absolute;
     border-radius: 3px;
     color: inherit;
-    bottom: 165px;
-    margin-right: 20px;
+    bottom: 115px;
+    /* margin-right: 20px; */
     border-radius: 3px;
     z-index: 5;
     word-wrap: anywhere
@@ -1156,8 +1132,8 @@ select {
 
 .link-form {
     height: 270px;
-    bottom: 160px;
-    margin-left: 55px;
+    bottom: 115px;
+    margin-left: 27px;
     padding: 30px 40px;
 }
 
@@ -1190,6 +1166,10 @@ select {
     right: 15px;
     margin-right: -15px;
     transform: rotate(93deg) skew(-37deg);
+}
+
+.card .link-button, .card .preview {
+    display: none;
 }
 
 .link-form::before {
@@ -1437,7 +1417,6 @@ select {
 .profile-description-about {
     display: inline-block;
     font-weight: bold;
-    font-size: 1.1em;
 }
 
 .strokeless {
@@ -1522,7 +1501,7 @@ select {
 }
 
 .profile-context {
-    align-self: end;
+    align-self: flex-end;
 }
 
 .profile-context .user-menu {
@@ -1580,15 +1559,15 @@ select {
 }
 
 .profile-name {
-    margin-top: 9px;
+    margin-top: 11px;
 }
 
 .headline, .profile-edition-headline {
-    margin: 5px 0;
+    margin: 7px 0;
 }
 
 .profile-karma {
-    margin-bottom: 5px;
+    margin-bottom: 7px;
 }
 
 .profile-asl {
@@ -1602,6 +1581,10 @@ select {
 .suggestion-arrow {
     margin-top: -38px;
     left: 10px;
+}
+
+.welcome {
+    font-size: 1.5em;
 }
 
 .suggestion-arrow:last-child {
@@ -1877,12 +1860,20 @@ select {
         height: 30px
     }
 
+.profile-tags,    .tags-description {
+        max-width: 100%;
+    }
+    .tag {
+        word-break: break-word;
+        width: auto;
+    }
+
+    .settings .outer-user-menu {
+        margin-left: unset;
+    }
 }
 
 @media (min-width:1366px) and (max-width:1919px) {
-    .welcome {
-        font-size: 1.5em;
-    }
     .card-sides {
         margin: 10px 0;
         width: calc(100vw * 0.6398243045387994);
@@ -1913,9 +1904,6 @@ select {
     html, body {
         font-size: 18px;
         line-height: 1.51857143;
-    }
-    .welcome {
-        font-size: 1.7em;
     }
     .profile-contact .avatar-profile, .avatar-contact-list, .avatar-settings, .avatar-message {
         width: 64px;
@@ -1948,15 +1936,7 @@ select {
         height: 91px;
     }
     .profile-name {
-        margin-top: 11px;
         letter-spacing: -0.02em;
-    }
-    .headline, .profile-edition-headline {
-        margin: 7px 0;
-        font-size: 1.15em;
-    }
-    .profile-karma {
-        margin-bottom: 7px;
     }
     .profile-asl {
         max-width: 872px;
@@ -2001,7 +1981,7 @@ select {
     .svg-other {
         width: 20px;
         height: 20px;
-        margin-top: 2px !important;
+
     }
     .card-top-header {
         margin: 40px 0px;

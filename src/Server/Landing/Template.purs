@@ -54,9 +54,11 @@ template = do
                                           HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.id "password"],
                                           HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                     ],
-                                    HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
-                                    HE.input [HA.type' "button", HA.value "Create account"],
-                                    HE.span' [HA.class' "request-error-message error-message"]
+                                    HE.div [HA.class' "input"] [
+                                          HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible"],
+                                          HE.input [HA.type' "button", HA.value "Create account"],
+                                          HE.span' [HA.class' "request-error-message error-message"]
+                                    ]
                               ]
                         ],
                         HE.h2_ [

@@ -54,8 +54,8 @@ presentContacts loggedUserID skip = SD.select (Query ("select distinct h.date, s
                                           order by date desc limit $2 offset $3""")) (loggedUserID /\ contactsPerPage /\ skip)
 
 presentSingleContact :: PrimaryKey -> PrimaryKey -> ServerEffect ContactWrapper
-presentSingleContact loggedUserID otherID = SD.single' (Query ("select distinct h.date, sender, first_message_date, " <> userPresentationFields <>
-                                      "from" <> usersTable <> "join histories h on (u.id = $1 and h.recipient = $2 or u.id = $2 and h.sender = $1)")) (loggedUserID /\ otherID)
+presentSingleContact loggedUserID otherID = SD.single' (Query ("select h.date, sender, first_message_date, " <> userPresentationFields <>
+                                      "from" <> usersTable <> "join histories h on (u.id = h.recipient and h.sender = $1 or u.id = h.sender and h.recipient = $1) where u.id = $2")) (loggedUserID /\ otherID)
 
 presentSelectedContacts :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array ContactWrapper)
 presentSelectedContacts loggedUserID ids

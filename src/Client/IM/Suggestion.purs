@@ -12,6 +12,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -75,7 +76,8 @@ blockUser webSocket blocked model@{ blockedUsers } =
       where updatedModel = removeBlockedUser blocked $ model {
                   blockedUsers = blocked : blockedUsers,
                   chatting = Nothing,
-                  failedRequests = []
+                  failedRequests = [],
+                  toggleContextMenu = HideContextMenu
             }
 
 removeBlockedUser :: PrimaryKey -> IMModel -> IMModel
