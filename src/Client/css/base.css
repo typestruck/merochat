@@ -8,7 +8,7 @@ body {
     min-height: 100%;
     font-family: "Verdana", "sans serif";
     font-size: 18px;
-    background-color: #262626;
+    background: #262626;
     line-height: 1.51857143;
     display: grid;
     grid-template-rows: 1fr auto;
@@ -145,7 +145,8 @@ select option {
     visibility: visible;
 }
 
-@media (max-width:1279px) {
+@media (max-width:1365px) {
+/* @media (max-width:1279px) { */
     .error-message {
         display: none;
     }

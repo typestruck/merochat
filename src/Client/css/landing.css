@@ -4,7 +4,8 @@
       display: grid;
       grid-template-columns: 100%;
       justify-content: center;
-      color: white
+      color: white;
+      min-height: 100%
 }
 
 .header {
@@ -114,9 +115,8 @@ h2 {
 
 @media (max-width:1279px) {
       body {
-            background: url('/client/media/landing-small.png') no-repeat fixed;
-            background-size: cover;
-            font-size:17px
+            background: url('/client/media/landing-small.png') repeat;
+            font-size: 17px
       }
       .header {
             left: 0%;
@@ -152,7 +152,6 @@ h2 {
       .footer-menu li {
             margin: 0 5px
       }
-
       #headline {
             line-height: 1.1;
             margin-bottom: 10px;

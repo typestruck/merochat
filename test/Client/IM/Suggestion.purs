@@ -43,6 +43,12 @@ tests = do
             TU.test "blockUser resets chatting" do
                   TUA.equal 333 1
 
+            TU.test "displayMoreSuggestions sets suggestions to 0 if there is 1 or fewer new suggestions" do
+                  TUA.equal 333 1
+
+            TU.test "resumeSuggesting sets suggestions to 0 if there is 1 or fewer new suggestions" do
+                  TUA.equal 333 1
+
             TU.test "nextSuggestion clears chatting" do
                   let { chatting } = DT.fst <<< CIS.nextSuggestion $ model  {
                         chatting = Just 2,

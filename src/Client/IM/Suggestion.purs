@@ -12,7 +12,6 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -51,17 +50,23 @@ fetchMoreSuggestions model@{ suggestionsPage } = model {
 } :> [CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }}]
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> MoreMessages
-displayMoreSuggestions suggestions model@{ suggestionsPage }
+displayMoreSuggestions suggestions model@{ suggestionsPage } =
       --if we looped through all the suggestions, retry
-      | DA.null suggestions && suggestionsPage > 0 = fetchMoreSuggestions $ model { suggestionsPage = 0 }
-      | otherwise =
+      if suggestionsSize == 0 && suggestionsPage > 0 then
+            fetchMoreSuggestions $ model {
+                  suggestionsPage = 0,
+                  suggesting = suggesting
+            }
+      else
             F.noMessages $ model {
-                  suggesting = Just 1,
+                  suggesting = suggesting,
                   chatting = Nothing,
                   freeToFetchSuggestions = true,
                   suggestions = suggestions,
-                  suggestionsPage = if DA.null suggestions then 0 else suggestionsPage + 1
+                  suggestionsPage = if suggestionsSize == 0 then 0 else suggestionsPage + 1
             }
+      where suggestionsSize = DA.length suggestions
+            suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
 
 blockUser :: WebSocket  -> PrimaryKey -> IMModel -> NextMessage
 blockUser webSocket blocked model@{ blockedUsers } =
@@ -95,6 +100,7 @@ toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model 
 }
 
 resumeSuggesting :: IMModel -> NoMessages
-resumeSuggesting model = F.noMessages $ model {
-      chatting = Nothing
+resumeSuggesting model@{ suggestions, suggesting } = F.noMessages $ model {
+      chatting = Nothing,
+      suggesting = if DA.length suggestions <= 1 then Just 0 else suggesting
 }

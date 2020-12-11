@@ -25,16 +25,18 @@ suggestions { contacts, suggesting, chatting, suggestions }
             ]
       | otherwise =
             case suggs of
-                  Just {avatar, name } | not $ DA.null contacts -> HE.div (HA.class' "side-suggestions-container") [
+                  Just { avatar, name } | not $ DA.null contacts -> HE.div (HA.class' "side-suggestions-container") [
                         HE.div [HA.class'"side-suggestion", HA.title "Your chat suggestions"] [
                               HE.div (HA.class' "avatar-contact-list-div faded") [
-                                    HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (map (_ - 1) suggesting), HA.src $ SA.avatarForRecipient (map (_ - 1) suggesting) avatar]
+                                    let previousIndex = map (_ - 1) suggesting in
+                                          HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass previousIndex, HA.src $ SA.avatarForRecipient previousIndex $ getAvatar previousIndex]
                               ],
                               HE.div (HA.class' "avatar-contact-list-div margin-less-z") [
                                     HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass suggesting, HA.src $ SA.avatarForRecipient suggesting avatar]
                               ],
                               HE.div (HA.class' "avatar-contact-list-div margin-less faded") [
-                                    HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (map (_ + 1) suggesting), HA.src $ SA.avatarForRecipient (map (_ + 1) suggesting) avatar]
+                                    let nextIndex = map (_ + 1) suggesting in
+                                          HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass nextIndex, HA.src $ SA.avatarForRecipient nextIndex $ getAvatar nextIndex]
                               ],
 
                               HE.div [HA.class' "contact-profile"] [
@@ -47,3 +49,8 @@ suggestions { contacts, suggesting, chatting, suggestions }
       where suggs = do
                   index <- suggesting
                   suggestions !! index
+
+            getAvatar index = do
+                  i <- index
+                  user <- suggestions !! i
+                  user.avatar

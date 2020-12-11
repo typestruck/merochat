@@ -90,11 +90,16 @@
 .save-cancel {
     margin-top: -30px;
     margin-left: 0;
-    align-self: end;
+    align-self: flex-end;
 }
 
 .save-cancel .cancel {
     margin-right: 20px;
+}
+
+.button-save-bottom {
+    position: sticky;
+    bottom:0px
 }
 
 .about {

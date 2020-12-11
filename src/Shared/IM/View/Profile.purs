@@ -33,7 +33,7 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
                   Nothing, (Just index) -> suggestion model index
                   _, _ -> emptySuggestions
       --this will need improvement
-      where emptySuggestions = HE.div (HA.class' "suggestion empty retry") $ SIVR.retryForm "Could not find new suggestions" $ SpecialRequest NextSuggestion
+      where emptySuggestions = HE.div (HA.class' {"suggestion empty retry": true, hidden: DM.isJust chatting }) $ SIVR.retryForm "Could not find new suggestions" $ SpecialRequest NextSuggestion
 
 unavailable :: String -> Html IMMessage
 unavailable name =

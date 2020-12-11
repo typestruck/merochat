@@ -361,7 +361,7 @@ body {
 }
 
 .message-content {
-    padding: 0 15px;
+    padding: 1 15px;
     position: relative;
     background: #1b3a28;
     border-radius: 5px;
@@ -373,6 +373,7 @@ body {
     height: 16px;
     position: absolute;
     width: 20px;
+    top:0px;
 }
 
 .no-avatar-message .message-content::before {
@@ -633,7 +634,6 @@ svg.toolbar-action {
 .chat-input {
     resize: none;
     width: 100%;
-    box-sizing: padding-box;
     cursor: text;
     border-radius: 5px;
     max-height: 150px;
@@ -777,9 +777,10 @@ svg.toolbar-action {
 }
 
 .message-content p {
-    display: inline-block;
+    display: block;
     word-wrap: break-word;
     max-width: 45em;
+    margin:5px 0px;
 }
 
 .message p img {
@@ -896,7 +897,7 @@ input:not(type=button):focus {
 }
 
 .send-button {
-    right: 13px;
+    right: 17px;
 }
 
 .chatting-contact {
@@ -1768,11 +1769,10 @@ select {
         padding: 10px;
     }
     .message-content {
-        padding: 0px 10px;
+        padding: 1px 10px;
     }
     .message-content p {
         width: 100%;
-        margin: 5px 0;
     }
     .message {
         margin: 0;
