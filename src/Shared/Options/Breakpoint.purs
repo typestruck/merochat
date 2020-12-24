@@ -1,4 +1,4 @@
 module Shared.Breakpoint where
 
 mobileBreakpoint :: Int
-mobileBreakpoint = 1365
+mobileBreakpoint = 1279

@@ -5,6 +5,7 @@ import Prelude
 import Client.Common.DOM as CCD
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Console as EC
 import Foreign as F
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
@@ -28,8 +29,10 @@ setUpFileChange message input channel = do
       fileReader <- WFR.fileReader
       setUpBase64Reader fileReader message channel
       CCD.addEventListener input change $ \_ -> do
-            maybeFileList <- WHI.files (SU.fromJust $ WHI.fromElement input)
+            let htmlInput = SU.fromJust $ WHI.fromElement input
+            maybeFileList <- WHI.files htmlInput
             readBase64 fileReader maybeFileList
+            WHI.setValue "" htmlInput
 
 setUpBase64Reader :: forall message. FileReader -> (String -> message) -> Channel message -> Effect Unit
 setUpBase64Reader fileReader message channel = do

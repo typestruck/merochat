@@ -145,8 +145,11 @@ select option {
     visibility: visible;
 }
 
-@media (max-width:1365px) {
-/* @media (max-width:1279px) { */
+.error-message.request-error-message {
+    visibility: visible;
+}
+
+@media (max-width:1279px) {
     .error-message {
         display: none;
     }
@@ -166,7 +169,6 @@ select option {
         width: 90%;
     }
     .request-error-message {
-        visibility: visible;
         text-align: center;
         display: inline-block;
     }

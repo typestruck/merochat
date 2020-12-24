@@ -17,8 +17,7 @@ import Shared.Markdown as SM
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
 history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests, freeToFetchChatHistory } contact =
-      HE.div [HA.class' "message-history" ] $
-            HE.div [HA.class' {"message-history-wrapper" : true, hidden: DM.isNothing contact }, HA.id "message-history-wrapper", HA.onScroll CheckFetchHistory] chatHistory
+      HE.div [HA.class' {"message-history": true, hidden: DM.isNothing contact}, HA.id "message-history", HA.onScroll CheckFetchHistory] chatHistory
       where chatHistory =
                   case contact of
                         Nothing -> [retry]

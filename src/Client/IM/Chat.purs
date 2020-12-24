@@ -24,8 +24,8 @@ import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Class.Console as EC
 import Effect.Now as EN
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
@@ -55,7 +55,11 @@ foreign import resizeTextarea_ :: EffectFn1 Element Unit
 getFileInput :: Effect Element
 getFileInput = CCD.unsafeQuerySelector "#image-file-input"
 
+getChatInput :: Effect Element
+getChatInput = CCD.unsafeQuerySelector "#chat-input"
+
 --the keydown event fires before input
+-- this event is filterd to run only on Enter keydown
 enterBeforeSendMessage :: IMModel -> NoMessages
 enterBeforeSendMessage model@{ messageEnter } = F.noMessages $ model {
       shouldSendMessage = messageEnter
@@ -63,22 +67,19 @@ enterBeforeSendMessage model@{ messageEnter } = F.noMessages $ model {
 
 --send message or image button click
 forceBeforeSendMessage :: IMModel -> MoreMessages
-forceBeforeSendMessage model@{ message }
-      | DM.maybe true (DS.null <<< DS.trim) message = F.noMessages model
-      | otherwise = model {
+forceBeforeSendMessage model@{ message } =
+      model {
             shouldSendMessage = true
       } :> [
-            pure <<< Just <<< BeforeSendMessage $ SU.fromJust message
+            pure <<< Just <<< BeforeSendMessage $ DM.fromMaybe "" message,
+            resizeInputEffect
       ]
 
-resizeTextarea :: Element -> Effect Unit
-resizeTextarea = EU.runEffectFn1 resizeTextarea_
-
-resizeChatInput :: Event -> IMModel -> NextMessage
-resizeChatInput event model = CIF.nothingNext model resize
-      where resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
-                  target <- WEE.target event
-                  WDE.fromEventTarget target
+resizeInputEffect :: Aff (Maybe IMMessage)
+resizeInputEffect = liftEffect $ do
+      input <- getChatInput
+      resizeTextarea input
+      pure Nothing
 
 --input event, or called after clicking the send message/image button
 beforeSendMessage :: String -> IMModel -> MoreMessages
@@ -86,17 +87,30 @@ beforeSendMessage content model@{
       shouldSendMessage,
       chatting,
       user: { id },
+      selectedImage,
       contacts,
       suggesting,
       suggestions
-}    | shouldSendMessage = snocContact :> [ nextSendMessage ]
+} =
+      --other event handlers just blindly set shouldSendMessage
+      -- so we centralize message checks here
+      if shouldSendMessage && (DM.isJust message || DM.isJust selectedImage)  then
+            snocContact :> [ nextSendMessage ]
+       else
+            F.noMessages $ model {
+                  message = message,
+                  shouldSendMessage = false
+            }
+      where message
+                  | DS.null $ DS.trim content = Nothing
+                  | otherwise = Just content
 
-      where snocContact = case chatting, suggesting of
+            snocContact = case chatting, suggesting of
                   Nothing, (Just index) ->
                         let chatted = suggestions !@ index
                         in
                               model {
-                                    message = Just content,
+                                    message = message,
                                     chatting = Just 0,
                                     contacts = DA.cons (SIC.defaultContact id chatted) contacts,
                                     suggestions = SU.fromJust $ DA.deleteAt index suggestions
@@ -106,11 +120,6 @@ beforeSendMessage content model@{
             nextSendMessage = do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   CIF.next $ SendMessage date
-
-      | otherwise =
-            F.noMessages $ model {
-                  message = Just content
-            }
 
 sendMessage :: WebSocket -> DateTimeWrapper -> IMModel -> NoMessages
 sendMessage webSocket date = case _ of
@@ -148,12 +157,15 @@ sendMessage webSocket date = case _ of
             in
                   CIF.nothingNext updatedModel $ liftEffect do
                         CIS.scrollLastMessage
+                        input <- getChatInput
+                        WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
                         CIW.sendPayload webSocket $ OutgoingMessage {
                               id: newTemporaryID,
                               userID: recipientID,
                               content: asMessageContent message imageCaption selectedImage,
                               turn
                         }
+
       model -> F.noMessages model
       where asMarkdownImage imageCaption base64 = "![" <> DM.fromMaybe "" imageCaption  <> "](" <> base64 <> ")"
             asMessageContent message imageCaption selectedImage = DM.maybe' (\_ -> Text $ SU.fromJust message) (Image <<< Tuple (DM.fromMaybe "" imageCaption)) selectedImage
@@ -198,14 +210,17 @@ makeTurn { chatStarter, chatAge, history } sender =
             getDate = DN.unwrap <<< _.date
 
 applyMarkup :: Markup -> IMModel -> MoreMessages
-applyMarkup markup model@{ message } = model :> [liftEffect (Just <$> apply markup (DM.fromMaybe "" message))]
+applyMarkup markup model@{ message } = model :> [
+      liftEffect (Just <$> apply markup (DM.fromMaybe "" message)),
+      resizeInputEffect
+]
       where apply markup value = do
-                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
+                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> getChatInput
                   let   Tuple before after = case markup of
                               Bold -> Tuple "**" "**"
                               Italic -> Tuple "*" "*"
                               Strike -> Tuple "~" "~"
-                              Heading -> Tuple "## " ""
+                              Heading -> Tuple "\n## " ""
                               OrderedList -> Tuple "\n1. " ""
                               UnorderedList -> Tuple "\n- " ""
                   start <- WHHTA.selectionStart textarea
@@ -224,7 +239,7 @@ setMessage cursor markdown model =
       }) <<< liftEffect $
             case cursor of
                   Just position -> do
-                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
+                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> getChatInput
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setSelectionEnd position textarea
                   Nothing -> pure unit
@@ -239,14 +254,8 @@ catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
       CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
       CCD.preventStop event
 
-toggleMessageEnter :: IMModel -> NoMessages
-toggleMessageEnter model@{ messageEnter } =
-      F.noMessages $ model {
-            messageEnter = not messageEnter
-      }
-
 setSelectedImage :: Maybe String -> IMModel -> NextMessage
-setSelectedImage maybeBase64 model =
+setSelectedImage maybeBase64 model@{smallScreen} =
       model {
             toggleChatModal = ShowSelectedImage,
             selectedImage = maybeBase64,
@@ -255,7 +264,7 @@ setSelectedImage maybeBase64 model =
                         [TDS.reflectSymbol (SProxy :: SProxy "selectedImage")]
                    else
                         []
-      } :> [CIF.next $ FocusInput "#image-form-caption"]
+      } :> (if smallScreen then [] else [CIF.next $ FocusInput "#image-form-caption"])
       where isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
 toggleModal :: ShowChatModal -> IMModel -> MoreMessages
@@ -305,7 +314,16 @@ insertLink model@{ message, linkText, link } =
 
 setAtCursor :: Maybe String -> String -> Effect (Maybe IMMessage)
 setAtCursor message text = do
-      textarea <- SU.fromJust <<< WHHTA.fromElement <$> CCD.unsafeQuerySelector "#chat-input"
+      textarea <- SU.fromJust <<< WHHTA.fromElement <$> getChatInput
       end <- WHHTA.selectionEnd textarea
       let { before, after } = DS.splitAt end $ DM.fromMaybe "" message
       CIF.next <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after
+
+resizeTextarea :: Element -> Effect Unit
+resizeTextarea = EU.runEffectFn1 resizeTextarea_
+
+resizeChatInput :: Event -> IMModel -> NextMessage
+resizeChatInput event model = CIF.nothingNext model resize
+      where resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
+                  target <- WEE.target event
+                  WDE.fromEventTarget target

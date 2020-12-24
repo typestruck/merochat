@@ -6,7 +6,7 @@ import Shared.Types
 import Client.Common.DOM (nameChanged, notificationClick)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.Common.Network (errorMessage, request)
+import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
@@ -24,6 +24,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -63,7 +64,6 @@ main = do
             init: [],
             update: update { fileReader, webSocketRef }
       }
-
       setUpWebSocket webSocketRef channel
       --for drag and drop
       CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
@@ -76,9 +76,9 @@ main = do
       --image upload
       input <- CIC.getFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
-      --for "mobile" screens, the send button is mandatory
       width <- CCD.screenWidth
-      when (width < mobileBreakpoint) $ SC.send channel [ToggleMessageEnter]
+      --keep track of mobile (-like) screens for things that cant be done with media queries
+      when (width < mobileBreakpoint) $ SC.send channel [SetSmallScreen]
       checkNotifications channel
       windowsFocus channel
 
@@ -97,7 +97,7 @@ update { webSocketRef, fileReader } model =
             SetMessageContent cursor content -> CIC.setMessage cursor content model
             Apply markup -> CIC.applyMarkup markup model
             SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
-            ToggleMessageEnter -> CIC.toggleMessageEnter model
+            SetSmallScreen -> setSmallScreen model
             SetEmoji event -> CIC.setEmoji event model
             FocusInput selector -> focusInput selector model
             --contacts
@@ -394,3 +394,10 @@ setUpWebSocket webSocketRef channel = do
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
       where sendChannel = SC.send channel <<< DA.singleton
+
+setSmallScreen :: IMModel -> NoMessages
+setSmallScreen model@{ messageEnter } =
+      F.noMessages $ model {
+            messageEnter = false,
+            smallScreen = true
+      }

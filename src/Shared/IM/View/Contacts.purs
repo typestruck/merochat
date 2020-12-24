@@ -44,7 +44,7 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
 
             unread total { status, sender } = total + DE.fromEnum (sender /= userID && status == Received)
             countUnread = DF.foldl unread 0
-            --should only work for text messages!
+
             lastMessage = DM.fromMaybe "" <<< map _.content <<< DA.last
             chattingID = do
                   index <- chatting
@@ -66,10 +66,6 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
                         HE.div (HA.class' "contact-options") [
                               HE.span (HA.class' { "duller": true, "invisible": not isClientRender }) <<< HE.text <<< DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date) $ DA.last history ,
                               HE.div (HA.class' {"unread-messages" :true, "hidden" : numberUnreadMessages == 0}) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
-                              -- HE.a (HA.class' "menu-button") $
-                              --       HE.svg [HA.class' "i-chevron-bottom svg-16 svg-right", HA.viewBox "0 0 32 32"] $
-                              --             HE.path' (HA.d "M30 12 L16 24 2 12"),
-                              -- HE.div' (HA.class' "drop-menu fade-in effect")
                         ]
                   ]
 

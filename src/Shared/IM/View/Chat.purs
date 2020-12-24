@@ -24,7 +24,7 @@ import Shared.Setter as SS
 
 chat :: IMModel -> Html IMMessage
 chat model@{ chatting } =
-      HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, HA.tabindex 0, SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
+      HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
             linkModal model,
             imageModal model,
             chatBarInput model
@@ -54,14 +54,12 @@ imageModal {selectedImage, erroredFields} =
             HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed }) [
                   HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
             ],
-            HE.label_ "Caption",
-            HE.input [HA.placeholder "optional title", HA.id "image-form-caption", HA.type' "text", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
-            HE.div (HA.class' "image-buttons") [
-                  HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
-                  HE.svg [HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 300 300"] [
-                        HE.title "Send image",
-                        HE.path' (HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"),
-                        HE.polygon' (HA.points "99.76 213.29 125.13 153.56 99.76 93.81 241.34 153.56 99.76 213.29")
+            HE.div (HA.class' "image-form-controls") [
+                  HE.label_ "Caption",
+                  HE.input [HA.placeholder "optional title", HA.id "image-form-caption", HA.type' "text", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
+                  HE.div (HA.class' "image-buttons") [
+                        HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
+                        HE.svg [HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16"] $ sendButtonElements "Send file"
                   ]
             ]
       ]
@@ -80,7 +78,7 @@ chatBarInput model@{
  } = HE.fragment [
       emojiModal model,
       if toggleChatModal == ShowPreview then
-            HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview }) [
+            HE.div_  [
                   HE.div [HA.class' "chat-input-options"] [
                         HE.button [HA.onClick $ ToggleChatModal HideChatModal, HA.title "Exit preview"] "Exit"
                   ],
@@ -96,15 +94,15 @@ chatBarInput model@{
                         unorderedList,
                         orderedList,
                         linkButton toggleChatModal,
-                        HE.button [HA.class' "preview", HA.onClick $ ToggleChatModal ShowPreview, HA.title "Preview"] "Preview",
+                        previewButton,
                         HE.div (HA.class' "send-enter") [
-                              HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
+                              HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick SetSmallScreen, HA.id "message-enter"],
                               HE.label (HA.for "message-enter") "Send message on enter"
                         ]
                   ],
-                  HE.div [HA.class' "chat-input-area" ] [
+                  HE.div [HA.class' {"chat-input-area" : true, side: not messageEnter}  ] [
                         emojiButton toggleChatModal,
-                        HE.textarea' [
+                        HE.textarea' $ [
                               HA.rows 1,
                               HA.class' "chat-input",
                               HA.id "chat-input",
@@ -114,8 +112,7 @@ chatBarInput model@{
                               HA.onInput BeforeSendMessage,
                               HA.onInput' ResizeChatInput,
                               HA.autocomplete "off",
-                              HA.value $ DM.fromMaybe "" message,
-                              HA.autofocus true
+                              HA.value $ DM.fromMaybe "" message
                         ],
                         imageButton,
                         sendButton messageEnter
@@ -163,58 +160,77 @@ heading = HE.svg [HA.class' "svg-20", HA.onClick (Apply Heading), HA.viewBox "0 
 ]
 
 unorderedList :: Html IMMessage
-unorderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply UnorderedList), HA.viewBox "0 0 250 250" ] [
+unorderedList = HE.svg [HA.class' "svg-20", HA.onClick (Apply UnorderedList), HA.viewBox "0 0 16 16" ] [
       HE.title "Bulleted list",
-      HE.circle' [HA.cx "37.35", HA.cy "98.39", HA.r "15"],
-      HE.rect' [HA.x "78.65", HA.y "91.52", HA.width "200", HA.height "8"],
-      HE.circle' [HA.cx "37.35", HA.cy "150", HA.r "15"],
-      HE.rect' [HA.x "78.65", HA.y "143.13", HA.width "200", HA.height "8"],
-      HE.circle' [HA.cx "37.35", HA.cy "201.61", HA.r "15"],
-      HE.rect' [HA.x "78.65", HA.y "194.74", HA.width "200", HA.height "8"]
+      HE.rect' [HA.class' "strokeless", HA.x "5", HA.y "13.14", HA.width "11", HA.height "1"],
+      HE.rect' [HA.class' "strokeless", HA.x "5", HA.y "7.5", HA.width "11", HA.height "1"],
+      HE.rect' [HA.class' "strokeless", HA.x "5", HA.y "2.05", HA.width "11", HA.height "1"],
+      HE.circle' [HA.class' "strokeless", HA.cx "2", HA.cy "2.55", HA.r "2"],
+      HE.circle' [HA.class' "strokeless", HA.cx "2", HA.cy "8", HA.r "2"],
+      HE.circle' [HA.class' "strokeless", HA.cx "2", HA.cy "13.64", HA.r "2"]
 ]
 
 orderedList :: Html IMMessage
-orderedList = HE.svg [HA.class' "svg-other", HA.onClick (Apply OrderedList), HA.viewBox "0 0 250 250" ] [
+orderedList = HE.svg [HA.class' "svg-20", HA.onClick (Apply OrderedList), HA.viewBox "0 0 16 16" ] [
       HE.title "Ordered list",
-      HE.rect' [HA.x "76", HA.y "92", HA.width "200", HA.height "8"],
-      HE.rect' [HA.x "76", HA.y "190", HA.width "200", HA.height "8"],
-      HE.rect' [HA.x "76.09", HA.y "140.28", HA.width "200", HA.height "8"],
-      HE.path' [HA.d "M52,110.6H30.7v-5.32h6.74V89.16H30.7v-5a25.49,25.49,0,0,0,3-.17A8.09,8.09,0,0,0,36,83.41a3.91,3.91,0,0,0,1.67-1.33,4.11,4.11,0,0,0,.65-2h7.09v25.25H52Z"],
-      HE.path' [HA.d "M54,160.91H29v-5c1.91-1.33,3.83-2.73,5.75-4.22s3.47-2.77,4.62-3.85A21.39,21.39,0,0,0,43,143.63a6.68,6.68,0,0,0,1.1-3.52,3.9,3.9,0,0,0-1.41-3.22,6.27,6.27,0,0,0-4-1.14,12.28,12.28,0,0,0-4.15.78,19.22,19.22,0,0,0-4,2H29.8v-6.78a27.22,27.22,0,0,1,4.49-1.27,28.65,28.65,0,0,1,6-.63q6,0,9.16,2.4a8.07,8.07,0,0,1,3.15,6.81A10.77,10.77,0,0,1,51,144.54a22.82,22.82,0,0,1-4.62,5.36q-2,1.72-3.92,3.16c-1.32,1-2.26,1.64-2.81,2H54Z"],
-      HE.path' [HA.d "M50.9,196.94a6.63,6.63,0,0,1,1.67,2,6.4,6.4,0,0,1,.62,3.06,9.09,9.09,0,0,1-.89,4,8.36,8.36,0,0,1-2.73,3.19,13.54,13.54,0,0,1-4.23,2,22.39,22.39,0,0,1-5.91.68,33.57,33.57,0,0,1-6.81-.59A27.28,27.28,0,0,1,28,209.94v-6.7h.84a21.25,21.25,0,0,0,4.4,1.85,16.19,16.19,0,0,0,4.69.77,20.36,20.36,0,0,0,2.7-.19,5.93,5.93,0,0,0,2.47-.85,4,4,0,0,0,1.26-1.24,3.8,3.8,0,0,0,.47-2.1,3,3,0,0,0-.64-2,3.52,3.52,0,0,0-1.69-1A9.22,9.22,0,0,0,40,198l-2.75,0H35.46v-5.44h1.83c1.11,0,2.1,0,3-.1a7.24,7.24,0,0,0,2.19-.48,3.26,3.26,0,0,0,1.42-1,3.21,3.21,0,0,0,.47-1.89,2.23,2.23,0,0,0-.49-1.49,3.59,3.59,0,0,0-1.25-.89,6.76,6.76,0,0,0-2-.49,19,19,0,0,0-2-.12,16.35,16.35,0,0,0-4.38.66,20.56,20.56,0,0,0-4.56,1.92h-.8V182a32.54,32.54,0,0,1,4.79-1.3,30.57,30.57,0,0,1,6.13-.62,25,25,0,0,1,5.29.5A13.58,13.58,0,0,1,48.88,182a6.9,6.9,0,0,1,2.62,2.44,6.41,6.41,0,0,1,.86,3.36,6.91,6.91,0,0,1-1.65,4.53,7.39,7.39,0,0,1-4.35,2.55v.29a10.94,10.94,0,0,1,2.31.57A7.31,7.31,0,0,1,50.9,196.94Z"]
+      HE.rect' [HA.class' "strokeless", HA.x "4.94", HA.y "13.04", HA.width "11.06", HA.height "1"],
+      HE.rect' [HA.class' "strokeless", HA.x "4.94", HA.y "7.5", HA.width "11.06", HA.height "1"],
+      HE.rect' [HA.class' "strokeless", HA.x "4.94", HA.y "1.95", HA.width "11.06", HA.height "1"],
+      HE.rect' [HA.class' "strokeless", HA.x "1.39", HA.y "0.68", HA.width "0.71", HA.height "0.71"],
+      HE.rect' [HA.class' "strokeless", HA.x "2.11", HA.width "0.75", HA.height "4.17"],
+      HE.rect' [HA.class' "strokeless", HA.x "1.4", HA.y "4.18", HA.width "2.16", HA.height "0.76"],
+      HE.polygon' [HA.class' "strokeless", HA.points "1.76 9.77 1.76 9.06 1.05 9.06 1.05 10.48 1.76 10.48 1.76 10.48 3.92 10.48 3.92 9.77 1.76 9.77"],
+      HE.polygon' [HA.class' "strokeless", HA.points "1.76 6.23 3.18 6.23 3.18 7.64 3.89 7.64 3.89 6.23 3.18 6.23 3.18 5.52 1.76 5.52 1.76 6.22 1.05 6.22 1.05 6.93 1.76 6.93 1.76 6.23"],
+      HE.rect' [HA.class' "strokeless", HA.x "2.47", HA.y "7.65", HA.width "0.71", HA.height "0.71"],
+      HE.rect' [HA.class' "strokeless", HA.x "1.76", HA.y "8.36", HA.width "0.71", HA.height "0.71"],
+      HE.rect' [HA.class' "strokeless", HA.x "1.07", HA.y "11.73", HA.width "0.72", HA.height "0.72"],
+      HE.rect' [HA.class' "strokeless", HA.x "1.78", HA.y "11.02", HA.width "1.43", HA.height "0.72"],
+      HE.polygon' [HA.class' "strokeless" ,HA.points "1.78 14.56 1.07 14.56 1.07 15.28 1.78 15.28 1.78 15.28 1.78 16 3.21 16 3.21 15.28 1.78 15.28 1.78 14.56"],
+      HE.polygon' [HA.class' "strokeless", HA.points "3.92 11.74 3.2 11.74 3.2 13.16 1.78 13.16 1.78 13.87 3.2 13.87 3.2 15.28 3.92 15.28 3.92 13.85 3.21 13.85 3.21 13.17 3.92 13.17 3.92 11.74"]
 ]
 
 linkButton :: ShowChatModal -> Html IMMessage
-linkButton toggle = HE.svg [HA.class' "svg-other link-button", HA.onClick <<< ToggleChatModal $ if toggle == ShowLinkForm then HideChatModal else ShowLinkForm, HA.viewBox "0 0 300 300" ] [
+linkButton toggle = HE.svg [HA.class' "svg-20 link-button", HA.onClick <<< ToggleChatModal $ if toggle == ShowLinkForm then HideChatModal else ShowLinkForm, HA.viewBox "0 0 16 16"] [
       HE.title "Add link",
-      HE.path' [HA.d "M127.14,181.74H44.08A22.1,22.1,0,0,1,22,159.66V140.34a22.1,22.1,0,0,1,22.08-22.08h83.06a22.12,22.12,0,0,1,22.1,22.08v19.32A22.12,22.12,0,0,1,127.14,181.74ZM44.08,123.1a17.25,17.25,0,0,0-17.23,17.24v19.32A17.25,17.25,0,0,0,44.08,176.9h83.06a17.26,17.26,0,0,0,17.25-17.24V140.34a17.26,17.26,0,0,0-17.25-17.24Z"],
-      HE.path' [HA.d "M255.92,181.74H172.86a22.12,22.12,0,0,1-22.1-22.08V140.34a22.12,22.12,0,0,1,22.1-22.08h83.06A22.1,22.1,0,0,1,278,140.34v19.32A22.1,22.1,0,0,1,255.92,181.74ZM172.86,123.1a17.26,17.26,0,0,0-17.25,17.24v19.32a17.26,17.26,0,0,0,17.25,17.24h83.06a17.25,17.25,0,0,0,17.23-17.24V140.34a17.25,17.25,0,0,0-17.23-17.24Z"],
-      HE.rect' [HA.x "51.2", HA.y "139.8", HA.width "199", HA.height "23", HA.rx "0.4"]
+      HE.path' [HA.class' "strokeless", HA.d "M15.12,6l-.21-.2-.12-.09a4,4,0,0,0-.49-.3,2.79,2.79,0,0,0-.55-.2,1.5,1.5,0,0,0-.29-.06,2.32,2.32,0,0,0-.46,0H10a3.81,3.81,0,0,1,.75.75H13a2.26,2.26,0,0,1,0,4.52H9a2.11,2.11,0,0,1-1-.24,2.31,2.31,0,0,1-.7-.54,2.28,2.28,0,0,1,0-2.95H6.39l0,0h0a2.87,2.87,0,0,0-.18.4,2.73,2.73,0,0,0-.18,1,3.5,3.5,0,0,0,.18,1,3.52,3.52,0,0,0,.18.4h0a.25.25,0,0,1,0,.07l.19.3.19.21.1.11.14.13.18.16.24.16.26.14.29.12H8l.26.08a1.36,1.36,0,0,0,.29.06,3.42,3.42,0,0,0,.46,0h4a3.42,3.42,0,0,0,.46,0,1.5,1.5,0,0,0,.29-.06,3.62,3.62,0,0,0,.55-.2,4,4,0,0,0,.49-.3l.12-.09.21-.2a3,3,0,0,0,0-4.25Z"],
+      HE.path' [HA.class' "strokeless", HA.d "M5.31,10.35H3A2.26,2.26,0,0,1,3,5.83H7a2.24,2.24,0,0,1,1,.24,2.34,2.34,0,0,1,.7.55,2.25,2.25,0,0,1,.54,1.47,2.59,2.59,0,0,1-.42,1.48h.83a7.09,7.09,0,0,0,.25-.73L10,8.55a3.44,3.44,0,0,0,0-.46l0-.46L9.9,7.34S9.8,7.06,9.76,7s-.1-.25-.12-.28a.93.93,0,0,0-.05-.1c-.06-.1-.12-.2-.19-.3l-.09-.11L9.11,6A1.85,1.85,0,0,0,9,5.83H9l-.18-.15a4.14,4.14,0,0,0-.5-.3A2.52,2.52,0,0,0,8,5.26H8l-.26-.08a1.36,1.36,0,0,0-.29-.06,2.32,2.32,0,0,0-.46,0H3a2.32,2.32,0,0,0-.46,0,1.5,1.5,0,0,0-.29.06,2.58,2.58,0,0,0-.55.2,4,4,0,0,0-.49.3l-.12.09a2.59,2.59,0,0,0-.4.41L.6,6.29a2.88,2.88,0,0,0-.3.5,2.6,2.6,0,0,0-.21.55L0,7.63a3.55,3.55,0,0,0,0,.46l0,.46.06.29L.3,9.4a2.48,2.48,0,0,0,.3.49L.69,10l.19.21.21.2.12.09a4,4,0,0,0,.49.3,3.27,3.27,0,0,0,.55.2,1.5,1.5,0,0,0,.29.06,3.42,3.42,0,0,0,.46,0H6.06A3.6,3.6,0,0,1,5.31,10.35Z"]
 ]
 
 emojiButton :: ShowChatModal -> Html IMMessage
-emojiButton toggle = HE.svg [HA.onClick <<< ToggleChatModal $ if toggle == ShowEmojis then HideChatModal else ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 300 300", SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
+emojiButton toggle = HE.svg [HA.onClick <<< ToggleChatModal $ if toggle == ShowEmojis then HideChatModal else ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 16 16", SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
       HE.title "Emojis",
-      HE.path' [HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"],
-      HE.ellipse' [HA.cx "97.68", HA.cy "125.87", HA.rx "10.67", HA.ry "11.43"],
-      HE.ellipse' [HA.cx "201.81", HA.cy "123.84", HA.rx "10.67", HA.ry "11.43"],
-      HE.path' [HA.d "M148.55,245.05H147a93,93,0,0,1-54.54-19.22c-24.23-18.93-34-54.38-34.08-54.74l-.17-.63h.66l183,.38,0,.54c-1.54,21.57-25.48,44-30.26,48.34C193,236.31,171.27,245.05,148.55,245.05Zm-89.06-73.6C60.92,176.3,70.85,207.7,93,225c28.58,22.32,77.65,30,117.83-6.08,13.55-12.15,28.43-30.84,29.89-47.13Z"]
+      HE.path' [HA.class' "strokeless", HA.d "M5.16,7.53a.71.71,0,1,0-.66-.71A.69.69,0,0,0,5.16,7.53Z"],
+      HE.path' [HA.class' "strokeless", HA.d "M10.8,7.53a.71.71,0,1,0-.66-.71A.68.68,0,0,0,10.8,7.53Z"],
+      HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0Zm0,15.5A7.5,7.5,0,1,1,15.47,8,7.51,7.51,0,0,1,8,15.45Z"],HE.path' [HA.class' "strokeless", HA.d "M2.34,9.19l0,.15a5.77,5.77,0,0,0,11.19,0l0-.15ZM8,13.45a5.47,5.47,0,0,1-5.31-4H13.27A5.49,5.49,0,0,1,8,13.45Z"]
 ]
 
 imageButton :: Html IMMessage
-imageButton = HE.svg [HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class' "svg-32 attachment", HA.viewBox "0 0 512 512"] [
-      HE.path' $ HA.d "M153.456,472A136,136,0,0,1,57.289,239.834l196.6-196.6L276.52,65.857l-196.6,196.6A104,104,0,0,0,227,409.539L434.912,201.622A72,72,0,0,0,333.088,99.8L125.171,307.716a40,40,0,1,0,56.568,56.568L361.373,184.652,384,207.279,204.367,386.911A72,72,0,1,1,102.544,285.089L310.461,77.172A104,104,0,1,1,457.539,224.249L249.622,432.166A135.1,135.1,0,0,1,153.456,472Z"
+imageButton = HE.svg [HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class' "svg-32 attachment", HA.viewBox "0 0 16 16"] [
+      HE.path' [HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z"]
 ]
 
 sendButton :: Boolean -> Html IMMessage
-sendButton messageEnter = HE.svg [HA.class' { "send-button svg-50": true, hidden: messageEnter }, HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 300 300"] [
-      HE.title "Send message",
-      HE.path' (HA.d "M150,278.5A128.5,128.5,0,1,1,278.5,150,128.64,128.64,0,0,1,150,278.5Zm0-256A127.5,127.5,0,1,0,277.5,150,127.65,127.65,0,0,0,150,22.5Z"),
-      HE.polygon' (HA.points "99.76 213.29 125.13 153.56 99.76 93.81 241.34 153.56 99.76 213.29")
+sendButton messageEnter = HE.svg [HA.class' { "send-button svg-32": true, hidden: messageEnter }, HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16"] $ sendButtonElements "Send message"
+
+sendButtonElements :: String -> Array (Html IMMessage)
+sendButtonElements title = [
+      HE.title title,
+      HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.25A7.25,7.25,0,1,1,15.25,8,7.26,7.26,0,0,1,8,15.25Z"],
+      HE.polygon' [HA.class' "strokeless", HA.points "4.02 4.02 6.06 7.99 4.02 12.01 13.63 8 4.02 4.02"]
+]
+
+previewButton :: Html IMMessage
+previewButton = HE.svg [HA.class' "svg-20", HA.onClick $ ToggleChatModal ShowPreview, HA.viewBox "0 0 16 16" ][
+      HE.title "Preview",
+      HE.path' [HA.class' "strokeless", HA.d "M1,11.05V3.12a0,0,0,0,1,0,0H12.43V6l1,.63v-2L16,2.07H.5A.51.51,0,0,0,0,2.6v8.85c0,.29.22.62.5.62H6.58l-.71-1Z"],
+      HE.rect' [HA.class' "strokeless", HA.x "2.42", HA.y "7.02", HA.width "3.99", HA.height "1.02"],
+      HE.rect' [HA.class' "strokeless", HA.x "2.42", HA.y "5.11", HA.width "5.4", HA.height "0.98"],
+      HE.path' [HA.class' "strokeless", HA.d "M10.26,8.36a1.37,1.37,0,1,0,1.37,1.37A1.37,1.37,0,0,0,10.26,8.36Z"],
+      HE.path' [HA.class' "strokeless", HA.d "M15.09,13.55h0l-.54-.48L13,11.66a3.34,3.34,0,0,0-2.73-5.27A3.35,3.35,0,0,0,7.11,8.58a3.51,3.51,0,0,0-.19,1.15,3.35,3.35,0,0,0,3.34,3.35,3.31,3.31,0,0,0,2.2-.85l1.48,1.33.55.5.83.75a.42.42,0,0,0,.28.1.43.43,0,0,0,.28-.11h0a.36.36,0,0,0,0-.53Zm-4.83-1.22a2.6,2.6,0,0,1-2.59-2.6,3,3,0,0,1,.14-.89A2.69,2.69,0,0,1,9,7.48a2.53,2.53,0,0,1,1.28-.34,2.6,2.6,0,0,1,0,5.19Z"]
 ]
 
 emojiModal  :: IMModel -> Html IMMessage
-emojiModal { toggleChatModal }= HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory
+emojiModal { toggleChatModal } = HE.div [HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis }] <<< HE.div [HA.class' "emojis", HA.onClick' SetEmoji] $ map toEmojiCategory SIE.byCategory
       where toEmojiCategory (Tuple name pairs) = HE.div_ [
                   HE.div (HA.class' "duller") name,
                   HE.div_ $ map (HE.span_ <<< _.s) pairs

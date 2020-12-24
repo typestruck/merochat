@@ -14,6 +14,7 @@ configuration.json
 old/
 fix
 todo
+dce-output/
 .cache/
 .spago/
 dist/

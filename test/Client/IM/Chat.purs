@@ -83,6 +83,12 @@ tests = do
 
             let { suggestions : modelSuggestions } = model
 
+            TU.test "beforeSendMessage unsets shouldSendMessage if message is empty" do
+                  TUA.equal 90 933
+
+            TU.test "beforeSendMessage sets shouldSendMessage if there is a selected image" do
+                  TUA.equal 50 933
+
             TU.test "beforeSendMessage adds new contact from suggestion" do
                   let   model' = model {
                               suggestions = suggestion : modelSuggestions,

@@ -40,6 +40,7 @@ template {contacts, suggestions, user} = do
                   freeToFetchChatHistory:true,
                   suggestionsPage: 0,
                   errorMessage: "",
+                  smallScreen: false,
                   initialScreen: true,
                   enableNotificationsVisible: false,
                   messageEnter: true,

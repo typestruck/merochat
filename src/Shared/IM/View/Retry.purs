@@ -16,9 +16,8 @@ retryForm failedText message = [
       HE.text failedText,
       HE.span [HA.class' "retry-button", HA.onClick message ] [
             HE.text "Retry",
-            HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512"] [
-                  HE.circle' [HA.cx "256", HA.cy "256", HA.r "240", HA.opacity "0.5"],
-                  HE.path' [HA.d "M332,327.128V211.657a114.5,114.5,0,1,0-229,0V295h42V211.657a72.5,72.5,0,0,1,145,0V327.724l-58.147-58.147-29.7,29.7L310.7,407.823,419.249,299.276l-29.7-29.7Z"]
+            HE.svg [HA.class' "svg-16", HA.viewBox "0 0 16 16"] [
+                  HE.path' [HA.class' "strokeless", HA.d "M13.75,8l1.76-2.69-1.87.39,0,0a6.12,6.12,0,0,0-8-3.27,6.11,6.11,0,0,0,0,11.29,6.1,6.1,0,0,0,8-3.33A.37.37,0,1,0,13,10,5.4,5.4,0,0,1,10.05,13a5.37,5.37,0,1,1,2.83-7.12l-1.83.38Z"]
             ]
       ]
 ]

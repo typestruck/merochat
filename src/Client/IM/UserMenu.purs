@@ -36,11 +36,13 @@ toggleModal mToggle model =
             ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.bundle.js" "#karma-leaderboard-root"
             ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.bundle.js" "#help-root"
             modal -> F.noMessages $ model {
-                  toggleModal = modal
+                  toggleModal = modal,
+                  toggleContextMenu = HideContextMenu
             }
       where showTab f toggle file root =
                   model {
                         toggleModal = toggle,
+                        toggleContextMenu = HideContextMenu,
                         failedRequests = []
                   } :> [
                         CCN.retryableResponse (ToggleModal toggle) (SetModalContents (Just file) root) (f {})

@@ -10,6 +10,7 @@ import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.IM.Svg as SIS
 import Shared.Avatar as SA
 
 suggestions :: IMModel -> Html IMMessage
@@ -17,9 +18,7 @@ suggestions { contacts, suggesting, chatting, suggestions }
       | DM.isJust chatting =
             HE.div (HA.class' "side-suggestions-container") [
                   HE.div [HA.class'"side-suggestion back-side-suggestion", HA.onClick ResumeSuggesting, HA.title "Browse chat suggestions again"] [
-                        HE.svg [HA.class' "svg-back-suggestions", HA.viewBox "0 0 30 30"][
-                              HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"]
-                        ],
+                        SIS.arrow [HA.class' "svg-back-suggestions"],
                         HE.span (HA.class' "back-suggestions") "Back to chat suggestions"
                   ]
             ]

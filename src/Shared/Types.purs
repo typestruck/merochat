@@ -208,6 +208,7 @@ type IM = (
       --indexes
       suggesting :: Maybe Int,
       chatting :: Maybe Int,
+      smallScreen :: Boolean,
       --visibility switches
       initialScreen :: Boolean, --used on mobile to switch screens
       hasTriedToConnectYet :: Boolean,
@@ -289,7 +290,7 @@ data RetryableRequest =
 data IMMessage =
       --history
       CheckFetchHistory |
-      DisplayHistory (Array HistoryMessage)  |
+      DisplayHistory (Array HistoryMessage)|
       --user menu
       ToggleInitialScreen |
       Logout |
@@ -319,7 +320,7 @@ data IMMessage =
       SendMessage DateTimeWrapper |
       SetMessageContent (Maybe Int) String |
       Apply Markup |
-      ToggleMessageEnter |
+      SetSmallScreen |
       SetEmoji Event |
       InsertLink |
       --main

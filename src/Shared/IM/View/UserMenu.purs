@@ -7,17 +7,18 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
+import Shared.IM.Svg as SIS
 
 userMenu :: IMModel -> Html IMMessage
-userMenu model@{ toggleContextMenu } =
+userMenu model@{ toggleContextMenu, smallScreen} =
       HE.div (HA.class' "settings") [
             header model,
             HE.div [HA.class' "outer-user-menu"] [
-                  HE.svg [HA.id "user-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
-                        HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
-                        HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
-                        HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
-                  ],
+                  HE.svg [HA.id "user-context-menu", HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 16 16"] (SIS.contextMenuElements <> [
+                        HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "7", HA.width "15.93", HA.height "2"],
+                        HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "2.5", HA.width "15.93", HA.height "2"],
+                        HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "11.5", HA.width "15.93", HA.height "2"]
+                  ]),
                   HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowUserContextMenu }][
                         HE.div (HA.class' "mobile-profile-header") $ header model,
                         HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile] [

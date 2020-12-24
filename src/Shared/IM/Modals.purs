@@ -3,6 +3,7 @@ module Shared.IM.View.Modals where
 import Prelude
 import Shared.Types
 
+import Shared.IM.Svg as SIA
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -22,8 +23,7 @@ modals { toggleModal: toggle, failedRequests} =
             else
                   HE.div (HA.class' "modal-placeholder") [
                         HE.div (HA.class' "modal-menu-mobile") [
-                              HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal] $
-                                    HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
+                              SIA.arrow [HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal],
                               HE.strong_ $ show toggle
                         ],
                         HE.div (HA.class' "modal-menu") [

@@ -20,6 +20,10 @@ body {
     list-style-type: disc;
 }
 
+.profile-description ol, .profile-description ul, .description-message ul, .description-message ol, .message ol, .message ul {
+    padding-left: inherit;
+}
+
 .profile-description ul li, .description-message ul li, .message ul li {
     display: list-item;
 }
@@ -74,6 +78,10 @@ body {
     justify-content: center;
 }
 
+#user-context-menu rect {
+    display: none;
+}
+
 .show-profile-icon {
     align-self: center;
     width: 13px;
@@ -84,6 +92,10 @@ body {
 
 .flexed {
     display: flex;
+}
+
+.contact-list-last-message a, .message-content a {
+    text-decoration: underline;
 }
 
 .side-suggestions-container {
@@ -111,6 +123,11 @@ body {
     margin: 0px 20px 10px 20px;
     position: relative;
     justify-content: end;
+}
+
+.chat-input-area, .chat-input-options {
+    position: relative;
+    z-index: 2;
 }
 
 .svg-8 {
@@ -370,10 +387,10 @@ body {
 .message-content::before {
     content: "\00a0";
     display: block;
-    height: 16px;
+    height: 14px;
     position: absolute;
-    width: 20px;
-    top:0px;
+    width: 17px;
+    top: 0px;
 }
 
 .no-avatar-message .message-content::before {
@@ -393,8 +410,8 @@ body {
 .recipient-message .message-content::before {
     background-color: #373737;
     top: 0px;
-    left: -5px;
-    transform: rotate( 50deg) skew( -38deg);
+    left: -6px;
+    transform: rotate( 52deg) skew( -36deg);
 }
 
 .sender-message .message-content::before {
@@ -408,32 +425,22 @@ body {
     flex-grow: 1;
     scrollbar-width: thin;
     flex-flow: column;
-    justify-content: flex-end;
-    position: relative;
-}
-
-.message-history-wrapper {
     overflow-y: auto;
-    top: 10px;
-    bottom: 15px;
-    right: 20px;
-    scrollbar-width: thin;
-    left: 20px;
-    position: absolute;
-    display: flex;
-    flex-flow: column;
-    /* justify-content: end; */
+    padding: 10px;
 }
 
-.message-history-wrapper> :first-child {
+.message-history> :first-child {
     margin-top: auto !important;
+}
+
+.message-history> :last-child {
+    padding-bottom: 10px;
 }
 
 .message {
     flex-direction: column;
     display: flex;
     margin: 2px;
-    /* align-items: center; */
 }
 
 .message.recipient-message, .message.sender-message {
@@ -640,9 +647,7 @@ svg.toolbar-action {
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     background: #2d2d2d;
-    padding: 10px;
-    padding-right: 53px;
-    padding-left: 42px;
+    padding: 10px 42px;
     border: 1px solid #b5b7b7;
     border-top: none;
 }
@@ -657,8 +662,14 @@ svg.toolbar-action {
     display: none;
 }
 
-.side .chat-input {
-    padding-right: 102px;
+.send-box .side .chat-input {
+    padding-right: 75px;
+}
+
+.tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .chat-input:placeholder-shown {
@@ -780,7 +791,7 @@ svg.toolbar-action {
     display: block;
     word-wrap: break-word;
     max-width: 45em;
-    margin:5px 0px;
+    margin: 5px 0px;
 }
 
 .message p img {
@@ -883,7 +894,6 @@ input:not(type=button):focus {
     position: absolute;
     top: 50%;
     margin-top: -20px;
-    stroke-width: 3;
     z-index: 5;
     background: #2d2d2d;
 }
@@ -892,8 +902,8 @@ input:not(type=button):focus {
     right: 13px;
 }
 
-.side .attachment {
-    right: 70px;
+.send-box .side .attachment {
+    right: 47px;
 }
 
 .send-button {
@@ -952,6 +962,10 @@ input:not(type=button):focus {
 .menu-item-heading {
     font-size: 1.1em;
     color: rgb(238, 238, 238);
+}
+
+.buttons button {
+    font-size: 1em;
 }
 
 .outer-user-menu {
@@ -1032,7 +1046,7 @@ select {
     }
 }
 
-.message-history-wrapper .loading {
+.message-history .loading {
     align-self: center;
     margin: 30px 0;
 }
@@ -1075,13 +1089,10 @@ select {
 
 .emoji-wrapper {
     background-color: #2d2d2d;
-    position: absolute;
     border-radius: 3px;
     color: inherit;
-    bottom: 115px;
-    /* margin-right: 20px; */
     border-radius: 3px;
-    z-index: 5;
+    height: 300px;
     word-wrap: anywhere
 }
 
@@ -1091,20 +1102,8 @@ select {
     padding-top: 5px;
     max-height: 300px;
     overflow-y: scroll;
+    scrollbar-width: thin;
     word-wrap: anywhere
-}
-
-.emoji-wrapper::before {
-    content: "\00a0";
-    display: block;
-    height: 31px;
-    position: absolute;
-    width: 30px;
-    background-color: #2d2d2d;
-    bottom: -13px;
-    left: 15px;
-    margin-left: -15px;
-    transform: rotate(88deg) skew(37deg);
 }
 
 .emojis .duller {
@@ -1121,29 +1120,24 @@ select {
 }
 
 .modal-form {
-    position: absolute;
+    /* position: absolute; */
     background: #2d2d2d;
     padding: 20px;
     display: flex;
     color: inherit;
     flex-direction: column;
-    z-index: 5;
+    /* z-index: 5; */
     border-radius: 3px;
 }
 
 .link-form {
-    height: 270px;
-    bottom: 115px;
-    margin-left: 27px;
+    height: 300px;
     padding: 30px 40px;
 }
 
 .image-form {
     padding: 60px;
-    max-height: 900px;
-    left: 20px;
-    right: 20px;
-    bottom: 165px;
+    max-height: 100vh;
 }
 
 .image-form-image {
@@ -1156,34 +1150,8 @@ select {
     max-width: 90%;
 }
 
-.image-form::before {
-    content: "\00a0";
-    display: block;
-    height: 31px;
-    position: absolute;
-    width: 30px;
-    background-color: #2d2d2d;
-    bottom: -13px;
-    right: 15px;
-    margin-right: -15px;
-    transform: rotate(93deg) skew(-37deg);
-}
-
 .card .link-button, .card .preview {
     display: none;
-}
-
-.link-form::before {
-    content: "\00a0";
-    display: block;
-    height: 31px;
-    position: absolute;
-    width: 30px;
-    background-color: #2d2d2d;
-    bottom: -15px;
-    left: 50%;
-    margin-left: -15px;
-    transform: rotate( 139deg);
 }
 
 .modal-form label {
@@ -1601,9 +1569,20 @@ select {
     height: 69px;
 }
 
+.image-form-controls {
+    z-index: 2;
+    display: flex;
+    background: #2d2d2d;
+    flex-direction: column;
+}
+
 /* dry this shite  */
 
-@media (max-width:1365px) {
+.suggestion.old~.message-history {
+    display: none;
+}
+
+@media (max-width:1279px) {
     .im {
         display: flex;
         overflow-x: hidden
@@ -1620,6 +1599,16 @@ select {
         order: 0;
         min-width: 100%;
         min-height: 100%;
+    }
+    .message-history> :first-child {
+        margin-top: unset !important;
+    }
+    .message-history .retry.invisible {
+        visibility: unset;
+        display: none;
+    }
+    .suggestion-box-error {
+        text-align: center;
     }
     .profile-contact .avatar-profile, .avatar-contact-list, .avatar-message {
         width: 36px;
@@ -1640,6 +1629,9 @@ select {
     .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
         display: none;
     }
+    .suggestion-box .suggestion.old {
+        flex-grow: 1;
+    }
     .mobile-profile-header {
         display: flex;
         padding: 5px;
@@ -1653,6 +1645,7 @@ select {
         display: flex;
         justify-content: space-around;
         padding: 5px;
+        padding-top: 10px;
         cursor: pointer;
     }
     .avatar-settings {
@@ -1725,10 +1718,13 @@ select {
     .suggestion-input {
         margin: 5px
     }
+    .chat-input, .chat-input:focus {
+        border-radius: 3px;
+        border-top: 1px solid #b5b7b7;
+    }
     .suggestion-input .chat-input {
         min-height: 0;
         max-height: 100px;
-        border-top: 1px solid #b5b7b7;
         border-radius: 5px;
         padding-left: 34px;
     }
@@ -1741,24 +1737,10 @@ select {
         display: block;
         right: 5px;
     }
-    .suggestion-input .chat-input-options {
+    .chat-input-options {
         display: none;
     }
-    .send-box .chat-input-options, .suggestion-input:focus-within .chat-input-options {
-        display: flex;
-    }
-    .chat-input:focus {
-        border-top: none;
-        border-top-left-radius: 0px;
-        border-top-right-radius: 0px;
-    }
-    #message-history-wrapper {
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        bottom: 0px;
-    }
-    .side .attachment {
+    .send-box .side .attachment {
         right: 38px
     }
     .profile-contact-top .svg-back-card {
@@ -1767,6 +1749,7 @@ select {
     .send-box {
         margin: 0;
         padding: 10px;
+        padding-bottom: 5px;
     }
     .message-content {
         padding: 1px 10px;
@@ -1859,21 +1842,82 @@ select {
         width: 30px;
         height: 30px
     }
-
-.profile-tags,    .tags-description {
+    .profile-tags, .tags-description {
         max-width: 100%;
     }
     .tag {
         word-break: break-word;
         width: auto;
     }
-
     .settings .outer-user-menu {
         margin-left: unset;
     }
+    .chat-input {
+        padding-right: 40px;
+    }
+    .send-box .side .chat-input {
+        padding-right: 69px;
+        padding-left: 34px;
+    }
+    .send-box .side .attachment {
+        right: 37px
+    }
+    .confirmation {
+        margin-left: 0;
+        width: unset;
+        left: 5px;
+        right: 5px;
+        margin-top: -130px;
+        padding: 10px;
+    }
+    .message-history, .message-history> :last-child {
+        padding-bottom: 0px;
+    }
+    .image-form {
+        padding: 10px;
+        bottom: 0;
+        z-index: 20;
+        left: 0;
+        right: 0;
+        height: 100vh;
+        justify-content: flex-end;
+        position: absolute;
+    }
+    .image-form-image {
+        margin: 5px;
+        position: sticky;
+        top: 0;
+        margin-bottom: 10px;
+        align-self: unset;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+    }
+    .image-form-image img {
+        max-width: 90%;
+        max-height: 90%;
+    }
+    .emojis {
+        padding: 5px;
+        height: 300px;
+    }
+    #user-context-menu circle {
+        display: none;
+    }
+    #user-context-menu rect {
+        display: block;
+    }
+    .svg-user-menu-context {
+        width: 20px;
+        height: 20px;
+    }
 }
 
-@media (min-width:1366px) and (max-width:1919px) {
+@media (min-width:1280px) and (max-width:1919px) {
+    .back-side-suggestion {
+        padding: 14px 6px;
+    }
     .card-sides {
         margin: 10px 0;
         width: calc(100vw * 0.6398243045387994);
@@ -1897,6 +1941,14 @@ select {
     }
     .description-message, .profile-description, .profile-edition-description {
         width: 595px;
+    }
+    .avatar-settings, .profile-contact .avatar-profile, .avatar-contact-list, .avatar-message {
+        width: 44px;
+        height: 44px;
+    }
+    .avatar-contact-list-div {
+        min-width: 44px;
+        min-height: 44px;
     }
 }
 
@@ -1965,6 +2017,9 @@ select {
     .contact {
         padding: 10px;
     }
+    .message-history> :last-child {
+        padding-bottom: 20px;
+    }
     .svg-back-suggestions {
         margin-right: 28px;
     }
@@ -1981,7 +2036,6 @@ select {
     .svg-other {
         width: 20px;
         height: 20px;
-
     }
     .card-top-header {
         margin: 40px 0px;
@@ -1989,4 +2043,9 @@ select {
     .emoji-access {
         margin-top: -16px
     }
+}
+
+.link-button {
+    height: 20px;
+    width: 20px;
 }

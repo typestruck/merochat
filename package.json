@@ -11,7 +11,10 @@
     "test": "test"
   },
   "scripts": {
-    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --inline --hot "
+    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
+    "watch-slim": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress  --config webpack.production.config.js",
+    "build": "spago build --purs-args '--codegen corefn,js'",
+    "shake": "zephyr -f Client.IM.Main.main"
   },
   "author": "Eduardo Asafe<e@asafe.dev>",
   "license": "AGPL-3.0-or-later",
@@ -37,6 +40,7 @@
     "purescript-psa": "^0.7.3",
     "purs-loader": "^3.7.1",
     "webpack": "^4.44.1",
+    "webpack-bundle-analyzer": "^4.3.0",
     "webpack-cli": "^3.3.12"
   },
   "optionalDependencies": {

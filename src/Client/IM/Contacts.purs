@@ -30,7 +30,7 @@ import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
 resumeChat :: PrimaryKey -> IMModel -> MoreMessages
-resumeChat searchID model@{ contacts, chatting } =
+resumeChat searchID model@{ contacts, chatting, smallScreen } =
       let   index = DA.findIndex ((searchID == _) <<< _.id <<< _.user) contacts
             { shouldFetchChatHistory, history, user: { id } } = SIC.chattingContact contacts index
       in
@@ -44,11 +44,13 @@ resumeChat searchID model@{ contacts, chatting } =
                         initialScreen = false,
                         selectedImage = Nothing,
                         failedRequests = []
-                  } :> [
+                  } :> ([
                         CIF.next UpdateReadCount,
                         CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory,
-                        CIF.next $ FocusInput "#chat-input"
-                  ]
+                        liftEffect do
+                              CIS.scrollLastMessage
+                              pure Nothing
+                  ] <> if smallScreen then [] else [CIF.next $ FocusInput "#chat-input"])
 
 markRead :: WebSocket -> IMModel -> MoreMessages
 markRead webSocket =
@@ -76,12 +78,11 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
           messagesRead = DA.mapMaybe unreadID  history
       in
             if DA.null messagesRead then
-                  CIF.nothingNext model $ liftEffect scroll
+                  F.noMessages model
              else
                   let updatedModel@{ contacts } = updateContacts contactRead
                   in CIF.nothingNext updatedModel $ liftEffect do
                         confirmRead messagesRead
-                        scroll
                         alertUnread contacts
 
       where unreadID { recipient, id, status }
@@ -98,8 +99,6 @@ updateReadHistory model { webSocket, chatting, userID, contacts } =
 
             confirmRead messages = CIW.sendPayload webSocket $ ReadMessages { ids: messages }
 
-            scroll = CIS.scrollLastMessage
-
             alertUnread contacts = CIUN.updateTabCount userID contacts
 
 checkFetchContacts :: IMModel -> MoreMessages
@@ -107,7 +106,7 @@ checkFetchContacts model@{ contacts, freeToFetchContactList }
       | freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
       where getScrollBottom = liftEffect do
-                  element <- CCD.unsafeQuerySelector "#message-history-wrapper"
+                  element <- CCD.unsafeQuerySelector "#message-history"
                   top <- WDE.scrollTop element
                   height <- WDE.scrollHeight element
                   offset <- WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element

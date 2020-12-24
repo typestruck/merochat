@@ -12,6 +12,7 @@ import Client.IM.Scroll as CIS
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
+import Effect.Class.Console as EC
 import Flame ((:>))
 import Flame as F
 import Shared.IM.Contact as SIC
@@ -23,7 +24,7 @@ checkFetchHistory model@{ freeToFetchChatHistory }
       | freeToFetchChatHistory = model :> [ Just <<< SpecialRequest <<< FetchHistory <$> getScrollTop ]
 
       where getScrollTop = liftEffect do
-                  element <- CCD.unsafeQuerySelector "#message-history-wrapper"
+                  element <- CCD.unsafeQuerySelector "#message-history"
                   (_ < 1.0) <$> WDE.scrollTop element
 
       | otherwise = F.noMessages model
@@ -38,20 +39,22 @@ fetchHistory shouldFetch model@{ chatting, contacts }
       | otherwise = F.noMessages model
 
 displayHistory :: Array HistoryMessage -> IMModel -> NoMessages
-displayHistory chatHistory model@{ chatting, contacts } =
-      let   contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
-            updatedModel = model {
-                  freeToFetchChatHistory = true,
-                  contacts = SU.fromJust do
-                        index <- chatting
-                        let contact' = contact {
-                              shouldFetchChatHistory = false,
-                              history = chatHistory <> history
-                        }
-                        DA.updateAt index contact' contacts
-            }
-      in
-            if shouldFetchChatHistory then
-                  CIF.nothingNext updatedModel $ liftEffect CIS.scrollLastMessage
-             else
-                  F.noMessages updatedModel
+displayHistory chatHistory model@{ chatting, contacts }
+      | DA.null chatHistory = F.noMessages model
+      | otherwise =
+            let   contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
+                  updatedModel = model {
+                        freeToFetchChatHistory = true,
+                        contacts = SU.fromJust do
+                              index <- chatting
+                              let contact' = contact {
+                                    shouldFetchChatHistory = false,
+                                    history = chatHistory <> history
+                              }
+                              DA.updateAt index contact' contacts
+                  }
+            in
+                  if shouldFetchChatHistory then
+                        CIF.nothingNext updatedModel $ liftEffect CIS.scrollLastMessage
+                  else
+                        F.noMessages updatedModel

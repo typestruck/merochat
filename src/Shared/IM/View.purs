@@ -19,7 +19,7 @@ import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 
 view :: Boolean -> IMModel -> Html IMMessage
-view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div (HA.class' "im") [
+view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, isWebSocketConnected, toggleModal } = HE.div [HA.class' "im"] [
       HE.div (HA.class' {"contact-box": true, "current-mobile-screen": initialScreen} ) [
             SIVU.userMenu model,
             SIVN.prompt enableNotificationsVisible,
@@ -28,7 +28,7 @@ view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, i
             SIVL.logoMenu fortune,
             SIVM.modals model
       ],
-      HE.div [HA.class' {"suggestion-box" : true, "current-mobile-screen": not initialScreen } , HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
+      HE.div [HA.class' {"suggestion-box" : true, "current-mobile-screen": not initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile] [
             HE.div (HA.class' {"suggestion-box-error": true, flexed: not $ DS.null errorMessage }) errorMessage,
             SIVP.profile model,
             SIVH.history model $ map (contacts !@ _ ) chatting,

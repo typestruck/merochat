@@ -3,6 +3,7 @@ module Shared.IM.View.Profile where
 import Prelude
 import Shared.Types
 
+import Shared.IM.Svg as SIA
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -40,8 +41,7 @@ unavailable name =
       HE.div [HA.class' "profile-contact"] [
             HE.div (HA.class' "profile-contact-top") [
                   HE.div (HA.class' "profile-unavailable-header") [
-                        HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick ToggleInitialScreen] $
-                              HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
+                        SIA.arrow [HA.class' "svg-back-card", HA.onClick ToggleInitialScreen],
                         HE.h1 (HA.class' "contact-name") name,
                         HE.span (HA.class' "unavailable-message") " is no longer available"
                   ]
@@ -52,27 +52,23 @@ contact :: IMModel -> IMUser -> Html IMMessage
 contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
       HE.div (HA.class' "profile-contact") [
             HE.div (HA.class' "profile-contact-top") [
-                  HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick ToggleInitialScreen] $
-                        HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
+                  SIA.arrow [HA.class' "svg-back-card", HA.onClick ToggleInitialScreen],
                   HE.img $ [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar] <> showProfile,
                   HE.div (HA.class' "profile-contact-header" : showProfile) [
                         HE.h1 (HA.class' "contact-name") name
                   ],
                   HE.div [HA.class' "profile-contact-deets"] $
                         HE.div [HA.class' "outer-user-menu"] $
-                        --REFACTOR: dry svg icon declarations
-                              HE.svg [HA.id "compact-profile-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
-                                    HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
-                                    HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
-                                    HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
-                              ],
+                              SIA.contextMenu "compact-profile-context-menu",
                               HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu }][
                                     HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                               ]
             ],
             HE.div (HA.class' "show-profile-icon-div" : showProfile) $
-                  HE.svg [HA.class' "show-profile-icon", HA.viewBox "0 0 16 5", HA.fill "none"] $
-                        HE.path' [HA.d "M5.33333 4.8H10.6667V3.42857H5.33333V4.8ZM0 1.37143H16V0H0V1.371x43Z"]
+                  HE.svg [HA.class' "show-profile-icon", HA.viewBox "0 0 16 16"] [
+                        HE.rect' [HA.x "0.01", HA.y "2", HA.width "16", HA.height "2"],
+                        HE.polygon' [HA.class' "strokeless", HA.points "8.01 16 16.01 6 0.01 6 8.01 16"]
+                  ]
       ]
       where showProfile = [HA.title "Click to see full profile", HA.onClick ToggleContactProfile]
 
@@ -121,7 +117,7 @@ dummySuggestion = {
 }
 
 arrow :: Boolean -> IMMessage -> Html IMMessage
-arrow freeToFetchSuggestions message = HE.div (HA.class' "suggestion-arrow" : clickMessage) [
+arrow freeToFetchSuggestions message = HE.div (HA.class' ("suggestion-arrow" <> e) : clickMessage) [
       case message of
             SpecialRequest PreviousSuggestion -> backArrow
             _ -> nextArrow
@@ -129,17 +125,20 @@ arrow freeToFetchSuggestions message = HE.div (HA.class' "suggestion-arrow" : cl
       where clickMessage
                   | freeToFetchSuggestions = [HA.onClick message]
                   | otherwise = []
+            e = case message of
+                   SpecialRequest PreviousSuggestion -> " ppe"
+                   _ ->  ""
 
 backArrow :: Html IMMessage
-backArrow = HE.svg [HA.class' "svg-55", HA.viewBox "0 0 55 55"] [
-      HE.path' [HA.class' "strokeless", HA.d "M54.6758 27.4046C54.6758 42.456 42.483 54.6576 27.4423 54.6576C12.4016 54.6576 0.20874 42.456 0.20874 27.4046C0.20874 12.3532 12.4016 0.151611 27.4423 0.151611C42.483 0.151611 54.6758 12.3532 54.6758 27.4046Z", HA.fill "#1B2921"],
-      HE.path' [HA.class' "filless", HA.strokeWidth "2.91996", HA.d "M32.2858 13.3713L19.6558 27.6094L32.2858 40.2293"]
+backArrow = HE.svg [HA.class' "svg-55", HA.viewBox "0 0 16 16"] [
+      HE.circle' [HA.class' "strokeless", HA.cx "8", HA.cy "8", HA.r "8", HA.fill "#1B2921"],
+      HE.polygon' [HA.class' "fillless strokeless", HA.points "4.88 7.99 9.37 3.5 10.29 4.42 6.73 7.99 10.32 11.58 9.39 12.5 5.81 8.91 5.8 8.91 4.88 7.99"]
 ]
 
 nextArrow :: Html IMMessage
-nextArrow = HE.svg [HA.class' "svg-55", HA.viewBox "0 0 38 38"] [
-      HE.path' [HA.class' "strokeless", HA.d "M4.57764e-05 19.0296C4.57764e-05 29.4062 8.41191 37.8181 18.7885 37.8181C29.165 37.8181 37.5769 29.4062 37.5769 19.0296C37.5769 8.65308 29.165 0.241211 18.7885 0.241211C8.41191 0.241211 4.57764e-05 8.65308 4.57764e-05 19.0296Z", HA.fill "#1B2921"],
-      HE.path' [HA.class' "filless",  HA.strokeWidth "2.01305", HA.d "M15.4472 9.35498L24.1606 19.1708L15.4472 27.8711"]
+nextArrow = HE.svg [HA.class' "svg-55", HA.viewBox "0 0 16 16"] [
+      HE.circle' [HA.class' "strokeless", HA.cx "8", HA.cy "8", HA.r "8", HA.fill "#1B2921"],
+      HE.polygon' [HA.class' "fillless strokeless", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99"]
 ]
 
 fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
@@ -187,27 +186,17 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             ]
 
             fullProfileMenu = HE.div (HA.class' "profile-top-menu") [
-                  HE.svg [HA.class' "svg-back-profile", HA.viewBox "0 0 30 30", HA.onClick ToggleContactProfile] $
-                        HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
+                  SIA.arrow [HA.class' "svg-back-profile", HA.onClick ToggleContactProfile],
                   HE.div [HA.class' "outer-user-menu"] $
-                        HE.svg [HA.id "full-profile-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
-                              HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
-                              HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
-                              HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
-                        ],
+                        SIA.contextMenu "full-profile-context-menu",
                         HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu }][
                               HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                         ]
             ]
 
             currentSuggestionMenu = HE.div [HA.class' "profile-context outer-user-menu"] [
-                  HE.svg [HA.class' "svg-back-card", HA.viewBox "0 0 30 30", HA.onClick ToggleInitialScreen] $
-                        HE.path' [HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z"],
-                  HE.svg [HA.id "suggestion-context-menu", HA.class' "svg-32", HA.viewBox "0 0 32 32"][
-                        HE.circle' [HA.cx "16", HA.cy "7", HA.r "2"],
-                        HE.circle' [HA.cx "16", HA.cy "16", HA.r "2"],
-                        HE.circle' [HA.cx "16", HA.cy "25", HA.r "2"]
-                  ],
+                  SIA.arrow [HA.class' "svg-back-card", HA.onClick ToggleInitialScreen],
+                  SIA.contextMenu "suggestion-context-menu",
                   HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
                         HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                   ]
