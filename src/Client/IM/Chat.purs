@@ -12,6 +12,8 @@ import Client.IM.WebSocket as CIW
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.DateTime as DT
+import Data.HashMap (HashMap)
+import Data.HashMap as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -51,12 +53,8 @@ foreign import resizeTextarea_ :: EffectFn1 Element Unit
 
 --purty is fucking terrible
 
---REFACTOR: make selectors inside updates type safe
-getFileInput :: Effect Element
-getFileInput = CCD.unsafeQuerySelector "#image-file-input"
-
 getChatInput :: Effect Element
-getChatInput = CCD.unsafeQuerySelector "#chat-input"
+getChatInput = CCD.unsafeQuerySelector $ "#" <> show ChatInput
 
 --the keydown event fires before input
 -- this event is filterd to run only on Enter keydown
@@ -244,9 +242,6 @@ setMessage cursor markdown model =
                         WHHTA.setSelectionEnd position textarea
                   Nothing -> pure unit
 
-selectImage :: Element -> IMModel -> NextMessage
-selectImage input model = CIF.nothingNext model <<< liftEffect $ CCF.triggerFileSelect input
-
 catchFile :: FileReader -> Event -> IMModel -> NoMessages
 catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
       CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
@@ -262,11 +257,11 @@ setSelectedImage maybeBase64 model@{smallScreen} =
                         [TDS.reflectSymbol (SProxy :: SProxy "selectedImage")]
                    else
                         []
-      } :> (if smallScreen then [] else [CIF.next $ FocusInput "#image-form-caption"])
+      } :> (if smallScreen then [] else [CIF.next $ FocusInput ImageFormCaption])
       where isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
-toggleModal :: ShowChatModal -> IMModel -> MoreMessages
-toggleModal toggle model = model {
+toggleModal :: HashMap IMElementID Element -> ShowChatModal -> IMModel -> MoreMessages
+toggleModal elements toggle model = model {
       toggleChatModal = toggle,
       link = Nothing,
       selectedImage = Nothing,
@@ -274,12 +269,11 @@ toggleModal toggle model = model {
 } :>  if toggle == ShowSelectedImage then
             [pickImage]
        else if toggle == ShowLinkForm then
-            [CIF.next $ FocusInput "#link-form-url"]
+            [CIF.next $ FocusInput LinkFormUrl]
        else
             []
       where pickImage = liftEffect do
-                  input <- getFileInput
-                  CCF.triggerFileSelect input
+                  CCF.triggerFileSelect $ SU.lookup ImageFileInput elements
                   pure Nothing
 
 setEmoji :: Event -> IMModel -> NextMessage

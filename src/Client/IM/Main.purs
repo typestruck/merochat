@@ -47,6 +47,7 @@ import Signal.Channel (Channel)
 import Signal.Channel as SC
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
+import Web.DOM.Node as WDN
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
@@ -62,7 +63,7 @@ main = do
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef <- ER.new webSocket
       --REFACTOR: use bounds
-      elements <- cacheElements [ImageFileInput, ChatInput, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot]
+      elements <- cacheElements [ ImageFileInput  {- , ChatInput, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot -}]
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view true,
@@ -79,7 +80,7 @@ main = do
       --display settings/profile page
       FE.send [FE.onClick' [ToggleUserContextMenu]] channel
       --image upload
-      input <- CIC.getFileInput
+      let input = SU.lookup ImageFileInput elements
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
       width <- CCD.screenWidth
       --keep track of mobile (-like) screens for things that cant be done with media queries
@@ -92,7 +93,7 @@ update { webSocketRef, fileReader, elements } model =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
-            ToggleChatModal modal -> CIC.toggleModal modal model
+            ToggleChatModal modal -> CIC.toggleModal elements modal model
             DropFile event -> CIC.catchFile fileReader event model
             EnterBeforeSendMessage -> CIC.enterBeforeSendMessage model
             ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
@@ -105,7 +106,7 @@ update { webSocketRef, fileReader, elements } model =
             SetSmallScreen -> setSmallScreen model
             SetEmoji event -> CIC.setEmoji event model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
-            FocusInput selector -> focusInput selector model
+            FocusInput elementID -> focusInput elementID model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
             MarkAsRead -> CICN.markRead webSocket model
@@ -162,21 +163,29 @@ toggleUserContextMenu event model@{ toggleContextMenu }
             F.noMessages $ model { toggleContextMenu = HideContextMenu }
       | otherwise =
             model :> [
-                  liftEffect <<< map (Just <<< SetContextMenuToggle <<< toggle) $ WDE.id <<< SU.fromJust $ do
-                  target <- WEE.target event
-                  WDE.fromEventTarget target
+                  --we can only node.contains as some of the elements are dinamically created/destroyed
+                  liftEffect do
+                  let element =  SU.fromJust $ do
+                        target <- WEE.target event
+                        WDE.fromEventTarget target
+                  id <- WDE.id element
+                  parent <- WDN.parentElement $ WDE.toNode element
+                  parentID <- case parent of
+                        Just e ->  WDE.id e
+                        Nothing -> pure ""
+                  pure <<< Just <<< SetContextMenuToggle $ toggle id parentID
             ]
-      where toggle a= case a of
-                  "user-context-menu" -> ShowUserContextMenu
-                  "suggestion-context-menu" -> ShowSuggestionContextMenu
-                  "compact-profile-context-menu" -> ShowCompactProfileContextMenu
-                  "full-profile-context-menu" -> ShowFullProfileContextMenu
-                  _ -> HideContextMenu
+      where toggle elementID parentID
+                  | elementID == show UserContextMenu || parentID == show UserContextMenu = ShowUserContextMenu
+                  | elementID == show SuggestionContextMenu || parentID == show SuggestionContextMenu = ShowSuggestionContextMenu
+                  | elementID == show CompactProfileContextMenu || parentID == show CompactProfileContextMenu = ShowCompactProfileContextMenu
+                  | elementID == show FullProfileContextMenu || parentID == show FullProfileContextMenu = ShowFullProfileContextMenu
+                  | otherwise = HideContextMenu
 
-focusInput :: String -> IMModel -> NextMessage
-focusInput selector model = model :> [
+focusInput :: IMElementID -> IMModel -> NextMessage
+focusInput elementID model = model :> [
       liftEffect do
-            element <- CCD.querySelector selector
+            element <- CCD.querySelector $ "#" <> show elementID
             WHHE.focus $ SU.fromJust do
                   e <- element
                   WHHE.fromElement e
@@ -389,7 +398,7 @@ setUpWebSocket webSocketRef channel = do
             sendChannel $ ToggleConnected false
             maybeID <- ER.read timerID
             when (DM.isNothing maybeID) do
-                  milliseconds <- ERD.randomInt 2000 7000
+                  milliseconds <- ERD.randomInt 2000 10000
                   id <- ET.setTimeout milliseconds <<< void $ do
                         newWebSocket <- CIW.createWebSocket
                         ER.write newWebSocket webSocketRef
@@ -408,7 +417,7 @@ setSmallScreen model@{ messageEnter } =
             smallScreen = true
       }
 
-cacheElements :: Array IMSelector -> Effect (HashMap IMSelector Element)
+cacheElements :: Array IMElementID -> Effect (HashMap IMElementID Element)
 cacheElements selectors = do
-      nodes <- DT.traverse ((SU.fromJust <$> _) <$> CCD.querySelector <<< show) selectors
+      nodes <- DT.traverse ((SU.fromJust <$> _) <$> CCD.querySelector <<< ("#" <> _) <<< show) selectors
       pure <<< HS.fromArray $ DA.zip selectors nodes

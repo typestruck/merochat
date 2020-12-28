@@ -14,7 +14,7 @@ userMenu model@{ toggleContextMenu, smallScreen} =
       HE.div (HA.class' "settings") [
             header model,
             HE.div [HA.class' "outer-user-menu"] [
-                  HE.svg [HA.id "user-context-menu", HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 16 16"] (SIS.contextMenuElements <> [
+                  HE.svg [HA.id $ show UserContextMenu, HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 16 16"] (SIS.contextMenuElements <> [
                         HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "7", HA.width "15.93", HA.height "2"],
                         HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "2.5", HA.width "15.93", HA.height "2"],
                         HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "11.5", HA.width "15.93", HA.height "2"]

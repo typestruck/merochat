@@ -6,6 +6,9 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum)
 import Data.Enum as DE
+import Data.HashMap (HashMap)
+import Data.HashMap as HS
+import Data.Hashable (class Hashable)
 import Data.Maybe (Maybe(..))
 import Effect.Exception.Unsafe as EEU
 
@@ -30,3 +33,9 @@ fromRight =
 
 toEnum :: forall a. BoundedEnum a => Int -> a
 toEnum = fromJust <<< DE.toEnum
+
+lookup :: forall k v. Hashable k => k -> HashMap k v -> v
+lookup key hashMap =
+      case HS.lookup key hashMap of
+            Nothing -> EEU.unsafeThrow $ "lookup failed! received Nothing"
+            Just value -> value

@@ -59,7 +59,7 @@ contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
                   ],
                   HE.div [HA.class' "profile-contact-deets"] $
                         HE.div [HA.class' "outer-user-menu"] $
-                              SIA.contextMenu "compact-profile-context-menu",
+                              SIA.contextMenu $ show CompactProfileContextMenu,
                               HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu }][
                                     HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                               ]
@@ -188,7 +188,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             fullProfileMenu = HE.div (HA.class' "profile-top-menu") [
                   SIA.arrow [HA.class' "svg-back-profile", HA.onClick ToggleContactProfile],
                   HE.div [HA.class' "outer-user-menu"] $
-                        SIA.contextMenu "full-profile-context-menu",
+                        SIA.contextMenu $ show FullProfileContextMenu,
                         HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu }][
                               HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                         ]
@@ -196,7 +196,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
             currentSuggestionMenu = HE.div [HA.class' "profile-context outer-user-menu"] [
                   SIA.arrow [HA.class' "svg-back-card", HA.onClick ToggleInitialScreen],
-                  SIA.contextMenu "suggestion-context-menu",
+                  SIA.contextMenu $ show SuggestionContextMenu,
                   HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
                         HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
                   ]

@@ -37,7 +37,7 @@ linkModal {toggleChatModal, linkText, link, erroredFields} =
             HE.label_ "Text",
             HE.input [HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
             HE.label_ "Link",
-            HE.input [HA.type' "text", HA.id "link-form-url", HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))],
+            HE.input [HA.type' "text", HA.id $ show LinkFormUrl, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))],
             HE.span [HA.class' {"error-message": true, "invisible": not (DS.null (DM.fromMaybe "" link)) || not (DA.elem (TDS.reflectSymbol (SProxy :: SProxy "link")) erroredFields) }] "Please enter a link",
             HE.div (HA.class' "buttons") [
                   HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
@@ -48,16 +48,16 @@ linkModal {toggleChatModal, linkText, link, erroredFields} =
 imageModal :: IMModel -> Html IMMessage
 imageModal {selectedImage, erroredFields} =
       HE.div [HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage }] [
-            HE.div (HA.class' { "upload-div": true, hidden : false {- not imageValidationFailed -} }) [
-                  HE.input [HA.id "image-file-input", HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
+            HE.div (HA.class' { "upload-div": true, hidden : not imageValidationFailed }) [
+                  HE.input [HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
                   HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
             ],
-            HE.div (HA.class' { "image-form-image": true, hidden: true {- imageValidationFailed -} }) [
+            HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed }) [
                   HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
             ],
             HE.div (HA.class' "image-form-controls") [
                   HE.label_ "Caption",
-                  HE.input [HA.placeholder "optional title", HA.id "image-form-caption", HA.type' "text", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
+                  HE.input [HA.placeholder "optional title", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (setJust (SProxy :: SProxy "imageCaption"))],
                   HE.div (HA.class' "image-buttons") [
                         HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
                         HE.svg [HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16"] $ sendButtonElements "Send file"
@@ -106,7 +106,7 @@ chatBarInput model@{
                         HE.textarea' $ [
                               HA.rows 1,
                               HA.class' "chat-input",
-                              HA.id "chat-input",
+                              HA.id $ show ChatInput,
                               HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
                               HA.disabled $ not isWebSocketConnected,
                               SK.keyDownOn "Enter" EnterBeforeSendMessage,

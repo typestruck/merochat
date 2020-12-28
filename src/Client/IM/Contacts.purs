@@ -50,7 +50,7 @@ resumeChat searchID model@{ contacts, chatting, smallScreen } =
                         liftEffect do
                               CIS.scrollLastMessage
                               pure Nothing
-                  ] <> if smallScreen then [] else [CIF.next $ FocusInput "#chat-input"])
+                  ] <> if smallScreen then [] else [CIF.next $ FocusInput ChatInput])
 
 markRead :: WebSocket -> IMModel -> MoreMessages
 markRead webSocket =

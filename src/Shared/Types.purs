@@ -314,8 +314,7 @@ data IMMessage =
       ToggleContactProfile |
       DropFile Event |
       ToggleMessageEnter |
-      --REFACTOR: dont use string selectors
-      FocusInput String |
+      FocusInput IMElementID |
       EnterBeforeSendMessage |
       ForceBeforeSendMessage |
       ResizeChatInput Event |
@@ -380,10 +379,15 @@ data DisplayHelpSection =
 data InternalHelpMessage =
       ToggleHelpSection DisplayHelpSection
 
-data IMSelector =
+data IMElementID =
+      UserContextMenu |
+      SuggestionContextMenu |
+      CompactProfileContextMenu |
+      FullProfileContextMenu |
       ImageFileInput |
       ChatInput |
       ImageFormCaption |
+      LinkFormUrl |
       MessageHistory |
       Favicon |
       ProfileEditionRoot |
@@ -490,7 +494,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
-derive instance eqIMSelector :: Eq IMSelector
+derive instance eqIMSelector :: Eq IMElementID
 derive instance eqShowContextMenu :: Eq ShowContextMenu
 derive instance eqDatabaseError :: Eq DatabaseError
 derive instance eqFullContactProfile :: Eq ProfilePresentation
@@ -794,17 +798,22 @@ instance showPayloadErrorContext :: Show DatabaseError where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
-instance showIMSelector :: Show IMSelector where
+instance showIMSelector :: Show IMElementID where
       show = case _ of
-            ImageFileInput -> "#image-file-input"
-            ChatInput -> "#chat-input"
-            ImageFormCaption -> "#image-form-caption"
-            MessageHistory -> "#message-history"
-            Favicon -> "#favicon"
-            ProfileEditionRoot -> "#profile-edition-root"
-            SettingsEditionRoot -> "#settings-edition-root"
-            KarmaLeaderboard -> "#karma-leaderboard-root"
-            HelpRoot ->"#help-root"
+            UserContextMenu -> "user-context-menu"
+            SuggestionContextMenu -> "suggestion-context-menu"
+            CompactProfileContextMenu -> "compact-profile-context-menu"
+            FullProfileContextMenu -> "full-profile-context-menu"
+            ImageFileInput -> "image-file-input"
+            LinkFormUrl -> "link-form-url"
+            ChatInput -> "chat-input"
+            ImageFormCaption -> "image-form-caption"
+            MessageHistory -> "message-history"
+            Favicon -> "favicon"
+            ProfileEditionRoot -> "profile-edition-root"
+            SettingsEditionRoot -> "settings-edition-root"
+            KarmaLeaderboard -> "karma-leaderboard-root"
+            HelpRoot -> "help-root"
 
 instance toSQLValueGender :: ToSQLValue Gender where
       toSQLValue = F.unsafeToForeign <<< show
@@ -814,7 +823,7 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
-instance hashableIMSelector :: Hashable IMSelector where
+instance hashableIMSelector :: Hashable IMElementID where
       hash = HS.hash <<< show
 
 instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
