@@ -4,7 +4,7 @@ import Prelude
 import Shared.Types
 
 import Control.Alt ((<|>))
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -17,6 +17,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Prim.Row (class Cons)
 import Shared.IM.Emoji as SIE
+import Shared.IM.Svg as SIS
 import Shared.Keydown as SK
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSizeKB)
@@ -47,11 +48,11 @@ linkModal {toggleChatModal, linkText, link, erroredFields} =
 imageModal :: IMModel -> Html IMMessage
 imageModal {selectedImage, erroredFields} =
       HE.div [HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage }] [
-            HE.div (HA.class' { "upload-div": true, hidden : not imageValidationFailed }) [
+            HE.div (HA.class' { "upload-div": true, hidden : false {- not imageValidationFailed -} }) [
                   HE.input [HA.id "image-file-input", HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
                   HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
             ],
-            HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed }) [
+            HE.div (HA.class' { "image-form-image": true, hidden: true {- imageValidationFailed -} }) [
                   HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
             ],
             HE.div (HA.class' "image-form-controls") [
@@ -80,9 +81,9 @@ chatBarInput model@{
       if toggleChatModal == ShowPreview then
             HE.div_  [
                   HE.div [HA.class' "chat-input-options"] [
-                        HE.button [HA.onClick $ ToggleChatModal HideChatModal, HA.title "Exit preview"] "Exit"
+                        HE.svg [HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32 boio-2", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
                   ],
-                  HE.div' [HA.innerHtml <<< SM.parse $ DM.fromMaybe "" message]
+                  HE.div' [HA.class' "chat-input-preview message-content", HA.innerHtml <<< SM.parse $ DM.fromMaybe "" message]
             ]
        else
             HE.div [HA.class' { hidden: not available || DM.isNothing chatting && DM.isNothing suggesting }] [
@@ -96,12 +97,12 @@ chatBarInput model@{
                         linkButton toggleChatModal,
                         previewButton,
                         HE.div (HA.class' "send-enter") [
-                              HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick SetSmallScreen, HA.id "message-enter"],
+                              HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
                               HE.label (HA.for "message-enter") "Send message on enter"
                         ]
                   ],
                   HE.div [HA.class' {"chat-input-area" : true, side: not messageEnter}  ] [
-                        emojiButton toggleChatModal,
+                        emojiButton model,
                         HE.textarea' $ [
                               HA.rows 1,
                               HA.class' "chat-input",
@@ -135,7 +136,7 @@ setJust :: forall t7 t8 t9. IsSymbol t8 => Cons t8 (Maybe t9) t7 IM => SProxy t8
 setJust field = SS.setIMField field <<< Just
 
 bold :: Html IMMessage
-bold = HE.svg [HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300"] [
+bold = HE.svg [HA.class' "svg-20 boio", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300"] [
       HE.title "Bold",
       HE.path' $ HA.d "M278,205.35q0,20.73-8.74,37a77.48,77.48,0,0,1-24,27.05,114.73,114.73,0,0,1-38.9,18q-21.21,5.38-53.75,5.37H22V7.16H138.13q36.18,0,53,2.3a112.71,112.71,0,0,1,33.24,10.17q17.11,8.27,25.44,22.15t8.33,31.76q0,20.73-11.46,36.54c-7.64,10.58-18.41,18.77-32.34,24.67v1.53q29.31,5.55,46.51,23T278,205.35ZM179.14,87.93a30.65,30.65,0,0,0-3.73-14.2q-3.71-7.11-13.16-10.55c-5.62-2-12.63-3.15-21-3.37s-20.15-.27-35.28-.27H98.75V120h12.06q18.28,0,31.13-.57t20.31-3.84q10.44-4.4,13.65-11.4A38.23,38.23,0,0,0,179.14,87.93ZM197.8,204.2c0-9.07-1.84-16.09-5.51-21s-9.92-8.61-18.75-11.05c-6-1.67-14.3-2.55-24.86-2.69s-21.59-.19-33.08-.19H98.75v71.18h5.61q32.49,0,46.52-.19a70.8,70.8,0,0,0,25.87-5q12-4.8,16.56-12.77A36.38,36.38,0,0,0,197.8,204.2Z"
 ]
@@ -196,13 +197,31 @@ linkButton toggle = HE.svg [HA.class' "svg-20 link-button", HA.onClick <<< Toggl
       HE.path' [HA.class' "strokeless", HA.d "M5.31,10.35H3A2.26,2.26,0,0,1,3,5.83H7a2.24,2.24,0,0,1,1,.24,2.34,2.34,0,0,1,.7.55,2.25,2.25,0,0,1,.54,1.47,2.59,2.59,0,0,1-.42,1.48h.83a7.09,7.09,0,0,0,.25-.73L10,8.55a3.44,3.44,0,0,0,0-.46l0-.46L9.9,7.34S9.8,7.06,9.76,7s-.1-.25-.12-.28a.93.93,0,0,0-.05-.1c-.06-.1-.12-.2-.19-.3l-.09-.11L9.11,6A1.85,1.85,0,0,0,9,5.83H9l-.18-.15a4.14,4.14,0,0,0-.5-.3A2.52,2.52,0,0,0,8,5.26H8l-.26-.08a1.36,1.36,0,0,0-.29-.06,2.32,2.32,0,0,0-.46,0H3a2.32,2.32,0,0,0-.46,0,1.5,1.5,0,0,0-.29.06,2.58,2.58,0,0,0-.55.2,4,4,0,0,0-.49.3l-.12.09a2.59,2.59,0,0,0-.4.41L.6,6.29a2.88,2.88,0,0,0-.3.5,2.6,2.6,0,0,0-.21.55L0,7.63a3.55,3.55,0,0,0,0,.46l0,.46.06.29L.3,9.4a2.48,2.48,0,0,0,.3.49L.69,10l.19.21.21.2.12.09a4,4,0,0,0,.49.3,3.27,3.27,0,0,0,.55.2,1.5,1.5,0,0,0,.29.06,3.42,3.42,0,0,0,.46,0H6.06A3.6,3.6,0,0,1,5.31,10.35Z"]
 ]
 
-emojiButton :: ShowChatModal -> Html IMMessage
-emojiButton toggle = HE.svg [HA.onClick <<< ToggleChatModal $ if toggle == ShowEmojis then HideChatModal else ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 16 16", SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
-      HE.title "Emojis",
-      HE.path' [HA.class' "strokeless", HA.d "M5.16,7.53a.71.71,0,1,0-.66-.71A.69.69,0,0,0,5.16,7.53Z"],
-      HE.path' [HA.class' "strokeless", HA.d "M10.8,7.53a.71.71,0,1,0-.66-.71A.68.68,0,0,0,10.8,7.53Z"],
-      HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0Zm0,15.5A7.5,7.5,0,1,1,15.47,8,7.51,7.51,0,0,1,8,15.45Z"],HE.path' [HA.class' "strokeless", HA.d "M2.34,9.19l0,.15a5.77,5.77,0,0,0,11.19,0l0-.15ZM8,13.45a5.47,5.47,0,0,1-5.31-4H13.27A5.49,5.49,0,0,1,8,13.45Z"]
-]
+emojiButton :: IMModel -> Html IMMessage
+emojiButton model@{toggleChatModal, smallScreen}
+      | toggleChatModal == ShowEmojis =
+            HE.svg [HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 16 16"] $
+                  if smallScreen then [
+                        HE.path' [HA.class' "strokeless", HA.d "M14.9,2.24H1.1A1.11,1.11,0,0,0,0,3.35v9.18a1.1,1.1,0,0,0,1.1,1.1H14.9a1.1,1.1,0,0,0,1.1-1.1V3.35A1.11,1.11,0,0,0,14.9,2.24ZM15,12.53a.11.11,0,0,1-.1.1H1.1a.11.11,0,0,1-.1-.1V3.35a.11.11,0,0,1,.1-.11H14.9a.11.11,0,0,1,.1.11Z"],
+                        HE.rect' [HA.class' "strokeless", HA.x "2.75", HA.y "4.53", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "2.75", HA.y "7.3", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "5.82", HA.y "4.53", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "5.82", HA.y "7.3", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "8.9", HA.y "4.53", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "8.9", HA.y "7.3", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "11.98", HA.y "4.53", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "11.98", HA.y "7.3", HA.width "1.28", HA.height "1.28"],
+                        HE.rect' [HA.class' "strokeless", HA.x "4.49", HA.y "10.18", HA.width "7.02", HA.height "1.28"]
+                  ]
+                  else
+                        HE.title "Close emojis" : SIS.closeElements
+      | otherwise =
+            HE.svg [HA.onClick $ ToggleChatModal ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 16 16"] [
+                  HE.title "Emojis",
+                  HE.path' [HA.class' "strokeless", HA.d "M5.16,7.53a.71.71,0,1,0-.66-.71A.69.69,0,0,0,5.16,7.53Z"],
+                  HE.path' [HA.class' "strokeless", HA.d "M10.8,7.53a.71.71,0,1,0-.66-.71A.68.68,0,0,0,10.8,7.53Z"],
+                  HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0Zm0,15.5A7.5,7.5,0,1,1,15.47,8,7.51,7.51,0,0,1,8,15.45Z"],HE.path' [HA.class' "strokeless", HA.d "M2.34,9.19l0,.15a5.77,5.77,0,0,0,11.19,0l0-.15ZM8,13.45a5.47,5.47,0,0,1-5.31-4H13.27A5.49,5.49,0,0,1,8,13.45Z"]
+            ]
 
 imageButton :: Html IMMessage
 imageButton = HE.svg [HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class' "svg-32 attachment", HA.viewBox "0 0 16 16"] [

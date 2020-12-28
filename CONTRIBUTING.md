@@ -16,11 +16,21 @@ Don't hesitate to [contact](https://github.com/easafe) if you need help, or want
 
 MelanChat is written in PureScript, both server-side and client-side. PostgreSQL is used for persistance. To get it running locally:
 
-* Run `npm install && spago build`
+1. Run `npm install && spago build`
 
-* Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql) (the user melanchat and databases melanchat and melanchat_test are expected)
+2. Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql). The user `melanchat`, databases `melanchat` and `melanchat_test` are expected (ident or trust authentication)
 
-* Run `npm run watch` for a hot reloading server at http://localhost:8000
+3. Run `npm run watch` to start a server at http://localhost:8000
+
+    * [purescript-ide](https://github.com/nwolverson/vscode-ide-purescript) is the fast and easy way to rebuild the project. Alternatively, run `spago build --watch` in a new terminal
+
+    * Refresh the page after any changes :)
+
+4. (Optional) Enable randomized profile creation
+
+    * Set the enviroment variable `RANDOMIZE_PROFILES` (e.g., `export RANDOMIZE_PROFILES=true`)
+
+    * You may need to build the native module ([bender.node](bender.node)) for your system. The source is [here](https://github.com/melanchat/bender). Detailed instructions on how to compile the module can be found [here](https://neon-bindings.com)
 
 ## Pull requests
 

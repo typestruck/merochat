@@ -207,11 +207,11 @@ let additions =
           , "argonaut-generic"
           ]
         , repo = "https://github.com/easafe/purescript-flame.git"
-        , version = "v0.9.0"
+        , version = "9ba45c00b7769805985fc63324102f5874470bdf"
         }
       }
 
 in      upstream
     //  overrides
     //  additions
-      with flame = ../purescript-flame/spago.dhall as Location
+--      with flame = ../purescript-flame/spago.dhall as Location

@@ -16,7 +16,8 @@ import Shared.Unsafe as SU
 -- | The process will fail if any of them are missing on production, dummy values will be used for development
 readConfiguration :: Effect Configuration
 readConfiguration = do
-      isDevelopment <- DM.maybe false (_ == "true") <$> NP.lookupEnv "DEVELOPMENT"
+      isDevelopment <- falseUnless <$> NP.lookupEnv "DEVELOPMENT"
+      randomizeProfiles <- falseUnless <$> NP.lookupEnv "RANDOMIZE_PROFILES"
       if isDevelopment then do
             EC.log "Starting development environment"
             pure {
@@ -27,7 +28,8 @@ readConfiguration = do
                   salt: "put it back together",
                   emailUser: "",
                   emailHost: "",
-                  emailPassword: ""
+                  emailPassword: "",
+                  randomizeProfiles
             }
        else do
             EC.log "Starting production environment!!!!1!"
@@ -36,6 +38,7 @@ readConfiguration = do
             case variables of
                   [captchaSecret, tokenSecretGET, tokenSecret, salt, emailUser, emailHost, emailPassword] ->
                         pure $ {
+                              randomizeProfiles: true,
                               development: false,
                               port,
                               captchaSecret,
@@ -50,3 +53,4 @@ readConfiguration = do
             parsePort value = SU.fromJust do
                   v <- value
                   DI.fromString v
+            falseUnless = DM.maybe false (_ == "true")

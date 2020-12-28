@@ -15,10 +15,8 @@ import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Server.Response as SR
-import Effect.Exception as EE
 import Run as R
 import Run.Reader as RR
-
 
 validateCaptcha :: Maybe String -> ServerEffect Unit
 validateCaptcha captchaResponse = do

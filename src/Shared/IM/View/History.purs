@@ -38,11 +38,10 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests
                                     Tuple "sender-message" $ SA.avatarForSender senderAvatar
                               else
                                     Tuple "recipient-message" $ SA.avatarForRecipient chatting recipientAvatar
-                  in HE.div (HA.class' $ "message " <> messageClass <> sameSenderClass) [
-                        HE.div (HA.class' {"exclamation": true, "hidden": status /= Errored}) "!",
+                  in HE.div (HA.class' $ "message " <> messageClass <> sameSenderClass)[
                         HE.div_ [
                               HE.div' [HA.class' "message-content", HA.innerHtml $ SM.parse content],
-                              HE.span (HA.class' {"error-message": true, "hidden": status /= Errored})  "Failed to send"
+                              HE.span (HA.class' {"error-message": true, "hidden": status /= Errored })  "Failed to send"
                         ]
                   ]
 

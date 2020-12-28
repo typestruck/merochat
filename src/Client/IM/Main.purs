@@ -22,9 +22,11 @@ import Control.Monad.Except as CME
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.HashMap (HashMap)
+import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug.Trace (spy)
+import Data.Traversable as DT
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -43,6 +45,7 @@ import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
+import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
@@ -58,11 +61,13 @@ main = do
       webSocket <- CIW.createWebSocket
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef <- ER.new webSocket
+      --REFACTOR: use bounds
+      elements <- cacheElements [ImageFileInput, ChatInput, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot]
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view true,
             init: [],
-            update: update { fileReader, webSocketRef }
+            update: update { fileReader, webSocketRef, elements }
       }
       setUpWebSocket webSocketRef channel
       --for drag and drop
@@ -83,7 +88,7 @@ main = do
       windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
-update { webSocketRef, fileReader } model =
+update { webSocketRef, fileReader, elements } model =
       case _ of
             --chat
             InsertLink -> CIC.insertLink model
@@ -99,6 +104,7 @@ update { webSocketRef, fileReader } model =
             SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
             SetSmallScreen -> setSmallScreen model
             SetEmoji event -> CIC.setEmoji event model
+            ToggleMessageEnter -> CIC.toggleMessageEnter model
             FocusInput selector -> focusInput selector model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
@@ -160,7 +166,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
                   target <- WEE.target event
                   WDE.fromEventTarget target
             ]
-      where toggle = case _ of
+      where toggle a= case a of
                   "user-context-menu" -> ShowUserContextMenu
                   "suggestion-context-menu" -> ShowSuggestionContextMenu
                   "compact-profile-context-menu" -> ShowCompactProfileContextMenu
@@ -233,7 +239,7 @@ receiveMessage webSocket isFocused wsPayload model@{
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
                  contacts =
-                        --assume that it is because the other use no longer exists
+                        --assume that it is because the other user no longer exists
                         if payload.context == Just MissingForeignKey then
                               markContactUnavailable contacts userID
                          else
@@ -401,3 +407,8 @@ setSmallScreen model@{ messageEnter } =
             messageEnter = false,
             smallScreen = true
       }
+
+cacheElements :: Array IMSelector -> Effect (HashMap IMSelector Element)
+cacheElements selectors = do
+      nodes <- DT.traverse ((SU.fromJust <$> _) <$> CCD.querySelector <<< show) selectors
+      pure <<< HS.fromArray $ DA.zip selectors nodes

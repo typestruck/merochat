@@ -48,7 +48,8 @@ type Configuration = {
       salt :: String,
       emailHost :: String,
       emailUser :: String,
-      emailPassword :: String
+      emailPassword :: String,
+      randomizeProfiles :: Boolean
 }
 
 newtype CaptchaResponse = CaptchaResponse {

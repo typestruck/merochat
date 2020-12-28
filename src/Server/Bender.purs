@@ -12,12 +12,13 @@ import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Effect.Random as ER
-import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried (EffectFn3)
 import Effect.Uncurried as EU
 import Run as R
+import Run.Reader as RR
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 
-foreign import generate_ :: EffectFn2 Int Int String
+foreign import generate_ :: EffectFn3 Boolean Int Int String
 
 generateName :: ServerEffect String
 generateName = do
@@ -47,4 +48,6 @@ generateHeadline = do
                                 pure headline
 
 generate :: BenderAction -> Int -> ServerEffect String
-generate action size = R.liftEffect $ EU.runEffectFn2 generate_ (DE.fromEnum action) size
+generate action size = do
+        { configuration: { randomizeProfiles } } <- RR.ask
+        R.liftEffect $ EU.runEffectFn3 generate_ randomizeProfiles (DE.fromEnum action) size

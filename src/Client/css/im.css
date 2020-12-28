@@ -66,10 +66,7 @@ body {
 }
 
 .suggestion-box-error {
-    height: 50px;
-    position: absolute;
-    left: 0;
-    right: 0;
+    padding: 10px 0;
     background: #262626;
     font-weight: bold;
     color: red;
@@ -111,10 +108,6 @@ body {
     align-items: center;
     border-bottom: 1px solid #4E4E4E;
     border-top: 1px solid #4E4E4E;
-}
-
-.suggestion-box-error.flexed~.profile-contact, .suggestion-box-error.flexed~.suggestion {
-    margin-top: 50px;
 }
 
 .send-box {
@@ -638,10 +631,8 @@ svg.toolbar-action {
     display: inline;
 }
 
-.chat-input {
-    resize: none;
-    width: 100%;
-    cursor: text;
+.chat-input-preview, .chat-input {
+
     border-radius: 5px;
     max-height: 150px;
     border-top-right-radius: 0;
@@ -650,6 +641,12 @@ svg.toolbar-action {
     padding: 10px 42px;
     border: 1px solid #b5b7b7;
     border-top: none;
+}
+
+.chat-input {
+    width: 100%;
+    resize: none;
+    cursor: text;
 }
 
 .chat-input:focus {
@@ -664,12 +661,6 @@ svg.toolbar-action {
 
 .send-box .side .chat-input {
     padding-right: 75px;
-}
-
-.tab-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .chat-input:placeholder-shown {
@@ -829,15 +820,9 @@ input:not(type=button):focus {
     color: red;
 }
 
-.exclamation {
-    font-size: 1.1em;
-    border: 2px solid red;
-    border-radius: 100%;
-    padding: 2px 10px;
-    line-height: 1;
-    height: 25px;
-    margin-top: 19px;
-    font-weight: bold;
+.message .error-message, .modal-form .error-message {
+    visibility: visible;
+    display: block;
 }
 
 .avatar-color-1 {
@@ -1624,7 +1609,7 @@ select {
         padding: 5px;
     }
     .contact {
-        padding: 5px
+        padding: 5px 10px
     }
     .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
         display: none;
@@ -1677,7 +1662,7 @@ select {
     }
     .suggestion-cards, .cards, .card, .card-center {
         max-width: 100%;
-        min-height: 100%;
+        flex-grow: 1;
         overflow: hidden;
     }
     .profile-name, .profile-asl {
@@ -1912,6 +1897,21 @@ select {
         width: 20px;
         height: 20px;
     }
+    .svg-suggestion-button {
+        width: 23px;
+        height: 23px;
+    }
+    .settings {
+        padding: 10px;
+    }
+
+    .tab-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.9em
+    }
+
 }
 
 @media (min-width:1280px) and (max-width:1919px) {

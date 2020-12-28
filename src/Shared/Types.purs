@@ -19,6 +19,8 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
+import Data.Hashable (class Hashable)
+import Data.Hashable as HS
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -311,6 +313,7 @@ data IMMessage =
       SetSelectedImage (Maybe String) |
       ToggleContactProfile |
       DropFile Event |
+      ToggleMessageEnter |
       --REFACTOR: dont use string selectors
       FocusInput String |
       EnterBeforeSendMessage |
@@ -377,6 +380,16 @@ data DisplayHelpSection =
 data InternalHelpMessage =
       ToggleHelpSection DisplayHelpSection
 
+data IMSelector =
+      ImageFileInput |
+      ChatInput |
+      ImageFormCaption |
+      MessageHistory |
+      Favicon |
+      ProfileEditionRoot |
+      SettingsEditionRoot |
+      KarmaLeaderboard |
+      HelpRoot
 
 type PU = (BasicUser (
       gender :: Maybe Gender,
@@ -477,6 +490,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqIMSelector :: Eq IMSelector
 derive instance eqShowContextMenu :: Eq ShowContextMenu
 derive instance eqDatabaseError :: Eq DatabaseError
 derive instance eqFullContactProfile :: Eq ProfilePresentation
@@ -768,7 +782,6 @@ instance showShowUserMenuModal :: Show ShowUserMenuModal where
             ShowLeaderboard -> "Karma leaderboard"
             ShowHelp -> "Help"
             _ -> ""
-
 instance showMDateTime :: Show DateTimeWrapper where
       show = DGRS.genericShow
 instance showMDate :: Show DateWrapper where
@@ -781,6 +794,17 @@ instance showPayloadErrorContext :: Show DatabaseError where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
+instance showIMSelector :: Show IMSelector where
+      show = case _ of
+            ImageFileInput -> "#image-file-input"
+            ChatInput -> "#chat-input"
+            ImageFormCaption -> "#image-form-caption"
+            MessageHistory -> "#message-history"
+            Favicon -> "#favicon"
+            ProfileEditionRoot -> "#profile-edition-root"
+            SettingsEditionRoot -> "#settings-edition-root"
+            KarmaLeaderboard -> "#karma-leaderboard-root"
+            HelpRoot ->"#help-root"
 
 instance toSQLValueGender :: ToSQLValue Gender where
       toSQLValue = F.unsafeToForeign <<< show
@@ -789,6 +813,9 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
+
+instance hashableIMSelector :: Hashable IMSelector where
+      hash = HS.hash <<< show
 
 instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
       encodeJson = DAEGR.genericEncodeJson

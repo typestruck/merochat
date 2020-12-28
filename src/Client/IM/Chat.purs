@@ -244,10 +244,8 @@ setMessage cursor markdown model =
                         WHHTA.setSelectionEnd position textarea
                   Nothing -> pure unit
 
-selectImage :: IMModel -> NextMessage
-selectImage model = CIF.nothingNext model $ liftEffect do
-      input <- getFileInput
-      CCF.triggerFileSelect input
+selectImage :: Element -> IMModel -> NextMessage
+selectImage input model = CIF.nothingNext model <<< liftEffect $ CCF.triggerFileSelect input
 
 catchFile :: FileReader -> Event -> IMModel -> NoMessages
 catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
@@ -327,3 +325,8 @@ resizeChatInput event model = CIF.nothingNext model resize
       where resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
                   target <- WEE.target event
                   WDE.fromEventTarget target
+
+toggleMessageEnter :: IMModel -> NoMessages
+toggleMessageEnter model@{ messageEnter } = F.noMessages $ model {
+      messageEnter = not messageEnter
+}
