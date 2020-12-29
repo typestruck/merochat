@@ -385,7 +385,9 @@ data IMElementID =
       CompactProfileContextMenu |
       FullProfileContextMenu |
       ImageFileInput |
+      ChatInputSuggestion |
       ChatInput |
+      ContactList |
       ImageFormCaption |
       LinkFormUrl |
       MessageHistory |
@@ -805,8 +807,10 @@ instance showIMSelector :: Show IMElementID where
             CompactProfileContextMenu -> "compact-profile-context-menu"
             FullProfileContextMenu -> "full-profile-context-menu"
             ImageFileInput -> "image-file-input"
+            ContactList -> "contact-list"
             LinkFormUrl -> "link-form-url"
             ChatInput -> "chat-input"
+            ChatInputSuggestion -> "chat-input-suggestion"
             ImageFormCaption -> "image-form-caption"
             MessageHistory -> "message-history"
             Favicon -> "favicon"

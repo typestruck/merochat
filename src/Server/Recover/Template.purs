@@ -27,7 +27,7 @@ template token = do
                   HE.div (HA.class' "green-area green-box") [
                               case token of
                                     Nothing ->
-                                          HE.div_ [
+                                          HE.fragment [
                                                 HE.h2 (HA.class' "ext-heading") "Recover account",
                                                 HE.div (HA.class' "form-up") [
                                                       HE.div [HA.id "email-input", HA.class' "input"] [
@@ -35,18 +35,20 @@ template token = do
                                                             HE.input [HA.type' "text", HA.id "email", HA.maxlength emailMaxCharacters],
                                                             HE.span (HA.class' "error-message") "Please enter a valid email"
                                                       ],
-                                                      HE.input [HA.type' "button", HA.value "Recover"],
+                                                      HE.div [HA.class' "input"][
+                                                            HE.input [HA.type' "button", HA.value "Recover"]
+                                                      ],
                                                       HE.span' [HA.class' "request-error-message error-message"],
                                                       HE.span [HA.id "request-success-message", HA.class' "success-message"] "Recovery email sent. Please check your inbox." ,
                                                       HE.div' [HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible"]
                                                 ]
                                           ]
                                     Just t ->
-                                          HE.div_ [
+                                          HE.fragment [
                                                 HE.h2 (HA.class' "ext-heading") "Reset password",
                                                 HE.div (HA.class' "form-up") [
-                                                      HE.label_ "Password",
                                                       HE.div [HA.id "password-input", HA.class' "input"] [
+                                                            HE.label_ "Password",
                                                             HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id "password"],
                                                             HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                                       ],
@@ -55,7 +57,9 @@ template token = do
                                                             HE.input [HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id "confirm-password"],
                                                             HE.span (HA.class' "error-message") "Password and confirmation do not match"
                                                       ],
-                                                      HE.input [HA.type' "button", HA.value "Change password", HA.class' "action-button"],
+                                                      HE.div [HA.class' "input"] [
+                                                            HE.input [HA.type' "button", HA.value "Change password", HA.class' "action-button"]
+                                                      ],
                                                       HE.span' [HA.class' "request-error-message error-message"],
                                                       HE.span [HA.class' "success-message"] $ "Password reseted. Redirecting to login..."
                                                 ]

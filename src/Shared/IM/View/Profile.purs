@@ -147,7 +147,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             FullContactProfile -> HE.div [HA.class' "suggestion old"] $ fullProfileMenu : profile
             CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
                   HE.div [HA.class' "suggestion new"] $ loading : currentSuggestionMenu : profile,
-                  HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput model
+                  HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput ChatInputSuggestion model
             ]
             OtherSuggestion -> HE.div [HA.class' "suggestion new"] profile
       where profile = [

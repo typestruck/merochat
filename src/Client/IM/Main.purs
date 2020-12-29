@@ -62,8 +62,7 @@ main = do
       webSocket <- CIW.createWebSocket
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef <- ER.new webSocket
-      --REFACTOR: use bounds
-      elements <- cacheElements [ ImageFileInput  {- , ChatInput, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot -}]
+      elements <- cacheElements [ ImageFileInput, ChatInput {-, ChatInputSuggestion, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot -}]
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view true,
@@ -92,19 +91,19 @@ update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader, elements } model =
       case _ of
             --chat
-            InsertLink -> CIC.insertLink model
+            InsertLink -> CIC.insertLink elements model
             ToggleChatModal modal -> CIC.toggleModal elements modal model
             DropFile event -> CIC.catchFile fileReader event model
             EnterBeforeSendMessage -> CIC.enterBeforeSendMessage model
-            ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
+            ForceBeforeSendMessage -> CIC.forceBeforeSendMessage elements model
             ResizeChatInput event -> CIC.resizeChatInput event model
             BeforeSendMessage content -> CIC.beforeSendMessage content model
-            SendMessage date -> CIC.sendMessage webSocket date model
-            SetMessageContent cursor content -> CIC.setMessage cursor content model
-            Apply markup -> CIC.applyMarkup markup model
+            SendMessage date -> CIC.sendMessage elements webSocket date model
+            SetMessageContent cursor content -> CIC.setMessage elements cursor content model
+            Apply markup -> CIC.applyMarkup elements markup model
             SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
             SetSmallScreen -> setSmallScreen model
-            SetEmoji event -> CIC.setEmoji event model
+            SetEmoji event -> CIC.setEmoji elements event  model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             FocusInput elementID -> focusInput elementID model
             --contacts

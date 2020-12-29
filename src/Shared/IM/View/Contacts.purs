@@ -20,7 +20,7 @@ import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
 contactList :: Boolean -> IMModel -> Html IMMessage
-contactList isClientRender { failedRequests, chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list"] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
+contactList isClientRender { failedRequests, chatting, contacts, user: { id: userID } } = HE.div [HA.onScroll CheckFetchContacts, HA.class' "contact-list", HA.id "contact-list"] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
       where --the ordering of the contact list is only done for the dom nodes
             -- model.contacts is left unchanged
             allContacts

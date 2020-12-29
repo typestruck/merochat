@@ -53,9 +53,6 @@ foreign import resizeTextarea_ :: EffectFn1 Element Unit
 
 --purty is fucking terrible
 
-getChatInput :: Effect Element
-getChatInput = CCD.unsafeQuerySelector $ "#" <> show ChatInput
-
 --the keydown event fires before input
 -- this event is filterd to run only on Enter keydown
 enterBeforeSendMessage :: IMModel -> NoMessages
@@ -64,18 +61,17 @@ enterBeforeSendMessage model@{ messageEnter } = F.noMessages $ model {
 }
 
 --send message or image button click
-forceBeforeSendMessage :: IMModel -> MoreMessages
-forceBeforeSendMessage model@{ message } =
+forceBeforeSendMessage :: HashMap IMElementID Element -> IMModel -> MoreMessages
+forceBeforeSendMessage elements model@{ message } =
       model {
             shouldSendMessage = true
       } :> [
             pure <<< Just <<< BeforeSendMessage $ DM.fromMaybe "" message,
-            resizeInputEffect
+            resizeInputEffect $ SU.lookup ChatInput elements
       ]
 
-resizeInputEffect :: Aff (Maybe IMMessage)
-resizeInputEffect = liftEffect $ do
-      input <- getChatInput
+resizeInputEffect :: Element -> Aff (Maybe IMMessage)
+resizeInputEffect input = liftEffect $ do
       resizeTextarea input
       pure Nothing
 
@@ -119,8 +115,8 @@ beforeSendMessage content model@{
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   CIF.next $ SendMessage date
 
-sendMessage :: WebSocket -> DateTimeWrapper -> IMModel -> NoMessages
-sendMessage webSocket date = case _ of
+sendMessage :: HashMap IMElementID Element -> WebSocket -> DateTimeWrapper -> IMModel -> NoMessages
+sendMessage elements webSocket date = case _ of
       model@{
             user: { id: senderID },
             chatting: Just chatting,
@@ -155,7 +151,7 @@ sendMessage webSocket date = case _ of
             in
                   CIF.nothingNext updatedModel $ liftEffect do
                         CIS.scrollLastMessage
-                        input <- getChatInput
+                        let input = SU.lookup ChatInput elements
                         WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
                         CIW.sendPayload webSocket $ OutgoingMessage {
                               id: newTemporaryID,
@@ -207,14 +203,15 @@ makeTurn { chatStarter, chatAge, history } sender =
             countCharacters total ( { content }) = total + DSC.length content
             getDate = DN.unwrap <<< _.date
 
-applyMarkup :: Markup -> IMModel -> MoreMessages
-applyMarkup markup model@{ message } = model :> [
+applyMarkup :: HashMap IMElementID Element -> Markup -> IMModel -> MoreMessages
+applyMarkup elements markup model@{ message } = model :> [
       liftEffect (Just <$> apply markup (DM.fromMaybe "" message)),
-      resizeInputEffect
+      resizeInputEffect input
 ]
-      where apply markup value = do
-                  textarea <- SU.fromJust <<< WHHTA.fromElement <$> getChatInput
-                  let   Tuple before after = case markup of
+      where input = SU.lookup ChatInput elements
+            apply markup value = do
+                  let   textarea = SU.fromJust $ WHHTA.fromElement input
+                        Tuple before after = case markup of
                               Bold -> Tuple "**" "**"
                               Italic -> Tuple "*" "*"
                               Strike -> Tuple "~" "~"
@@ -230,14 +227,14 @@ applyMarkup markup model@{ message } = model :> [
                         newValue = beforeSelection <> before <> selected <> after <> afterSelection
                   pure $ SetMessageContent (Just $ end + beforeSize) newValue
 
-setMessage :: Maybe Int -> String -> IMModel -> NextMessage
-setMessage cursor markdown model =
+setMessage :: HashMap IMElementID Element -> Maybe Int -> String -> IMModel -> NextMessage
+setMessage elements cursor markdown model =
       CIF.nothingNext (model {
             message = Just markdown
       }) <<< liftEffect $
             case cursor of
                   Just position -> do
-                        textarea <- SU.fromJust <<< WHHTA.fromElement <$> getChatInput
+                        let textarea = SU.fromJust <<< WHHTA.fromElement $ SU.lookup ChatInput elements
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setSelectionEnd position textarea
                   Nothing -> pure unit
@@ -276,19 +273,19 @@ toggleModal elements toggle model = model {
                   CCF.triggerFileSelect $ SU.lookup ImageFileInput elements
                   pure Nothing
 
-setEmoji :: Event -> IMModel -> NextMessage
-setEmoji event model@{ message } = model :>
+setEmoji :: HashMap IMElementID Element -> Event -> IMModel -> NextMessage
+setEmoji elements event model@{ message } = model :>
       if CCD.tagNameFromTarget event == "SPAN" then
             [liftEffect  do
                   emoji <- CCD.innerTextFromTarget event
-                  setAtCursor message emoji,
+                  setAtCursor (SU.lookup ChatInput elements) message emoji,
             pure <<< Just $ ToggleChatModal HideChatModal
             ]
        else
             []
 
-insertLink :: IMModel -> MoreMessages
-insertLink model@{ message, linkText, link } =
+insertLink :: HashMap IMElementID Element -> IMModel -> MoreMessages
+insertLink elements model@{ message, linkText, link } =
       case link of
             Nothing -> F.noMessages $ model {
                   erroredFields = [ TDS.reflectSymbol (SProxy :: SProxy "link") ]
@@ -302,11 +299,11 @@ insertLink model@{ message, linkText, link } =
                         insert $ if protocol == null then "http://" <> url else url
                   ]
       where markdown url = "[" <> DM.fromMaybe url linkText <> "](" <> url <> ")"
-            insert = liftEffect <<< setAtCursor message <<< markdown
+            insert = liftEffect <<< setAtCursor (SU.lookup ChatInput elements) message <<< markdown
 
-setAtCursor :: Maybe String -> String -> Effect (Maybe IMMessage)
-setAtCursor message text = do
-      textarea <- SU.fromJust <<< WHHTA.fromElement <$> getChatInput
+setAtCursor :: Element -> Maybe String -> String -> Effect (Maybe IMMessage)
+setAtCursor input message text = do
+      let textarea = SU.fromJust $ WHHTA.fromElement input
       end <- WHHTA.selectionEnd textarea
       let { before, after } = DS.splitAt end $ DM.fromMaybe "" message
       CIF.next <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after

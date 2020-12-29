@@ -10,4 +10,4 @@ initialMessagesPerPage :: Int
 initialMessagesPerPage = 1
 
 messagesPerPage :: Int
-messagesPerPage = 20
+messagesPerPage = 25

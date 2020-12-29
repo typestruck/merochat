@@ -46,10 +46,10 @@ resumeChat searchID model@{ contacts, chatting, smallScreen } =
                         failedRequests = []
                   } :> ([
                         CIF.next UpdateReadCount,
-                        CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory,
-                        liftEffect do
-                              CIS.scrollLastMessage
-                              pure Nothing
+                        -- liftEffect do
+                        --       CIS.scrollLastMessage
+                        --       pure Nothing,
+                        CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
                   ] <> if smallScreen then [] else [CIF.next $ FocusInput ChatInput])
 
 markRead :: WebSocket -> IMModel -> MoreMessages
@@ -106,7 +106,7 @@ checkFetchContacts model@{ contacts, freeToFetchContactList }
       | freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
       where getScrollBottom = liftEffect do
-                  element <- CCD.unsafeQuerySelector "#message-history"
+                  element <- CCD.unsafeQuerySelector $ "#" <> show ContactList
                   top <- WDE.scrollTop element
                   height <- WDE.scrollHeight element
                   offset <- WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element

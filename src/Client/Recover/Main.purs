@@ -17,10 +17,10 @@ import Shared.Routes (routes)
 
 recover :: Maybe String -> Effect Unit
 recover captchaResponse = do
-     registerLogin <- CCA.validateEmailPassword
+     registerLogin <- CCA.validateEmail
      case registerLogin of
             Nothing -> pure unit
-            Just { email } ->
+            Just email ->
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
                    else EA.launchAff_ do
@@ -33,10 +33,10 @@ completeRecover captchaResponse = recover $ Just captchaResponse
 
 reset :: String -> Effect Unit
 reset token = do
-      registerLogin <- CCA.validateEmailPassword
+      registerLogin <- CCA.validatePassword
       case registerLogin of
             Nothing -> pure unit
-            Just { password } ->
+            Just password ->
                   EA.launchAff_  do
                         status <- CCA.formRequest $ request.recover.reset { body: { token, password } }
                         when (status == Success) do

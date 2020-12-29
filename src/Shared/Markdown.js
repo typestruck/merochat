@@ -27,12 +27,12 @@ function restrictedoptions() {
                   link(_, title, text) {
                         return `<a title="${title || ""}">${text}</a>`;
                   },
-                  image(_, title) {
-                        var tag = '<br/>You sent an image';
+                  image(_, __, title) {
+                        var tag = '<i>Image file';
                         if (title)
                               tag = `${tag}: ${title}`;
 
-                        return tag;
+                        return `${tag}</i>`;
                   }
             }
       });

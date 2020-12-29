@@ -269,6 +269,10 @@ body {
     text-overflow: ellipsis;
 }
 
+.contact-list-last-message>* {
+    font-size: 1em;
+}
+
 .profile {
     display: flex;
     text-align: center;
@@ -557,6 +561,7 @@ img.emoji {
     overflow-y: auto;
     flex-grow: 1;
     padding-top: 5px;
+    scrollbar-width: thin;
 }
 
 .logo-contact-list {
@@ -1066,6 +1071,7 @@ select {
     margin: 0 10px;
     cursor: pointer;
     color: inherit;
+    font-size: 1em;
 }
 
 .danger {

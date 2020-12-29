@@ -28,7 +28,7 @@ chat model@{ chatting } =
       HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
             linkModal model,
             imageModal model,
-            chatBarInput model
+            chatBarInput ChatInput model
       ]
 
 linkModal :: IMModel -> Html IMMessage
@@ -66,8 +66,8 @@ imageModal {selectedImage, erroredFields} =
       ]
       where imageValidationFailed = DA.elem (TDS.reflectSymbol (SProxy :: SProxy "selectedImage")) erroredFields
 
-chatBarInput :: IMModel -> Html IMMessage
-chatBarInput model@{
+chatBarInput :: IMElementID -> IMModel -> Html IMMessage
+chatBarInput elementID model@{
       chatting,
       contacts,
       suggesting,
@@ -106,7 +106,7 @@ chatBarInput model@{
                         HE.textarea' $ [
                               HA.rows 1,
                               HA.class' "chat-input",
-                              HA.id $ show ChatInput,
+                              HA.id $ show elementID,
                               HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
                               HA.disabled $ not isWebSocketConnected,
                               SK.keyDownOn "Enter" EnterBeforeSendMessage,

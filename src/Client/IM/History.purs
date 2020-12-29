@@ -12,7 +12,6 @@ import Client.IM.Scroll as CIS
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
-import Effect.Class.Console as EC
 import Flame ((:>))
 import Flame as F
 import Shared.IM.Contact as SIC
