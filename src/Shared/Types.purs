@@ -422,7 +422,8 @@ type PM = (
       descriptionInputed :: Maybe String,
       generating :: Maybe Generate,
       countries :: Array (Tuple PrimaryKey String),
-      languages :: Array (Tuple PrimaryKey String)
+      languages :: Array (Tuple PrimaryKey String),
+      hideSuccessMessage :: Boolean
 )
 
 --used to generically set records

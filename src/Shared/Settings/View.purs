@@ -94,7 +94,7 @@ account model@{ erroredFields, confirmTermination } =
                   in HE.div (formId field) [
                         HE.div (HA.class' { errored: hasErrors }) [
                               HE.label_ capitalizedStringField ,
-                              HE.input [HA.type' inputType, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field)],
+                              HE.input [HA.type' inputType, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field), HA.autocomplete $ "new-" <> stringField],
                               HE.div (HA.class' "error-message") fieldErrorMessage
                         ],
                         HE.div (HA.class' { errored: hasConfirmationErrors }) [

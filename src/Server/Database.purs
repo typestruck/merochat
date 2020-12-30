@@ -10,7 +10,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLRow, Connection, PGError(..), Pool, Query(..), Row1)
 import Database.PostgreSQL.PG as DP
-import Debug.Trace (spy)
+
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Console as EC

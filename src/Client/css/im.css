@@ -134,7 +134,7 @@ body {
     align-self: baseline;
 }
 
-.profile-name {
+.profile-edition-name, .profile-name {
     font-family: Verdana, "sans serif";
     font-size: 1.1em;
     margin: 0;
@@ -637,7 +637,6 @@ svg.toolbar-action {
 }
 
 .chat-input-preview, .chat-input {
-
     border-radius: 5px;
     max-height: 150px;
     border-top-right-radius: 0;
@@ -1518,7 +1517,7 @@ select {
     height: 38px;
 }
 
-.profile-name {
+.profile-name, .profile-edition-name {
     margin-top: 11px;
 }
 
@@ -1534,7 +1533,7 @@ select {
     margin-bottom: 16px;
 }
 
-.profile-description-about {
+.profile-description-about, .about {
     margin-top: 16px;
 }
 
@@ -1671,7 +1670,7 @@ select {
         flex-grow: 1;
         overflow: hidden;
     }
-    .profile-name, .profile-asl {
+    .profile-edition-name, .profile-name, .profile-asl {
         text-align: center;
     }
     .suggestion-center .suggestion.new .tags-description {
@@ -1910,14 +1909,12 @@ select {
     .settings {
         padding: 10px;
     }
-
     .tab-item {
         display: flex;
         flex-direction: column;
         align-items: center;
         font-size: 0.9em
     }
-
 }
 
 @media (min-width:1280px) and (max-width:1919px) {
@@ -1939,7 +1936,7 @@ select {
     .profile-asl {
         margin-bottom: 16px;
     }
-    .suggestion .headline {
+    .suggestion .headline, .profile-edition-headline {
         max-width: 483px;
     }
     .profile-tags {
@@ -1979,7 +1976,7 @@ select {
         height: calc(100vh * 0.7092592592592592);
         width: 1100px;
     }
-    .profile-description-about {
+    .profile-description-about, .about {
         margin-top: 25px;
     }
     .suggestion-center {
@@ -1993,14 +1990,14 @@ select {
         width: 94px;
         height: 91px;
     }
-    .profile-name {
+    .profile-edition-name,.profile-name {
         letter-spacing: -0.02em;
     }
     .profile-asl {
         max-width: 872px;
         margin-bottom: 20px;
     }
-    .suggestion .headline {
+    .suggestion .headline, .profile-edition-headline {
         max-width: 670px;
     }
     .profile-tags {

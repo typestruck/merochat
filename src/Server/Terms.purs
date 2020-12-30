@@ -12,7 +12,7 @@ terms  =
       HE.div (HA.class' "terms") [
             HE.h2 (HA.class' "no-padding") "Introduction and agreement",
             HE.p_ """These terms and conditions are the entire agreement between MelanChat ("the Site", "we", "our", "us") and the user of the Site ("you", "your").""",
-            HE.p_ "By using the Site in any capacity, you accept these conditions and agree to comply with the most recent version of this agreement. We have the right to update this agreement at any time without prior notice. Your continued use of the Site implies your acceptance of the agreement as updated.",
+            HE.p_ "By using the Site in any capacity, you accept these conditions and agree to comply with the most recent version of this agreement. We reserve the right to update this agreement at any time without prior notice. Your continued use of the Site implies your acceptance of the agreement as updated.",
             HE.div (HA.class' "hide-internal") [
                   HE.h2_ "Privacy policy",
                   HE.p_ [
@@ -38,7 +38,6 @@ terms  =
                   HE.li_ "harrass, bully or target groups or individuals",
                   HE.li_ "promote hate speech or discrimination",
                   HE.li_ "engage in fraudelent or criminal behavior",
-                  HE.li_ "sell or promote services or products",
                   HE.li_ "engage in sexual activities, or send pornographic material",
                   HE.li_ "distribute viruses or malicious software"
             ],

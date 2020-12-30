@@ -8,10 +8,6 @@
     width: 500px;
 }
 
-.suggestion.contact .profile-tags {
-    margin-top: 10px;
-}
-
 .suggestion.contact .profile-asl div {
     margin-right: 0;
 }
@@ -31,19 +27,11 @@
 
 .profile-edition-name {
     font-weight: bold;
-    margin: 20px 0;
     display: inline-block;
 }
 
 .edit {
     margin: 0 10px;
-}
-
-.suggestion.contact .profile-asl {
-    margin: 20px 0;
-    flex-wrap: wrap;
-    width: 100%;
-    justify-content: center;
 }
 
 .italics {
@@ -91,6 +79,7 @@
     margin-top: -30px;
     margin-left: 0;
     align-self: flex-end;
+    z-index: 2;
 }
 
 .save-cancel .cancel {
@@ -99,7 +88,10 @@
 
 .button-save-bottom {
     position: sticky;
-    bottom:0px
+    bottom: 0px;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
 }
 
 .about {
@@ -115,6 +107,7 @@
     cursor: pointer;
 }
 
+
 .centered {
     margin-bottom: 20px;
     margin-right: 0 !important;
@@ -126,7 +119,7 @@
 }
 
 .save {
-    margin-left: -30px;
+    margin-left: -30px
 }
 
 select+.save {
@@ -134,12 +127,12 @@ select+.save {
 }
 
 .modal-input {
-    padding-right:30px;
-    margin-top:20px;
+    padding-right: 30px;
+    margin-top: 20px;
 }
 
 .suggestion.contact .modal-input:focus {
-    border:none !important;
+    border: none !important;
 }
 
 .profile-edition-add-list {
@@ -159,6 +152,7 @@ select+.save {
     cursor: pointer;
     margin-right: 20px;
     font-size: 0.8em;
+    vertical-align: middle;
 }
 
 .grow div:hover>.list-remove {
@@ -172,7 +166,17 @@ select+.save {
 }
 
 .plus {
-    margin-left: -30px
+    margin-left: -30px;
+}
+
+.plus, .save {
+    width: 20px;
+    height: 20px
+}
+
+.cancel {
+    width: 17px;
+    height: 17px
 }
 
 select+.plus {
@@ -184,16 +188,27 @@ select+.plus {
 }
 
 .disabled {
-    stroke:rgb(238, 238, 238, 0.5);
-    fill:rgb(238, 238, 238, 0.5)
+    stroke: rgb(238, 238, 238, 0.5);
+    fill: rgb(238, 238, 238, 0.5)
 }
 
 .avatar-edition {
     cursor: pointer;
     display: flex;
-    align-items: end;
+    align-items: flex-end;
 }
 
 .avatar-edition svg {
     margin-bottom: 10px;
+}
+
+.value-edition {
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width:1279px) {
+    .profile-edition-add-list, .suggestion.contact select {
+        width: auto;
+    }
 }

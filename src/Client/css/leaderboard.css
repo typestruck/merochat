@@ -47,6 +47,7 @@ h2 {
 
 .user .name::after {
     content: ' (You!)';
+    white-space: normal;
 }
 
 .avatar-leaderboard-div {
@@ -81,7 +82,7 @@ h2 {
     font-size: 1.2em;
 }
 
-@media (max-width:1365px) {
+@media (max-width:1279px) {
     .avatar-leaderboard {
         width: 64px;
         height: 64px;
@@ -92,5 +93,12 @@ h2 {
     .name-karma {
         width: auto;
         flex-grow: 1;
+    }
+    .name {
+        max-width: 180px;
+        white-space: nowrap;
+        overflow: hidden;
+        word-wrap: break-word;
+        text-overflow: ellipsis;
     }
 }

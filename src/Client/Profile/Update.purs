@@ -8,6 +8,7 @@ import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CNN
+import Client.Common.Types (RequestStatus(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -15,12 +16,13 @@ import Data.Newtype as DN
 import Data.String as DS
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Prim.Symbol (class Append)
+import Effect.Aff (Aff, Milliseconds(..))
+import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
 import Prim.Row (class Cons)
+import Prim.Symbol (class Append)
 import Record as R
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 import Shared.Profile.View (profileEditionId)
@@ -32,7 +34,7 @@ getFileInput :: Effect Element
 getFileInput = CCD.unsafeQuerySelector "#avatar-file-input"
 
 update :: AffUpdate ProfileModel ProfileMessage
-update rc@{ model, message } =
+update rc@{ model, message, display } =
       case message of
             SelectAvatar -> selectAvatar
             SetPField setter -> pure setter
@@ -42,7 +44,7 @@ update rc@{ model, message } =
                         Name -> setGenerated rc Name (SProxy :: SProxy "name") nameMaxCharacters
                         Headline -> setGenerated rc Headline (SProxy :: SProxy "headline") headlineMaxCharacters
                         Description -> setGenerated rc Description (SProxy :: SProxy "description") descriptionMaxCharacters
-            SaveProfile -> saveProfile model
+            SaveProfile -> saveProfile rc
 
 setGenerated :: forall field fieldInputed r u . IsSymbol field => Cons field String r PU => IsSymbol fieldInputed => Append field "Inputed" fieldInputed => Cons fieldInputed (Maybe String) u PM => Environment ProfileModel ProfileMessage -> Generate -> SProxy field -> Int -> Aff (ProfileModel -> ProfileModel)
 setGenerated { model, display } what field characters = do
@@ -68,10 +70,15 @@ selectAvatar = do
             CCF.triggerFileSelect input
       FAE.noChanges
 
-saveProfile :: ProfileModel -> Aff (ProfileModel -> ProfileModel)
-saveProfile { user: user@{ name }} = do
-      void <<< CNN.formRequest profileEditionId $ request.profile.post { body: user }
-      liftEffect <<<
-            --let im know that the name has changed
-            CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
-      FAE.noChanges
+saveProfile :: AffUpdate ProfileModel ProfileMessage
+saveProfile {display, model : { user: user@{ name }} } = do
+      status <- CNN.formRequest profileEditionId $ request.profile.post { body: user }
+      case status of
+            Success -> do
+                  display $ FAE.diff' { hideSuccessMessage : false }
+                  liftEffect <<<
+                        --let im know that the name has changed
+                        CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
+                  EA.delay $ Milliseconds 3000.0
+                  FAE.diff { hideSuccessMessage : true }
+            _ -> FAE.noChanges

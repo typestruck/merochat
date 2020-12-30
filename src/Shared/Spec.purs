@@ -92,7 +92,7 @@ spec :: Spec {
                   },
                   account :: Routes "/account" {
                         email :: POST "/account/email"  {
-                              body :: String,
+                              body :: { email ::String },
                               response :: Ok
                         },
                         password :: POST "/account/password" {

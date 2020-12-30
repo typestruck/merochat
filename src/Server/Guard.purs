@@ -5,10 +5,10 @@ import Server.Types
 import Shared.Types
 
 import Data.Either (Either(..))
-import Data.Either (Either)
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DMB
+
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Node.HTTP (Request)
@@ -20,8 +20,8 @@ import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Guards as PSG
 import Payload.Server.Response as PSR
 import Server.Cookies (cookieName)
-import Shared.Options.Domain (domain)
 import Server.Token as ST
+import Shared.Options.Domain (domain)
 import Shared.Routes (routes)
 
 guards :: Configuration -> _

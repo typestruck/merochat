@@ -8,7 +8,6 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Query(..), Row1(..))
 import Server.Database as SD
-import Debug.Trace(spy)
 
 baseQuery :: String
 baseQuery = "select id, email, password from users where "

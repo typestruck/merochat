@@ -5,7 +5,7 @@ import Shared.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
+
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F

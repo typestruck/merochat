@@ -16,7 +16,8 @@
 }
 
 .settings-section .error-message {
-    margin: 0;
+    display: block;
+    visibility: hidden;
 }
 
 .settings-section .green-button {
@@ -54,7 +55,7 @@
     font-weight: bold;
 }
 
-@media (max-width:1365px) {
+@media (max-width:1279px) {
     .settings-edition {
         width: 100%;
     }

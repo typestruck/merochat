@@ -26,6 +26,7 @@ template {user: user, countries, languages } = do
                   tagsInputedList: Nothing,
                   descriptionInputed: Nothing,
                   generating: Nothing,
+                  hideSuccessMessage: false,
                   user,
                   countries,
                   languages

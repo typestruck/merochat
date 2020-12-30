@@ -64,7 +64,7 @@ faq =
             HE.h2_ "Recommend me some music",
             HE.p_ [
                   HE.text "Listen to ",
-                  HE.a (HA.href "https://open.spotify.com/artist/2JmW0VFQ6nJ8eMc3HKPeiF") "Metá Metá",
+                  HE.a (HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q") "Metá Metá",
                   HE.text "."
             ],
             HE.h2 [HA.id "canihelp"] "Wow, I love it. How can I help?",

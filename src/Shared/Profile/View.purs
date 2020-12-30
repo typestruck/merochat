@@ -16,7 +16,6 @@ import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Debug.Trace (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -26,6 +25,7 @@ import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
+import Shared.IM.Svg as SIS
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Setter as SS
@@ -42,6 +42,7 @@ view model@{
       countries,
       languages,
       generating,
+      hideSuccessMessage,
       descriptionInputed
 } = HE.div profileEditionId [
       HE.div [HA.class' "profile-edition suggestion contact"] [
@@ -51,11 +52,8 @@ view model@{
                         HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar],
                         pen
                   ],
-                  HE.svg [HA.class' "svg-16", HA.viewBox "0 0 512 512", HA.onClick resetAvatar] [
-                        HE.title "Reset profile picture",
-                        HE.path' $ HA.d "M96,472.205A23.715,23.715,0,0,0,119.579,496H392.421A23.715,23.715,0,0,0,416,472.205V168H96Z",
-                        HE.path' $ HA.d "M333,91V48c0-16.262-11.684-29-26.6-29H205.6C190.684,19,179,31.738,179,48V91H64v42H448V91ZM221,61h70V91H221Z"
-                  ]
+                  HE.svg [HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick resetAvatar] $
+                        HE.title "Reset profile picture" : removeContents
             ],
             HE.input [HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"],
 
@@ -82,7 +80,7 @@ view model@{
             HE.div (HA.class' "button-save-bottom") [
                   HE.input [HA.type' "button", HA.onClick SaveProfile, HA.value "Update profile", HA.class' "green-button center-flex"],
                   HE.span' (HA.class' "request-error-message"),
-                  HE.span (HA.class' "success-message") "Profiled updated!"
+                  HE.span [HA.class' {"success-message": true, hidden: hideSuccessMessage } ] "Profiled updated!"
             ]
       ]
 ]
@@ -139,7 +137,7 @@ view model@{
                         ]
                   in  HE.div (HA.class' "profile-tags") $ displayEditList (SProxy :: SProxy "tags") identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
 
-            displayEditDescription = HE.div_ [
+            displayEditDescription = HE.fragment [
                   HE.div (HA.class' { hidden: generating /= Just Description })[
                         HE.div' (HA.class' "loading")
                   ],
@@ -183,16 +181,16 @@ view model@{
                         displayRemoveItem item =
                               HE.div_ [
                                     HE.span (HA.class' $ "list-" <> stringField) $ formatter item,
-                                    HE.span [HA.class' "list-remove", HA.onClick (removeFromInputedList fieldInputedList item)] "x"
+                                    HE.svg [HA.class' "list-remove svg-20", HA.viewBox "0 0 16 16", HA.onClick (removeFromInputedList fieldInputedList item)] $ HE.title "Remove item" : removeContents
                               ]
                   in HE.div (HA.class' { centered: isEditing }) [
                         HE.div [HA.class' { "profile-edition-add": true, hidden: isEditing }, title stringField, HA.onClick (editField field fieldInputedList)] $
                               case currentFieldValue of
-                                    Nothing -> HE.div (HA.class' "italics") [
+                                    Nothing -> HE.div (HA.class' "value-edition italics") [
                                           HE.text $ "Your " <> stringField,
                                           pen
                                     ]
-                                    Just value -> HE.div_ [
+                                    Just value -> HE.div (HA.class' "value-edition") [
                                           value,
                                           pen
                                     ],
@@ -227,11 +225,11 @@ view model@{
                   in HE.div (HA.class' { centered: isEditing }) [
                         HE.div [HA.class' { "profile-edition-add" : true, hidden: isEditing }, title stringField, HA.onClick (editField field fieldInputed)] $
                               case currentFieldValue of
-                                    Just value -> HE.div_ [
+                                    Just value -> HE.div (HA.class' "value-edition") [
                                           value,
                                           pen
                                     ]
-                                    _ -> HE.div (HA.class' "italics") [
+                                    _ -> HE.div (HA.class' "italics value-edition") [
                                           HE.text $ "Your " <> stringField,
                                           pen
                                     ],
@@ -255,7 +253,7 @@ view model@{
                         HE.div' (HA.class' "loading")
                       else
                         HE.div_ [
-                              HE.div [title stringField, HA.class' {"hidden": isEditing}, HA.onClick (editField field fieldInputed)] [
+                              HE.div [title stringField, HA.class' {"hidden": isEditing, "value-edition" : true}, HA.onClick (editField field fieldInputed)] [
                                     HE.span [HA.class' $ "profile-edition-" <> stringField] [HE.text $ R.get field model.user],
                                     pen
                               ],
@@ -335,9 +333,10 @@ exitEditGenerated message fieldInputed (Tuple key _) =
             SetPField identity
 
 pen :: Html ProfileMessage
-pen = HE.svg [HA.class' "svg-16 edit", HA.viewBox "0 0 512 512"] [
-      HE.path' $ HA.d "M295.772,113.228,85.791,323.209,38.818,461.681a9,9,0,0,0,2.159,9.255l.087.087a9,9,0,0,0,9.255,2.159l138.472-46.973L398.772,216.228Z",
-      HE.path' $ HA.d "M458.648,53.353h0a72.833,72.833,0,0,0-103,0l-34.42,34.42,103,103,34.42-34.42A72.832,72.832,0,0,0,458.648,53.353Z"
+pen = HE.svg [HA.class' "svg-16 edit", HA.viewBox "0 0 16 16"] [
+      HE.polygon' [HA.points "2.74 11.62 2.15 12.92 1.64 14.06 1.41 14.59 1.93 14.35 3.04 13.84 4.43 13.19 11.43 6.21 9.8 4.58 2.74 11.62"],
+      HE.path' [HA.class' "strokeless", HA.d "M15.82,2.36,13.63.18A.56.56,0,0,0,13.21,0a.55.55,0,0,0-.41.18L10.66,2.31l3,3.06,2.14-2.13A.63.63,0,0,0,15.82,2.36Z"],
+      HE.path' [HA.class' "strokeless", HA.d "M1.91,11l-.06.06-.61,1.41h0L.72,13.65.05,15.18A.58.58,0,0,0,.58,16a.6.6,0,0,0,.24-.06l1.52-.68,1.12-.52h0L5,14.08l7.9-7.87-3-3Zm2.52,2.15-.06,0L2.75,11.61l7.05-7,1.63,1.63Z"]
 ]
 
 plus :: Boolean -> ProfileMessage -> Html ProfileMessage
@@ -346,16 +345,15 @@ plus isDisabled message = HE.svg attrs $ HE.path' [HA.d "M425.706,86.294A240,240
 
 
 check :: ProfileMessage -> Html ProfileMessage
-check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 512 512", HA.onClick message] [
+check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 16 16", HA.onClick message] [
       HE.title "Save edition",
-      HE.polygon' [HA.points "204 445.539 35.23 276.77 108.77 203.23 204 298.461 419.23 83.23 492.77 156.77 204 445.539"]
+      HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.5A7.5,7.5,0,1,1,15.5,8,7.5,7.5,0,0,1,8,15.5Z"],
+      HE.path' [HA.class' "a", HA.d "M10.67,5.11l-4.3,4.3L4.73,7.77a.62.62,0,0,0-.88.88l2.52,2.52L11.55,6a.62.62,0,0,0-.88-.88Z"]
 ]
 
 cancel :: forall r t fieldInputed. IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy fieldInputed -> Html ProfileMessage
-cancel fieldInputed = HE.svg [HA.class' "svg-16 cancel", HA.viewBox "0 0 512 512", HA.onClick (resetFieldInputed fieldInputed) ] [
-      HE.title "Cancel edition",
-      HE.polygon' $ HA.points "438.627 118.627 393.373 73.373 256 210.746 118.627 73.373 73.373 118.627 210.746 256 73.373 393.373 118.627 438.627 256 301.254 393.373 438.627 438.627 393.373 301.254 256 438.627 118.627"
-]
+cancel fieldInputed = HE.svg [HA.class' "svg-16 cancel", HA.viewBox "0 0 16 16", HA.onClick (resetFieldInputed fieldInputed) ] $
+      HE.title "Cancel edition" : SIS.closeElements
 
 displayOptions :: forall id. Show id => Eq id => Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
 displayOptions = displayOptionsWith "Don't show"
@@ -382,3 +380,9 @@ resetAvatar = SetPField $ \model -> model {
             avatar = Nothing
       }
 }
+
+removeContents :: forall message. Array (Html message)
+removeContents = [
+      HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.5A7.5,7.5,0,1,1,15.5,8,7.5,7.5,0,0,1,8,15.5Z"],
+      HE.path' [HA.class' "a", HA.d "M11.65,7.38H4.4a.62.62,0,1,0,0,1.24h7.25a.62.62,0,0,0,0-1.24Z"]
+]

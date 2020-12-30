@@ -15,8 +15,8 @@ import Shared.Routes (routes)
 settings :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect String
 settings { guards: { loggedUserID } } = R.liftEffect SST.template
 
-accountEmail :: { guards :: { loggedUserID :: PrimaryKey }, body :: String } -> ServerEffect Ok
-accountEmail { guards: { loggedUserID }, body } = SSA.changeEmail loggedUserID body
+accountEmail :: { guards :: { loggedUserID :: PrimaryKey }, body :: { email :: String} } -> ServerEffect Ok
+accountEmail { guards: { loggedUserID }, body: { email } } = SSA.changeEmail loggedUserID email
 
 accountPassword :: { guards :: { loggedUserID :: PrimaryKey }, body :: String } -> ServerEffect (Response Ok)
 accountPassword { guards: { loggedUserID }, body } = do
