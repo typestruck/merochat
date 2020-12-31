@@ -96,7 +96,7 @@ spec :: Spec {
                               response :: Ok
                         },
                         password :: POST "/account/password" {
-                              body :: String,
+                              body :: { password :: String },
                               response :: Ok
                         },
                         terminate :: POST "/account/terminate" {

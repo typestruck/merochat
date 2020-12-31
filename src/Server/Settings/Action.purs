@@ -5,15 +5,13 @@ import Server.Types
 import Shared.Types
 
 import Server.AccountValidation as SA
-import Server.Ok (ok)
 import Server.Settings.Database as SSD
 
-changeEmail :: PrimaryKey -> String -> ServerEffect Ok
+changeEmail :: PrimaryKey -> String -> ServerEffect Unit
 changeEmail loggedUserID rawEmail = do
       email <- SA.validateEmail rawEmail
       SA.validateExistingEmail email
       SSD.changeEmail loggedUserID email
-      pure ok
 
 changePassword :: PrimaryKey -> String -> ServerEffect Unit
 changePassword loggedUserID password = do

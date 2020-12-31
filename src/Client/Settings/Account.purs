@@ -30,10 +30,10 @@ toggleTerminateAccount :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
 toggleTerminateAccount _ = pure (\model -> model { confirmTermination = not model.confirmTermination})
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changeEmail model@({ email, emailConfirmation }) = requestAndLogout (SProxy :: SProxy "email") $ request.settings.account.email { body: {email} }
+changeEmail model@({ email, emailConfirmation }) = requestAndLogout (SProxy :: SProxy "email") $ request.settings.account.email { body: { email } }
 
 changePassword :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changePassword model@({ password, passwordConfirmation }) = requestAndLogout (SProxy :: SProxy "password") $ request.settings.account.password { body: password }
+changePassword model@({ password, passwordConfirmation }) = requestAndLogout (SProxy :: SProxy "password") $ request.settings.account.password { body: { password } }
 
 requestAndLogout :: forall v field. IsSymbol field => SProxy field -> Aff (ClientResponse v) -> Aff (SettingsModel -> SettingsModel)
 requestAndLogout field aff = do

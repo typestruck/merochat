@@ -97,7 +97,7 @@ view model@{
                               HA.class' "modal-input",
                               HA.placeholder "yyyy-mm-dd",
                               HA.onInput (setFieldInputed fieldInputed <<< parser),
-                              HA.value $ DM.fromMaybe "" currentFieldValue
+                              HA.value <<< DM.fromMaybe "" $ map SDT.formatISODate user.age
                         ]
                   in displayEditOptionalField field (map HE.span_ currentFieldValue) control
             displayEditGender = displayEditOptional DSR.read genders (SProxy :: SProxy "gender") (HE.span_ <<< show <$> user.gender)

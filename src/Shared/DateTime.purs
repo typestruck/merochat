@@ -74,10 +74,12 @@ dateToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDate <<< DN.unwrap
 dateTimeToNumber :: forall n. Newtype n DateTime => n -> Number
 dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwrap
 
---formatISODate :: Date -> String
 formatISODate :: forall n. Newtype n Date => n -> String
-formatISODate dateWrapper = DA.intercalate "-" $ map show [DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date]
+formatISODate dateWrapper = DA.intercalate "-" $ map (pad <<< show) [DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date]
       where date = DN.unwrap dateWrapper
+            pad value = case DS.length value of
+                  1 -> "0" <> value
+                  _ -> value
 
 unformatISODate :: String -> Maybe Date
 unformatISODate value = do
