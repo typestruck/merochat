@@ -1,4 +1,4 @@
-![logo](src/Client/media/logo-small .png)
+![logo](src/Client/media/logo-small.png) [![Build Status](https://travis-ci.org/melanchat/melanchat.svg?branch=master)](https://travis-ci.com/melanchat/melanchat)
 
 MelanChat is a friendly random chat!
 
