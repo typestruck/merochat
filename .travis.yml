@@ -6,4 +6,4 @@ install:
 script:
   - npm install
   - spago build
-  - spago test
+  - export CLI=true && spago test
