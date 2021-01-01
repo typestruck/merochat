@@ -162,7 +162,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
             F.noMessages $ model { toggleContextMenu = HideContextMenu }
       | otherwise =
             model :> [
-                  --we can only node.contains as some of the elements are dinamically created/destroyed
+                  --we cant use node.contains as some of the elements are dinamically created/destroyed
                   liftEffect do
                   let element =  SU.fromJust $ do
                         target <- WEE.target event

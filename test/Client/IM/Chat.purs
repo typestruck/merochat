@@ -4,38 +4,71 @@ import Prelude
 import Shared.Types
 
 import Client.IM.Chat as CIC
-import Client.IM.Main as CIM
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
+import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe (fromJust) as SN
-import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
+import Test.Client.Model (anotherIMUserID, contact, contactID, elements, historyMessage, imUser, imUserID, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
+import Test.Unit as TU
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
---REFACTOR: some of these tests should be for client/IM/Main.purs
 tests :: TestSuite
 tests = do
       TU.suite "im chat update" do
-            let content = "test"
+            TU.test "beforeSendMessage unsets shouldSendMessage if message is empty" do
+                  let   model' = model {
+                              shouldSendMessage = true
+                        }
+                        { shouldSendMessage } = DT.fst $ CIC.beforeSendMessage "" model'
+                  TUA.equal false shouldSendMessage
+
+            TU.test "beforeSendMessage sets shouldSendMessage if there is a selected image" do
+                  let   model' = model {
+                              shouldSendMessage = true,
+                              selectedImage = Just image,
+                              message = Nothing
+                        }
+                        { shouldSendMessage } = DT.fst $ CIC.beforeSendMessage "" model'
+                  TUA.equal true shouldSendMessage
+
+            TU.test "beforeSendMessage adds new contact from suggestion" do
+                  let   model' = model {
+                              suggestions = suggestion : modelSuggestions,
+                              chatting = Nothing,
+                              suggesting = Just 0
+                        }
+                        { contacts } = DT.fst $ CIC.beforeSendMessage content model'
+                  TUA.equal ( _.user <$> DA.head contacts) $ Just suggestion
+
+            TU.test "beforeSendMessage sets chatting to 0" do
+                  let   model' = model {
+                              suggestions = suggestion : modelSuggestions,
+                              chatting = Nothing,
+                              suggesting = Just 0
+                        }
+                        { chatting } = DT.fst $ CIC.beforeSendMessage content model'
+                  TUA.equal (Just 0) chatting
 
             TU.test "sendMessage bumps temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let m@{ temporaryID } = DT.fst $ CIC.sendMessage webSocket date model
+                  let m@{ temporaryID } = DT.fst $ CIC.sendMessage elements webSocket date model
                   TUA.equal 1 temporaryID
 
-                  let { temporaryID } = DT.fst <<< CIC.sendMessage webSocket date $ m { message = Just "oi" }
+                  let { temporaryID } = DT.fst <<< CIC.sendMessage elements webSocket date $ m { message = Just "oi" }
                   TUA.equal 2 temporaryID
 
             TU.test "sendMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { user: { id: userID }, contacts, chatting } = DT.fst <<< CIC.sendMessage webSocket date $ model { message = Just content }
+                  let   { user: { id: userID }, contacts, chatting } = DT.fst <<< CIC.sendMessage elements webSocket date $ model { message = Just content }
                         user = SN.fromJust do
                               index <- chatting
                               contacts !! index
@@ -49,14 +82,35 @@ tests = do
                         sender: userID
                   }] user.history
 
-            let recipientMessage = historyMessage {
-                  sender = anotherIMUserID,
-                  recipient = imUserID
-            }
+            TU.test "sendMessage adds markdown image to history" do
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  let   { contacts, chatting } = DT.fst <<< CIC.sendMessage elements webSocket date $ model {
+                              selectedImage = Just image,
+                              imageCaption = Just caption
+                        }
+                        entry = SN.fromJust do
+                              index <- chatting
+                              contacts !! index
+
+                  TUA.equal ("!["<> caption<> "]("<> image <>")") (entry.history !@ 0).content
+
+            TU.test "sendMessage resets input fields" do
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  let { message } = DT.fst <<< CIC.sendMessage elements webSocket date $ model {
+                        message = Just content
+                  }
+                  TUA.equal Nothing message
+
+                  let { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage elements webSocket date $ model {
+                        selectedImage = Just image,
+                        imageCaption = Just caption
+                  }
+                  TUA.equal Nothing selectedImage
+                  TUA.equal Nothing imageCaption
 
             TU.test "makeTurn calculate turn" do
                   let   contact' = contact {
-                              history = [recipientMessage]
+                              history = [recipientMessage, senderMessage]
                         }
                         turn = Just {
                               chatAge: 0.0,
@@ -79,117 +133,22 @@ tests = do
                   let contact' = contact {
                         history = [recipientMessage, recipientMessage]
                   }
+
                   TUA.equal Nothing $ CIC.makeTurn contact' contactID
 
-            let { suggestions : modelSuggestions } = model
+            TU.test "setSelectedImage sets file" do
+                  let { selectedImage, erroredFields } = DT.fst <<< CIC.setSelectedImage (Just image) $ model {
+                        erroredFields = [],
+                        selectedImage = Nothing
+                  }
+                  TUA.equal (Just image) selectedImage
+                  TUA.equal [] erroredFields
 
-            TU.test "beforeSendMessage unsets shouldSendMessage if message is empty" do
-                  TUA.equal 90 933
-
-            TU.test "beforeSendMessage sets shouldSendMessage if there is a selected image" do
-                  TUA.equal 50 933
-
-            TU.test "beforeSendMessage adds new contact from suggestion" do
-                  let   model' = model {
-                              suggestions = suggestion : modelSuggestions,
-                              chatting = Nothing,
-                              suggesting = Just 0
-                        }
-                        { contacts } = DT.fst $ CIC.beforeSendMessage content model'
-                  TUA.equal ( _.user <$> DA.head contacts) $ Just suggestion
-
-            TU.test "beforeSendMessage sets chatting to 0" do
-                  let   model' = model {
-                              suggestions = suggestion : modelSuggestions,
-                              chatting = Nothing,
-                              suggesting = Just 0
-                        }
-                        { chatting } = DT.fst $ CIC.beforeSendMessage content model'
-                  TUA.equal (Just 0) chatting
-
-            let { id: recipientID } = imUser
-                messageID = 1
-                newMessageID = 101
-
-            TU.test "receiveMessage substitutes temporary id" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   {contacts} = DT.fst <<< CIM.receiveMessage webSocket true (ServerReceivedMessage {
-                              previousID: messageID,
-                              id : newMessageID,
-                              userID: contactID
-                        }) $ model {
-                              contacts = [contact {
-                                    history = [ {
-                                          status: Received,
-                                          date,
-                                          id: messageID,
-                                          recipient: recipientID,
-                                          sender: anotherIMUserID,
-                                          content
-                                    }]
-                              }]
-                        }
-                  TUA.equal (Just newMessageID) $ getMessageID contacts
-
-            TU.test "receiveMessage removes user from suggestions" do
-                  TUA.equal 2 44
-
-            TU.test "receiveMessage marks deleted users as unavailable" do
-                  TUA.equal 22 4
-
-            TU.test "receiveMessage marks blockee users as unaviable" do
-                  TUA.equal 22 4
-
-            TU.test "receiveMessage removes blockee users from suggestions" do
-                  TUA.equal 0 7
-
-            TU.test "receiveMessage adds message to history" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (NewIncomingMessage {
-                              date,
-                              id: newMessageID,
-                              content,
-                              userID: contact.user.id
-                        }) $ model {
-                              contacts = [contact],
-                              chatting = Nothing
-                        }
-                  TUA.equal (Just {
-                        status: Received,
-                        id: newMessageID,
-                        content,
-                        sender: contact.user.id,
-                        recipient: recipientID,
-                        date
-                  }) $ getHistory contacts
-
-            TU.test "receiveMessage mark messages as read if coming from current chat" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (NewIncomingMessage {
-                              id: newMessageID,
-                              userID: contactID,
-                              content,
-                              date
-                        }) $ model {
-                              contacts = [contact],
-                              chatting = Just 0,
-                              suggesting = Nothing
-                        }
-                  TUA.equal [Tuple newMessageID Read] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
-
-            TU.test "receiveMessage does not mark messages as read if window is not focused" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let { contacts } = DT.fst <<< CIM.receiveMessage webSocket false (NewIncomingMessage {
-                              id: newMessageID,
-                              userID: anotherIMUserID,
-                              content,
-                              date
-                        }) $ model {
-                              contacts = [contact],
-                              chatting = Just 0,
-                              suggesting = Nothing
-                        }
-                  TUA.equal [Tuple newMessageID Received] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
+            TU.test "setSelectedImage validates files too long" do
+                  let { erroredFields } = DT.fst <<< CIC.setSelectedImage (Just <<< DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a") $ model {
+                        erroredFields = []
+                  }
+                  TUA.equal ["selectedImage"] erroredFields
 
       where getHistory contacts = do
                   { history } <- DA.head contacts
@@ -197,3 +156,20 @@ tests = do
             getMessageID contacts = do
                   { id } <- getHistory contacts
                   pure id
+
+            content = "test"
+            { id: recipientID } = imUser
+            messageID = 1
+            newMessageID = 101
+            { suggestions : modelSuggestions } = model
+
+            recipientMessage = historyMessage {
+                  sender = anotherIMUserID,
+                  recipient = imUserID
+            }
+            senderMessage = historyMessage {
+                  sender = imUserID,
+                  recipient = anotherIMUserID
+            }
+            image = "base64"
+            caption = "caption"

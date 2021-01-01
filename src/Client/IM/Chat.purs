@@ -13,7 +13,6 @@ import Data.Array ((!!))
 import Data.Array as DA
 import Data.DateTime as DT
 import Data.HashMap (HashMap)
-import Data.HashMap as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -25,6 +24,7 @@ import Data.Symbol (SProxy(..))
 import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -88,14 +88,14 @@ beforeSendMessage content model@{
 } =
       --other event handlers just blindly set shouldSendMessage
       -- so we centralize message checks here
-      if shouldSendMessage && (DM.isJust message || DM.isJust selectedImage)  then
+      if shouldSendMessage && (DM.isJust maybeContent || DM.isJust selectedImage)  then
             snocContact :> [ nextSendMessage ]
        else
             F.noMessages $ model {
-                  message = message,
+                  message = maybeContent,
                   shouldSendMessage = false
             }
-      where message
+      where maybeContent
                   | DS.null $ DS.trim content = Nothing
                   | otherwise = Just content
 
@@ -104,7 +104,7 @@ beforeSendMessage content model@{
                         let chatted = suggestions !@ index
                         in
                               model {
-                                    message = message,
+                                    message = maybeContent,
                                     chatting = Just 0,
                                     contacts = DA.cons (SIC.defaultContact id chatted) contacts,
                                     suggestions = SU.fromJust $ DA.deleteAt index suggestions
@@ -172,8 +172,9 @@ makeTurn { chatStarter, chatAge, history } sender =
                   Tuple senderMessages recipientMessages = SU.fromJust do
                         let   groups = DA.groupBy sameSender history
                               size = DA.length groups
-                        senderMessages <- groups !! (size - 3)
-                        recipientMessages <- groups !! (size - 2)
+                              beforeLastIndex = (max size 3) - 1 - 2
+                        senderMessages <- groups !! beforeLastIndex
+                        recipientMessages <- DA.last groups
                         pure $ Tuple senderMessages recipientMessages
                   senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
                   recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages

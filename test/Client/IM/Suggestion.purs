@@ -5,7 +5,7 @@ import Prelude
 import Client.IM.Suggestion as CIS
 import Data.Maybe (Maybe(..))
 import Data.Tuple as DT
-import Test.Client.Model (model, imUser)
+import Test.Client.Model (contact, imUser, model, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -34,21 +34,6 @@ tests = do
                   }
                   TUA.equal (Just 2) suggesting
 
-            TU.test "blockUser removes user from suggestions" do
-                  TUA.equal 1 555
-
-            TU.test "blockUser removes user from contacts" do
-                  TUA.equal 21 5558
-
-            TU.test "blockUser resets chatting" do
-                  TUA.equal 333 1
-
-            TU.test "displayMoreSuggestions sets suggestions to 0 if there is 1 or fewer new suggestions" do
-                  TUA.equal 333 1
-
-            TU.test "resumeSuggesting sets suggestions to 0 if there is 1 or fewer new suggestions" do
-                  TUA.equal 333 1
-
             TU.test "nextSuggestion clears chatting" do
                   let { chatting } = DT.fst <<< CIS.nextSuggestion $ model  {
                         chatting = Just 2,
@@ -76,3 +61,35 @@ tests = do
                         suggestions = [imUser, imUser]
                   }
                   TUA.equal Nothing chatting
+
+            TU.test "displayMoreSuggestions sets suggesting to 0 if there is 1 or fewer new suggestions" do
+                  let { suggesting } = DT.fst <<< CIS.displayMoreSuggestions [imUser] $ model  {
+                        suggesting = Nothing,
+                        suggestions = []
+                  }
+                  TUA.equal (Just 0) suggesting
+
+            TU.test "blockUser removes user from suggestions" do
+                  let { suggestions } = DT.fst <<< CIS.blockUser webSocket imUser.id $ model {
+                        suggestions = [imUser]
+                  }
+                  TUA.equal [] suggestions
+
+            TU.test "blockUser removes user from contacts" do
+                  let { contacts } = DT.fst <<< CIS.blockUser webSocket contact.user.id $ model {
+                        contacts = [contact]
+                  }
+                  TUA.equal [] contacts
+
+            TU.test "blockUser resets chatting" do
+                  let { chatting } = DT.fst <<< CIS.blockUser webSocket contact.user.id $ model {
+                        contacts = [contact]
+                  }
+                  TUA.equal Nothing chatting
+
+            TU.test "resumeSuggesting sets suggestions to 0 if there is 1 or fewer suggestions" do
+                  let { suggesting } = DT.fst <<< CIS.resumeSuggesting $ model  {
+                        suggesting = Nothing,
+                        suggestions = []
+                  }
+                  TUA.equal (Just 0) suggesting

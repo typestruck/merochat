@@ -46,9 +46,9 @@ resumeChat searchID model@{ contacts, chatting, smallScreen } =
                         failedRequests = []
                   } :> ([
                         CIF.next UpdateReadCount,
-                        -- liftEffect do
-                        --       CIS.scrollLastMessage
-                        --       pure Nothing,
+                        liftEffect do
+                              CIS.scrollLastMessage
+                              pure Nothing,
                         CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
                   ] <> if smallScreen then [] else [CIF.next $ FocusInput ChatInput])
 
@@ -142,7 +142,14 @@ resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, us
                   history = map updateSenderError history
             }
             updateSenderError history@{ sender, status, id }
-                  | status == Sent && sender == senderID && not (DH.member id messageMap) = history { status = Errored } -- message that was not delivered
+                  | status == Sent && sender == senderID =
+                        if DH.member id messageMap then  --received or not by the server
+                              history {
+                                    status = Received,
+                                    id = SU.lookup id messageMap
+                              }
+                        else
+                              history { status = Errored }
                   | otherwise = history
 
             indexesToIndexes = DA.zip (0 .. DA.length missedContacts) $ findContact <$> missedContacts
