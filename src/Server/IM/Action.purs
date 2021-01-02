@@ -62,8 +62,9 @@ processMessage loggedUserID userID temporaryID content = do
             Image (Tuple caption base64) -> do
                   path <- base64From $ DS.split (Pattern ",") base64
                   pure $ "![" <> caption  <> "](" <> path <> ")"
-      id <- SID.insertMessage loggedUserID userID temporaryID  <<< DS.trim $ sanitize message
-      pure $ Tuple id message
+      let sanitized = DS.trim $ sanitize message
+      id <- SID.insertMessage loggedUserID userID temporaryID sanitized
+      pure $ Tuple id sanitized
       where base64From =
                   case _ of
                         [mediaType, base64] -> do

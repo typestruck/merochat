@@ -18,8 +18,7 @@ readConfiguration :: Effect Configuration
 readConfiguration = do
       isDevelopment <- falseUnless <$> NP.lookupEnv "DEVELOPMENT"
       randomizeProfiles <- falseUnless <$> NP.lookupEnv "RANDOMIZE_PROFILES"
-      if isDevelopment then do
-            EC.log "Starting development environment"
+      if isDevelopment then
             pure {
                   port: 8000,
                   development: true,
@@ -32,7 +31,7 @@ readConfiguration = do
                   randomizeProfiles
             }
        else do
-            EC.log "Starting production environment!!!!1!"
+            EC.log "Starting production environment"
             port <- parsePort <$> NP.lookupEnv "PORT"
             variables <- DT.traverse getVariable ["CAPTCHA_SECRET", "TOKEN_SECRET_GET", "TOKEN_SECRET_POST", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD"]
             case variables of

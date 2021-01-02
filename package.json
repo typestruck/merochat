@@ -5,16 +5,15 @@
     "type": "git",
     "url": "https://github.com/melanchat/melanchat.git"
   },
-  "description": "",
-  "main": "index.js",
+  "description": "Friendly random chat",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
-    "watch-slim": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress  --config webpack.production.config.js",
-    "build": "spago build --purs-args '--codegen corefn,js'",
-    "shake": "zephyr -f Client.IM.Main.main"
+    "build-production-server": "rm -rf output && spago bundle-app -m Server.Main -t dist/production/server.js",
+    "build-production-client": "rm -rf output && spago build --purs-args '--codegen corefn' && zephyr -f Client.IM.Main && zephyr -f Client.Landing.Main && zephyr -f Client.Login.Main && zephyr -f Client.Profile.Main && zephyr -f Client.Leaderboard.Main && zephyr -f Client.InternalHelp.Main && zephyr -f Client.Help.Main && zephyr -f Client.Settings.Main && zephyr -f Client.Recover.Main && rm -rf output && mv dce-output output && webpack --progress --config webpack.production.config.js",
+    "build-production": "rm -rf dist && npm run build-production-server && npm run build-production-client && rm -rf output"
   },
   "author": "Eduardo Asafe<e@asafe.dev>",
   "license": "AGPL-3.0-or-later",
@@ -32,7 +31,10 @@
   },
   "devDependencies": {
     "canvas": "^2.6.1",
+    "css-loader": "^5.0.1",
+    "css-minimizer-webpack-plugin": "^1.1.5",
     "jsdom": "^16.4.0",
+    "mini-css-extract-plugin": "^1.3.3",
     "nodemon": "^2.0.4",
     "purescript-psa": "^0.7.3",
     "purs-loader": "^3.7.1",
