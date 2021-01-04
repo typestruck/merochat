@@ -3,22 +3,29 @@ module Test.Server.IM.Action where
 import Prelude
 
 import Data.Array as DA
+import Data.Maybe (Maybe(..))
+import Data.String (Pattern(..))
+import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
-import Database.PostgreSQL (Query(..))
+import Database.PostgreSQL (Query(..), Row0(..))
 import Run as R
 import Server.Database as SD
 import Server.IM.Action as SIA
 import Server.Landing.Database as SLD
+import Server.Profile.Action (invalidImageMessage)
+import Shared.Options.File (maxImageSize)
 import Shared.Types (MessageContent(..))
+import Shared.Unsafe ((!@))
 import Test.Server as TS
+import Test.Server.Model (baseUser)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
 tests :: TestSuite
 tests = do
-      TU.suiteOnly "im actions" do
+      TU.suite "im actions" do
             TU.test "suggest filters out blocked users" $
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers
@@ -26,24 +33,18 @@ tests = do
                         R.liftAff <<< TUA.equal 1 $ DA.length suggestions
 
                         void $ SIA.blockUser userID anotherUserID
-                        suggestions <- SIA.suggest userID 0
-                        R.liftAff <<< TUA.equal 0 $ DA.length suggestions
+                        suggestions' <- SIA.suggest userID 0
+                        R.liftAff <<< TUA.equal 0 $ DA.length suggestions'
 
-            TU.testOnly "suggest filters out blocker users" $
+            TU.test "suggest filters out blocker users" $
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers
                         suggestions <- SIA.suggest userID 0
                         R.liftAff <<< TUA.equal 1 $ DA.length suggestions
 
                         void $ SIA.blockUser userID anotherUserID
-                        suggestions <- SIA.suggest anotherUserID 0
-                        R.liftAff <<< TUA.equal 0 $ DA.length suggestions
-
-            TU.test "listContacts matches contact and chat history" $
-                  TUA.equal 1 2
-
-            TU.test "listContacts orders contacts" $
-                  TUA.equal 1 2
+                        suggestions' <- SIA.suggest anotherUserID 0
+                        R.liftAff <<< TUA.equal 0 $ DA.length suggestions'
 
             TU.test "processMessage creates history" $
                   TS.serverAction $ do
@@ -53,41 +54,80 @@ tests = do
                         count <- SD.scalar' (Query """select count(1) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
                         R.liftAff $ TUA.equal 1 count
 
+            TU.test "processMessage sets chat starter" $
+                  TS.serverAction $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
+                        R.liftAff $ TUA.equal userID id
+                        chatStarter <- SD.scalar' (Query """select sender from histories limit 1""") Row0
+                        R.liftAff $ TUA.equal userID chatStarter
+
+            TU.test "processMessage accepts files" $
+                  TS.serverActionCatch (TS.catch invalidImageMessage) $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        Tuple _ message <- SIA.processMessage userID anotherUserID 2 <<< Image <<< Tuple "hey" $ "data:image/png;base64,ya"
+                        R.liftAff <<< TUA.assert "returns file" $ DS.contains (Pattern "![hey](/client/media/upload") message
+
             TU.test "processMessage sanitizes input" $
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers
-                        Tuple id message <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
-                        R.liftAff $ TUA.equal userID id
-                        count <- SD.scalar' (Query """select count(1) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
-                        R.liftAff $ TUA.equal 1 count
-
-            TU.test "processMessage accepts files" $
-                  TUA.equal 3 5
+                        Tuple _ message <- SIA.processMessage userID anotherUserID 2 $ Text "<script><script>"
+                        R.liftAff $ TUA.equal "" message
 
             TU.test "processMessage does not accept files too large" $
-                  TUA.equal 3 5
+                  TS.serverActionCatch (TS.catch invalidImageMessage) $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        SIA.processMessage userID anotherUserID 2 <<< Image <<< Tuple "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 
-            TU.test "listMissedEvents finds missed messages" $
-                  TUA.equal 3 5
+            TU.test "listContacts orders contacts by descreasing date" $
+                  TS.serverAction $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        yetAnotherUserID <- SLD.createUser $ baseUser { email = "d@d.com"}
+                        void <<< SIA.processMessage userID yetAnotherUserID 2 $ Text "ola"
+                        void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
+                        void <<< SIA.processMessage userID yetAnotherUserID 2 $ Text "hey"
+                        contacts <- SIA.listContacts userID 0
+                        R.liftAff <<< TUA.equal 2 $ DA.length contacts
+                        R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 0).user.id
+                        R.liftAff $ TUA.equal anotherUserID (contacts !@ 1).user.id
+
+            TU.test "listContacts matches contact and (first message) chat history" $
+                  TS.serverAction $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        yetAnotherUserID <- SLD.createUser $ baseUser { email = "d@d.com"}
+                        void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
+                        void <<< SIA.processMessage userID yetAnotherUserID 2 $ Text "ola"
+                        void <<< SIA.processMessage userID yetAnotherUserID 3 $ Text "hey"
+                        contacts <- SIA.listContacts userID 0
+                        R.liftAff <<< TUA.equal 2 $ DA.length contacts
+                        R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 0).user.id
+                        R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 0).history
+                        R.liftAff $ TUA.equal anotherUserID (contacts !@ 1).user.id
+                        R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 1).history
 
             TU.test "listMissedEvents finds missed contacts" $
-                  TUA.equal 3 5
+                  TS.serverAction $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        yetAnotherUserID <- SLD.createUser $ baseUser { email = "d@d.com"}
+                        Tuple id _ <- SIA.processMessage anotherUserID userID 1 $ Text "oi"
+                        void <<< SIA.processMessage yetAnotherUserID userID 2 $ Text "ola"
+                        void <<< SIA.processMessage yetAnotherUserID userID 3 $ Text "hey"
+                        { contacts } <- SIA.listMissedEvents userID Nothing (Just id)
+                        R.liftAff <<< TUA.equal 1 $ DA.length contacts
+                        R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 0).user.id
+                        R.liftAff <<< TUA.equal 2 $ DA.length (contacts !@ 0).history
 
             TU.test "listMissedEvents finds temporary ids" $
-                  TUA.equal 3 5
+                  TS.serverAction $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        yetAnotherUserID <- SLD.createUser $ baseUser { email = "d@d.com"}
+                        void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
+                        void <<< SIA.processMessage userID yetAnotherUserID 2 $ Text "ola"
+                        void <<< SIA.processMessage userID yetAnotherUserID 3 $ Text "hey"
+                        { messageIDs } <- SIA.listMissedEvents userID (Just 0) Nothing
+                        R.liftAff <<< TUA.equal [1, 2, 3] $ map _.temporaryID messageIDs
+
       where setUpUsers = do
-                  userID <- SLD.createUser {
-                              email: "e@a.com",
-                              name: "sdsd",
-                              password: "ss",
-                              headline: "sd",
-                              description: "ss"
-                        }
-                  anotherUserID <- SLD.createUser {
-                              email: "e@aaa.com" ,
-                              name: "sdsd",
-                              password: "ss",
-                              headline: "sd",
-                              description: "ss"
-                        }
+                  userID <- SLD.createUser $ baseUser { email = "b@b.com" }
+                  anotherUserID <- SLD.createUser $ baseUser { email = "c@c.com" }
                   pure $ Tuple userID anotherUserID

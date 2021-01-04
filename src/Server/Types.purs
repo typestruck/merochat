@@ -18,7 +18,6 @@ import Data.String.Read (class Read)
 import Database.PostgreSQL (PGError, Pool)
 import Effect.Aff (Aff)
 import Effect.Ref (Ref)
-import HTTPure (Response)
 import Payload.ContentType (html)
 import Payload.Headers as PH
 import Payload.ResponseTypes as PR
@@ -92,8 +91,6 @@ type BaseEffect r a = Run (
 ) a
 
 type ServerEffect a = BaseEffect ServerReader a
-
-type ResponseEffect = BaseEffect ServerReader Response
 
 type WebSocketEffect = BaseEffect WebSocketReader Unit
 

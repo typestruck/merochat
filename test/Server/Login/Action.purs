@@ -32,7 +32,7 @@ tests = do
                         captchaResponse: Nothing
                   }
 
-            TU.test "login does not accept inexsting login" $
+            TU.test "login does not accept inexesting login" $
                   TS.serverActionCatch (TS.catch invalidLogin) $ expectExpection {
                         email,
                         password,

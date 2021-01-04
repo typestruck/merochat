@@ -18,7 +18,6 @@ You can edit this file as you like.
   , "foreign-object"
   , "form-urlencoded"
   , "http-methods"
-  , "httpure"
   , "node-fs"
   , "node-process"
   , "now"

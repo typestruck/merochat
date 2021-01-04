@@ -1,3 +1,3 @@
-var insane = require('insane');
+let insane = require('insane');
 
 exports.sanitize = insane;

@@ -84,5 +84,19 @@ tests = do
                         leaderboard <- SD.scalar' (Query "select count(1) from karma_leaderboard where ranker = $1") $ Row1 id
                         R.liftAff $ TUA.equal 1 leaderboard
 
+            TU.test "register creates suggestion" $
+                  TS.serverAction $ do
+                        void $ SLA.register {
+                              email,
+                              password,
+                              captchaResponse: Nothing
+                        }
+                        RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
+                        suggestion <- SD.scalar' (Query "select count(1) from suggestions where suggested = $1") $ Row1 id
+                        R.liftAff $ TUA.equal 1 suggestion
+
+
+
+
 
 
