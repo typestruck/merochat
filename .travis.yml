@@ -5,5 +5,5 @@ install:
   - npm install -g purescript@0.13.8 spago
 script:
   - npm install
-  - spago build
+  - spago build -p development/Environment.purs
   - export CLI=true && spago test
