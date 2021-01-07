@@ -8,15 +8,17 @@ import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Faq as SA
 import Server.Privacy as SP
+import Shared.Path as SPT
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Server.Terms as STM
+import Shared.Types (ContentType(..))
 
 template :: Effect String
 template = do
       contents <- ST.template externalDefaultParameters {
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/help.css"]],
-            javascript = [HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/help.bundle.js"] ],
+            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.70d2202c46fd972df032"]],
+            javascript = [HE.script' [HA.type' "text/javascript", HA.src $ SPT.pathery JS "help.70d2202c46fd972df032"] ],
             content = externalDefaultParameters.content <> content
       }
       FRS.render contents

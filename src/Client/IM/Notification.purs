@@ -14,6 +14,7 @@ import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Shared.IM.Unread as SIU
+import Shared.Path as SP
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
 
@@ -39,7 +40,7 @@ notify model@{ user: { id }, contacts } userIDs = do
       where contactUsers = map _.user $ DA.filter (\cnt -> DA.elem cnt.user.id userIDs) contacts
             createNotification' user = createNotification {
                   body: "New message from " <> user.name,
-                  icon: "/client/media/loading.png",
+                  icon: SP.pathery PNG "loading",
                   handler: CCD.dispatchCustomEvent $ CCD.createCustomEvent notificationClick user.id
             }
 

@@ -16,7 +16,7 @@ Don't hesitate to [contact](https://github.com/easafe) if you need help, or want
 
 MelanChat is written in PureScript, both server-side and client-side. PostgreSQL is used for persistance. To get it running locally:
 
-1. Run `npm install && spago build`
+1. Run `npm install && npm run build`
 
 2. Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql). The user `melanchat`, databases `melanchat` and `melanchat_test` are expected (ident or trust authentication)
 

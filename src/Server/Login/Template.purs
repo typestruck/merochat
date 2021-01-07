@@ -10,7 +10,9 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
+import Shared.Path as SP
 import Shared.Routes (routes)
+import Shared.Types (ContentType(..))
 
 template :: Effect String
 template = do
@@ -20,7 +22,7 @@ template = do
       }
       FRS.render contents
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/login.bundle.js"]
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "login.0f908b3c929e9468a108"]
             ]
             content = [
                   HE.div (HA.class' "green-area green-box") [

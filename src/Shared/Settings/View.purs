@@ -19,6 +19,7 @@ import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
+import Shared.Path as SP
 import Shared.Unsafe as SU
 import Type.Data.Symbol as TDS
 import Web.DOM.Element as WDE
@@ -27,7 +28,7 @@ import Web.Event.Event as WEE
 view :: SettingsModel -> Html SettingsMessage
 view model =
       HE.div (HA.class' "settings-edition") [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/settings.css"],
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "settings.3434"],
             account model
       ]
 

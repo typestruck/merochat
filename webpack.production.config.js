@@ -4,32 +4,34 @@ const path = require('path');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
     mode: 'production',
-    optimization: {
-        usedExports: true
-    },
     entry: {
-        im: ['./loader/im.bundle.js', './src/Client/css/im.css'],
+        im: {
+            import: ['./loader/im.bundle.js', './src/Client/css/im.css'],
+            dependOn: 'emoji'
+        },
         landing: ['./loader/landing.bundle.js', './src/Client/css/base.css', './src/Client/css/external.css'],
         login: './loader/login.bundle.js',
         profile: ['./loader/profile.bundle.js', './src/Client/css/profile.css'],
-        leaderboard: ['./loader/leaderboard.bundle.js', './src/Client/css/profile.css'],
+        leaderboard: ['./loader/leaderboard.bundle.js', './src/Client/css/leaderboard.css'],
         help: ['./loader/help.bundle.js', './src/Client/css/help.css'],
         internalHelp: './loader/internalHelp.bundle.js',
         settings: ['./loader/settings.bundle.js', './src/Client/css/settings.css'],
         recover: './loader/recover.bundle.js',
+        emoji: './output/Shared.IM.Emoji/index.js',
     },
-
     output: {
         path: path.resolve(__dirname, 'dist/production'),
-        filename: '[name].[contenthash].min.js'
+        filename: '[name].[contenthash].bundle.js'
     },
     plugins: [
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css',
-        })
+        }),
+        new BundleAnalyzerPlugin()
     ],
     module: {
         rules: [
@@ -48,6 +50,19 @@ module.exports = {
         ]
     },
     optimization: {
+        moduleIds: 'deterministic',
+        splitChunks: {
+            chunks: 'all',
+            name: 'other',
+            cacheGroups: {
+                common: {
+                    name: 'common',
+                    test(module) {
+                        return module.resource && /(.*)(Shared\.Types|Client\.Common\.Network|Shared\.Routes)(.*)/.test(module.resource)
+                    }
+                }
+            }
+        },
         minimizer: [
             new TerserPlugin(),
             new CssMinimizerPlugin(),

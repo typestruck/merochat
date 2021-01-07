@@ -5,10 +5,11 @@ import Shared.Types
 
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
+import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-
+import Shared.Path as SP
 
 logoMenu :: Maybe String -> Html IMMessage
 logoMenu fortune = HE.div (HA.class' "relative") [
@@ -47,8 +48,8 @@ logoMenu fortune = HE.div (HA.class' "relative") [
 
       HE.div [HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true] $
             HE.img [
-                  HA.createAttribute "srcset" "/client/media/logo-3-small.png 180w, /client/media/logo-small.png 210w",
+                  HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo-small", "210w"],
                   HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px",
-                  HA.src "/client/media/logo.png"
+                  HA.src $ SP.pathery PNG "logo"
             ]
 ]

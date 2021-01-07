@@ -28,6 +28,7 @@ import Shared.DateTime as SDT
 import Shared.IM.Svg as SIS
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
+import Shared.Path as SP
 import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Type.Data.Symbol as TDS
@@ -46,7 +47,7 @@ view model@{
       descriptionInputed
 } = HE.div profileEditionId [
       HE.div [HA.class' "profile-edition suggestion contact"] [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/profile.css"],
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "profile"],
             HE.div (HA.class' "avatar-edition") [
                   HE.div (HA.onClick SelectAvatar) [
                         HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar],

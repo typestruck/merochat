@@ -4,10 +4,12 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
+import Shared.Path as SP
+import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
 
 defaultAvatarName :: String
-defaultAvatarName = baseFileName <> show "1" <> fileExtension
+defaultAvatarName = baseFileName <> show "1"
 
 defaultAvatar :: String
 defaultAvatar = fileName 1
@@ -18,11 +20,8 @@ differentAvatarImages = 8
 baseFileName :: String
 baseFileName = "avatar-"
 
-fileExtension :: String
-fileExtension = ".png"
-
 fileName :: Int -> String
-fileName index = "/client/media/" <> baseFileName <> show index <> fileExtension
+fileName index = SP.pathery PNG $ baseFileName <> show index
 
 avatarForSender :: Maybe String -> String
 avatarForSender = DM.fromMaybe defaultAvatar

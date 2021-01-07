@@ -5,7 +5,6 @@ import Shared.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
-
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
@@ -15,6 +14,7 @@ import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.Unread as SIU
 import Shared.IM.View as SIV
+import Shared.Path as SP
 
 template :: {
       contacts :: Array Contact,
@@ -66,8 +66,10 @@ template {contacts, suggestions, user} = do
                   user
             }
       }
-      --REFACTOR: js css et all must have typed routes
-      where javascript = [ HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/im.bundle.js"] ]
+      where javascript = [
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "emoji.0f908b3c929e9468a108"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.0f908b3c929e9468a108"]
+            ]
             css = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/im.css"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.70d2202c46fd972df032" ]
             ]

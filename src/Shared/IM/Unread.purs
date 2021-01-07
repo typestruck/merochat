@@ -1,9 +1,10 @@
 module Shared.IM.Unread where
 
 import Prelude
+import Shared.Types
 
 import Data.Foldable as DF
-import Shared.Types
+import Shared.Path (imageBasePath)
 
 title :: Int -> String
 title =
@@ -18,7 +19,7 @@ favicon =
             0 -> name <> extension
             n | n <= 10 -> name <> "-" <> show n <> extension
             n -> name <> "-10-plus" <> extension
-      where name = "/client/media/favicon"
+      where name = imageBasePath <> "favicon"
             extension = ".ico"
 
 countUnreadChats :: PrimaryKey -> Array Contact -> Int

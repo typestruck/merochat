@@ -5,14 +5,15 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Node.Process as NP
+import Server.Configuration as SC
 import Test.Client.Main as TCM
 import Test.Server.Main as TSM
 import Test.Unit.Main as TUM
 
 main :: Effect Unit
 main = do
-      cli <- NP.lookupEnv "CLI"
+      cli <- SC.isCLI
       TUM.runTest do
-            unless (cli == Just "true") TSM.tests
+            unless cli TSM.tests
             TCM.tests
 

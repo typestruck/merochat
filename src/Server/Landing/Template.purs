@@ -2,6 +2,7 @@ module Server.Landing.Template where
 
 import Prelude
 
+import Data.String as DS
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -9,7 +10,9 @@ import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
+import Shared.Path as SP
 import Shared.Routes (routes)
+import Shared.Types (ContentType(..))
 
 template :: Effect String
 template = do
@@ -20,20 +23,20 @@ template = do
       }
       FRS.render contents
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/landing.bundle.js"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "landing.0f908b3c929e9468a108"],
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             css = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/external.css"],
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/landing.css"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.2434343434"],
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.34534534"]
             ]
             content = [
                   HE.div (HA.class' "landing") [
                         HE.div (HA.class' "header") [
                               HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
-                                          HA.createAttribute "srcset" "/client/media/logo-3-small.png 180w, /client/media/logo.png 250w, /client/media/logo-small.png 210w",
-                                          HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
-                                          HA.src "/client/media/logo.png"],
+                                    HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo.png", "250w,", SP.pathery PNG "logo-small.png", "210w"],
+                                    HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
+                                    HA.src $ SP.pathery PNG "logo"],
                               HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href $ routes.login.get {}] "Login"
                         ],
                         HE.div (HA.class' "green-area") [
@@ -69,7 +72,7 @@ template = do
                         HE.div (HA.class' "first-points") [
                               HE.div (HA.class' "point-column") [
                                     HE.div (HA.class' "point") [
-                                          HE.img [HA.class' "point-melon", HA.src "/client/media/point1.png"],
+                                          HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "point1"],
                                           HE.br,
                                           HE.text "No seedy people!",
                                           HE.br,
@@ -78,7 +81,7 @@ template = do
                                           HE.text "have meaningful conversations"
                                     ],
                                     HE.div (HA.class' "point") [
-                                          HE.img [HA.class' "point-melon", HA.src "/client/media/point4.png"],
+                                          HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "point4"],
                                           HE.br,
                                           HE.text "Community driven:",
                                           HE.br,
@@ -89,7 +92,7 @@ template = do
                               ],
                               HE.div (HA.class' "point-column") [
                                     HE.div (HA.class' "point") [
-                                          HE.img [HA.class' "point-melon", HA.src "/client/media/point2.png"],
+                                          HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "point2"],
                                           HE.br,
                                           HE.text "Set the privacy level you",
                                           HE.br,
@@ -98,7 +101,7 @@ template = do
                                           HE.text "Safe, anonymous and ad free"
                                     ],
                                     HE.div (HA.class' "point") [
-                                          HE.img [HA.class' "point-melon", HA.src "/client/media/point5.png"],
+                                          HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "point5"],
                                           HE.br,
                                           HE.text "Ultra fancy algorithms",
                                           HE.br,
@@ -109,7 +112,7 @@ template = do
                               ],
                               HE.div (HA.class' "point-column") [
                                     HE.div (HA.class' "point") [
-                                          HE.img [HA.class' "point-melon", HA.src "/client/media/point3.png"],
+                                          HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "point3"],
                                           HE.br,
                                           HE.text "Feeling uninspired?",
                                           HE.br,
@@ -118,7 +121,7 @@ template = do
                                           HE.text "or suggest what to say"
                                     ],
                                     HE.div (HA.class' "point") [
-                                          HE.img [HA.class' "point-melon", HA.src "/client/media/point6.png"],
+                                          HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "point6"],
                                           HE.br,
                                           HE.text "Send text, image & audio messages.",
                                           HE.br,
@@ -130,7 +133,7 @@ template = do
                         ],
                         HE.div (HA.class' "second-point") [
                               HE.div (HA.class' "point") [
-                                    HE.img [HA.class' "point-melon", HA.src "/client/media/point7.png"],
+                                    HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "point7"],
                                     HE.br,
                                     HE.text "Full of watermelons!"
                               ]
@@ -140,7 +143,7 @@ template = do
                         ],
                         HE.div (HA.class' "third-points") [
                               HE.div (HA.class' "point") [
-                                    HE.img [HA.class' "point-melon", HA.src "/client/media/works1.png"],
+                                    HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "works1"],
                                     HE.br,
                                     HE.text "New users randomized account needs Karma to access",
                                     HE.br,
@@ -152,7 +155,7 @@ template = do
                                     HE.text "Creeps get weeded out; interesting folks get more visibility"
                               ],
                               HE.div (HA.class' "point") [
-                                    HE.img [HA.class' "point-melon", HA.src "/client/media/works2.png"],
+                                    HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "works2"],
                                     HE.br,
                                     HE.text "Whenever you feel like chatting, the system matches",
                                     HE.br,
@@ -164,7 +167,7 @@ template = do
                                     HE.text "You decide what to share and who to share it with"
                               ],
                               HE.div (HA.class' "point") [
-                                    HE.img [HA.class' "point-melon", HA.src "/client/media/works3.png"],
+                                    HE.img [HA.class' "point-melon", HA.src $ SP.pathery PNG "works3"],
                                     HE.br,
                                     HE.text "Want to take a break, or delete your account forever?",
                                     HE.br,

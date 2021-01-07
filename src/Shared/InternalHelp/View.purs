@@ -8,12 +8,13 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Server.Faq as SH
 import Server.Terms as ST
-import Server.Privacy  as SP
+import Server.Privacy as SP
+import Shared.Path as SPT
 
 view :: InternalHelpModel -> Html InternalHelpMessage
 view { toggleHelp } =
       HE.div (HA.class' "internal-help") [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/help.css"],
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.2245"],
             HE.div (HA.class' "duller center") [
                   HE.text "Learn more about Melanchat",
                   HE.br,

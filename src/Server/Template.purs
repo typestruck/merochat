@@ -3,11 +3,15 @@ module Server.Template where
 
 import Prelude
 
+import Data.String as DS
 import Effect (Effect)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Path (imageBasePath)
+import Shared.Path as SP
 import Shared.Routes (routes)
+import Shared.Types (ContentType(..))
 
 type Parameters a = {
       title :: String,
@@ -21,7 +25,7 @@ type Parameters a = {
 defaultParameters :: forall a. Parameters a
 defaultParameters = {
       title: "MelanChat - Friendly Random Chat",
-      favicon: "/client/media/favicon.ico",
+      favicon: imageBasePath <> "favicon.ico",
       javascript: [],
       css: [], --REFACTOR: should just be a list of file names
       content: [],
@@ -31,15 +35,15 @@ defaultParameters = {
 externalDefaultParameters :: forall a. Parameters a
 externalDefaultParameters = defaultParameters {
       css = [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/external.css"]
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.2434343434"]
       ],
       content = [
             HE.div (HA.class' "header") [
                   HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $
                         HE.img [
-                              HA.createAttribute "srcset" "/client/media/logo-3-small.png 180w, /client/media/logo.png 250w, /client/media/logo-small.png 210w",
+                              HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo.png", "250w,", SP.pathery PNG "logo-small.png", "210w"],
                               HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
-                              HA.src "/client/media/logo.png"]
+                              HA.src $ SP.pathery PNG "logo"]
                         ]
       ],
       footer = [externalFooter]
@@ -49,7 +53,7 @@ template :: forall a. Parameters a -> Effect (Html a)
 template = pure <<< templateWith
 
 templateWith :: forall a. Parameters a -> Html a
-templateWith { title, content, css, footer, javascript, favicon } =
+templateWith parameters@{ title, content, css, footer, favicon } =
       HE.html (HA.lang "en") [
             HE.head_ ([
                   HE.meta $ HA.charset "UTF-8",
@@ -60,13 +64,17 @@ templateWith { title, content, css, footer, javascript, favicon } =
             HE.body_ $ content <> footer <> javascript
       ]
       where styleSheets = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/base.css"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "base.344"]
             ]
+            javascript = [
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "other.343545"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "common.343545"]
+            ] <> parameters.javascript
 
 externalFooter :: forall a. Html a
 externalFooter =
       HE.div (HA.class' "footer") [
-            HE.a (HA.href $ routes.landing {}) <<< HE.img $ HA.src "/client/media/logo-small.png",
+            HE.a (HA.href $ routes.landing {}) <<< HE.img <<< HA.src $ SP.pathery PNG "logo-small",
             HE.ul (HA.class' "footer-menu") [
                   HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login",
                   HE.li_ $ HE.a (HA.href $ routes.help {} <> "#faq") "FAQ",

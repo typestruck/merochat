@@ -10,14 +10,14 @@ module.exports = {
 
       entry: {
             im: './loader/im.bundle.js',
-            // landing: './loader/landing.bundle.js',
-            // login: './loader/login.bundle.js',
-            // profile: './loader/profile.bundle.js',
-            // leaderboard: './loader/leaderboard.bundle.js',
-            // help: './loader/help.bundle.js',
-            // internalHelp: './loader/internalHelp.bundle.js',
-            // settings: './loader/settings.bundle.js',
-            // recover: './loader/recover.bundle.js'
+            landing: './loader/landing.bundle.js',
+            login: './loader/login.bundle.js',
+            profile: './loader/profile.bundle.js',
+            leaderboard: './loader/leaderboard.bundle.js',
+            help: './loader/help.bundle.js',
+            internalHelp: './loader/internalHelp.bundle.js',
+            settings: './loader/settings.bundle.js',
+            recover: './loader/recover.bundle.js'
       },
 
       output: {
@@ -48,11 +48,6 @@ module.exports = {
       plugins: [
             new webpack.LoaderOptionsPlugin({
                   debug: true
-            }),
-            function(){
-                  this.plugin('done', function(stats){
-                        process.stderr.write(stats.toString('errors-only'));
-                  });
-            }
+            })
       ]
 };

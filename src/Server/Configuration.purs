@@ -2,8 +2,10 @@ module Server.Configuration where
 
 import Prelude
 import Server.Types
+import Environment(development)
 
 import Data.Int as DI
+import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Data.Traversable as DT
 import Effect (Effect)
@@ -16,9 +18,8 @@ import Shared.Unsafe as SU
 -- | The process will fail if any of them are missing on production, dummy values will be used for development
 readConfiguration :: Effect Configuration
 readConfiguration = do
-      isDevelopment <- falseUnless <$> NP.lookupEnv "DEVELOPMENT"
       randomizeProfiles <- falseUnless <$> NP.lookupEnv "RANDOMIZE_PROFILES"
-      if isDevelopment then
+      if development then
             pure {
                   port: 8000,
                   development: true,
@@ -52,4 +53,9 @@ readConfiguration = do
             parsePort value = SU.fromJust do
                   v <- value
                   DI.fromString v
-            falseUnless = DM.maybe false (_ == "true")
+
+isCLI :: Effect Boolean
+isCLI = falseUnless <$> NP.lookupEnv "CLI"
+
+falseUnless :: Maybe String -> Boolean
+falseUnless = DM.maybe false (_ == "true")

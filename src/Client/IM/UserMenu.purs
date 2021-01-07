@@ -6,6 +6,8 @@ import Shared.Types
 import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
+import Shared.Types
+import Shared.Path as SP
 import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
@@ -27,14 +29,13 @@ logout model = CIF.nothingNext model out
                   void $ request.logout { body: {} }
                   liftEffect $ CCL.setLocation $ routes.login.get {}
 
---PERFORMANCE: load bundles only once
 toggleModal :: ShowUserMenuModal -> IMModel -> NextMessage
 toggleModal mToggle model =
       case mToggle of
-            ShowProfile -> showTab request.profile.get ShowProfile "profile.bundle.js" "#profile-edition-root"
-            ShowSettings -> showTab request.settings.get ShowSettings "settings.bundle.js" "#settings-edition-root"
-            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.bundle.js" "#karma-leaderboard-root"
-            ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.bundle.js" "#help-root"
+            ShowProfile -> showTab request.profile.get ShowProfile (SP.pathery JS "profile.343434") "#profile-edition-root"
+            ShowSettings -> showTab request.settings.get ShowSettings (SP.pathery JS "settings.343434") "#settings-edition-root"
+            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard (SP.pathery JS "leaderboard.343434") "#karma-leaderboard-root"
+            ShowHelp -> showTab request.internalHelp ShowHelp (SP.pathery JS "internalHelp.343434") "#help-root"
             modal -> F.noMessages $ model {
                   toggleModal = modal,
                   toggleContextMenu = HideContextMenu

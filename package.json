@@ -10,10 +10,11 @@
     "test": "test"
   },
   "scripts": {
-    "watch": "export DEVELOPMENT=true && nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
-    "build-production-server": "rm -rf output && spago bundle-app -m Server.Main -t dist/production/server.js",
-    "build-production-client": "rm -rf output && spago build --purs-args '--codegen corefn' && zephyr -f Client.IM.Main && zephyr -f Client.Landing.Main && zephyr -f Client.Login.Main && zephyr -f Client.Profile.Main && zephyr -f Client.Leaderboard.Main && zephyr -f Client.InternalHelp.Main && zephyr -f Client.Help.Main && zephyr -f Client.Settings.Main && zephyr -f Client.Recover.Main && rm -rf output && mv dce-output output && webpack --progress --config webpack.production.config.js",
-    "build-production": "rm -rf dist && npm run build-production-server && npm run build-production-client && rm -rf output"
+    "build": "spago build -p development/Environment.purs",
+    "test": "spago test -p development/Environment.purs",
+    "watch": "nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
+    "build-production-client": "rm -rf dist && rm -rf output && spago build -p production/Environment.purs --purs-args '--codegen corefn,js' && zephyr Client.IM.Main Client.Recover.Main Client.Settings.Main Client.InternalHelp.Main Client.Help.Main Client.Leaderboard.Main Client.Profile.Main Client.Login.Main Client.Landing.Main && rm -rf output && mv dce-output output && webpack --progress --config webpack.production.config.js",
+    "build-production-server": "rm -rf output && spago build -p production/Environment.purs"
   },
   "author": "Eduardo Asafe<e@asafe.dev>",
   "license": "AGPL-3.0-or-later",
@@ -23,7 +24,9 @@
     "marked": "^1.1.1",
     "nodemailer": "^6.4.11",
     "pg": "^8.3.3",
+    "querystring-es3": "^0.2.1",
     "trie-search": "^1.2.11",
+    "url": "^0.11.0",
     "uuid": "^8.3.0",
     "uuid-validate": "0.0.3",
     "ws": "^7.3.1",
@@ -33,12 +36,11 @@
     "canvas": "^2.6.1",
     "css-loader": "^5.0.1",
     "css-minimizer-webpack-plugin": "^1.1.5",
-    "jsdom": "^16.4.0",
     "mini-css-extract-plugin": "^1.3.3",
     "nodemon": "^2.0.4",
     "purescript-psa": "^0.7.3",
     "purs-loader": "^3.7.1",
-    "webpack": "^4.44.1",
+    "webpack": "^5.0.0",
     "webpack-bundle-analyzer": "^4.3.0",
     "webpack-cli": "^3.3.12"
   },

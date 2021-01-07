@@ -10,7 +10,9 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
+import Shared.Path as SP
 import Shared.Routes (routes)
+import Shared.Types (ContentType(..))
 
 template :: Maybe String -> Effect String
 template token = do
@@ -20,7 +22,7 @@ template token = do
       }
       FRS.render contents
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src "/client/javascript/recover.bundle.js"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "recover.0f908b3c929e9468a108"],
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             content = [

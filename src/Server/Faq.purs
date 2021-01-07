@@ -9,12 +9,14 @@ import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.Path as SP
+import Shared.Types (ContentType(..))
 
 template :: Effect String
 template = do
       contents <- ST.template externalDefaultParameters {
             content = externalDefaultParameters.content <> [faq],
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href "/client/css/help.css"]]
+            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "help.33434566"]]
       }
       FRS.render contents
 
