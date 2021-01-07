@@ -32,10 +32,10 @@ logout model = CIF.nothingNext model out
 toggleModal :: ShowUserMenuModal -> IMModel -> NextMessage
 toggleModal mToggle model =
       case mToggle of
-            ShowProfile -> showTab request.profile.get ShowProfile (SP.pathery JS "profile.343434") "#profile-edition-root"
-            ShowSettings -> showTab request.settings.get ShowSettings (SP.pathery JS "settings.343434") "#settings-edition-root"
-            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard (SP.pathery JS "leaderboard.343434") "#karma-leaderboard-root"
-            ShowHelp -> showTab request.internalHelp ShowHelp (SP.pathery JS "internalHelp.343434") "#help-root"
+            ShowProfile -> showTab request.profile.get ShowProfile "profile.343434" "#profile-edition-root"
+            ShowSettings -> showTab request.settings.get ShowSettings "settings.343434" "#settings-edition-root"
+            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.343434" "#karma-leaderboard-root"
+            ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.343434" "#help-root"
             modal -> F.noMessages $ model {
                   toggleModal = modal,
                   toggleContextMenu = HideContextMenu

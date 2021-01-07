@@ -10,6 +10,8 @@ import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
+import Shared.Path as SP
+import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
@@ -129,7 +131,7 @@ loadScript name = do
       window <- WH.window
       document <- WHW.document window
       script <- WDD.createElement "script" $ WHHD.toDocument document
-      WHS.setSrc ("/client/javascript/"<>name) <<< SU.fromJust $ WHS.fromElement script
+      WHS.setSrc (SP.pathery JS name) <<< SU.fromJust $ WHS.fromElement script
       body <- SU.fromJust <$> WHHD.body document
       void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body
 

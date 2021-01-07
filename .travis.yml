@@ -6,4 +6,4 @@ install:
 script:
   - npm install
   - spago build -p development/Environment.purs
-  - export CLI=true && spago test
+  - export CLI=true && spago test -p development/Environment.purs

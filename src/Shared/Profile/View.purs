@@ -341,9 +341,11 @@ pen = HE.svg [HA.class' "svg-16 edit", HA.viewBox "0 0 16 16"] [
 ]
 
 plus :: Boolean -> ProfileMessage -> Html ProfileMessage
-plus isDisabled message = HE.svg attrs $ HE.path' [HA.d "M425.706,86.294A240,240,0,0,0,86.294,425.706,240,240,0,0,0,425.706,86.294ZM384,280H280V384H232V280H128V232H232V128h48V232H384Z"]
-      where attrs = [HA.class' {"svg-20 plus": true, disabled: isDisabled}, HA.viewBox "0 0 512 512"] <> if isDisabled then [] else [HA.onClick message]
-
+plus isDisabled message = HE.svg attrs [
+      HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.51A7.51,7.51,0,1,1,15.5,8,7.51,7.51,0,0,1,8,15.51Z"],
+      HE.path' [ HA.d "M12.07,7.65a.5.5,0,0,0-.35-.14H8.49V4.3a.49.49,0,0,0-1,0V7.51H4.28a.5.5,0,0,0-.5.49.49.49,0,0,0,.15.36.5.5,0,0,0,.35.14H7.51v3.2a.45.45,0,0,0,.14.35A.47.47,0,0,0,8,12.2a.49.49,0,0,0,.49-.49V8.5h3.23a.5.5,0,0,0,.5-.49.49.49,0,0,0-.15-.36Z"]
+]
+      where attrs = [HA.class' {"svg-20 plus": true, disabled: isDisabled}, HA.viewBox "0 0 16 16"] <> if isDisabled then [] else [HA.onClick message]
 
 check :: ProfileMessage -> Html ProfileMessage
 check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 16 16", HA.onClick message] [
