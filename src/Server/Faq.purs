@@ -16,7 +16,7 @@ template :: Effect String
 template = do
       contents <- ST.template externalDefaultParameters {
             content = externalDefaultParameters.content <> [faq],
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "help.33434566"]]
+            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "help.5c2d5d65952114e0b0e3"]]
       }
       FRS.render contents
 

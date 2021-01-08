@@ -23,12 +23,12 @@ template = do
       }
       FRS.render contents
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "landing.0f908b3c929e9468a108"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "landing.f7267fec1afc1685f9ce"],
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             css = [
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.2434343434"],
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.34534534"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.7639993a7c1edc839c04"]
             ]
             content = [
                   HE.div (HA.class' "landing") [

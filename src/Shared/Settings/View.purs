@@ -28,7 +28,7 @@ import Web.Event.Event as WEE
 view :: SettingsModel -> Html SettingsMessage
 view model =
       HE.div (HA.class' "settings-edition") [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "settings.3434"],
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "settings.6390cea6e61528add6f3"],
             account model
       ]
 

@@ -17,8 +17,8 @@ import Shared.Types (ContentType(..))
 template :: Effect String
 template = do
       contents <- ST.template externalDefaultParameters {
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.70d2202c46fd972df032"]],
-            javascript = [HE.script' [HA.type' "text/javascript", HA.src $ SPT.pathery JS "help.70d2202c46fd972df032"] ],
+            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.5c2d5d65952114e0b0e3"]],
+            javascript = [HE.script' [HA.type' "text/javascript", HA.src $ SPT.pathery JS "help.6bd589f824ee04677314"] ],
             content = externalDefaultParameters.content <> content
       }
       FRS.render contents

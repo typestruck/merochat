@@ -47,7 +47,7 @@ view model@{
       descriptionInputed
 } = HE.div profileEditionId [
       HE.div [HA.class' "profile-edition suggestion contact"] [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "profile"],
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "profile.ac60b6d1cf56812f13e6"],
             HE.div (HA.class' "avatar-edition") [
                   HE.div (HA.onClick SelectAvatar) [
                         HE.img [HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar],

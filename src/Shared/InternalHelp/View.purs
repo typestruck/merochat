@@ -14,7 +14,7 @@ import Shared.Path as SPT
 view :: InternalHelpModel -> Html InternalHelpMessage
 view { toggleHelp } =
       HE.div (HA.class' "internal-help") [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.2245"],
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.5c2d5d65952114e0b0e3"],
             HE.div (HA.class' "duller center") [
                   HE.text "Learn more about Melanchat",
                   HE.br,

@@ -22,7 +22,7 @@ template = do
       }
       FRS.render contents
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "login.0f908b3c929e9468a108"]
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "login.987f0b7b7b052fcf9ad2"]
             ]
             content = [
                   HE.div (HA.class' "green-area green-box") [

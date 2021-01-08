@@ -22,7 +22,7 @@ template token = do
       }
       FRS.render contents
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "recover.0f908b3c929e9468a108"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "recover.1a5fa8368956a8294e65"],
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             content = [

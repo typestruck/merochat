@@ -67,8 +67,8 @@ templateWith parameters@{ title, content, css, footer, favicon } =
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "base.344"]
             ]
             javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "other.343545"],
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "common.343545"]
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "other.54966b023c0327eab3d5"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "common.57f1f81fd1f5869fd3e6"]
             ] <> parameters.javascript
 
 externalFooter :: forall a. Html a

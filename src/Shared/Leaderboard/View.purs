@@ -14,7 +14,7 @@ import Shared.Path as SP
 view :: LeaderboardModel -> Html LeaderboardMessage
 view { top10, inBetween10, userPosition, toggleBoard } =
       HE.div (HA.class' "karma-leaderboard") [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "leaderboard"],
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "leaderboard.199080b5f1c852fe9ffd"],
             HE.div (HA.class' "duller center") [
                   HE.text "Earn karma by making great conversations and being a good user in general",
                   HE.br,
