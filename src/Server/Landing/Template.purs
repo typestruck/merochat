@@ -28,13 +28,13 @@ template = do
             ]
             css = [
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.2434343434"],
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.7639993a7c1edc839c04"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.9361845d640d2fa7ac80"]
             ]
             content = [
                   HE.div (HA.class' "landing") [
                         HE.div (HA.class' "header") [
                               HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
-                                    HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo.png", "250w,", SP.pathery PNG "logo-small.png", "210w"],
+                                    HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo", "250w,", SP.pathery PNG "logo-small.png", "210w"],
                                     HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
                                     HA.src $ SP.pathery PNG "logo"],
                               HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href $ routes.login.get {}] "Login"

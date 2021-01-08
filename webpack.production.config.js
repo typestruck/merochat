@@ -13,7 +13,7 @@ module.exports = {
             import: ['./loader/im.bundle.js', './src/Client/css/im.css'],
             dependOn: 'emoji'
         },
-        landing: ['./loader/landing.bundle.js', './src/Client/css/base.css', './src/Client/css/external.css'],
+        landing: ['./loader/landing.bundle.js', './src/Client/css/landing.css'],
         login: './loader/login.bundle.js',
         profile: ['./loader/profile.bundle.js', './src/Client/css/profile.css'],
         leaderboard: ['./loader/leaderboard.bundle.js', './src/Client/css/leaderboard.css'],
@@ -22,6 +22,8 @@ module.exports = {
         settings: ['./loader/settings.bundle.js', './src/Client/css/settings.css'],
         recover: './loader/recover.bundle.js',
         emoji: './output/Shared.IM.Emoji/index.js',
+        base: './src/Client/css/base.css',
+        external: './src/Client/css/external.css'
     },
     output: {
         path: path.resolve(__dirname, 'dist/production'),

@@ -35,13 +35,13 @@ defaultParameters = {
 externalDefaultParameters :: forall a. Parameters a
 externalDefaultParameters = defaultParameters {
       css = [
-            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.2434343434"]
+            HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80"]
       ],
       content = [
             HE.div (HA.class' "header") [
                   HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $
                         HE.img [
-                              HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo.png", "250w,", SP.pathery PNG "logo-small.png", "210w"],
+                              HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo", "250w,", SP.pathery PNG "logo-small.png", "210w"],
                               HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
                               HA.src $ SP.pathery PNG "logo"]
                         ]
@@ -64,7 +64,7 @@ templateWith parameters@{ title, content, css, footer, favicon } =
             HE.body_ $ content <> footer <> javascript
       ]
       where styleSheets = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "base.344"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "base.768271ce06fa68cc4b3d"]
             ]
             javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "other.54966b023c0327eab3d5"],
