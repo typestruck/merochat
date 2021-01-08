@@ -27,7 +27,7 @@ template = do
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             css = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.2434343434"],
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80"],
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.9361845d640d2fa7ac80"]
             ]
             content = [
