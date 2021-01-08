@@ -17,13 +17,16 @@ pathery contentType file = case contentType of
     _ -> file
 
 jsBasePath :: String
-jsBasePath = if development then "/client/javascript/" else "/dist/"
+jsBasePath = if development then "/client/javascript/" else productionBasePath
 
 cssBasePath :: String
-cssBasePath = if development then "/client/css/" else "/dist/"
+cssBasePath = if development then "/client/css/" else productionBasePath
 
 imageBasePath :: String
-imageBasePath = if development then "/client/media/" else "/client/media/"
+imageBasePath = if development then "/client/media/" else productionBasePath
+
+productionBasePath :: String
+productionBasePath = "https://static.melan.chat/"
 
 fileName :: String -> String
 fileName file
