@@ -41,7 +41,7 @@ externalDefaultParameters = defaultParameters {
             HE.div (HA.class' "header") [
                   HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $
                         HE.img [
-                              HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo", "250w,", SP.pathery PNG "logo-small.png", "210w"],
+                              HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo", "250w,", SP.pathery PNG "logo-small", "210w"],
                               HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
                               HA.src $ SP.pathery PNG "logo"]
                         ]

@@ -115,7 +115,7 @@ h2 {
 
 @media (max-width:1279px) {
       body {
-            background: url('https://static.melan.chat/file/staticmelan/landing-small.png') repeat;
+
             font-size: 17px
       }
       .header {
@@ -160,8 +160,7 @@ h2 {
 
 @media (min-width:1280px) {
       body {
-            background: url('https://static.melan.chat/file/staticmelan/landing-medium.png') no-repeat fixed;
-            background-size: cover;
+
             font-size: 16px;
       }
       .header {
@@ -190,8 +189,6 @@ h2 {
 
 @media (min-width:1920px) {
       body {
-            background: url('https://static.melan.chat/file/staticmelan/landing-big.png') no-repeat fixed;
-            background-size: cover;
             font-size: 18px;
       }
       .landing {

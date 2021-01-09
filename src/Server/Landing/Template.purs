@@ -27,6 +27,10 @@ template = do
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             css = [
+                  HE.style (HA.type' "text/css") """body {
+                        background: url(https://static.melan.chat/file/staticmelan/landing-medium.png) no-repeat fixed;
+                        background-size: cover;
+                  }""",
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80"],
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.102fad601f4d9f3208d1"]
             ]
@@ -34,7 +38,7 @@ template = do
                   HE.div (HA.class' "landing") [
                         HE.div (HA.class' "header") [
                               HE.a [HA.href $ routes.landing {}, HA.class' "logo"] $ HE.img [
-                                    HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo", "250w,", SP.pathery PNG "logo-small.png", "210w"],
+                                    HA.createAttribute "srcset" $ DS.joinWith " " [SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo", "250w,", SP.pathery PNG "logo-small", "210w"],
                                     HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px",
                                     HA.src $ SP.pathery PNG "logo"],
                               HE.div [HA.class' "login-box"] $ HE.a [HA.class' "login", HA.href $ routes.login.get {}] "Login"
