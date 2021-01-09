@@ -28,7 +28,7 @@ template = do
             ]
             css = [
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80"],
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.9361845d640d2fa7ac80"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.102fad601f4d9f3208d1"]
             ]
             content = [
                   HE.div (HA.class' "landing") [
