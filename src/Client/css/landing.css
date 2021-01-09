@@ -115,7 +115,7 @@ h2 {
 
 @media (max-width:1279px) {
       body {
-            background: url('/client/media/landing-small.png') repeat;
+            background: url('https://f000.backblazeb2.com/file/staticmelan/landing-small.png') repeat;
             font-size: 17px
       }
       .header {
@@ -160,7 +160,7 @@ h2 {
 
 @media (min-width:1280px) {
       body {
-            background: url('/client/media/landing-medium.png') no-repeat fixed;
+            background: url('https://f000.backblazeb2.com/file/staticmelan/landing-medium.png') no-repeat fixed;
             background-size: cover;
             font-size: 16px;
       }
@@ -190,7 +190,7 @@ h2 {
 
 @media (min-width:1920px) {
       body {
-            background: url('/client/media/landing-big.png') no-repeat fixed;
+            background: url('https://f000.backblazeb2.com/file/staticmelan/landing-big.png') no-repeat fixed;
             background-size: cover;
             font-size: 18px;
       }

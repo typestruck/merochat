@@ -26,7 +26,7 @@ imageBasePath :: String
 imageBasePath = if development then "/client/media/" else productionBasePath
 
 productionBasePath :: String
-productionBasePath = "https://staticmelan.fra1.digitaloceanspaces.com/"
+productionBasePath = "https://f000.backblazeb2.com/file/staticmelan/"
 
 fileName :: String -> String
 fileName file
