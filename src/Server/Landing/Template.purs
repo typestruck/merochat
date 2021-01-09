@@ -23,7 +23,7 @@ template = do
       }
       FRS.render contents
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "landing.f7267fec1afc1685f9ce"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "landing.e73af710139b0b4b7561"],
                   HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
             css = [
@@ -32,7 +32,7 @@ template = do
                         background-size: cover;
                   }""",
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80"],
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.f7267fec1afc1685f9ce"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.b437cef6db9d74e21536"]
             ]
             content = [
                   HE.div (HA.class' "landing") [
