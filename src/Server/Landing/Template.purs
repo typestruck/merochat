@@ -32,7 +32,7 @@ template = do
                         background-size: cover;
                   }""",
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80"],
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.b437cef6db9d74e21536"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.f7267fec1afc1685f9ce"]
             ]
             content = [
                   HE.div (HA.class' "landing") [
@@ -100,7 +100,7 @@ template = do
                                           HE.br,
                                           HE.text "Set the privacy level you",
                                           HE.br,
-                                          HE.text "feel confortable with.",
+                                          HE.text "feel comfortable with.",
                                           HE.br,
                                           HE.text "Safe, anonymous and ad free"
                                     ],
