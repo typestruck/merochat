@@ -4,7 +4,9 @@ import Prelude
 import Shared.Types
 
 import Client.Common.Location as CCD
+import Data.Boolean (otherwise)
 import Effect (Effect)
+import Environment (development)
 import Shared.JSON as SJ
 import Shared.Options.WebSocket (port)
 import Web.Socket.Event.EventTypes as WSEE
@@ -16,7 +18,10 @@ import Web.Socket.WebSocket hiding (sendString,create) as WSW
 createWebSocket :: Effect WebSocket
 createWebSocket = do
       hostName <- CCD.hostName
-      WSWS.create ("ws://" <> hostName <> ":" <> show port) []
+      WSWS.create (protocol <> hostName <> ":" <> show port) []
+      where protocal
+                  | development = "ws://"
+                  | otherwise = "wss://"
 
 sendPayload :: WebSocket -> WebSocketPayloadServer -> Effect Unit
 sendPayload ws = WSWS.sendString ws <<< SJ.toJSON
