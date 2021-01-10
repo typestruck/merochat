@@ -24,11 +24,12 @@ import Shared.Unsafe as SU
 --this makes pg interpret bigints as ints (since we don't use them) and dates as Number (to be used as epoch)
 foreign import setUpConversions :: Effect Unit
 
-newPool ∷ Effect Pool
-newPool = do
+newPool ∷ Configuration -> Effect Pool
+newPool { databaseHost } = do
       setUpConversions
       DP.newPool $ (DP.defaultPoolConfiguration "melanchat") {
             user = Just "melanchat",
+            host = databaseHost,
             idleTimeoutMillis = Just 1000
       }
 

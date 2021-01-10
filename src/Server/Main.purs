@@ -33,12 +33,12 @@ startWebSocketServer configuration = do
 
       webSocketServer <- SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
-      pool <- SD.newPool
+      pool <- SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections)
 
 startHTTPServer :: Configuration -> Effect Unit
 startHTTPServer configuration@{port} = do
-      pool <- SD.newPool
+      pool <- SD.newPool configuration
       EA.launchAff_ $ PS.startGuarded (defaultOpts { port = port }) spec {
             guards: guards configuration,
             handlers: SH.handlers { configuration, pool, session: { userID: Nothing } }
