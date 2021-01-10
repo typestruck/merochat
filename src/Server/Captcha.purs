@@ -22,7 +22,6 @@ import Server.Response as SR
 validateCaptcha :: Maybe String -> ServerEffect Unit
 validateCaptcha captchaResponse = do
       { configuration : { captchaSecret } } <- RR.ask
-
       unless development do
             response <- R.liftAff <<< A.request $ A.defaultRequest {
                   url = "https://www.google.com/recaptcha/api/siteverify",

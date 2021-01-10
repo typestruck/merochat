@@ -48,7 +48,11 @@ readConfiguration =
                               emailPassword
                         }
                   _ -> EE.throw "Wrong number of environment variables"
-      where getVariable name = SU.fromJust <$> NP.lookupEnv name
+      where getVariable name = do
+                  value <- NP.lookupEnv name
+                  case value of
+                        Nothing -> EE.throw $ "missing configuration: " <> name
+                        Just value -> pure value
             parsePort value = SU.fromJust do
                   v <- value
                   DI.fromString v
