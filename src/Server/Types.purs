@@ -42,10 +42,10 @@ type ProfileUserEdition = {
 --refactor: remove development from here
 type Configuration = {
       port :: Int,
-      development :: Boolean,
       captchaSecret :: String,
       tokenSecret :: String,
       salt :: String,
+      databaseHost :: Maybe String,
       emailHost :: String,
       emailUser :: String,
       emailPassword :: String,

@@ -14,21 +14,22 @@ import Data.FormURLEncoded as DF
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Server.Response as SR
+import Environment (development)
 import Run as R
 import Run.Reader as RR
+import Server.Response as SR
 
 validateCaptcha :: Maybe String -> ServerEffect Unit
 validateCaptcha captchaResponse = do
-      { configuration :configuration } <- RR.ask
+      { configuration : { captchaSecret } } <- RR.ask
 
-      unless configuration.development do
+      unless development do
             response <- R.liftAff <<< A.request $ A.defaultRequest {
                   url = "https://www.google.com/recaptcha/api/siteverify",
                   method = Left POST,
                   responseFormat = RF.json,
                   content = Just <<< RB.formURLEncoded $ DF.fromArray [
-                        Tuple "secret" $ Just configuration.captchaSecret,
+                        Tuple "secret" $ Just captchaSecret,
                         Tuple "response" captchaResponse
                   ]
             }

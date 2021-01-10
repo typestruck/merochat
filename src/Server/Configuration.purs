@@ -2,15 +2,14 @@ module Server.Configuration where
 
 import Prelude
 import Server.Types
-import Environment(development)
 
 import Data.Int as DI
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Traversable as DT
 import Effect (Effect)
-import Effect.Console as EC
 import Effect.Exception as EE
+import Environment (development)
 import Node.Process as NP
 import Shared.Unsafe as SU
 
@@ -20,9 +19,10 @@ readConfiguration :: Effect Configuration
 readConfiguration =
       if development then do
             randomizeProfiles <- falseUnless <$> NP.lookupEnv "RANDOMIZE_PROFILES"
+            databaseHost <- NP.lookupEnv "DATABASE_HOST"
             pure {
                   port: 8000,
-                  development: true,
+                  databaseHost,
                   captchaSecret: "",
                   tokenSecret: "so nice, so nice, I got you",
                   salt: "put it back together",
@@ -32,15 +32,14 @@ readConfiguration =
                   randomizeProfiles
             }
        else do
-            EC.log "Starting production environment"
             port <- parsePort <$> NP.lookupEnv "PORT"
-            variables <- DT.traverse getVariable ["CAPTCHA_SECRET", "TOKEN_SECRET", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD"]
+            variables <- DT.traverse getVariable ["CAPTCHA_SECRET", "TOKEN_SECRET", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD", "DATABASE_HOST"]
             case variables of
-                  [captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword] ->
+                  [captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host] ->
                         pure $ {
                               randomizeProfiles: true,
-                              development: false,
                               port,
+                              databaseHost: Just host,
                               captchaSecret,
                               tokenSecret,
                               salt,
