@@ -19,7 +19,7 @@ createWebSocket :: Effect WebSocket
 createWebSocket = do
       hostName <- CCD.hostName
       WSWS.create (protocol <> hostName <> ":" <> show port) []
-      where protocal
+      where protocol
                   | development = "ws://"
                   | otherwise = "wss://"
 
