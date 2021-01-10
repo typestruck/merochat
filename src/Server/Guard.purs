@@ -31,38 +31,30 @@ guards configuration = {
 }
 
 checkLoggedUser :: Configuration -> Request -> Aff (Either (Response Empty) PrimaryKey)
-checkLoggedUser { development, tokenSecret } request = do
-      headers <- PSG.headers request
-      if isPost && (not development && PH.lookup "origin" headers /= Just domain || PH.lookup "content-type" headers /= Just json) then
-            badRequest
-       else do
-            cookies <- PSG.cookies request
-            maybeUserID <- liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
-            case maybeUserID of
-                  Just userID -> pure $ Right userID
-                  _ ->
-                        if isPost then
-                              pure <<< Left $ PSR.unauthorized Empty
-                         else
-                              redirectLogin
+checkLoggedUser { tokenSecret } request = do
+      cookies <- PSG.cookies request
+      maybeUserID <- liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      case maybeUserID of
+            Just userID -> pure $ Right userID
+            _ ->
+                  if isPost then
+                        pure <<< Left $ PSR.unauthorized Empty
+                   else
+                        redirectLogin
       where isPost = NH.requestMethod request == "POST"
             redirectLogin = redirect $ routes.login.get { query: {next: Just $ NH.requestURL request} }
 
 checkAnonymous :: Configuration -> Request -> Aff (Either (Response Empty) Unit)
-checkAnonymous { development, tokenSecret } request = do
-      headers <- PSG.headers request
-      if NH.requestMethod request == "POST" && (not development && PH.lookup "origin" headers /= Just domain) then
-            badRequest
-       else do
-            cookies <- PSG.cookies request
-            maybeUserID <- liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
-            case maybeUserID of
-                  Just userID ->
-                        if isPost then
-                              pure <<< Left $ PSR.forbidden Empty
-                         else
-                              redirectIM
-                  _ -> pure $ Right unit
+checkAnonymous { tokenSecret } request = do
+      cookies <- PSG.cookies request
+      maybeUserID <- liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      case maybeUserID of
+            Just userID ->
+                  if isPost then
+                        pure <<< Left $ PSR.forbidden Empty
+                   else
+                        redirectIM
+            _ -> pure $ Right unit
       where isPost = NH.requestMethod request == "POST"
             redirectIM = redirect $ routes.im.get {}
 

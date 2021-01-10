@@ -8,22 +8,20 @@ import Data.JSDate as DJ
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
-import Run.Reader as RR
 import Server.Types (ServerEffect)
 import Shared.Options.Domain (domain)
+import Environment(development)
 
 cookieHeader :: String
 cookieHeader = "Set-Cookie"
 
 makeCookieHeader :: String -> ServerEffect (Tuple String String)
-makeCookieHeader token = do
-      { configuration: { development } } <- RR.ask
-      pure <<< Tuple cookieHeader <<< BC.encode $ makeCookie development token
+makeCookieHeader = pure <<< Tuple cookieHeader <<< BC.encode <<< makeCookie
 
 makeExpiredCookieHeader :: Tuple String String
 makeExpiredCookieHeader = Tuple cookieHeader $ BC.encode expiredCookie
       where expiredCookie :: SetCookie
-            expiredCookie = DN.over SetCookie expire $ makeCookie true ""
+            expiredCookie = DN.over SetCookie expire $ makeCookie ""
             expire cookie = cookie {
                   opts = map update' cookie.opts
             }
@@ -45,17 +43,17 @@ makeExpiredCookieHeader = Tuple cookieHeader $ BC.encode expiredCookie
 cookieName :: String
 cookieName = "melanchat"
 
-makeCookie :: Boolean -> String -> SetCookie
-makeCookie isDevelopment value =
+makeCookie :: String -> SetCookie
+makeCookie value =
       SetCookie {
             cookie: Cookie { key: cookieName, value },
             opts: Just $ CookieOpts {
                   maxAge: Just 3471300000.0,
                   expires: Nothing,
                   httpOnly: true,
-                  samesite: if isDevelopment then Nothing else Just Strict,
-                  domain: if isDevelopment then Nothing else Just domain,
+                  samesite: if development then Nothing else Just Strict,
+                  domain: if development then Nothing else Just domain,
                   path: Just "/",
-                  secure: not isDevelopment
+                  secure: not development
             }
       }

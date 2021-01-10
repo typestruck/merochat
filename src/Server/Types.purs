@@ -39,6 +39,7 @@ type ProfileUserEdition = {
       birthday :: Maybe DateWrapper
 }
 
+--refactor: remove development from here
 type Configuration = {
       port :: Int,
       development :: Boolean,
