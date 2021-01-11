@@ -68,7 +68,7 @@ template {contacts, suggestions, user} = do
       }
       where javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "emoji.579d0f135d969603bd63"],
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.d1202a693e7d7458a1cb"]
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.f008d9c30d99616fef99"]
             ]
             css = [
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.8afea29da29563838ee1" ]
