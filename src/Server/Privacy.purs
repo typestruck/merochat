@@ -35,7 +35,7 @@ privacy =
             HE.h2_ "Data storage",
             HE.p_ "Your data may be stored in databases, caches or your browser. If you decide to terminate your account, all of your data saved in our databases or caches will be deleted. Otherwise your data is kept indefinitely.",
             HE.h2_ "Cookies",
-            HE.p_ "MelanChat only uses session cookies. These have the function of keeping you logged in after you register on log in on the Site.",
+            HE.p_ "MelanChat only uses session cookies. These have the function of keeping you logged in after you register or log in on the Site.",
             HE.div (HA.class' "hide-internal") [
                   HE.h2_ "Contact",
                   HE.p_ [

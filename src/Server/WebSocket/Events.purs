@@ -29,6 +29,7 @@ import Node.HTTP as NH
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.Cookies (cookieName)
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Token as ST
@@ -76,8 +77,8 @@ handleMessage payload = do
 handleConnection :: Configuration -> Pool -> Ref (HashMap PrimaryKey WebSocketConnection) -> WebSocketConnection -> Request -> Effect Unit
 handleConnection c@{ tokenSecret } pool allConnections connection request = do
       maybeUserID <- ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
-            value <- FO.lookup "cookie" $ NH.requestHeaders request
-            _.value <<< DN.unwrap <$> DA.head (BCI.bakeCookies value)
+            uncooked <- FO.lookup "cookie" $ NH.requestHeaders request
+            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _ ) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
       case maybeUserID of
             Nothing -> do
                   SW.close connection
