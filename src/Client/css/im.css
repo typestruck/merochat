@@ -291,7 +291,7 @@ body {
 }
 
 .suggestion.new {
-    background: url('https://static.melan.chat/file/staticmelan/suggestions.png');
+    background: url('https://static.melan.chat/file/ourmelon/suggestions.png');
     border-radius: 15px;
     flex-grow: 1;
 }
@@ -1019,7 +1019,7 @@ select {
 }
 
 .loading {
-    background: url('https://static.melan.chat/file/staticmelan/loading.png');
+    background: url('https://static.melan.chat/file/ourmelon/loading.png');
     animation: rotating 2s linear infinite;
     width: 46px;
     height: 44px;
@@ -1389,7 +1389,7 @@ select {
 .suggestion-center {
     display: flex;
     border-radius: 15px;
-    background: url('https://static.melan.chat/file/staticmelan/suggestions.png');
+    background: url('https://static.melan.chat/file/ourmelon/suggestions.png');
     position: relative;
     flex-direction: column;
     border: 2px solid #4E4E4E;

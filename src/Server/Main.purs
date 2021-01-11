@@ -19,7 +19,7 @@ import Server.Types (Configuration)
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events as SWE
-import Shared.Options.WebSocket (port, portProxy)
+import Shared.Options.WebSocket (port)
 import Shared.Spec (spec)
 
 main :: Effect Unit
@@ -31,14 +31,10 @@ main = do
 startWebSocketServer :: Configuration -> Effect Unit
 startWebSocketServer configuration = do
       allConnections <- ER.new DH.empty
-
-      webSocketServer <- SW.createWebSocketServerWithPort (Port wsPort) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show wsPort)
+      webSocketServer <- SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
       pool <- SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections)
-      where wsPort
-                  | development = port
-                  | otherwise = portProxy
 
 startHTTPServer :: Configuration -> Effect Unit
 startHTTPServer configuration@{port} = do

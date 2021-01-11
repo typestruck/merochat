@@ -28,7 +28,7 @@ template = do
             ]
             css = [
                   HE.style (HA.type' "text/css") """body {
-                        background: url(https://static.melan.chat/file/staticmelan/landing-medium.png) no-repeat fixed;
+                        background: url(https://static.melan.chat/file/ourmelon/landing-medium.png) no-repeat fixed;
                         background-size: cover;
                   }""",
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80"],

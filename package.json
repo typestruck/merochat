@@ -29,7 +29,7 @@
     "url": "^0.11.0",
     "uuid": "^8.3.0",
     "uuid-validate": "0.0.3",
-    "ws": "^7.3.1",
+    "ws": "^7.4.2",
     "xhr2": "^0.2.0"
   },
   "devDependencies": {
@@ -45,6 +45,7 @@
     "webpack-cli": "^3.3.12"
   },
   "optionalDependencies": {
-    "bufferutil": "^4.0.1"
+    "bufferutil": "^4.0.3",
+    "utf-8-validate": "^5.0.4"
   }
 }
