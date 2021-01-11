@@ -71,5 +71,5 @@ template {contacts, suggestions, user} = do
                   HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.f008d9c30d99616fef99"]
             ]
             css = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.8afea29da29563838ee1" ]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.f58ca8784e420c3a7efd" ]
             ]
