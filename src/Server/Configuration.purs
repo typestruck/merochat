@@ -35,7 +35,7 @@ readConfiguration =
             port <- parsePort <$> NP.lookupEnv "PORT"
             variables <- DT.traverse getVariable ["CAPTCHA_SECRET", "TOKEN_SECRET", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD", "DATABASE_HOST"]
             case variables of
-                  [captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host, storageKey] ->
+                  [captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host] ->
                         pure $ {
                               randomizeProfiles: true,
                               port,
@@ -61,7 +61,7 @@ isCLI :: Effect Boolean
 isCLI = falseUnless <$> NP.lookupEnv "CLI"
 
 storageAuthenticationKey :: Effect String
-storageAuthenticationKey = pure "MDAzNDhjY2MyODQ1MjJkMDAwMDAwMDAwMTpLMDAzNjE1RTNIM1JvUnZ4N0RnUlpKcUZBMnF1a3A0" -- DM.fromMaybe "" <$> NP.lookupEnv "STORAGE_KEY"
+storageAuthenticationKey = DM.fromMaybe "" <$> NP.lookupEnv "STORAGE_KEY"
 
 falseUnless :: Maybe String -> Boolean
 falseUnless = DM.maybe false (_ == "true")
