@@ -14,7 +14,7 @@ serveTemplate template = do
       contents <- R.liftEffect template
       pure $ Html contents
 
-throwInternalError :: forall whatever. String -> ServerEffect whatever
+throwInternalError :: forall r whatever. String -> BaseEffect r whatever
 throwInternalError reason = RE.throw $ InternalError { reason, context: Nothing }
 
 throwBadRequest :: forall r whatever. String -> BaseEffect r whatever

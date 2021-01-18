@@ -9,6 +9,7 @@ import Data.Array as DA
 import Data.Foldable as FD
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
@@ -18,19 +19,13 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
 import Server.Bender as SB
+import Server.File as SF
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
 import Server.Response as SR
 import Shared.DateTime as SDT
-import Shared.Options.File (allowedMediaTypes, maxImageSize, maxImageSizeKB)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Unsafe as SU
-
-invalidImageMessage :: String
-invalidImageMessage = "Invalid image"
-
-imageTooBigMessage :: String
-imageTooBigMessage = "Max allowed size for profile picture is " <> maxImageSizeKB
 
 missingRequiredFieldsMessage :: String
 missingRequiredFieldsMessage = "Name, headline and description are mandatory"
@@ -63,7 +58,7 @@ saveProfile loggedUserID profileUser@{ name, age, headline, description, avatar,
       thirteen <- Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map DN.unwrap age > thirteen) $ SR.throwBadRequest tooYoungMessage
 
-      updatedAvatar <- base64From $ map (DS.split (Pattern ",")) avatar
+      updatedAvatar <- DM.maybe (pure Nothing) (map Just <<< SF.saveBase64File) avatar
       SPD.saveProfile {
             user: profileUser { id = loggedUserID },
             avatar: updatedAvatar,
@@ -73,21 +68,3 @@ saveProfile loggedUserID profileUser@{ name, age, headline, description, avatar,
       pure ok
       where isNull = DS.null <<< DS.trim
             anyFieldIsTooBig = DS.length name > nameMaxCharacters || DS.length headline > headlineMaxCharacters || DS.length description > descriptionMaxCharacters || DA.any ((_ > tagMaxCharacters) <<< DS.length) tags
-            base64From =
-                  case _ of
-                        Just [mediaType, base64] -> do
-                              if FD.any (_ == mediaType) $ DH.keys allowedMediaTypes then do
-                                    buffer <- R.liftEffect $ NB.fromString base64 Base64
-                                    bufferSize <- R.liftEffect $ NB.size buffer
-                                    if bufferSize > maxImageSize then
-                                          SR.throwBadRequest imageTooBigMessage
-                                     else do
-                                          uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
-                                          let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
-                                          R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
-
-                                          pure $ Just fileName
-                               else
-                                    SR.throwBadRequest invalidImageMessage
-                        Just [savedFile] -> pure <<< DA.last $ DS.split (Pattern "/") savedFile
-                        _ -> pure Nothing

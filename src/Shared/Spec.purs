@@ -38,7 +38,7 @@ spec :: Spec {
             im :: Routes "/im" {
                   guards :: Guards ("loggedUserID" : Nil),
                   get :: GET "/" {
-                        response :: Html
+                        response :: String
                   },
                   contacts :: GET "/contacts?skip=<skip>" {
                         query :: { skip :: Int },

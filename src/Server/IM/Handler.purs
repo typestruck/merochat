@@ -7,13 +7,19 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
+import Data.Tuple (Tuple(..))
+import Payload.ContentType (html)
+import Payload.Headers as PH
+import Payload.ResponseTypes (Response)
+import Payload.Server.Response as PSR
+import Run as R
 import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
 import Server.Response as SR
 
-im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect Html
+im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect (Response String)
 im { guards: { loggedUserID } } = do
       maybeUser <- SID.presentUser loggedUserID
       case maybeUser of
@@ -22,7 +28,8 @@ im { guards: { loggedUserID } } = do
             Just user -> do
                   suggestions <- SIA.suggest loggedUserID 0
                   contacts <- SIA.listContacts loggedUserID 0
-                  SR.serveTemplate $ SIT.template { contacts, suggestions, user: DN.unwrap user }
+                  contents <- R.liftEffect $ SIT.template { contacts, suggestions, user: DN.unwrap user }
+                  pure <<< PSR.setHeaders (PH.fromFoldable [Tuple "content-type" html, Tuple "cache-control" "no-store, max-age=0"]) $ PSR.ok contents
 
 contacts :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int } } -> ServerEffect (Array Contact)
 contacts { guards: { loggedUserID }, query: { skip } } = SIA.listContacts loggedUserID skip

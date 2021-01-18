@@ -7,14 +7,12 @@ import Shared.Types
 import Control.Monad.Except (ExceptT)
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
+import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
 import Data.Generic.Rep (class Generic)
 import Data.HashMap (HashMap)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
-import Data.Newtype as DN
-import Data.String as DS
-import Data.String.Read (class Read)
 import Database.PostgreSQL (PGError, Pool)
 import Effect.Aff (Aff)
 import Effect.Ref (Ref)
@@ -39,7 +37,6 @@ type ProfileUserEdition = {
       birthday :: Maybe DateWrapper
 }
 
---refactor: remove development from here
 type Configuration = {
       port :: Int,
       captchaSecret :: String,
@@ -69,6 +66,7 @@ type Session = {
 type PG result = ExceptT PGError Aff result
 
 type BaseReader extension = {
+      storageDetails :: Ref StorageDetails,
       pool :: Pool |
       extension
 }
@@ -94,6 +92,24 @@ type BaseEffect r a = Run (
 type ServerEffect a = BaseEffect ServerReader a
 
 type WebSocketEffect = BaseEffect WebSocketReader Unit
+
+type StorageDetails = {
+      authenticationKey :: String,
+      accountAuthorizationToken :: Maybe String,
+      uploadAuthorizationToken :: Maybe String,
+      uploadUrl :: Maybe String,
+      apiUrl :: Maybe String
+}
+
+type AuthorizeAccountResponse =  {
+      authorizationToken :: String,
+      apiUrl :: String
+}
+
+type GetUploadUrlResponse =  {
+      authorizationToken :: String,
+      uploadUrl :: String
+}
 
 data BenderAction = Name | Description
 
@@ -129,8 +145,6 @@ instance enumBenderAction :: Enum BenderAction where
 
       pred Name = Nothing
       pred Description = Just Name
-
--------new
 
 type Ok = Record ()
 

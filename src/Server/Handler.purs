@@ -81,7 +81,7 @@ handlers reading = {
       developmentFiles: developmentFiles
 }
 
-runHTML :: forall a. ServerReader -> (a -> ServerEffect Html) -> a -> Aff (Either (Response String) Html)
+runHTML :: forall a b. ServerReader -> (a -> ServerEffect b) -> a -> Aff (Either (Response String) b)
 runHTML reading handler input = run `EA.catchError` catch
       where run = R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right $ handler input
             catch = liftEffect <<< map Left <<< SIEH.internalError <<< EA.message
@@ -103,7 +103,6 @@ runJSON reading handler =
                         InternalError { reason } -> PSR.internalError reason
                         ExpiredSession -> PSR.unauthorized ""
 
---this shouldn't work on production
 developmentFiles :: { params :: { path :: List String } } -> Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}
       where clientBaseFolder = "src/Client/"

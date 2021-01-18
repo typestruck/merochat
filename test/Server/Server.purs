@@ -10,14 +10,16 @@ import Database.PostgreSQL as DP
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Ref as ER
 import Run (Run, AFF, EFFECT)
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Server.Configuration as SC
 import Server.Database as SD
-import Test.Unit as TU
+import Test.Server.Model (storageDetails)
 import Test.Unit (failure) as TUA
+import Test.Unit as TU
 import Test.Unit.Assert (equal) as TUA
 
 session :: Session
@@ -36,7 +38,9 @@ serverAction :: forall a. ServerEffect a -> Aff Unit
 serverAction action = do
       configuration <- liftEffect SC.readConfiguration
       pool <- liftEffect $ newTestPool configuration
+      ref <- liftEffect $ ER.new storageDetails
       R.runBaseAff' <<< RE.catch (\ex -> R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex)) <<< RR.runReader {
+            storageDetails: ref,
             configuration,
             pool,
             session
@@ -48,7 +52,9 @@ serverActionCatch :: forall a. (ResponseError -> Run (aff :: AFF, effect :: EFFE
 serverActionCatch catch action  = do
       configuration <- liftEffect SC.readConfiguration
       pool <- liftEffect $ newTestPool configuration
+      ref <- liftEffect $ ER.new storageDetails
       R.runBaseAff' <<< RE.catch catch <<< RR.runReader {
+            storageDetails: ref,
             configuration,
             pool,
             session

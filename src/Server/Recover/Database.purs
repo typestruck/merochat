@@ -18,7 +18,5 @@ selectRecoverer token = SD.scalar (Query "select recoverer from recoveries where
 
 recoverPassword :: String -> PrimaryKey -> String -> ServerEffect Unit
 recoverPassword token id password = SD.withTransaction $ \connection -> do
-        SD.executeWith connection (Query "update recoveries set active = false where uuid = $1") $ Row1 token
-        SD.executeWith connection (Query "update users set password = $1 where id = $2") (password /\ id)
-
-
+      SD.executeWith connection (Query "update recoveries set active = false where uuid = $1") $ Row1 token
+      SD.executeWith connection (Query "update users set password = $1 where id = $2") (password /\ id)

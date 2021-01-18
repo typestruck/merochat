@@ -24,6 +24,6 @@ A note on naming: melan is short for _melancia_, the Portuguese word for waterme
 
 ### Contributing
 
-Pull requests are welcome! MelanChat is not quite yet production ready, but we do have a [spec](docs/README.md). Issues correspond to spec items, but feel free to contact me (or just fork the thing) if you wish to help.
+Pull requests are welcome! We have a [spec](docs/README.md). Issues correspond to spec items, but feel free to contact me (or just fork the thing) if you wish to help.
 
 See [CONTRIBUTING](CONTRIBUTING.md) for how to get started.

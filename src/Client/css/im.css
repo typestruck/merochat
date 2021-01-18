@@ -291,7 +291,6 @@ body {
 }
 
 .suggestion.new {
-    background: url('https://static.melan.chat/file/ourmelon/suggestions.png');
     border-radius: 15px;
     flex-grow: 1;
 }
@@ -1389,15 +1388,10 @@ select {
 .suggestion-center {
     display: flex;
     border-radius: 15px;
-    background: url('https://static.melan.chat/file/ourmelon/suggestions.png');
     position: relative;
     flex-direction: column;
     border: 2px solid #4E4E4E;
     border-bottom: none;
-}
-
-.suggestion-center .suggestion.new {
-    background: none;
 }
 
 .suggestion-input {
@@ -1842,6 +1836,9 @@ select {
     .settings .outer-user-menu {
         margin-left: unset;
     }
+    .cards {
+        min-width: 100%;
+    }
     .chat-input {
         padding-right: 40px;
     }
@@ -1990,7 +1987,7 @@ select {
         width: 94px;
         height: 91px;
     }
-    .profile-edition-name,.profile-name {
+    .profile-edition-name, .profile-name {
         letter-spacing: -0.02em;
     }
     .profile-asl {

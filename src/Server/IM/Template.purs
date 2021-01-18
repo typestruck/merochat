@@ -68,8 +68,11 @@ template {contacts, suggestions, user} = do
       }
       where javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "emoji.579d0f135d969603bd63"],
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.f008d9c30d99616fef99"]
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.6c3e70efa903e07ab7da"]
             ]
             css = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.f58ca8784e420c3a7efd" ]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.4f71221a2993491d04e8" ],
+                  HE.style (HA.type' "text/css") """.suggestion.new {
+                        background: url(https://static.melan.chat/file/ourmelon/suggestions.png);
+                  }"""
             ]

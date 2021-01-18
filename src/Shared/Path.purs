@@ -1,4 +1,4 @@
-module Shared.Path (pathery, imageBasePath) where
+module Shared.Path (pathery) where
 
 import Prelude
 
@@ -6,6 +6,7 @@ import Data.Array as DA
 import Data.String (Pattern(..))
 import Data.String as DS
 import Environment (development)
+import Shared.Options.File (imageBasePath, productionBasePath)
 import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
 
@@ -21,12 +22,6 @@ jsBasePath = if development then "/client/javascript/" else productionBasePath
 
 cssBasePath :: String
 cssBasePath = if development then "/client/css/" else productionBasePath
-
-imageBasePath :: String
-imageBasePath = if development then "/client/media/" else productionBasePath
-
-productionBasePath :: String
-productionBasePath = "https://static.melan.chat/file/ourmelon/"
 
 fileName :: String -> String
 fileName file

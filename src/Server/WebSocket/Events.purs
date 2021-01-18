@@ -74,8 +74,8 @@ handleMessage payload = do
                   Nothing -> pure unit
                   Just v -> f v
 
-handleConnection :: Configuration -> Pool -> Ref (HashMap PrimaryKey WebSocketConnection) -> WebSocketConnection -> Request -> Effect Unit
-handleConnection c@{ tokenSecret } pool allConnections connection request = do
+handleConnection :: Configuration -> Pool -> Ref (HashMap PrimaryKey WebSocketConnection) -> Ref StorageDetails -> WebSocketConnection -> Request -> Effect Unit
+handleConnection c@{ tokenSecret } pool allConnections storageDetails connection request = do
       maybeUserID <- ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked <- FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _ ) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
@@ -90,7 +90,7 @@ handleConnection c@{ tokenSecret } pool allConnections connection request = do
       where runMessageHandler sessionUserID (WebSocketMessage message) = do
                   case SJ.fromJSON message of
                         Right payload -> do
-                              let run = R.runBaseAff' <<< RE.catch (\e -> reportError payload (checkInternalError e) e) <<< RR.runReader { allConnections, pool, sessionUserID, connection } $ handleMessage payload
+                              let run = R.runBaseAff' <<< RE.catch (\e -> reportError payload (checkInternalError e) e) <<< RR.runReader { storageDetails, allConnections, pool, sessionUserID, connection } $ handleMessage payload
                               EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
                         Left error -> do
                               SW.close connection

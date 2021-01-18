@@ -8,7 +8,7 @@ import Effect (Effect)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Path (imageBasePath)
+import Shared.Options.File(imageBasePath)
 import Shared.Path as SP
 import Shared.Routes (routes)
 import Shared.Types (ContentType(..))
@@ -67,8 +67,8 @@ templateWith parameters@{ title, content, css, footer, favicon } =
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "base.768271ce06fa68cc4b3d"]
             ]
             javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "other.654c364da5f428e6d082"],
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "common.57f1f81fd1f5869fd3e6"]
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "other.66c93d449db99ffcc61b"],
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "common.c70cbc35b6b9dabf2804"]
             ] <> parameters.javascript
 
 externalFooter :: forall a. Html a

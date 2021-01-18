@@ -4,14 +4,14 @@ import Prelude
 import Shared.Types
 
 import Data.Foldable as DF
-import Shared.Path (imageBasePath)
+import Shared.Options.File (imageBasePath)
 
 title :: Int -> String
 title =
       case _ of
             0 -> defaultTitle
             n -> "(" <> show n <> ") " <> defaultTitle
-      where defaultTitle = "Melanchat - Friendly Random Chat"
+      where defaultTitle = "MelanChat - Friendly Random Chat"
 
 favicon :: Int -> String
 favicon =

@@ -120,6 +120,10 @@ end;
 $$
 language plpgsql;
 
+-- select cron.schedule('0 * * * *', $$select crunch_karma_history(1)$$);
+-- select cron.schedule('10 0 * * *', $$select crunch_karma_history(24)$$);
+-- select cron.schedule('30 0 * * 1', $$select crunch_karma_history(24 * 7)$$);
+
 create table karma_leaderboard
 (
     id integer generated always as identity primary key,
@@ -150,6 +154,8 @@ begin
 end;
 $$
 language plpgsql;
+
+-- select cron.schedule('0 */4 * * *', $$select crunch_karma_history()$$);
 
 create table histories
 (

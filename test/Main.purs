@@ -2,9 +2,8 @@ module Test.Main where
 
 import Prelude
 
-import Data.Maybe (Maybe(..))
+
 import Effect (Effect)
-import Node.Process as NP
 import Server.Configuration as SC
 import Test.Client.Main as TCM
 import Test.Server.Main as TSM

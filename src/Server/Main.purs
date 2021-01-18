@@ -7,15 +7,15 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Console as EC
+import Effect.Ref (Ref)
 import Effect.Ref as ER
-import Environment (development)
 import Payload.Server (defaultOpts)
 import Payload.Server as PS
 import Server.Configuration as CF
 import Server.Database as SD
 import Server.Guard (guards)
 import Server.Handler as SH
-import Server.Types (Configuration)
+import Server.Types (Configuration, StorageDetails)
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events as SWE
@@ -25,22 +25,34 @@ import Shared.Spec (spec)
 main :: Effect Unit
 main = do
       configuration <- CF.readConfiguration
-      startWebSocketServer configuration
-      startHTTPServer configuration
+      storageRef <- createStorageDetails
+      startWebSocketServer configuration storageRef
+      startHTTPServer configuration storageRef
 
-startWebSocketServer :: Configuration -> Effect Unit
-startWebSocketServer configuration = do
+startWebSocketServer :: Configuration -> Ref StorageDetails -> Effect Unit
+startWebSocketServer configuration storageDetails = do
       allConnections <- ER.new DH.empty
       webSocketServer <- SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
       pool <- SD.newPool configuration
-      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections)
+      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections storageDetails)
 
-startHTTPServer :: Configuration -> Effect Unit
-startHTTPServer configuration@{port} = do
+startHTTPServer :: Configuration -> Ref StorageDetails -> Effect Unit
+startHTTPServer configuration@{port} storageDetails = do
       pool <- SD.newPool configuration
       EA.launchAff_ $ PS.startGuarded (defaultOpts { port = port }) spec {
             guards: guards configuration,
-            handlers: SH.handlers { configuration, pool, session: { userID: Nothing } }
+            handlers: SH.handlers { storageDetails, configuration, pool, session: { userID: Nothing } }
       }
       EC.log $ "HTTP now up on http://localhost:" <> show port
+
+createStorageDetails :: Effect (Ref StorageDetails)
+createStorageDetails = do
+      authenticationKey <- CF.storageAuthenticationKey
+      ER.new $ {
+            accountAuthorizationToken: Nothing,
+            uploadAuthorizationToken: Nothing,
+            uploadUrl: Nothing,
+            apiUrl: Nothing,
+            authenticationKey
+      }

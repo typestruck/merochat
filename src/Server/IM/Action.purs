@@ -16,16 +16,20 @@ import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Data.UUID as DU
 import Database.PostgreSQL (Pool)
+import Effect.Ref (Ref)
+import Environment (development)
 import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
+import Server.File as SF
 import Server.IM.Database as SID
 import Server.Ok (ok)
 import Server.Response as SR
 import Server.Wheel as SW
 import Shared.Newtype as SN
 import Shared.Options.File (allowedMediaTypes, maxImageSize)
+import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
 
 foreign import sanitize :: String -> String
@@ -55,34 +59,16 @@ listSingleContact loggedUserID userID = do
             history = history
       }
 
-processMessage :: forall r. PrimaryKey -> PrimaryKey -> Int -> MessageContent -> BaseEffect { pool :: Pool | r } (Tuple PrimaryKey String)
+processMessage :: forall r. PrimaryKey -> PrimaryKey -> Int -> MessageContent -> BaseEffect { storageDetails :: Ref StorageDetails, pool :: Pool | r } (Tuple PrimaryKey String)
 processMessage loggedUserID userID temporaryID content = do
       message <- case content of
             Text m -> pure m
             Image (Tuple caption base64) -> do
-                  path <- base64From $ DS.split (Pattern ",") base64
+                  path <- SF.saveBase64File $ base64
                   pure $ "![" <> caption  <> "](" <> path <> ")"
       let sanitized = DS.trim $ sanitize message
       id <- SID.insertMessage loggedUserID userID temporaryID sanitized
       pure $ Tuple id sanitized
-      where base64From =
-                  case _ of
-                        [mediaType, base64] -> do
-                              if FD.any (_ == mediaType) $ DH.keys allowedMediaTypes then do
-                                    buffer <- R.liftEffect $ NB.fromString base64 Base64
-                                    bufferSize <- R.liftEffect $ NB.size buffer
-                                    if bufferSize > maxImageSize then
-                                          invalidImage
-                                     else do
-                                          uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
-                                          let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
-                                          R.liftEffect $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
-
-                                          pure $ "/client/media/upload/" <> fileName
-                               else
-                                    invalidImage
-                        _ -> invalidImage
-            invalidImage = SR.throwBadRequest "Invalid image"
 
 processKarma :: forall r. PrimaryKey -> PrimaryKey -> Turn -> BaseEffect { pool :: Pool | r } Unit
 processKarma loggedUserID userID turn = SID.insertKarma loggedUserID userID $ SW.karmaFrom turn

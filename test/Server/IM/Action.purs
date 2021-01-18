@@ -6,14 +6,18 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
+import Data.String.Regex as DSR
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Query(..), Row0(..))
+import Debug.Trace (spy)
 import Run as R
 import Server.Database as SD
+import Server.File (imageTooBigMessage, invalidImageMessage)
 import Server.IM.Action as SIA
 import Server.Landing.Database as SLD
-import Server.Profile.Action (invalidImageMessage)
 import Shared.Options.File (maxImageSize)
 import Shared.Types (MessageContent(..))
 import Shared.Unsafe ((!@))
@@ -66,7 +70,7 @@ tests = do
                   TS.serverActionCatch (TS.catch invalidImageMessage) $ do
                         Tuple userID anotherUserID <- setUpUsers
                         Tuple _ message <- SIA.processMessage userID anotherUserID 2 <<< Image <<< Tuple "hey" $ "data:image/png;base64,ya"
-                        R.liftAff <<< TUA.assert "returns file" $ DS.contains (Pattern "![hey](/client/media/upload") message
+                        R.liftAff <<< TUA.assert "returns file" $ DSR.test (DSRU.unsafeRegex "!\\[hey\\]((.*).png)" noFlags) message
 
             TU.test "processMessage sanitizes input" $
                   TS.serverAction $ do
@@ -75,7 +79,7 @@ tests = do
                         R.liftAff $ TUA.equal "" message
 
             TU.test "processMessage does not accept files too large" $
-                  TS.serverActionCatch (TS.catch invalidImageMessage) $ do
+                  TS.serverActionCatch (TS.catch imageTooBigMessage) $ do
                         Tuple userID anotherUserID <- setUpUsers
                         SIA.processMessage userID anotherUserID 2 <<< Image <<< Tuple "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 

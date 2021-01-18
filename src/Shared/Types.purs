@@ -41,6 +41,7 @@ import Global as G
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime as SDT
+import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Web.Event.Internal.Types (Event)
@@ -704,7 +705,7 @@ readAge foreignAge = do
 readAvatar :: Foreign -> F (Maybe String)
 readAvatar foreignAvatar = do
       maybeForeignAvatar <- F.readNull foreignAvatar
-      DM.maybe (pure Nothing) (map (Just <<< ("/client/media/upload/" <> _ )) <<< F.readString) maybeForeignAvatar
+      DM.maybe (pure Nothing) (map (Just <<< ((imageBasePath <> _) <<< ("upload/" <> _ ))) <<< F.readString) maybeForeignAvatar
 
 --REFACTOR: just use pg arrays for tags and languages
 readTags foreignTags = do
