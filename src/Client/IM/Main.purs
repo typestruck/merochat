@@ -14,6 +14,7 @@ import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Notification as CIUC
+import Client.IM.Scroll as CISM
 import Client.IM.Suggestion as CIS
 import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
@@ -27,6 +28,7 @@ import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Traversable as DT
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -237,12 +239,13 @@ receiveMessage webSocket isFocused wsPayload model@{
                               chatting: Just index,
                               contacts
                         } | isFocused && isChatting userID updatedModel ->  --mark it as read if we received a message from the current chat
-                              CICN.updateReadHistory updatedModel {
+                              let Tuple furtherUpdatedModel messages = CICN.updateReadHistory updatedModel {
                                     chatting: index,
                                     userID: recipientID,
                                     contacts,
                                     webSocket
-                              }
+                              } in
+                              furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
                         Right updatedModel -> CIUC.notifyUnreadChats updatedModel [payload.userID]
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
