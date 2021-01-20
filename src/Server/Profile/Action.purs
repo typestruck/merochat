@@ -11,12 +11,14 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
-import Data.String (Pattern(..))
+import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Data.UUID as DU
+import Debug.Trace (spy)
 import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
+import Node.Path as NP
 import Run as R
 import Server.Bender as SB
 import Server.File as SF
@@ -24,6 +26,7 @@ import Server.Ok (ok)
 import Server.Profile.Database as SPD
 import Server.Response as SR
 import Shared.DateTime as SDT
+import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Unsafe as SU
 
@@ -58,7 +61,15 @@ saveProfile loggedUserID profileUser@{ name, age, headline, description, avatar,
       thirteen <- Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map DN.unwrap age > thirteen) $ SR.throwBadRequest tooYoungMessage
 
-      updatedAvatar <- DM.maybe (pure Nothing) (map Just <<< SF.saveBase64File) avatar
+      updatedAvatar <- case avatar of
+            Nothing -> pure Nothing
+            Just path ->
+                  let fileName = DS.replace (Pattern $ imageBasePath <> "upload/") (Replacement "") path in
+                  --likely a base64 image
+                  if fileName == path then
+                        Just <$> SF.saveBase64File path
+                   else
+                        pure $ Just fileName
       SPD.saveProfile {
             user: profileUser { id = loggedUserID },
             avatar: updatedAvatar,
