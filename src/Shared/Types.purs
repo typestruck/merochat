@@ -343,7 +343,7 @@ data IMMessage =
       ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer =
-      Connect |
+      Ping |
       OutgoingMessage (BasicMessage (
             userID :: PrimaryKey,
             content :: MessageContent,
@@ -356,6 +356,10 @@ data WebSocketPayloadServer =
       ToBlock {
             id :: PrimaryKey
       }
+
+data FullWebSocketPayloadClient =
+      Pong |
+      Content WebSocketPayloadClient
 
 data WebSocketPayloadClient =
       NewIncomingMessage ClientMessagePayload |
@@ -489,6 +493,7 @@ derive instance genericMDateTime :: Generic DateTimeWrapper _
 derive instance genericMDate :: Generic DateWrapper _
 derive instance genericMessageContent :: Generic MessageContent _
 derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
+derive instance genericFullWebSocketPayloadServer :: Generic FullWebSocketPayloadClient _
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
 derive instance genericShowModal :: Generic ShowUserMenuModal _
 
@@ -844,6 +849,8 @@ instance fromSQLValueGender :: FromSQLValue Gender where
 instance hashableIMSelector :: Hashable IMElementID where
       hash = HS.hash <<< show
 
+instance encodeJsonWebSocketPayloadClient :: EncodeJson WebSocketPayloadClient where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonPayloadErrorContext :: EncodeJson DatabaseError where
@@ -873,6 +880,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonWebSocketPayloadClient :: DecodeJson WebSocketPayloadClient  where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowContextMenu :: DecodeJson ShowContextMenu where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonPayloadErrorContext :: DecodeJson DatabaseError where

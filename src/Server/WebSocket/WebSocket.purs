@@ -2,16 +2,19 @@
 
 -- | WS node library bindings adapted from https://github.com/FruitieX/purescript-ws
 module Server.WebSocket where
+
 import Prelude
 
+import Data.DateTime (DateTime)
+import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Record as R
 import Data.Symbol (SProxy(..))
 import Effect (Effect)
 import Effect.Exception (Error)
 import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3)
 import Effect.Uncurried as EU
 import Node.HTTP (Request)
+import Record as R
 import Type.Row (class Lacks, class Cons, class Union)
 
 foreign import data WebSocketServer :: Type
@@ -19,11 +22,20 @@ foreign import data WebSocketConnection :: Type
 foreign import createWebSocketServer_ :: forall options . EffectFn2 options (EffectFn1 Unit Unit) WebSocketServer
 foreign import onConnection_ :: EffectFn2 WebSocketServer (EffectFn2 WebSocketConnection Request Unit)Unit
 foreign import onServerError_  :: EffectFn2 WebSocketServer (EffectFn1 Error Unit) Unit
+foreign import onServerClose_  :: EffectFn2 WebSocketServer (EffectFn1 Unit Unit) Unit
 foreign import onMessage_ :: EffectFn2 WebSocketConnection (EffectFn1 WebSocketMessage Unit) Unit
 foreign import onClose_ :: EffectFn2 WebSocketConnection (EffectFn2 CloseCode CloseReason Unit) Unit
 foreign import onError_ :: EffectFn2 WebSocketConnection (EffectFn1 Error Unit) Unit
+foreign import onPong_ :: EffectFn2 WebSocketConnection (EffectFn1 Unit Unit) Unit
+foreign import ping_ :: EffectFn2 WebSocketConnection (EffectFn1 Unit Unit) Unit
 foreign import sendMessage_ :: EffectFn2 WebSocketConnection WebSocketMessage Unit
 foreign import close_ :: EffectFn3 WebSocketConnection CloseCode CloseReason Unit
+foreign import terminate_ :: EffectFn1 WebSocketConnection Unit
+
+type AliveWebSocketConnection = {
+        connection :: WebSocketConnection,
+        lastSeen :: DateTime
+}
 
 newtype WebSocketMessage = WebSocketMessage String
 derive newtype instance showWSM :: Show WebSocketMessage
@@ -54,6 +66,9 @@ onConnection server callback = EU.runEffectFn2 onConnection_ server (EU.mkEffect
 onServerError :: WebSocketServer -> (Error -> Effect Unit) -> Effect Unit
 onServerError server callback = EU.runEffectFn2 onServerError_ server (EU.mkEffectFn1 callback)
 
+onServerClose :: WebSocketServer -> (Unit -> Effect Unit) -> Effect Unit
+onServerClose server callback = EU.runEffectFn2 onServerClose_ server (EU.mkEffectFn1 callback)
+
 -- | Attaches a message event handler to a WebSocketConnection
 onMessage :: WebSocketConnection -> (WebSocketMessage -> Effect Unit) -> Effect Unit
 onMessage ws callback = EU.runEffectFn2 onMessage_ ws (EU.mkEffectFn1 callback)
@@ -66,6 +81,12 @@ onClose ws callback = EU.runEffectFn2 onClose_ ws (EU.mkEffectFn2 callback)
 onError :: WebSocketConnection -> (Error -> Effect Unit) -> Effect Unit
 onError ws callback = EU.runEffectFn2 onError_ ws (EU.mkEffectFn1 callback)
 
+onPong :: WebSocketConnection -> (Unit -> Effect Unit) -> Effect Unit
+onPong ws callback = EU.runEffectFn2 onPong_ ws (EU.mkEffectFn1 callback)
+
+ping :: WebSocketConnection -> (Unit -> Effect Unit) -> Effect Unit
+ping ws callback = EU.runEffectFn2 ping_ ws (EU.mkEffectFn1 callback)
+
 -- | Send a message over a WebSocketConnection
 sendMessage :: WebSocketConnection -> WebSocketMessage -> Effect Unit
 sendMessage ws message = EU.runEffectFn2 sendMessage_ ws message
@@ -73,6 +94,9 @@ sendMessage ws message = EU.runEffectFn2 sendMessage_ ws message
 -- | Initiate a closing handshake
 close :: WebSocketConnection -> Effect Unit
 close ws = EU.runEffectFn3 close_ ws (CloseCode 1000) (CloseReason "Closed by server")
+
+terminate :: WebSocketConnection -> Effect Unit
+terminate ws = EU.runEffectFn1 terminate_ ws
 
 -- | Initiate a closing handshake with given code and reason
 close' :: WebSocketConnection -> CloseCode -> CloseReason -> Effect Unit

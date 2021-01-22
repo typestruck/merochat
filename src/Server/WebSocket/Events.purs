@@ -6,12 +6,17 @@ import Shared.Types
 
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
+import Data.DateTime (DateTime)
+import Data.DateTime as DDT
 import Data.Either (Either(..))
+import Data.Foldable as DF
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
+import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (Pool)
 import Effect (Effect)
@@ -33,11 +38,51 @@ import Server.Cookies (cookieName)
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Token as ST
-import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
+import Server.WebSocket (CloseCode, CloseReason, AliveWebSocketConnection, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.JSON as SJ
 
-handleClose ::  Ref (HashMap PrimaryKey WebSocketConnection) -> PrimaryKey -> CloseCode -> CloseReason -> Effect Unit
+aliveDelay :: Int
+aliveDelay = 1000 * 60 * aliveDelayMinutes
+
+aliveDelayMinutes :: Int
+aliveDelayMinutes = 10
+
+handleConnection :: Configuration -> Pool -> Ref (HashMap PrimaryKey AliveWebSocketConnection) -> Ref StorageDetails -> WebSocketConnection -> Request -> Effect Unit
+handleConnection c@{ tokenSecret } pool allConnections storageDetails connection request = do
+      maybeUserID <- ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
+            uncooked <- FO.lookup "cookie" $ NH.requestHeaders request
+            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _ ) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
+      case maybeUserID of
+            Nothing -> do
+                  SW.terminate connection
+                  EC.log "terminated due to auth error"
+            Just sessionUserID -> do
+                  now <- EN.nowDateTime
+                  ER.modify_ (DH.insert sessionUserID { lastSeen: now, connection }) allConnections
+                  SW.onError connection handleError
+                  SW.onClose connection (handleClose allConnections sessionUserID)
+                  SW.onMessage connection (runMessageHandler sessionUserID)
+      where runMessageHandler sessionUserID (WebSocketMessage message) = do
+                  case SJ.fromJSON message of
+                        Right payload -> do
+                              let run = R.runBaseAff' <<< RE.catch (\e -> reportError payload (checkInternalError e) e) <<< RR.runReader { storageDetails, allConnections, pool, sessionUserID, connection } $ handleMessage payload
+                              EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
+                        Left error -> do
+                              SW.terminate connection
+                              EC.log $ "terminated due to seriliazation error: " <> error
+
+            reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> Maybe DatabaseError -> a -> b Unit
+            reportError origin context _ = sendWebSocketMessage connection <<< Content $ PayloadError { origin, context }
+
+            checkInternalError = case _ of
+                  InternalError { context } -> context
+                  _ -> Nothing
+
+handleError :: Error -> Effect Unit
+handleError = EC.log <<< show
+
+handleClose :: Ref (HashMap PrimaryKey AliveWebSocketConnection) -> PrimaryKey -> CloseCode -> CloseReason -> Effect Unit
 handleClose allConnections id _ _ = ER.modify_ (DH.delete id) allConnections
 
 --REFACTOR: untangle the im logic from the websocket logic
@@ -45,23 +90,32 @@ handleMessage ::  WebSocketPayloadServer -> WebSocketEffect
 handleMessage payload = do
       { connection, sessionUserID, allConnections } <- RR.ask
       case payload of
-            Connect -> R.liftEffect $ ER.modify_ (DH.insert sessionUserID connection) allConnections
+            Ping -> do
+                  possibleConnection <- R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
+                  case possibleConnection of
+                        Nothing -> R.liftEffect $ do
+                              EC.log "ping without saved connection"
+                              SW.terminate connection
+                        Just { lastSeen } -> R.liftEffect $ do
+                              now <- EN.nowDateTime
+                              ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserID) allConnections
+                              sendWebSocketMessage connection Pong
             ReadMessages { ids } -> SID.markRead sessionUserID ids
             ToBlock { id } -> do
                   possibleConnection <- R.liftEffect (DH.lookup id <$> ER.read allConnections)
-                  whenJust possibleConnection $ \recipientConnection -> sendWebSocketMessage recipientConnection $ BeenBlocked { id: sessionUserID }
+                  whenJust possibleConnection $ \{ connection: recipientConnection } -> sendWebSocketMessage recipientConnection <<< Content $ BeenBlocked { id: sessionUserID }
             OutgoingMessage { id: temporaryID , userID: recipient, content, turn } -> do
                   date <- R.liftEffect $ map DateTimeWrapper EN.nowDateTime
                   Tuple messageID finalContent <- SIA.processMessage sessionUserID recipient temporaryID content
-                  sendWebSocketMessage connection $ ServerReceivedMessage {
+                  sendWebSocketMessage connection <<< Content $ ServerReceivedMessage {
                         previousID: temporaryID,
                         id: messageID,
                         userID: sessionUserID
                   }
 
                   possibleRecipientConnection <- R.liftEffect (DH.lookup recipient <$> ER.read allConnections)
-                  whenJust possibleRecipientConnection $ \recipientConnection ->
-                        sendWebSocketMessage recipientConnection $ NewIncomingMessage {
+                  whenJust possibleRecipientConnection $ \{ connection: recipientConnection } ->
+                        sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage {
                               id : messageID,
                               userID: sessionUserID,
                               content: finalContent,
@@ -74,37 +128,19 @@ handleMessage payload = do
                   Nothing -> pure unit
                   Just v -> f v
 
-handleConnection :: Configuration -> Pool -> Ref (HashMap PrimaryKey WebSocketConnection) -> Ref StorageDetails -> WebSocketConnection -> Request -> Effect Unit
-handleConnection c@{ tokenSecret } pool allConnections storageDetails connection request = do
-      maybeUserID <- ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
-            uncooked <- FO.lookup "cookie" $ NH.requestHeaders request
-            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _ ) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
-      case maybeUserID of
-            Nothing -> do
-                  SW.close connection
-                  EC.log "closed due to auth error"
-            Just sessionUserID -> do
-                  SW.onError connection handleError
-                  SW.onClose connection (handleClose allConnections sessionUserID)
-                  SW.onMessage connection (runMessageHandler sessionUserID)
-      where runMessageHandler sessionUserID (WebSocketMessage message) = do
-                  case SJ.fromJSON message of
-                        Right payload -> do
-                              let run = R.runBaseAff' <<< RE.catch (\e -> reportError payload (checkInternalError e) e) <<< RR.runReader { storageDetails, allConnections, pool, sessionUserID, connection } $ handleMessage payload
-                              EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
-                        Left error -> do
-                              SW.close connection
-                              EC.log $ "closed due to seriliazation error: " <> error
-
-            reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> Maybe DatabaseError -> a -> b Unit
-            reportError origin context _ = sendWebSocketMessage connection $ PayloadError { origin, context }
-
-            checkInternalError = case _ of
-                  InternalError { context } -> context
-                  _ -> Nothing
-
-sendWebSocketMessage :: forall b. MonadEffect b => WebSocketConnection -> WebSocketPayloadClient -> b Unit
+sendWebSocketMessage :: forall b. MonadEffect b => WebSocketConnection -> FullWebSocketPayloadClient -> b Unit
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJSON
 
-handleError :: Error -> Effect Unit
-handleError = EC.log <<< show
+checkLastSeen :: Ref (HashMap PrimaryKey AliveWebSocketConnection) -> Effect Unit
+checkLastSeen allConnections = do
+      connections <- ER.read allConnections
+      now <- EN.nowDateTime
+      DF.traverse_ (check now) $ DH.toArrayBy Tuple connections
+      where check now (Tuple id { lastSeen, connection })
+                  | hasExpired lastSeen now = do
+                        ER.modify_ (DH.delete id) allConnections
+                        SW.terminate connection
+                  | otherwise = pure unit
+
+            hasExpired lastSeen now = aliveDelayMinutes <= DI.floor (DN.unwrap (DDT.diff now lastSeen :: Minutes))
+

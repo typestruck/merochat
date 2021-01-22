@@ -9,6 +9,7 @@ import Effect.Aff as EA
 import Effect.Console as EC
 import Effect.Ref (Ref)
 import Effect.Ref as ER
+import Effect.Timer as ET
 import Payload.Server (defaultOpts)
 import Payload.Server as PS
 import Server.Configuration as CF
@@ -18,6 +19,7 @@ import Server.Handler as SH
 import Server.Types (Configuration, StorageDetails)
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
+import Server.WebSocket.Events (aliveDelay)
 import Server.WebSocket.Events as SWE
 import Shared.Options.WebSocket (port)
 import Shared.Spec (spec)
@@ -36,6 +38,8 @@ startWebSocketServer configuration storageDetails = do
       SW.onServerError webSocketServer SWE.handleError
       pool <- SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections storageDetails)
+      intervalID <- ET.setInterval aliveDelay (SWE.checkLastSeen allConnections)
+      SW.onServerClose webSocketServer (const (ET.clearInterval intervalID))
 
 startHTTPServer :: Configuration -> Ref StorageDetails -> Effect Unit
 startHTTPServer configuration@{port} storageDetails = do

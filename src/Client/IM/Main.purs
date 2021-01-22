@@ -8,6 +8,7 @@ import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
+import Client.Common.Types (CurrentWebSocket)
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
 import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
@@ -63,7 +64,7 @@ main :: Effect Unit
 main = do
       webSocket <- CIW.createWebSocket
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
-      webSocketRef <- ER.new webSocket
+      webSocketRef <- ER.new { webSocket, ponged : true }
       elements <- cacheElements [ ImageFileInput, ChatInput {-, ChatInputSuggestion, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot -}]
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
@@ -147,7 +148,7 @@ update { webSocketRef, fileReader, elements } model =
             ToggleFortune isVisible -> toggleFortune isVisible model
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
-      where webSocket = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+      where { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
 
 askNotification :: IMModel -> MoreMessages
 askNotification model = CIF.nothingNext (model { enableNotificationsVisible = false }) $ liftEffect CCD.requestNotificationPermission
@@ -256,8 +257,6 @@ receiveMessage webSocket isFocused wsPayload model@{
                          else
                               markErroredMessage contacts userID id
             }
-            --the connection might still be open and the server haven't saved the socket
-            Connect -> CIF.nothingNext model <<< liftEffect $ CIW.close webSocket
             _ -> F.noMessages model
       where isChatting senderID { contacts, chatting } =
                   let ({ user: { id: recipientID } }) = contacts !@ (SU.fromJust chatting) in
@@ -266,7 +265,7 @@ receiveMessage webSocket isFocused wsPayload model@{
 unsuggest :: PrimaryKey -> IMModel -> IMModel
 unsuggest userID model@{ suggestions, suggesting } = model {
       suggestions = DA.filter ((userID /= _) <<< _.id) suggestions,
-      suggesting = (\i -> if i == 0 then 0  else i - 1) <$> suggesting
+      suggesting = (\i -> if i == 0 then 0 else i - 1) <$> suggesting
 }
 
 processIncomingMessage :: ClientMessagePayload -> IMModel -> Either PrimaryKey IMModel
@@ -377,40 +376,66 @@ windowsFocus channel = do
       window <- WH.window
       WET.addEventListener focus focusListener false $ WHW.toEventTarget window
 
-setUpWebSocket :: Ref WebSocket -> Channel (Array IMMessage) -> Effect Unit
+setUpWebSocket :: Ref CurrentWebSocket -> Channel (Array IMMessage) -> Effect Unit
 setUpWebSocket webSocketRef channel = do
-      webSocket <- ER.read webSocketRef
+      { webSocket } <- ER.read webSocketRef
       let webSocketTarget = CIW.toEventTarget webSocket
-      --a ref is used to track reconnections
-      timerID <- ER.new Nothing
-      openListener <- WET.eventListener $ const (do
-            CIW.sendPayload webSocket Connect
-            sendChannel $ ToggleConnected true)
-      messageListener <- WET.eventListener $ \event -> do
-            maybeID <- ER.read timerID
-            DM.maybe (pure unit) (\id -> do
-                  ET.clearTimeout id
-                  ER.write Nothing timerID) maybeID
-            let payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
-                message = SU.fromRight $ SJ.fromJSON payload
-            isFocused <- CCD.documentHasFocus
-            sendChannel $ ReceiveMessage message isFocused
-
-      closeListener <- WET.eventListener $ \_ -> do
-            sendChannel $ ToggleConnected false
-            maybeID <- ER.read timerID
-            when (DM.isNothing maybeID) do
-                  milliseconds <- ERD.randomInt 2000 10000
-                  id <- ET.setTimeout milliseconds <<< void $ do
-                        newWebSocket <- CIW.createWebSocket
-                        ER.write newWebSocket webSocketRef
-                        setUpWebSocket webSocketRef channel
-                  ER.write (Just id) timerID
-
+      --a ref is used to track reconnections and ping intervals
+      timerIDs <- ER.new { reconnectID : Nothing, pingID : Nothing }
+      openListener <- WET.eventListener (open timerIDs)
+      messageListener <- WET.eventListener runMessage
+      closeListener <- WET.eventListener (close timerIDs)
       WET.addEventListener onMessage messageListener false webSocketTarget
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
+
       where sendChannel = SC.send channel <<< DA.singleton
+
+            open timerIDs _ =  do
+                  { reconnectID } <- ER.read timerIDs
+                  case reconnectID of
+                        Nothing -> pure unit
+                        Just id -> do
+                              ET.clearTimeout id
+                              ER.modify_ ( _ { reconnectID = Nothing }) timerIDs
+                  pong true
+                  newPingID <- ping
+                  ER.modify_ ( _ { pingID = Just newPingID }) timerIDs
+                  sendChannel $ ToggleConnected true
+
+            ping = ET.setInterval (1000 * 60) do
+                  { webSocket, ponged } <- ER.read webSocketRef
+                  if ponged then do
+                        pong false
+                        CIW.sendPayload webSocket Ping
+                   else
+                        CIW.close webSocket
+
+            runMessage event = do
+                  let payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
+                      message = SU.fromRight $ SJ.fromJSON payload
+                  isFocused <- CCD.documentHasFocus
+                  case message of
+                        Pong -> pong true
+                        Content cnt -> sendChannel $ ReceiveMessage cnt isFocused
+
+            pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
+
+            close timerIDs _ = do
+                  sendChannel $ ToggleConnected false
+                  { reconnectID, pingID } <- ER.read timerIDs
+                  newPingID <- case pingID of
+                        Nothing -> pure unit
+                        Just id -> do
+                              ET.clearInterval id
+                              ER.modify_ (_ { pingID = Nothing }) timerIDs
+                  when (DM.isNothing reconnectID) do
+                        milliseconds <- ERD.randomInt 2000 10000
+                        id <- ET.setTimeout milliseconds <<< void $ do
+                              newWebSocket <- CIW.createWebSocket
+                              ER.modify_ (_ { webSocket = newWebSocket }) webSocketRef
+                              setUpWebSocket webSocketRef channel
+                        ER.modify_ (_ { reconnectID = Just id }) timerIDs
 
 setSmallScreen :: IMModel -> NoMessages
 setSmallScreen model@{ messageEnter } =

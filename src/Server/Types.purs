@@ -23,7 +23,7 @@ import Payload.Server.Response (class EncodeResponse)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
 import Run.Reader (READER)
-import Server.WebSocket (WebSocketConnection)
+import Server.WebSocket (WebSocketConnection, AliveWebSocketConnection)
 
 type ProfileUserEdition = {
       id :: String,
@@ -74,7 +74,7 @@ type BaseReader extension = {
 type WebSocketReader = BaseReader (
       sessionUserID :: PrimaryKey,
       connection :: WebSocketConnection,
-      allConnections:: Ref (HashMap PrimaryKey WebSocketConnection)
+      allConnections:: Ref (HashMap PrimaryKey AliveWebSocketConnection)
 )
 
 type ServerReader = BaseReader (
