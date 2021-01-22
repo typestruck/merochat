@@ -32,10 +32,23 @@ body {
     margin-top: 0px;
 }
 
+.update-im {
+    border-bottom: 1px solid #4E4E4E;
+}
+
 .notification {
+    display: flex;
     padding: 10px;
-    text-align: center;
     cursor: pointer;
+}
+
+.notification-message {
+    padding-left: 15px;
+}
+
+.notification-icon {
+    height: 30px;
+    align-self: center;
 }
 
 .profile-description p:last-of-type, .description-message p:last-of-type {
@@ -1610,6 +1623,9 @@ select {
     .contact {
         padding: 5px 10px
     }
+    .notification {
+        padding-left: 10px;
+    }
     .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
         display: none;
     }
@@ -2017,6 +2033,7 @@ select {
     .contact {
         padding: 10px;
     }
+
     .message-history> :last-child {
         padding-bottom: 20px;
     }

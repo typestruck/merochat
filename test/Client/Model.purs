@@ -28,6 +28,7 @@ model = {
       shouldSendMessage: true,
       freeToFetchContactList: true,
       errorMessage: "",
+      imUpdated : false,
       smallScreen: false,
       failedRequests: [],
       toggleContextMenu: HideContextMenu,

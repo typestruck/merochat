@@ -351,7 +351,7 @@ check :: ProfileMessage -> Html ProfileMessage
 check message = HE.svg [HA.class' "svg-20 save", HA.viewBox "0 0 16 16", HA.onClick message] [
       HE.title "Save edit",
       HE.path' [HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.5A7.5,7.5,0,1,1,15.5,8,7.5,7.5,0,0,1,8,15.5Z"],
-      HE.path' [HA.class' "a", HA.d "M10.67,5.11l-4.3,4.3L4.73,7.77a.62.62,0,0,0-.88.88l2.52,2.52L11.55,6a.62.62,0,0,0-.88-.88Z"]
+      HE.path' [HA.d "M10.67,5.11l-4.3,4.3L4.73,7.77a.62.62,0,0,0-.88.88l2.52,2.52L11.55,6a.62.62,0,0,0-.88-.88Z"]
 ]
 
 cancel :: forall r t fieldInputed. IsSymbol fieldInputed => Cons fieldInputed (Maybe t) r PM => SProxy fieldInputed -> Html ProfileMessage

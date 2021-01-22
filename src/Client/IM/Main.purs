@@ -224,6 +224,10 @@ receiveMessage webSocket isFocused wsPayload model@{
       suggestions,
       blockedUsers
 } = case wsPayload of
+      IMUpdate ->
+            F.noMessages $ model {
+                  imUpdated = true
+            }
       ServerReceivedMessage { previousID, id, userID } ->
             F.noMessages $ model {
                   contacts = updateTemporaryID contacts userID previousID id

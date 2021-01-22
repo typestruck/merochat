@@ -217,6 +217,7 @@ type IM = (
       initialScreen :: Boolean, --used on mobile to switch screens
       hasTriedToConnectYet :: Boolean,
       fullContactProfileVisible :: Boolean,
+      imUpdated :: Boolean,
       enableNotificationsVisible :: Boolean,
       toggleContextMenu :: ShowContextMenu,
       toggleModal :: ShowUserMenuModal,
@@ -362,6 +363,7 @@ data FullWebSocketPayloadClient =
       Content WebSocketPayloadClient
 
 data WebSocketPayloadClient =
+      IMUpdate |
       NewIncomingMessage ClientMessagePayload |
       ServerReceivedMessage {
           previousID :: PrimaryKey,

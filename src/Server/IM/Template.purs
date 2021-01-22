@@ -58,6 +58,7 @@ template {contacts, suggestions, user} = do
                   message: Nothing,
                   toggleChatModal: HideChatModal,
                   blockedUsers: [],
+                  imUpdated: false,
                   isWebSocketConnected: false,
                   failedRequests: [],
                   hasTriedToConnectYet: false,
@@ -68,10 +69,10 @@ template {contacts, suggestions, user} = do
       }
       where javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "emoji.579d0f135d969603bd63"],
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.6084703395ddedb32f1d"]
+                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.330f099142e3b116b833"]
             ]
             css = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.4f71221a2993491d04e8" ],
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.764a972cf23262537d6d" ],
                   HE.style (HA.type' "text/css") """.suggestion.new {
                         background: url(https://static.melan.chat/file/ourmelon/suggestions.png);
                   }"""
