@@ -5,10 +5,11 @@ import Prelude
 
 import Data.String as DS
 import Effect (Effect)
+import Environment (commonJSHash, otherJSHash)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Options.File(imageBasePath)
+import Shared.Options.File (imageBasePath)
 import Shared.Path as SP
 import Shared.Routes (routes)
 import Shared.Types (ContentType(..))
@@ -67,8 +68,8 @@ templateWith parameters@{ title, content, css, footer, favicon } =
                   HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "base.768271ce06fa68cc4b3d"]
             ]
             javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "other.94d468332694199182af"],
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "common.cffba6d8744c7321080d"]
+                  HE.script' [HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "other." <> otherJSHash],
+                  HE.script' [HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "common." <> commonJSHash]
             ] <> parameters.javascript
 
 externalFooter :: forall a. Html a

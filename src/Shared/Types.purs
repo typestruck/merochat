@@ -213,6 +213,8 @@ type IM = (
       suggesting :: Maybe Int,
       chatting :: Maybe Int,
       smallScreen :: Boolean,
+      --used to signal that the page should be reloaded
+      hash :: String,
       --visibility switches
       initialScreen :: Boolean, --used on mobile to switch screens
       hasTriedToConnectYet :: Boolean,
@@ -329,6 +331,7 @@ data IMMessage =
       SetEmoji Event |
       InsertLink |
       --main
+      ReloadPage |
       ToggleUserContextMenu Event |
       SpecialRequest RetryableRequest |
       ReceiveMessage WebSocketPayloadClient Boolean |
@@ -344,6 +347,7 @@ data IMMessage =
       ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer =
+      UpdateHash |
       Ping |
       OutgoingMessage (BasicMessage (
             userID :: PrimaryKey,
@@ -363,7 +367,7 @@ data FullWebSocketPayloadClient =
       Content WebSocketPayloadClient
 
 data WebSocketPayloadClient =
-      IMUpdate |
+      CurrentHash String |
       NewIncomingMessage ClientMessagePayload |
       ServerReceivedMessage {
           previousID :: PrimaryKey,

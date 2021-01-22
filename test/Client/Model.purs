@@ -26,6 +26,7 @@ model = {
       message: Just "test message",
       suggestionsPage: 0,
       shouldSendMessage: true,
+      hash: "",
       freeToFetchContactList: true,
       errorMessage: "",
       imUpdated : false,

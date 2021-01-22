@@ -22,7 +22,7 @@ view :: Boolean -> IMModel -> Html IMMessage
 view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, imUpdated, isWebSocketConnected, toggleModal } = HE.div [HA.class' "im"] [
       HE.div (HA.class' {"contact-box": true, "current-mobile-screen": initialScreen} ) [
             SIVU.userMenu model,
-            SIVN.updateIM imUpdated,
+            SIVN.reloadPage imUpdated,
             SIVN.prompt enableNotificationsVisible,
             SIVS.suggestions model,
             SIVCN.contactList isClientRender model,

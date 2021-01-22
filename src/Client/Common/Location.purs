@@ -56,3 +56,9 @@ hostName = do
       window <- WH.window
       location <- WHW.location window
       WHL.hostname location
+
+reload :: Effect Unit
+reload = do
+      window <- WH.window
+      location <- WHW.location window
+      WHL.reload location

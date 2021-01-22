@@ -38,6 +38,7 @@ import Server.Cookies (cookieName)
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Token as ST
+import Shared.Path(updateHash)
 import Server.WebSocket (CloseCode, CloseReason, AliveWebSocketConnection, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.JSON as SJ
@@ -90,9 +91,12 @@ handleMessage ::  WebSocketPayloadServer -> WebSocketEffect
 handleMessage payload = do
       { connection, sessionUserID, allConnections } <- RR.ask
       case payload of
+            UpdateHash ->
+                  sendWebSocketMessage connection <<< Content $ CurrentHash updateHash
             Ping -> do
                   possibleConnection <- R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
                   case possibleConnection of
+                        --shouldnt be possible
                         Nothing -> R.liftEffect $ do
                               EC.log "ping without saved connection"
                               SW.terminate connection
