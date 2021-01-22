@@ -9,7 +9,7 @@ import Flame.Html.Element as HE
 import Shared.IM.View.Retry as SIR
 
 reloadPage :: Boolean -> Html IMMessage
-reloadPage shouldReload = HE.div [HA.class' {"notification update-im": true, hidden: not shouldReload}, HA.onClick ReloadPage] [
+reloadPage shouldReload = HE.div [HA.class' {"notification": true, hidden: not shouldReload}, HA.onClick ReloadPage] [
       SIR.retryIcon "notification-icon",
       HE.div (HA.class' "notification-message") [
             HE.strong_ "Update available",
