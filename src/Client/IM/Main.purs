@@ -6,12 +6,13 @@ import Shared.Types
 import Client.Common.DOM (nameChanged, notificationClick)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
+import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.Common.Types (CurrentWebSocket)
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Notification as CIUC
@@ -137,6 +138,7 @@ update { webSocketRef, fileReader, elements } model =
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetContextMenuToggle toggle -> CIU.toogleUserContextMenu toggle model
             --main
+            ReloadPage -> reloadPage model
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
             AskNotification -> askNotification model
@@ -149,6 +151,9 @@ update { webSocketRef, fileReader, elements } model =
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
       where { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+reloadPage :: IMModel -> NextMessage
+reloadPage model = CIF.nothingNext model $ liftEffect CCL.reload
 
 askNotification :: IMModel -> MoreMessages
 askNotification model = CIF.nothingNext (model { enableNotificationsVisible = false }) $ liftEffect CCD.requestNotificationPermission
@@ -222,11 +227,12 @@ receiveMessage webSocket isFocused wsPayload model@{
       user: { id: recipientID },
       contacts,
       suggestions,
+      hash,
       blockedUsers
 } = case wsPayload of
-      IMUpdate ->
+      CurrentHash newHash ->
             F.noMessages $ model {
-                  imUpdated = true
+                  imUpdated = newHash /= hash
             }
       ServerReceivedMessage { previousID, id, userID } ->
             F.noMessages $ model {
@@ -406,6 +412,7 @@ setUpWebSocket webSocketRef channel = do
                   newPingID <- ping
                   ER.modify_ ( _ { pingID = Just newPingID }) timerIDs
                   sendChannel $ ToggleConnected true
+                  askForUpdates
 
             ping = ET.setInterval (1000 * 60) do
                   { webSocket, ponged } <- ER.read webSocketRef
@@ -424,6 +431,10 @@ setUpWebSocket webSocketRef channel = do
                         Content cnt -> sendChannel $ ReceiveMessage cnt isFocused
 
             pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
+
+            askForUpdates = do
+                  { webSocket} <- ER.read webSocketRef
+                  CIW.sendPayload webSocket UpdateHash
 
             close timerIDs _ = do
                   sendChannel $ ToggleConnected false

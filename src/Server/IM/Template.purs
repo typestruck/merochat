@@ -6,6 +6,7 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Environment (emojiJSHash, imCSSHash, imJSHash)
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.Html.Attribute as HA
@@ -14,6 +15,7 @@ import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.Unread as SIU
 import Shared.IM.View as SIV
+import Shared.Path (updateHash)
 import Shared.Path as SP
 
 template :: {
@@ -62,17 +64,18 @@ template {contacts, suggestions, user} = do
                   isWebSocketConnected: false,
                   failedRequests: [],
                   hasTriedToConnectYet: false,
+                  hash: updateHash,
                   contacts,
                   suggestions,
                   user
             }
       }
       where javascript = [
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "emoji.579d0f135d969603bd63"],
-                  HE.script' [HA.type' "text/javascript", HA.src $ SP.pathery JS "im.330f099142e3b116b833"]
+                  HE.script' [HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "emoji." <> emojiJSHash],
+                  HE.script' [HA.type' "text/javascript", HA.src <<< SP.pathery JS $  "im." <> imJSHash]
             ]
             css = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "im.764a972cf23262537d6d" ],
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "im." <> imCSSHash],
                   HE.style (HA.type' "text/css") """.suggestion.new {
                         background: url(https://static.melan.chat/file/ourmelon/suggestions.png);
                   }"""

@@ -1,11 +1,11 @@
-module Shared.Path (pathery) where
+module Shared.Path (pathery, updateHash) where
 
 import Prelude
 
 import Data.Array as DA
 import Data.String (Pattern(..))
 import Data.String as DS
-import Environment (development)
+import Environment (commonJSHash, development, emojiJSHash, imCSSHash, imJSHash, otherJSHash)
 import Shared.Options.File (imageBasePath, productionBasePath)
 import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
@@ -27,3 +27,6 @@ fileName :: String -> String
 fileName file
     | development = SU.fromJust <<< DA.head $ DS.split (Pattern ".") file
     | otherwise = file
+
+updateHash :: String
+updateHash = commonJSHash <> otherJSHash <> imJSHash <> emojiJSHash <> imCSSHash
