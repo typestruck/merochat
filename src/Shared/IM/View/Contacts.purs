@@ -45,9 +45,9 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
             unread total { status, sender } = total + DE.fromEnum (sender /= userID && status < Read)
             countUnread = DF.foldl unread 0
 
-            lastMessage = DM.fromMaybe "" <<< map _.content <<< DA.last
-            lastStatus = DM.fromMaybe "" <<< map (show <<< _.status) <<< DA.last
-            lastDate = DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date) <<< DA.last
+            lastMessage = DM.fromMaybe "" <<< map _.content
+            lastStatus = DM.fromMaybe "" <<< map (show <<< _.status)
+            lastDate = DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date)
             chattingID = do
                   index <- chatting
                   contact <- contacts !! index
@@ -57,19 +57,20 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
                   let   index' = Just index
                         extraContactClasses = if chattingID == Just id then " chatting-contact" else ""
                         numberUnreadMessages = countUnread history
+                        maybeMessage = DA.last history
+
                   in HE.div [HA.class' $ "contact" <> extraContactClasses, HA.onClick $ ResumeChat id] [
                         HE.div (HA.class' "avatar-contact-list-div") [
                               HE.img [HA.class' $ "avatar-contact-list" <> SA.avatarColorClass index', HA.src $ SA.avatarForRecipient index' avatar]
                         ],
                         HE.div [HA.class' "contact-profile"] [
                               HE.span (HA.class' "contact-name") name,
-                              HE.div' [HA.class' "contact-list-last-message", HA.innerHtml <<< SM.parseRestricted $ lastMessage history]
+                              HE.div' [HA.class' "contact-list-last-message", HA.innerHtml <<< SM.parseRestricted $ lastMessage maybeMessage]
                         ],
                         HE.div (HA.class' "contact-options") [
-                              HE.span (HA.class' {duller: true, invisible: not isClientRender }) $ lastDate history,
+                              HE.span (HA.class' {duller: true, invisible: not isClientRender }) $ lastDate maybeMessage,
                               HE.div (HA.class' { "unread-messages" :true, hidden: numberUnreadMessages == 0}) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages,
-                              --should show only for sent    messages
-                              HE.div (HA.class' { duller: true, hidden: numberUnreadMessages > 0}) $ lastStatus history
+                              HE.div (HA.class' { duller: true, hidden: numberUnreadMessages > 0 || map _.sender maybeMessage == Just id }) $ lastStatus maybeMessage
                         ]
                   ]
 
