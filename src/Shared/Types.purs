@@ -33,6 +33,7 @@ import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue)
+import Debug.Trace (spy)
 import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
@@ -155,6 +156,7 @@ data MessageStatus =
       Errored |
       Sent |
       Received |
+      Delivered |
       Read
 
 type MessageIDTemporary = {
@@ -304,7 +306,6 @@ data IMMessage =
       SetContextMenuToggle ShowContextMenu |
       SetModalContents (Maybe String) String String |
       --contact
-      MarkAsRead |
       ResumeChat PrimaryKey |
       UpdateReadCount |
       CheckFetchContacts |
@@ -354,7 +355,9 @@ data WebSocketPayloadServer =
             content :: MessageContent,
             turn :: Maybe Turn
       )) |
-      ReadMessages {
+      ChangeStatus {
+            userID :: PrimaryKey,
+            status :: MessageStatus,
             --alternatively, update by user?
             ids :: Array PrimaryKey
       } |
@@ -373,6 +376,11 @@ data WebSocketPayloadClient =
           previousID :: PrimaryKey,
           id :: PrimaryKey,
           userID :: PrimaryKey
+      } |
+      ServerChangedStatus {
+            ids :: Array PrimaryKey,
+            status :: MessageStatus,
+            userID :: PrimaryKey
       } |
       BeenBlocked { id :: PrimaryKey } |
       PayloadError { origin :: WebSocketPayloadServer, context :: Maybe DatabaseError }
@@ -798,7 +806,13 @@ instance contentTypeShow :: Show ContentType where
 instance showGenerate :: Show Generate where
       show = DGRS.genericShow
 instance showMessageStatus :: Show MessageStatus where
-      show = DGRS.genericShow
+      show = case _ of
+            Errored -> "Failed to send"
+            Sent -> "Sending"
+            Received -> "Sent"
+            Delivered -> "Unread"
+            Read -> "Read"
+
 instance showResponseError :: Show ResponseError where
       show = DGRS.genericShow
 instance showGender :: Show Gender where
@@ -951,9 +965,7 @@ instance readGenerate :: Read Generate where
 
 --thats a lot of work...
 instance ordMessageStatus :: Ord MessageStatus where
-      compare Received Read = LT
-      compare Read Received = GT
-      compare _ _ = EQ
+      compare status otherStatus = compare (DE.fromEnum status) $ (DE.fromEnum otherStatus)
 
 instance boundedMessageStatus :: Bounded MessageStatus where
       bottom = Received
@@ -966,24 +978,28 @@ instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
           Errored -> -1
           Sent -> 0
           Received -> 1
-          Read -> 2
+          Delivered -> 2
+          Read -> 3
 
       toEnum = case _ of
           -1 -> Just Errored
           0 -> Just Sent
           1 -> Just Received
-          2 -> Just Read
+          2 -> Just Delivered
+          3 -> Just Read
           _ -> Nothing
 
 instance enumMessageStatus :: Enum MessageStatus where
       succ = case _ of
           Errored -> Just Received
           Sent -> Just Sent
-          Received -> Just Read
+          Received -> Just Delivered
+          Delivered -> Just Read
           Read -> Nothing
 
       pred = case _ of
           Errored -> Nothing
           Sent -> Just Sent
           Received -> Just Errored
-          Read -> Just Received
+          Delivered -> Just Received
+          Read -> Just Delivered

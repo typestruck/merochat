@@ -104,17 +104,29 @@ unformatISODate value = do
 --    mdy
 ago :: DateTime -> String
 ago dateTime =
-      let days = DI.floor $ DN.unwrap (DDT.diff now dateTime :: Days)
-      in
-            if days == 0 then
-                  localDateTimeWith time dateTime
-             else if days == 1 then
-                  "Yesterday "
-             else if days >= 2 && days <= 7 then
-                  localDateTimeWith dayOfTheWeek dateTime
-             else
-                  localDateTimeWith fullDate dateTime
-      where now :: DateTime
+      if days == 0 then
+            localDateTimeWith time dateTime
+       else if days == 1 then
+            "Yesterday "
+       else if days >= 2 && days <= 7 then
+            localDateTimeWith dayOfTheWeek dateTime
+       else
+            localDateTimeWith fullDate dateTime
+      where days = DI.floor $ DN.unwrap (DDT.diff now dateTime :: Days)
+
+            now :: DateTime
+            now = EU.unsafePerformEffect EN.nowDateTime
+
+agoWithTime :: DateTime -> String
+agoWithTime dateTime =
+      if days == 0 then
+            timeString
+       else
+            ago dateTime <> " " <> timeString
+      where days = DI.floor $ DN.unwrap (DDT.diff now dateTime :: Days)
+            timeString = localDateTimeWith time dateTime
+
+            now :: DateTime
             now = EU.unsafePerformEffect EN.nowDateTime
 
 localDateTimeWith :: _ -> DateTime -> String

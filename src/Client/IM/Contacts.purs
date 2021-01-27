@@ -19,6 +19,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -46,9 +47,7 @@ resumeChat searchID model@{ contacts, chatting, smallScreen } =
                         failedRequests = []
                   } :> ([
                         CIF.next UpdateReadCount,
-                        liftEffect do
-                              CIS.scrollLastMessage
-                              pure Nothing,
+                        CIS.scrollLastMessage',
                         CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
                   ] <> if smallScreen then [] else [CIF.next $ FocusInput ChatInput])
 
@@ -60,46 +59,48 @@ markRead webSocket =
                   contacts,
                   chatting: Just index
             } -> updateReadHistory model {
-                  chatting: index,
+                  newStatus: Read,
+                  index,
                   webSocket,
-                  userID,
+                  sessionUserID: userID,
                   contacts
             }
             model -> F.noMessages model
 
 updateReadHistory :: IMModel -> {
-      userID :: PrimaryKey,
+      sessionUserID :: PrimaryKey,
       webSocket :: WebSocket,
       contacts :: Array Contact,
-      chatting :: Int
+      index :: Int,
+      newStatus :: MessageStatus
 } -> MoreMessages
-updateReadHistory model { webSocket, chatting, userID, contacts } =
-      let contactRead@{ history } = contacts !@ chatting
-          messagesRead = DA.mapMaybe unreadID  history
+updateReadHistory model { webSocket, index, sessionUserID, contacts, newStatus } =
+      let contactRead@{ history, user: { id: contactUserID } } = contacts !@ index
+          messagesRead = DA.mapMaybe toChange history
       in
             if DA.null messagesRead then
                   F.noMessages model
              else
                   let updatedModel@{ contacts } = updateContacts contactRead
                   in CIF.nothingNext updatedModel $ liftEffect do
-                        confirmRead messagesRead
+                        changeStatus contactUserID messagesRead
                         alertUnread contacts
 
-      where unreadID { recipient, id, status }
-                  | status == Received && recipient == userID = Just id
+      where toChange { recipient, id, status }
+                  | status >= Sent && status < newStatus && recipient == sessionUserID = Just id
                   | otherwise = Nothing
 
             read historyEntry@( { recipient, id, status })
-                  | status == Received && recipient == userID = historyEntry { status = Read }
+                  | status >= Sent && status < newStatus && recipient == sessionUserID = historyEntry { status = newStatus }
                   | otherwise = historyEntry
 
             updateContacts contactRead@{ history } = model {
-                  contacts = SU.fromJust $ DA.updateAt chatting (contactRead { history = map read  history }) contacts
+                  contacts = SU.fromJust $  DA.updateAt index (contactRead { history = map read history }) contacts
             }
 
-            confirmRead messages = CIW.sendPayload webSocket $ ReadMessages { ids: messages }
+            changeStatus contactUserID messages = CIW.sendPayload webSocket $ ChangeStatus { userID: contactUserID, status: newStatus, ids: messages }
 
-            alertUnread contacts = CIUN.updateTabCount userID contacts
+            alertUnread contacts = CIUN.updateTabCount sessionUserID contacts
 
 checkFetchContacts :: IMModel -> MoreMessages
 checkFetchContacts model@{ contacts, freeToFetchContactList }

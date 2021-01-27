@@ -31,6 +31,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -112,7 +113,6 @@ update { webSocketRef, fileReader, elements } model =
             FocusInput elementID -> focusInput elementID model
             --contacts
             ResumeChat id -> CICN.resumeChat id model
-            MarkAsRead -> CICN.markRead webSocket model
             UpdateReadCount -> CICN.markRead webSocket model
             CheckFetchContacts -> CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) -> CICN.fetchContacts shouldFetch model
@@ -225,7 +225,7 @@ displayFortune sequence model = F.noMessages $ model {
 receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
 receiveMessage webSocket isFocused wsPayload model@{
       user: { id: recipientID },
-      contacts,
+      contacts: currentContacts,
       suggestions,
       hash,
       blockedUsers
@@ -236,36 +236,55 @@ receiveMessage webSocket isFocused wsPayload model@{
             }
       ServerReceivedMessage { previousID, id, userID } ->
             F.noMessages $ model {
-                  contacts = updateTemporaryID contacts userID previousID id
+                  contacts = updateTemporaryID currentContacts userID previousID id
+            }
+      ServerChangedStatus { ids, status, userID } ->
+            F.noMessages $ model {
+                  contacts = updateStatus currentContacts userID ids status
             }
       BeenBlocked { id } ->
-            F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable contacts id }
+            F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
       NewIncomingMessage payload@{ userID } ->
             if DA.elem userID blockedUsers then
                   F.noMessages model
             else let model' = unsuggest userID model in
                   case processIncomingMessage payload model' of
+                  --this should also set status
                         Left userID -> model' :> [CCNT.retryableResponse CheckMissedEvents DisplayNewContacts (request.im.singleContact { query: { id: userID }})]
+                        --mark it as read if we received a message from the current chat
+                        -- or as delivered otherwise
                         Right updatedModel@{
                               chatting: Just index,
                               contacts
-                        } | isFocused && isChatting userID updatedModel ->  --mark it as read if we received a message from the current chat
+                        } | isFocused && isChatting userID updatedModel ->
                               let Tuple furtherUpdatedModel messages = CICN.updateReadHistory updatedModel {
-                                    chatting: index,
-                                    userID: recipientID,
+                                    sessionUserID: recipientID,
+                                    contacts,
+                                    newStatus: Read,
+                                    webSocket,
+                                    index
+                              } in
+                              furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
+                        Right updatedModel@{
+                              contacts
+                        } ->
+                              let Tuple furtherUpdatedModel messages = CICN.updateReadHistory updatedModel {
+                                    index: SU.fromJust $ DA.findIndex ((_ == userID) <<< _.id <<< _.user) contacts,
+                                    sessionUserID: recipientID,
+                                    newStatus: Delivered,
                                     contacts,
                                     webSocket
                               } in
-                              furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
-                        Right updatedModel -> CIUC.notifyUnreadChats updatedModel [payload.userID]
+                              furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [payload.userID] : messages)
+
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
                  contacts =
                         --assume that it is because the other user no longer exists
                         if payload.context == Just MissingForeignKey then
-                              markContactUnavailable contacts userID
+                              markContactUnavailable currentContacts userID
                          else
-                              markErroredMessage contacts userID id
+                              markErroredMessage currentContacts userID id
             }
             _ -> F.noMessages model
       where isChatting senderID { contacts, chatting } =
@@ -290,8 +309,8 @@ processIncomingMessage { id, userID, date, content } model@{
                   contacts = contacts'
             }
       Nothing -> Left userID
-      where updateHistory { id, content, date } user@{ history } =
-                  user {
+      where updateHistory { id, content, date } contact@{ history } =
+                  contact {
                         history = DA.snoc history $  {
                               status: Received,
                               sender: userID,
@@ -304,8 +323,7 @@ processIncomingMessage { id, userID, date, content } model@{
             findAndUpdateContactList = do
                   index <- DA.findIndex findUser contacts
                   { history } <- contacts !! index
-                  updated <- DA.modifyAt index (updateHistory { content, id, date }) contacts
-                  pure updated
+                  DA.modifyAt index (updateHistory { content, id, date }) contacts
 
             findUser ({ user: { id } }) = userID == id
 
@@ -313,6 +331,12 @@ updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> PrimaryKey -> 
 updateTemporaryID contacts userID previousMessageID messageID = updateContactHistory contacts userID updateTemporary
       where updateTemporary history@( { id })
                   | id == previousMessageID = history { id = messageID, status = Received }
+                  | otherwise = history
+
+updateStatus :: Array Contact -> PrimaryKey -> Array PrimaryKey -> MessageStatus -> Array Contact
+updateStatus contacts userID ids status = updateContactHistory contacts userID updateSt
+      where updateSt history@( { id })
+                  | DA.elem id ids = history { status = status }
                   | otherwise = history
 
 markErroredMessage :: Array Contact -> PrimaryKey -> PrimaryKey -> Array Contact
@@ -401,7 +425,7 @@ setUpWebSocket webSocketRef channel = do
 
       where sendChannel = SC.send channel <<< DA.singleton
 
-            open timerIDs _ =  do
+            open timerIDs _ = do
                   { reconnectID } <- ER.read timerIDs
                   case reconnectID of
                         Nothing -> pure unit

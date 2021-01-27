@@ -91,8 +91,8 @@ insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
       void $ SD.insert (Query "insert into karma_histories(amount, target) values ($1, $2), ($3, $4)") $ ( senderKarma /\ loggedUserID /\ recipientKarma /\ otherID)
 
 --when using an array parameter, any must be used instead of in
-markRead :: forall r. PrimaryKey -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit
-markRead loggedUserID ids = SD.execute (Query "update messages set status = $1 where recipient = $2 and id = any($3)") (Read /\ loggedUserID /\ ids)
+changeStatus :: forall r. PrimaryKey -> MessageStatus -> Array PrimaryKey -> BaseEffect { pool :: Pool | r } Unit
+changeStatus loggedUserID status ids = SD.execute (Query "update messages set status = $1 where recipient = $2 and id = any($3)") (status /\ loggedUserID /\ ids)
 
 insertBlock :: PrimaryKey -> PrimaryKey -> ServerEffect Unit
 insertBlock loggedUserID blocked = void $ SD.insert (Query "insert into blocks(blocker, blocked) values ($1, $2)") (loggedUserID /\ blocked)

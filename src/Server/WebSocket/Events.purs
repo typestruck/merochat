@@ -19,6 +19,7 @@ import Data.Newtype as DN
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (Pool)
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff as CMEC
 import Effect.Aff as EA
@@ -38,10 +39,10 @@ import Server.Cookies (cookieName)
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Token as ST
-import Shared.Path(updateHash)
 import Server.WebSocket (CloseCode, CloseReason, AliveWebSocketConnection, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.JSON as SJ
+import Shared.Path (updateHash)
 
 aliveDelay :: Int
 aliveDelay = 1000 * 60 * aliveDelayMinutes
@@ -104,7 +105,15 @@ handleMessage payload = do
                               now <- EN.nowDateTime
                               ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserID) allConnections
                               sendWebSocketMessage connection Pong
-            ReadMessages { ids } -> SID.markRead sessionUserID ids
+            ChangeStatus { userID: sender, status, ids } -> do
+                  SID.changeStatus sessionUserID status ids
+                  possibleSenderConnection <- R.liftEffect (DH.lookup sender <$> ER.read allConnections)
+                  whenJust possibleSenderConnection $ \{ connection: senderConnection } ->
+                        sendWebSocketMessage senderConnection <<< Content $ ServerChangedStatus {
+                              ids,
+                              status,
+                              userID: sessionUserID
+                        }
             ToBlock { id } -> do
                   possibleConnection <- R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \{ connection: recipientConnection } -> sendWebSocketMessage recipientConnection <<< Content $ BeenBlocked { id: sessionUserID }
@@ -114,7 +123,7 @@ handleMessage payload = do
                   sendWebSocketMessage connection <<< Content $ ServerReceivedMessage {
                         previousID: temporaryID,
                         id: messageID,
-                        userID: sessionUserID
+                        userID: recipient
                   }
 
                   possibleRecipientConnection <- R.liftEffect (DH.lookup recipient <$> ER.read allConnections)

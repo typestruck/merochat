@@ -9,7 +9,9 @@ import Client.IM.Flame (NextMessage)
 import Client.IM.Flame as CIF
 import Data.Array as DA
 import Data.Foldable as DF
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
@@ -43,6 +45,11 @@ notify model@{ user: { id }, contacts } userIDs = do
                   icon: SP.pathery PNG "loading",
                   handler: CCD.dispatchCustomEvent $ CCD.createCustomEvent notificationClick user.id
             }
+
+notify' :: IMModel -> Array PrimaryKey -> Aff (Maybe IMMessage)
+notify' model userIDs = do
+      liftEffect $ notify model userIDs
+      pure Nothing
 
 updateTabCount :: PrimaryKey -> Array Contact -> Effect Unit
 updateTabCount id contacts = do

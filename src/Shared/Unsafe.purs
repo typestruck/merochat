@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..))
 import Effect.Exception.Unsafe as EEU
 
 unsafeIndex :: forall a. Array a -> Int -> a
-unsafeIndex array i = fromJust $ DA.index array i
+unsafeIndex array i = fromJust  $ DA.index array i
 
 infixl 8 unsafeIndex as !@
 
@@ -21,7 +21,7 @@ infixl 8 unsafeIndex as !@
 fromJust :: forall a. Maybe a -> a
 fromJust =
       case _ of
-            Nothing -> EEU.unsafeThrow $ "fromJust failed! received Nothing"
+            Nothing -> EEU.unsafeThrow "fromJust failed! received Nothing"
             Just j -> j
 
 -- | This function should be used when a Right value is a programming error.
