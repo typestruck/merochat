@@ -27,4 +27,4 @@ countUnreadChats id = DF.foldl count 0
       where count total { history }
                   | DF.any isUnread history = total + 1
                   | otherwise = total
-            isUnread { sender, status } = status == Received && sender /= id
+            isUnread { sender, status } = status < Read && sender /= id

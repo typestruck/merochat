@@ -13,6 +13,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
+import Debug.Trace (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
@@ -80,7 +81,7 @@ retryableResponse :: forall response. RetryableRequest -> (response -> IMMessage
 retryableResponse requestMessage message aff = do
       result <- aff
       case result of
-            Right r -> pure <<< Just <<< message <<< _.body $ DN.unwrap r
+            Right r -> pure <<< Just <<< message <<< _.body $  DN.unwrap r
             Left err -> do
                   logError err
                   pure <<< Just $ RequestFailed { request: requestMessage, errorMessage : errorMessage err }

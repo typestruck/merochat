@@ -277,7 +277,7 @@ toggleModal elements toggle model = model {
 setEmoji :: HashMap IMElementID Element -> Event -> IMModel -> NextMessage
 setEmoji elements event model@{ message } = model :>
       if CCD.tagNameFromTarget event == "SPAN" then
-            [liftEffect  do
+            [liftEffect do
                   emoji <- CCD.innerTextFromTarget event
                   setAtCursor (SU.lookup ChatInput elements) message emoji,
             pure <<< Just $ ToggleChatModal HideChatModal

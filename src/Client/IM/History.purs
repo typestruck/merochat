@@ -11,6 +11,7 @@ import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -34,7 +35,7 @@ fetchHistory shouldFetch model@{ chatting, contacts }
             let { history, user: { id } } = SIC.chattingContact contacts chatting
             in model {
                   freeToFetchChatHistory = false
-            } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history } })   ]
+            } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history } }) ]
       | otherwise = F.noMessages model
 
 displayHistory :: Array HistoryMessage -> IMModel -> NoMessages
@@ -42,6 +43,7 @@ displayHistory chatHistory model@{ chatting, contacts } =
       let   contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
             updatedModel = model {
                   freeToFetchChatHistory = true,
+
                   contacts = SU.fromJust do
                         index <- chatting
                         let contact' = contact {

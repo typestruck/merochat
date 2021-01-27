@@ -42,10 +42,12 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
                   pure md
             compareDateUnread contact anotherContact = compare (getDate anotherContact.history) (getDate contact.history)
 
-            unread total { status, sender } = total + DE.fromEnum (sender /= userID && status == Received)
+            unread total { status, sender } = total + DE.fromEnum (sender /= userID && status < Read)
             countUnread = DF.foldl unread 0
 
             lastMessage = DM.fromMaybe "" <<< map _.content <<< DA.last
+            lastStatus = DM.fromMaybe "" <<< map (show <<< _.status) <<< DA.last
+            lastDate = DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date) <<< DA.last
             chattingID = do
                   index <- chatting
                   contact <- contacts !! index
@@ -64,8 +66,10 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
                               HE.div' [HA.class' "contact-list-last-message", HA.innerHtml <<< SM.parseRestricted $ lastMessage history]
                         ],
                         HE.div (HA.class' "contact-options") [
-                              HE.span (HA.class' { "duller": true, "invisible": not isClientRender }) <<< HE.text <<< DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date) $ DA.last history ,
-                              HE.div (HA.class' {"unread-messages" :true, "hidden" : numberUnreadMessages == 0}) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
+                              HE.span (HA.class' {duller: true, invisible: not isClientRender }) $ lastDate history,
+                              HE.div (HA.class' { "unread-messages" :true, hidden: numberUnreadMessages == 0}) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages,
+                              --should show only for sent    messages
+                              HE.div (HA.class' { duller: true, hidden: numberUnreadMessages > 0}) $ lastStatus history
                         ]
                   ]
 

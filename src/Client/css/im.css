@@ -282,6 +282,12 @@ body {
     text-overflow: ellipsis;
 }
 
+.message-status {
+    font-size: 0.7em;
+    text-align: right;
+    font-weight: lighter;
+}
+
 .contact-list-last-message>* {
     font-size: 1em;
 }

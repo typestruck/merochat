@@ -37,7 +37,7 @@ reset token = do
       case registerLogin of
             Nothing -> pure unit
             Just password ->
-                  EA.launchAff_  do
+                  EA.launchAff_ do
                         status <- CCA.formRequest $ request.recover.reset { body: { token, password } }
                         when (status == Success) do
                               EA.delay $ Milliseconds 3000.0

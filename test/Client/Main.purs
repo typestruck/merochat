@@ -11,8 +11,8 @@ import Test.Client.IM.History as TCIH
 
 tests :: TestSuite
 tests = do
-        TCIS.tests
-        TCIC.tests
-        TCICN.tests
-        TCIM.tests
-        TCIH.tests
+      TCIS.tests
+      TCIC.tests
+      TCICN.tests
+      TCIM.tests
+      TCIH.tests

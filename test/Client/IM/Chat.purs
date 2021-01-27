@@ -14,7 +14,7 @@ import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
-import Shared.Unsafe (fromJust) as SN
+import Shared.Unsafe as SN
 import Test.Client.Model (anotherIMUserID, contact, contactID, elements, historyMessage, imUser, imUserID, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU

@@ -100,7 +100,7 @@ tests = do
                               chatting = Nothing
                         }
                   TUA.equal (Just {
-                        status: Received,
+                        status: Delivered,
                         id: newMessageID,
                         content,
                         sender: contact.user.id,
@@ -134,7 +134,7 @@ tests = do
                               chatting = Just 0,
                               suggesting = Nothing
                         }
-                  TUA.equal [Tuple newMessageID Received] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
+                  TUA.equal [Tuple newMessageID Delivered] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
 
       where getHistory contacts = do
                   { history } <- DA.head contacts
