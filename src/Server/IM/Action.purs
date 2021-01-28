@@ -28,7 +28,7 @@ import Server.Ok (ok)
 import Server.Response as SR
 import Server.Wheel as SW
 import Shared.Newtype as SN
-import Shared.Options.File (allowedMediaTypes, maxImageSize)
+import Shared.Options.File (allowedMediaTypes, imageBasePath, maxImageSize)
 import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
 
@@ -65,7 +65,7 @@ processMessage loggedUserID userID temporaryID content = do
             Text m -> pure m
             Image (Tuple caption base64) -> do
                   path <- SF.saveBase64File $ base64
-                  pure $ "![" <> caption  <> "](" <> path <> ")"
+                  pure $ "![" <> caption  <> "](" <> imageBasePath <> "upload/" <> path <> ")"
       let sanitized = DS.trim $ sanitize message
       id <- SID.insertMessage loggedUserID userID temporaryID sanitized
       pure $ Tuple id sanitized

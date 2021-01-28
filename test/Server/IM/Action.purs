@@ -70,7 +70,7 @@ tests = do
                   TS.serverActionCatch (TS.catch invalidImageMessage) $ do
                         Tuple userID anotherUserID <- setUpUsers
                         Tuple _ message <- SIA.processMessage userID anotherUserID 2 <<< Image <<< Tuple "hey" $ "data:image/png;base64,ya"
-                        R.liftAff <<< TUA.assert "returns file" $ DSR.test (DSRU.unsafeRegex "!\\[hey\\]((.*).png)" noFlags) message
+                        R.liftAff <<< TUA.assert "returns file" $ DSR.test (DSRU.unsafeRegex "!\\[hey\\]((.*)/upload/(.*).png)" noFlags) message
 
             TU.test "processMessage sanitizes input" $
                   TS.serverAction $ do
