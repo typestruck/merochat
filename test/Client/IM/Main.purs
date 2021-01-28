@@ -144,7 +144,7 @@ tests = do
 
             TU.test "checkMissedEvents finds last received message id" do
                   let   dummyContact = contact { user = imUser, history = [historyMessage, historyMessage ] }
-                        anotherDummyContact = dummyContact { history = [historyMessage { sender = anotherIMUserID, id = 25}, historyMessage ]}
+                        anotherDummyContact = dummyContact { history = [historyMessage { sender = anotherIMUserID, id = 25}, historyMessage {sender = anotherIMUserID, id = 2}]}
                         { lastReceivedMessageID } = CIM.findLastMessages [dummyContact, anotherDummyContact] imUserID
                   TUA.equal (Just 25) lastReceivedMessageID
 

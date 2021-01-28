@@ -382,7 +382,8 @@ findLastMessages contacts sessionUserID = {
                   { id } <- allHistories !! index
                   pure id
 
-            allHistories = DA.concatMap _.history contacts
+            allHistories = DA.sortBy byID $ DA.concatMap _.history contacts
+            byID { id } { id: anotherID } = compare id anotherID
 
 setName :: String -> IMModel -> NoMessages
 setName name model@{ user } =
