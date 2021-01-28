@@ -136,6 +136,18 @@ tests = do
                         }
                   TUA.equal [Tuple newMessageID Delivered] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
 
+            TU.test "checkMissedEvents finds last sent message id" do
+                  let   dummyContact = contact { user = imUser, history = [historyMessage, historyMessage ] }
+                        anotherDummyContact = dummyContact { history = [historyMessage, historyMessage { id = 25}]}
+                        { lastSentMessageID } = CIM.findLastMessages [dummyContact, anotherDummyContact] imUserID
+                  TUA.equal (Just 25) lastSentMessageID
+
+            TU.test "checkMissedEvents finds last received message id" do
+                  let   dummyContact = contact { user = imUser, history = [historyMessage, historyMessage ] }
+                        anotherDummyContact = dummyContact { history = [historyMessage { sender = anotherIMUserID, id = 25}, historyMessage ]}
+                        { lastReceivedMessageID } = CIM.findLastMessages [dummyContact, anotherDummyContact] imUserID
+                  TUA.equal (Just 25) lastReceivedMessageID
+
       where getHistory contacts = do
                   { history } <- DA.head contacts
                   DA.head history

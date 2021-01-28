@@ -362,21 +362,27 @@ markContactUnavailable contacts userID = updateContact <$> contacts
                   | otherwise = contact
 
 checkMissedEvents :: IMModel -> MoreMessages
-checkMissedEvents model@{ contacts, user : { id: senderID } } =
+checkMissedEvents model@{ contacts, user : { id } } =
       model :> [do
-            let lastSenderID = findLast (\h -> senderID == h.sender && h.status == Received) contacts
-                lastRecipientID = findLast ((senderID /= _) <<< _.sender) contacts
+            let { lastSentMessageID, lastReceivedMessageID} = findLastMessages contacts id
 
-            if DM.isNothing lastSenderID && DM.isNothing lastRecipientID then
+            if DM.isNothing lastSentMessageID && DM.isNothing lastReceivedMessageID then
                   pure Nothing
              else
-                  CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderID, lastRecipientID } })
+                  CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderID: lastSentMessageID, lastRecipientID: lastReceivedMessageID } })
       ]
-      where findLast f array = do
-                  { history } <- DA.head array
-                  index <- DA.findLastIndex f history
-                  { id } <- history !! index
+
+findLastMessages :: Array Contact -> PrimaryKey -> { lastSentMessageID :: Maybe PrimaryKey, lastReceivedMessageID :: Maybe PrimaryKey }
+findLastMessages contacts sessionUserID = {
+      lastSentMessageID: findLast (\h -> sessionUserID == h.sender && h.status == Received),
+      lastReceivedMessageID: findLast ((sessionUserID /= _) <<< _.sender)
+}
+      where findLast f = do
+                  index <- DA.findLastIndex f allHistories
+                  { id } <- allHistories !! index
                   pure id
+
+            allHistories = DA.concatMap _.history contacts
 
 setName :: String -> IMModel -> NoMessages
 setName name model@{ user } =
