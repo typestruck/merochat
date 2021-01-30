@@ -270,6 +270,8 @@ body {
 
 .contact-list-last-message {
     font-size: 1.1em;
+    overflow-y: hidden;
+    max-height: 25px;
     color: rgb(238, 238, 238, 0.8)
 }
 
@@ -936,6 +938,7 @@ input:not(type=button):focus {
     background: #262626;
     padding: 20px 15px;
     border-radius: 3px;
+    z-index: 3;
     position: absolute;
     right: 16px;
     top: 42px;
