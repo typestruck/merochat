@@ -111,25 +111,25 @@ type GetUploadUrlResponse =  {
       uploadUrl :: String
 }
 
-data BenderAction = Name | Description
+data ThreeKAction = Name | Description
 
-instance benderActionShow :: Show BenderAction where
+instance threeKActionShow :: Show ThreeKAction where
       show Name = "name"
       show Description = "description"
 
-derive instance eqBenderAction :: Eq BenderAction
+derive instance eqThreeKAction :: Eq ThreeKAction
 
 --thats a lot of work...
-instance ordBenderAction :: Ord BenderAction where
+instance ordThreeKAction :: Ord ThreeKAction where
       compare Name Description = LT
       compare Description Name = GT
       compare _ _ = EQ
 
-instance boundedBenderAction :: Bounded BenderAction where
+instance boundedThreeKAction :: Bounded ThreeKAction where
       bottom = Name
       top = Description
 
-instance boundedEnumBenderAction :: BoundedEnum BenderAction where
+instance boundedEnumThreeKAction :: BoundedEnum ThreeKAction where
       cardinality = Cardinality 1
 
       fromEnum Name = 0
@@ -139,7 +139,7 @@ instance boundedEnumBenderAction :: BoundedEnum BenderAction where
       toEnum 1 = Just Description
       toEnum _ = Nothing
 
-instance enumBenderAction :: Enum BenderAction where
+instance enumThreeKAction :: Enum ThreeKAction where
       succ Name = Just Description
       succ Description = Nothing
 

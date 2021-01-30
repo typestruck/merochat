@@ -333,6 +333,7 @@ body {
 
 .suggestion.old {
     background: #373737;
+    flex-grow: 1;
     padding: 5px 0px 43px 0px;
     overflow: hidden;
     overflow-y: auto;
@@ -1638,9 +1639,7 @@ select {
     .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
         display: none;
     }
-    .suggestion-box .suggestion.old {
-        flex-grow: 1;
-    }
+
     .mobile-profile-header {
         display: flex;
         padding: 5px;

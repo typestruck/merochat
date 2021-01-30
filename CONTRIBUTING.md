@@ -30,7 +30,7 @@ MelanChat is written in PureScript, both server-side and client-side. PostgreSQL
 
     * Set the enviroment variable `RANDOMIZE_PROFILES` (e.g., `export RANDOMIZE_PROFILES=true`)
 
-    * You may need to build the native module ([bender.node](bender.node)) for your system. The source is [here](https://github.com/melanchat/bender). Detailed instructions on how to compile the module can be found [here](https://neon-bindings.com)
+    * You may need to build the native module ([3000.node](3000.node)) for your system. The source is [here](https://github.com/melanchat/3000). Detailed instructions on how to compile the module can be found [here](https://neon-bindings.com)
 
 ## Pull requests
 

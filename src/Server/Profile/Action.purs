@@ -2,25 +2,16 @@
 module Server.Profile.Action where
 
 import Prelude
-import Server.Types hiding (BenderAction(..))
+import Server.Types hiding (ThreeKAction(..))
 import Shared.Types
 
 import Data.Array as DA
-import Data.Foldable as FD
-import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
-import Data.UUID as DU
-import Debug.Trace (spy)
-import Node.Buffer as NB
-import Node.Encoding (Encoding(..))
-import Node.FS.Sync as NFS
-import Node.Path as NP
 import Run as R
-import Server.Bender as SB
+import Server.ThreeK as SB
 import Server.File as SF
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
@@ -28,7 +19,6 @@ import Server.Response as SR
 import Shared.DateTime as SDT
 import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
-import Shared.Unsafe as SU
 
 missingRequiredFieldsMessage :: String
 missingRequiredFieldsMessage = "Name, headline and description are mandatory"

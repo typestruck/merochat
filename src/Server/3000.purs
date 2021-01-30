@@ -1,4 +1,4 @@
-module Server.Bender (
+module Server.ThreeK (
         generateName,
         generateHeadline,
         generateDescription
@@ -47,7 +47,7 @@ generateHeadline = do
                          else
                                 pure headline
 
-generate :: BenderAction -> Int -> ServerEffect String
+generate :: ThreeKAction -> Int -> ServerEffect String
 generate action size = do
         { configuration: { randomizeProfiles } } <- RR.ask
         R.liftEffect $ EU.runEffectFn3 generate_ randomizeProfiles (DE.fromEnum action) size

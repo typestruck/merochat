@@ -5,7 +5,7 @@ import Server.Types
 import Shared.Types
 
 import Server.AccountValidation as SA
-import Server.Bender as SB
+import Server.ThreeK as SB
 import Server.Captcha as SC
 import Server.Landing.Database as SLD
 import Server.Token as ST
