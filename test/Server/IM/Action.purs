@@ -116,10 +116,15 @@ tests = do
                         Tuple id _ <- SIA.processMessage anotherUserID userID 1 $ Text "oi"
                         void <<< SIA.processMessage yetAnotherUserID userID 2 $ Text "ola"
                         void <<< SIA.processMessage yetAnotherUserID userID 3 $ Text "hey"
-                        { contacts } <- SIA.listMissedEvents userID Nothing (Just id)
-                        R.liftAff <<< TUA.equal 1 $ DA.length contacts
-                        R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 0).user.id
-                        R.liftAff <<< TUA.equal 2 $ DA.length (contacts !@ 0).history
+                        { contacts } <- SIA.listMissedEvents userID Nothing (Just $ id - 1)
+                        R.liftAff <<< TUA.equal 2 $ DA.length contacts
+
+                        R.liftAff $ TUA.equal anotherUserID (contacts !@ 0).user.id
+                        R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 0).history
+
+                        R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 1).user.id
+                        R.liftAff <<< TUA.equal 2 $ DA.length (contacts !@ 1).history
+
 
             TU.test "listMissedEvents finds temporary ids" $
                   TS.serverAction $ do

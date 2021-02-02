@@ -89,9 +89,10 @@ listMissedEvents loggedUserID lastSenderID lastRecipientID = do
             messageIDs
       }
 
-      where intoHashMap hashMap m@{ recipient } = DH.insertWith (<>) recipient [m] hashMap
+      where intoHashMap hashMap m@{ sender } = DH.insertWith (<>) sender [m] hashMap
+
             intoContacts userHistory contact@{ user: { id } } = contact {
-                  history = SU.fromJust $ DH.lookup loggedUserID userHistory
+                  history = SU.fromJust $ DH.lookup id userHistory
             }
 
 resumeChatHistory :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
