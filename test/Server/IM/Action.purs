@@ -17,9 +17,10 @@ import Run as R
 import Server.Database as SD
 import Server.File (imageTooBigMessage, invalidImageMessage)
 import Server.IM.Action as SIA
+import Server.IM.Database as SID
 import Server.Landing.Database as SLD
 import Shared.Options.File (maxImageSize)
-import Shared.Types (MessageContent(..))
+import Shared.Types (MessageContent(..), MessageStatus(..))
 import Shared.Unsafe ((!@))
 import Test.Server as TS
 import Test.Server.Model (baseUser)
@@ -125,6 +126,18 @@ tests = do
                         R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 1).user.id
                         R.liftAff <<< TUA.equal 2 $ DA.length (contacts !@ 1).history
 
+            TU.test "listMissedEvents ignores delivered messages" $
+                  TS.serverAction $ do
+                        Tuple userID anotherUserID <- setUpUsers
+                        yetAnotherUserID <- SLD.createUser $ baseUser { email = "d@d.com"}
+                        Tuple id _ <- SIA.processMessage anotherUserID userID 1 $ Text "oi"
+                        Tuple anotherID _ <- SIA.processMessage yetAnotherUserID userID 2 $ Text "ola"
+                        void <<< SIA.processMessage yetAnotherUserID userID 3 $ Text "hey"
+                        SID.changeStatus userID Delivered [id, anotherID]
+                        { contacts } <- SIA.listMissedEvents userID Nothing (Just $ id - 1)
+                        R.liftAff <<< TUA.equal 1 $ DA.length contacts
+                        R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 0).user.id
+                        R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 0).history
 
             TU.test "listMissedEvents finds temporary ids" $
                   TS.serverAction $ do
