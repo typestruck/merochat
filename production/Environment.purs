@@ -7,7 +7,7 @@ commonJSHash :: String
 commonJSHash = "599befac75bb13a6b48e"
 
 otherJSHash :: String
-otherJSHash = "9fbeeb734d3e9e044b50"
+otherJSHash = "16eacf993308296f1761"
 
 imJSHash :: String
 imJSHash = "e1430a9577c231c5c0e3"
