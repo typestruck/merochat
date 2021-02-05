@@ -13,6 +13,7 @@ import Data.Enum as DE
 import Data.Function.Uncurried as DFU
 import Data.Int as DI
 import Data.Int as DIN
+import Data.Interval (DurationComponent(..))
 import Data.List as DA
 import Data.List as DL
 import Data.Maybe (Maybe(..))
@@ -22,7 +23,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Time.Duration as DTD
-
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
@@ -94,6 +95,9 @@ unformatISODate value = do
                   integered <- DI.fromString raw
                   DE.toEnum integered
 
+unsafeNow :: DateTime
+unsafeNow = EU.unsafePerformEffect EN.nowDateTime
+
 --same day
 --    hh:mm
 --yesterday
@@ -112,10 +116,7 @@ ago dateTime =
             localDateTimeWith dayOfTheWeek dateTime
        else
             localDateTimeWith fullDate dateTime
-      where days = DI.floor $ DN.unwrap (DDT.diff now dateTime :: Days)
-
-            now :: DateTime
-            now = EU.unsafePerformEffect EN.nowDateTime
+      where days = dayDiff dateTime
 
 agoWithTime :: DateTime -> String
 agoWithTime dateTime =
@@ -123,11 +124,14 @@ agoWithTime dateTime =
             timeString
        else
             ago dateTime <> " " <> timeString
-      where days = DI.floor $ DN.unwrap (DDT.diff now dateTime :: Days)
+      where days = dayDiff dateTime
             timeString = localDateTimeWith time dateTime
 
-            now :: DateTime
-            now = EU.unsafePerformEffect EN.nowDateTime
+dayDiff :: DateTime -> Int
+dayDiff dateTime = days now - days dateTime
+      where firstDay = DateTime (DD.canonicalDate (DD.year $ DDT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
+            now = unsafeNow
+            days dt = DI.floor $ DN.unwrap (DDT.diff dt firstDay :: Days)
 
 localDateTimeWith :: _ -> DateTime -> String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
