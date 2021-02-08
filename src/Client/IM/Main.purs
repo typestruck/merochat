@@ -67,7 +67,7 @@ main = do
       webSocket <- CIW.createWebSocket
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef <- ER.new { webSocket, ponged : true }
-      elements <- cacheElements [ ImageFileInput, ChatInput {-, ChatInputSuggestion, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot -}]
+      elements <- cacheElements [ ImageFileInput, ChatInput {-, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot -}]
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view true,

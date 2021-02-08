@@ -66,11 +66,11 @@ presentSelectedContacts loggedUserID ids
 chatHistoryFor :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array HistoryMessageWrapper)
 chatHistoryFor loggedUserID otherIDs
       | DA.null otherIDs = pure []
-      | otherwise = SD.select (Query query) (loggedUserID /\ initialMessagesPerPage)
+      | otherwise = SD.select (Query query) (loggedUserID /\ initialMessagesPerPage /\ Delivered)
       where query = "select * from (" <> DS.joinWith " union all " (select <$> otherIDs) <> ") r order by date, sender, recipient"
             select n =
                   let parameter = show n
-                  in "select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = $1 order by date desc limit $2) a"
+                  in "((select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = $1 order by date desc limit $2) union (select" <> messagePresentationFields <> "from messages where recipient = $1 and sender = " <> parameter <> " and status < $3 order by date desc))"
 
 chatHistorySince :: PrimaryKey -> Int -> ServerEffect (Array HistoryMessageWrapper)
 chatHistorySince loggedUserID lastID = SD.select (Query $ "select " <> messagePresentationFields <> " from messages m where recipient = $1 and m.id > $2 and status < $3 order by date, sender") (loggedUserID /\ lastID /\ Delivered)

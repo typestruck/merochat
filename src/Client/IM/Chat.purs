@@ -62,16 +62,17 @@ enterBeforeSendMessage model@{ messageEnter } = F.noMessages $ model {
 
 --send message or image button click
 forceBeforeSendMessage :: HashMap IMElementID Element -> IMModel -> MoreMessages
-forceBeforeSendMessage elements model@{ message } =
+forceBeforeSendMessage elements model@{ message, chatting } =
       model {
             shouldSendMessage = true
       } :> [
             pure <<< Just <<< BeforeSendMessage $ DM.fromMaybe "" message,
-            resizeInputEffect $ SU.lookup ChatInput elements
+            resizeInputEffect chatting elements
       ]
 
-resizeInputEffect :: Element -> Aff (Maybe IMMessage)
-resizeInputEffect input = liftEffect $ do
+resizeInputEffect :: Maybe Int -> HashMap IMElementID Element -> Aff (Maybe IMMessage)
+resizeInputEffect chatting elements = liftEffect $ do
+      input <- chatInput chatting elements
       resizeTextarea input
       pure Nothing
 
@@ -205,12 +206,12 @@ makeTurn { chatStarter, chatAge, history } sender =
             getDate = DN.unwrap <<< _.date
 
 applyMarkup :: HashMap IMElementID Element -> Markup -> IMModel -> MoreMessages
-applyMarkup elements markup model@{ message } = model :> [
+applyMarkup elements markup model@{ message, chatting } = model :> [
       liftEffect (Just <$> apply markup (DM.fromMaybe "" message)),
-      resizeInputEffect input
+      resizeInputEffect chatting elements
 ]
-      where input = SU.lookup ChatInput elements
-            apply markup value = do
+      where apply markup value = do
+                  input <- chatInput chatting elements
                   let   textarea = SU.fromJust $ WHHTA.fromElement input
                         Tuple before after = case markup of
                               Bold -> Tuple "**" "**"
@@ -228,14 +229,20 @@ applyMarkup elements markup model@{ message } = model :> [
                         newValue = beforeSelection <> before <> selected <> after <> afterSelection
                   pure $ SetMessageContent (Just $ end + beforeSize) newValue
 
+chatInput :: Maybe Int -> HashMap IMElementID Element -> Effect Element
+chatInput chatting elements
+      | DM.isNothing chatting = CCD.unsafeQuerySelector $ "#" <> show ChatInputSuggestion -- suggestion card input cannot be cached
+      | otherwise = pure $ SU.lookup ChatInput elements
+
 setMessage :: HashMap IMElementID Element -> Maybe Int -> String -> IMModel -> NextMessage
-setMessage elements cursor markdown model =
+setMessage elements cursor markdown model@{chatting} =
       CIF.nothingNext (model {
             message = Just markdown
       }) <<< liftEffect $
             case cursor of
                   Just position -> do
-                        let textarea = SU.fromJust <<< WHHTA.fromElement $ SU.lookup ChatInput elements
+                        input <- chatInput chatting elements
+                        let textarea = SU.fromJust $ WHHTA.fromElement input
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setSelectionEnd position textarea
                   Nothing -> pure unit
@@ -275,11 +282,12 @@ toggleModal elements toggle model = model {
                   pure Nothing
 
 setEmoji :: HashMap IMElementID Element -> Event -> IMModel -> NextMessage
-setEmoji elements event model@{ message } = model :>
+setEmoji elements event model@{ message, chatting } = model :>
       if CCD.tagNameFromTarget event == "SPAN" then
             [liftEffect do
                   emoji <- CCD.innerTextFromTarget event
-                  setAtCursor (SU.lookup ChatInput elements) message emoji,
+                  input <- chatInput chatting elements
+                  setAtCursor input message emoji,
             pure <<< Just $ ToggleChatModal HideChatModal
             ]
        else
