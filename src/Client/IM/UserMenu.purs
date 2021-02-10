@@ -32,10 +32,10 @@ logout model = CIF.nothingNext model out
 toggleModal :: ShowUserMenuModal -> IMModel -> NextMessage
 toggleModal mToggle model =
       case mToggle of
-            ShowProfile -> showTab request.profile.get ShowProfile "profile.6f4f3e5a964a4fe39094" "#profile-edition-root"
-            ShowSettings -> showTab request.settings.get ShowSettings "settings.e737b2c018c48843b189" "#settings-edition-root"
-            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.4d4f6182f4af2475e4e8" "#karma-leaderboard-root"
-            ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.b7950417810ec6df079a" "#help-root"
+            ShowProfile -> showTab request.profile.get ShowProfile "profile.6f4f3e5a964a4fe39094" ProfileEditionRoot
+            ShowSettings -> showTab request.settings.get ShowSettings "settings.e737b2c018c48843b189" SettingsEditionRoot
+            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.4d4f6182f4af2475e4e8" KarmaLeaderboard
+            ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.b7950417810ec6df079a" HelpRoot
             modal -> F.noMessages $ model {
                   toggleModal = modal,
                   toggleContextMenu = HideContextMenu
@@ -49,10 +49,10 @@ toggleModal mToggle model =
                         CCN.retryableResponse (ToggleModal toggle) (SetModalContents (Just file) root) (f {})
                   ]
 
-setModalContents :: Maybe String -> String -> String -> IMModel -> NextMessage
+setModalContents :: Maybe String -> ElementID -> String -> IMModel -> NextMessage
 setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
       where loadModal root html file = liftEffect do
-                  element <- CCD.unsafeQuerySelector root
+                  element <- CCD.unsafeGetElementByID root
                   CCD.setInnerHTML element html
                   --scripts don't load when inserted via innerHTML
                   case file of

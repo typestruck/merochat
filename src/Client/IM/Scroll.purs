@@ -7,11 +7,11 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Shared.Types (IMMessage)
+import Shared.Types
 
 scrollLastMessage :: Effect Unit
 scrollLastMessage = do
-      node <- CCD.unsafeQuerySelector "#message-history"
+      node <- CCD.unsafeGetElementByID MessageHistory
       CCD.scrollDown node
 
 scrollLastMessage' :: Aff (Maybe IMMessage)

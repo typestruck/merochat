@@ -7,6 +7,7 @@ import Data.Function.Uncurried as DF
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect (Effect)
+import Shared.Types (ElementID)
 import Web.HTML as WH
 import Web.HTML.Location as WHL
 import Web.HTML.Window as WHW
@@ -45,11 +46,11 @@ hash = do
       location <- WHW.location window
       WHL.hash location
 
-setHash :: String -> Effect Unit
-setHash hash = do
+setHash :: ElementID -> Effect Unit
+setHash elementID = do
       window <- WH.window
       location <- WHW.location window
-      WHL.setHash hash location
+      WHL.setHash (show elementID) location
 
 hostName :: Effect String
 hostName = do

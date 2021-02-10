@@ -24,7 +24,7 @@ checkFetchHistory model@{ freeToFetchChatHistory }
       | freeToFetchChatHistory = model :> [ Just <<< SpecialRequest <<< FetchHistory <$> getScrollTop ]
 
       where getScrollTop = liftEffect do
-                  element <- CCD.unsafeQuerySelector "#message-history"
+                  element <- CCD.unsafeGetElementByID MessageHistory
                   (_ < 1.0) <$> WDE.scrollTop element
 
       | otherwise = F.noMessages model

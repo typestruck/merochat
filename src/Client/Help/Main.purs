@@ -6,23 +6,24 @@ import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Data.Traversable as DT
 import Effect (Effect)
+import Shared.Types (ElementID(..))
 import Web.DOM.Element as WDE
 import Web.Event.EventTarget as WET
 import Web.HTML as WH
-import Web.HTML.Window as WHW
 import Web.HTML.Event.EventTypes (click)
 import Web.HTML.Event.HashChangeEvent.EventTypes (hashchange)
+import Web.HTML.Window as WHW
 
 -- :(
 main :: Effect Unit
 main = do
       hash <- CCL.hash
-      faqLink <- CCD.unsafeQuerySelector "#faq-link"
-      termsLink <- CCD.unsafeQuerySelector "#terms-link"
-      privacyLink <- CCD.unsafeQuerySelector "#privacy-link"
-      faq <- CCD.unsafeQuerySelector "#faq"
-      terms <- CCD.unsafeQuerySelector "#terms"
-      privacy <- CCD.unsafeQuerySelector "#privacy"
+      faqLink <- CCD.unsafeGetElementByID FaqLink
+      termsLink <- CCD.unsafeGetElementByID TermsLink
+      privacyLink <- CCD.unsafeGetElementByID PrivacyLink
+      faq <- CCD.unsafeGetElementByID Faq
+      terms <- CCD.unsafeGetElementByID TermsSection
+      privacy <- CCD.unsafeGetElementByID PrivacySection
 
       let   unselectAll = do
                   DT.traverse_ (WDE.setAttribute "class" "entry") [faqLink, termsLink, privacyLink]
@@ -37,9 +38,9 @@ main = do
                         "#privacy" -> select privacyLink privacy
                         _ -> select faqLink faq
 
-      CCD.addEventListener faqLink click (const (CCL.setHash "faq"))
-      CCD.addEventListener termsLink click (const (CCL.setHash "terms"))
-      CCD.addEventListener privacyLink click (const (CCL.setHash "privacy"))
+      CCD.addEventListener faqLink click (const (CCL.setHash Faq))
+      CCD.addEventListener termsLink click (const (CCL.setHash TermsSection))
+      CCD.addEventListener privacyLink click (const (CCL.setHash PrivacySection))
 
       hashListener <- WET.eventListener $ const (CCL.hash >>= showTab)
       window <- WH.window

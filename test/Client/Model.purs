@@ -23,9 +23,7 @@ model :: IMModel
 model = {
       freeToFetchSuggestions: true,
       initialScreen: true,
-      message: Just "test message",
       suggestionsPage: 0,
-      shouldSendMessage: true,
       hash: "",
       freeToFetchContactList: true,
       errorMessage: "",
@@ -106,5 +104,5 @@ historyMessage = {
 webSocket :: WebSocket
 webSocket = UC.unsafeCoerce 2
 
-elements :: HashMap IMElementID Element
+elements :: HashMap ElementID Element
 elements = HS.empty

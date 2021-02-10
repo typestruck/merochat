@@ -11,13 +11,14 @@ import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
 import Shared.Path as SP
-import Shared.Types (ContentType(..))
+import Shared.Types (ContentType(..), ElementID)
 import Shared.Unsafe as SU
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
 import Web.DOM.Element as WHE
 import Web.DOM.Node as WDN
+import Web.DOM.NonElementParentNode as WDNE
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as WDP
 import Web.Event.CustomEvent (CustomEvent)
@@ -85,6 +86,18 @@ addEventListener :: forall a . Element -> EventType -> (Event -> Effect a) -> Ef
 addEventListener element eventType handler = do
       listener <- WET.eventListener handler
       WET.addEventListener eventType listener false $ WDE.toEventTarget element
+
+-- | Selects a single element.
+unsafeGetElementByID :: ElementID -> Effect Element
+unsafeGetElementByID elementID = do
+      maybeElement <- getElementByID elementID
+      DM.maybe (EE.throwException $ EE.error $ "No element with id:" <> show elementID) pure maybeElement
+
+getElementByID :: ElementID -> Effect (Maybe Element)
+getElementByID elementID = do
+      window <- WH.window
+      document <- WHHD.toDocument <$> WHW.document window
+      WDNE.getElementById (show elementID) $ WDD.toNonElementParentNode document
 
 -- | Selects a single element.
 unsafeQuerySelector :: String -> Effect Element

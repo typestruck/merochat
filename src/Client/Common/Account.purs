@@ -16,7 +16,7 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Payload.Client (ClientResponse)
 import Shared.Options.Profile (passwordMinCharacters)
-import Shared.Types (RegisterLogin)
+import Shared.Types (ElementID(..), RegisterLogin)
 import Shared.Unsafe as SU
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
@@ -46,11 +46,11 @@ validateEmailPassword = do
 
 validateEmail :: Effect (Maybe String)
 validateEmail = do
-      maybeEmailDiv <- CCD.querySelector "#email-input"
+      maybeEmailDiv <- CCD.getElementByID EmailInput
       case maybeEmailDiv of
             Nothing -> pure Nothing
             Just emailDiv -> do
-                  emailElement <- CCD.unsafeQuerySelector "#email"
+                  emailElement <- CCD.unsafeGetElementByID EmailDiv
                   email <- CCD.value emailElement
                   WDE.setClassName "input" emailDiv
 
@@ -62,11 +62,11 @@ validateEmail = do
 
 validatePassword :: Effect (Maybe String)
 validatePassword = do
-      maybePasswordDiv <- CCD.querySelector "#password-input"
+      maybePasswordDiv <- CCD.getElementByID PasswordInput
       case maybePasswordDiv of
             Nothing -> pure Nothing
             Just passwordDiv -> do
-                  passwordElement <- CCD.unsafeQuerySelector "#password"
+                  passwordElement <- CCD.unsafeGetElementByID PasswordDiv
                   password <- CCD.value passwordElement
                   WDE.setClassName "input" passwordDiv
 
@@ -78,11 +78,11 @@ validatePassword = do
 
 validateConfirmPassword :: Effect Unit
 validateConfirmPassword = do
-      maybeConfirmPasswordDiv <- CCD.querySelector "#confirm-password-input"
+      maybeConfirmPasswordDiv <- CCD.getElementByID ConfirmPasswordInput
       case maybeConfirmPasswordDiv of
             Nothing -> pure unit
             Just confirmPasswordDiv -> do
-                  confirmPasswordElement <- CCD.unsafeQuerySelector "#confirm-password-input"
+                  confirmPasswordElement <- CCD.unsafeGetElementByID ConfirmPasswordInput
                   password <- CCD.value confirmPasswordElement
                   WDE.setClassName "input" confirmPasswordDiv
 
@@ -95,9 +95,9 @@ registerEvents :: Effect Unit -> Effect Unit
 registerEvents callback = do
       formDiv <- CCD.unsafeQuerySelector formSelector
       button <- CCD.unsafeQuerySelector buttonSelector
-      emailElement <- CCD.querySelector "#email"
-      passwordElement <- CCD.querySelector "#password"
-      confirmPasswordElement <- CCD.querySelector "#confirm-password"
+      emailElement <- CCD.getElementByID EmailDiv
+      passwordElement <- CCD.getElementByID PasswordDiv
+      confirmPasswordElement <- CCD.getElementByID ConfirmPassword
       listenIfExists emailElement validateEmail
       listenIfExists passwordElement validatePassword
       listenIfExists confirmPasswordElement validateConfirmPassword

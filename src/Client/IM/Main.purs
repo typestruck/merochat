@@ -67,12 +67,11 @@ main = do
       webSocket <- CIW.createWebSocket
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef <- ER.new { webSocket, ponged : true }
-      elements <- cacheElements [ ImageFileInput, ChatInput {-, ImageFormCaption, MessageHistory, Favicon, ProfileEditionRoot, SettingsEditionRoot, KarmaLeaderboard, HelpRoot -}]
       fileReader <- WFR.fileReader
       channel <- F.resumeMount (QuerySelector ".im") {
             view: SIV.view true,
             init: [],
-            update: update { fileReader, webSocketRef, elements }
+            update: update { fileReader, webSocketRef }
       }
       setUpWebSocket webSocketRef channel
       --for drag and drop
@@ -84,7 +83,7 @@ main = do
       --display settings/profile page
       FE.send [FE.onClick' [ToggleUserContextMenu]] channel
       --image upload
-      let input = SU.lookup ImageFileInput elements
+      input <- CCD.unsafeGetElementByID ImageFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
       width <- CCD.screenWidth
       --keep track of mobile (-like) screens for things that cant be done with media queries
@@ -93,22 +92,22 @@ main = do
       windowsFocus channel
 
 update :: _ -> ListUpdate IMModel IMMessage
-update { webSocketRef, fileReader, elements } model =
+update { webSocketRef, fileReader } model =
       case _ of
             --chat
-            InsertLink -> CIC.insertLink elements model
-            ToggleChatModal modal -> CIC.toggleModal elements modal model
+            InsertLink -> CIC.insertLink model
+            ToggleChatModal modal -> CIC.toggleModal modal model
             DropFile event -> CIC.catchFile fileReader event model
-            EnterBeforeSendMessage -> CIC.enterBeforeSendMessage model
-            ForceBeforeSendMessage -> CIC.forceBeforeSendMessage elements model
+            EnterBeforeSendMessage event -> CIC.enterBeforeSendMessage event model
+            ForceBeforeSendMessage -> CIC.forceBeforeSendMessage model
             ResizeChatInput event -> CIC.resizeChatInput event model
             BeforeSendMessage content -> CIC.beforeSendMessage content model
-            SendMessage date -> CIC.sendMessage elements webSocket date model
-            SetMessageContent cursor content -> CIC.setMessage elements cursor content model
-            Apply markup -> CIC.applyMarkup elements markup model
+            SendMessage content date -> CIC.sendMessage webSocket content date model
+            SetMessageContent cursor content -> CIC.setMessage cursor content model
+            Apply markup -> CIC.applyMarkup markup model
             SetSelectedImage maybeBase64 -> CIC.setSelectedImage maybeBase64 model
             SetSmallScreen -> setSmallScreen model
-            SetEmoji event -> CIC.setEmoji elements event  model
+            SetEmoji event -> CIC.setEmoji event  model
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             FocusInput elementID -> focusInput elementID model
             --contacts
@@ -189,10 +188,10 @@ toggleUserContextMenu event model@{ toggleContextMenu }
                   | elementID == show FullProfileContextMenu || parentID == show FullProfileContextMenu = ShowFullProfileContextMenu
                   | otherwise = HideContextMenu
 
-focusInput :: IMElementID -> IMModel -> NextMessage
+focusInput :: ElementID -> IMModel -> NextMessage
 focusInput elementID model = model :> [
       liftEffect do
-            element <- CCD.querySelector $ "#" <> show elementID
+            element <- CCD.getElementByID elementID
             WHHE.focus $ SU.fromJust do
                   e <- element
                   WHHE.fromElement e
@@ -489,8 +488,3 @@ setSmallScreen model@{ messageEnter } =
             messageEnter = false,
             smallScreen = true
       }
-
-cacheElements :: Array IMElementID -> Effect (HashMap IMElementID Element)
-cacheElements selectors = do
-      nodes <- DT.traverse ((SU.fromJust <$> _) <$> CCD.querySelector <<< ("#" <> _) <<< show) selectors
-      pure <<< HS.fromArray $ DA.zip selectors nodes

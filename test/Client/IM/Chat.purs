@@ -8,38 +8,20 @@ import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.String as DS
-import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
-import Test.Client.Model (anotherIMUserID, contact, contactID, elements, historyMessage, imUser, imUserID, model, suggestion, webSocket)
+import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
-import Test.Unit as TU
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
 tests :: TestSuite
 tests = do
       TU.suite "im chat update" do
-            TU.test "beforeSendMessage unsets shouldSendMessage if message is empty" do
-                  let   model' = model {
-                              shouldSendMessage = true
-                        }
-                        { shouldSendMessage } = DT.fst $ CIC.beforeSendMessage "" model'
-                  TUA.equal false shouldSendMessage
-
-            TU.test "beforeSendMessage sets shouldSendMessage if there is a selected image" do
-                  let   model' = model {
-                              shouldSendMessage = true,
-                              selectedImage = Just image,
-                              message = Nothing
-                        }
-                        { shouldSendMessage } = DT.fst $ CIC.beforeSendMessage "" model'
-                  TUA.equal true shouldSendMessage
-
             TU.test "beforeSendMessage adds new contact from suggestion" do
                   let   model' = model {
                               suggestions = suggestion : modelSuggestions,
@@ -60,15 +42,15 @@ tests = do
 
             TU.test "sendMessage bumps temporary id" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let m@{ temporaryID } = DT.fst $ CIC.sendMessage elements webSocket date model
+                  let m@{ temporaryID } = DT.fst $ CIC.sendMessage webSocket content date model
                   TUA.equal 1 temporaryID
 
-                  let { temporaryID } = DT.fst <<< CIC.sendMessage elements webSocket date $ m { message = Just "oi" }
+                  let { temporaryID } = DT.fst $ CIC.sendMessage webSocket content date m
                   TUA.equal 2 temporaryID
 
             TU.test "sendMessage adds message to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { user: { id: userID }, contacts, chatting } = DT.fst <<< CIC.sendMessage elements webSocket date $ model { message = Just content }
+                  let   { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage webSocket content date model
                         user = SN.fromJust do
                               index <- chatting
                               contacts !! index
@@ -78,13 +60,13 @@ tests = do
                         recipient: user.user.id,
                         status: Sent,
                         id: 1,
-                        content,
+                        content: "test",
                         sender: userID
                   }] user.history
 
             TU.test "sendMessage adds markdown image to history" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { contacts, chatting } = DT.fst <<< CIC.sendMessage elements webSocket date $ model {
+                  let   { contacts, chatting } = DT.fst <<< CIC.sendMessage webSocket (Image caption image) date $ model {
                               selectedImage = Just image,
                               imageCaption = Just caption
                         }
@@ -96,12 +78,7 @@ tests = do
 
             TU.test "sendMessage resets input fields" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let { message } = DT.fst <<< CIC.sendMessage elements webSocket date $ model {
-                        message = Just content
-                  }
-                  TUA.equal Nothing message
-
-                  let { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage elements webSocket date $ model {
+                  let { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage webSocket content date $ model {
                         selectedImage = Just image,
                         imageCaption = Just caption
                   }
@@ -157,7 +134,7 @@ tests = do
                   { id } <- getHistory contacts
                   pure id
 
-            content = "test"
+            content = Text "test"
             { id: recipientID } = imUser
             messageID = 1
             newMessageID = 101

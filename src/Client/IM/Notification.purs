@@ -54,6 +54,6 @@ notify' model userIDs = do
 updateTabCount :: PrimaryKey -> Array Contact -> Effect Unit
 updateTabCount id contacts = do
       CCD.setTitle $ SIU.title unreadChats
-      faviconElement <- CCD.unsafeQuerySelector "#favicon"
+      faviconElement <- CCD.unsafeGetElementByID Favicon
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
       where unreadChats = SIU.countUnreadChats id contacts

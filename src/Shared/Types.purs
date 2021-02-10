@@ -196,7 +196,6 @@ type IM = (
       freeToFetchChatHistory :: Boolean,
       freeToFetchContactList :: Boolean,
       freeToFetchSuggestions :: Boolean,
-      message :: Maybe String,
       selectedImage :: Maybe String,
       imageCaption :: Maybe String,
       messageEnter :: Boolean,
@@ -204,7 +203,6 @@ type IM = (
       suggestionsPage :: Int,
       linkText :: Maybe String,
       isWebSocketConnected :: Boolean,
-      shouldSendMessage :: Boolean,
       erroredFields :: Array String,
       fortune :: Maybe String,
       failedRequests :: Array RequestFailure,
@@ -271,7 +269,7 @@ data ProfilePresentation =
       OtherSuggestion
 
 data MessageContent =
-      Image (Tuple String String) |
+      Image String String | --caption & base64
       Text String
 
 data Markup =
@@ -304,7 +302,7 @@ data IMMessage =
       ToggleInitialScreen |
       Logout |
       SetContextMenuToggle ShowContextMenu |
-      SetModalContents (Maybe String) String String |
+      SetModalContents (Maybe String) ElementID String |
       --contact
       ResumeChat PrimaryKey |
       UpdateReadCount |
@@ -320,12 +318,12 @@ data IMMessage =
       ToggleContactProfile |
       DropFile Event |
       ToggleMessageEnter |
-      FocusInput IMElementID |
-      EnterBeforeSendMessage |
+      FocusInput ElementID |
+      EnterBeforeSendMessage Event |
       ForceBeforeSendMessage |
       ResizeChatInput Event |
-      BeforeSendMessage String  |
-      SendMessage DateTimeWrapper |
+      BeforeSendMessage MessageContent |
+      SendMessage MessageContent DateTimeWrapper |
       SetMessageContent (Maybe Int) String |
       Apply Markup |
       SetSmallScreen |
@@ -399,7 +397,7 @@ data DisplayHelpSection =
 data InternalHelpMessage =
       ToggleHelpSection DisplayHelpSection
 
-data IMElementID =
+data ElementID =
       UserContextMenu |
       SuggestionContextMenu |
       CompactProfileContextMenu |
@@ -409,13 +407,26 @@ data IMElementID =
       ChatInput |
       ContactList |
       ImageFormCaption |
+      PasswordDiv |
+      ConfirmPasswordInput |
       LinkFormUrl |
       MessageHistory |
       Favicon |
       ProfileEditionRoot |
       SettingsEditionRoot |
       KarmaLeaderboard |
-      HelpRoot
+      HelpRoot |
+      TermsLink |
+      PrivacyLink |
+      Faq |
+      TermsSection |
+      PasswordInput |
+      EmailDiv |
+      PrivacySection |
+      EmailInput |
+      ConfirmPassword |
+      FaqLink |
+      AvatarFileInput
 
 type PU = (BasicUser (
       gender :: Maybe Gender,
@@ -520,7 +531,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
-derive instance eqIMSelector :: Eq IMElementID
+derive instance eqIMSelector :: Eq ElementID
 derive instance eqShowContextMenu :: Eq ShowContextMenu
 derive instance eqDatabaseError :: Eq DatabaseError
 derive instance eqFullContactProfile :: Eq ProfilePresentation
@@ -839,7 +850,7 @@ instance showPayloadErrorContext :: Show DatabaseError where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
       show = DGRS.genericShow
-instance showIMSelector :: Show IMElementID where
+instance showElementID :: Show ElementID where
       show = case _ of
             UserContextMenu -> "user-context-menu"
             SuggestionContextMenu -> "suggestion-context-menu"
@@ -853,10 +864,23 @@ instance showIMSelector :: Show IMElementID where
             ImageFormCaption -> "image-form-caption"
             MessageHistory -> "message-history"
             Favicon -> "favicon"
+            ConfirmPasswordInput -> "#confirm-password-input"
+            PasswordDiv -> "password"
+            TermsLink -> "terms-link"
+            PrivacyLink -> "privacy-link"
+            Faq -> "faq"
+            TermsSection -> "terms"
+            EmailDiv -> "email"
+            EmailInput -> "email-input"
+            PrivacySection -> "privacy"
+            ConfirmPassword -> "confirm-password"
+            FaqLink -> "faq-link"
             ProfileEditionRoot -> "profile-edition-root"
             SettingsEditionRoot -> "settings-edition-root"
             KarmaLeaderboard -> "karma-leaderboard-root"
             HelpRoot -> "help-root"
+            PasswordInput -> "password-input"
+            AvatarFileInput -> "avatar-file-input"
 
 instance toSQLValueGender :: ToSQLValue Gender where
       toSQLValue = F.unsafeToForeign <<< show
@@ -866,7 +890,7 @@ instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
 
-instance hashableIMSelector :: Hashable IMElementID where
+instance hashableIMSelector :: Hashable ElementID where
       hash = HS.hash <<< show
 
 instance encodeJsonWebSocketPayloadClient :: EncodeJson WebSocketPayloadClient where

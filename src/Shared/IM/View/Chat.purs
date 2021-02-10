@@ -3,6 +3,7 @@ module Shared.IM.View.Chat where
 import Prelude
 import Shared.Types
 
+import Client.Common.DOM as CCD
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
@@ -12,6 +13,7 @@ import Data.String as DS
 import Data.Symbol (class IsSymbol, SProxy(..))
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
+import Effect.Unsafe as EU
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -25,7 +27,7 @@ import Shared.Setter as SS
 
 chat :: IMModel -> Html IMMessage
 chat model@{ chatting } =
-      HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, SK.keyDownOn "Escape" $ ToggleChatModal HideChatModal] [
+      HE.div [HA.class' {"send-box" : true, "hidden": DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal)] [
             linkModal model,
             imageModal model,
             chatBarInput ChatInput model
@@ -66,13 +68,12 @@ imageModal {selectedImage, erroredFields} =
       ]
       where imageValidationFailed = DA.elem (TDS.reflectSymbol (SProxy :: SProxy "selectedImage")) erroredFields
 
-chatBarInput :: IMElementID -> IMModel -> Html IMMessage
+chatBarInput :: ElementID -> IMModel -> Html IMMessage
 chatBarInput elementID model@{
       chatting,
       contacts,
       suggesting,
       isWebSocketConnected,
-      message,
       messageEnter,
       suggestions,
       toggleChatModal
@@ -83,7 +84,7 @@ chatBarInput elementID model@{
                   HE.div [HA.class' "chat-input-options"] [
                         HE.svg [HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32 boio-2", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
                   ],
-                  HE.div' [HA.class' "chat-input-preview message-content", HA.innerHtml <<< SM.parse $ DM.fromMaybe "" message]
+                  HE.div' [HA.class' "chat-input-preview message-content", HA.innerHtml <<< SM.parse $ EU.unsafePerformEffect (CCD.unsafeGetElementByID elementID >>= CCD.value)]
             ]
        else
             HE.div [HA.class' { hidden: not available || DM.isNothing chatting && DM.isNothing suggesting }] [
@@ -110,10 +111,8 @@ chatBarInput elementID model@{
                               HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
                               HA.disabled $ not isWebSocketConnected,
                               SK.keyDownOn "Enter" EnterBeforeSendMessage,
-                              HA.onInput BeforeSendMessage,
                               HA.onInput' ResizeChatInput,
-                              HA.autocomplete "off",
-                              HA.value $ DM.fromMaybe "" message
+                              HA.autocomplete "off"
                         ],
                         imageButton,
                         sendButton messageEnter

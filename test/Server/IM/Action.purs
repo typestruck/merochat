@@ -70,7 +70,7 @@ tests = do
             TU.test "processMessage accepts files" $
                   TS.serverActionCatch (TS.catch invalidImageMessage) $ do
                         Tuple userID anotherUserID <- setUpUsers
-                        Tuple _ message <- SIA.processMessage userID anotherUserID 2 <<< Image <<< Tuple "hey" $ "data:image/png;base64,ya"
+                        Tuple _ message <- SIA.processMessage userID anotherUserID 2 $ Image "hey" "data:image/png;base64,ya"
                         R.liftAff <<< TUA.assert "returns file" $ DSR.test (DSRU.unsafeRegex "!\\[hey\\]((.*)/upload/(.*).png)" noFlags) message
 
             TU.test "processMessage sanitizes input" $
@@ -82,7 +82,7 @@ tests = do
             TU.test "processMessage does not accept files too large" $
                   TS.serverActionCatch (TS.catch imageTooBigMessage) $ do
                         Tuple userID anotherUserID <- setUpUsers
-                        SIA.processMessage userID anotherUserID 2 <<< Image <<< Tuple "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
+                        SIA.processMessage userID anotherUserID 2 <<< Image "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 
             TU.test "listContacts orders contacts by descreasing date" $
                   TS.serverAction $ do

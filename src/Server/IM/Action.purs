@@ -63,7 +63,7 @@ processMessage :: forall r. PrimaryKey -> PrimaryKey -> Int -> MessageContent ->
 processMessage loggedUserID userID temporaryID content = do
       message <- case content of
             Text m -> pure m
-            Image (Tuple caption base64) -> do
+            Image caption base64 -> do
                   path <- SF.saveBase64File $ base64
                   pure $ "![" <> caption  <> "](" <> imageBasePath <> "upload/" <> path <> ")"
       let sanitized = DS.trim $ sanitize message
