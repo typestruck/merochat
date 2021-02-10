@@ -2,24 +2,9 @@ module Server.Faq where
 
 import Prelude
 
-import Effect (Effect)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
-import Server.Template (externalDefaultParameters)
-import Server.Template as ST
-import Shared.Path as SP
-import Shared.Types (ContentType(..))
-import Environment(helpJSHash)
-
-template :: Effect String
-template = do
-      contents <- ST.template externalDefaultParameters {
-            content = externalDefaultParameters.content <> [faq],
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "help." <> helpJSHash]]
-      }
-      FRS.render contents
 
 faq :: forall m. Html m
 faq =
