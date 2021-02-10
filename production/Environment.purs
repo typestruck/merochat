@@ -4,16 +4,20 @@ development :: Boolean
 development = false
 
 commonJSHash :: String
-commonJSHash = "599befac75bb13a6b48e"
+commonJSHash = "84f2001d925afc955fbc"
 
 otherJSHash :: String
-otherJSHash = "480b463a1a89a6f913f7"
+otherJSHash = "f3831a212a4429a8a7a2"
 
 imCSSHash :: String
 imCSSHash = "7a5938f1839bfa6bef97"
 
 imJSHash :: String
-imJSHash = "c18835c7a2828fe0e929"
+imJSHash = "bd3233519c0234937629"
 
 emojiJSHash :: String
 emojiJSHash = "579d0f135d969603bd63"
+
+helpJSHash :: String
+helpJSHash = "e2127064dcd520f2a977"
+

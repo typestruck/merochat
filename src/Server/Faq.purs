@@ -11,12 +11,13 @@ import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Path as SP
 import Shared.Types (ContentType(..))
+import Environment(helpJSHash)
 
 template :: Effect String
 template = do
       contents <- ST.template externalDefaultParameters {
             content = externalDefaultParameters.content <> [faq],
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "help.5c2d5d65952114e0b0e3"]]
+            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "help." <> helpJSHash]]
       }
       FRS.render contents
 
