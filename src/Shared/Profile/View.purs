@@ -287,7 +287,7 @@ appendInputedMaybe :: forall t r u fieldInputedList fieldInputed. Ord t => IsSym
 appendInputedMaybe fieldInputedList fieldInputed =
       SetPField $ \model ->
             case R.get fieldInputed model of
-                  Nothing ->  model
+                  Nothing -> model
                   Just value -> R.set fieldInputed Nothing $ R.set fieldInputedList (Just <<< DA.nub $ DA.snoc (DM.fromMaybe [] $ R.get fieldInputedList model) value) model
 
 removeFromInputedList :: forall t r fieldInputedList. Eq t => IsSymbol fieldInputedList => Cons fieldInputedList (Maybe (Array t)) r PM => SProxy fieldInputedList -> t -> ProfileMessage

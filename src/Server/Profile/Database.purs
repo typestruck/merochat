@@ -21,7 +21,7 @@ headline,
 description,
 country,
 (select array_agg(l.id) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
-(select string_agg(name, '\n' order by name) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
+(select string_agg(name, '\n' order by l.id) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
 k.current_karma karma,
 k.position """
 
