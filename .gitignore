@@ -16,6 +16,7 @@ fix
 todo
 dce-output/
 .cache/
+package-lock.json
 .spago/
 dist/
 parcel*.log
