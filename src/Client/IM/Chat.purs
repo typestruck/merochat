@@ -122,6 +122,7 @@ sendMessage webSocket content date model@{
       CIS.scrollLastMessage
       input <- chatInput model
       WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
+      CCD.setValue input ""
       CIW.sendPayload webSocket $ OutgoingMessage {
             id: newTemporaryID,
             userID: recipientID,

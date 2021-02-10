@@ -13,7 +13,7 @@ imCSSHash :: String
 imCSSHash = "7a5938f1839bfa6bef97"
 
 imJSHash :: String
-imJSHash = "bd3233519c0234937629"
+imJSHash = "3d8efaf90a423ffee3cf"
 
 emojiJSHash :: String
 emojiJSHash = "579d0f135d969603bd63"
