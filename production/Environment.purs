@@ -7,13 +7,13 @@ commonJSHash :: String
 commonJSHash = "40a2e962ada64ab56a69"
 
 otherJSHash :: String
-otherJSHash = "fd368977d63ced6f537f"
+otherJSHash = "71f305066fddd1f9e469"
 
 imCSSHash :: String
 imCSSHash = "7a5938f1839bfa6bef97"
 
 imJSHash :: String
-imJSHash = "e68ace9b19e8acf531b4"
+imJSHash = "7fbcab919b6c421fc53b"
 
 emojiJSHash :: String
 emojiJSHash = "579d0f135d969603bd63"
