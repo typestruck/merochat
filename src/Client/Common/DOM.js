@@ -48,3 +48,7 @@ exports.requestNotificationPermission = function () {
 exports.notificationPermission = function() {
       return Notification.permission;
 }
+
+exports.pushState_ = function(location) {
+      history.pushState(null, '', location);
+}

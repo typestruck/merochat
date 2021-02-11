@@ -38,6 +38,7 @@ import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 
 foreign import innerHTML_ :: EffectFn2 Element String Unit
 foreign import innerText_ :: EffectFn1 Element String
+foreign import pushState_ :: EffectFn1 String Unit
 
 foreign import createCustomEvent_ :: forall value. Fn2 String value CustomEvent
 foreign import customEventDetail_ :: forall value. Fn1 CustomEvent value
@@ -171,3 +172,6 @@ setTitle title = do
       window <- WH.window
       document <- WHW.document window
       WHHD.setTitle title document
+
+pushState :: String -> Effect Unit
+pushState = EU.runEffectFn1 pushState_

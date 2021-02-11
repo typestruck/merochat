@@ -6,8 +6,6 @@ import Shared.Types
 import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Shared.Types
-import Shared.Path as SP
 import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
@@ -17,10 +15,11 @@ import Flame ((:>))
 import Flame as F
 import Shared.Routes (routes)
 
-toggleInitialScreen :: IMModel -> NoMessages
-toggleInitialScreen model@{ initialScreen } = F.noMessages $ model {
-      initialScreen = not initialScreen,
-      chatting = Nothing
+toggleInitialScreen :: Boolean -> IMModel -> NoMessages
+toggleInitialScreen toggle model@{ initialScreen } = F.noMessages $ model {
+      initialScreen = toggle,
+      chatting = Nothing,
+      toggleModal = HideUserMenuModal
  }
 
 logout :: IMModel -> MoreMessages

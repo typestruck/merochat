@@ -46,11 +46,11 @@ import Foreign as FO
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
+import Shared.Routes (routes)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Signal.Channel (Channel)
 import Signal.Channel as SC
-import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
 import Web.Event.Event as WEE
@@ -59,6 +59,7 @@ import Web.Event.Internal.Types (Event)
 import Web.File.FileReader as WFR
 import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
+import Web.HTML.Event.PopStateEvent.EventTypes (popstate)
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
 
@@ -86,10 +87,17 @@ main = do
       input <- CCD.unsafeGetElementByID ImageFileInput
       CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
       width <- CCD.screenWidth
+      let smallScreen = width < mobileBreakpoint
       --keep track of mobile (-like) screens for things that cant be done with media queries
-      when (width < mobileBreakpoint) $ SC.send channel [SetSmallScreen]
+      when smallScreen $ SC.send channel [SetSmallScreen]
+      --disable the back button on desktop/make the back button go back to previous screen on mobile
+      CCD.pushState $ routes.im.get {}
+      historyChange smallScreen channel
+      --notification permission (desktop)
       checkNotifications channel
+      --message status on window focus
       windowsFocus channel
+
 
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader } model =
@@ -130,7 +138,7 @@ update { webSocketRef, fileReader } model =
             SpecialRequest (BlockUser id) -> CIS.blockUser webSocket id model
             DisplayMoreSuggestions suggestions -> CIS.displayMoreSuggestions suggestions model
             --user menu
-            ToggleInitialScreen -> CIU.toggleInitialScreen model
+            ToggleInitialScreen toggle -> CIU.toggleInitialScreen toggle model
             Logout -> CIU.logout model
             ToggleUserContextMenu event -> toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) -> CIU.toggleModal toggle model
@@ -415,6 +423,15 @@ windowsFocus channel = do
       --focus event has to be on the window as chrome is a whiny baby about document
       window <- WH.window
       WET.addEventListener focus focusListener false $ WHW.toEventTarget window
+
+historyChange :: Boolean -> Channel (Array IMMessage) -> Effect Unit
+historyChange smallScreen channel = do
+      popStateListener <- WET.eventListener $ const handler
+      window <- WH.window
+      WET.addEventListener popstate popStateListener false $ WHW.toEventTarget window
+      where handler = do
+                  CCD.pushState $ routes.im.get {}
+                  when smallScreen <<< SC.send channel <<< DA.singleton $ ToggleInitialScreen true
 
 setUpWebSocket :: Ref CurrentWebSocket -> Channel (Array IMMessage) -> Effect Unit
 setUpWebSocket webSocketRef channel = do

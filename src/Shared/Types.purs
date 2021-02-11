@@ -299,7 +299,7 @@ data IMMessage =
       CheckFetchHistory |
       DisplayHistory (Array HistoryMessage)|
       --user menu
-      ToggleInitialScreen |
+      ToggleInitialScreen Boolean |
       Logout |
       SetContextMenuToggle ShowContextMenu |
       SetModalContents (Maybe String) ElementID String |

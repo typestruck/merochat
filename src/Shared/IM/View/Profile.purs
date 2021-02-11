@@ -41,7 +41,7 @@ unavailable name =
       HE.div [HA.class' "profile-contact"] [
             HE.div (HA.class' "profile-contact-top") [
                   HE.div (HA.class' "profile-unavailable-header") [
-                        SIA.arrow [HA.class' "svg-back-card", HA.onClick ToggleInitialScreen],
+                        SIA.arrow [HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true],
                         HE.h1 (HA.class' "contact-name") name,
                         HE.span (HA.class' "unavailable-message") " is no longer available"
                   ]
@@ -52,7 +52,7 @@ contact :: IMModel -> IMUser -> Html IMMessage
 contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
       HE.div (HA.class' "profile-contact") [
             HE.div (HA.class' "profile-contact-top") [
-                  SIA.arrow [HA.class' "svg-back-card", HA.onClick ToggleInitialScreen],
+                  SIA.arrow [HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true],
                   HE.img $ [HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar] <> showProfile,
                   HE.div (HA.class' "profile-contact-header" : showProfile) [
                         HE.h1 (HA.class' "contact-name") name
@@ -195,7 +195,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             ]
 
             currentSuggestionMenu = HE.div [HA.class' "profile-context outer-user-menu"] [
-                  SIA.arrow [HA.class' "svg-back-card", HA.onClick ToggleInitialScreen],
+                  SIA.arrow [HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true],
                   SIA.contextMenu $ show SuggestionContextMenu,
                   HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
                         HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"

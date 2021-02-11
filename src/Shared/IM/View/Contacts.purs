@@ -28,13 +28,13 @@ contactList isClientRender { failedRequests, chatting, contacts, user: { id: use
                   | otherwise = DA.mapWithIndex contactEntry $ DA.sortBy compareDateUnread contacts
 
             suggestionsCall = HE.div (HA.class' "suggestions-call") [
-                  HE.div (HA.onClick ToggleInitialScreen) $ SIVP.backArrow,
+                  HE.div (HA.onClick $ ToggleInitialScreen false) $ SIVP.backArrow,
                   HE.div (HA.class' "suggestions-call-middle") [
                         HE.div (HA.class' "welcome-suggestions-call") $ "Welcome!",
                         HE.div_ "Tap on either of the arrows to see ",
                         HE.div_ "your chat suggestions"
                   ],
-                  HE.div (HA.onClick ToggleInitialScreen) $ SIVP.nextArrow
+                  HE.div (HA.onClick $ ToggleInitialScreen false) $ SIVP.nextArrow
             ]
 
             getDate history = do
