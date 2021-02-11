@@ -94,10 +94,9 @@ main = do
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen channel
       --notification permission (desktop)
-      checkNotifications channel
+      unless smallScreen $ checkNotifications channel
       --message status on window focus
       windowsFocus channel
-
 
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader } model =

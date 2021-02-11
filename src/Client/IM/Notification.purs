@@ -36,9 +36,9 @@ notifyUnreadChats :: IMModel -> Array PrimaryKey -> NextMessage
 notifyUnreadChats model userIDs = CIF.nothingNext model <<< liftEffect $ notify model userIDs
 
 notify :: IMModel -> Array PrimaryKey -> Effect Unit
-notify model@{ user: { id }, contacts } userIDs = do
+notify model@{ user: { id }, contacts, smallScreen } userIDs = do
       updateTabCount id contacts
-      DF.traverse_  createNotification' contactUsers
+      unless smallScreen $ DF.traverse_  createNotification' contactUsers
       where contactUsers = map _.user $ DA.filter (\cnt -> DA.elem cnt.user.id userIDs) contacts
             createNotification' user = createNotification {
                   body: "New message from " <> user.name,
