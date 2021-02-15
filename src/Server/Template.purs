@@ -5,7 +5,7 @@ import Prelude
 
 import Data.String as DS
 import Effect (Effect)
-import Environment (commonJSHash, otherJSHash)
+import Environment (commonJSHash, otherJSHash, baseJSHash)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -65,7 +65,7 @@ templateWith parameters@{ title, content, css, footer, favicon } =
             HE.body_ $ content <> footer <> javascript
       ]
       where styleSheets = [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "base.768271ce06fa68cc4b3d"]
+                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "base." <> baseJSHash ]
             ]
             javascript = [
                   HE.script' [HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "other." <> otherJSHash],

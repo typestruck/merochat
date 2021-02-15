@@ -16,3 +16,6 @@ imCSSHash :: String
 imCSSHash = "764a972cf23262537d6d"
 helpJSHash :: String
 helpJSHash = "e2127064dcd520f2a977"
+
+baseJSHash :: String
+baseJSHash = "2a6d2314a87b3f0f1834"

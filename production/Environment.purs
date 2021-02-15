@@ -21,3 +21,5 @@ emojiJSHash = "579d0f135d969603bd63"
 helpJSHash :: String
 helpJSHash = "e2127064dcd520f2a977"
 
+baseJSHash :: String
+baseJSHash = "2a6d2314a87b3f0f1834"
