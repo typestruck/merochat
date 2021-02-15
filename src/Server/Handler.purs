@@ -30,6 +30,8 @@ import Server.Leaderboard.Handler as SLBH
 import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH
+import Server.Backer.Handler as SBH
+import Server.InternalBacker.Handler as SIBH
 import Server.NotFound.Handler as SNH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
@@ -76,9 +78,12 @@ handlers reading = {
       leaderboard: runJSON reading SLBH.leaderboard,
       logout: runJSON reading SLOH.logout,
       help: runHTML reading SHH.help,
-      notFound: runHTML reading SNH.notFound,
+      backer: runHTML reading SBH.backer,
+      internalBacker: runJSON reading SIBH.internalBacker,
 
-      developmentFiles: developmentFiles
+      developmentFiles: developmentFiles,
+
+      notFound: runHTML reading SNH.notFound
 }
 
 runHTML :: forall a b. ServerReader -> (a -> ServerEffect b) -> a -> Aff (Either (Response String) b)

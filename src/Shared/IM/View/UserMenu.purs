@@ -37,6 +37,10 @@ userMenu model@{ toggleContextMenu, smallScreen} =
                               HE.div (HA.class' "menu-item-heading") "Help",
                               HE.span (HA.class' "duller") "Learn more about MelanChat"
                         ],
+                        HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker] [
+                              HE.div (HA.class' "menu-item-heading") "Backing",
+                              HE.span (HA.class' "duller") "Donate or become a patron"
+                        ],
                         HE.div [HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmLogout] "Logout"
                   ]
             ],

@@ -5,6 +5,7 @@ import Prelude
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Routes (routes)
 
 faq :: forall m. Html m
 faq =
@@ -32,7 +33,7 @@ faq =
             HE.h2 [HA.id "isitfree"] "Is MelanChat free?",
             HE.p_ [
                   HE.text "Yes! The app is totally free and there is no ads. MelanChat ",
-                  HE.a (HA.href "#") "runs on donations",
+                  HE.a (HA.href $ routes.backer {}) "runs on donations",
                   HE.text " from people who like it enough (or might just be after the rewards, who can tell)."
             ],
             HE.h2 [HA.id "whatskarma"] "What is Karma?",
@@ -58,7 +59,7 @@ faq =
             HE.h2 [HA.id "canihelp"] "Wow, I love it. How can I help?",
             HE.p_ [
                   HE.text "Right?! If you can spare some, consider ",
-                  HE.a (HA.href "") "backing MelanChat",
+                  HE.a (HA.href $ routes.backer {}) "backing MelanChat",
                   HE.text ". The entire ",
                   HE.a (HA.href "https://github.com/melanchat/melanchat") "source code",
                   HE.text " is also open source, in case this is your thing."

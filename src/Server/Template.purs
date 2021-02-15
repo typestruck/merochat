@@ -79,7 +79,7 @@ externalFooter =
             HE.ul (HA.class' "footer-menu") [
                   HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login",
                   HE.li_ $ HE.a (HA.href $ routes.help {} <> "#faq") "FAQ",
-                  HE.li_ $ HE.a (HA.href "#") "Become a backer",
+                  HE.li_ $ HE.a (HA.href $ routes.backer {}) "Become a backer",
                   HE.li_ $ HE.a (HA.href $ routes.help {} <> "#terms" ) "Terms and conditions",
                   HE.li_ $ HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy police",
                   HE.li_ $ HE.a (HA.href "https://github.com/melanchat/melanchat") "Source code"
