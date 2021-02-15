@@ -136,6 +136,15 @@ spec :: Spec {
                   guards :: Guards ("loggedUserID" : Nil),
                   response :: String
             },
+            backer :: GET "/backer" {
+                  guards :: Guards ("checkAnonymous" : Nil),
+                  response :: Html
+            },
+            internalBacker :: GET "/inbacker" {
+                  guards :: Guards ("loggedUserID" : Nil),
+                  response :: String
+            },
+
             developmentFiles :: GET "/client/<..path>" {
                   params :: { path :: List String },
                   response :: File

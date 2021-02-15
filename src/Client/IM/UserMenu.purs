@@ -31,10 +31,11 @@ logout model = CIF.nothingNext model out
 toggleModal :: ShowUserMenuModal -> IMModel -> NextMessage
 toggleModal mToggle model =
       case mToggle of
-            ShowProfile -> showTab request.profile.get ShowProfile "profile.6f4f3e5a964a4fe39094" ProfileEditionRoot
-            ShowSettings -> showTab request.settings.get ShowSettings "settings.e737b2c018c48843b189" SettingsEditionRoot
-            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard "leaderboard.4d4f6182f4af2475e4e8" KarmaLeaderboard
-            ShowHelp -> showTab request.internalHelp ShowHelp "internalHelp.b7950417810ec6df079a" HelpRoot
+            ShowProfile -> showTab request.profile.get ShowProfile (Just "profile.6f4f3e5a964a4fe39094") ProfileEditionRoot
+            ShowSettings -> showTab request.settings.get ShowSettings (Just "settings.e737b2c018c48843b189") SettingsEditionRoot
+            ShowLeaderboard -> showTab request.leaderboard ShowLeaderboard (Just "leaderboard.4d4f6182f4af2475e4e8") KarmaLeaderboard
+            ShowHelp -> showTab request.internalHelp ShowHelp (Just "internalHelp.b7950417810ec6df079a") HelpRoot
+            ShowBacker -> showTab request.internalBacker ShowBacker Nothing BackerRoot
             modal -> F.noMessages $ model {
                   toggleModal = modal,
                   toggleContextMenu = HideContextMenu
@@ -45,7 +46,7 @@ toggleModal mToggle model =
                         toggleContextMenu = HideContextMenu,
                         failedRequests = []
                   } :> [
-                        CCN.retryableResponse (ToggleModal toggle) (SetModalContents (Just file) root) (f {})
+                        CCN.retryableResponse (ToggleModal toggle) (SetModalContents file root) (f {})
                   ]
 
 setModalContents :: Maybe String -> ElementID -> String -> IMModel -> NextMessage

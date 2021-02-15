@@ -1,0 +1,21 @@
+.backer {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+}
+
+p {
+    display: block;
+    word-wrap: break-word;
+    max-width: 45em;
+    margin: 5px 0px;
+}
+
+strong {
+    color: #db5a5d;
+    font-size: 1.2em;
+    margin: 15px 0 5px 0;
+}
+

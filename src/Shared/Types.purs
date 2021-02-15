@@ -249,7 +249,8 @@ data ShowUserMenuModal =
       ShowProfile |
       ShowSettings |
       ShowLeaderboard |
-      ShowHelp
+      ShowHelp |
+      ShowBacker
 
 type Stats = {
     characters :: Number,
@@ -424,6 +425,7 @@ data ElementID =
       EmailDiv |
       PrivacySection |
       EmailInput |
+      BackerRoot |
       ConfirmPassword |
       FaqLink |
       AvatarFileInput
@@ -837,6 +839,7 @@ instance showShowUserMenuModal :: Show ShowUserMenuModal where
             ShowSettings -> "Your settings"
             ShowLeaderboard -> "Karma leaderboard"
             ShowHelp -> "Help"
+            ShowBacker -> "Backing"
             _ -> ""
 instance showMDateTime :: Show DateTimeWrapper where
       show = DGRS.genericShow
@@ -875,6 +878,7 @@ instance showElementID :: Show ElementID where
             PrivacySection -> "privacy"
             ConfirmPassword -> "confirm-password"
             FaqLink -> "faq-link"
+            BackerRoot -> "backer-root"
             ProfileEditionRoot -> "profile-edition-root"
             SettingsEditionRoot -> "settings-edition-root"
             KarmaLeaderboard -> "karma-leaderboard-root"

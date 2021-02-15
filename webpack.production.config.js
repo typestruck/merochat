@@ -23,7 +23,8 @@ module.exports = {
         recover: './loader/recover.bundle.js',
         emoji: './output/Shared.IM.Emoji/index.js',
         base: './src/Client/css/base.css',
-        external: './src/Client/css/external.css'
+        external: './src/Client/css/external.css',
+        backer: './src/Client/css/backer.css'
     },
     output: {
         path: path.resolve(__dirname, 'dist/production'),
