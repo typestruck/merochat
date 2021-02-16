@@ -55,5 +55,7 @@ displayHistory chatHistory model@{ chatting, contacts } =
       in
             if shouldFetchChatHistory then
                   CIF.nothingNext updatedModel $ liftEffect CIS.scrollLastMessage
-            else
+             else if not $ DA.null chatHistory then
+                  CIF.nothingNext updatedModel <<< liftEffect <<< CIS.scrollIntoView <<< SU.fromJust $ DA.last chatHistory
+             else
                   F.noMessages updatedModel

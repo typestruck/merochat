@@ -414,7 +414,7 @@ preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop
 checkNotifications :: Channel (Array IMMessage) -> Effect Unit
 checkNotifications channel = do
       status <- CCD.notificationPermission
-      when (status /= "granted") $ SC.send channel [ToggleAskNotification]
+      when (status == "default") $ SC.send channel [ToggleAskNotification]
 
 windowsFocus :: Channel (Array IMMessage) -> Effect Unit
 windowsFocus channel = do

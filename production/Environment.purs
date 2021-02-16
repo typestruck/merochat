@@ -23,3 +23,6 @@ helpJSHash = "e2127064dcd520f2a977"
 
 baseJSHash :: String
 baseJSHash = "2a6d2314a87b3f0f1834"
+
+backerCSSHash :: String
+backerCSSHash = "5c2d5d65952114e0b0e3"

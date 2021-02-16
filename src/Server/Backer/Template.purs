@@ -15,7 +15,6 @@ import Shared.Backer.View as SBV
 template :: Effect String
 template = do
       contents <- ST.template externalDefaultParameters {
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "backer.5c2d5d65952114e0b0e3"]],
             content = externalDefaultParameters.content <> [SBV.view]
       }
       FRS.render contents

@@ -52,3 +52,7 @@ exports.notificationPermission = function() {
 exports.pushState_ = function(location) {
       history.pushState(null, '', location);
 }
+
+exports.scrollIntoView_ = function(element) {
+      element.scrollIntoView(true);
+}

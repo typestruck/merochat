@@ -33,7 +33,7 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests
             retry = SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
             display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i -> entry avatar (map _.sender (history !! (i - 1)))) history
 
-            entry recipientAvatar previousSender { status, date, sender, content } =
+            entry recipientAvatar previousSender { id, status, date, sender, content } =
                   let sameSender = sender == senderID
                       avatar =
                         if senderID == sender then
@@ -46,7 +46,7 @@ history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests
                         "recipient-message": not sameSender,
                         "no-avatar-message": previousSender == Just sender
                   }) [
-                        HE.div [HA.class' "message-content"] [
+                        HE.div [HA.class' "message-content", HA.id $ "m" <> show id ] [
                               HE.div' [HA.innerHtml $ SM.parse content],
                               HE.div (HA.class' {
                                     duller: status /= Errored,

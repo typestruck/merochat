@@ -2,12 +2,16 @@ module Shared.Backer.View where
 
 import Prelude
 
+import Environment (backerCSSHash)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Path as SPT
+import Shared.Types (ContentType(..))
 
 view :: Html Unit
 view = HE.div (HA.class' "backer") [
+      HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SPT.pathery CSS $ "backer." <> backerCSSHash],
       HE.strong_ "MelanChat depends on people like you to keep running",
       HE.p_ "Above all, MelanChat is a project to enable great conversations and human connection. For that reason, we don't show ads, charge for subscriptions, sell bs comestics or anything that would stand in the way of being the best place ever to chat.",
       HE.p_ "At the same time, running an app has costs. Paying for servers, domains, marketing campaings, art, developer time, etc quickly becomes expensive -- specially for a passion project like MelanChat that is not tied to any big corporation or VC money.",

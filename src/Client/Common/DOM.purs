@@ -55,6 +55,8 @@ foreign import screenWidth :: Effect Int
 foreign import requestNotificationPermission :: Effect Unit
 foreign import notificationPermission :: Effect String
 
+foreign import scrollIntoView_ :: EffectFn1 Element Unit
+
 nameChanged :: EventType
 nameChanged = EventType "nameChanged"
 
@@ -116,6 +118,9 @@ scrollDown :: Element -> Effect Unit
 scrollDown element = do
       height <- WDE.scrollHeight element
       WDE.setScrollTop height element
+
+scrollIntoView :: Element -> Effect Unit
+scrollIntoView element = EU.runEffectFn1 scrollIntoView_ element
 
 -- | Input value property or button inner text
 value :: Element -> Effect String

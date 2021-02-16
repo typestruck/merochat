@@ -6,16 +6,41 @@
     flex-grow: 1;
 }
 
-p {
+.backer p {
     display: block;
     word-wrap: break-word;
     max-width: 45em;
     margin: 5px 0px;
 }
 
-strong {
+.backer strong {
     color: #db5a5d;
     font-size: 1.2em;
     margin: 15px 0 5px 0;
+}
+
+.svg-patreon {
+    margin-right:10px;
+    width: 20px;
+    height: 20px;
+    vertical-align: text-top;
+}
+
+.patreon-button {
+    color: rgb(238, 238, 238);
+    border-radius: 25px;
+    padding: 5px 20px;
+    background: rgb(255, 66, 77)
+}
+
+@media (max-width:1279px) {
+    .backer {
+        max-width: 100%;
+        padding: 10px
+    }
+
+    .backer strong {
+        text-align: center;
+    }
 }
 
