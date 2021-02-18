@@ -94,10 +94,10 @@ body {
 
 .show-profile-icon {
     align-self: center;
-    width: 13px;
-    height: 4px;
+    width: 10px;
+    height: 10px;
     align-self: center;
-    margin-bottom: -4px;
+    margin-bottom: -5px;
 }
 
 .flexed {
@@ -117,7 +117,7 @@ body {
     justify-content: center;
     background: #213027;
     font-weight: bold;
-    padding: 5px 6px;
+    padding: 5px 10px;
     align-items: center;
     border-bottom: 1px solid #4E4E4E;
     border-top: 1px solid #4E4E4E;
@@ -234,14 +234,15 @@ body {
     background-color: #212120;
     position: relative;
     align-items: center;
-    padding: 10px 5px;
+    padding: 5px 10px;
     border-bottom: #161616
 }
 
 .contact {
     align-items: baseline;
     cursor: pointer;
-    padding: 9px 6px;
+    padding: 5px 10px
+
 }
 
 .settings-name {
@@ -587,7 +588,7 @@ img.emoji {
 
 .logo-contact-list {
     background-color: #2d2d2d;
-    padding: 15px;
+    padding: 10px;
     text-align: center;
 }
 
@@ -630,7 +631,7 @@ svg.toolbar-action {
     align-items: center;
 }
 
-.chat-input-options svg {
+.svg-duller, .chat-input-options svg {
     fill: rgb(238, 238, 238, 0.8);
     stroke: rgb(238, 238, 238, 0.8);
 }
@@ -663,7 +664,7 @@ svg.toolbar-action {
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     background: #2d2d2d;
-    padding: 10px 42px;
+    padding: 10px 35px;
     border: 1px solid #b5b7b7;
     border-top: none;
 }
@@ -682,10 +683,6 @@ svg.toolbar-action {
 
 .suggestions-call {
     display: none;
-}
-
-.send-box .side .chat-input {
-    padding-right: 75px;
 }
 
 .chat-input:placeholder-shown {
@@ -774,7 +771,6 @@ svg.toolbar-action {
     background: #373737;
 }
 
-
 .modal-menu .back {
     color: hsl(145, 80%, 28%);
     margin-bottom: 25px;
@@ -784,7 +780,7 @@ svg.toolbar-action {
 
 .modal-menu .back svg {
     fill: hsl(145, 80%, 28%);
-    vertical-align: middle;
+    stroke: hsl(145, 80%, 28%);
 }
 
 .end {
@@ -839,7 +835,8 @@ svg.toolbar-action {
 
 .contact-options {
     display: flex;
-    text-align: right;
+    font-size:0.96em;
+    align-items: flex-end;
     flex-direction: column;
 }
 
@@ -906,24 +903,32 @@ input:not(type=button):focus {
     margin-bottom: 15px;
 }
 
-.attachment, .send-button {
+.attachment-button, .send-button {
+    width: 22px;
+    height: 22px;
+}
+
+.card .attachment-button {
+    display: none;
+}
+
+.send-button-div {
+    padding: 0 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.chat-right-buttons {
     position: absolute;
-    top: 50%;
-    margin-top: -20px;
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    display: flex;
+    align-items: center;
     z-index: 5;
     background: #2d2d2d;
-}
-
-.attachment {
-    right: 13px;
-}
-
-.send-box .side .attachment {
-    right: 47px;
-}
-
-.send-button {
-    right: 17px;
 }
 
 .chatting-contact {
@@ -1206,14 +1211,23 @@ select {
     stroke: rgb(238, 238, 238);
 }
 
-.emoji-access {
-    position: absolute;
-    top: 50%;
-    margin-top: -13px;
-    stroke-width: 5;
-    left: 5px;
+.emoji-access-div {
     z-index: 2;
+    left: 2px;
+    top: 2px;
+    bottom: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: absolute;
     background: #2d2d2d;
+}
+
+.emoji-access {
+    width: 21px;
+    height: 21px;
+    padding: 0 8px;
+    stroke-width: 5;
 }
 
 .send-enter {
@@ -1429,10 +1443,6 @@ select {
     justify-content: flex-end;
 }
 
-.suggestion-input .svg-32.attachment {
-    display: none;
-}
-
 .profile-contact-top .headline {
     text-align: left;
 }
@@ -1589,6 +1599,10 @@ select {
     flex-direction: column;
 }
 
+.attachment-button {
+    padding-right: 8px;
+}
+
 /* dry this shite  */
 
 .suggestion.old~.message-history {
@@ -1627,6 +1641,9 @@ select {
         width: 36px;
         height: 36px;
     }
+    .contact-options {
+        font-weight: lighter;
+    }
     .avatar-contact-list-div {
         min-width: 36px;
         min-height: 36px;
@@ -1636,9 +1653,7 @@ select {
         justify-content: space-between;
         padding: 5px;
     }
-    .contact {
-        padding: 5px 10px
-    }
+
     .notification {
         padding-left: 10px;
     }
@@ -1739,22 +1754,9 @@ select {
         min-height: 0;
         max-height: 100px;
         border-radius: 5px;
-        padding-left: 34px;
-    }
-    .attachment, .send-button {
-        width: 30px;
-        height: 30px;
-        margin-top: -15px
-    }
-    .send-button {
-        display: block;
-        right: 5px;
     }
     .chat-input-options {
         display: none;
-    }
-    .send-box .side .attachment {
-        right: 38px
     }
     .profile-contact-top .svg-back-card {
         margin-right: 10px;
@@ -1869,14 +1871,11 @@ select {
         min-width: 100%;
     }
     .chat-input {
-        padding-right: 40px;
+        padding-left: 39px;
+        padding-right: 72px;
     }
-    .send-box .side .chat-input {
-        padding-right: 69px;
-        padding-left: 34px;
-    }
-    .send-box .side .attachment {
-        right: 37px
+    .suggestion-input .chat-input {
+        padding-right: 38px;
     }
     .confirmation {
         margin-left: 0;
@@ -1925,12 +1924,12 @@ select {
         display: block;
     }
     .svg-user-menu-context {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
     }
     .svg-suggestion-button {
-        width: 23px;
-        height: 23px;
+        width: 25px;
+        height: 25px;
     }
     .settings {
         padding: 10px;
@@ -1978,6 +1977,12 @@ select {
     .avatar-contact-list-div {
         min-width: 44px;
         min-height: 44px;
+    }
+    .side .chat-input {
+        padding-right: 85px;
+    }
+    .chat-input-preview, .chat-input, .suggestion-input .side .chat-input {
+        padding: 10px 38px;
     }
 }
 
@@ -2070,7 +2075,18 @@ select {
         margin: 40px 0px;
     }
     .emoji-access {
-        margin-top: -16px
+        width: 28px;
+        height: 28px;
+    }
+    .attachment-button, .send-button {
+        width: 32px;
+        height: 32px;
+    }
+    .side .chat-input {
+        padding-right: 90px;
+    }
+    .chat-input-preview, .chat-input, .suggestion-input .side .chat-input {
+        padding: 10px 45px;
     }
 }
 

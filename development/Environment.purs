@@ -22,3 +22,6 @@ baseJSHash = "2a6d2314a87b3f0f1834"
 
 backerCSSHash :: String
 backerCSSHash = "5c2d5d65952114e0b0e3"
+
+leaderboardCSSHash :: String
+leaderboardCSSHash = "f11d73f5cc7006586e2c"

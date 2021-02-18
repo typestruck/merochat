@@ -114,8 +114,10 @@ chatBarInput elementID model@{
                               HA.onInput' ResizeChatInput,
                               HA.autocomplete "off"
                         ],
-                        imageButton,
-                        sendButton messageEnter
+                        HE.div (HA.class' "chat-right-buttons") [
+                              imageButton,
+                              sendButton messageEnter
+                        ]
                   ]
             ]
 ]
@@ -199,7 +201,7 @@ linkButton toggle = HE.svg [HA.class' "svg-20 link-button", HA.onClick <<< Toggl
 emojiButton :: IMModel -> Html IMMessage
 emojiButton model@{toggleChatModal, smallScreen}
       | toggleChatModal == ShowEmojis =
-            HE.svg [HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 16 16"] $
+            HE.div (HA.class' "emoji-access-div") $ HE.svg [HA.onClick $ ToggleChatModal HideChatModal, HA.class' "emoji-access", HA.viewBox "0 0 16 16"] $
                   if smallScreen then [
                         HE.path' [HA.class' "strokeless", HA.d "M14.9,2.24H1.1A1.11,1.11,0,0,0,0,3.35v9.18a1.1,1.1,0,0,0,1.1,1.1H14.9a1.1,1.1,0,0,0,1.1-1.1V3.35A1.11,1.11,0,0,0,14.9,2.24ZM15,12.53a.11.11,0,0,1-.1.1H1.1a.11.11,0,0,1-.1-.1V3.35a.11.11,0,0,1,.1-.11H14.9a.11.11,0,0,1,.1.11Z"],
                         HE.rect' [HA.class' "strokeless", HA.x "2.75", HA.y "4.53", HA.width "1.28", HA.height "1.28"],
@@ -215,7 +217,7 @@ emojiButton model@{toggleChatModal, smallScreen}
                   else
                         HE.title "Close emojis" : SIS.closeElements
       | otherwise =
-            HE.svg [HA.onClick $ ToggleChatModal ShowEmojis, HA.class' "svg-32 emoji-access", HA.viewBox "0 0 16 16"] [
+           HE.div (HA.class' "emoji-access-div") $ HE.svg [HA.onClick $ ToggleChatModal ShowEmojis, HA.class' "emoji-access", HA.viewBox "0 0 16 16"] [
                   HE.title "Emojis",
                   HE.path' [HA.class' "strokeless", HA.d "M5.16,7.53a.71.71,0,1,0-.66-.71A.69.69,0,0,0,5.16,7.53Z"],
                   HE.path' [HA.class' "strokeless", HA.d "M10.8,7.53a.71.71,0,1,0-.66-.71A.68.68,0,0,0,10.8,7.53Z"],
@@ -223,12 +225,12 @@ emojiButton model@{toggleChatModal, smallScreen}
             ]
 
 imageButton :: Html IMMessage
-imageButton = HE.svg [HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class' "svg-32 attachment", HA.viewBox "0 0 16 16"] [
+imageButton = HE.svg [HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class' "attachment-button", HA.viewBox "0 0 16 16"] [
       HE.path' [HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z"]
 ]
 
 sendButton :: Boolean -> Html IMMessage
-sendButton messageEnter = HE.svg [HA.class' { "send-button svg-32": true, hidden: messageEnter }, HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16"] $ sendButtonElements "Send message"
+sendButton messageEnter = HE.div [HA.class' {"send-button-div": true, hidden: messageEnter }, HA.onClick ForceBeforeSendMessage] $ HE.svg [HA.class' "send-button", HA.viewBox "0 0 16 16"] $ sendButtonElements "Send message"
 
 sendButtonElements :: String -> Array (Html IMMessage)
 sendButtonElements title = [

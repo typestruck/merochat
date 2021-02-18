@@ -1,6 +1,6 @@
 var localDateFormat = new Intl.DateTimeFormat([], { dateStyle: 'short' }),
     localWeekDayFormat = new Intl.DateTimeFormat([], { weekday: 'short' }),
-    localTimeFormat = new Intl.DateTimeFormat([], { timeStyle: 'short' });
+    localTimeFormat = new Intl.DateTimeFormat([], { timeStyle: 'short', hour12: false });
 
 exports.time = function (ms) {
     return localTimeFormat.format(new Date(ms));
