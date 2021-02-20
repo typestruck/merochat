@@ -292,7 +292,7 @@ blockquote {
     color: rgb(238, 238, 238, 0.8)
 }
 
-.contact-name, .contact-list-last-message *, .chat-input::placeholder, .settings-name {
+.contact-name, .contact-list-last-message > *, .chat-input::placeholder, .settings-name {
     white-space: nowrap;
     display: inline-block;
     margin: 0;

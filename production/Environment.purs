@@ -10,7 +10,7 @@ otherJSHash :: String
 otherJSHash = "2854b350e6ff1ee7e8f7"
 
 imCSSHash :: String
-imCSSHash = "f0cbe751b21b8bf6036c"
+imCSSHash = "e8c321be5968fa2a95dc"
 
 imJSHash :: String
 imJSHash = "dc9d8cdc5b0a52f9408f"
