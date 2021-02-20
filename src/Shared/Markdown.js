@@ -16,6 +16,9 @@ function defaultOptions() {
                               tag += `<br/>${text}`;
 
                         return tag;
+                  },
+                  blockquote(q) {
+                        return `<blockquote>${q}</blockquote>`;
                   }
             }
       });
@@ -33,6 +36,9 @@ function restrictedoptions() {
                               tag = `${tag}: ${title}`;
 
                         return `${tag}</i>`;
+                  },
+                  blockquote() {
+                        return '<i>Quote:</i>&nbsp;';
                   }
             }
       });

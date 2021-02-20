@@ -226,6 +226,23 @@ body {
     display: none !important;
 }
 
+blockquote {
+    padding: 2px 10px;
+    margin: 0;
+    margin-top: 5px;
+    border-radius: 5px;
+}
+
+.sender-message blockquote {
+    border-left: 5px solid hsl(0, 0%, 14.6%);
+    background: #373737;
+}
+
+.recipient-message blockquote {
+    border-left: 5px solid hsl(145, 36.5%, 11.7%);
+    background: #1b3a28;
+}
+
 .settings, .contact {
     display: flex;
 }
@@ -242,7 +259,6 @@ body {
     align-items: baseline;
     cursor: pointer;
     padding: 5px 10px
-
 }
 
 .settings-name {
@@ -276,7 +292,7 @@ body {
     color: rgb(238, 238, 238, 0.8)
 }
 
-.contact-name, .contact-list-last-message>*, .chat-input::placeholder, .settings-name {
+.contact-name, .contact-list-last-message *, .chat-input::placeholder, .settings-name {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
@@ -285,13 +301,18 @@ body {
     text-overflow: ellipsis;
 }
 
+.contact-list-last-message blockquote {
+    margin: 0;
+    padding: 0;
+}
+
 .message-status {
     font-size: 0.7em;
     text-align: right;
     font-weight: lighter;
 }
 
-.contact-list-last-message>* {
+.contact-list-last-message * {
     font-size: 1em;
 }
 
@@ -835,7 +856,7 @@ svg.toolbar-action {
 
 .contact-options {
     display: flex;
-    font-size:0.96em;
+    font-size: 0.96em;
     align-items: flex-end;
     flex-direction: column;
 }
@@ -1653,7 +1674,6 @@ select {
         justify-content: space-between;
         padding: 5px;
     }
-
     .notification {
         padding-left: 10px;
     }
