@@ -26,7 +26,7 @@ IM uses purescript-flame as web framework. `Client.IM.Main` kickstarts the appli
 
 Lazy loaded pages will also have their own `Main` module (e.g. `Client.Profile.Main`) that will handle events and message updates.
 
-#### Miscelanneous
+#### Miscellaneous
 
 * Resource urls (like CSS or JS files) are not hardcoded, there is a function to set the correct path for production or development
 
@@ -44,7 +44,7 @@ The web server framework is purescript-payload. Routes and their query string, r
 
 There is a folder for each route (e.g. /im, /landing etc). Each folder always has a `Handler` module for taking care of routes and other HTTP logic, an `Action` module for domain logic, a `Template` module for rendering markup, and sometimes a `Database` module for SQL queries.
 
-#### Miscelanneous
+#### Miscellaneous
 
 * If a type is used by both server and client side, then it should be located under the folder Shared
 
