@@ -22,9 +22,9 @@ A new User starts off with the Karma earned by new User [trophies](#trophies).
 
 **CONSTANT** _in this document is equal to 10_
 
-* Karma algorithm ([wheel](https://github.com/easafe/wheel))
+* Karma algorithm ([wheel](https://github.com/melanchat/melanchat/blob/master/src/Server/Wheel.purs))
 
-    See wheel project
+    todo: copy linked file here
 
 * Karma rank
 
@@ -248,8 +248,10 @@ Special chat features selected for random Users to take part in.
 
 * User can see their chat partner message as it is typed
 
-    TBD
-
 * Group chat in which the size of participants double every x time
 
-    TBD
+* Find patient zero
+
+* Debate mode
+
+* Chat as x historical figure/character/famous person

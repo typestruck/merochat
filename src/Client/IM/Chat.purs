@@ -37,6 +37,7 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
+import Shared.Markdown as SM
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -262,15 +263,21 @@ toggleModal toggle model = model {
       link = Nothing,
       selectedImage = Nothing,
       linkText = Nothing
-} :>  if toggle == ShowSelectedImage then
-            [pickImage]
-       else if toggle == ShowLinkForm then
-            [CIF.next $ FocusInput LinkFormUrl]
-       else
-            []
+} :>  case toggle of
+            ShowSelectedImage -> [pickImage]
+            ShowLinkForm -> [CIF.next $ FocusInput LinkFormUrl]
+            ShowPreview -> [ setPreview ]
+            _ -> []
       where pickImage = liftEffect do
                   fileInput <- CCD.unsafeGetElementByID ImageFileInput
                   CCF.triggerFileSelect fileInput
+                  pure Nothing
+
+            setPreview = liftEffect do
+                  preview <- CCD.unsafeGetElementByID ChatInputPreview
+                  input <- chatInput model
+                  message <- CCD.value input
+                  CCD.setInnerHTML preview $ SM.parse message
                   pure Nothing
 
 setEmoji :: Event -> IMModel -> NextMessage

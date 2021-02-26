@@ -414,6 +414,7 @@ data ElementID =
       MessageHistory |
       Favicon |
       ProfileEditionRoot |
+      ChatInputPreview |
       SettingsEditionRoot |
       KarmaLeaderboard |
       HelpRoot |
@@ -879,6 +880,7 @@ instance showElementID :: Show ElementID where
             ConfirmPassword -> "confirm-password"
             FaqLink -> "faq-link"
             BackerRoot -> "backer-root"
+            ChatInputPreview -> "chat-input-preview"
             ProfileEditionRoot -> "profile-edition-root"
             SettingsEditionRoot -> "settings-edition-root"
             KarmaLeaderboard -> "karma-leaderboard-root"

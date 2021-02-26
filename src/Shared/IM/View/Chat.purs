@@ -79,47 +79,45 @@ chatBarInput elementID model@{
       toggleChatModal
  } = HE.fragment [
       emojiModal model,
-      if toggleChatModal == ShowPreview then
-            HE.div_  [
-                  HE.div [HA.class' "chat-input-options"] [
-                        HE.svg [HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32 boio-2", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
+      HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview})  [
+            HE.div [HA.class' "chat-input-options"] [
+                  HE.svg [HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32 boio-2", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
+            ],
+            HE.div' [HA.id $ show ChatInputPreview, HA.class' "chat-input-preview message-content"]
+      ],
+      HE.div [HA.class' { hidden: not available || toggleChatModal == ShowPreview || DM.isNothing chatting && DM.isNothing suggesting }] [
+            HE.div [HA.class' "chat-input-options"] [
+                  bold,
+                  italic,
+                  strikethrough,
+                  heading,
+                  unorderedList,
+                  orderedList,
+                  linkButton toggleChatModal,
+                  previewButton,
+                  HE.div (HA.class' "send-enter") [
+                        HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
+                        HE.label (HA.for "message-enter") "Send message on enter"
+                  ]
+            ],
+            HE.div [HA.class' {"chat-input-area" : true, side: not messageEnter}  ] [
+                  emojiButton model,
+                  HE.textarea' $ [
+                        HA.rows 1,
+                        HA.class' "chat-input",
+                        HA.id $ show elementID,
+                        HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
+                        HA.disabled $ not isWebSocketConnected,
+                        SK.keyDownOn "Enter" EnterBeforeSendMessage,
+                        HA.onInput' ResizeChatInput,
+                        HA.autocomplete "off"
                   ],
-                  HE.div' [HA.class' "chat-input-preview message-content", HA.innerHtml <<< SM.parse $ EU.unsafePerformEffect (CCD.unsafeGetElementByID elementID >>= CCD.value)]
-            ]
-       else
-            HE.div [HA.class' { hidden: not available || DM.isNothing chatting && DM.isNothing suggesting }] [
-                  HE.div [HA.class' "chat-input-options"] [
-                        bold,
-                        italic,
-                        strikethrough,
-                        heading,
-                        unorderedList,
-                        orderedList,
-                        linkButton toggleChatModal,
-                        previewButton,
-                        HE.div (HA.class' "send-enter") [
-                              HE.input [HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter"],
-                              HE.label (HA.for "message-enter") "Send message on enter"
-                        ]
-                  ],
-                  HE.div [HA.class' {"chat-input-area" : true, side: not messageEnter}  ] [
-                        emojiButton model,
-                        HE.textarea' $ [
-                              HA.rows 1,
-                              HA.class' "chat-input",
-                              HA.id $ show elementID,
-                              HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection...",
-                              HA.disabled $ not isWebSocketConnected,
-                              SK.keyDownOn "Enter" EnterBeforeSendMessage,
-                              HA.onInput' ResizeChatInput,
-                              HA.autocomplete "off"
-                        ],
-                        HE.div (HA.class' "chat-right-buttons") [
-                              imageButton,
-                              sendButton messageEnter
-                        ]
+                  HE.div (HA.class' "chat-right-buttons") [
+                        imageButton,
+                        sendButton messageEnter
                   ]
             ]
+      ]
 ]
       where available = DM.fromMaybe true $ getContact _.available
             recipientName = DM.fromMaybe "" $ getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
