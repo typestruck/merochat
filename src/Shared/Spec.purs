@@ -52,8 +52,8 @@ spec :: Spec {
                         query :: { skip :: Int, with :: PrimaryKey },
                         response :: Array HistoryMessage
                   },
-                  suggestions :: GET "/suggestions?skip=<skip>" {
-                        query :: { skip :: Int },
+                  suggestions :: GET "/suggestions?skip=<skip>&avoid=<avoid>" {
+                        query :: { skip :: Int, avoid :: Maybe ArrayPrimaryKey },
                         response :: Array Suggestion
                   },
                   block :: GET "/block?id=<id>" {
@@ -133,6 +133,10 @@ spec :: Spec {
                   response :: Html
             },
             internalHelp :: GET "/inhelp" {
+                  guards :: Guards ("loggedUserID" : Nil),
+                  response :: String
+            },
+            experiments :: GET "/experiments" {
                   guards :: Guards ("loggedUserID" : Nil),
                   response :: String
             },

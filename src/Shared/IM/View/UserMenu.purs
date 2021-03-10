@@ -3,6 +3,8 @@ module Shared.IM.View.UserMenu where
 import Prelude
 import Shared.Types
 
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -10,10 +12,16 @@ import Shared.Avatar as SA
 import Shared.IM.Svg as SIS
 
 userMenu :: IMModel -> Html IMMessage
-userMenu model@{ toggleContextMenu, smallScreen} =
+userMenu model@{ toggleContextMenu, smallScreen, experimenting } =
       HE.div (HA.class' "settings") [
             header model,
-            HE.div [HA.class' "outer-user-menu"] [
+            HE.svg [HA.class' {"svg-experiment" : true, "svg-imp": DM.isJust experimenting }, HA.viewBox "0 0 1479 1536", HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments] [
+                  HE.title "Chat experiments",
+                  --from https://leungwensen.github.io/svg-icon/#awesome
+                  HE.path' $ HA.d "M1434.5 1320q56 89 21.5 152.5t-140.5 63.5h-1152q-106 0-140.5-63.5T44.5 1320l503-793V128h-64q-26 0-45-19t-19-45 19-45 45-19h512q26 0 45 19t19 45-19 45-45 19h-64v399zm-779-725l-272 429h712l-272-429-20-31V128h-128v436z"
+            ],
+
+            HE.div [HA.class' "outer-user-menu", HA.title "Your options"] [
                   HE.svg [HA.id $ show UserContextMenu, HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 16 16"] (SIS.contextMenuElements <> [
                         HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "7", HA.width "15.93", HA.height "2"],
                         HE.rect' [HA.class' "strokeless", HA.x "0.03", HA.y "2.5", HA.width "15.93", HA.height "2"],
@@ -29,17 +37,21 @@ userMenu model@{ toggleContextMenu, smallScreen} =
                               HE.div (HA.class' "menu-item-heading") "Settings",
                               HE.span (HA.class' "duller") "Change email, password, etc"
                         ],
+                        HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker] [
+                              HE.div (HA.class' "menu-item-heading") "Backing",
+                              HE.span (HA.class' "duller") "Donate or become a patron"
+                        ],
                         HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard] [
                               HE.div (HA.class' "menu-item-heading") "Karma leaderboard",
                               HE.span (HA.class' "duller") "See your karma rank and stats"
                         ],
+                        HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments] [
+                              HE.div (HA.class' "menu-item-heading") "Chat experiments",
+                              HE.span (HA.class' "duller") "Talk in novel ways"
+                        ],
                         HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp] [
                               HE.div (HA.class' "menu-item-heading") "Help",
                               HE.span (HA.class' "duller") "Learn more about MelanChat"
-                        ],
-                        HE.div [HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker] [
-                              HE.div (HA.class' "menu-item-heading") "Backing",
-                              HE.span (HA.class' "duller") "Donate or become a patron"
                         ],
                         HE.div [HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmLogout] "Logout"
                   ]
@@ -57,7 +69,7 @@ userMenu model@{ toggleContextMenu, smallScreen} =
       ]
 
 header :: IMModel -> Html IMMessage
-header { user: { name, avatar, karma, karmaPosition }} = HE.fragment [
+header model@{ user: { karma, karmaPosition }, experimenting } = HE.fragment [
       HE.img [HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar],
       HE.div [HA.class' "settings-name"] [
             HE.strong_ name,
@@ -68,3 +80,6 @@ header { user: { name, avatar, karma, karmaPosition }} = HE.fragment [
             ]
       ]
 ]
+      where { name, avatar } = case experimenting of
+                  Just (Impersonation (Just profile)) -> profile
+                  _ -> model.user

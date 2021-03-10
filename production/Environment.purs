@@ -66,3 +66,9 @@ settingsCSSHash = "6390cea6e61528add6f3"
 
 settingsJSHash :: String
 settingsJSHash = "99057a3dd05954003021"
+
+experimentsJSHash :: String
+experimentsJSHash = ""
+
+experimentsCSSHash :: String
+experimentsCSSHash = ""

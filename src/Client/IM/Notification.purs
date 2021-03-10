@@ -9,12 +9,15 @@ import Client.IM.Flame (NextMessage)
 import Client.IM.Flame as CIF
 import Data.Array as DA
 import Data.Foldable as DF
+import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
+import Shared.Experiments.Impersonation (impersonations)
 import Shared.IM.Unread as SIU
 import Shared.Path as SP
 import Shared.Unsafe as SU
@@ -32,21 +35,25 @@ foreign import createNotification_ :: EffectFn1 Notification Unit
 createNotification :: Notification -> Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
-notifyUnreadChats :: IMModel -> Array PrimaryKey -> NextMessage
+notifyUnreadChats :: IMModel -> Array (Tuple PrimaryKey (Maybe PrimaryKey)) -> NextMessage
 notifyUnreadChats model userIDs = CIF.nothingNext model <<< liftEffect $ notify model userIDs
 
-notify :: IMModel -> Array PrimaryKey -> Effect Unit
+notify :: IMModel -> Array (Tuple PrimaryKey (Maybe PrimaryKey)) -> Effect Unit
 notify model@{ user: { id }, contacts, smallScreen } userIDs = do
       updateTabCount id contacts
-      unless smallScreen $ DF.traverse_  createNotification' contactUsers
-      where contactUsers = map _.user $ DA.filter (\cnt -> DA.elem cnt.user.id userIDs) contacts
-            createNotification' user = createNotification {
-                  body: "New message from " <> user.name,
+      unless smallScreen $ DF.traverse_ createNotification' contactUsers
+      where contactUsers = DA.filter byKeys contacts
+            createNotification' { impersonating, user } = createNotification {
+                  body: "New message from " <> (case impersonating of
+                        Nothing -> user
+                        Just id -> SU.fromJust $ HS.lookup id impersonations).name,
                   icon: SP.pathery PNG "loading",
-                  handler: CCD.dispatchCustomEvent $ CCD.createCustomEvent notificationClick user.id
+                  handler: CCD.dispatchCustomEvent <<< CCD.createCustomEvent notificationClick $ Tuple user.id impersonating
             }
 
-notify' :: IMModel -> Array PrimaryKey -> Aff (Maybe IMMessage)
+            byKeys cnt = DA.any (\(Tuple id impersonating) -> cnt.user.id == id && cnt.impersonating == impersonating) userIDs
+
+notify' :: IMModel -> Array (Tuple PrimaryKey (Maybe PrimaryKey)) -> Aff (Maybe IMMessage)
 notify' model userIDs = do
       liftEffect $ notify model userIDs
       pure Nothing

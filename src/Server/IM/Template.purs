@@ -4,6 +4,7 @@ import Prelude
 import Shared.Types
 
 import Data.Array as DA
+import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Environment (emojiJSHash, imCSSHash, imJSHash)
@@ -38,6 +39,7 @@ template {contacts, suggestions, user} = do
                   chatting: Nothing,
                   freeToFetchSuggestions: true,
                   temporaryID: 0,
+                  modalsLoaded: [],
                   suggesting: if suggestionsCount == 0 then Nothing else if suggestionsCount == 1 then Just 0 else Just 1,
                   freeToFetchChatHistory:true,
                   suggestionsPage: 0,
@@ -57,6 +59,7 @@ template {contacts, suggestions, user} = do
                   toggleContextMenu: HideContextMenu,
                   toggleModal: HideUserMenuModal,
                   toggleChatModal: HideChatModal,
+                  experimenting: Nothing,
                   blockedUsers: [],
                   imUpdated: false,
                   isWebSocketConnected: false,

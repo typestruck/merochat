@@ -5,6 +5,7 @@ import Shared.Types
 
 import Data.HashMap (HashMap)
 import Data.HashMap as HS
+import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Now as EN
@@ -21,6 +22,7 @@ run model f = do
 
 model :: IMModel
 model = {
+      modalsLoaded : [],
       freeToFetchSuggestions: true,
       initialScreen: true,
       suggestionsPage: 0,
@@ -33,6 +35,7 @@ model = {
       toggleContextMenu: HideContextMenu,
       imageCaption: Nothing,
       fullContactProfileVisible: false,
+      experimenting : Nothing,
       fortune: Nothing,
       link: Nothing,
       erroredFields: [],

@@ -45,10 +45,17 @@ previousSuggestion model@{ suggesting } =
                   }
 
 fetchMoreSuggestions :: IMModel -> NextMessage
-fetchMoreSuggestions model@{ suggestionsPage } = model {
+fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } = model {
       freeToFetchSuggestions = false,
       failedRequests = []
-} :> [CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions { query: { skip: suggestionsPerPage * suggestionsPage }}]
+} :> [CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions {
+            query: {
+                  skip: suggestionsPerPage * suggestionsPage,
+                  avoid: case experimenting of
+                        Just (Impersonation (Just _)) -> Just <<< ArrayPrimaryKey <<< map (_.id <<< _.user) $ DA.filter (DM.isJust <<< _.impersonating) contacts
+                        _ -> Nothing
+            }
+      }]
 
 displayMoreSuggestions :: Array Suggestion -> IMModel -> MoreMessages
 displayMoreSuggestions suggestions model@{ suggestionsPage } =

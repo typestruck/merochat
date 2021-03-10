@@ -5,7 +5,7 @@ import Server.Types
 import Shared.Types
 
 import Data.Array as DA
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
@@ -43,9 +43,16 @@ presentUser :: PrimaryKey -> ServerEffect (Maybe IMUserWrapper)
 presentUser loggedUserID = SD.single presentUserQuery $ presentUserParameters loggedUserID
 
 --fit online status here
-suggest :: PrimaryKey -> Int -> ServerEffect (Array IMUserWrapper)
-suggest loggedUserID skip =
-     SD.select (Query ("select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> $1 and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id)) and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()")) $ (loggedUserID /\ suggestionsPerPage /\ skip)
+suggest :: PrimaryKey -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array IMUserWrapper)
+suggest loggedUserID skip = case _ of
+      Just (ArrayPrimaryKey []) ->
+            SD.select (Query (select <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
+      Just (ArrayPrimaryKey keys) ->
+            SD.select (Query (select <> "and u.id = any($4)" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip /\ keys)
+      _ ->
+            SD.select (Query (select <> "and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id))" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
+      where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> $1 "
+            rest = " and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()"
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array ContactWrapper)
 presentContacts loggedUserID skip = SD.select (Query ("select distinct h.date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
@@ -53,9 +60,10 @@ presentContacts loggedUserID skip = SD.select (Query ("select distinct h.date, s
                                          where not exists (select 1 from blocks where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
                                           order by date desc limit $2 offset $3""")) (loggedUserID /\ contactsPerPage /\ skip)
 
+--needs to handle impersonations
 presentSingleContact :: PrimaryKey -> PrimaryKey -> ServerEffect ContactWrapper
-presentSingleContact loggedUserID otherID = SD.single' (Query ("select h.date, sender, first_message_date, " <> userPresentationFields <>
-                                      "from" <> usersTable <> "join histories h on (u.id = h.recipient and h.sender = $1 or u.id = h.sender and h.recipient = $1) where u.id = $2")) (loggedUserID /\ otherID)
+presentSingleContact loggedUserID otherID = SD.single' (Query ("select coalesce(h.date, now() at time zone 'utc'), coalesce(sender, $2), coalesce(first_message_date, now() at time zone 'utc'), " <> userPresentationFields <>
+                                      "from" <> usersTable <> "left join histories h on (u.id = h.recipient and h.sender = $1 or u.id = h.sender and h.recipient = $1) where u.id = $2")) (loggedUserID /\ otherID)
 
 presentSelectedContacts :: PrimaryKey -> Array PrimaryKey -> ServerEffect (Array ContactWrapper)
 presentSelectedContacts loggedUserID ids

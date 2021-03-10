@@ -21,7 +21,6 @@ import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.UUID as DU
-import Debug.Trace (spy)
 import Effect.Class.Console as EC
 import Effect.Ref (Ref)
 import Effect.Ref as ER

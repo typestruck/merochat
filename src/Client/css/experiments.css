@@ -1,0 +1,55 @@
+.chat-experiments {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 50em;
+}
+
+.all-experiments {
+    margin-top: 30px;
+}
+
+.experiment {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.experiment-name {
+    margin-bottom: 5px;
+    display: block;
+    font-weight: bolder;
+}
+
+.chat-experiments .green-button {
+    width: max-content;
+    margin:0;
+    align-self: flex-end;
+}
+
+.impersonation {
+    margin: 10px 0;
+}
+
+.impersonation-header {
+    border-bottom: 1px solid #373737;
+    padding: 2px 5px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    margin-top:5px;
+    cursor: pointer;
+    /* font-weight: bold; */
+    color: hsl(145, 80%, 28%);
+}
+
+.header-plus {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+
+.impersonation .buttons {
+    margin:30px 0 15px 0;
+    align-items: center ;
+}

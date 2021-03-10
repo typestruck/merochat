@@ -1,7 +1,7 @@
 module Shared.IM.Contact where
 
 import Data.Array ((!!))
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Shared.Types
 import Shared.Unsafe as SU
 import Prelude
@@ -11,6 +11,7 @@ defaultContact id chatted = {
       available: true,
       shouldFetchChatHistory: false,
       user: chatted,
+      impersonating: Nothing,
       chatStarter: id,
       history: [],
       chatAge: 0.0
