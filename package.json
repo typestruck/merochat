@@ -13,7 +13,7 @@
     "build": "spago build -p development/Environment.purs",
     "test": "spago test -p development/Environment.purs",
     "watch": "nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
-    "build-production-client": "rm -rf dist && rm -rf output && spago build -p production/Environment.purs --purs-args '--codegen corefn,js' && zephyr Client.IM.Main Client.Recover.Main Client.Settings.Main Client.InternalHelp.Main Client.Help.Main Client.Leaderboard.Main Client.Profile.Main Client.Login.Main Client.Landing.Main && rm -rf output && mv dce-output output && webpack --progress --config webpack.production.config.js",
+    "build-production-client": "rm -rf dist && rm -rf output && spago build -p production/Environment.purs --purs-args '--codegen corefn,js' && zephyr Client.IM.Main Client.Experiments.Main Client.Recover.Main Client.Settings.Main Client.InternalHelp.Main Client.Help.Main Client.Leaderboard.Main Client.Profile.Main Client.Login.Main Client.Landing.Main && rm -rf output && mv dce-output output && webpack --progress --config webpack.production.config.js",
     "production-server": "git pull --no-edit && npm install && spago build -p production/Environment.purs && pm2 restart server --update-env"
   },
   "author": "Eduardo Asafe<e@asafe.dev>",
