@@ -18,6 +18,7 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.Experiments.Impersonation (impersonations)
+import Shared.Experiments.Impersonation as SEI
 import Shared.IM.View.Profile as SIVP
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
@@ -33,7 +34,7 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
 
             suggestionsCall =
                   let { welcome, first, second } = case experimenting of
-                        Just (Impersonation (Just { name })) -> { welcome: "You are impersonating: " <> name, first: "Tip: quit the experiment at any time ", second: "to go back to your chats" }
+                        Just (Impersonation (Just { name })) -> SEI.welcomeMessage name
                         _ -> { welcome: "Welcome!", first: "Tap on either of the arrows to see ", second: "your chat suggestions" }
                   in HE.div (HA.class' "suggestions-call") [
                         HE.div (HA.onClick $ ToggleInitialScreen false) $ SIVP.backArrow,

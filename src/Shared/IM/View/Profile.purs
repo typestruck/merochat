@@ -14,6 +14,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Experiments.Impersonation (impersonations)
+import Shared.Experiments.Impersonation as SEI
 import Shared.IM.Svg as SIA
 import Shared.IM.View.Chat as SIVC
 import Shared.IM.View.Retry as SIVR
@@ -86,10 +87,11 @@ suggestion :: IMModel -> Int -> Html IMMessage
 suggestion model@{ user, suggestions, experimenting } index =
       HE.div (HA.class' "suggestion-cards") [
             case experimenting of
-                  Just (Impersonation (Just profile)) ->
-                        HE.div (HA.class' "card-top-header imp") [
-                              HE.div (HA.class' "welcome") $ "You are impersonating " <> profile.name,
-                              HE.div (HA.class' "welcome-new") "Tip: quit the experiment at any time to go back to your chats"
+                  Just (Impersonation (Just { name })) ->
+                        let { welcome, first, second } = SEI.welcomeMessage name
+                        in HE.div (HA.class' "card-top-header imp") [
+                              HE.div (HA.class' "welcome") $ welcome,
+                              HE.div (HA.class' "welcome-new") $ first <> second
                         ]
                   _ ->
                         HE.div (HA.class' "card-top-header") [

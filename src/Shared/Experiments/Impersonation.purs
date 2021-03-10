@@ -112,3 +112,6 @@ Let me thank the awesome, multi-talented Mike Figgis. My incredible, amazing co-
 
 impersonations :: HashMap PrimaryKey ImpresonationProfile
 impersonations = DH.fromFoldable [Tuple batman.id batman, Tuple socrates.id socrates, Tuple nicolasCage.id nicolasCage]
+
+welcomeMessage :: String -> _
+welcomeMessage name = { welcome: "You are impersonating: " <> name, first: "Tip: quit the experiment at any time ", second: "to go back to your chats" }
