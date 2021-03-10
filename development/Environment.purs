@@ -3,6 +3,7 @@ module Environment where
 development :: Boolean
 development = true
 
+<<<<<<< HEAD
 
 backerCSSHash :: String
 backerCSSHash = "0c01c6efe2f4a165e866"
@@ -72,3 +73,5 @@ experimentsJSHash = ""
 
 experimentsCSSHash :: String
 experimentsCSSHash = ""
+=======
+>>>>>>> a6f2005... Updated hashs
