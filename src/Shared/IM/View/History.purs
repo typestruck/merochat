@@ -8,7 +8,6 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
-import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -18,19 +17,28 @@ import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
 history :: IMModel -> Maybe Contact -> Html IMMessage
-history { user: { id: senderID, avatar: senderAvatar }, chatting, failedRequests, freeToFetchChatHistory } contact =
-      HE.div [HA.class' {"message-history": true, hidden: DM.isNothing contact}, HA.id "message-history", HA.onScroll CheckFetchHistory] chatHistory
+history { user: { id: senderID, avatar: senderAvatar }, experimenting, chatting, failedRequests, freeToFetchChatHistory } contact =
+      HE.div [HA.class' { "message-history": true, hidden: DM.isNothing contact }, HA.id "message-history", HA.onScroll CheckFetchHistory] chatHistory
       where chatHistory =
                   case contact of
-                        Nothing -> [retry]
+                        Nothing -> [retryOrWarning]
                         Just recipient@{ shouldFetchChatHistory, available } ->
                               if available then
-                                    let entries = retry : display recipient
+                                    let entries = retryOrWarning : display recipient
                                     in if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries else entries
                               else
                                     []
 
-            retry = SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
+            retryOrWarning = case experimenting of
+                  Just (Impersonation (Just { name })) ->
+                        HE.div (HA.class' "imp impersonation-warning-history")  [
+                              HE.div_ [
+                                    HE.text "You are impersonating ",
+                                    HE.strong_ name
+                              ]
+                        ]
+                  _ ->
+                        SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
             display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i -> entry avatar (map _.sender (history !! (i - 1)))) history
 
             entry recipientAvatar previousSender { id, status, date, sender, content } =

@@ -10,6 +10,7 @@ import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic.Rep as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic.Rep as DAEGR
+import Data.Array as DA
 import Data.Bifunctor as DB
 import Data.DateTime (Date, DateTime)
 import Data.DateTime as DTT
@@ -21,6 +22,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show as DGRS
 import Data.Hashable (class Hashable)
 import Data.Hashable as HS
+import Data.Int as DI
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -29,11 +31,13 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
+import Data.String.Regex as DSRG
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe as DSRU
 import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Database.PostgreSQL (class FromSQLRow, class FromSQLValue, class ToSQLValue)
-import Debug.Trace (spy)
 import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
@@ -71,6 +75,7 @@ type IU = (BasicUser (
 ))
 
 type IMUser = Record IU
+type ImpresonationProfile = Record IU
 
 data Gender =
       Female |
@@ -124,7 +129,8 @@ data ResponseError =
 type Suggestion = IMUser
 
 type BasicMessage fields = {
-      id :: PrimaryKey |
+      id :: PrimaryKey,
+      experimenting :: Maybe ExperimentPayload |
       fields
 }
 
@@ -140,6 +146,7 @@ type Contact = {
       available :: Boolean,
       chatAge :: Number, --Days,
       chatStarter :: PrimaryKey,
+      impersonating :: Maybe PrimaryKey,
       history :: Array HistoryMessage
 }
 
@@ -207,6 +214,8 @@ type IM = (
       fortune :: Maybe String,
       failedRequests :: Array RequestFailure,
       errorMessage :: String,
+      experimenting :: Maybe ExperimentData,
+      modalsLoaded :: Array ShowUserMenuModal,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -228,6 +237,10 @@ type IM = (
 
 type IMModel = Record IM
 
+data ExperimentData = Impersonation (Maybe ImpresonationProfile)
+
+data ExperimentPayload = ImpersonationPayload PrimaryKey
+
 data ShowChatModal =
       HideChatModal |
       ShowSelectedImage |
@@ -246,11 +259,40 @@ data ShowUserMenuModal =
       HideUserMenuModal |
       ConfirmLogout |
       ConfirmTermination |
+      ShowExperiments |
       ShowProfile |
       ShowSettings |
       ShowLeaderboard |
       ShowHelp |
       ShowBacker
+
+type ChatExperiment = {
+      id :: PrimaryKey,
+      code :: ExperimentData,
+      name :: String,
+      description :: String
+}
+
+data ChatExperimentMessage =
+      QuitExperiment |
+      JoinExperiment ExperimentData |
+      ToggleSection ChatExperimentSection |
+      ConfirmImpersonation (Maybe ImpresonationProfile)
+
+data ChatExperimentSection =
+      HideSections |
+      Characters |
+      HistoricalFigures |
+      Celebrities
+
+type ChatExperimentModel = {
+      experiments :: Array ChatExperiment,
+      section :: ChatExperimentSection,
+      current :: Maybe ExperimentData,
+      impersonation :: Maybe ImpresonationProfile
+}
+
+newtype ChatExperimentWrapper = ChatExperimentWrapper ChatExperiment
 
 type Stats = {
     characters :: Number,
@@ -305,13 +347,15 @@ data IMMessage =
       SetContextMenuToggle ShowContextMenu |
       SetModalContents (Maybe String) ElementID String |
       --contact
-      ResumeChat PrimaryKey |
+      ResumeChat (Tuple PrimaryKey (Maybe PrimaryKey)) |
       UpdateReadCount |
       CheckFetchContacts |
       DisplayContacts (Array Contact) |
       DisplayNewContacts (Array Contact) |
+      DisplayImpersonatedContact PrimaryKey HistoryMessage (Array Contact) |
       ResumeMissedEvents MissedEvents |
       --suggestion
+      FetchMoreSuggestions |
       ResumeSuggesting |
       DisplayMoreSuggestions (Array Suggestion) |
       --chat
@@ -331,6 +375,8 @@ data IMMessage =
       SetEmoji Event |
       InsertLink |
       --main
+      AskChatExperiment |
+      SetChatExperiment String | --to be serialized
       ReloadPage |
       ToggleUserContextMenu Event |
       SpecialRequest RetryableRequest |
@@ -357,6 +403,7 @@ data WebSocketPayloadServer =
       ChangeStatus {
             userID :: PrimaryKey,
             status :: MessageStatus,
+            persisting :: Boolean, -- in some cases status changs should be not persisted to the database
             --alternatively, update by user?
             ids :: Array PrimaryKey
       } |
@@ -417,6 +464,7 @@ data ElementID =
       ChatInputPreview |
       SettingsEditionRoot |
       KarmaLeaderboard |
+      ExperimentsRoot |
       HelpRoot |
       TermsLink |
       PrivacyLink |
@@ -457,7 +505,8 @@ type PM = (
       generating :: Maybe Generate,
       countries :: Array (Tuple PrimaryKey String),
       languages :: Array (Tuple PrimaryKey String),
-      hideSuccessMessage :: Boolean
+      hideSuccessMessage :: Boolean,
+      experimenting :: Maybe ExperimentData
 )
 
 --used to generically set records
@@ -470,6 +519,7 @@ data ProfileMessage =
       SelectAvatar |
       SetAvatar String |
       SetGenerate Generate |
+      SetProfileChatExperiment String |
       SaveProfile
 
 type SM = (
@@ -506,6 +556,11 @@ data LeaderboardMessage =
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
+newtype ArrayPrimaryKey = ArrayPrimaryKey (Array PrimaryKey)
+
+derive instance genericExperimentPayload :: Generic ExperimentPayload _
+derive instance genericChatExperimentSection :: Generic ChatExperimentSection _
+derive instance genericExperimentCode :: Generic ExperimentData _
 derive instance genericShowContextMenu :: Generic ShowContextMenu _
 derive instance genericDatabaseError :: Generic DatabaseError _
 derive instance genericRetryableRequest :: Generic RetryableRequest _
@@ -525,6 +580,7 @@ derive instance genericFullWebSocketPayloadServer :: Generic FullWebSocketPayloa
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
 derive instance genericShowModal :: Generic ShowUserMenuModal _
 
+derive instance newtypeExperimentsWrapper :: Newtype ChatExperimentWrapper _
 derive instance newtypeMessageIDTemporaryWrapper :: Newtype MessageIDTemporaryWrapper _
 derive instance newtypeProfileUserWrapper :: Newtype ProfileUserWrapper _
 derive instance newtypeLeaderboardUserWrapper :: Newtype LeaderboardUserWrapper _
@@ -534,6 +590,8 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqChatExperimentSection :: Eq ChatExperimentSection
+derive instance eqExperimentCode :: Eq ExperimentData
 derive instance eqIMSelector :: Eq ElementID
 derive instance eqShowContextMenu :: Eq ShowContextMenu
 derive instance eqDatabaseError :: Eq DatabaseError
@@ -557,6 +615,22 @@ instance fromSQLRowMessageIDTemporaryWrapper :: FromSQLRow MessageIDTemporaryWra
                         temporaryID <- F.readInt foreignTemporaryID
                         pure $ MessageIDTemporaryWrapper { id, temporaryID }
                   _ -> Left "missing or extra fields for karma user"
+
+instance fromSQLRowExperimentsWrapper :: FromSQLRow ChatExperimentWrapper where
+      fromSQLRow =
+            case _ of
+                  [foreignID, foreignCode, foreignName, foreignDescription] -> DB.lmap (DLN.foldMap F.renderForeignError) <<< CME.runExcept $ do
+                        id <- F.readInt foreignID
+                        code <- (SU.fromJust <<< DE.toEnum) <$> F.readInt foreignCode
+                        name <- F.readString foreignName
+                        description <- F.readString foreignDescription
+                        pure $ ChatExperimentWrapper {
+                              id,
+                              code,
+                              name,
+                              description
+                        }
+                  _ -> Left "missing or extra fields for experiments"
 
 instance fromSQLRowLeaderboardUserWrapper :: FromSQLRow LeaderboardUserWrapper where
       fromSQLRow =
@@ -676,6 +750,7 @@ instance fromSQLRowContact :: FromSQLRow ContactWrapper where
                   available: true,
                   shouldFetchChatHistory: true,
                   history: [],
+                  impersonating: Nothing,
                   chatStarter: sender,
                   chatAge,
                   user
@@ -782,6 +857,13 @@ instance readForeignGender :: ReadForeign Gender where
 instance readForeignMessageStatus :: ReadForeign MessageStatus where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
 
+instance decodeQueryArrayPrimaryKey :: DecodeQueryParam ArrayPrimaryKey where
+      decodeQueryParam query key =
+            case FO.lookup key query of
+                  Nothing -> Left $ QueryParamNotFound { key, queryObj: query }
+                  --this is terrible
+                  Just [value] -> Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
+                  _ -> errorDecoding query key
 instance decodeQueryGenerate :: DecodeQueryParam Generate where
       decodeQueryParam query key =
             case FO.lookup key query of
@@ -803,6 +885,8 @@ errorDecoding queryObj key = Left $ QueryDecodeError {
       queryObj
 }
 
+instance encodeQueryArrayPrimaryKey :: EncodeQueryParam ArrayPrimaryKey where
+      encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
 instance encodeQueryParamMDateTime :: EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< show <<< SDT.dateTimeToNumber
 instance encodeQueryGenerate :: EncodeQueryParam Generate where
@@ -840,6 +924,7 @@ instance showShowUserMenuModal :: Show ShowUserMenuModal where
             ShowSettings -> "Your settings"
             ShowLeaderboard -> "Karma leaderboard"
             ShowHelp -> "Help"
+            ShowExperiments -> "Chat experiments"
             ShowBacker -> "Backing"
             _ -> ""
 instance showMDateTime :: Show DateTimeWrapper where
@@ -853,6 +938,8 @@ instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
 instance showPayloadErrorContext :: Show DatabaseError where
       show = DGRS.genericShow
 instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
+      show = DGRS.genericShow
+instance showExperimentPayload :: Show ExperimentPayload where
       show = DGRS.genericShow
 instance showElementID :: Show ElementID where
       show = case _ of
@@ -885,6 +972,7 @@ instance showElementID :: Show ElementID where
             SettingsEditionRoot -> "settings-edition-root"
             KarmaLeaderboard -> "karma-leaderboard-root"
             HelpRoot -> "help-root"
+            ExperimentsRoot -> "experiments-root"
             PasswordInput -> "password-input"
             AvatarFileInput -> "avatar-file-input"
 
@@ -899,6 +987,12 @@ instance fromSQLValueGender :: FromSQLValue Gender where
 instance hashableIMSelector :: Hashable ElementID where
       hash = HS.hash <<< show
 
+instance encodeJsonExperimentPayload :: EncodeJson ExperimentPayload where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonChatExperimentSection :: EncodeJson ChatExperimentSection where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonExperimentCode :: EncodeJson ExperimentData where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonWebSocketPayloadClient :: EncodeJson WebSocketPayloadClient where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
@@ -930,6 +1024,12 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonExperimentPayload :: DecodeJson ExperimentPayload  where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonChatExperimentSection :: DecodeJson ChatExperimentSection  where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonExperimentCode :: DecodeJson ExperimentData  where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonWebSocketPayloadClient :: DecodeJson WebSocketPayloadClient  where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowContextMenu :: DecodeJson ShowContextMenu where
@@ -1033,3 +1133,27 @@ instance enumMessageStatus :: Enum MessageStatus where
           Received -> Just Errored
           Delivered -> Just Received
           Read -> Just Delivered
+
+instance ordExperimentCode :: Ord ExperimentData where
+      compare status otherStatus = compare (DE.fromEnum status) $ (DE.fromEnum otherStatus)
+
+instance boundedExperimentCode :: Bounded ExperimentData where
+      bottom = Impersonation Nothing
+      top = Impersonation Nothing
+
+instance boundedEnumExperimentCode :: BoundedEnum ExperimentData where
+      cardinality = Cardinality 1
+
+      fromEnum = case _ of
+          Impersonation _ -> 0
+
+      toEnum = case _ of
+          0 -> Just $ Impersonation Nothing
+          _ -> Nothing
+
+instance enumExperimentCode :: Enum ExperimentData where
+      succ = case _ of
+          Impersonation _ -> Nothing
+
+      pred = case _ of
+          Impersonation _JsonBoolean -> Nothing

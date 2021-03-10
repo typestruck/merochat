@@ -19,7 +19,6 @@ import Data.Newtype as DN
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
 import Database.PostgreSQL (Pool)
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff as CMEC
 import Effect.Aff as EA
@@ -97,7 +96,7 @@ handleMessage payload = do
             Ping -> do
                   possibleConnection <- R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
                   case possibleConnection of
-                        --shouldnt be possible
+                        --shouldnt be possible 🤔
                         Nothing -> R.liftEffect $ do
                               EC.log "ping without saved connection"
                               SW.terminate connection
@@ -105,8 +104,8 @@ handleMessage payload = do
                               now <- EN.nowDateTime
                               ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserID) allConnections
                               sendWebSocketMessage connection Pong
-            ChangeStatus { userID: sender, status, ids } -> do
-                  SID.changeStatus sessionUserID status ids
+            ChangeStatus { userID: sender, status, ids, persisting } -> do
+                  when persisting $ SID.changeStatus sessionUserID status ids
                   possibleSenderConnection <- R.liftEffect (DH.lookup sender <$> ER.read allConnections)
                   whenJust possibleSenderConnection $ \{ connection: senderConnection } ->
                         sendWebSocketMessage senderConnection <<< Content $ ServerChangedStatus {
@@ -117,9 +116,15 @@ handleMessage payload = do
             ToBlock { id } -> do
                   possibleConnection <- R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \{ connection: recipientConnection } -> sendWebSocketMessage recipientConnection <<< Content $ BeenBlocked { id: sessionUserID }
-            OutgoingMessage { id: temporaryID , userID: recipient, content, turn } -> do
+            OutgoingMessage { id: temporaryID , userID: recipient, content, turn, experimenting } -> do
                   date <- R.liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  Tuple messageID finalContent <- SIA.processMessage sessionUserID recipient temporaryID content
+                  Tuple messageID finalContent <- case experimenting of
+                        --impersonating experiment messages are not saved
+                        Just (ImpersonationPayload id) -> do
+                              msg <- SIA.processMessageContent content
+                              pure $ Tuple temporaryID msg
+                        _ ->
+                              SIA.processMessage sessionUserID recipient temporaryID content
                   sendWebSocketMessage connection <<< Content $ ServerReceivedMessage {
                         previousID: temporaryID,
                         id: messageID,
@@ -132,6 +137,7 @@ handleMessage payload = do
                               id : messageID,
                               userID: sessionUserID,
                               content: finalContent,
+                              experimenting: experimenting,
                               date
                         }
                   --pass along karma calculation to wheel

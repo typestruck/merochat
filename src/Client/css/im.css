@@ -12,10 +12,6 @@ body {
     hyphens: auto;
 }
 
-.settings .outer-user-menu {
-    margin-left: auto;
-}
-
 .profile-description ul, .description-message ul, .message ul {
     list-style-type: disc;
 }
@@ -292,7 +288,7 @@ blockquote {
     color: rgb(238, 238, 238, 0.8)
 }
 
-.contact-name, .contact-list-last-message > *, .chat-input::placeholder, .settings-name {
+.contact-name, .contact-list-last-message>*, .chat-input::placeholder, .settings-name {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
@@ -762,7 +758,7 @@ svg.toolbar-action {
     margin: 0 20px;
 }
 
-#profile-edition-root, #settings-edition-root, #karma-leaderboard-root, #help-root, #backer-root {
+#experiments-root, #profile-edition-root, #settings-edition-root, #karma-leaderboard-root, #help-root, #backer-root {
     margin-top: 45px;
     display: flex;
     flex-direction: column;
@@ -1596,6 +1592,54 @@ select {
     left: 10px;
 }
 
+.imp {
+    color: #db5a5d
+}
+
+.svg-imp {
+    fill: #db5a5d !important
+}
+
+.impersonation-warning {
+    margin-bottom: 20px;
+}
+
+.message-history> :first-child.impersonation-warning-history {
+    margin-top: 0 !important;
+}
+
+.impersonation-warning-history {
+    z-index: 4;
+    margin-bottom: auto;
+    position: sticky;
+    top: 0;
+    padding: 20px 10px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.impersonation-warning-history div {
+    border: 1px solid #db5a5d;
+    padding: 10px 20px;
+    background-color: #262626;
+    border-radius: 4px;
+}
+
+.suggestion.old.imper {
+    background-color: inherit;
+}
+
+.exit-impersonation {
+    display: flex;
+    flex-direction: column;
+}
+
+.exit-experiment {
+    align-self: flex-end;
+    padding: 10px;
+}
+
 .welcome {
     font-size: 1.5em;
 }
@@ -1622,6 +1666,13 @@ select {
 
 .attachment-button {
     padding-right: 8px;
+}
+
+.svg-experiment {
+    width: 15px;
+    height: 15px;
+    margin-left: auto;
+    margin-right: 20px;
 }
 
 /* dry this shite  */
@@ -1701,6 +1752,9 @@ select {
         height: 43px;
         align-self: center;
     }
+    .welcome-imp {
+        color:#db5a5d
+    }
     .settings .user-menu {
         left: 0px;
         top: 40px;
@@ -1711,10 +1765,17 @@ select {
     .settings .user-menu .user-menu-item {
         padding: 10px
     }
+    .svg-experiment {
+        order: 2;
+        width: 18px;
+        fill: rgb(195, 211, 101);
+        height: 18px;
+        margin-right: 25px;
+    }
     .suggestions-button {
         display: block;
         cursor: pointer;
-        margin-left: auto;
+        order: 3;
     }
     .avatar-profile {
         width: 64px;
@@ -1824,7 +1885,7 @@ select {
     .modal-menu {
         display: none;
     }
-    #help-root, #karma-leaderboard-root, #settings-edition-root, #profile-edition-root, #backer-root {
+    #help-root, #karma-leaderboard-root, #settings-edition-root, #profile-edition-root, #backer-root, #experiments-root {
         margin: 0;
         width: 100%;
         overflow-x: hidden;
@@ -1838,7 +1899,7 @@ select {
     .profile-contact-deets .outer-user-menu {
         margin-right: -10px;
     }
-    .profile-contact {
+    .chat-experiments, .profile-contact {
         padding: 10px;
     }
     .settings-section {

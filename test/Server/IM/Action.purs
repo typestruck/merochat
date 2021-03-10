@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
-import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
@@ -12,7 +11,6 @@ import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Query(..), Row0(..))
-import Debug.Trace (spy)
 import Run as R
 import Server.Database as SD
 import Server.File (imageTooBigMessage, invalidImageMessage)
@@ -20,7 +18,7 @@ import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Landing.Database as SLD
 import Shared.Options.File (maxImageSize)
-import Shared.Types (MessageContent(..), MessageStatus(..))
+import Shared.Types
 import Shared.Unsafe ((!@))
 import Test.Server as TS
 import Test.Server.Model (baseUser)
@@ -34,22 +32,20 @@ tests = do
             TU.test "suggest filters out blocked users" $
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers
-                        suggestions <- SIA.suggest userID 0
+                        suggestions <- SIA.suggest userID 0 Nothing
                         R.liftAff <<< TUA.equal 1 $ DA.length suggestions
 
                         void $ SIA.blockUser userID anotherUserID
-                        suggestions' <- SIA.suggest userID 0
+                        suggestions' <- SIA.suggest userID 0 Nothing
                         R.liftAff <<< TUA.equal 0 $ DA.length suggestions'
 
-            TU.test "suggest filters out blocker users" $
+            TU.test "suggest includes all users if impersonating" $
                   TS.serverAction $ do
-                        Tuple userID anotherUserID <- setUpUsers
-                        suggestions <- SIA.suggest userID 0
-                        R.liftAff <<< TUA.equal 1 $ DA.length suggestions
+                        R.liftAff $ TUA.equal 0 3
 
-                        void $ SIA.blockUser userID anotherUserID
-                        suggestions' <- SIA.suggest anotherUserID 0
-                        R.liftAff <<< TUA.equal 0 $ DA.length suggestions'
+            TU.test "suggest avoids given users if impersonating" $
+                  TS.serverAction $ do
+                        R.liftAff $ TUA.equal 0 3
 
             TU.test "processMessage creates history" $
                   TS.serverAction $ do

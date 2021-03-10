@@ -11,7 +11,7 @@ import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
-import Debug.Trace (spy)
+import Data.Maybe as DM
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -30,12 +30,16 @@ checkFetchHistory model@{ freeToFetchChatHistory }
       | otherwise = F.noMessages model
 
 fetchHistory :: Boolean -> IMModel -> MoreMessages
-fetchHistory shouldFetch model@{ chatting, contacts }
+fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
       | shouldFetch =
-            let { history, user: { id } } = SIC.chattingContact contacts chatting
-            in model {
-                  freeToFetchChatHistory = false
-            } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history } }) ]
+            let { history, user: { id }, impersonating } = SIC.chattingContact contacts chatting
+            in
+                  if DM.isJust experimenting ||  DM.isJust impersonating then --impersonated messages are not saved in the database
+                        displayHistory [] model
+                   else
+                        model {
+                              freeToFetchChatHistory = false
+                        } :>  [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history } }) ]
       | otherwise = F.noMessages model
 
 displayHistory :: Array HistoryMessage -> IMModel -> NoMessages

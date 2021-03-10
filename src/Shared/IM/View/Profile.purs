@@ -3,19 +3,26 @@ module Shared.IM.View.Profile where
 import Prelude
 import Shared.Types
 
-import Shared.IM.Svg as SIA
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
+import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
+import Shared.Experiments.Impersonation (impersonations)
+import Shared.Experiments.Impersonation as SEI
+import Shared.IM.Svg as SIA
 import Shared.IM.View.Chat as SIVC
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
+import Shared.Unsafe as SU
+
+--refactor: break this shit down into right modules
 
 profile :: IMModel -> Html IMMessage
 profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible } =
@@ -24,13 +31,14 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
        else
             case chatting, suggesting of
                   i@(Just index), _ ->
-                        let cnt = contacts !@ index in
-                              if not cnt.available then
-                                    unavailable cnt.user.name
+                        let cnt@{ user: { name }, available, impersonating } = contacts !@ index
+                        in
+                              if not available then
+                                    unavailable name
                                else if fullContactProfileVisible then
-                                    fullProfile FullContactProfile i model cnt.user
+                                    fullProfile FullContactProfile i model impersonating cnt.user
                                else
-                                    contact model cnt.user
+                                    contact model cnt
                   Nothing, (Just index) -> suggestion model index
                   _, _ -> emptySuggestions
       --this will need improvement
@@ -48,8 +56,8 @@ unavailable name =
             ]
 ]
 
-contact :: IMModel -> IMUser -> Html IMMessage
-contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
+contact :: IMModel -> Contact -> Html IMMessage
+contact model@{ chatting, toggleContextMenu } cnt@{ impersonating, user: { id} } =
       HE.div (HA.class' "profile-contact") [
             HE.div (HA.class' "profile-contact-top") [
                   SIA.arrow [HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true],
@@ -57,7 +65,7 @@ contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
                   HE.div (HA.class' "profile-contact-header" : showProfile) [
                         HE.h1 (HA.class' "contact-name") name
                   ],
-                  HE.div [HA.class' "profile-contact-deets"] $
+                  HE.div [HA.class' "profile-contact-deets"] <<<
                         HE.div [HA.class' "outer-user-menu"] $
                               SIA.contextMenu $ show CompactProfileContextMenu,
                               HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu }][
@@ -71,14 +79,25 @@ contact model@{ chatting, toggleContextMenu } { id, name, avatar } =
                   ]
       ]
       where showProfile = [HA.title "Click to see full profile", HA.onClick ToggleContactProfile]
+            { name, avatar } = case impersonating of
+                  Just impersonationID -> SU.fromJust $ HS.lookup impersonationID impersonations
+                  _ -> cnt.user
 
 suggestion :: IMModel -> Int -> Html IMMessage
-suggestion model@{ user, suggestions } index =
+suggestion model@{ user, suggestions, experimenting } index =
       HE.div (HA.class' "suggestion-cards") [
-            HE.div (HA.class' "card-top-header") [
-                  HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
-                  HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
-            ],
+            case experimenting of
+                  Just (Impersonation (Just { name })) ->
+                        let { welcome, first, second } = SEI.welcomeMessage name
+                        in HE.div (HA.class' "card-top-header imp") [
+                              HE.div (HA.class' "welcome") $ welcome,
+                              HE.div (HA.class' "welcome-new") $ first <> second
+                        ]
+                  _ ->
+                        HE.div (HA.class' "card-top-header") [
+                              HE.div (HA.class' "welcome") $ "Welcome, " <> user.name,
+                              HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
+                        ],
             HE.div (HA.class' "cards") cards
       ]
       where cards =
@@ -95,7 +114,7 @@ card model suggesting index suggestion =
             attrs
                   | isCenter = [ HA.class' "card card-center"  ]
                   | otherwise = [HA.class' "card card-sides faded" ]
-      in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just index) model suggestion
+      in HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestion) (Just index) model Nothing suggestion
 
 dummyCard :: IMModel -> Html IMMessage
 dummyCard model = card model (-1) 0 dummySuggestion
@@ -141,8 +160,8 @@ nextArrow = HE.svg [HA.class' "svg-55", HA.viewBox "0 0 16 16"] [
       HE.polygon' [HA.class' "fillless strokeless", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99"]
 ]
 
-fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> IMUser -> Html IMMessage
-fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } =
+fullProfile :: ProfilePresentation -> Maybe Int -> IMModel -> Maybe PrimaryKey -> IMUser -> Html IMMessage
+fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } impersonating user@{ id } =
       case presentation of
             FullContactProfile -> HE.div [HA.class' "suggestion old"] $ fullProfileMenu : profile
             CurrentSuggestion -> HE.div [HA.class' "suggestion-center"] [
@@ -150,37 +169,12 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                   HE.div [HA.class' "suggestion-input"] $ SIVC.chatBarInput ChatInputSuggestion model
             ]
             OtherSuggestion -> HE.div [HA.class' "suggestion new"] profile
-      where profile = [
-                  HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar],
-                  HE.h1 (HA.class' "profile-name") name,
-                  HE.div (HA.class' "headline") headline,
-                  HE.div (HA.class' "profile-karma") [
-                        HE.div_ [
-                              HE.span [HA.class' "span-info"] $ show karma,
-                              HE.span [HA.class' "duller"] " karma",
-                              HE.span_ $ " (#" <> show karmaPosition <> ")"
-                        ]
-                  ],
-                  HE.div (HA.class' "profile-asl") [
-                        HE.div_ [
-                              toSpan $ map show age,
-                              duller (DM.isNothing age || DM.isNothing gender) ", ",
-                              toSpan gender
-                        ],
-                        HE.div_ [
-                              duller (DM.isNothing country) "from ",
-                              toSpan country
-                        ],
-                        HE.div_ ([
-                              duller (DA.null languages) "speaks "
-                        ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
-                  ],
-
-                  HE.div (HA.class' "tags-description") [
-                        HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
-                        HE.span (HA.class' "duller profile-description-about" ) "About",
-                        HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]
-                  ],
+      where profile = displayUserProfile index (case impersonating of
+                  Just impersonationID ->
+                        SU.fromJust $ HS.lookup impersonationID impersonations
+                  _ ->
+                        user
+                  ) <> [
                   arrow freeToFetchSuggestions $ SpecialRequest PreviousSuggestion,
                   arrow freeToFetchSuggestions $ SpecialRequest NextSuggestion
             ]
@@ -204,17 +198,51 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
             loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
-toSpan :: Maybe String -> Html IMMessage
+displayUserProfile :: forall message. Maybe Int -> IMUser -> Array (Html message)
+displayUserProfile index { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } = [
+      HE.img [HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar],
+      HE.h1 (HA.class' "profile-name") name,
+      HE.div (HA.class' "headline") headline,
+      HE.div (HA.class' "profile-karma") [
+            HE.div_ [
+                  HE.span [HA.class' "span-info"] $ show karma,
+                  HE.span [HA.class' "duller"] " karma",
+                  HE.span_ $ " (#" <> show karmaPosition <> ")"
+            ]
+      ],
+      HE.div (HA.class' "profile-asl") [
+            HE.div_ [
+                  toSpan $ map show age,
+                  duller (DM.isNothing age || DM.isNothing gender) ", ",
+                  toSpan gender
+            ],
+            HE.div_ [
+                  duller (DM.isNothing country) "from ",
+                  toSpan country
+            ],
+            HE.div_ ([
+                  duller (DA.null languages) "speaks "
+            ] <> (DA.intercalate [duller false ", "] $ map (DA.singleton <<< spanWith) languages))
+      ],
+
+      HE.div (HA.class' "tags-description") [
+            HE.div (HA.class' "profile-tags") $ map toTagSpan tags,
+            HE.span (HA.class' "duller profile-description-about" ) "About",
+            HE.div' [HA.class' "description-message", HA.innerHtml $ SM.parse description]
+      ]
+]
+
+toSpan :: forall message. Maybe String -> Html message
 toSpan =
       case _ of
             Just s -> spanWith s
             _ -> HE.createEmptyElement "span"
 
-spanWith :: String -> Html IMMessage
+spanWith :: forall message. String -> Html message
 spanWith = HE.span (HA.class' "span-info")
 
-toTagSpan :: String -> Html IMMessage
+toTagSpan :: forall message. String -> Html message
 toTagSpan = HE.span (HA.class' "tag")
 
-duller :: Boolean -> String -> Html IMMessage
+duller :: forall message. Boolean -> String -> Html message
 duller hidden t = HE.span (HA.class' { "duller" : true, "hidden": hidden }) t

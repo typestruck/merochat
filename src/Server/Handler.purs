@@ -20,9 +20,12 @@ import Payload.Server.Response as PSR
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.Backer.Handler as SBH
+import Server.Experiments.Handler as SEH
 import Server.Fortune.Handler as SFTH
 import Server.Help.Handler as SHH
 import Server.IM.Handler as SIH
+import Server.InternalBacker.Handler as SIBH
 import Server.InternalError.Handler as SIEH
 import Server.InternalHelp.Handler as SIHH
 import Server.Landing.Handler as SLH
@@ -30,8 +33,6 @@ import Server.Leaderboard.Handler as SLBH
 import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH
-import Server.Backer.Handler as SBH
-import Server.InternalBacker.Handler as SIBH
 import Server.NotFound.Handler as SNH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
@@ -80,6 +81,7 @@ handlers reading = {
       help: runHTML reading SHH.help,
       backer: runHTML reading SBH.backer,
       internalBacker: runJSON reading SIBH.internalBacker,
+      experiments: runJSON reading SEH.experiments,
 
       developmentFiles: developmentFiles,
 

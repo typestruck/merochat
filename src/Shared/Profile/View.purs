@@ -26,6 +26,7 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
 import Shared.IM.Svg as SIS
+import Shared.IM.View.Profile as SIVP
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Path as SP
@@ -44,9 +45,12 @@ view model@{
       languages,
       generating,
       hideSuccessMessage,
-      descriptionInputed
+      descriptionInputed,
+      experimenting
 } = HE.div profileEditionId [
-      HE.div [HA.class' "profile-edition suggestion contact"] [
+      impersonationProfile experimenting,
+
+      HE.div [HA.class' {"profile-edition suggestion contact": true, hidden: DM.isJust experimenting}] [
             HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "profile.ac60b6d1cf56812f13e6"],
             HE.div (HA.class' "avatar-edition") [
                   HE.div (HA.onClick SelectAvatar) [
@@ -283,11 +287,24 @@ view model@{
             languageHM = DH.fromArray languages
             getLanguage = SU.fromJust <<< flip DH.lookup languageHM
 
+--refactor: abstract with shared/profile
+impersonationProfile :: Maybe ExperimentData -> Html ProfileMessage
+impersonationProfile = case  _ of
+      Just (Impersonation (Just profile@{ name })) ->
+            HE.div [HA.class' "suggestion old imper"] $ warning name : SIVP.displayUserProfile (Just 0) profile
+      _ -> HE.createEmptyElement "div"
+      where warning name = HE.div (HA.class' "imp impersonation-warning") [
+                  HE.text "You are impersonating ",
+                  HE.strong_ name,
+                  HE.text ". Here is how your profile will be seen by other users:"
+            ]
+
 appendInputedMaybe :: forall t r u fieldInputedList fieldInputed. Ord t => IsSymbol fieldInputedList => Cons fieldInputedList (Maybe (Array t)) r PM => IsSymbol fieldInputed => Cons fieldInputed (Maybe t) u PM => SProxy fieldInputedList -> SProxy fieldInputed -> ProfileMessage
 appendInputedMaybe fieldInputedList fieldInputed =
       SetPField $ \model ->
             case R.get fieldInputed model of
                   Nothing -> model
+                  --refactor: this should be a set
                   Just value -> R.set fieldInputed Nothing $ R.set fieldInputedList (Just <<< DA.nub $ DA.snoc (DM.fromMaybe [] $ R.get fieldInputedList model) value) model
 
 removeFromInputedList :: forall t r fieldInputedList. Eq t => IsSymbol fieldInputedList => Cons fieldInputedList (Maybe (Array t)) r PM => SProxy fieldInputedList -> t -> ProfileMessage

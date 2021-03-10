@@ -3,7 +3,7 @@ module Client.IM.Main where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM (nameChanged, notificationClick)
+import Client.Common.DOM (askChatExperiment, nameChanged, notificationClick, setChatExperiment)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Location as CCL
@@ -12,7 +12,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Types (CurrentWebSocket)
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Notification as CIUC
@@ -25,13 +25,9 @@ import Control.Monad.Except as CME
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.HashMap (HashMap)
-import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -75,17 +71,6 @@ main = do
             update: update { fileReader, webSocketRef }
       }
       setUpWebSocket webSocketRef channel
-      --for drag and drop
-      CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
-      --receive profile edition changes
-      CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
-      --move to given chat when clicking on system notification
-      CCD.addCustomEventListener notificationClick (SC.send channel <<< DA.singleton <<< ResumeChat)
-      --display settings/profile page
-      FE.send [FE.onClick' [ToggleUserContextMenu]] channel
-      --image upload
-      input <- CCD.unsafeGetElementByID ImageFileInput
-      CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
       width <- CCD.screenWidth
       let smallScreen = width < mobileBreakpoint
       --keep track of mobile (-like) screens for things that cant be done with media queries
@@ -93,10 +78,24 @@ main = do
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen channel
+      --display settings/profile/etc page menus
+      FE.send [FE.onClick' [ToggleUserContextMenu]] channel
+      --for drag and drop
+      CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
+      --receive profile edition changes
+      CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
+      --move to given chat when clicking on system notification
+      CCD.addCustomEventListener notificationClick (SC.send channel <<< DA.singleton <<< ResumeChat)
+      --image upload
+      input <- CCD.unsafeGetElementByID ImageFileInput
+      CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
       --notification permission (desktop)
       unless smallScreen $ checkNotifications channel
       --message status on window focus
       windowsFocus channel
+      --events for chat experiments
+      CCD.addCustomEventListener setChatExperiment (SC.send channel <<< DA.singleton <<< SetChatExperiment)
+      CCD.addCustomEventListener askChatExperiment (const (SC.send channel [AskChatExperiment]))
 
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader } model =
@@ -118,18 +117,20 @@ update { webSocketRef, fileReader } model =
             ToggleMessageEnter -> CIC.toggleMessageEnter model
             FocusInput elementID -> focusInput elementID model
             --contacts
-            ResumeChat id -> CICN.resumeChat id model
+            ResumeChat (Tuple id impersonating) -> CICN.resumeChat id impersonating model
             UpdateReadCount -> CICN.markRead webSocket model
             CheckFetchContacts -> CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) -> CICN.fetchContacts shouldFetch model
             DisplayContacts contacts -> CICN.displayContacts contacts model
             DisplayNewContacts contacts -> CICN.displayNewContacts contacts model
+            DisplayImpersonatedContact id history contacts -> CICN.displayImpersonatedContacts id history contacts model
             ResumeMissedEvents missed -> CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory -> CIH.checkFetchHistory model
             SpecialRequest (FetchHistory shouldFetch) -> CIH.fetchHistory shouldFetch model
             DisplayHistory history -> CIH.displayHistory history model
             --suggestion
+            FetchMoreSuggestions -> CIS.fetchMoreSuggestions model
             ResumeSuggesting -> CIS.resumeSuggesting model
             ToggleContactProfile -> CIS.toggleContactProfile model
             SpecialRequest PreviousSuggestion -> CIS.previousSuggestion model
@@ -144,6 +145,8 @@ update { webSocketRef, fileReader } model =
             SetModalContents file root html -> CIU.setModalContents file root html model
             SetContextMenuToggle toggle -> CIU.toogleUserContextMenu toggle model
             --main
+            AskChatExperiment -> askExperiment model
+            SetChatExperiment experiment -> setExperiment experiment model
             ReloadPage -> reloadPage model
             ReceiveMessage payload isFocused -> receiveMessage webSocket isFocused payload model
             SetNameFromProfile name -> setName name model
@@ -157,6 +160,29 @@ update { webSocketRef, fileReader } model =
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
       where { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+
+askExperiment ::  IMModel -> MoreMessages
+askExperiment model@{ experimenting } = model :> if DM.isNothing experimenting then [] else [ do
+      liftEffect <<< CCD.dispatchCustomEvent <<< CCD.createCustomEvent setChatExperiment $ SJ.toJSON experimenting
+      pure Nothing
+]
+
+setExperiment :: String -> IMModel -> MoreMessages
+setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestionsPage } = model {
+      chatting = Nothing,
+      temporaryID = 3000000,
+      contacts = if impersonating then [] else contacts,
+      experimenting = parsedExperiment,
+      toggleModal = if toggleModal == ShowExperiments then HideUserMenuModal else toggleModal,
+      suggestionsPage = if impersonating then 0 else suggestionsPage
+} :> if impersonating then [pure $ Just FetchMoreSuggestions] else []
+      where parsedExperiment = case SJ.fromJSON experiment of
+                  Left _ -> Nothing
+                  Right e -> e
+            impersonating = case parsedExperiment of
+                  imp@(Just (Impersonation (Just _))) -> imp /= experimenting --avoid running more than once
+                  _ -> false
 
 reloadPage :: IMModel -> NextMessage
 reloadPage model = CIF.nothingNext model $ liftEffect CCL.reload
@@ -176,7 +202,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
             F.noMessages $ model { toggleContextMenu = HideContextMenu }
       | otherwise =
             model :> [
-                  --we cant use node.contains as some of the elements are dinamically created/destroyed
+                  --we cant use node.contains as some of the elements are dynamically created/destroyed
                   liftEffect do
                   let element =  SU.fromJust $ do
                         target <- WEE.target event
@@ -250,20 +276,33 @@ receiveMessage webSocket isFocused wsPayload model@{
             }
       BeenBlocked { id } ->
             F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
-      NewIncomingMessage payload@{ userID } ->
-            if DA.elem userID blockedUsers then
+      NewIncomingMessage payload@{ id: messageID, userID, content: messageContent, date: messageDate, experimenting } ->
+            --(for now) if the experiments dont match, discard the message
+            if DA.elem userID blockedUsers || DM.isJust model.experimenting && DM.isNothing experimenting then
                   F.noMessages model
             else let model' = unsuggest userID model in
                   case processIncomingMessage payload model' of
                   --this should also set status
-                        Left userID -> model' :> [CCNT.retryableResponse CheckMissedEvents DisplayNewContacts (request.im.singleContact { query: { id: userID }})]
+                        Left userID ->
+                              let message = case experimenting of
+                                    Just (ImpersonationPayload impersonationID) ->
+                                          DisplayImpersonatedContact impersonationID {
+                                                status: Received,
+                                                sender: userID,
+                                                recipient: recipientID,
+                                                id: messageID,
+                                                content: messageContent,
+                                                date: messageDate
+                                          }
+                                    _ -> DisplayNewContacts
+                              in model' :> [CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID }})]
                         --mark it as read if we received a message from the current chat
                         -- or as delivered otherwise
                         Right updatedModel@{
                               chatting: Just index,
                               contacts
                         } | isFocused && isChatting userID updatedModel ->
-                              let Tuple furtherUpdatedModel messages = CICN.updateReadHistory updatedModel {
+                              let Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel {
                                     sessionUserID: recipientID,
                                     contacts,
                                     newStatus: Read,
@@ -274,14 +313,19 @@ receiveMessage webSocket isFocused wsPayload model@{
                         Right updatedModel@{
                               contacts
                         } ->
-                              let Tuple furtherUpdatedModel messages = CICN.updateReadHistory updatedModel {
-                                    index: SU.fromJust $ DA.findIndex ((_ == userID) <<< _.id <<< _.user) contacts,
-                                    sessionUserID: recipientID,
-                                    newStatus: Delivered,
-                                    contacts,
-                                    webSocket
-                              } in
-                              furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [payload.userID] : messages)
+                              let   impersonationID = case experimenting of
+                                          Just (ImpersonationPayload impersonationID) ->
+                                                Just impersonationID
+                                          _ -> Nothing
+                                    Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel {
+                                          index: SU.fromJust $ DA.findIndex (findContact userID impersonationID model.experimenting ) contacts,
+                                          sessionUserID: recipientID,
+                                          newStatus: Delivered,
+                                          contacts,
+                                          webSocket
+                                    }
+                              in
+                                    furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [Tuple payload.userID impersonationID] : messages)
 
       PayloadError payload -> case payload.origin of
             OutgoingMessage { id, userID } -> F.noMessages $ model {
@@ -294,8 +338,8 @@ receiveMessage webSocket isFocused wsPayload model@{
             }
             _ -> F.noMessages model
       where isChatting senderID { contacts, chatting } =
-                  let ({ user: { id: recipientID } }) = contacts !@ (SU.fromJust chatting) in
-                  recipientID == senderID
+                  let { user: { id: recipientID }, impersonating } = contacts !@ SU.fromJust chatting
+                  in recipientID == senderID
 
 unsuggest :: PrimaryKey -> IMModel -> IMModel
 unsuggest userID model@{ suggestions, suggesting } = model {
@@ -304,7 +348,7 @@ unsuggest userID model@{ suggestions, suggesting } = model {
 }
 
 processIncomingMessage :: ClientMessagePayload -> IMModel -> Either PrimaryKey IMModel
-processIncomingMessage { id, userID, date, content } model@{
+processIncomingMessage { id, userID, date, content, experimenting } model@{
       user: { id: recipientID },
       suggestions,
       contacts,
@@ -326,12 +370,21 @@ processIncomingMessage { id, userID, date, content } model@{
                               date
                         }
                   }
-            findAndUpdateContactList = do
-                  index <- DA.findIndex findUser contacts
-                  { history } <- contacts !! index
-                  DA.modifyAt index (updateHistory { content, id, date }) contacts
+            impersonationID = case experimenting of
+                  Just (ImpersonationPayload id) -> Just id
+                  _ -> Nothing
 
-            findUser ({ user: { id } }) = userID == id
+            findAndUpdateContactList = do
+                  index <- DA.findIndex (findContact userID impersonationID model.experimenting) contacts
+                  { impersonating } <- contacts !! index
+                  let updated = DA.modifyAt index (updateHistory { content, id, date }) contacts
+                  --if impersonating, only the user can start new chats
+                  case model.experimenting, experimenting, impersonating of
+                        Nothing, Just (ImpersonationPayload _), Nothing -> Nothing
+                        _, _, _ -> updated
+
+findContact :: PrimaryKey -> Maybe PrimaryKey -> Maybe ExperimentData -> Contact -> Boolean
+findContact userID impersonationID experimenting { user: { id }, impersonating } = userID == id && (DM.isJust experimenting || impersonating == impersonationID)
 
 updateTemporaryID :: Array Contact -> PrimaryKey -> PrimaryKey -> PrimaryKey -> Array Contact
 updateTemporaryID contacts userID previousMessageID messageID = updateContactHistory contacts userID updateTemporary
@@ -351,6 +404,7 @@ markErroredMessage contacts userID messageID = updateContactHistory contacts use
                   | id == messageID = history { status = Errored }
                   | otherwise = history
 
+--refactor: should be abstract with updateReadCount
 updateContactHistory :: Array Contact -> PrimaryKey -> (HistoryMessage -> HistoryMessage) -> Array Contact
 updateContactHistory contacts userID f = updateContact <$> contacts
       where updateContact contact@{ user: { id }, history }
@@ -368,8 +422,8 @@ markContactUnavailable contacts userID = updateContact <$> contacts
                   | otherwise = contact
 
 checkMissedEvents :: IMModel -> MoreMessages
-checkMissedEvents model@{ contacts, user : { id } } =
-      model :> [do
+checkMissedEvents model@{ experimenting, contacts, user : { id } } =
+      model :> if DM.isJust experimenting then [] else [do
             let { lastSentMessageID, lastReceivedMessageID} = findLastMessages contacts id
 
             if DM.isNothing lastSentMessageID && DM.isNothing lastReceivedMessageID then

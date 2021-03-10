@@ -13,7 +13,6 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
-import Debug.Trace (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC

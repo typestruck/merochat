@@ -52,11 +52,11 @@
     stroke: hsl(145, 80%, 28%);
 }
 
-.plus, .save, .cancel {
+.plus, .save, .profile-edition .cancel {
     vertical-align: middle;
 }
 
-.cancel {
+.profile-edition .cancel {
     margin-left: 20px;
 }
 
@@ -82,7 +82,7 @@
     z-index: 2;
 }
 
-.save-cancel .cancel {
+.save-cancel .profile-edition .cancel {
     margin-right: 20px;
 }
 
@@ -173,7 +173,7 @@ select+.save {
     height: 20px
 }
 
-.cancel {
+.profile-edition .cancel {
     width: 17px;
     height: 17px
 }

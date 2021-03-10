@@ -63,6 +63,12 @@ nameChanged = EventType "nameChanged"
 notificationClick :: EventType
 notificationClick = EventType "notificationClick"
 
+askChatExperiment :: EventType
+askChatExperiment = EventType "askChatExperiment"
+
+setChatExperiment :: EventType
+setChatExperiment = EventType "setChatExperiment"
+
 dispatchCustomEvent :: CustomEvent -> Effect Unit
 dispatchCustomEvent event = do
       window <- WH.window

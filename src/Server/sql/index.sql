@@ -163,7 +163,7 @@ create table histories
     sender integer not null,
     recipient integer not null,
     first_message_date timestamp not null default (now() at time zone 'utc'),
-    date timestamp not null default (now() at time zone 'utc'),
+    date @
     sender_archived boolean not null default false,
     recipient_archived boolean not null default false,
 
@@ -252,6 +252,15 @@ create table suggestions
 --     constraint reaction_user_user foreign key (bearer) references users(id) on delete cascade,
 --     constraint reaction_user_reaction foreign key (reaction) references reactions(id) on delete cascade
 -- );
+
+create table experiments
+(
+    id integer generated always as identity primary key,
+    code integer not null,
+    name text not null,
+    description text not null,
+    added timestamp not null default (now() at time zone 'utc')
+);
 
 create or replace function insert_history
 (sender_id int, recipient_id int) returns void as
@@ -602,3 +611,5 @@ values
     ('Yemen'),
     ('Zambia'),
     ('Zimbabwe');
+
+insert into experiments (code, name, description) values (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it');

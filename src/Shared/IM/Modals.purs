@@ -35,15 +35,17 @@ modals { toggleModal: toggle, failedRequests} =
                               ],
                               HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' { entry: true, selected: toggle == ShowProfile }] $ show ShowProfile,
                               HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings, HA.class' { entry: true, selected: toggle == ShowSettings }] $ show ShowSettings,
+                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggle == ShowBacker }] $ show ShowBacker,
+                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments, HA.class' { entry: true, selected: toggle == ShowExperiments }] $ show ShowExperiments,
                               HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggle == ShowLeaderboard }] $ show ShowLeaderboard,
-                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggle == ShowHelp }] $ show ShowHelp,
-                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggle == ShowBacker }] $ show ShowBacker
+                              HE.div [HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggle == ShowHelp }] $ show ShowHelp
                         ],
                         HE.div [HA.id "profile-edition-root", HA.class' { hidden: toggle /= ShowProfile }] $ retry ShowProfile,
                         HE.div [HA.id "settings-edition-root", HA.class' { hidden: toggle /= ShowSettings }] $ retry ShowSettings,
+                        HE.div [HA.id "backer-root", HA.class' { hidden: toggle /= ShowBacker }] $ retry ShowBacker,
+                        HE.div [HA.id "experiments-root", HA.class' { hidden: toggle /= ShowExperiments }] $ retry ShowExperiments,
                         HE.div [HA.id "karma-leaderboard-root", HA.class' { hidden: toggle /= ShowLeaderboard }] $ retry ShowLeaderboard,
-                        HE.div [HA.id "help-root", HA.class' { hidden: toggle /= ShowHelp }] $ retry ShowHelp,
-                        HE.div [HA.id "backer-root", HA.class' { hidden: toggle /= ShowBacker }] $ retry ShowBacker
+                        HE.div [HA.id "help-root", HA.class' { hidden: toggle /= ShowHelp }] $ retry ShowHelp
                   ]
       ]
       where retry toggle = HE.div (HA.class' "retry-modal") [

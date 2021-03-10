@@ -23,7 +23,6 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Time.Duration as DTD
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU

@@ -11,10 +11,16 @@ baseCSSHash :: String
 baseCSSHash = "768271ce06fa68cc4b3d"
 
 commonJSHash :: String
-commonJSHash = "d9f0622bac7d058268e1"
+commonJSHash = "750c3a54649f9b231092"
 
 emojiJSHash :: String
 emojiJSHash = "579d0f135d969603bd63"
+
+experimentsCSSHash :: String
+experimentsCSSHash = "47eff52b0d363fd4de3e"
+
+experimentsJSHash :: String
+experimentsJSHash = "daf689cefc842d85daf5"
 
 externalCSSHash :: String
 externalCSSHash = "9361845d640d2fa7ac80"
@@ -25,11 +31,11 @@ helpCSSHash = "5c2d5d65952114e0b0e3"
 helpJSHash :: String
 helpJSHash = "e2127064dcd520f2a977"
 
-imCSSHash :: String
-imCSSHash = "7f6619904ed8dd732a7a"
-
 imJSHash :: String
-imJSHash = "ded32fc46ce55374aca2"
+imJSHash = "dcc249695a52214b42b0"
+
+imCSSHash :: String
+imCSSHash = "ea57e1a66d5d4c0329cb"
 
 internalHelpJSHash :: String
 internalHelpJSHash = "efc84b6e78a087e436fc"
@@ -50,13 +56,13 @@ loginJSHash :: String
 loginJSHash = "987f0b7b7b052fcf9ad2"
 
 otherJSHash :: String
-otherJSHash = "2854b350e6ff1ee7e8f7"
-
-profileCSSHash :: String
-profileCSSHash = "ac60b6d1cf56812f13e6"
+otherJSHash = "4f94fb3e5dac372c8c67"
 
 profileJSHash :: String
-profileJSHash = "ecb96820b228ebb3c794"
+profileJSHash = "000e0eecae3a3503c340"
+
+profileCSSHash :: String
+profileCSSHash = "64a151ddf74b7372087a"
 
 recoverJSHash :: String
 recoverJSHash = "1a5fa8368956a8294e65"

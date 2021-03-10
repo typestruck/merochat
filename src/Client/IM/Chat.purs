@@ -11,10 +11,7 @@ import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
 import Data.Array ((!!))
 import Data.Array as DA
-import Data.Bifunctor as DB
 import Data.DateTime as DT
-import Data.Either (Either(..))
-import Data.HashMap (HashMap)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -26,7 +23,6 @@ import Data.Symbol (SProxy(..))
 import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -90,7 +86,8 @@ beforeSendMessage content model@{
       selectedImage,
       contacts,
       suggesting,
-      suggestions
+      suggestions,
+      experimenting
 } = case content of
       t@(Text message)
             | isEmpty message -> F.noMessages model
@@ -114,11 +111,12 @@ beforeSendMessage content model@{
 
 sendMessage :: WebSocket -> MessageContent -> DateTimeWrapper -> IMModel -> NoMessages
 sendMessage webSocket content date model@{
-            user: { id: senderID },
-            chatting,
-            temporaryID,
-            contacts,
-            imageCaption
+      user: { id: senderID },
+      chatting,
+      temporaryID,
+      contacts,
+      imageCaption,
+      experimenting
 } = CIF.nothingNext updatedModel $ liftEffect do
       CIS.scrollLastMessage
       input <- chatInput model
@@ -128,6 +126,10 @@ sendMessage webSocket content date model@{
             id: newTemporaryID,
             userID: recipientID,
             content,
+            experimenting: case experimenting, recipient.impersonating of
+                  Just (Impersonation (Just { id })), _ -> Just $ ImpersonationPayload id
+                  _, Just id -> Just $ ImpersonationPayload id
+                  _, _ -> Nothing,
             turn
       }
       where index = SU.fromJust chatting

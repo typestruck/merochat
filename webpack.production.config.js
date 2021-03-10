@@ -20,6 +20,7 @@ module.exports = {
         help: ['./loader/help.bundle.js', './src/Client/css/help.css'],
         internalHelp: './loader/internalHelp.bundle.js',
         settings: ['./loader/settings.bundle.js', './src/Client/css/settings.css'],
+        experiments: ['./loader/experiments.bundle.js', './src/Client/css/experiments.css'],
         recover: './loader/recover.bundle.js',
         emoji: './output/Shared.IM.Emoji/index.js',
         base: './src/Client/css/base.css',

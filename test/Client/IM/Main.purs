@@ -44,6 +44,7 @@ tests = do
                   let   { suggestions } = DT.fst <<< CIM.receiveMessage webSocket true (NewIncomingMessage {
                               date,
                               id: newMessageID,
+                              experimenting: Nothing,
                               content,
                               userID: contact.user.id
                         }) $ model {
@@ -60,6 +61,7 @@ tests = do
                                     id : 1,
                                     userID : contact.user.id,
                                     content : Text content,
+                                    experimenting: Nothing,
                                     turn : Nothing
                               },
                               context: Just MissingForeignKey
@@ -94,6 +96,7 @@ tests = do
                               date,
                               id: newMessageID,
                               content,
+                              experimenting: Nothing,
                               userID: contact.user.id
                         }) $ model {
                               contacts = [contact],
@@ -112,6 +115,7 @@ tests = do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let   { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (NewIncomingMessage {
                               id: newMessageID,
+                              experimenting: Nothing,
                               userID: contactID,
                               content,
                               date
@@ -122,10 +126,13 @@ tests = do
                         }
                   TUA.equal [Tuple newMessageID Read] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
 
+
+
             TU.test "receiveMessage does not mark messages as read if window is not focused" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let { contacts } = DT.fst <<< CIM.receiveMessage webSocket false (NewIncomingMessage {
                               id: newMessageID,
+                              experimenting: Nothing,
                               userID: anotherIMUserID,
                               content,
                               date

@@ -67,7 +67,7 @@ single query parameters = withConnection $ \connection -> toMaybe <$> DP.query c
                         tooManyResults unit
 
 tooManyResults :: forall error. Unit -> error
-tooManyResults _ = EEU.unsafeThrow "more than one row returned for single query"
+tooManyResults _ = EEU.unsafeThrow "single query resulted in no/more than one results"
 
 single' :: forall r query row. ToSQLRow query ⇒ FromSQLRow row ⇒ Query query row → query → BaseEffect { pool :: Pool | r } row
 single' query parameters = withConnection $ \connection -> singleWith connection query parameters

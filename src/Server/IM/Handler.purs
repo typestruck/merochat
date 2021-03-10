@@ -26,7 +26,7 @@ im { guards: { loggedUserID } } = do
             --nothing can only happen in case the user has an invalid cookie
             Nothing -> RE.throw ExpiredSession
             Just user -> do
-                  suggestions <- SIA.suggest loggedUserID 0
+                  suggestions <- SIA.suggest loggedUserID 0 Nothing
                   contacts <- SIA.listContacts loggedUserID 0
                   contents <- R.liftEffect $ SIT.template { contacts, suggestions, user: DN.unwrap user }
                   pure <<< PSR.setHeaders (PH.fromFoldable [Tuple "content-type" html, Tuple "cache-control" "no-store, max-age=0"]) $ PSR.ok contents
@@ -41,8 +41,8 @@ singleContact { guards: { loggedUserID }, query: { id } } = DA.singleton <$> SIA
 history :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int, with :: PrimaryKey } } -> ServerEffect (Array HistoryMessage)
 history { guards: { loggedUserID }, query: { with, skip } } = SIA.resumeChatHistory loggedUserID with skip
 
-suggestions :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int } } -> ServerEffect (Array Suggestion)
-suggestions { guards: { loggedUserID }, query: { skip } } = SIA.suggest loggedUserID skip
+suggestions :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int, avoid :: Maybe ArrayPrimaryKey } } -> ServerEffect (Array Suggestion)
+suggestions { guards: { loggedUserID }, query: { skip, avoid } } = SIA.suggest loggedUserID skip avoid
 
 block :: { guards :: { loggedUserID :: PrimaryKey }, query :: { id :: PrimaryKey } } -> ServerEffect Ok
 block { guards: { loggedUserID }, query: { id } } = SIA.blockUser loggedUserID id

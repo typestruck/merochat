@@ -1,3 +1,4 @@
+--refactor: here and other modueles only export whats needed
 module Server.IM.Action where
 
 import Prelude
@@ -34,8 +35,8 @@ import Shared.Unsafe as SU
 
 foreign import sanitize :: String -> String
 
-suggest :: PrimaryKey -> Int -> ServerEffect (Array Suggestion)
-suggest loggedUserID = SN.unwrapAll <<< SID.suggest loggedUserID
+suggest :: PrimaryKey -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array Suggestion)
+suggest loggedUserID skip = SN.unwrapAll <<< SID.suggest loggedUserID skip
 
 listContacts :: PrimaryKey -> Int -> ServerEffect (Array Contact)
 listContacts loggedUserID skip = do
@@ -61,14 +62,19 @@ listSingleContact loggedUserID userID = do
 
 processMessage :: forall r. PrimaryKey -> PrimaryKey -> Int -> MessageContent -> BaseEffect { storageDetails :: Ref StorageDetails, pool :: Pool | r } (Tuple PrimaryKey String)
 processMessage loggedUserID userID temporaryID content = do
+      sanitized <- processMessageContent content
+      id <- SID.insertMessage loggedUserID userID temporaryID sanitized
+      pure $ Tuple id sanitized
+
+-- | Sanitizes markdown and handle image uploads
+processMessageContent :: forall r. MessageContent -> BaseEffect { storageDetails :: Ref StorageDetails, pool :: Pool | r } String
+processMessageContent content = do
       message <- case content of
             Text m -> pure m
             Image caption base64 -> do
                   path <- SF.saveBase64File $ base64
                   pure $ "![" <> caption  <> "](" <> imageBasePath <> "upload/" <> path <> ")"
-      let sanitized = DS.trim $ sanitize message
-      id <- SID.insertMessage loggedUserID userID temporaryID sanitized
-      pure $ Tuple id sanitized
+      pure <<< DS.trim $ sanitize message
 
 processKarma :: forall r. PrimaryKey -> PrimaryKey -> Turn -> BaseEffect { pool :: Pool | r } Unit
 processKarma loggedUserID userID turn = SID.insertKarma loggedUserID userID $ SW.karmaFrom turn

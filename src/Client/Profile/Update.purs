@@ -24,6 +24,7 @@ import Flame.Application.Effectful as FAE
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
+import Shared.JSON as SJ
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 import Shared.Profile.View (profileEditionId)
 import Shared.Setter as SS
@@ -44,6 +45,7 @@ update rc@{ model, message, display } =
                         Name -> setGenerated rc Name (SProxy :: SProxy "name") nameMaxCharacters
                         Headline -> setGenerated rc Headline (SProxy :: SProxy "headline") headlineMaxCharacters
                         Description -> setGenerated rc Description (SProxy :: SProxy "description") descriptionMaxCharacters
+            SetProfileChatExperiment experiment -> setChatExperiment experiment
             SaveProfile -> saveProfile rc
 
 setGenerated :: forall field fieldInputed r u . IsSymbol field => Cons field String r PU => IsSymbol fieldInputed => Append field "Inputed" fieldInputed => Cons fieldInputed (Maybe String) u PM => Environment ProfileModel ProfileMessage -> Generate -> SProxy field -> Int -> Aff (ProfileModel -> ProfileModel)
@@ -69,6 +71,14 @@ selectAvatar = do
             input <- getFileInput
             CCF.triggerFileSelect input
       FAE.noChanges
+
+setChatExperiment :: String -> Aff (ProfileModel -> ProfileModel)
+setChatExperiment experiment =
+      FAE.diff {
+            experimenting : case SJ.fromJSON experiment of
+                  Left _ -> Nothing
+                  Right e -> e
+      }
 
 saveProfile :: AffUpdate ProfileModel ProfileMessage
 saveProfile {display, model : { user: user@{ name }} } = do
