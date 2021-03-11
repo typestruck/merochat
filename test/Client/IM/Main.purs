@@ -126,7 +126,8 @@ tests = do
                         }
                   TUA.equal [Tuple newMessageID Read] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
 
-
+            TU.test "receiveMessage ignores impersonation messages that dont match current" do
+                  TUA.equal 34 9
 
             TU.test "receiveMessage does not mark messages as read if window is not focused" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime

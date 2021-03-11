@@ -7,6 +7,7 @@ import Client.Common.DOM as CCD
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
+import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
@@ -18,6 +19,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Prim.Row (class Cons)
+import Shared.Experiments.Impersonation (impersonations)
 import Shared.IM.Emoji as SIE
 import Shared.IM.Svg as SIS
 import Shared.Keydown as SK
@@ -120,7 +122,14 @@ chatBarInput elementID model@{
       ]
 ]
       where available = DM.fromMaybe true $ getContact _.available
-            recipientName = DM.fromMaybe "" $ getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
+            recipientName = DM.fromMaybe "" $ impersonationName <|> getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
+
+            impersonationName = do
+                  index <- chatting
+                  { impersonating } <- contacts !! index
+                  id <- impersonating
+                  imp <- HS.lookup id impersonations
+                  pure $ imp.name
 
             getContact :: forall a. (Contact -> a) -> Maybe a
             getContact = getProperty chatting contacts
