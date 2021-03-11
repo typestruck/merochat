@@ -287,7 +287,7 @@ receiveMessage webSocket isFocused wsPayload model@{
                   --this should also set status
                         Left userID ->
                               let message = case experimenting of
-                                    Just (ImpersonationPayload impersonationID) ->
+                                    Just (ImpersonationPayload { id: impersonationID }) ->
                                           DisplayImpersonatedContact impersonationID {
                                                 status: Received,
                                                 sender: userID,
@@ -316,8 +316,7 @@ receiveMessage webSocket isFocused wsPayload model@{
                               contacts
                         } ->
                               let   impersonationID = case experimenting of
-                                          Just (ImpersonationPayload impersonationID) ->
-                                                Just impersonationID
+                                          Just (ImpersonationPayload { id: impersonationID }) -> Just impersonationID
                                           _ -> Nothing
                                     Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel {
                                           index: SU.fromJust $ DA.findIndex (findContact userID impersonationID model.experimenting ) contacts,
@@ -345,7 +344,8 @@ receiveMessage webSocket isFocused wsPayload model@{
 
             match userID experimenting = case model.experimenting, experimenting of
                   Just (Impersonation (Just _)), Nothing -> false
-                  Just (Impersonation (Just { id })), Just (ImpersonationPayload otherID) -> id == otherID && DA.any ((userID == _) <<< _.id <<< _.user) currentContacts
+                  Just (Impersonation (Just { id })), Just (ImpersonationPayload { id: otherID, sender }) -> id == otherID && not sender
+                  Nothing, Just (ImpersonationPayload { sender }) -> sender
                   _, _ -> true
 
 unsuggest :: PrimaryKey -> IMModel -> IMModel
@@ -378,7 +378,7 @@ processIncomingMessage { id, userID, date, content, experimenting } model@{
                         }
                   }
             impersonationID = case experimenting of
-                  Just (ImpersonationPayload id) -> Just id
+                  Just (ImpersonationPayload { id }) -> Just id
                   _ -> Nothing
 
             findAndUpdateContactList = do

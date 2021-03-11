@@ -239,7 +239,10 @@ type IMModel = Record IM
 
 data ExperimentData = Impersonation (Maybe ImpresonationProfile)
 
-data ExperimentPayload = ImpersonationPayload PrimaryKey
+data ExperimentPayload = ImpersonationPayload {
+      id :: PrimaryKey,
+      sender :: Boolean
+}
 
 data ShowChatModal =
       HideChatModal |

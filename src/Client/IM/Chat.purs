@@ -127,8 +127,8 @@ sendMessage webSocket content date model@{
             userID: recipientID,
             content,
             experimenting: case experimenting, recipient.impersonating of
-                  Just (Impersonation (Just { id })), _ -> Just $ ImpersonationPayload id
-                  _, Just id -> Just $ ImpersonationPayload id
+                  Just (Impersonation (Just { id })), _ -> Just $ ImpersonationPayload { id: id, sender: true }
+                  _, Just id -> Just $ ImpersonationPayload { id: id, sender: false }
                   _, _ -> Nothing,
             turn
       }
