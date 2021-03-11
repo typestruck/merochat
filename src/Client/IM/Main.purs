@@ -254,6 +254,7 @@ displayFortune sequence model = F.noMessages $ model {
       fortune = Just sequence
 }
 
+--refactor: this needs some serious cleanup
 receiveMessage :: WebSocket -> Boolean -> WebSocketPayloadClient -> IMModel -> MoreMessages
 receiveMessage webSocket isFocused wsPayload model@{
       user: { id: recipientID },
@@ -278,7 +279,7 @@ receiveMessage webSocket isFocused wsPayload model@{
             F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
       NewIncomingMessage payload@{ id: messageID, userID, content: messageContent, date: messageDate, experimenting } ->
             --(for now) if the experiments dont match, discard the message
-            if DA.elem userID blockedUsers || DM.isJust model.experimenting && DM.isNothing experimenting then
+            if DA.elem userID blockedUsers || not (match experimenting) then
                   F.noMessages model
             else let model' = unsuggest userID model in
                   case processIncomingMessage payload model' of
@@ -340,6 +341,10 @@ receiveMessage webSocket isFocused wsPayload model@{
       where isChatting senderID { contacts, chatting } =
                   let { user: { id: recipientID }, impersonating } = contacts !@ SU.fromJust chatting
                   in recipientID == senderID
+
+            match experimeting = case model.experimenting, experimeting of
+                  Just (Impersonation (Just { id })), Just (ImpersonationPayload otherID) -> id == otherID
+                  _, _ -> true
 
 unsuggest :: PrimaryKey -> IMModel -> IMModel
 unsuggest userID model@{ suggestions, suggesting } = model {
