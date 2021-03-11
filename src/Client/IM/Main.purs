@@ -28,6 +28,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -279,7 +280,7 @@ receiveMessage webSocket isFocused wsPayload model@{
             F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
       NewIncomingMessage payload@{ id: messageID, userID, content: messageContent, date: messageDate, experimenting } ->
             --(for now) if the experiments dont match, discard the message
-            if DA.elem userID blockedUsers || not (match experimenting) then
+            if DA.elem userID blockedUsers || not (match userID experimenting)  then
                   F.noMessages model
             else let model' = unsuggest userID model in
                   case processIncomingMessage payload model' of
@@ -342,8 +343,9 @@ receiveMessage webSocket isFocused wsPayload model@{
                   let { user: { id: recipientID }, impersonating } = contacts !@ SU.fromJust chatting
                   in recipientID == senderID
 
-            match experimeting = case model.experimenting, experimeting of
-                  Just (Impersonation (Just { id })), Just (ImpersonationPayload otherID) -> id == otherID
+            match userID experimenting = case model.experimenting, experimenting of
+                  Just (Impersonation (Just _)), Nothing -> false
+                  Just (Impersonation (Just { id })), Just (ImpersonationPayload otherID) -> id == otherID && DA.any ((userID == _) <<< _.id <<< _.user) currentContacts
                   _, _ -> true
 
 unsuggest :: PrimaryKey -> IMModel -> IMModel
@@ -447,7 +449,7 @@ findLastMessages contacts sessionUserID = {
                   { id } <- allHistories !! index
                   pure id
 
-            allHistories = DA.sortBy byID $ DA.concatMap _.history contacts
+            allHistories = DA.sortBy byID <<< DA.concatMap _.history $ DA.filter (DM.isNothing <<< _.impersonating) contacts
             byID { id } { id: anotherID } = compare id anotherID
 
 setName :: String -> IMModel -> NoMessages
