@@ -3,6 +3,7 @@ module Shared.IM.View.Modals where
 import Prelude
 import Shared.Types
 
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Symbol (SProxy(..))
 import Flame (Html)
@@ -18,32 +19,11 @@ modals { toggleModal: toggle, failedRequests} =
             case toggle of
                   ShowReport reportedID ->
                         HE.div (HA.class' "confirmation report") [
-                              HE.span (HA.class' "bold") "Report user",
-                              HE.div (HA.class' "report-reasons") [
-                                    HE.div_ [
-                                          HE.input [HA.type' "radio", HA.id "report-dating", HA.name "report-reason", HA.onInput (const (SS.setIMField (SProxy :: SProxy "reportReason") (Just DatingContent)) )],
-                                          HE.label (HA.createAttribute "for" "report-dating") "Dating Content"
-                                    ],
-                                    HE.div_ [
-                                          HE.input [HA.type' "radio", HA.id "report-harrassment", HA.name "report-reason"],
-                                          HE.label (HA.createAttribute "for" "report-harrassment") "Harrassment/Bullying"
-                                    ],
-                                    HE.div_ [
-                                          HE.input [HA.type' "radio", HA.id "report-hate", HA.name "report-reason"],
-                                          HE.label (HA.createAttribute "for" "report-hate") "Hate speech/Promotion of violence"
-                                    ],
-                                    HE.div_ [
-                                          HE.input [HA.type' "radio", HA.id "report-spam", HA.name "report-reason"],
-                                          HE.label (HA.createAttribute "for" "report-spam") "Spam/Marketing"
-                                    ],
-                                    HE.div_ [
-                                          HE.input [HA.type' "radio", HA.id "report-other", HA.name "report-reason"],
-                                          HE.label (HA.createAttribute "for" "report-other") "Other"
-                                    ]
-                              ],
+                              HE.span (HA.class' "report-title") "Report user",
+                              HE.div (HA.class' "report-reasons") $ DA.mapWithIndex toRadio [DatingContent, Harrassment, HateSpeech, Spam, OtherReason],
                               HE.div (HA.class' "report-comment") [
                                     HE.label_ "Comment",
-                                    HE.input (HA.type' "text")
+                                    HE.input [HA.type' "text", HA.maxlength 300, HA.class' "modal-input", HA.onInput setReportComment]
                               ],
                               HE.div (HA.class' "buttons") [
                                     HE.button [HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal] "Cancel",
@@ -87,6 +67,13 @@ modals { toggleModal: toggle, failedRequests} =
                         ]
       ]
       where retry toggle = HE.div (HA.class' "retry-modal") [
-            SIVR.retry "Failed to load contents" (ToggleModal toggle) failedRequests,
-            HE.div' (HA.class' "loading")
-      ]
+                  SIVR.retry "Failed to load contents" (ToggleModal toggle) failedRequests,
+                  HE.div' (HA.class' "loading")
+            ]
+            toRadio i reason = let idName = show i in
+                  HE.div (HA.class' "reason") [
+                        HE.input [HA.type' "radio", HA.id $ "report-" <> idName, HA.name "report-reason", HA.onInput (const (SetField (_ { reportReason = Just reason})))],
+                        HE.label (HA.for $ "report-" <> idName) $ show reason
+                  ]
+
+            setReportComment value = SetField (_ { reportComment = Just value})

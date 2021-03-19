@@ -1094,16 +1094,32 @@ select {
     display: inline;
 }
 
+.reason {
+    margin: 10px 0;
+}
+
 .message-history .loading {
     align-self: center;
     margin: 30px 0;
+}
+
+.report-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.report-comment {
+    margin-top: 10px;
+}
+
+.report-comment label {
+    margin-bottom: 5px;
 }
 
 .confirmation {
     z-index: 20;
     position: absolute;
     padding: 50px;
-    padding-bottom: 10px;
     background: #262626;
     width: 500px;
     height: 120px;
@@ -1766,7 +1782,7 @@ select {
         align-self: center;
     }
     .welcome-imp {
-        color:#db5a5d
+        color: #db5a5d
     }
     .settings .user-menu {
         left: 0px;

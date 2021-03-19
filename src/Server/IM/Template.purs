@@ -62,6 +62,7 @@ template {contacts, suggestions, user} = do
                   experimenting: Nothing,
                   blockedUsers: [],
                   reportReason: Nothing,
+                  reportComment: Nothing,
                   imUpdated: false,
                   isWebSocketConnected: false,
                   failedRequests: [],

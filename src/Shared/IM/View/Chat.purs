@@ -35,6 +35,7 @@ chat model@{ chatting } =
             chatBarInput ChatInput model
       ]
 
+--REFACTOR: replace sproxy usage with just SetField (all the fields are known!)
 linkModal :: IMModel -> Html IMMessage
 linkModal {toggleChatModal, linkText, link, erroredFields} =
       HE.div [HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }] [

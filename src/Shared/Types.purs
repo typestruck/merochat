@@ -217,6 +217,7 @@ type IM = (
       experimenting :: Maybe ExperimentData,
       modalsLoaded :: Array ShowUserMenuModal,
       reportReason :: Maybe ReportReason,
+      reportComment :: Maybe String,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -900,6 +901,14 @@ instance encodeQueryParamMDateTime :: EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< show <<< SDT.dateTimeToNumber
 instance encodeQueryGenerate :: EncodeQueryParam Generate where
       encodeQueryParam = Just <<< show
+
+instance contentReportReason :: Show ReportReason where
+      show = case _ of
+            DatingContent -> "Dating content"
+            Harrassment -> "Harrassment/Bullying"
+            HateSpeech -> "Hate Speech/Call to violence"
+            Spam -> "Spam/Product placement"
+            OtherReason -> "Other"
 
 instance contentTypeShow :: Show ContentType where
       show JSON = "application/json"
