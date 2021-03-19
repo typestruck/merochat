@@ -61,6 +61,7 @@ template {contacts, suggestions, user} = do
                   toggleChatModal: HideChatModal,
                   experimenting: Nothing,
                   blockedUsers: [],
+                  reportReason: Nothing,
                   imUpdated: false,
                   isWebSocketConnected: false,
                   failedRequests: [],

@@ -216,6 +216,7 @@ type IM = (
       errorMessage :: String,
       experimenting :: Maybe ExperimentData,
       modalsLoaded :: Array ShowUserMenuModal,
+      reportReason :: Maybe ReportReason,
       --the current logged in user
       user :: IMUser,
       --indexes
@@ -267,7 +268,8 @@ data ShowUserMenuModal =
       ShowSettings |
       ShowLeaderboard |
       ShowHelp |
-      ShowBacker
+      ShowBacker |
+      ShowReport PrimaryKey
 
 type ChatExperiment = {
       id :: PrimaryKey,
@@ -338,7 +340,10 @@ data RetryableRequest =
       ToggleModal ShowUserMenuModal |
       BlockUser PrimaryKey |
       PreviousSuggestion |
-      NextSuggestion
+      NextSuggestion |
+      ReportUser PrimaryKey
+
+data ReportReason = DatingContent | Harrassment | HateSpeech | Spam | OtherReason
 
 data IMMessage =
       --history
@@ -561,6 +566,7 @@ data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
 newtype ArrayPrimaryKey = ArrayPrimaryKey (Array PrimaryKey)
 
+derive instance genericReportReason :: Generic ReportReason _
 derive instance genericExperimentPayload :: Generic ExperimentPayload _
 derive instance genericChatExperimentSection :: Generic ChatExperimentSection _
 derive instance genericExperimentCode :: Generic ExperimentData _
@@ -990,6 +996,8 @@ instance fromSQLValueGender :: FromSQLValue Gender where
 instance hashableIMSelector :: Hashable ElementID where
       hash = HS.hash <<< show
 
+instance encodeJsonReportReason :: EncodeJson ReportReason where
+      encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonExperimentPayload :: EncodeJson ExperimentPayload where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonChatExperimentSection :: EncodeJson ChatExperimentSection where
@@ -1027,6 +1035,8 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
+instance decodeJsonReportReason :: DecodeJson ReportReason  where
+      decodeJson = DADGR.genericDecodeJson
 instance decodeJsonExperimentPayload :: DecodeJson ExperimentPayload  where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonChatExperimentSection :: DecodeJson ChatExperimentSection  where

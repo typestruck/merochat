@@ -6,9 +6,6 @@ import Record as R
 import Shared.Types
 import Prelude
 
---REFACTOR: see if actual optics can improve these and other getter/setters
--- https://thomashoneyman.com/articles/practical-profunctor-lenses-optics/
-
 setUserField field value model = model {
       user = R.set field value model.user
 }

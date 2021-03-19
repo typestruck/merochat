@@ -160,6 +160,7 @@ update { webSocketRef, fileReader } model =
             ToggleFortune isVisible -> toggleFortune isVisible model
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
+            SpecialRequest (ReportUser _) -> F.noMessages model
       where { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
 
 

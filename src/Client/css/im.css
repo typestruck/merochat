@@ -84,6 +84,11 @@ body {
     justify-content: center;
 }
 
+.report-reasons {
+    display: flex;
+    flex-direction: column;
+}
+
 #user-context-menu rect {
     display: none;
 }
@@ -1105,6 +1110,10 @@ select {
     left: 50%;
     display: flex;
     flex-direction: column;
+}
+
+.confirmation.report {
+    height: auto;
 }
 
 .buttons {
