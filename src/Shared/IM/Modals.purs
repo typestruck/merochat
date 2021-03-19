@@ -17,25 +17,31 @@ modals { toggleModal: toggle, failedRequests} =
       HE.div (HA.class' {"modal-placeholder-overlay": true, "hidden" : toggle == HideUserMenuModal}) [
             case toggle of
                   ShowReport reportedID ->
-                        HE.div (HA.class' "confirmation report" ) [
+                        HE.div (HA.class' "confirmation report") [
                               HE.span (HA.class' "bold") "Report user",
                               HE.div (HA.class' "report-reasons") [
-                                    HE.input [HA.type' "radio", HA.id "report-dating", HA.name "report-reason", HA.onInput (const (SS.setIMField (SProxy :: SProxy "reportReason") (Just DatingContent)) )],
-                                    HE.label (HA.createAttribute "for" "report-dating") "Dating Content",
-
-                                    HE.input [HA.type' "radio", HA.id "report-harrassment", HA.name "report-reason"],
-                                    HE.label (HA.createAttribute "for" "report-harrassment") "Harrassment/Bullying",
-
-                                    HE.input [HA.type' "radio", HA.id "report-hate", HA.name "report-reason"],
-                                    HE.label (HA.createAttribute "for" "report-hate") "Hate speech/Promotion of violence",
-
-                                    HE.input [HA.type' "radio", HA.id "report-spam", HA.name "report-reason"],
-                                    HE.label (HA.createAttribute "for" "report-spam") "Spam/Marketing",
-
-                                    HE.input [HA.type' "radio", HA.id "report-other", HA.name "report-reason"],
-                                    HE.label (HA.createAttribute "for" "report-other") "Other"
+                                    HE.div_ [
+                                          HE.input [HA.type' "radio", HA.id "report-dating", HA.name "report-reason", HA.onInput (const (SS.setIMField (SProxy :: SProxy "reportReason") (Just DatingContent)) )],
+                                          HE.label (HA.createAttribute "for" "report-dating") "Dating Content"
+                                    ],
+                                    HE.div_ [
+                                          HE.input [HA.type' "radio", HA.id "report-harrassment", HA.name "report-reason"],
+                                          HE.label (HA.createAttribute "for" "report-harrassment") "Harrassment/Bullying"
+                                    ],
+                                    HE.div_ [
+                                          HE.input [HA.type' "radio", HA.id "report-hate", HA.name "report-reason"],
+                                          HE.label (HA.createAttribute "for" "report-hate") "Hate speech/Promotion of violence"
+                                    ],
+                                    HE.div_ [
+                                          HE.input [HA.type' "radio", HA.id "report-spam", HA.name "report-reason"],
+                                          HE.label (HA.createAttribute "for" "report-spam") "Spam/Marketing"
+                                    ],
+                                    HE.div_ [
+                                          HE.input [HA.type' "radio", HA.id "report-other", HA.name "report-reason"],
+                                          HE.label (HA.createAttribute "for" "report-other") "Other"
+                                    ]
                               ],
-                              HE.div (HA.class' "report-reasons") [
+                              HE.div (HA.class' "report-comment") [
                                     HE.label_ "Comment",
                                     HE.input (HA.type' "text")
                               ],

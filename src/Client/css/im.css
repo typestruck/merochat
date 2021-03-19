@@ -1090,6 +1090,10 @@ select {
     }
 }
 
+.report-reasons label {
+    display: inline;
+}
+
 .message-history .loading {
     align-self: center;
     margin: 30px 0;
