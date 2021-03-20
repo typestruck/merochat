@@ -51,7 +51,8 @@ handlers reading = {
             suggestions: runJSON reading SIH.suggestions,
             block: runJSON reading SIH.block,
             missedEvents: runJSON reading SIH.missedEvents,
-            fortune: runJSON reading SFTH.fortune
+            fortune: runJSON reading SFTH.fortune,
+            report: runJSON reading SIH.report
       },
       profile: {
             get: runJSON reading SPH.profile,

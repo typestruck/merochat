@@ -56,8 +56,8 @@ spec :: Spec {
                         query :: { skip :: Int, avoid :: Maybe ArrayPrimaryKey },
                         response :: Array Suggestion
                   },
-                  block :: GET "/block?id=<id>" {
-                        query :: { id :: PrimaryKey },
+                  block :: POST "/block" {
+                        body :: { id :: PrimaryKey },
                         response :: Ok
                   },
                   missedEvents :: GET "/missed?lastSenderID=<lastSenderID>&lastRecipientID=<lastRecipientID>" {
@@ -69,6 +69,10 @@ spec :: Spec {
                   },
                   fortune :: GET "/fortune" {
                         response :: String
+                  },
+                  report :: POST "/report" {
+                        body :: Report,
+                        response :: Ok
                   }
             },
             profile :: Routes "/profile" {

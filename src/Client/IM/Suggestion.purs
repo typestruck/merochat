@@ -78,26 +78,26 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
 
 blockUser :: WebSocket  -> PrimaryKey -> IMModel -> NextMessage
 blockUser webSocket blocked model@{ blockedUsers } =
-      updatedModel :> [do
-            result <- CCN.defaultResponse $ request.im.block { query: { id: blocked } }
+      updateAfterBlock blocked model :> [do
+            result <- CCN.defaultResponse $ request.im.block { body: { id: blocked } }
             case result of
+                  --refactor: either make errorMessage maybe or get rid of it
                   Left _ -> pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage : "" }
                   _ -> do
                         liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked }
                         pure Nothing
       ]
-      where updatedModel = removeBlockedUser blocked $ model {
-                  blockedUsers = blocked : blockedUsers,
-                  chatting = Nothing,
-                  failedRequests = [],
-                  toggleContextMenu = HideContextMenu
-            }
 
-removeBlockedUser :: PrimaryKey -> IMModel -> IMModel
-removeBlockedUser blocked model@{ contacts, suggestions } =
+updateAfterBlock :: PrimaryKey -> IMModel -> IMModel
+updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       model {
             contacts = DA.filter ((blocked /= _) <<< fromContact) contacts,
-            suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
+            suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions,
+            blockedUsers = blocked : blockedUsers,
+            chatting = Nothing,
+            failedRequests = [],
+            toggleModal = HideUserMenuModal,
+            toggleContextMenu = HideContextMenu
       }
       where fromContact { user } = fromUser user
             fromUser { id } = id

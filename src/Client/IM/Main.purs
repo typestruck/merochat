@@ -1,4 +1,5 @@
 module Client.IM.Main where
+--refactor: this file needs to be broken down into modules
 
 import Prelude
 import Shared.Types
@@ -8,6 +9,7 @@ import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
+import Client.Common.Network as CCN
 import Client.Common.Network as CCNT
 import Client.Common.Types (CurrentWebSocket)
 import Client.IM.Chat as CIC
@@ -27,8 +29,9 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Symbol (SProxy(..))
+import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -160,8 +163,25 @@ update { webSocketRef, fileReader } model =
             ToggleFortune isVisible -> toggleFortune isVisible model
             DisplayFortune sequence -> displayFortune sequence model
             RequestFailed failure -> addFailure failure model
+            SpecialRequest (ReportUser userID) -> report userID webSocket model
       where { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
 
+report :: PrimaryKey -> WebSocket -> IMModel -> MoreMessages
+report userID webSocket model@{ reportReason, reportComment } = case reportReason of
+      Just rs -> CIS.updateAfterBlock userID (model {
+            reportReason = Nothing,
+            reportComment = Nothing
+      }) :> [do
+            result <- CCN.defaultResponse $ request.im.report { body: { userID, reason: rs, comment: reportComment } }
+            case result of
+                  Left _ -> pure <<< Just $ RequestFailed { request: ReportUser userID, errorMessage : "" }
+                  _ -> do
+                        liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: userID }
+                        pure Nothing
+      ]
+      Nothing -> F.noMessages $ model {
+            erroredFields = [ TDS.reflectSymbol (SProxy :: SProxy "reportReason") ]
+      }
 
 askExperiment ::  IMModel -> MoreMessages
 askExperiment model@{ experimenting } = model :> if DM.isNothing experimenting then [] else [ do
@@ -237,6 +257,7 @@ addFailure failure@{ request } model@{ failedRequests, errorMessage } = F.noMess
       failedRequests = failure : failedRequests,
       errorMessage = case request of
             BlockUser _ -> "Could not block user. Please try again"
+            ReportUser _ -> "Could not report user. Please try again"
             PreviousSuggestion -> suggestionsError
             NextSuggestion -> suggestionsError
             _ -> errorMessage

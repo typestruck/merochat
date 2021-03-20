@@ -35,6 +35,7 @@ chat model@{ chatting } =
             chatBarInput ChatInput model
       ]
 
+--REFACTOR: replace sproxy usage with just SetField (all the fields are known!)
 linkModal :: IMModel -> Html IMMessage
 linkModal {toggleChatModal, linkText, link, erroredFields} =
       HE.div [HA.class' {"link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm }] [
@@ -42,7 +43,7 @@ linkModal {toggleChatModal, linkText, link, erroredFields} =
             HE.input [HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (SProxy :: SProxy "linkText"))],
             HE.label_ "Link",
             HE.input [HA.type' "text", HA.id $ show LinkFormUrl, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (SProxy :: SProxy "link"))],
-            HE.span [HA.class' {"error-message": true, "invisible": not (DS.null (DM.fromMaybe "" link)) || not (DA.elem (TDS.reflectSymbol (SProxy :: SProxy "link")) erroredFields) }] "Please enter a link",
+            HE.span [HA.class' {"error-message": true, "invisible": not (link /= Nothing && DA.elem (TDS.reflectSymbol (SProxy :: SProxy "link")) erroredFields) }] "Please enter a link",
             HE.div (HA.class' "buttons") [
                   HE.button [HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal] "Cancel",
                   HE.button [HA.class' "green-button", HA.onClick InsertLink] "Insert"

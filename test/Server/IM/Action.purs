@@ -47,6 +47,10 @@ tests = do
                   TS.serverAction $ do
                         R.liftAff $ TUA.equal 0 3
 
+            TU.test "report also blocks user" $
+                  TS.serverAction $ do
+                        R.liftAff $ TUA.equal 0 3
+
             TU.test "processMessage creates history" $
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers

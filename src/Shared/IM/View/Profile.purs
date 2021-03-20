@@ -192,7 +192,8 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                   SIA.arrow [HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true],
                   SIA.contextMenu $ show SuggestionContextMenu,
                   HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
-                        HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
+                        HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block",
+                        HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id] "Report"
                   ]
             ]
 

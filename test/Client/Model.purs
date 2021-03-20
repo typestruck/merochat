@@ -29,6 +29,8 @@ model = {
       hash: "",
       freeToFetchContactList: true,
       errorMessage: "",
+      reportReason: Nothing,
+      reportComment: Nothing,
       imUpdated : false,
       smallScreen: false,
       failedRequests: [],

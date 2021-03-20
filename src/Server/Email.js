@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-exports.sendEmail_ = async function ({ host, user, password }, to, content) {
+exports.sendEmail_ = async function ({ host, user, password }, to, subject, content) {
       var transporter = await nodemailer.createTransport({
             port: 465,
             auth: {
@@ -12,7 +12,7 @@ exports.sendEmail_ = async function ({ host, user, password }, to, content) {
 
       await transporter.sendMail({
             from: `"MelanChat" <noreply@melan.chat>`,
-            subject: "Reset password",
+            subject,
             html: content,
             to
       });
