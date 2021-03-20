@@ -1125,8 +1125,7 @@ select {
     height: 120px;
     margin-left: -250px;
     justify-content: center;
-    margin-top: -190px;
-    top: 50%;
+    top: 35%;
     left: 50%;
     display: flex;
     flex-direction: column;

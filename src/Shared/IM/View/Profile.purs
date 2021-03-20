@@ -8,7 +8,6 @@ import Data.Array as DA
 import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -26,7 +25,7 @@ import Shared.Unsafe as SU
 
 profile :: IMModel -> Html IMMessage
 profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible } =
-      if DA.null suggestions then
+      if DA.null suggestions && DM.isNothing chatting then
             emptySuggestions
        else
             case chatting, suggesting of
@@ -68,9 +67,7 @@ contact model@{ chatting, toggleContextMenu } cnt@{ impersonating, user: { id} }
                   HE.div [HA.class' "profile-contact-deets"] <<<
                         HE.div [HA.class' "outer-user-menu"] $
                               SIA.contextMenu $ show CompactProfileContextMenu,
-                              HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu }][
-                                    HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
-                              ]
+                              HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu }] $ blockReport id
             ],
             HE.div (HA.class' "show-profile-icon-div" : showProfile) $
                   HE.svg [HA.class' "show-profile-icon", HA.viewBox "0 0 16 16"] [
@@ -183,21 +180,22 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                   SIA.arrow [HA.class' "svg-back-profile", HA.onClick ToggleContactProfile],
                   HE.div [HA.class' "outer-user-menu"] $
                         SIA.contextMenu $ show FullProfileContextMenu,
-                        HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu }][
-                              HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block"
-                        ]
+                        HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu }] $ blockReport id
             ]
 
             currentSuggestionMenu = HE.div [HA.class' "profile-context outer-user-menu"] [
                   SIA.arrow [HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true],
                   SIA.contextMenu $ show SuggestionContextMenu,
-                  HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu }][
-                        HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block",
-                        HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id] "Report"
-                  ]
+                  HE.div [HA.class' {"user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu }] $ blockReport id
             ]
 
             loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
+
+blockReport :: PrimaryKey -> Array (Html IMMessage)
+blockReport id = [
+      HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id] "Block",
+      HE.div [HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id] "Report"
+]
 
 displayUserProfile :: forall message. Maybe Int -> IMUser -> Array (Html message)
 displayUserProfile index { id, karmaPosition, name, avatar, age, karma, headline, gender, country, languages, tags, description } = [

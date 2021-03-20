@@ -108,5 +108,5 @@ resumeChatHistory loggedUserID userID skip = SN.unwrapAll $ SID.chatHistoryBetwe
 reportUser :: PrimaryKey -> Report -> ServerEffect Ok
 reportUser loggedUserID report@{ reason, userID } = do
       SID.insertReport loggedUserID report
-      SE.sendEmail "contact@melan.chat" ("[REPORT]" <> show reason) $ "select * from reports where reported = " <> show userID
+      SE.sendEmail "contact@melan.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userID <> ";"
       pure ok
