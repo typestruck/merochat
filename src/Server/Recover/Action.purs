@@ -50,7 +50,7 @@ recover { email: rawEmail, captchaResponse } = do
                               HE.text " If you didn't ask to recover your password, just ignore this email. Your account will be safe."
                         ]
                   ]
-                  SE.sendEmail email contents
+                  SE.sendEmail email "Reset password" contents
                   pure ok
 
 reset :: ResetPassword -> ServerEffect Ok

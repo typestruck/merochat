@@ -23,6 +23,7 @@ import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync as NFS
 import Run as R
+import Server.Email as SE
 import Server.File as SF
 import Server.IM.Database as SID
 import Server.Ok (ok)
@@ -103,3 +104,9 @@ listMissedEvents loggedUserID lastSenderID lastRecipientID = do
 
 resumeChatHistory :: PrimaryKey -> PrimaryKey -> Int -> ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserID userID skip = SN.unwrapAll $ SID.chatHistoryBetween loggedUserID userID skip
+
+reportUser :: PrimaryKey -> Report -> ServerEffect Ok
+reportUser loggedUserID report@{ reason, userID } = do
+      SID.insertReport loggedUserID report
+      SE.sendEmail "contact@melan.chat" ("[REPORT]" <> show reason) $ "select * from reports where reported = " <> show userID
+      pure ok

@@ -1017,7 +1017,7 @@ input:not(type=button):focus {
 }
 
 .invisible {
-    visibility: hidden;
+    visibility: hidden !important;
 }
 
 .settings-karma {
@@ -1095,7 +1095,7 @@ select {
 }
 
 .reason {
-    margin: 10px 0;
+    margin-top: 10px;
 }
 
 .message-history .loading {
@@ -1109,7 +1109,7 @@ select {
 }
 
 .report-comment {
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .report-comment label {
@@ -1130,6 +1130,10 @@ select {
     left: 50%;
     display: flex;
     flex-direction: column;
+}
+
+.confirmation .error-message {
+    visibility: visible;
 }
 
 .confirmation.report {

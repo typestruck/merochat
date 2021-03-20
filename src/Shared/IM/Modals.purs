@@ -6,21 +6,22 @@ import Shared.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Symbol (SProxy(..))
+import Data.Symbol as TDS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.IM.Svg as SIA
 import Shared.IM.View.Retry as SIVR
-import Shared.Setter as SS
 
 modals :: IMModel -> Html IMMessage
-modals { toggleModal: toggle, failedRequests} =
+modals { toggleModal: toggle, failedRequests, erroredFields } =
       HE.div (HA.class' {"modal-placeholder-overlay": true, "hidden" : toggle == HideUserMenuModal}) [
             case toggle of
                   ShowReport reportedID ->
                         HE.div (HA.class' "confirmation report") [
                               HE.span (HA.class' "report-title") "Report user",
                               HE.div (HA.class' "report-reasons") $ DA.mapWithIndex toRadio [DatingContent, Harrassment, HateSpeech, Spam, OtherReason],
+                              HE.span [HA.class' {"error-message": true, "invisible": not (DA.elem (TDS.reflectSymbol (SProxy :: SProxy "reportReason")) erroredFields) }] "Please choose a reason",
                               HE.div (HA.class' "report-comment") [
                                     HE.label_ "Comment",
                                     HE.input [HA.type' "text", HA.maxlength 300, HA.class' "modal-input", HA.onInput setReportComment]
@@ -72,8 +73,8 @@ modals { toggleModal: toggle, failedRequests} =
             ]
             toRadio i reason = let idName = show i in
                   HE.div (HA.class' "reason") [
-                        HE.input [HA.type' "radio", HA.id $ "report-" <> idName, HA.name "report-reason", HA.onInput (const (SetField (_ { reportReason = Just reason})))],
+                        HE.input [HA.type' "radio", HA.id $ "report-" <> idName, HA.name "report-reason", HA.onInput (const (SetField (_ { reportReason = Just reason, erroredFields = [] })))],
                         HE.label (HA.for $ "report-" <> idName) $ show reason
                   ]
 
-            setReportComment value = SetField (_ { reportComment = Just value})
+            setReportComment value = SetField (_ { reportComment = Just value })

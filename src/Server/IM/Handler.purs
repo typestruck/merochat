@@ -44,8 +44,11 @@ history { guards: { loggedUserID }, query: { with, skip } } = SIA.resumeChatHist
 suggestions :: { guards :: { loggedUserID :: PrimaryKey }, query :: { skip :: Int, avoid :: Maybe ArrayPrimaryKey } } -> ServerEffect (Array Suggestion)
 suggestions { guards: { loggedUserID }, query: { skip, avoid } } = SIA.suggest loggedUserID skip avoid
 
-block :: { guards :: { loggedUserID :: PrimaryKey }, query :: { id :: PrimaryKey } } -> ServerEffect Ok
-block { guards: { loggedUserID }, query: { id } } = SIA.blockUser loggedUserID id
+block :: { guards :: { loggedUserID :: PrimaryKey }, body :: { id :: PrimaryKey } } -> ServerEffect Ok
+block { guards: { loggedUserID }, body: { id } } = SIA.blockUser loggedUserID id
 
 missedEvents :: { guards :: { loggedUserID :: PrimaryKey }, query :: { lastSenderID :: Maybe Int, lastRecipientID :: Maybe Int } } -> ServerEffect MissedEvents
 missedEvents { guards: { loggedUserID }, query: { lastSenderID, lastRecipientID } } = SIA.listMissedEvents loggedUserID lastSenderID lastRecipientID
+
+report :: { guards :: { loggedUserID :: PrimaryKey }, body :: Report } -> ServerEffect Ok
+report { guards: { loggedUserID }, body } = SIA.reportUser loggedUserID body

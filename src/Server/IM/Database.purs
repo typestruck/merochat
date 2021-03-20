@@ -103,4 +103,11 @@ changeStatus :: forall r. PrimaryKey -> MessageStatus -> Array PrimaryKey -> Bas
 changeStatus loggedUserID status ids = SD.execute (Query "update messages set status = $1 where recipient = $2 and id = any($3)") (status /\ loggedUserID /\ ids)
 
 insertBlock :: PrimaryKey -> PrimaryKey -> ServerEffect Unit
-insertBlock loggedUserID blocked = void $ SD.insert (Query "insert into blocks(blocker, blocked) values ($1, $2)") (loggedUserID /\ blocked)
+insertBlock loggedUserID blocked = void $ SD.insert blockQuery (loggedUserID /\ blocked)
+
+blockQuery = Query "insert into blocks(blocker, blocked) values ($1, $2)"
+
+insertReport :: PrimaryKey -> Report -> ServerEffect Unit
+insertReport loggedUserID { userID, comment, reason } = SD.withTransaction $ \connection -> do
+      SD.executeWith connection blockQuery (loggedUserID /\ userID)
+      SD.executeWith connection (Query """INSERT INTO reports(reporter, reported, reason, comment) VALUES ($1, $2, $3, $4)""") (loggedUserID /\ userID /\ reason /\ comment)

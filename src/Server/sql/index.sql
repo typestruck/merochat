@@ -182,6 +182,18 @@ create table suggestions
     constraint user_suggested foreign key (suggested) references users(id) on delete cascade
 );
 
+create table reports
+(
+    id integer generated always as identity primary key,
+    comment text not null,
+    reason smallint not null,
+    reporter integer not null,
+    date timestamp not null default (now() at time zone 'utc'),
+    reported integer not null,
+    constraint reporter_user foreign key (reporter) references users(id) on delete cascade,
+    constraint reported_user foreign key (reported) references users(id) on delete cascade
+);
+
 -- create table badges
 -- (
 --     id integer generated always as identity primary key,
@@ -203,18 +215,6 @@ create table suggestions
 --     feature smallint not null,
 --     description text,
 --     quantity integer not null
--- );
-
--- create table reports
--- (
---     id integer generated always as identity primary key,
---     description text not null,
---     offense integer not null,
---     reporter integer not null,
---     reported integer not null,
---     constraint offense_reaction foreign key (offense) references reactions(id) on delete cascade,
---     constraint reporter_user foreign key (reporter) references users(id) on delete cascade,
---     constraint reported_user foreign key (reported) references users(id) on delete cascade
 -- );
 
 -- create table privileges_users

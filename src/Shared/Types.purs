@@ -194,6 +194,7 @@ newtype ContactWrapper = ContactWrapper Contact
 
 newtype HistoryMessageWrapper = HistoryMessageWrapper HistoryMessage
 
+--refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
 type IM = (
       suggestions :: Array Suggestion,
       contacts :: Array Contact,
@@ -277,6 +278,12 @@ type ChatExperiment = {
       code :: ExperimentData,
       name :: String,
       description :: String
+}
+
+type Report = {
+      reason :: ReportReason,
+      comment :: Maybe String,
+      userID :: PrimaryKey
 }
 
 data ChatExperimentMessage =
@@ -600,6 +607,7 @@ derive instance newTypeIMUserWrapper :: Newtype IMUserWrapper _
 derive instance newTypeContactWrapper :: Newtype ContactWrapper _
 derive instance newTypeHistoryMessageWrapper :: Newtype HistoryMessageWrapper _
 
+derive instance eqReportReason :: Eq ReportReason
 derive instance eqChatExperimentSection :: Eq ChatExperimentSection
 derive instance eqExperimentCode :: Eq ExperimentData
 derive instance eqIMSelector :: Eq ElementID
@@ -855,6 +863,8 @@ instance writeForeignMessageStatus :: WriteForeign MessageStatus where
       writeImpl messageStatus = F.unsafeToForeign $ DE.fromEnum messageStatus
 instance writeForeignGender :: WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
+instance writeForeignReportReason :: WriteForeign ReportReason where
+      writeImpl reason = F.unsafeToForeign $ DE.fromEnum reason
 instance writeForeignMDate :: WriteForeign DateWrapper where
       writeImpl = F.unsafeToForeign <<< SDT.dateToNumber
 
@@ -862,9 +872,12 @@ instance readForeignMDatee :: ReadForeign DateWrapper where
       readImpl foreignDate = DateWrapper <<< DTT.date <<<  DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
 instance readForeignMDateTime :: ReadForeign DateTimeWrapper where
       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
+--refactor: gender should use enum instances for read/writeforeigner
 instance readForeignGender :: ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
 instance readForeignMessageStatus :: ReadForeign MessageStatus where
+      readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
+instance readForeignReportReason :: ReadForeign ReportReason where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
 
 instance decodeQueryArrayPrimaryKey :: DecodeQueryParam ArrayPrimaryKey where
@@ -998,6 +1011,8 @@ instance toSQLValueGender :: ToSQLValue Gender where
       toSQLValue = F.unsafeToForeign <<< show
 instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
       toSQLValue = F.unsafeToForeign <<< DE.fromEnum
+instance toSQLReportReason :: ToSQLValue ReportReason where
+      toSQLValue = F.unsafeToForeign <<< DE.fromEnum
 
 instance fromSQLValueGender :: FromSQLValue Gender where
       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
@@ -1116,52 +1131,37 @@ instance readGenerate :: Read Generate where
               _ -> Nothing
 
 --thats a lot of work...
-instance ordMessageStatus :: Ord MessageStatus where
-      compare status otherStatus = compare (DE.fromEnum status) $ (DE.fromEnum otherStatus)
+derive instance ordExperimentData  :: Ord ExperimentData
+derive instance ordReportReason :: Ord ReportReason
+derive instance ordMessageStatus :: Ord MessageStatus
 
+instance boundedReportReason :: Bounded ReportReason where
+      bottom = DatingContent
+      top = OtherReason
 instance boundedMessageStatus :: Bounded MessageStatus where
       bottom = Received
       top = Read
-
-instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
-      cardinality = Cardinality 1
-
-      fromEnum = case _ of
-          Errored -> -1
-          Sent -> 0
-          Received -> 1
-          Delivered -> 2
-          Read -> 3
-
-      toEnum = case _ of
-          -1 -> Just Errored
-          0 -> Just Sent
-          1 -> Just Received
-          2 -> Just Delivered
-          3 -> Just Read
-          _ -> Nothing
-
-instance enumMessageStatus :: Enum MessageStatus where
-      succ = case _ of
-          Errored -> Just Received
-          Sent -> Just Sent
-          Received -> Just Delivered
-          Delivered -> Just Read
-          Read -> Nothing
-
-      pred = case _ of
-          Errored -> Nothing
-          Sent -> Just Sent
-          Received -> Just Errored
-          Delivered -> Just Received
-          Read -> Just Delivered
-
-instance ordExperimentCode :: Ord ExperimentData where
-      compare status otherStatus = compare (DE.fromEnum status) $ (DE.fromEnum otherStatus)
-
 instance boundedExperimentCode :: Bounded ExperimentData where
       bottom = Impersonation Nothing
       top = Impersonation Nothing
+
+instance boundedEnumReportReason :: BoundedEnum ReportReason where
+      cardinality = Cardinality 1
+
+      fromEnum = case _ of
+            DatingContent -> 0
+            Harrassment -> 1
+            HateSpeech -> 2
+            Spam -> 3
+            OtherReason -> 255
+
+      toEnum = case _ of
+            0 -> Just DatingContent
+            1 -> Just Harrassment
+            2 -> Just HateSpeech
+            3 -> Just Spam
+            255 -> Just OtherReason
+            _ -> Nothing
 
 instance boundedEnumExperimentCode :: BoundedEnum ExperimentData where
       cardinality = Cardinality 1
@@ -1172,10 +1172,55 @@ instance boundedEnumExperimentCode :: BoundedEnum ExperimentData where
       toEnum = case _ of
           0 -> Just $ Impersonation Nothing
           _ -> Nothing
+instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
+      cardinality = Cardinality 1
 
-instance enumExperimentCode :: Enum ExperimentData where
+      fromEnum = case _ of
+            Errored -> -1
+            Sent -> 0
+            Received -> 1
+            Delivered -> 2
+            Read -> 3
+
+      toEnum = case _ of
+            -1 -> Just Errored
+            0 -> Just Sent
+            1 -> Just Received
+            2 -> Just Delivered
+            3 -> Just Read
+            _ -> Nothing
+
+instance enumReportReason :: Enum ReportReason where
       succ = case _ of
-          Impersonation _ -> Nothing
+            DatingContent -> Just Harrassment
+            Harrassment -> Just HateSpeech
+            HateSpeech -> Just Spam
+            Spam -> Just OtherReason
+            OtherReason -> Nothing
 
       pred = case _ of
-          Impersonation _JsonBoolean -> Nothing
+            DatingContent -> Nothing
+            Harrassment -> Just DatingContent
+            HateSpeech -> Just Harrassment
+            Spam -> Just HateSpeech
+            OtherReason -> Just Spam
+instance enumMessageStatus :: Enum MessageStatus where
+      succ = case _ of
+            Errored -> Just Received
+            Sent -> Just Sent
+            Received -> Just Delivered
+            Delivered -> Just Read
+            Read -> Nothing
+
+      pred = case _ of
+            Errored -> Nothing
+            Sent -> Just Sent
+            Received -> Just Errored
+            Delivered -> Just Received
+            Read -> Just Delivered
+instance enumExperimentCode :: Enum ExperimentData where
+      succ = case _ of
+            Impersonation _ -> Nothing
+
+      pred = case _ of
+            Impersonation _JsonBoolean -> Nothing

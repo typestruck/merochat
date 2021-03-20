@@ -46,6 +46,7 @@ toggleModal mToggle model@{ modalsLoaded } =
             ShowBacker -> showTab request.internalBacker ShowBacker Nothing BackerRoot
             modal -> F.noMessages $ model {
                   toggleModal = modal,
+                  erroredFields = [],
                   toggleContextMenu = HideContextMenu
             }
       where showTab f toggle file root =
