@@ -17,13 +17,12 @@ import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
-import Server.Response as SR
 
 im :: { guards :: { loggedUserID :: PrimaryKey } } -> ServerEffect (Response String)
 im { guards: { loggedUserID } } = do
       maybeUser <- SID.presentUser loggedUserID
       case maybeUser of
-            --nothing can only happen in case the user has an invalid cookie
+            --happens if the user has an invalid cookie/was suspended
             Nothing -> RE.throw ExpiredSession
             Just user -> do
                   suggestions <- SIA.suggest loggedUserID 0 Nothing

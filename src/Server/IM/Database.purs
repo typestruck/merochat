@@ -34,7 +34,7 @@ messagePresentationFields :: String
 messagePresentationFields = " id, sender, recipient, date, content, status "
 
 presentUserQuery :: forall p v. Query p v
-presentUserQuery = Query ("select" <> userPresentationFields <> "from" <> usersTable <> "where u.id = $1")
+presentUserQuery = Query ("select" <> userPresentationFields <> "from" <> usersTable <> "where u.id = $1 and active")
 
 presentUserParameters :: forall t. t -> Row1 t
 presentUserParameters = Row1
@@ -52,7 +52,7 @@ suggest loggedUserID skip = case _ of
       _ ->
             SD.select (Query (select <> "and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id))" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
       where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> $1 "
-            rest = " and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()"
+            rest = " and u.active and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()"
 
 presentContacts :: PrimaryKey -> Int -> ServerEffect (Array ContactWrapper)
 presentContacts loggedUserID skip = SD.select (Query ("select distinct h.date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
