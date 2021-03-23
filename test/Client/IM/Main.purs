@@ -10,6 +10,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
+import Shared.Experiments.Impersonation (batman)
 import Shared.Unsafe ((!@))
 import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, webSocket)
 import Test.Unit (TestSuite)
@@ -127,7 +128,19 @@ tests = do
                   TUA.equal [Tuple newMessageID Read] $ map (\( { id, status}) -> Tuple id status) (contacts !@ 0).history
 
             TU.test "receiveMessage ignores impersonation messages that dont match current" do
-                  TUA.equal 34 9
+                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  let   { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (NewIncomingMessage {
+                              date,
+                              id: newMessageID,
+                              content,
+                              experimenting: Just $ ImpersonationPayload { id: batman.id + 1, sender : false },
+                              userID: contact.user.id
+                        }) $ model {
+                              contacts = [contact],
+                              chatting = Nothing,
+                              experimenting = Just <<< Impersonation $ Just batman
+                        }
+                  TUA.equal Nothing $ getHistory contacts
 
             TU.test "receiveMessage does not mark messages as read if window is not focused" do
                   date <- liftEffect $ map DateTimeWrapper EN.nowDateTime

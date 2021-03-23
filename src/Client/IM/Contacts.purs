@@ -29,7 +29,7 @@ import Web.DOM.Element as WDE
 import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
-resumeChat :: PrimaryKey -> Maybe PrimaryKey ->  IMModel -> MoreMessages
+resumeChat :: PrimaryKey -> Maybe PrimaryKey -> IMModel -> MoreMessages
 resumeChat searchID impersonating model@{ contacts, chatting, smallScreen } =
       let   index = DA.findIndex (\cnt -> cnt.user.id == searchID && cnt.impersonating == impersonating) contacts
             cnt@{ shouldFetchChatHistory, user: { id } } = SIC.chattingContact contacts index

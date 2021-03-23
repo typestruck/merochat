@@ -14,5 +14,11 @@ tests = do
             TU.test "" do
                   TUA.equal 3 4
       TU.suite "displaying message date time" do
-            TU.test "" do
+            TU.test "ago shows yesterday" do
+                  TUA.equal 3 4
+            TU.test "ago shows day of the week" do
+                  TUA.equal 3 4
+            TU.test "ago shows full date" do
+                  TUA.equal 3 4
+            TU.test "agoWithTime includes time" do
                   TUA.equal 3 4

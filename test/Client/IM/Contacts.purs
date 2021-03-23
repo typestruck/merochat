@@ -9,6 +9,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Now as EN
 import Effect.Unsafe as EU
+import Shared.Experiments.Impersonation (batman)
 import Shared.Unsafe ((!@))
 import Test.Client.Model (contact, historyMessage, imUser, imUserID, model, webSocket)
 import Test.Unit (TestSuite)
@@ -29,7 +30,11 @@ tests = do
                   TUA.equal (Just 0) chatting
 
             TU.test "resumeChat finds impersonation contact" do
-                  TUA.equal 9 4
+                  let m@{ chatting } = DT.fst <<< CICN.resumeChat imUser.id (Just batman.id) $ model {
+                        chatting = Nothing,
+                        contacts = [contact { user = imUser }, anotherContact { user = imUser, impersonating = Just batman.id}]
+                  }
+                  TUA.equal (Just 1) chatting
 
             TU.test "updateStatus sets recieved messages as read" do
                   let { contacts } = DT.fst <<< CICN.markRead webSocket $ model {
