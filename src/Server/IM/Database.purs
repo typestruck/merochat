@@ -10,6 +10,7 @@ import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Pool, Query(..), Row1(..))
+import Debug.Trace (spy)
 import Server.Database as SD
 import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage, suggestionsPerPage)
 
@@ -48,7 +49,7 @@ suggest loggedUserID skip = case _ of
       Just (ArrayPrimaryKey []) ->
             SD.select (Query (select <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
       Just (ArrayPrimaryKey keys) ->
-            SD.select (Query (select <> "and u.id = any($4)" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip /\ keys)
+            SD.select (Query (select <> "and not (u.id = any($4))" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip /\ keys)
       _ ->
             SD.select (Query (select <> "and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id))" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
       where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> $1 "

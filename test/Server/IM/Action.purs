@@ -1,6 +1,7 @@
 module Test.Server.IM.Action where
 
 import Prelude
+import Shared.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -11,6 +12,7 @@ import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Database.PostgreSQL (Query(..), Row0(..))
+import Debug.Trace (spy)
 import Run as R
 import Server.Database as SD
 import Server.File (imageTooBigMessage, invalidImageMessage)
@@ -18,7 +20,6 @@ import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Landing.Database as SLD
 import Shared.Options.File (maxImageSize)
-import Shared.Types
 import Shared.Unsafe ((!@))
 import Test.Server as TS
 import Test.Server.Model (baseUser)
@@ -41,15 +42,23 @@ tests = do
 
             TU.test "suggest includes all users if impersonating" $
                   TS.serverAction $ do
-                        R.liftAff $ TUA.equal 0 3
+                        Tuple userID anotherUserID <- setUpUsers
+                        Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
+                        suggestions <- SIA.suggest userID 0 <<< Just $ ArrayPrimaryKey []
+                        R.liftAff <<< TUA.equal 1 $ DA.length suggestions
 
             TU.test "suggest avoids given users if impersonating" $
                   TS.serverAction $ do
-                        R.liftAff $ TUA.equal 0 3
+                        Tuple userID anotherUserID <- setUpUsers
+                        suggestions <- SIA.suggest userID 0 <<< Just $ ArrayPrimaryKey [anotherUserID]
+                        R.liftAff <<< TUA.equal 0 $ DA.length suggestions
 
             TU.test "report also blocks user" $
                   TS.serverAction $ do
-                        R.liftAff $ TUA.equal 0 3
+                        Tuple userID anotherUserID <- setUpUsers
+                        void $ SIA.reportUser userID { userID: anotherUserID, reason: Spam, comment: Nothing }
+                        count <- SD.scalar' (Query """select count(1) as c from blocks where blocker = $1 and  blocked = $2""") (userID /\ anotherUserID)
+                        R.liftAff $ TUA.equal 1 count
 
             TU.test "processMessage creates history" $
                   TS.serverAction $ do

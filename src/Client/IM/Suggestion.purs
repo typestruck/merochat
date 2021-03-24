@@ -12,7 +12,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-
+import Debug.Trace (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -52,7 +52,7 @@ fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } = model 
             query: {
                   skip: suggestionsPerPage * suggestionsPage,
                   avoid: case experimenting of
-                        Just (Impersonation (Just _)) -> Just <<< ArrayPrimaryKey <<< map (_.id <<< _.user) $ DA.filter (DM.isJust <<< _.impersonating) contacts
+                        Just (Impersonation (Just _)) -> Just <<< ArrayPrimaryKey $ map (_.id <<< _.user) contacts
                         _ -> Nothing
             }
       }]

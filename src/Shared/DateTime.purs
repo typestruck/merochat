@@ -34,11 +34,13 @@ foreign import time :: Number -> String
 foreign import dayOfTheWeek :: Number -> String
 foreign import fullDate :: Number -> String
 
---REFACTOR: take now as parameter
 ageFrom :: Maybe Date -> Maybe Int
-ageFrom birthday = fromDays <<< DD.diff now <$> birthday
+ageFrom = ageFrom' now
       where now = EU.unsafePerformEffect EN.nowDate
-            fromDays (Days d) = DIN.floor (d / 365.0)
+
+ageFrom' :: Date -> Maybe Date -> Maybe Int
+ageFrom' now birthday = calculate <$> birthday
+      where calculate b = DE.fromEnum (DD.year now) - DE.fromEnum (DD.year b) - if dayDiff (DateTime now zeroTime) < dayDiff (DateTime b zeroTime) then 1 else 0
 
 --minimum age to sign up is 13
 latestEligibleBirthday :: Effect Date
@@ -110,7 +112,7 @@ ago dateTime =
       if days == 0 then
             localDateTimeWith time dateTime
        else if days == 1 then
-            "Yesterday "
+            "Yesterday"
        else if days >= 2 && days <= 7 then
             localDateTimeWith dayOfTheWeek dateTime
        else

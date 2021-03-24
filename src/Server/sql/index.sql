@@ -186,7 +186,7 @@ create table suggestions
 create table reports
 (
     id integer generated always as identity primary key,
-    comment text not null,
+    comment text,
     reason smallint not null,
     reporter integer not null,
     date timestamp not null default (now() at time zone 'utc'),
