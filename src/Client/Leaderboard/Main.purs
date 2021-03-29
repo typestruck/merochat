@@ -12,6 +12,7 @@ main :: Effect Unit
 main =
       F.resumeMount_ (QuerySelector ".karma-leaderboard") {
             view: SLV.view,
+            subscribe: [],
             init: [],
             update: CLU.update
       }

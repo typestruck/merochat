@@ -12,7 +12,8 @@ import Web.DOM.ParentNode (QuerySelector(..))
 main :: Effect Unit
 main =
       FAE.resumeMount_ (QuerySelector ".settings-edition") {
-            view: SSV.view ,
+            view: SSV.view,
+            subscribe: [],
             init: Nothing,
             update: CSA.update
       }

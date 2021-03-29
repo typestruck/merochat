@@ -41,7 +41,7 @@ import Effect.Timer as ET
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
-import Flame.Html.Signal as FE
+import Flame.Subscription as FE
 import Foreign as FO
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV

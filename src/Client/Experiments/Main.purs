@@ -12,6 +12,7 @@ main :: Effect Unit
 main =
       F.resumeMount_ (QuerySelector ".chat-experiments") {
             view: SEV.view,
+            subscribe: [],
             init: [],
             update: CEU.update
       }
