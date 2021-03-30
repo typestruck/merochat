@@ -392,7 +392,7 @@ data IMMessage =
       InsertLink |
       --main
       AskChatExperiment |
-      SetChatExperiment String | --to be serialized
+      SetChatExperiment (Maybe ExperimentData) |
       ReloadPage |
       ToggleUserContextMenu Event |
       SpecialRequest RetryableRequest |

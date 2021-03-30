@@ -4,7 +4,7 @@ module Client.IM.Main where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM (setChatExperiment)
+import Client.Common.DOM (setChatExperiment, askChatExperiment)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Location as CCL
@@ -43,12 +43,14 @@ import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
 import Flame.Subscription as FE
 import Flame.Subscription as FS
+import Flame.Subscription.Document as FSD
+import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Flame.Subscription.Window as FSW
 import Foreign as FO
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
-import Shared.Options.MountPoint (imID)
+import Shared.Options.MountPoint (imID, profileID)
 import Shared.Routes (routes)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -74,23 +76,24 @@ main = do
             view: SIV.view true,
             subscribe: [
                   --display settings/profile/etc page menus
-                  FE.onClick' ToggleUserContextMenu,
+                  FSD.onClick' ToggleUserContextMenu,
                   --focus event has to be on the window as chrome is a whiny baby about document
                   FSW.onFocus UpdateReadCount,
                   --events from chat experiment
-                  FS.onCustomEvent setChatExperiment SetChatExperiment
+                  FS.onCustomEvent setChatExperiment SetChatExperiment,
+                  FS.onCustomEvent' askChatExperiment AskChatExperiment
             ],
             init: [],
             update: update { fileReader, webSocketRef }
       }
-      setUpWebSocket webSocketRef imID
+      setUpWebSocket webSocketRef
       width <- CCD.screenWidth
       let smallScreen = width < mobileBreakpoint
       --keep track of mobile (-like) screens for things that cant be done with media queries
       when smallScreen $ FS.send imID SetSmallScreen
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
-      historyChange smallScreen imID
+      historyChange smallScreen
       --for drag and drop
       CCF.setUpBase64Reader fileReader (SetSelectedImage <<< Just) imID
       --image upload
@@ -98,6 +101,8 @@ main = do
       CCF.setUpFileChange (SetSelectedImage <<< Just) input imID
       --notification permission (desktop)
       unless smallScreen checkNotifications
+
+      FS.send imID AskChatExperiment
 
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader } model =
@@ -181,25 +186,23 @@ report userID webSocket model@{ reportReason, reportComment } = case reportReaso
             erroredFields = [ TDS.reflectSymbol (SProxy :: SProxy "reportReason") ]
       }
 
-askExperiment ::  IMModel -> MoreMessages
+askExperiment :: IMModel -> MoreMessages
 askExperiment model@{ experimenting } = model :> if DM.isNothing experimenting then [] else [ do
-      liftEffect <<< CCD.dispatchCustomEvent <<< CCD.createCustomEvent setChatExperiment $ SJ.toJSON experimenting
+      liftEffect $ FSUC.broadcast setChatExperiment experimenting
       pure Nothing
 ]
 
-setExperiment :: String -> IMModel -> MoreMessages
+setExperiment :: Maybe ExperimentData -> IMModel -> MoreMessages
 setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestionsPage } = model {
       chatting = Nothing,
       temporaryID = 3000000,
       contacts = if impersonating then [] else contacts,
-      experimenting = parsedExperiment,
+      experimenting = experiment,
       toggleModal = if toggleModal == ShowExperiments then HideUserMenuModal else toggleModal,
       suggestionsPage = if impersonating then 0 else suggestionsPage
 } :> if impersonating then [pure $ Just FetchMoreSuggestions] else []
-      where parsedExperiment = case SJ.fromJSON experiment of
-                  Left _ -> Nothing
-                  Right e -> e
-            impersonating = case parsedExperiment of
+      where
+            impersonating = case experiment of
                   imp@(Just (Impersonation (Just _))) -> imp /= experimenting --avoid running more than once
                   _ -> false
 
@@ -491,22 +494,23 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketCo
 preventStop :: Event -> IMModel -> NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
-checkNotifications :: imID (Array IMMessage) -> Effect Unit
-checkNotifications imID = do
+checkNotifications :: Effect Unit
+checkNotifications = do
       status <- CCD.notificationPermission
       when (status == "default") $ FS.send imID ToggleAskNotification
 
-historyChange :: Boolean -> imID (Array IMMessage) -> Effect Unit
-historyChange smallScreen imID = do
+--refactor use popstate subscription
+historyChange :: Boolean -> Effect Unit
+historyChange smallScreen = do
       popStateListener <- WET.eventListener $ const handler
       window <- WH.window
       WET.addEventListener popstate popStateListener false $ WHW.toEventTarget window
       where handler = do
                   CCD.pushState $ routes.im.get {}
-                  when smallScreen <<< FS.send imID <<< DA.singleton $ ToggleInitialScreen true
+                  when smallScreen <<< FS.send imID $ ToggleInitialScreen true
 
-setUpWebSocket :: Ref CurrentWebSocket -> imID (Array IMMessage) -> Effect Unit
-setUpWebSocket webSocketRef imID = do
+setUpWebSocket :: Ref CurrentWebSocket -> Effect Unit
+setUpWebSocket webSocketRef = do
       { webSocket } <- ER.read webSocketRef
       let webSocketTarget = CIW.toEventTarget webSocket
       --a ref is used to track reconnections and ping intervals
@@ -518,9 +522,7 @@ setUpWebSocket webSocketRef imID = do
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
 
-      where sendimID = FS.send imID <<< DA.singleton
-
-            open timerIDs _ = do
+      where open timerIDs _ = do
                   { reconnectID } <- ER.read timerIDs
                   case reconnectID of
                         Nothing -> pure unit
@@ -530,7 +532,7 @@ setUpWebSocket webSocketRef imID = do
                   pong true
                   newPingID <- ping
                   ER.modify_ ( _ { pingID = Just newPingID }) timerIDs
-                  sendimID $ ToggleConnected true
+                  FS.send imID $ ToggleConnected true
                   askForUpdates
 
             ping = ET.setInterval (1000 * 60) do
@@ -547,7 +549,7 @@ setUpWebSocket webSocketRef imID = do
                   isFocused <- CCD.documentHasFocus
                   case message of
                         Pong -> pong true
-                        Content cnt -> sendimID $ ReceiveMessage cnt isFocused
+                        Content cnt -> FS.send imID $ ReceiveMessage cnt isFocused
 
             pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
 
@@ -556,7 +558,7 @@ setUpWebSocket webSocketRef imID = do
                   CIW.sendPayload webSocket UpdateHash
 
             close timerIDs _ = do
-                  sendimID $ ToggleConnected false
+                  FS.send imID $ ToggleConnected false
                   { reconnectID, pingID } <- ER.read timerIDs
                   newPingID <- case pingID of
                         Nothing -> pure unit
@@ -568,7 +570,7 @@ setUpWebSocket webSocketRef imID = do
                         id <- ET.setTimeout milliseconds <<< void $ do
                               newWebSocket <- CIW.createWebSocket
                               ER.modify_ (_ { webSocket = newWebSocket }) webSocketRef
-                              setUpWebSocket webSocketRef imID
+                              setUpWebSocket webSocketRef
                         ER.modify_ (_ { reconnectID = Just id }) timerIDs
 
 setSmallScreen :: IMModel -> NoMessages
