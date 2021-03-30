@@ -4,13 +4,12 @@ import Prelude
 import Shared.Types
 
 import Client.Common.DOM (setChatExperiment)
-import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
 import Flame (ListUpdate, (:>))
 import Flame as F
-import Shared.JSON as SJ
+import Flame.Subscription.Unsafe.CustomEvent as FSUC
 
 update :: ListUpdate ChatExperimentModel ChatExperimentMessage
 update model =
@@ -26,6 +25,6 @@ update model =
             ToggleSection section -> F.noMessages $ model { section = section }
             ConfirmImpersonation profile -> F.noMessages model { impersonation = profile }
       where dispatchEvent payload = [ liftEffect do
-                  CCD.dispatchCustomEvent <<< CCD.createCustomEvent setChatExperiment $ SJ.toJSON payload
+                  FSUC.broadcast setChatExperiment payload
                   pure Nothing
             ]

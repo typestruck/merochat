@@ -495,6 +495,8 @@ data ElementID =
       FaqLink |
       AvatarFileInput
 
+data MountPoint = IM | Profile
+
 type PU = (BasicUser (
       gender :: Maybe Gender,
       country :: Maybe PrimaryKey,
@@ -535,7 +537,7 @@ data ProfileMessage =
       SelectAvatar |
       SetAvatar String |
       SetGenerate Generate |
-      SetProfileChatExperiment String |
+      SetProfileChatExperiment (Maybe ExperimentData) |
       SaveProfile
 
 type SM = (
@@ -915,6 +917,11 @@ instance encodeQueryParamMDateTime :: EncodeQueryParam DateTimeWrapper where
 instance encodeQueryGenerate :: EncodeQueryParam Generate where
       encodeQueryParam = Just <<< show
 
+instance contentMountPoint :: Show MountPoint where
+      show = case _ of
+            IM -> "im-mount"
+            Profile -> "profile-mount"
+
 instance contentReportReason :: Show ReportReason where
       show = case _ of
             DatingContent -> "Dating content"
@@ -922,7 +929,6 @@ instance contentReportReason :: Show ReportReason where
             HateSpeech -> "Hate Speech/Call to violence"
             Spam -> "Spam/Product placement"
             OtherReason -> "Other"
-
 instance contentTypeShow :: Show ContentType where
       show JSON = "application/json"
       show JS = "application/javascript"

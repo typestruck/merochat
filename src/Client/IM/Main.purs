@@ -4,7 +4,7 @@ module Client.IM.Main where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM (askChatExperiment, nameChanged, notificationClick, setChatExperiment)
+import Client.Common.DOM (setChatExperiment)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Location as CCL
@@ -42,15 +42,16 @@ import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
 import Flame.Subscription as FE
+import Flame.Subscription as FS
+import Flame.Subscription.Window as FSW
 import Foreign as FO
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
+import Shared.Options.MountPoint (imID)
 import Shared.Routes (routes)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
-import Signal.Channel (Channel)
-import Signal.Channel as SC
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
 import Web.Event.Event as WEE
@@ -69,37 +70,34 @@ main = do
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef <- ER.new { webSocket, ponged : true }
       fileReader <- WFR.fileReader
-      channel <- F.resumeMount (QuerySelector ".im") {
+      F.resumeMount (QuerySelector ".im") imID {
             view: SIV.view true,
+            subscribe: [
+                  --display settings/profile/etc page menus
+                  FE.onClick' ToggleUserContextMenu,
+                  --focus event has to be on the window as chrome is a whiny baby about document
+                  FSW.onFocus UpdateReadCount,
+                  --events from chat experiment
+                  FS.onCustomEvent setChatExperiment SetChatExperiment
+            ],
             init: [],
             update: update { fileReader, webSocketRef }
       }
-      setUpWebSocket webSocketRef channel
+      setUpWebSocket webSocketRef imID
       width <- CCD.screenWidth
       let smallScreen = width < mobileBreakpoint
       --keep track of mobile (-like) screens for things that cant be done with media queries
-      when smallScreen $ SC.send channel [SetSmallScreen]
+      when smallScreen $ FS.send imID SetSmallScreen
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
-      historyChange smallScreen channel
-      --display settings/profile/etc page menus
-      FE.send [FE.onClick' [ToggleUserContextMenu]] channel
+      historyChange smallScreen imID
       --for drag and drop
-      CCF.setUpBase64Reader fileReader (DA.singleton <<< SetSelectedImage <<< Just) channel
-      --receive profile edition changes
-      CCD.addCustomEventListener nameChanged (SC.send channel <<< DA.singleton <<< SetNameFromProfile)
-      --move to given chat when clicking on system notification
-      CCD.addCustomEventListener notificationClick (SC.send channel <<< DA.singleton <<< ResumeChat)
+      CCF.setUpBase64Reader fileReader (SetSelectedImage <<< Just) imID
       --image upload
       input <- CCD.unsafeGetElementByID ImageFileInput
-      CCF.setUpFileChange (DA.singleton <<< SetSelectedImage <<< Just) input channel
+      CCF.setUpFileChange (SetSelectedImage <<< Just) input imID
       --notification permission (desktop)
-      unless smallScreen $ checkNotifications channel
-      --message status on window focus
-      windowsFocus channel
-      --events for chat experiments
-      CCD.addCustomEventListener setChatExperiment (SC.send channel <<< DA.singleton <<< SetChatExperiment)
-      CCD.addCustomEventListener askChatExperiment (const (SC.send channel [AskChatExperiment]))
+      unless smallScreen checkNotifications
 
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader } model =
@@ -493,29 +491,22 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketCo
 preventStop :: Event -> IMModel -> NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
-checkNotifications :: Channel (Array IMMessage) -> Effect Unit
-checkNotifications channel = do
+checkNotifications :: imID (Array IMMessage) -> Effect Unit
+checkNotifications imID = do
       status <- CCD.notificationPermission
-      when (status == "default") $ SC.send channel [ToggleAskNotification]
+      when (status == "default") $ FS.send imID ToggleAskNotification
 
-windowsFocus :: Channel (Array IMMessage) -> Effect Unit
-windowsFocus channel = do
-      focusListener <- WET.eventListener $ const (SC.send channel $ DA.singleton UpdateReadCount)
-      --focus event has to be on the window as chrome is a whiny baby about document
-      window <- WH.window
-      WET.addEventListener focus focusListener false $ WHW.toEventTarget window
-
-historyChange :: Boolean -> Channel (Array IMMessage) -> Effect Unit
-historyChange smallScreen channel = do
+historyChange :: Boolean -> imID (Array IMMessage) -> Effect Unit
+historyChange smallScreen imID = do
       popStateListener <- WET.eventListener $ const handler
       window <- WH.window
       WET.addEventListener popstate popStateListener false $ WHW.toEventTarget window
       where handler = do
                   CCD.pushState $ routes.im.get {}
-                  when smallScreen <<< SC.send channel <<< DA.singleton $ ToggleInitialScreen true
+                  when smallScreen <<< FS.send imID <<< DA.singleton $ ToggleInitialScreen true
 
-setUpWebSocket :: Ref CurrentWebSocket -> Channel (Array IMMessage) -> Effect Unit
-setUpWebSocket webSocketRef channel = do
+setUpWebSocket :: Ref CurrentWebSocket -> imID (Array IMMessage) -> Effect Unit
+setUpWebSocket webSocketRef imID = do
       { webSocket } <- ER.read webSocketRef
       let webSocketTarget = CIW.toEventTarget webSocket
       --a ref is used to track reconnections and ping intervals
@@ -527,7 +518,7 @@ setUpWebSocket webSocketRef channel = do
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
 
-      where sendChannel = SC.send channel <<< DA.singleton
+      where sendimID = FS.send imID <<< DA.singleton
 
             open timerIDs _ = do
                   { reconnectID } <- ER.read timerIDs
@@ -539,7 +530,7 @@ setUpWebSocket webSocketRef channel = do
                   pong true
                   newPingID <- ping
                   ER.modify_ ( _ { pingID = Just newPingID }) timerIDs
-                  sendChannel $ ToggleConnected true
+                  sendimID $ ToggleConnected true
                   askForUpdates
 
             ping = ET.setInterval (1000 * 60) do
@@ -556,7 +547,7 @@ setUpWebSocket webSocketRef channel = do
                   isFocused <- CCD.documentHasFocus
                   case message of
                         Pong -> pong true
-                        Content cnt -> sendChannel $ ReceiveMessage cnt isFocused
+                        Content cnt -> sendimID $ ReceiveMessage cnt isFocused
 
             pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
 
@@ -565,7 +556,7 @@ setUpWebSocket webSocketRef channel = do
                   CIW.sendPayload webSocket UpdateHash
 
             close timerIDs _ = do
-                  sendChannel $ ToggleConnected false
+                  sendimID $ ToggleConnected false
                   { reconnectID, pingID } <- ER.read timerIDs
                   newPingID <- case pingID of
                         Nothing -> pure unit
@@ -577,7 +568,7 @@ setUpWebSocket webSocketRef channel = do
                         id <- ET.setTimeout milliseconds <<< void $ do
                               newWebSocket <- CIW.createWebSocket
                               ER.modify_ (_ { webSocket = newWebSocket }) webSocketRef
-                              setUpWebSocket webSocketRef channel
+                              setUpWebSocket webSocketRef imID
                         ER.modify_ (_ { reconnectID = Just id }) timerIDs
 
 setSmallScreen :: IMModel -> NoMessages

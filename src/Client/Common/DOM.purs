@@ -57,33 +57,8 @@ foreign import notificationPermission :: Effect String
 
 foreign import scrollIntoView_ :: EffectFn1 Element Unit
 
-nameChanged :: EventType
-nameChanged = EventType "nameChanged"
-
-notificationClick :: EventType
-notificationClick = EventType "notificationClick"
-
-askChatExperiment :: EventType
-askChatExperiment = EventType "askChatExperiment"
-
 setChatExperiment :: EventType
 setChatExperiment = EventType "setChatExperiment"
-
-dispatchCustomEvent :: CustomEvent -> Effect Unit
-dispatchCustomEvent event = do
-      window <- WH.window
-      document <- WHHD.toDocument <$> WHW.document window
-      void $ WET.dispatchEvent (WEC.toEvent event) $ WDD.toEventTarget document
-
-createCustomEvent :: forall value. EventType -> value -> CustomEvent
-createCustomEvent (EventType name) = DFU.runFn2 createCustomEvent_ name
-
-addCustomEventListener :: forall value. EventType -> (value -> Effect Unit) -> Effect Unit
-addCustomEventListener eventType handler = do
-      window <- WH.window
-      document <- WHHD.toDocument <$> WHW.document window
-      listener <- WET.eventListener (handler <<< DFU.runFn1 customEventDetail_ <<< SU.fromJust <<< WEC.fromEvent)
-      WET.addEventListener eventType listener false $ WDD.toEventTarget document
 
 confirm :: String -> Effect Boolean
 confirm message = do

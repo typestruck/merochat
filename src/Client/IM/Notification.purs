@@ -3,7 +3,6 @@ module Client.IM.Notification where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM (notificationClick)
 import Client.Common.DOM as CCD
 import Client.IM.Flame (NextMessage)
 import Client.IM.Flame as CIF
@@ -17,8 +16,10 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
+import Flame.Subscription as FS
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.IM.Unread as SIU
+import Shared.Options.MountPoint (imID)
 import Shared.Path as SP
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
@@ -48,7 +49,8 @@ notify model@{ user: { id }, contacts, smallScreen } userIDs = do
                         Nothing -> user
                         Just id -> SU.fromJust $ HS.lookup id impersonations).name,
                   icon: SP.pathery PNG "loading",
-                  handler: CCD.dispatchCustomEvent <<< CCD.createCustomEvent notificationClick $ Tuple user.id impersonating
+                  --move to given chat when clicking on system notification
+                  handler: FS.send imID <<< ResumeChat $ Tuple user.id impersonating
             }
 
             byKeys cnt = DA.any (\(Tuple id impersonating) -> cnt.user.id == id && cnt.impersonating == impersonating) userIDs

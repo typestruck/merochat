@@ -207,7 +207,7 @@ let additions =
           , "argonaut-generic"
           ]
         , repo = "https://github.com/easafe/purescript-flame.git"
-        , version = "667620dcf34e97c460fef9ed8a4758187d782523"
+        , version = "b90bc8de7fa3ba0401c641ba6efb1320a53d7e9b"
         }
       }
 

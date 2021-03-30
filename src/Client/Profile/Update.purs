@@ -3,7 +3,6 @@ module Client.Profile.Update where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM (nameChanged)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
@@ -21,10 +20,12 @@ import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
+import Flame.Subscription as FS
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.JSON as SJ
+import Shared.Options.MountPoint (imID)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 import Shared.Profile.View (profileEditionId)
 import Shared.Setter as SS
@@ -72,13 +73,8 @@ selectAvatar = do
             CCF.triggerFileSelect input
       FAE.noChanges
 
-setChatExperiment :: String -> Aff (ProfileModel -> ProfileModel)
-setChatExperiment experiment =
-      FAE.diff {
-            experimenting : case SJ.fromJSON experiment of
-                  Left _ -> Nothing
-                  Right e -> e
-      }
+setChatExperiment :: Maybe ExperimentData -> Aff (ProfileModel -> ProfileModel)
+setChatExperiment experimenting = FAE.diff { experimenting }
 
 saveProfile :: AffUpdate ProfileModel ProfileMessage
 saveProfile {display, model : { user: user@{ name }} } = do
@@ -88,7 +84,7 @@ saveProfile {display, model : { user: user@{ name }} } = do
                   display $ FAE.diff' { hideSuccessMessage : false }
                   liftEffect <<<
                         --let im know that the name has changed
-                        CCD.dispatchCustomEvent $ CCD.createCustomEvent nameChanged name
+                        FS.send imID $ SetNameFromProfile name
                   EA.delay $ Milliseconds 3000.0
                   FAE.diff { hideSuccessMessage : true }
             _ -> FAE.noChanges
