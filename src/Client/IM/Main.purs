@@ -102,8 +102,6 @@ main = do
       --notification permission (desktop)
       unless smallScreen checkNotifications
 
-      FS.send imID AskChatExperiment
-
 update :: _ -> ListUpdate IMModel IMMessage
 update { webSocketRef, fileReader } model =
       case _ of
