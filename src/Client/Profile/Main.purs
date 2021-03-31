@@ -24,7 +24,6 @@ main = do
             update: CPU.update
       }
       --a pain, but a chat experiment might be going on before loading the modal
-      --FSUC.broadcast' askChatExperiment
       --avatar changes
       input <- CPU.getFileInput
       CCF.setUpFileChange SetAvatar input profileID
