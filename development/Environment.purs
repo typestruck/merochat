@@ -35,7 +35,7 @@ imCSSHash :: String
 imCSSHash = "826af82e4a0c8997ece4"
 
 imJSHash :: String
-imJSHash = "a7f7640ee7f1ed94e1b8"
+imJSHash = "cbb9198a1dcc9edaab69"
 
 internalHelpJSHash :: String
 internalHelpJSHash = "72dc6d09bb09188f52dc"
@@ -56,7 +56,7 @@ loginJSHash :: String
 loginJSHash = "987f0b7b7b052fcf9ad2"
 
 otherJSHash :: String
-otherJSHash = "ec965ab0421ce286495d"
+otherJSHash = "4dab197d2a64f745a21e"
 
 profileJSHash :: String
 profileJSHash = "05fe3b8299c1971a48b1"
