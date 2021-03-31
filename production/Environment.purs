@@ -65,7 +65,7 @@ loginJSHash :: String
 loginJSHash = "94e6c18c6102c8da0dea"
 
 otherJSHash :: String
-otherJSHash = "2e31504d020361a1ce13"
+otherJSHash = "475c93aaed5aca87c053"
 
 profileJSHash :: String
 profileJSHash = "10e79714c15377c79a7d"
