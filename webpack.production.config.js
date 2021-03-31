@@ -15,7 +15,10 @@ module.exports = {
         },
         landing: ['./loader/landing.bundle.js', './src/Client/css/landing.css'],
         login: './loader/login.bundle.js',
-        profile: ['./loader/profile.bundle.js', './src/Client/css/profile.css'],
+        profile: {
+            import: ['./loader/profile.bundle.js', './src/Client/css/profile.css'],
+            dependOn: 'im'
+        },
         leaderboard: ['./loader/leaderboard.bundle.js', './src/Client/css/leaderboard.css'],
         help: ['./loader/help.bundle.js', './src/Client/css/help.css'],
         internalHelp: './loader/internalHelp.bundle.js',
@@ -70,7 +73,7 @@ module.exports = {
         minimizer: [
             new TerserPlugin(),
             new CssMinimizerPlugin(),
-        ],
+        ]
     },
 
 };

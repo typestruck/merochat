@@ -4,7 +4,7 @@ module Client.IM.Main where
 import Prelude
 import Shared.Types
 
-import Client.Common.DOM (setChatExperiment, askChatExperiment)
+import Client.Common.DOM (setChatExperiment)
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Location as CCL
@@ -80,8 +80,7 @@ main = do
                   --focus event has to be on the window as chrome is a whiny baby about document
                   FSW.onFocus UpdateReadCount,
                   --events from chat experiment
-                  FS.onCustomEvent setChatExperiment SetChatExperiment,
-                  FS.onCustomEvent' askChatExperiment AskChatExperiment
+                  FS.onCustomEvent setChatExperiment SetChatExperiment
             ],
             init: [],
             update: update { fileReader, webSocketRef }

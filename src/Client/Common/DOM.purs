@@ -60,9 +60,6 @@ foreign import scrollIntoView_ :: EffectFn1 Element Unit
 setChatExperiment :: EventType
 setChatExperiment = EventType "setChatExperiment"
 
-askChatExperiment :: EventType
-askChatExperiment = EventType "askChatExperiment"
-
 confirm :: String -> Effect Boolean
 confirm message = do
       window <- WH.window
