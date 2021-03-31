@@ -67,10 +67,11 @@ module.exports = {
                 }
             }
         },
-        minimizer: [
-            new TerserPlugin(),
-            new CssMinimizerPlugin(),
-        ],
+        minimize: false
+        // minimizer: [
+        //     new TerserPlugin(),
+        //     new CssMinimizerPlugin(),
+        // ],
     },
 
 };
