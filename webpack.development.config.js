@@ -9,16 +9,23 @@ module.exports = {
       devtool: 'eval-source-map',
 
       entry: {
-            im: './loader/im.bundle.js',
-            landing: './loader/landing.bundle.js',
+            im: {
+                  import: ['./loader/im.bundle.js'],
+                  dependOn: 'emoji'
+            },
+            landing: ['./loader/landing.bundle.js'],
             login: './loader/login.bundle.js',
-            profile: './loader/profile.bundle.js',
-            leaderboard: './loader/leaderboard.bundle.js',
-            help: './loader/help.bundle.js',
+            profile: {
+                  import: ['./loader/profile.bundle.js'],
+                  dependOn: 'im'
+            },
+            leaderboard: ['./loader/leaderboard.bundle.js'],
+            help: ['./loader/help.bundle.js'],
             internalHelp: './loader/internalHelp.bundle.js',
-            experiments: './loader/experiments.bundle.js',
-            settings: './loader/settings.bundle.js',
-            recover: './loader/recover.bundle.js'
+            settings: ['./loader/settings.bundle.js'],
+            experiments: ['./loader/experiments.bundle.js'],
+            recover: './loader/recover.bundle.js',
+            emoji: './output/Shared.IM.Emoji/index.js'
       },
 
       output: {
@@ -42,9 +49,27 @@ module.exports = {
       },
 
       resolve: {
-            modules: [ 'node_modules' ],
-            extensions: [ '.purs', '.js']
+            modules: ['node_modules'],
+            extensions: ['.purs', '.js']
       },
+
+      optimization: {
+            moduleIds: 'deterministic',
+            splitChunks: {
+                  chunks: 'all',
+                  name: 'other',
+                  cacheGroups: {
+                        common: {
+                              name: 'common',
+                              test(module) {
+                                    return module.resource && /(.*)(Shared\.Types|Client\.Common\.Network|Shared\.Routes)(.*)/.test(module.resource);
+                              }
+                        }
+                  }
+            },
+            minimize: false
+      },
+
 
       plugins: [
             new webpack.LoaderOptionsPlugin({
