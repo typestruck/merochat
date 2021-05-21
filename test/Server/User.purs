@@ -1,11 +1,16 @@
 module Test.Server.User where
 
-import Database.PostgreSQL (Query(..), Row0(..))
+import Prelude
 import Server.Database as SD
+import Data.Maybe(Maybe(..))
 import Server.Types
 
 userCount :: ServerEffect Int
-userCount = SD.scalar' (Query "select count(1) from users") Row0
+userCount = do
+    count <- SD.unsafeSingle ("select count(1) as count from users") {} :: BaseEffect _ (Maybe { count :: Int })
+    pure $ case count of
+        Just { count } -> count
+        Nothing -> 0
 
 email :: String
 email = "e@a.com"

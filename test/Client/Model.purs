@@ -59,7 +59,7 @@ model = {
       chatting: Just 0
 }
 
-imUserID :: PrimaryKey
+imUserID :: Int
 imUserID = 23
 
 imUser :: IMUser
@@ -78,10 +78,10 @@ imUser = {
       karma: 5
 }
 
-anotherIMUserID :: PrimaryKey
+anotherIMUserID :: Int
 anotherIMUserID = 90
 
-contactID :: PrimaryKey
+contactID :: Int
 contactID = anotherIMUserID
 
 anotherIMUser :: IMUser
@@ -90,7 +90,7 @@ anotherIMUser = imUser { id = anotherIMUserID }
 contact :: Contact
 contact = SIC.defaultContact imUserID anotherIMUser
 
-suggestionID :: PrimaryKey
+suggestionID :: Int
 suggestionID =  300
 
 suggestion :: Suggestion

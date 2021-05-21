@@ -3,7 +3,7 @@ module Test.Server.Profile.Action where
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Query(..), Row1(..))
+
 import Run as R
 import Server.Database as SD
 import Server.Landing.Database as SLD
@@ -22,6 +22,6 @@ tests = do
                   TS.serverAction $ do
                         userID <- SLD.createUser $ baseUser { email = "b@b.com" }
                         void $ SPA.saveProfile userID { id: userID, karma:0, karmaPosition:0, gender: Nothing, country: Nothing, name:"a", age: Nothing, headline:"a", description:"a", avatar: Just $ imageBasePath <> "upload/avatar.png", languages:[], tags:[] }
-                        avatar <- SD.scalar' (Query "select avatar from users where id = $1") $ Row1 userID
+                        avatar <- SD.scalar' ("select avatar from users where id = $1") $ Row1 userID
                         R.liftAff $ TUA.equal (Just "avatar.png") avatar
 

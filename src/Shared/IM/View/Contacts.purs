@@ -8,6 +8,7 @@ import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.HashMap as DH
+import Shared.Experiments.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN

@@ -5,8 +5,7 @@ import Server.Types
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Pool, Query(..), Row0(..))
-import Database.PostgreSQL as DP
+
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -19,8 +18,11 @@ import Server.Configuration as SC
 import Server.Database as SD
 import Test.Server.Model (storageDetails)
 import Test.Unit (failure) as TUA
+import Droplet.Driver (Pool)
+import Droplet.Driver as DD
 import Test.Unit as TU
 import Test.Unit.Assert (equal) as TUA
+import Type.Row (type (+))
 
 session :: Session
 session = { userID : Nothing }
@@ -28,7 +30,7 @@ session = { userID : Nothing }
 newTestPool ∷ Configuration -> Effect Pool
 newTestPool { databaseHost }= do
       SD.setUpConversions
-      DP.newPool $ (DP.defaultPoolConfiguration "melanchat_test") {
+      DD.newPool $ (DD.defaultConfiguration "melanchat_test") {
             user = Just "melanchat",
             host = databaseHost,
             idleTimeoutMillis = Just 1000
@@ -48,7 +50,7 @@ serverAction action = do
             truncateTables
             void action
 
-serverActionCatch :: forall a. (ResponseError -> Run (aff :: AFF, effect :: EFFECT) Unit) -> ServerEffect a -> Aff Unit
+serverActionCatch :: forall a. (ResponseError -> Run (AFF + EFFECT + ()) Unit) -> ServerEffect a -> Aff Unit
 serverActionCatch catch action  = do
       configuration <- liftEffect SC.readConfiguration
       pool <- liftEffect $ newTestPool configuration
@@ -63,7 +65,7 @@ serverActionCatch catch action  = do
             void action
 
 truncateTables :: ServerEffect Unit
-truncateTables = SD.execute (Query "select truncate_tables()") Row0
+truncateTables = SD.unsafeExecute "select truncate_tables()" {}
 
 catch expected =
       case _ of

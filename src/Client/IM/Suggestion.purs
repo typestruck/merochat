@@ -12,7 +12,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug.Trace (spy)
+import Debug (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -76,7 +76,7 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
       where suggestionsSize = DA.length suggestions
             suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
 
-blockUser :: WebSocket  -> PrimaryKey -> IMModel -> NextMessage
+blockUser :: WebSocket  -> Int -> IMModel -> NextMessage
 blockUser webSocket blocked model@{ blockedUsers } =
       updateAfterBlock blocked model :> [do
             result <- CCN.defaultResponse $ request.im.block { body: { id: blocked } }
@@ -88,7 +88,7 @@ blockUser webSocket blocked model@{ blockedUsers } =
                         pure Nothing
       ]
 
-updateAfterBlock :: PrimaryKey -> IMModel -> IMModel
+updateAfterBlock :: Int -> IMModel -> IMModel
 updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       model {
             contacts = DA.filter ((blocked /= _) <<< fromContact) contacts,

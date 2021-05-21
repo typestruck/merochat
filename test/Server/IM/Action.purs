@@ -11,8 +11,8 @@ import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
-import Database.PostgreSQL (Query(..), Row0(..))
-import Debug.Trace (spy)
+
+import Debug (spy)
 import Run as R
 import Server.Database as SD
 import Server.File (imageTooBigMessage, invalidImageMessage)
@@ -57,7 +57,7 @@ tests = do
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers
                         void $ SIA.reportUser userID { userID: anotherUserID, reason: Spam, comment: Nothing }
-                        count <- SD.scalar' (Query """select count(1) as c from blocks where blocker = $1 and  blocked = $2""") (userID /\ anotherUserID)
+                        count <- SD.scalar' ("""select count(1) as c from blocks where blocker = $1 and  blocked = $2""") (userID /\ anotherUserID)
                         R.liftAff $ TUA.equal 1 count
 
             TU.test "processMessage creates history" $
@@ -65,7 +65,7 @@ tests = do
                         Tuple userID anotherUserID <- setUpUsers
                         Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         R.liftAff $ TUA.equal userID id
-                        count <- SD.scalar' (Query """select count(1) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
+                        count <- SD.scalar' ("""select count(1) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
                         R.liftAff $ TUA.equal 1 count
 
             TU.test "processMessage sets chat starter" $
@@ -73,7 +73,7 @@ tests = do
                         Tuple userID anotherUserID <- setUpUsers
                         Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         R.liftAff $ TUA.equal userID id
-                        chatStarter <- SD.scalar' (Query """select sender from histories limit 1""") Row0
+                        chatStarter <- SD.scalar' ("""select sender from histories limit 1""") {}
                         R.liftAff $ TUA.equal userID chatStarter
 
             TU.test "processMessage accepts files" $

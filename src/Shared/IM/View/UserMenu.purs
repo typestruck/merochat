@@ -3,6 +3,7 @@ module Shared.IM.View.UserMenu where
 import Prelude
 import Shared.Types
 
+import Shared.Experiments.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Flame (Html)

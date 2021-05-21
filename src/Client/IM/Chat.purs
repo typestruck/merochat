@@ -18,8 +18,9 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
 import Data.String as DS
+
 import Data.String.CodeUnits as DSC
-import Data.Symbol (SProxy(..))
+import Type.Proxy(Proxy(..))
 import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
@@ -158,7 +159,7 @@ sendMessage webSocket content date model@{
 
             asMarkdownImage imageCaption base64 = "![" <> DM.fromMaybe "" imageCaption  <> "](" <> base64 <> ")"
 
-makeTurn :: Contact -> PrimaryKey -> Maybe Turn
+makeTurn :: Contact -> Int -> Maybe Turn
 makeTurn { chatStarter, chatAge, history } sender =
       if chatStarter == sender && isNewTurn history sender then
             let   senderEntry = SU.fromJust $ DA.last history
@@ -253,7 +254,7 @@ setSelectedImage maybeBase64 model@{smallScreen} =
             selectedImage = maybeBase64,
             erroredFields =
                   if isTooLarge $ DM.fromMaybe "" maybeBase64 then
-                        [TDS.reflectSymbol (SProxy :: SProxy "selectedImage")]
+                        [TDS.reflectSymbol (Proxy :: Proxy "selectedImage")]
                    else
                         []
       } :> (if smallScreen then [] else [CIF.next $ FocusInput ImageFormCaption])
@@ -299,7 +300,7 @@ insertLink :: IMModel -> MoreMessages
 insertLink model@{ linkText, link } =
       case link of
             Nothing -> F.noMessages $ model {
-                  erroredFields = [ TDS.reflectSymbol (SProxy :: SProxy "link") ]
+                  erroredFields = [ TDS.reflectSymbol (Proxy :: Proxy "link") ]
             }
             Just url ->
                   let { protocol } = NU.parse $ DS.trim url

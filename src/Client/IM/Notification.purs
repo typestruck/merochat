@@ -36,10 +36,10 @@ foreign import createNotification_ :: EffectFn1 Notification Unit
 createNotification :: Notification -> Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
-notifyUnreadChats :: IMModel -> Array (Tuple PrimaryKey (Maybe PrimaryKey)) -> NextMessage
+notifyUnreadChats :: IMModel -> Array (Tuple Int (Maybe Int)) -> NextMessage
 notifyUnreadChats model userIDs = CIF.nothingNext model <<< liftEffect $ notify model userIDs
 
-notify :: IMModel -> Array (Tuple PrimaryKey (Maybe PrimaryKey)) -> Effect Unit
+notify :: IMModel -> Array (Tuple Int (Maybe Int)) -> Effect Unit
 notify model@{ user: { id }, contacts, smallScreen } userIDs = do
       updateTabCount id contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
@@ -55,12 +55,12 @@ notify model@{ user: { id }, contacts, smallScreen } userIDs = do
 
             byKeys cnt = DA.any (\(Tuple id impersonating) -> cnt.user.id == id && cnt.impersonating == impersonating) userIDs
 
-notify' :: IMModel -> Array (Tuple PrimaryKey (Maybe PrimaryKey)) -> Aff (Maybe IMMessage)
+notify' :: IMModel -> Array (Tuple Int (Maybe Int)) -> Aff (Maybe IMMessage)
 notify' model userIDs = do
       liftEffect $ notify model userIDs
       pure Nothing
 
-updateTabCount :: PrimaryKey -> Array Contact -> Effect Unit
+updateTabCount :: Int -> Array Contact -> Effect Unit
 updateTabCount id contacts = do
       CCD.setTitle $ SIU.title unreadChats
       faviconElement <- CCD.unsafeGetElementByID Favicon

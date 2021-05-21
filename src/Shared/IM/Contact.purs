@@ -6,7 +6,7 @@ import Shared.Types
 import Shared.Unsafe as SU
 import Prelude
 
-defaultContact :: PrimaryKey -> IMUser -> Contact
+defaultContact :: Int -> IMUser -> Contact
 defaultContact id chatted = {
       available: true,
       shouldFetchChatHistory: false,

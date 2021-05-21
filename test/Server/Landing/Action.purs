@@ -4,7 +4,7 @@ import Prelude
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
-import Database.PostgreSQL (Query(..), Row1(..))
+
 import Run as R
 import Server.AccountValidation (emailAlreadyRegisteredMessage, invalidEmailMessage, invalidPasswordMessage)
 import Server.Database as SD
@@ -79,9 +79,9 @@ tests = do
                               captchaResponse: Nothing
                         }
                         RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
-                        history <- SD.scalar' (Query "select count(1) from karma_histories where target = $1") $ Row1 id
+                        history <- SD.scalar' ("select count(1) from karma_histories where target = $1") $ Row1 id
                         R.liftAff $ TUA.equal 1 history
-                        leaderboard <- SD.scalar' (Query "select count(1) from karma_leaderboard where ranker = $1") $ Row1 id
+                        leaderboard <- SD.scalar' ("select count(1) from karma_leaderboard where ranker = $1") $ Row1 id
                         R.liftAff $ TUA.equal 1 leaderboard
 
             TU.test "register creates suggestion" $
@@ -92,7 +92,7 @@ tests = do
                               captchaResponse: Nothing
                         }
                         RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
-                        suggestion <- SD.scalar' (Query "select count(1) from suggestions where suggested = $1") $ Row1 id
+                        suggestion <- SD.scalar' ("select count(1) from suggestions where suggested = $1") $ Row1 id
                         R.liftAff $ TUA.equal 1 suggestion
 
 
