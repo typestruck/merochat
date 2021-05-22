@@ -31,3 +31,9 @@ type IU = (BasicUser (
       languages :: Array String,
       age :: Maybe Int
 ))
+
+data Gender =
+      Female |
+      Male |
+      NonBinary |
+      Other

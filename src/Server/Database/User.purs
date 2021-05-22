@@ -4,6 +4,8 @@ import Server.Types
 import Shared.Types
 import Prelude
 import Droplet.Language
+import Type.Proxy(Proxy(..))
+import Data.DateTime(DateTime)
 import Data.Maybe (Maybe)
 
 import Server.Database as SD
@@ -63,6 +65,6 @@ baseQuery = "select id, email, password from users where active and "
 
 userBy :: By -> ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
-      Email value -> SD.single (baseQuery <> "lower(email) = lower($1)") $ Row1 value
-      ID value -> SD.single (baseQuery <> "id = $1") $ Row1 value
+      Email value -> SD.unsafeSingle (baseQuery <> "lower(email) = lower(@email)") { email: value }
+      ID value -> SD.unsafeSingle (baseQuery <> "id = @id") {id: value}
 

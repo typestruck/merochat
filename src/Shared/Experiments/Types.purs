@@ -7,6 +7,8 @@ import Data.Generic.Rep (class Generic)
 import Data.Show.Generic as DGRS
 import Prelude
 
+import Data.Either(Either(..))
+import Droplet.Language
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic as DADGR
@@ -41,9 +43,8 @@ type ChatExperimentModel = {
       current :: Maybe ExperimentData,
       impersonation :: Maybe ImpersonationProfile
 }
-
+--refactor: this type is being used in a very bonkers way, pls fix his shit
 data ExperimentData = Impersonation (Maybe ImpersonationProfile)
-
 
 data ExperimentPayload = ImpersonationPayload {
       id :: Int,
@@ -53,7 +54,6 @@ data ExperimentPayload = ImpersonationPayload {
 derive instance genericChatExperimentSection :: Generic ChatExperimentSection _
 derive instance genericExperimentCode :: Generic ExperimentData _
 derive instance genericExperimentPayload :: Generic ExperimentPayload _
-
 
 derive instance eqChatExperimentSection :: Eq ChatExperimentSection
 derive instance eqExperimentCode :: Eq ExperimentData
@@ -97,3 +97,7 @@ instance enumExperimentCode :: Enum ExperimentData where
 
 instance showExperimentPayload :: Show ExperimentPayload where
       show = DGRS.genericShow
+
+--placeholder
+instance experimentDataFromValue :: FromValue ExperimentData where
+      fromValue = Right <<< const (Impersonation Nothing)

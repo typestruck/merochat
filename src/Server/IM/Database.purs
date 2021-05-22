@@ -8,9 +8,13 @@ import Server.Database.Messages
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.String.Common as DS
+import Droplet.Driver(Pool)
+import Server.Database.Reports
+import Server.Database.Blocks
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
+import Droplet.Language
 import Server.Database as SD
 import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage, suggestionsPerPage)
 
@@ -34,14 +38,10 @@ usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 messagePresentationFields :: String
 messagePresentationFields = " id, sender, recipient, date, content, status "
 
-presentUserQuery :: forall p v. p v
-presentUserQuery = ("select" <> userPresentationFields <> "from" <> usersTable <> "where u.id = $1 and active")
+presentUserQuery = "select" <> userPresentationFields <> "from" <> usersTable <> "where u.id = @id and active"
 
-presentUserParameters :: forall t. t -> Row1 t
-presentUserParameters = Row1
-
-presentUser :: Int -> ServerEffect (Maybe IMUserWrapper)
-presentUser loggedUserID = SD.single presentUserQuery $ presentUserParameters loggedUserID
+presentUser :: Int -> ServerEffect (Maybe IMUser)
+presentUser loggedUserID = SD.unsafeSingle presentUserQuery {id: loggedUserID}
 
 --fit online status here
 suggest :: Int -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array IMUserWrapper)
@@ -97,14 +97,14 @@ insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ 
 
 insertKarma :: forall r. Int -> Int -> Tuple Int Int -> BaseEffect { pool :: Pool | r } Unit
 insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
-      void $ SD.insert ("insert into karma_histories(amount, target) values ($1, $2), ($3, $4)") $ ( senderKarma /\ loggedUserID /\ recipientKarma /\ otherID)
+      void $ SD.unsafeExecute "insert into karma_histories(amount, target) values (@senderKarma, @senderID), (@recipientKarma, @recipientID)" ({senderKarma, senderID: loggedUserID, recipientKarma, recipientID: otherID})
 
 --when using an array parameter, any must be used instead of in
 changeStatus :: forall r. Int -> MessageStatus -> Array Int -> BaseEffect { pool :: Pool | r } Unit
 changeStatus loggedUserID status ids = SD.unsafeExecute "update messages set status = @status where recipient = @recipient and id = any(@ids)" {status, recipient: loggedUserID, ids}
 
 insertBlock :: Int -> Int -> ServerEffect Unit
-insertBlock loggedUserID blocked = void $ SD.insert blockQuery (loggedUserID /\ blocked)
+insertBlock loggedUserID blocked = void $ SD.execute blockQuery (loggedUserID /\ blocked)
 
 blockQuery blocker blocked = insert # into blocks (_blocker /\ _blocked) # values (blocker /\ blocked)
 

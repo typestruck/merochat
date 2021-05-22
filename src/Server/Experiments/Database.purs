@@ -2,7 +2,7 @@ module Server.Experiments.Database where
 
 import Shared.Types
 
-
+import Shared.Experiments.Types
 import Server.Database as SD
 import Server.Types (ServerEffect)
 

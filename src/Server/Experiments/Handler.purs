@@ -11,5 +11,5 @@ import Server.Experiments.Database as SED
 
 experiments :: { guards :: { loggedUserID :: Int } } -> ServerEffect String
 experiments _ = do
-      experiments <- SN.unwrapAll SED.fecthExperiments
+      experiments <- SED.fecthExperiments
       R.liftEffect $ SET.template experiments
