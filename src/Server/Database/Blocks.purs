@@ -12,8 +12,7 @@ type Blocks = (
 blocks :: Table "blocks" Blocks
 blocks = Table
 
-_id :: Proxy "id"
-_id = Proxy
+
 
 _blocker :: Proxy "blocker"
 _blocker = Proxy

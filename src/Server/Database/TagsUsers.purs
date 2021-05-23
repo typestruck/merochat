@@ -12,8 +12,7 @@ type TagsUsers = (
 tags_users :: Table "tags_users" TagsUsers
 tags_users = Table
 
-_id :: Proxy "id"
-_id = Proxy
+
 
 _creator :: Proxy "creator"
 _creator = Proxy

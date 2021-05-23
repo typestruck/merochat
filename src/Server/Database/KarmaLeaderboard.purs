@@ -16,8 +16,7 @@ type KarmaLeaderboard = (
 karma_leaderboard :: Table "karma_leaderboard" KarmaLeaderboard
 karma_leaderboard = Table
 
-_id :: Proxy "id"
-_id = Proxy
+
 
 _ranker :: Proxy "ranker"
 _ranker = Proxy

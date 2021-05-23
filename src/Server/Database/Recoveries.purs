@@ -21,8 +21,5 @@ _uuid = Proxy
 _created :: Proxy "created"
 _created = Proxy
 
-_active :: Proxy "active"
-_active = Proxy
-
 _recoverer :: Proxy "recoverer"
 _recoverer = Proxy

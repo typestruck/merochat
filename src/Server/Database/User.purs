@@ -13,6 +13,7 @@ import Server.Database as SD
 
 type Users = (
       id :: Auto Int,
+      password :: String,
       name :: String,
       headline :: String,
       joined :: Default DateTime,
@@ -28,11 +29,11 @@ type Users = (
 users :: Table "users" Users
 users = Table
 
-_id :: Proxy "id"
-_id = Proxy
-
 _name :: Proxy "name"
 _name = Proxy
+
+_password :: Proxy "password"
+_password = Proxy
 
 _headline :: Proxy "headline"
 _headline = Proxy
@@ -57,9 +58,6 @@ _gender = Proxy
 
 _country :: Proxy "country"
 _country = Proxy
-
-_active :: Proxy "active"
-_active = Proxy
 
 baseQuery :: String
 baseQuery = "select id, email, password from users where active and "

@@ -30,7 +30,9 @@ foreign import setUpConversions :: Effect Unit
 
 query q = withConnection $ \connection -> hoist $ DD.query connection q
 
-single q = withConnection $ \connection -> hoist $ DD.single connection q
+single q = withConnection $ \connection -> singleWith connection q
+
+singleWith connection q = hoist $ DD.single connection q
 
 execute q = withConnection $ \connection -> executeWith connection q
 

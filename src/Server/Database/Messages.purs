@@ -21,8 +21,7 @@ type Messages = (
 messages :: Table "messages" Messages
 messages = Table
 
-_id :: Proxy "id"
-_id = Proxy
+
 
 _temporary_id :: Proxy "temporary_id"
 _temporary_id = Proxy
