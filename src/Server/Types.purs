@@ -12,6 +12,7 @@ import Data.Enum (class BoundedEnum, Cardinality(..), class Enum)
 import Data.Generic.Rep (class Generic)
 import Data.HashMap (HashMap)
 import Data.Maybe (Maybe(..))
+import Shared.IM.Types
 import Data.Newtype (class Newtype)
 import Type.Row (type (+))
 import Effect.Aff (Aff)

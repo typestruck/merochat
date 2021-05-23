@@ -3,7 +3,7 @@ module Shared.Spec where
 import Prelude
 import Server.Types
 import Shared.Types
-
+import Shared.IM.Types
 import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)

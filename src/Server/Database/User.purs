@@ -6,6 +6,7 @@ import Prelude
 import Droplet.Language
 import Type.Proxy(Proxy(..))
 import Data.DateTime(DateTime)
+import Data.Date(Date)
 import Data.Maybe (Maybe)
 
 import Server.Database as SD
@@ -20,7 +21,7 @@ type Users = (
       description :: String,
       avatar :: Maybe String,
       gender :: Gender,
-      country :: Int
+      country :: Int,
       active :: Default Boolean
 )
 

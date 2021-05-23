@@ -3,6 +3,7 @@ module Server.Database.Messages where
 import Type.Proxy (Proxy(..))
 import Droplet.Language
 import Data.DateTime(DateTime)
+import Shared.IM.Types
 import Shared.Types
 import Data.Maybe(Maybe(..))
 

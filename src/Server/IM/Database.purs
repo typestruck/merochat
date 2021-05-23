@@ -14,6 +14,7 @@ import Server.Database.Blocks
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
+import Shared.IM.Types
 import Droplet.Language
 import Server.Database as SD
 import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage, suggestionsPerPage)
@@ -44,7 +45,7 @@ presentUser :: Int -> ServerEffect (Maybe IMUser)
 presentUser loggedUserID = SD.unsafeSingle presentUserQuery {id: loggedUserID}
 
 --fit online status here
-suggest :: Int -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array IMUserWrapper)
+suggest :: Int -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array IMUser)
 suggest loggedUserID skip = case _ of
       Just (ArrayPrimaryKey []) ->
             SD.unsafeQuery ((select <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
@@ -55,24 +56,24 @@ suggest loggedUserID skip = case _ of
       where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> $1 "
             rest = " and u.active and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()"
 
-presentContacts :: Int -> Int -> ServerEffect (Array ContactWrapper)
+presentContacts :: Int -> Int -> ServerEffect (Array Contact)
 presentContacts loggedUserID skip = SD.unsafeQuery (("select distinct h.date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
                                       "from" <> usersTable <> """join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)
                                          where not exists (select 1 from blocks where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
                                           order by date desc limit $2 offset $3""")) (loggedUserID /\ contactsPerPage /\ skip)
 
 --needs to handle impersonations
-presentSingleContact :: Int -> Int -> ServerEffect ContactWrapper
-presentSingleContact loggedUserID otherID = SD.single' (("select coalesce(h.date, now() at time zone 'utc'), coalesce(sender, $2), coalesce(first_message_date, now() at time zone 'utc'), " <> userPresentationFields <>
+presentSingleContact :: Int -> Int -> ServerEffect Contact
+presentSingleContact loggedUserID otherID = SU.fromJust <$> SD.unsafeSingle (("select coalesce(h.date, now() at time zone 'utc'), coalesce(sender, $2), coalesce(first_message_date, now() at time zone 'utc'), " <> userPresentationFields <>
                                       "from" <> usersTable <> "left join histories h on (u.id = h.recipient and h.sender = $1 or u.id = h.sender and h.recipient = $1) where u.id = $2")) (loggedUserID /\ otherID)
 
-presentSelectedContacts :: Int -> Array Int -> ServerEffect (Array ContactWrapper)
+presentSelectedContacts :: Int -> Array Int -> ServerEffect (Array Contact)
 presentSelectedContacts loggedUserID ids
       | DA.null ids = pure []
       | otherwise = SD.unsafeQuery ("select distinct h.date, sender, first_message_date," <> userPresentationFields <> "from" <> usersTable <> "join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1) where u.id = any($2)") (loggedUserID /\ ids)
 
 --there must be a better way to do this
-chatHistoryFor :: Int -> Array Int -> ServerEffect (Array HistoryMessageWrapper)
+chatHistoryFor :: Int -> Array Int -> ServerEffect (Array HistoryMessage)
 chatHistoryFor loggedUserID otherIDs
       | DA.null otherIDs = pure []
       | otherwise = SD.unsafeQuery (query) (loggedUserID /\ initialMessagesPerPage /\ Delivered)
@@ -81,10 +82,10 @@ chatHistoryFor loggedUserID otherIDs
                   let parameter = show n
                   in "((select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = $1 order by date desc limit $2) union (select" <> messagePresentationFields <> "from messages where recipient = $1 and sender = " <> parameter <> " and status < $3 order by date desc))"
 
-chatHistorySince :: Int -> Int -> ServerEffect (Array HistoryMessageWrapper)
+chatHistorySince :: Int -> Int -> ServerEffect (Array HistoryMessage)
 chatHistorySince loggedUserID lastID = SD.unsafeQuery ("select " <> messagePresentationFields <> " from messages m where recipient = $1 and m.id > $2 and status < $3 order by date, sender") (loggedUserID /\ lastID /\ Delivered)
 
-chatHistoryBetween :: Int -> Int -> Int -> ServerEffect (Array HistoryMessageWrapper)
+chatHistoryBetween :: Int -> Int -> Int -> ServerEffect (Array HistoryMessage)
 chatHistoryBetween loggedUserID otherID skip = SD.unsafeQuery (("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (loggedUserID /\ otherID /\ messagesPerPage /\ skip)
 
 messsageIDsFor :: Int -> Int -> ServerEffect (Array MessageIDTemporaryWrapper)

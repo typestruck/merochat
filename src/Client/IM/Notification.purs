@@ -14,6 +14,7 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Shared.IM.Types
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame.Subscription as FS

@@ -15,7 +15,9 @@ import Effect.Class (liftEffect)
 import Effect.Aff
 import Effect.Console as EC
 import Effect.Exception.Unsafe as EEU
+import Shared.IM.Types as SIT
 import Droplet.Driver as DD
+import Shared.IM.Types
 import Droplet.Driver.Unsafe as DDU
 import Run as R
 import Run.Except as RE
@@ -91,7 +93,7 @@ withTransaction handler = do
 throwError :: forall r error. PgError -> BaseEffect { pool :: Pool | r } error
 throwError error = do
       liftEffect $ EC.log errorMessage
-      RE.throw $ ST.InternalError { reason: errorMessage, context: checkRevelanceError error }
+      RE.throw $ SIT.InternalError { reason: errorMessage, context: checkRevelanceError error }
       where errorMessage = show error
             checkRevelanceError = case _ of
                   --this is absolutely vile

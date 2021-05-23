@@ -2,7 +2,7 @@ module Shared.IM.Unread where
 
 import Prelude
 import Shared.Types
-
+import Shared.IM.Types
 import Data.Foldable as DF
 import Shared.Options.File (imageBasePath)
 

@@ -16,6 +16,7 @@ import Run.Except as RE
 import Run.Reader as RR
 import Server.Configuration as SC
 import Server.Database as SD
+import Shared.IM.Types
 import Test.Server.Model (storageDetails)
 import Test.Unit (failure) as TUA
 import Droplet.Driver (Pool)

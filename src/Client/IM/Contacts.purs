@@ -20,8 +20,10 @@ import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
+import Shared.Experiments.Types
 import Flame ((:>))
 import Flame as F
+import Shared.IM.Types
 import Shared.IM.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU

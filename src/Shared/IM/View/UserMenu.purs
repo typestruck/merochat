@@ -6,7 +6,9 @@ import Shared.Types
 import Shared.Experiments.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Shared.IM.Types
 import Flame (Html)
+import Shared.IM.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA

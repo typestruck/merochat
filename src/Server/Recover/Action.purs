@@ -37,7 +37,7 @@ recover { email: rawEmail, captchaResponse } = do
       user <- SDU.userBy $ Email email
       case user of
             Nothing -> SR.throwBadRequest accountNotFound
-            Just (RegisterLoginUser { id }) -> do
+            Just { id } -> do
                   token <- R.liftEffect (DU.toString <$> DU.genUUID)
                   SRD.insertRecover id token
                   contents <- R.liftEffect <<< FRS.render $ HE.html_ [

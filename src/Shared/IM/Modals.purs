@@ -11,6 +11,7 @@ import Data.Symbol as TDS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.IM.Types
 import Shared.IM.Svg as SIA
 import Shared.IM.View.Retry as SIVR
 

@@ -3,6 +3,7 @@ module Shared.IM.Contact where
 import Data.Array ((!!))
 import Data.Maybe (Maybe(..))
 import Shared.Types
+import Shared.IM.Types
 import Shared.Unsafe as SU
 import Prelude
 

@@ -28,12 +28,14 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
+import Shared.IM.Types
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
+import Shared.Experiments.Types
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))

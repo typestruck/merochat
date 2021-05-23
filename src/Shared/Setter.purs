@@ -3,6 +3,7 @@ module Shared.Setter where
 import Data.Symbol (class IsSymbol)
 import Prim.Row (class Nub, class Lacks, class Cons, class Union)
 import Record as R
+import Shared.IM.Types
 import Shared.Types
 import Type.Proxy(Proxy(..))
 import Prelude

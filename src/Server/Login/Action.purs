@@ -20,6 +20,6 @@ login { email: rawEmail, password } = do
       maybeUser <- SDU.userBy $ Email email
       case maybeUser of
             Nothing -> SR.throwBadRequest invalidLogin
-            Just (RegisterLoginUser user) -> do
+            Just user -> do
                   when (hash /= user.password) $ SR.throwBadRequest invalidLogin
                   ST.createToken user.id

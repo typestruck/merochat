@@ -22,6 +22,7 @@ import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
 import Shared.IM.View.Profile as SIVP
 import Shared.IM.View.Retry as SIVR
+import Shared.IM.Types
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
 

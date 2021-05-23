@@ -16,6 +16,7 @@ import Data.String as DS
 import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol)
 import Data.Tuple (Tuple(..))
+import Shared.IM.Types
 import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA

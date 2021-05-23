@@ -67,7 +67,7 @@ tests = do
                         maybeUser <- SDU.userBy (Email email)
                         case maybeUser of
                               Nothing -> R.liftAff $ TU.failure "user not created!"
-                              Just (RegisterLoginUser user) -> do
+                              Just user -> do
                                     hashed <- ST.hashPassword password
                                     R.liftAff $ TUA.equal hashed user.password
 
@@ -78,8 +78,8 @@ tests = do
                               password,
                               captchaResponse: Nothing
                         }
-                        RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
-                        history <- SD.scalar' ("select count(1) from karma_histories where target = $1") $ Row1 id
+                        { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
+                        history <- (_.count <<< SU.fromJust) <$> SD.unsafeSingle "select count(1) as count from karma_histories where target = @id" { id}
                         R.liftAff $ TUA.equal 1 history
                         leaderboard <- SD.scalar' ("select count(1) from karma_leaderboard where ranker = $1") $ Row1 id
                         R.liftAff $ TUA.equal 1 leaderboard
@@ -91,7 +91,7 @@ tests = do
                               password,
                               captchaResponse: Nothing
                         }
-                        RegisterLoginUser { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
+                        { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
                         suggestion <- SD.scalar' ("select count(1) from suggestions where suggested = $1") $ Row1 id
                         R.liftAff $ TUA.equal 1 suggestion
 

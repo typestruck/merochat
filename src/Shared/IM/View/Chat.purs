@@ -16,6 +16,7 @@ import Data.Symbol as TDS
 import Type.Proxy(Proxy(..))
 import Data.Tuple (Tuple(..))
 import Effect.Unsafe as EU
+import Shared.IM.Types
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE

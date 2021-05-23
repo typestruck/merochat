@@ -13,6 +13,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Experiments.Types
 import Shared.Avatar as SA
+import Shared.IM.Types
 import Shared.DateTime as SD
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM

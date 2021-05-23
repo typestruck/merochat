@@ -8,7 +8,6 @@ import Droplet.Language
 import Server.Database.User
 import Server.Database as SD
 import Server.Types (ServerEffect)
-import Shared.Types (Int)
 
 changeEmail :: Int -> String -> ServerEffect Unit
 changeEmail loggedUserID email = SD.execute $ update users # set (_email /\ email) # wher (id .=. loggedUserID)

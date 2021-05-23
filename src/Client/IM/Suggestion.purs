@@ -8,12 +8,14 @@ import Client.Common.Network as CCN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.WebSocket as CIW
 import Data.Array ((:))
+import Shared.IM.Types
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Debug (spy)
 import Effect.Class (liftEffect)
+import Shared.Experiments.Types
 import Flame ((:>))
 import Flame as F
 import Shared.Options.Page (suggestionsPerPage)
