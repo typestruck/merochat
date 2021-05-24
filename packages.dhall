@@ -203,7 +203,7 @@ let additions =
           , "unsafe-coerce"
           ]
         , repo = "https://github.com/easafe/purescript-droplet.git"
-        , version = "1e30cc0107544a10933e548ae1a7de507aa88825"
+        , version = "9d7a540ba5c12f216cf8b1783490cfad55731e3f"
         }
       }
 

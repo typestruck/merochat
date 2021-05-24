@@ -8,4 +8,4 @@ import Server.Types (ServerEffect)
 
 --could also order by popularity
 fecthExperiments :: ServerEffect (Array ChatExperiment)
-fecthExperiments = SD.unsafeQuery "select id, code, name, description from experiments order by added desc" {}
+fecthExperiments = SD.query $ select (_id /\ _code /\ _name /\ _description) # from experiments # orderBy (_added # desc)

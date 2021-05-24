@@ -17,7 +17,7 @@ insertRecover :: Int -> String -> ServerEffect Unit
 insertRecover id token = void <<< SD.execute $ insert # into recoveries (_uuid /\ _recoverer) # values (token /\ id)
 
 selectRecoverer :: String -> ServerEffect (Maybe Int)
-selectRecoverer token = SD.scalar ("select recoverer from recoveries where uuid = $1 and active = true and created >=  (now() at time zone 'utc') - interval '1 day'") $ Row1 token
+selectRecoverer token = SD.scalar ("select recoverer from recoveries where uuid = $1 and active = true and created >= (now() at time zone 'utc') - interval '1 day'") $ Row1 token
 
 recoverPassword :: String -> Int -> String -> ServerEffect Unit
 recoverPassword token id password = SD.withTransaction $ \connection -> do

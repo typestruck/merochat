@@ -35,11 +35,11 @@ usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 presentProfile :: Int -> ServerEffect ProfileUserWrapper
 presentProfile loggedUserID = SD.single' ("select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = $1") $ Row1 loggedUserID
 
-presentCountries :: ServerEffect (Array (Tuple Int String))
-presentCountries = SD.unsafeQuery ("select id, name from countries order by name") {}
+presentCountries :: ServerEffect (Array {id :: Int, name :: String})
+presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name
 
-presentLanguages :: ServerEffect (Array (Tuple Int String))
-presentLanguages = SD.unsafeQuery ("select id, name from languages order by name") {}
+presentLanguages :: ServerEffect (Array {id :: Int, name :: String})
+presentLanguages = SD.query select (_id /\ _name) # from languages # orderBy _name
 
 saveProfile :: { user :: ProfileUser, avatar :: Maybe String, languages :: Array Int, tags :: Array String } -> ServerEffect Unit
 saveProfile {

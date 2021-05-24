@@ -83,7 +83,7 @@ chatHistoryFor loggedUserID otherIDs
                   in "((select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = $1 order by date desc limit $2) union (select" <> messagePresentationFields <> "from messages where recipient = $1 and sender = " <> parameter <> " and status < $3 order by date desc))"
 
 chatHistorySince :: Int -> Int -> ServerEffect (Array HistoryMessage)
-chatHistorySince loggedUserID lastID = SD.unsafeQuery ("select " <> messagePresentationFields <> " from messages m where recipient = $1 and m.id > $2 and status < $3 order by date, sender") (loggedUserID /\ lastID /\ Delivered)
+chatHistorySince loggedUserID lastID = SD.query $ select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status) # from messages # wher (_recipient .=. loggedUserID .&&. _id .>. lastID .&&. _status .<. Delivered) # orderBy (_date /\ _sender)
 
 chatHistoryBetween :: Int -> Int -> Int -> ServerEffect (Array HistoryMessage)
 chatHistoryBetween loggedUserID otherID skip = SD.unsafeQuery (("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (loggedUserID /\ otherID /\ messagesPerPage /\ skip)
