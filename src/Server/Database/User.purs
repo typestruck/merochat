@@ -21,16 +21,13 @@ type Users = (
       birthday :: Maybe Date,
       description :: String,
       avatar :: Maybe String,
-      gender :: Gender,
-      country :: Int,
+      gender :: Maybe Gender,
+      country :: Maybe Int,
       active :: Default Boolean
 )
 
 users :: Table "users" Users
 users = Table
-
-_name :: Proxy "name"
-_name = Proxy
 
 _password :: Proxy "password"
 _password = Proxy

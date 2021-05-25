@@ -10,8 +10,13 @@ import Server.Database as SD
 import Server.Types
 import Server.Database.Fields
 import Server.Database.User
+import Shared.Unsafe as SU
+
 import Server.Database.LanguagesUsers
+import Server.Database.Languages
+import Server.Database.Countries
 import Droplet.Language
+import Data.Newtype as DN
 import Server.Database.TagsUsers
 import Shared.Types
 
@@ -33,7 +38,7 @@ usersTable :: String
 usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 
 presentProfile :: Int -> ServerEffect ProfileUserWrapper
-presentProfile loggedUserID = SD.single' ("select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = $1") $ Row1 loggedUserID
+presentProfile loggedUserID = SD.unsafeSingle ("select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = @id") {id: loggedUserID}
 
 presentCountries :: ServerEffect (Array {id :: Int, name :: String})
 presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name
@@ -56,13 +61,13 @@ saveProfile {
                    (_description /\ description) /\
                    (_country /\ country) /\
                    (_gender /\ gender) /\
-                   (_birthday /\ age))
+                   (_birthday /\ DN.unwrap age))
                   # wher (_id .=. id)
       SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. id)
-      void $ DT.traverse (SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (id /\ languages))
+      void $ DT.traverse (\lang -> SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (id /\ lang)) languages
       SD.executeWith connection $ delete # from tags_users # wher (_creator .=. id)
-      tagIDs :: Array Int <- DT.traverse (SD.scalarWith connection ("""
+      tagIDs :: Array (Maybe { id :: Int}) <- DT.traverse (\name -> SD.unsafeSingleWith connection ("""
             with ins as (insert into tags (name) values (@name) on conflict on constraint unique_tag do nothing returning id)
-            select coalesce ((select id from ins), (select id from tags where name = @name))""") <<< { name: _ }) tags
-      DT.traverse (SD.executeWith connection $ insert # into # tags_users (_creator /\ _tag) # values (id /\ _)) tagIDs
+            select coalesce ((select id from ins), (select id from tags where name = @name)) as id""") { name }) tags
+      DT.traverse (\id -> SD.executeWith connection (insert # into tags_users (_creator /\ _tag) # values (id /\ (SU.fromJust id).id))) tagIDs
 

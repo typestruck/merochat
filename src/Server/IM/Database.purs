@@ -15,7 +15,9 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Shared.IM.Types
+import Shared.Unsafe as SU
 import Droplet.Language
+import Server.Database.Fields
 import Server.Database as SD
 import Shared.Options.Page (contactsPerPage, messagesPerPage, initialMessagesPerPage, suggestionsPerPage)
 
@@ -48,13 +50,13 @@ presentUser loggedUserID = SD.unsafeSingle presentUserQuery {id: loggedUserID}
 suggest :: Int -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array IMUser)
 suggest loggedUserID skip = case _ of
       Just (ArrayPrimaryKey []) ->
-            SD.unsafeQuery ((select <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
+            SD.unsafeQuery (select <> rest) {id: loggedUserID, page: suggestionsPerPage, skip}
       Just (ArrayPrimaryKey keys) ->
-            SD.unsafeQuery ((select <> "and not (u.id = any($4))" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip /\ keys)
+            SD.unsafeQuery (select <> "and not (u.id = any(@keys))" <> rest) {id: loggedUserID, page: suggestionsPerPage, skip, keys}
       _ ->
-            SD.unsafeQuery ((select <> "and not exists(select 1 from histories where sender in ($1, u.id) and recipient in ($1, u.id))" <> rest)) (loggedUserID /\ suggestionsPerPage /\ skip)
-      where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> $1 "
-            rest = " and u.active and not exists (select 1 from blocks where blocker in ($1, u.id) and blocked in ($1, u.id)) order by s.id limit $2 offset $3) t order by random()"
+            SD.unsafeQuery (select <> "and not exists(select 1 from histories where sender in (@id, u.id) and recipient in (@id, u.id))" <> rest) {id: loggedUserID, page: suggestionsPerPage, skip}
+      where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> @id "
+            rest = " and u.active and not exists (select 1 from blocks where blocker in (@id, u.id) and blocked in (@id, u.id)) order by s.id limit @page offset @skip) t order by random()"
 
 presentContacts :: Int -> Int -> ServerEffect (Array Contact)
 presentContacts loggedUserID skip = SD.unsafeQuery (("select distinct h.date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
@@ -64,8 +66,8 @@ presentContacts loggedUserID skip = SD.unsafeQuery (("select distinct h.date, se
 
 --needs to handle impersonations
 presentSingleContact :: Int -> Int -> ServerEffect Contact
-presentSingleContact loggedUserID otherID = SU.fromJust <$> SD.unsafeSingle (("select coalesce(h.date, now() at time zone 'utc'), coalesce(sender, $2), coalesce(first_message_date, now() at time zone 'utc'), " <> userPresentationFields <>
-                                      "from" <> usersTable <> "left join histories h on (u.id = h.recipient and h.sender = $1 or u.id = h.sender and h.recipient = $1) where u.id = $2")) (loggedUserID /\ otherID)
+presentSingleContact loggedUserID otherID = SU.fromJust <$> SD.unsafeSingle (("select coalesce(h.date, now() at time zone 'utc'), coalesce(sender, @otherID), coalesce(first_message_date, now() at time zone 'utc'), " <> userPresentationFields <>
+                                      "from" <> usersTable <> "left join histories h on (u.id = h.recipient and h.sender = @id or u.id = h.sender and h.recipient = @id) where u.id = @otherID")) {id: loggedUserID, otherID}
 
 presentSelectedContacts :: Int -> Array Int -> ServerEffect (Array Contact)
 presentSelectedContacts loggedUserID ids

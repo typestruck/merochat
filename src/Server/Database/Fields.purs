@@ -7,3 +7,9 @@ _id = Proxy
 
 _active :: Proxy "active"
 _active = Proxy
+
+_name :: Proxy "name"
+_name = Proxy
+
+_date :: Proxy "date"
+_date = Proxy

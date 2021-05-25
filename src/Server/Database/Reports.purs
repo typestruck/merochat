@@ -16,8 +16,6 @@ type Reports = (
 reports :: Table "reports" Reports
 reports = Table
 
-
-
 _comment :: Proxy "comment"
 _comment = Proxy
 
@@ -26,9 +24,6 @@ _reason = Proxy
 
 _reporter :: Proxy "reporter"
 _reporter = Proxy
-
-_date :: Proxy "date"
-_date = Proxy
 
 _reported :: Proxy "reported"
 _reported = Proxy

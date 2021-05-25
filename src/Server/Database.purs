@@ -38,7 +38,9 @@ execute q = withConnection $ \connection -> executeWith connection q
 
 executeWith connection q = hoistMaybe $ DD.execute connection q
 
-unsafeQuery q parameters = withConnection $ \connection -> hoist $ DDU.unsafeQuery connection Nothing q parameters
+unsafeQuery q parameters = withConnection $ \connection -> unsafeQueryWith connection q parameters
+
+unsafeQueryWith connection q parameters = hoist $ DDU.unsafeQuery connection Nothing q parameters
 
 unsafeSingle q parameters = withConnection $ \connection -> unsafeSingleWith connection q parameters
 

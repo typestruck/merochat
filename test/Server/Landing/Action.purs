@@ -2,7 +2,7 @@ module Test.Server.Landing.Action where
 
 import Prelude
 import Shared.Types
-
+import Server.Types
 import Data.Maybe (Maybe(..))
 
 import Run as R
@@ -81,7 +81,7 @@ tests = do
                         { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
                         history <- (_.count <<< SU.fromJust) <$> SD.unsafeSingle "select count(1) as count from karma_histories where target = @id" { id}
                         R.liftAff $ TUA.equal 1 history
-                        leaderboard <- SD.scalar' ("select count(1) from karma_leaderboard where ranker = $1") $ Row1 id
+                        leaderboard <- _.count <<< SU.fromJust <$> (SD.unsafeSingle "select count(1) as count from karma_leaderboard where ranker = @id" {id} :: BaseEffect _ (Maybe { count :: Int}))
                         R.liftAff $ TUA.equal 1 leaderboard
 
             TU.test "register creates suggestion" $
