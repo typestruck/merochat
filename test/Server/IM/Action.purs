@@ -57,16 +57,16 @@ tests = do
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers
                         void $ SIA.reportUser userID { userID: anotherUserID, reason: Spam, comment: Nothing }
-                        count <- SD.scalar' ("""select count(1) as c from blocks where blocker = $1 and  blocked = $2""") (userID /\ anotherUserID)
-                        R.liftAff $ TUA.equal 1 count
+                        count <- SD.single $ select (count _id # as c) # from blocks # wher (_blocker .=. userID .&&. _blocked .=. anotherUserID)
+                        R.liftAff $ TUA.equal (Just {c: 1}) count
 
             TU.test "processMessage creates history" $
                   TS.serverAction $ do
                         Tuple userID anotherUserID <- setUpUsers
                         Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         R.liftAff $ TUA.equal userID id
-                        count <- SD.scalar' ("""select count(1) as c from histories where sender = $1 and recipient = $2""") (userID /\ anotherUserID)
-                        R.liftAff $ TUA.equal 1 count
+                        count <- SD.single $ select (count _id # as c) # from histories # wher (_sender .=. userID .&&. _recipient .=. anotherUserID)
+                        R.liftAff $ TUA.equal (Just {c: 1}) count
 
             TU.test "processMessage sets chat starter" $
                   TS.serverAction $ do

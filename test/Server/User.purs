@@ -1,15 +1,20 @@
 module Test.Server.User where
 
 import Prelude
+import Droplet.Language
 import Server.Database as SD
+import Server.Database.Users
 import Data.Maybe(Maybe(..))
+import Shared.Unsafe as SU
 import Server.Types
+import Data.BigInt as DB
+import Server.Database.Fields
 
 userCount :: ServerEffect Int
 userCount = do
-    count <- SD.unsafeSingle ("select count(1) as count from users") {} :: BaseEffect _ (Maybe { count :: Int })
+    count <- SD.single $ select (count _id # as c) # from users
     pure $ case count of
-        Just { count } -> count
+        Just { c } -> SU.fromJust $ DB.toInt c
         Nothing -> 0
 
 email :: String

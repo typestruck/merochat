@@ -190,6 +190,7 @@ let additions =
           , "foreign"
           , "foreign-object"
           , "integers"
+          , "bigints"
           , "maybe"
           , "newtype"
           , "nullable"
@@ -203,7 +204,7 @@ let additions =
           , "unsafe-coerce"
           ]
         , repo = "https://github.com/easafe/purescript-droplet.git"
-        , version = "c06571b83847ed11df57202df952580c0f6515a2"
+        , version = "7c79fbd742ee278c98892a472b95cbc0935b6cb0"
         }
       }
 

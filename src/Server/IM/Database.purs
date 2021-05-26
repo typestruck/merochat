@@ -58,6 +58,7 @@ suggest loggedUserID skip = case _ of
       where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> @id "
             rest = " and u.active and not exists (select 1 from blocks where blocker in (@id, u.id) and blocked in (@id, u.id)) order by s.id limit @page offset @skip) t order by random()"
 
+--should not return contact
 presentContacts :: Int -> Int -> ServerEffect (Array Contact)
 presentContacts loggedUserID skip = SD.unsafeQuery (("select distinct h.date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
                                       "from" <> usersTable <> """join histories h on (u.id = h.sender and h.recipient = $1 or u.id = h.recipient and h.sender = $1)

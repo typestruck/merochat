@@ -2,14 +2,14 @@ module Server.Profile.Database where
 
 import Prelude
 
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Types
 import Server.Database.Fields
-import Server.Database.User
+import Server.Database.Users
 import Shared.Unsafe as SU
 
 import Server.Database.LanguagesUsers
@@ -69,5 +69,5 @@ saveProfile {
       tagIDs :: Array (Maybe { id :: Int}) <- DT.traverse (\name -> SD.unsafeSingleWith connection ("""
             with ins as (insert into tags (name) values (@name) on conflict on constraint unique_tag do nothing returning id)
             select coalesce ((select id from ins), (select id from tags where name = @name)) as id""") { name }) tags
-      DT.traverse (\id -> SD.executeWith connection (insert # into tags_users (_creator /\ _tag) # values (id /\ (SU.fromJust id).id))) tagIDs
+      DT.traverse (\tid -> SD.executeWith connection (insert # into tags_users (_creator /\ _tag) # values (id /\ (SU.fromJust tid).id))) tagIDs
 

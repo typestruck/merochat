@@ -13,3 +13,6 @@ _name = Proxy
 
 _date :: Proxy "date"
 _date = Proxy
+
+c :: Proxy "c"
+c = Proxy

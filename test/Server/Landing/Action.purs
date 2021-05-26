@@ -8,16 +8,19 @@ import Data.Maybe (Maybe(..))
 import Run as R
 import Server.AccountValidation (emailAlreadyRegisteredMessage, invalidEmailMessage, invalidPasswordMessage)
 import Server.Database as SD
-import Server.Database.User as SDU
+import Server.Database.Users as SDU
 import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
+import Server.Database.KarmaHistories
 import Server.Token as ST
 import Shared.Unsafe as SU
 import Test.Server as TS
 import Test.Server.User (email, password)
 import Test.Server.User as STU
+import Droplet.Language
 import Test.Unit (TestSuite)
 import Test.Unit as TU
+import Server.Database.Fields
 import Test.Unit.Assert as TUA
 
 tests :: TestSuite
@@ -79,10 +82,10 @@ tests = do
                               captchaResponse: Nothing
                         }
                         { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
-                        history <- (_.count <<< SU.fromJust) <$> SD.unsafeSingle "select count(1) as count from karma_histories where target = @id" { id}
-                        R.liftAff $ TUA.equal 1 history
-                        leaderboard <- _.count <<< SU.fromJust <$> (SD.unsafeSingle "select count(1) as count from karma_leaderboard where ranker = @id" {id} :: BaseEffect _ (Maybe { count :: Int}))
-                        R.liftAff $ TUA.equal 1 leaderboard
+                        history <-  SD.single $ select count _id # as c # from karma_histories # wher (_target .=. id)
+                        R.liftAff $ TUA.equal (Just {c: 1}) history
+                        leaderboard <- SD.single $ select count _id # as c # from karma_leaderboard # wher (_ranker .=. id)
+                        R.liftAff $ TUA.equal (Just {c: 1}) leaderboard
 
             TU.test "register creates suggestion" $
                   TS.serverAction $ do
@@ -92,8 +95,8 @@ tests = do
                               captchaResponse: Nothing
                         }
                         { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
-                        suggestion <- SD.scalar' ("select count(1) from suggestions where suggested = $1") $ Row1 id
-                        R.liftAff $ TUA.equal 1 suggestion
+                        suggestion <- SD.single $ select (count _id # as c) # from suggestions # wher (_suggested .=. id)
+                        R.liftAff $ TUA.equal (Just {c: 1}) suggestion
 
 
 

@@ -15,7 +15,7 @@ import Flame.Renderer.String as FRS
 import Run as R
 import Server.AccountValidation as SA
 import Server.Captcha as SC
-import Server.Database.User as SDU
+import Server.Database.Users as SDU
 import Server.Email as SE
 import Server.Ok (ok)
 import Server.Recover.Database as SRD

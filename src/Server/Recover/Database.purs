@@ -4,7 +4,7 @@ import Prelude
 import Server.Types
 import Shared.Types
 import Droplet.Language
-import Server.Database.User
+import Server.Database.Users
 import Server.Database.Recoveries
 import Server.Database.Fields
 import Data.Maybe (Maybe)

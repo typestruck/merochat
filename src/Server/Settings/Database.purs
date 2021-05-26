@@ -5,7 +5,7 @@ import Prelude
 import Data.Tuple.Nested ((/\))
 
 import Droplet.Language
-import Server.Database.User
+import Server.Database.Users
 import Server.Database as SD
 import Server.Types (ServerEffect)
 import Server.Database.Fields

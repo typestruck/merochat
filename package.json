@@ -19,6 +19,7 @@
   "author": "Eduardo Asafe<e@asafe.dev>",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
+    "big-integer": "^1.6.48",
     "bufferutil": "^4.0.3",
     "decimal.js": "^10.2.0",
     "insane": "^2.6.2",

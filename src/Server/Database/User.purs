@@ -1,4 +1,4 @@
-module Server.Database.User  where
+module Server.Database.Users  where
 
 import Server.Types
 import Shared.Types

@@ -494,6 +494,9 @@ instance writeForeignGender :: WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
 
 
+instance genderToValue :: ToValue Gender where
+      toValue = F.unsafeToForeign <<< DE.fromEnum
+
 instance encodeQueryArrayPrimaryKey :: EncodeQueryParam ArrayPrimaryKey where
       encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
 
