@@ -25,6 +25,8 @@ import Data.Generic.Rep (class Generic)
 import Data.Show.Generic as DGRS
 import Data.Hashable (class Hashable)
 import Data.Hashable as HS
+import Droplet.Language (class ToValue, class FromValue)
+import Droplet.Language as DL
 import Shared.IM.Types
 import Data.Int as DI
 import Data.List.NonEmpty as DLN
@@ -138,8 +140,8 @@ type PM = (
       tagsInputedList :: Maybe (Array String),
       descriptionInputed :: Maybe String,
       generating :: Maybe Generate,
-      countries :: Array (Tuple Int String),
-      languages :: Array (Tuple Int String),
+      countries :: Array {id :: Int, name :: String},
+      languages :: Array {id :: Int, name :: String},
       hideSuccessMessage :: Boolean,
       experimenting :: Maybe ExperimentData
 )
@@ -177,7 +179,7 @@ data SettingsMessage =
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
-
+--should be in user
 data Gender =
       Female |
       Male |
@@ -456,16 +458,6 @@ errorDecoding queryObj key = Left $ QueryDecodeError {
       queryObj
 }
 
--- instance toSQLValueGender :: ToSQLValue Gender where
---       toSQLValue = F.unsafeToForeign <<< show
--- instance toSQLValueMessageStatus :: ToSQLValue MessageStatus where
---       toSQLValue = F.unsafeToForeign <<< DE.fromEnum
--- instance toSQLReportReason :: ToSQLValue ReportReason where
---       toSQLValue = F.unsafeToForeign <<< DE.fromEnum
-
--- instance fromSQLValueGender :: FromSQLValue Gender where
---       fromSQLValue = DB.lmap show <<< CME.runExcept <<< map (SU.fromJust <<< DSR.read) <<< F.readString
-
 
 instance encodeQueryGenerate :: EncodeQueryParam Generate where
       encodeQueryParam = Just <<< show
@@ -529,7 +521,9 @@ instance contentTypeRead :: Read ContentType where
                    else OctetStream
             where value = DS.trim $ DS.toLower v
 
+derive instance ooGender :: Ord Gender
 
+--should just use Enum
 instance readGender :: Read Gender where
       read input =
           case DS.toLower $ DS.trim input of
@@ -547,6 +541,39 @@ instance readGenerate :: Read Generate where
               "description" -> Just Description
               _ -> Nothing
 
---thats a lot of work...
+instance oGender :: Bounded Gender where
+      bottom = Female
+      top = Other
+
+instance bGender :: BoundedEnum Gender where
+      cardinality = Cardinality 1
+
+      fromEnum = case _ of
+            Female -> 0
+            Male -> 1
+            NonBinary -> 2
+            Other -> 3
+
+      toEnum = case _ of
+            0 -> Just Female
+            1 -> Just Male
+            2 -> Just NonBinary
+            3 -> Just Other
+            _ -> Nothing
+
+instance gEnum :: Enum Gender where
+      succ = case _ of
+            Female -> Just Male
+            Male -> Just NonBinary
+            NonBinary -> Just Other
+            Other -> Nothing
+
+      pred = case _ of
+            Female -> Nothing
+            Male -> Just Female
+            NonBinary -> Just Male
+            Other -> Just NonBinary
 
 
+instance geFromValue :: FromValue Gender where
+      fromValue v = map (SU.fromJust <<< DE.toEnum)  (DL.fromValue v :: Either String Int)

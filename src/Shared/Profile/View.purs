@@ -287,7 +287,7 @@ view model@{
                               ]
                         ]
 
-            languageHM = DH.fromArray languages
+            languageHM = DH.fromArray $ map (\{id, name} -> Tuple id name) languages
             getLanguage = SU.fromJust <<< flip DH.lookup languageHM
 
 --refactor: abstract with shared/profile
@@ -381,9 +381,9 @@ cancel fieldInputed = HE.svg [HA.class' "svg-16 cancel", HA.viewBox "0 0 16 16",
 displayOptions :: forall id. Show id => Eq id => Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
 displayOptions = displayOptionsWith "Don't show"
 
-displayOptionsWith :: forall id. Show id => Eq id => String -> Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
-displayOptionsWith unselectedText current = (HE.option [HA.selected $ DM.isNothing current] unselectedText : _) <<< map makeOptions
-      where makeOptions (Tuple id value) = HE.option [HA.value $ show id, HA.selected $ Just id == current] value
+displayOptionsWith :: forall i. Show i => Eq i => String -> Maybe i -> Array {id:: i, name :: String} -> Array (Html ProfileMessage)
+displayOptionsWith unselectedText current = HE.option [HA.selected $ DM.isNothing current] <<< (unselectedText : _) <<< map makeOptions
+      where makeOptions {id, name} = HE.option [HA.value $ show id, HA.selected $ Just id == current] name
 
 title :: String -> NodeData ProfileMessage
 title name = HA.title $ "Click to edit your " <> name

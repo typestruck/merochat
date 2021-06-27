@@ -73,7 +73,7 @@ tests = do
                         Tuple userID anotherUserID <- setUpUsers
                         Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         R.liftAff $ TUA.equal userID id
-                        chatStarter <- SD.scalar' ("""select sender from histories limit 1""") {}
+                        chatStarter <- SD.single $ select _sender # from histories # orderBy _id # limit 1
                         R.liftAff $ TUA.equal userID chatStarter
 
             TU.test "processMessage accepts files" $

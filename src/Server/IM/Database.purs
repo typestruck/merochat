@@ -91,8 +91,8 @@ chatHistorySince loggedUserID lastID = SD.query $ select (_id /\ _sender /\ _rec
 chatHistoryBetween :: Int -> Int -> Int -> ServerEffect (Array HistoryMessage)
 chatHistoryBetween loggedUserID otherID skip = SD.unsafeQuery (("select * from (select" <> messagePresentationFields <> "from messages where sender = $1 and recipient = $2 or sender = $2 and recipient = $1 order by date desc limit $3 offset $4) s order by date")) (loggedUserID /\ otherID /\ messagesPerPage /\ skip)
 
-messsageIDsFor :: Int -> Int -> ServerEffect (Array MessageIDTemporaryWrapper)
-messsageIDsFor loggedUserID messageID = SD.unsafeQuery ("select id, temporary_id from messages where sender = $1 and id > $2") (loggedUserID /\ messageID)
+messsageIDsFor :: Int -> Int -> ServerEffect (Array MessageIDTemporary)
+messsageIDsFor loggedUserID messageID = SD.query $ select (_id /\ _temporary_id) # from messages # wher (_sender .=. loggedUserID .&&. id .>. messageID)
 
 insertMessage :: forall r. Int -> Int -> Int -> String -> BaseEffect { pool :: Pool | r } Int
 insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ \connection -> do

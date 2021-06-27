@@ -16,6 +16,8 @@ import Data.Bifunctor as DB
 import Data.DateTime (Date, DateTime)
 import Data.DateTime as DTT
 import Data.DateTime.Instant as DDI
+import Droplet.Language as DL
+import Droplet.Language (class FromValue)
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
@@ -104,9 +106,6 @@ type MessageIDTemporary = {
       id :: Int,
       temporaryID :: Int
 }
-
---refactor: move wrappers to server/types
-newtype MessageIDTemporaryWrapper = MessageIDTemporaryWrapper MessageIDTemporary
 
 type MissedEvents = {
       contacts :: Array Contact,
@@ -241,6 +240,9 @@ data ResponseError =
       ExpiredSession
 
 newtype DateWrapper = DateWrapper Date
+
+instance dddFromValue :: FromValue DateWrapper where
+      fromValue v = map DateWrapper (DL.fromValue v :: Either String Date)
 
 data ReportReason = DatingContent | Harrassment | HateSpeech | Spam | OtherReason
 

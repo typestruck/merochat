@@ -59,6 +59,8 @@ _country = Proxy
 baseQuery :: String
 baseQuery = "select id, email, password from users where active and "
 
+--refactor: emails should be inserted/updated as lowered
+-- and not use lower()
 userBy :: By -> ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
       Email value -> SD.unsafeSingle (baseQuery <> "lower(email) = lower(@email)") { email: value }

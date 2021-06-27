@@ -12,9 +12,13 @@ import Server.Database.Users as SDU
 import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
 import Server.Database.KarmaHistories
+import Server.Database.KarmaLeaderboard
+import Server.Database.Suggestions
+import Data.BigInt as BG
 import Server.Token as ST
 import Shared.Unsafe as SU
 import Test.Server as TS
+
 import Test.Server.User (email, password)
 import Test.Server.User as STU
 import Droplet.Language
@@ -82,10 +86,10 @@ tests = do
                               captchaResponse: Nothing
                         }
                         { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
-                        history <-  SD.single $ select count _id # as c # from karma_histories # wher (_target .=. id)
-                        R.liftAff $ TUA.equal (Just {c: 1}) history
-                        leaderboard <- SD.single $ select count _id # as c # from karma_leaderboard # wher (_ranker .=. id)
-                        R.liftAff $ TUA.equal (Just {c: 1}) leaderboard
+                        history <- SD.single $ select (count _id # as c) # from karma_histories # wher (_target .=. id)
+                        R.liftAff $ TUA.equal (Just {c: BG.fromInt 1}) history
+                        leaderboard <- SD.single $ select (count _id # as c) # from karma_leaderboard # wher (_ranker .=. id)
+                        R.liftAff $ TUA.equal (Just {c: BG.fromInt 1}) leaderboard
 
             TU.test "register creates suggestion" $
                   TS.serverAction $ do
@@ -96,7 +100,7 @@ tests = do
                         }
                         { id } <- SU.fromJust <$> (SDU.userBy $ Email email)
                         suggestion <- SD.single $ select (count _id # as c) # from suggestions # wher (_suggested .=. id)
-                        R.liftAff $ TUA.equal (Just {c: 1}) suggestion
+                        R.liftAff $ TUA.equal (Just {c: BG.fromInt 1}) suggestion
 
 
 

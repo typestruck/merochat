@@ -37,14 +37,14 @@ k.position """
 usersTable :: String
 usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 
-presentProfile :: Int -> ServerEffect ProfileUserWrapper
-presentProfile loggedUserID = SD.unsafeSingle ("select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = @id") {id: loggedUserID}
+presentProfile :: Int -> ServerEffect ProfileUser
+presentProfile loggedUserID = map SU.fromJust $ SD.unsafeSingle ("select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = @id") {id: loggedUserID}
 
 presentCountries :: ServerEffect (Array {id :: Int, name :: String})
 presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name
 
 presentLanguages :: ServerEffect (Array {id :: Int, name :: String})
-presentLanguages = SD.query select (_id /\ _name) # from languages # orderBy _name
+presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
 
 saveProfile :: { user :: ProfileUser, avatar :: Maybe String, languages :: Array Int, tags :: Array String } -> ServerEffect Unit
 saveProfile {
@@ -61,7 +61,7 @@ saveProfile {
                    (_description /\ description) /\
                    (_country /\ country) /\
                    (_gender /\ gender) /\
-                   (_birthday /\ DN.unwrap age))
+                   (_birthday /\ map DN.unwrap age))
                   # wher (_id .=. id)
       SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. id)
       void $ DT.traverse (\lang -> SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (id /\ lang)) languages
