@@ -12,6 +12,7 @@ import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Options.File (maxImageSize)
+import Shared.IM.Types
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
 import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)

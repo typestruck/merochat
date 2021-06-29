@@ -12,7 +12,7 @@ import Server.Profile.Template as SPT
 
 profile :: { guards :: { loggedUserID :: Int } } -> ServerEffect String
 profile { guards: { loggedUserID } } = do
-      profileUser <- DN.unwrap <$> SPD.presentProfile loggedUserID
+      profileUser <- SPD.presentProfile loggedUserID
       countries <- SPD.presentCountries
       languages <- SPD.presentLanguages
       R.liftEffect $ SPT.template {

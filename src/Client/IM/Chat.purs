@@ -12,6 +12,7 @@ import Client.IM.WebSocket as CIW
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.DateTime as DT
+import Data.Array.NonEmpty as DAN
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -24,6 +25,7 @@ import Type.Proxy(Proxy(..))
 import Data.Symbol as TDS
 import Data.Time.Duration (Seconds)
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -172,7 +174,7 @@ makeTurn { chatStarter, chatAge, history } sender =
                               beforeLastIndex = (max size 3) - 1 - 2
                         senderMessages <- groups !! beforeLastIndex
                         recipientMessages <- DA.last groups
-                        pure $ Tuple senderMessages recipientMessages
+                        pure (DAN.toArray senderMessages /\ DAN.toArray recipientMessages)
                   senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
                   recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
             in
@@ -198,7 +200,7 @@ makeTurn { chatStarter, chatAge, history } sender =
                   pure $ sender == userID && recipient == userID
 
             sameSender entry anotherEntry = entry.sender ==  anotherEntry.sender
-            countCharacters total ( { content }) = total + DSC.length content
+            countCharacters total { content } = total + DSC.length content
             getDate = DN.unwrap <<< _.date
 
 applyMarkup :: Markup -> IMModel -> MoreMessages

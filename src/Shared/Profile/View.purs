@@ -116,7 +116,7 @@ view model@{
                   ]
                   in displayEditOptional DI.fromString countries (Proxy :: Proxy "country") do
                         country <- user.country
-                        display <<< DT.snd <$> DF.find ((country == _) <<< DT.fst) countries
+                        display <<< _.name <$> DF.find ((country == _) <<< _.id) countries
 
             displayEditLanguages =
                   let   fieldInputed = Proxy :: Proxy "languagesInputed"
@@ -220,7 +220,7 @@ view model@{
                         ]
                   ]
 
-            displayEditOptional :: forall r s t field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Choice (Maybe t)) r PM => Cons field (Maybe t) s PU => Show t => Eq t => (String -> Maybe t) -> Array (Tuple t String) -> Proxy field -> Maybe (Html ProfileMessage) -> Html ProfileMessage
+            displayEditOptional :: forall r s t field fieldInputed. IsSymbol field => Append field "Inputed" fieldInputed => IsSymbol fieldInputed => Cons fieldInputed (Choice (Maybe t)) r PM => Cons field (Maybe t) s PU => Show t => Eq t => (String -> Maybe t) -> Array {id:: t, name :: String} -> Proxy field -> Maybe (Html ProfileMessage) -> Html ProfileMessage
             displayEditOptional parser options field currentFieldValue =
                   let   fieldInputed = TDS.append field (Proxy :: Proxy "Inputed")
                   in displayEditOptionalField field currentFieldValue $ HE.select [HA.onInput (setFieldInputed fieldInputed <<< parser)] $ displayOptions (R.get field model.user) options
@@ -378,18 +378,18 @@ cancel :: forall r t fieldInputed. IsSymbol fieldInputed => Cons fieldInputed (M
 cancel fieldInputed = HE.svg [HA.class' "svg-16 cancel", HA.viewBox "0 0 16 16", HA.onClick (resetFieldInputed fieldInputed) ] $
       HE.title "Cancel edit" : SIS.closeElements
 
-displayOptions :: forall id. Show id => Eq id => Maybe id -> Array (Tuple id String) -> Array (Html ProfileMessage)
+displayOptions :: forall i. Show i => Eq i => Maybe i -> Array {id:: i, name :: String} -> Array (Html ProfileMessage)
 displayOptions = displayOptionsWith "Don't show"
 
 displayOptionsWith :: forall i. Show i => Eq i => String -> Maybe i -> Array {id:: i, name :: String} -> Array (Html ProfileMessage)
-displayOptionsWith unselectedText current = HE.option [HA.selected $ DM.isNothing current] <<< (unselectedText : _) <<< map makeOptions
+displayOptionsWith unselectedText current = (HE.option [HA.selected $ DM.isNothing current] unselectedText : _) <<< map makeOptions
       where makeOptions {id, name} = HE.option [HA.value $ show id, HA.selected $ Just id == current] name
 
 title :: String -> NodeData ProfileMessage
 title name = HA.title $ "Click to edit your " <> name
 
-genders :: Array (Tuple Gender String)
-genders = [Tuple Female $ show Female, Tuple Male $ show Male, Tuple NonBinary $ show NonBinary, Tuple Other $ show Other]
+genders :: Array {id:: Gender, name :: String}
+genders = [{id: Female, name: show Female}, {id: Male, name: show Male}, {id: NonBinary, name: show NonBinary}, {id: Other, name: show Other}]
 
 nothingOnEmpty :: String -> Maybe String
 nothingOnEmpty s =
