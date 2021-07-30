@@ -117,7 +117,7 @@ let additions =
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.14.1-20210516/packages.dhall sha256:f5e978371d4cdc4b916add9011021509c8d869f4c3f6d0d2694c0e03a85046c8
+      https://github.com/purescript/package-sets/releases/download/psc-0.14.2-20210629/packages.dhall sha256:534c490bb73cae75adb5a39871142fd8db5c2d74c90509797a80b8bb0d5c3f7b
 
 let overrides = {=}
 
@@ -156,23 +156,6 @@ let additions =
           ]
         , repo = "https://github.com/vilu/purescript-browser-cookies.git"
         , version = "v0.0.1"
-        }
-      , flame =
-        { dependencies =
-          [ "prelude"
-          , "console"
-          , "effect"
-          , "web-events"
-          , "web-dom"
-          , "web-html"
-          , "nullable"
-          , "aff"
-          , "signal"
-          , "foreign-object"
-          , "argonaut-generic"
-          ]
-        , repo = "https://github.com/easafe/purescript-flame.git"
-        , version = "6b7e56cf6b5091c5b1d3d897546bb0195ea5b71a"
         }
       , droplet =
         { dependencies =
