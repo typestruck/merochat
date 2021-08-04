@@ -24,12 +24,6 @@ messages = Table
 _temporary_id :: Proxy "temporary_id"
 _temporary_id = Proxy
 
-_sender :: Proxy "sender"
-_sender = Proxy
-
-_recipient :: Proxy "recipient"
-_recipient = Proxy
-
 _content :: Proxy "content"
 _content = Proxy
 

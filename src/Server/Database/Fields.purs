@@ -14,5 +14,12 @@ _name = Proxy
 _date :: Proxy "date"
 _date = Proxy
 
+_sender :: Proxy "sender"
+_sender = Proxy
+
+_recipient :: Proxy "recipient"
+_recipient = Proxy
+
+
 c :: Proxy "c"
 c = Proxy

@@ -1,9 +1,15 @@
 module Test.Server.IM.Action where
 
+import Droplet.Language
 import Prelude
+import Server.Database.Blocks
+import Server.Database.Fields
+import Server.Database.Histories
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Array as DA
+import Data.BigInt as BI
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Data.String.Regex as DSR
@@ -11,7 +17,6 @@ import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
-
 import Debug (spy)
 import Run as R
 import Server.Database as SD
@@ -58,7 +63,7 @@ tests = do
                         Tuple userID anotherUserID <- setUpUsers
                         void $ SIA.reportUser userID { userID: anotherUserID, reason: Spam, comment: Nothing }
                         count <- SD.single $ select (count _id # as c) # from blocks # wher (_blocker .=. userID .&&. _blocked .=. anotherUserID)
-                        R.liftAff $ TUA.equal (Just {c: 1}) count
+                        R.liftAff $ TUA.equal (Just {c: BI.fromInt 1}) count
 
             TU.test "processMessage creates history" $
                   TS.serverAction $ do
@@ -66,7 +71,7 @@ tests = do
                         Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         R.liftAff $ TUA.equal userID id
                         count <- SD.single $ select (count _id # as c) # from histories # wher (_sender .=. userID .&&. _recipient .=. anotherUserID)
-                        R.liftAff $ TUA.equal (Just {c: 1}) count
+                        R.liftAff $ TUA.equal (Just {c: BI.fromInt 1}) count
 
             TU.test "processMessage sets chat starter" $
                   TS.serverAction $ do
@@ -74,7 +79,7 @@ tests = do
                         Tuple id _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         R.liftAff $ TUA.equal userID id
                         chatStarter <- SD.single $ select _sender # from histories # orderBy _id # limit 1
-                        R.liftAff $ TUA.equal userID chatStarter
+                        R.liftAff $ TUA.equal (Just {sender: userID}) chatStarter
 
             TU.test "processMessage accepts files" $
                   TS.serverActionCatch (TS.catch invalidImageMessage) $ do

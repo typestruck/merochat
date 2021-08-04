@@ -3,6 +3,7 @@ module Server.IM.Action where
 
 import Prelude
 import Server.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Array as DA
@@ -16,7 +17,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Data.UUID as DU
-
+import Droplet.Driver (Pool)
 import Effect.Ref (Ref)
 import Environment (development)
 import Node.Buffer as NB
@@ -25,6 +26,7 @@ import Node.FS.Sync as NFS
 import Run as R
 import Server.Email as SE
 import Server.File as SF
+import Server.IM.Database (FlatContact)
 import Server.IM.Database as SID
 import Server.Ok (ok)
 import Server.Response as SR
@@ -37,12 +39,12 @@ import Shared.Unsafe as SU
 foreign import sanitize :: String -> String
 
 suggest :: Int -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array Suggestion)
-suggest loggedUserID skip = SN.unwrapAll <<< SID.suggest loggedUserID skip
+suggest loggedUserID skip = SID.suggest loggedUserID skip
 
 listContacts :: Int -> Int -> ServerEffect (Array Contact)
 listContacts loggedUserID skip = do
-      contacts <- SN.unwrapAll $ SID.presentContacts loggedUserID skip
-      history <- SN.unwrapAll <<< SID.chatHistoryFor loggedUserID $ map (_.id <<< _.user) contacts
+      contacts <- (fromFlatContact <$> _) <$> SID.presentContacts loggedUserID skip
+      history <- SID.chatHistoryFor loggedUserID $ map (_.id <<< _.user) contacts
       let userHistory = DF.foldl intoHashMap DH.empty history
       pure $ intoContacts userHistory <$> contacts
 
@@ -55,11 +57,35 @@ listContacts loggedUserID skip = do
 
 listSingleContact :: Int -> Int -> ServerEffect Contact
 listSingleContact loggedUserID userID = do
-      contact <- DN.unwrap <$> SID.presentSingleContact loggedUserID userID
-      history <- SN.unwrapAll $ SID.chatHistoryBetween loggedUserID userID 0
+      contact <- fromFlatContact <$> SID.presentSingleContact loggedUserID userID
+      history <- SID.chatHistoryBetween loggedUserID userID 0
       pure $ contact {
             history = history
       }
+
+fromFlatContact :: FlatContact -> Contact
+fromFlatContact fc = {
+      shouldFetchChatHistory: fc.shouldFetchChatHistory,
+      available : fc.available,
+      chatAge : fc.chatAge,
+      chatStarter: fc.chatStarter,
+      impersonating : fc.impersonating,
+      history: [],
+      user: {
+            id : fc.id,
+            name : fc.name,
+            headline : fc.headline,
+            description : fc.description,
+            avatar : fc.avatar,
+            tags : fc.tags,
+            karma : fc.karma,
+            karmaPosition : fc.karmaPosition,
+            gender : fc.gender,
+            country : fc.country,
+            languages : fc.languages,
+            age : fc.age
+      }
+}
 
 processMessage :: forall r. Int -> Int -> Int -> MessageContent -> BaseEffect { storageDetails :: Ref StorageDetails, pool :: Pool | r } (Tuple Int String)
 processMessage loggedUserID userID temporaryID content = do
@@ -87,12 +113,12 @@ blockUser loggedUserID userID = do
 
 listMissedEvents :: Int -> Maybe Int -> Maybe Int -> ServerEffect MissedEvents
 listMissedEvents loggedUserID lastSenderID lastRecipientID = do
-      messageIDs <- SN.unwrapAll $ DM.maybe (pure []) (SID.messsageIDsFor loggedUserID) lastSenderID
-      history <- SN.unwrapAll $ DM.maybe (pure []) (SID.chatHistorySince loggedUserID) lastRecipientID
-      contacts <- SN.unwrapAll <<< SID.presentSelectedContacts loggedUserID <<< DA.nubEq $ map _.sender history
+      messageIDs <- DM.maybe (pure []) (SID.messsageIDsFor loggedUserID) lastSenderID
+      history <- DM.maybe (pure []) (SID.chatHistorySince loggedUserID) lastRecipientID
+      contacts <- SID.presentSelectedContacts loggedUserID <<< DA.nubEq $ map _.sender history
       let userHistory = DF.foldl intoHashMap DH.empty history
       pure {
-            contacts: intoContacts userHistory <$> contacts,
+            contacts: intoContacts userHistory <$> map fromFlatContact contacts,
             messageIDs
       }
 
@@ -103,7 +129,7 @@ listMissedEvents loggedUserID lastSenderID lastRecipientID = do
             }
 
 resumeChatHistory :: Int -> Int -> Int -> ServerEffect (Array HistoryMessage)
-resumeChatHistory loggedUserID userID skip = SN.unwrapAll $ SID.chatHistoryBetween loggedUserID userID skip
+resumeChatHistory loggedUserID userID skip = SID.chatHistoryBetween loggedUserID userID skip
 
 reportUser :: Int -> Report -> ServerEffect Ok
 reportUser loggedUserID report@{ reason, userID } = do
