@@ -12,9 +12,9 @@ type Messages = (
       temporary_id :: Int,
       sender :: Int,
       recipient :: Int,
-      date :: Default DateTime,
+      date :: Default DateTimeWrapper,
       content :: String,
-      status :: MessageStatus,
+      status :: Default MessageStatus,
       visualized :: Maybe DateTime
 )
 
@@ -38,4 +38,3 @@ _status = Proxy
 
 _visualized :: Proxy "visualized"
 _visualized = Proxy
-

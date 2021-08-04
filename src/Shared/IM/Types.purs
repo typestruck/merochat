@@ -2,9 +2,13 @@ module Shared.IM.Types where
 
 --refactor: split to the correct modules
 
+import Prelude
+import Shared.Experiments.Types
+import Shared.User
+import Shared.User
+
 import Control.Monad.Except as CME
 import Data.Argonaut.Core as DAC
-import Shared.Experiments.Types
 import Data.Argonaut.Core as DAP
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
@@ -13,24 +17,22 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Array as DA
 import Data.Bifunctor as DB
-import Data.DateTime (Date, DateTime)
+import Data.DateTime (Date, DateTime(..))
 import Data.DateTime as DTT
 import Data.DateTime.Instant as DDI
-import Droplet.Language as DL
-import Droplet.Language (class FromValue)
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Show.Generic as DGRS
 import Data.Hashable (class Hashable)
 import Data.Hashable as HS
 import Data.Int as DI
 import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Number as DNM
 import Data.Newtype (class Newtype)
+import Data.Number as DNM
+import Data.Show.Generic as DGRS
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.Read (class Read)
@@ -41,7 +43,8 @@ import Data.String.Regex.Unsafe as DSRU
 import Data.Time.Duration as DTD
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
-import Shared.User
+import Droplet.Language (class FromValue, class ToValue)
+import Droplet.Language as DL
 import Foreign (F, Foreign, ForeignError(..))
 import Foreign as F
 import Foreign.Object (Object)
@@ -53,8 +56,6 @@ import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Web.Event.Internal.Types (Event)
-import Prelude
-import Shared.User
 
 
 type IMUser = Record IU
@@ -70,21 +71,25 @@ type BasicMessage fields = {
       fields
 }
 
-type ClientMessagePayload = (BasicMessage (
+type ClientMessagePayload = BasicMessage (
       content :: String,
       userID :: Int,
       date :: DateTimeWrapper
-))
+)
 
-type Contact = {
+type BaseContact fields = {
       shouldFetchChatHistory :: Boolean, -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
-      user :: IMUser,
       available :: Boolean,
       chatAge :: Number, --Days,
       chatStarter :: Int,
-      impersonating :: Maybe Int,
-      history :: Array HistoryMessage
+      impersonating :: Maybe Int |
+      fields
 }
+
+type Contact = BaseContact (
+      user :: IMUser,
+      history :: Array HistoryMessage
+)
 
 type HistoryMessage = {
       id :: Int,
@@ -241,8 +246,23 @@ data ResponseError =
 
 newtype DateWrapper = DateWrapper Date
 
-instance dddFromValue :: FromValue DateWrapper where
+instance FromValue DateWrapper where
       fromValue v = map DateWrapper (DL.fromValue v :: Either String Date)
+
+instance FromValue DateTimeWrapper where
+      fromValue v = map DateTimeWrapper (DL.fromValue v :: Either String DateTime)
+
+instance ToValue MessageStatus where
+      toValue v = F.unsafeToForeign $ DE.fromEnum v
+
+instance FromValue ReportReason where
+      fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v :: Either String Int)
+
+instance ToValue ReportReason where
+      toValue v = F.unsafeToForeign $ DE.fromEnum v
+
+instance FromValue MessageStatus where
+      fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v :: Either String Int)
 
 data ReportReason = DatingContent | Harrassment | HateSpeech | Spam | OtherReason
 

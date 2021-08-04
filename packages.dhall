@@ -117,7 +117,7 @@ let additions =
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.14.2-20210629/packages.dhall sha256:534c490bb73cae75adb5a39871142fd8db5c2d74c90509797a80b8bb0d5c3f7b
+      https://github.com/purescript/package-sets/releases/download/psc-0.14.3-20210722/packages.dhall sha256:1ceb43aa59436bf5601bac45f6f3781c4e1f0e4c2b8458105b018e5ed8c30f8c
 
 let overrides = {=}
 
@@ -187,7 +187,7 @@ let additions =
           , "unsafe-coerce"
           ]
         , repo = "https://github.com/easafe/purescript-droplet.git"
-        , version = "c8da6b8c34f7c2ec71ba065bf1388b873595b2d2"
+        , version = "ad887229d06eb240d8d79894bcae95640df3b0d7"
         }
       }
 

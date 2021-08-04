@@ -1,13 +1,16 @@
 module Server.Database.Reports where
 
-import Type.Proxy (Proxy(..))
 import Droplet.Language
-import Data.DateTime(DateTime)
+
+import Data.DateTime (DateTime)
+import Data.Maybe (Maybe)
+import Shared.IM.Types (ReportReason)
+import Type.Proxy (Proxy(..))
 
 type Reports = (
       id :: Auto Int,
-      comment :: String,
-      reason :: Int, --should be enum
+      comment :: Maybe String,
+      reason :: ReportReason,
       reporter :: Int,
       date :: Default DateTime,
       reported :: Int
