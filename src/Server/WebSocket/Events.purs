@@ -2,6 +2,8 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Types
+import Shared.Experiments.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Browser.Cookies.Internal as BCI
@@ -18,7 +20,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
-
+import Droplet.Driver (Pool)
 import Effect (Effect)
 import Effect.Aff as CMEC
 import Effect.Aff as EA
@@ -50,7 +52,7 @@ aliveDelayMinutes :: Int
 aliveDelayMinutes = 10
 
 handleConnection :: Configuration -> Pool -> Ref (HashMap Int AliveWebSocketConnection) -> Ref StorageDetails -> WebSocketConnection -> Request -> Effect Unit
-handleConnection c@{ tokenSecret } pool allConnections storageDetails connection request = do
+handleConnection { tokenSecret } pool allConnections storageDetails connection request = do
       maybeUserID <- ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked <- FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _ ) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
@@ -162,4 +164,3 @@ checkLastSeen allConnections = do
                   | otherwise = pure unit
 
             hasExpired lastSeen now = aliveDelayMinutes <= DI.floor (DN.unwrap (DDT.diff now lastSeen :: Minutes))
-

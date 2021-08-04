@@ -6,7 +6,6 @@ import Shared.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
-import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Payload.ContentType (html)
 import Payload.Headers as PH
@@ -17,6 +16,7 @@ import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Template as SIT
+import Shared.IM.Types
 
 im :: { guards :: { loggedUserID :: Int } } -> ServerEffect (Response String)
 im { guards: { loggedUserID } } = do
@@ -27,7 +27,7 @@ im { guards: { loggedUserID } } = do
             Just user -> do
                   suggestions <- SIA.suggest loggedUserID 0 Nothing
                   contacts <- SIA.listContacts loggedUserID 0
-                  contents <- R.liftEffect $ SIT.template { contacts, suggestions, user: DN.unwrap user }
+                  contents <- R.liftEffect $ SIT.template { contacts, suggestions, user }
                   pure <<< PSR.setHeaders (PH.fromFoldable [Tuple "content-type" html, Tuple "cache-control" "no-store, max-age=0"]) $ PSR.ok contents
 
 contacts :: { guards :: { loggedUserID :: Int }, query :: { skip :: Int } } -> ServerEffect (Array Contact)
