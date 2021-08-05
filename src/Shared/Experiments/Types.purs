@@ -18,12 +18,14 @@ import Shared.User
 
 type ImpersonationProfile = Record IU
 
-type ChatExperiment = {
+type BaseChatExperiment fields = {
       id :: Int,
-      code :: ExperimentData,
       name :: String,
-      description :: String
+      description :: String |
+      fields
 }
+
+type ChatExperiment = BaseChatExperiment (code :: ExperimentData)
 
 data ChatExperimentMessage =
       QuitExperiment |

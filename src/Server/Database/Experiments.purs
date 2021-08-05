@@ -1,14 +1,16 @@
 module Server.Database.Experiments  where
 
 import Droplet.Language
-import Type.Proxy(Proxy(..))
-import Data.DateTime(DateTime)
-import Data.Date(Date)
+
+import Data.Date (Date)
+import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
+import Shared.Experiments.Types (ExperimentData)
+import Type.Proxy (Proxy(..))
 
 type Experiments = (
       id :: Auto Int,
-      code :: Int,
+      code :: ExperimentData,
       name :: String,
       description :: String,
       added :: Default DateTime

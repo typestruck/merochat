@@ -7,7 +7,6 @@ import Shared.Types
 import Data.Either (Either(..))
 import Data.List (List(..))
 import Data.List as DL
-import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect.Aff (Aff)
 import Effect.Aff as EA
@@ -37,6 +36,7 @@ import Server.NotFound.Handler as SNH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
+import Shared.IM.Types (ResponseError(..))
 import Shared.Routes (routes)
 
 handlers :: ServerReader -> _
