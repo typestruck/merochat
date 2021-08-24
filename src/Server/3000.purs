@@ -27,7 +27,7 @@ generateName = do
 
 generateDescription :: ServerEffect String
 generateDescription = do
-        size <- R.liftEffect $ ER.randomInt 120 descriptionMaxCharacters
+        size <- R.liftEffect $ ER.randomInt 100 descriptionMaxCharacters
         generate Description size
 
 generateHeadline :: ServerEffect String

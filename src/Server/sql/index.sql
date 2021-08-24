@@ -279,16 +279,16 @@ end;
   $$
   language plpgsql;
 
--- create or replace function truncate_tables()
---   returns void as
--- $body$
--- begin
---         truncate table users  restart identity cascade;
---         truncate table messages restart identity cascade ;
---         truncate table tags restart identity cascade ;
--- end;
---   $body$
---   language plpgsql;
+create or replace function truncate_tables()
+  returns void as
+$body$
+begin
+        truncate table users  restart identity cascade;
+        truncate table messages restart identity cascade ;
+        truncate table tags restart identity cascade ;
+end;
+  $body$
+  language plpgsql;
 
 insert into languages
     (name)

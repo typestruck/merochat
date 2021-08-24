@@ -19,7 +19,7 @@ tagMaxCharacters :: Int
 tagMaxCharacters = 40
 
 descriptionMaxCharacters :: Int
-descriptionMaxCharacters = 1000
+descriptionMaxCharacters = 400
 
 passwordMinCharacters :: Int
 passwordMinCharacters = 5

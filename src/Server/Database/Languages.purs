@@ -1,7 +1,8 @@
 module Server.Database.Languages where
 
-import Type.Proxy (Proxy(..))
 import Droplet.Language
+
+import Type.Proxy (Proxy(..))
 
 type Languages = (
       id :: Auto Int,
@@ -10,3 +11,6 @@ type Languages = (
 
 languages :: Table "languages" Languages
 languages = Table
+
+_languages :: Proxy "languages"
+_languages = Proxy

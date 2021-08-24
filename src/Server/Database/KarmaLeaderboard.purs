@@ -16,8 +16,6 @@ type KarmaLeaderboard = (
 karma_leaderboard :: Table "karma_leaderboard" KarmaLeaderboard
 karma_leaderboard = Table
 
-
-
 _ranker :: Proxy "ranker"
 _ranker = Proxy
 
@@ -30,6 +28,5 @@ _current_karma = Proxy
 _gained :: Proxy "gained"
 _gained = Proxy
 
-_date :: Proxy "date"
-_date = Proxy
-
+_karma :: Proxy "karma"
+_karma = Proxy

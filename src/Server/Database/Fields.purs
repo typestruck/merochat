@@ -20,6 +20,20 @@ _sender = Proxy
 _recipient :: Proxy "recipient"
 _recipient = Proxy
 
-
 c :: Proxy "c"
 c = Proxy
+
+k :: Proxy "k"
+k = Proxy
+
+u :: Proxy "u"
+u = Proxy
+
+l :: Proxy "l"
+l = Proxy
+
+lu :: Proxy "lu"
+lu = Proxy
+
+tu :: Proxy "tu"
+tu = Proxy

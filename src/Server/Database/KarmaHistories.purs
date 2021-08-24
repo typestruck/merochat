@@ -14,8 +14,6 @@ type KarmaHistories = (
 karma_histories :: Table "karma_histories" KarmaHistories
 karma_histories = Table
 
-
-
 _target :: Proxy "target"
 _target = Proxy
 

@@ -1,11 +1,17 @@
 module Server.IM.Database where
 
 import Droplet.Language
-import Prelude
+import Prelude hiding (join)
 import Server.Database.Blocks
+import Server.Database.Countries
 import Server.Database.Fields
+import Server.Database.Languages
+import Server.Database.LanguagesUsers
 import Server.Database.Messages
 import Server.Database.Reports
+import Server.Database.Tags
+import Server.Database.TagsUsers
+import Server.Database.Users
 import Server.Types
 import Shared.IM.Types
 import Shared.Types
@@ -17,11 +23,11 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
 import Server.Database as SD
+import Server.Database.KarmaLeaderboard
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
 import Shared.User (IU)
 import Type.Proxy (Proxy(..))
-
 
 type FlatContact = BaseContact IU
 
@@ -38,6 +44,20 @@ description,
 (select string_agg(name, '\n' order by l.id) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
 k.current_karma karma,
 k.position """
+
+userPresentationFields2 =
+      u ... _id /\
+      _avatar /\
+      _gender /\
+      _birthday /\
+      _name /\
+      _headline /\
+      _description /\
+      (select _name # from countries # wher (_id .=. u ... _country) # as _country) /\
+      (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id))) /\
+      (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id))) /\
+      (k ... _current_karma # as _karma) /\
+      (k ... _position)
 
 usersTable :: String
 usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
@@ -110,7 +130,7 @@ insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
 
 --when using an array parameter, any must be used instead of in
 changeStatus :: forall r. Int -> MessageStatus -> Array Int -> BaseEffect { pool :: Pool | r } Unit
-changeStatus loggedUserID status ids = SD.unsafeExecute "update messages set status = @status where recipient = @recipient and id = any(@ids)" {status, recipient: loggedUserID, ids}
+changeStatus loggedUserID status ids = SD.execute $ update messages # set (_status /\ status) # wher (_recipient .=. loggedUserID .&&. (_id `in_` ids))
 
 insertBlock :: Int -> Int -> ServerEffect Unit
 insertBlock loggedUserID blocked = SD.execute $ blockQuery loggedUserID blocked

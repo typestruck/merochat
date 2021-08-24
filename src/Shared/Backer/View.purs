@@ -14,7 +14,7 @@ view = HE.div (HA.class' "backer") [
       HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SPT.pathery CSS $ "backer." <> backerCSSHash],
       HE.strong_ "MelanChat depends on people like you to keep running",
       HE.p_ "Above all, MelanChat is a project to enable great conversations and human connection. For that reason, we don't show ads, charge for subscriptions, sell bs comestics or anything that would stand in the way of being the best place ever to chat.",
-      HE.p_ "At the same time, running an app has costs. Paying for servers, domains, marketing campaings, art, developer time, etc quickly becomes expensive -- specially for a passion project like MelanChat that is not tied to any big corporation or VC money.",
+      HE.p_ "At the same time, running an app has costs. Paying for servers, domains, marketing campaings, art, developer time, etc. quickly becomes expensive -- specially for a passion project like MelanChat that is not tied to any big corporation or VC money.",
       HE.strong_ "Make an one time donation via PayPal",
       HE.form [HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_top"] [
             HE.input [HA.type' "hidden", HA.name "business", HA.value "RAH62A4TZZD7L"],
@@ -35,7 +35,7 @@ view = HE.div (HA.class' "backer") [
       ],
       HE.strong_ "Other ways to help",
       HE.p_ [
-            HE.text "Not all contributions have to be financial. Spreading the word, inviting new people to try MelanChat out, reporting bugs or undesired behavior are also a lot of help. Likewise, if you have any interest in design or programming, MelanChat is ",
+            HE.text "Not all contributions have to be financial. Spreading the word, inviting new people to try MelanChat out, reporting bugs or undesired behavior is also a lot of help. Likewise, if you have any interest in design or programming, MelanChat is ",
             HE.a (HA.href "https://github.com/melanchat/melanchat") "free and open source software."
       ]
 ]
