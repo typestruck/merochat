@@ -45,8 +45,9 @@ description,
 k.current_karma karma,
 k.position """
 
+userPresentationFields2 :: _
 userPresentationFields2 =
-      u ... _id /\
+      (u ... _id # as _id) /\
       _avatar /\
       _gender /\
       _birthday /\
@@ -57,19 +58,19 @@ userPresentationFields2 =
       (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id))) /\
       (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id))) /\
       (k ... _current_karma # as _karma) /\
-      (k ... _position)
+      _position
 
 usersTable :: String
 usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 
+usersTable2 :: _
+usersTable2 = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
+
 messagePresentationFields :: String
 messagePresentationFields = " id, sender, recipient, date, content, status "
 
-presentUserQuery :: String
-presentUserQuery = "select" <> userPresentationFields <> "from" <> usersTable <> "where u.id = @id and active"
-
-presentUser :: Int -> ServerEffect (Maybe IMUser)
-presentUser loggedUserID = SD.unsafeSingle presentUserQuery {id: loggedUserID}
+presentUser :: Int -> ServerEffect (Maybe _)
+presentUser loggedUserID = SD.single $ select userPresentationFields2 # from usersTable2 # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
 
 --fit online status here
 suggest :: Int -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array IMUser)
@@ -83,7 +84,7 @@ suggest loggedUserID skip = case _ of
       where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> @id "
             rest = " and u.active and not exists (select 1 from blocks where blocker in (@id, u.id) and blocked in (@id, u.id)) order by s.id limit @page offset @skip) t order by random()"
 
---should not return contact
+--add pg function for  age(now() at time zone 'utc', first_message_date))and use on userpresentation fields too
 presentContacts :: Int -> Int -> ServerEffect (Array FlatContact)
 presentContacts loggedUserID skip = SD.unsafeQuery ("select distinct h.date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
                                       "from" <> usersTable <> """join histories h on (u.id = h.sender and h.recipient = @sender or u.id = h.recipient and h.sender = @sender)
