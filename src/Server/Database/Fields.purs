@@ -37,3 +37,6 @@ lu = Proxy
 
 tu :: Proxy "tu"
 tu = Proxy
+
+_age :: Proxy "age"
+_age  = Proxy

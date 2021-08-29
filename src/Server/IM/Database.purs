@@ -5,6 +5,7 @@ import Prelude hiding (join)
 import Server.Database.Blocks
 import Server.Database.Countries
 import Server.Database.Fields
+import Server.Database.KarmaLeaderboard
 import Server.Database.Languages
 import Server.Database.LanguagesUsers
 import Server.Database.Messages
@@ -23,7 +24,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
 import Server.Database as SD
-import Server.Database.KarmaLeaderboard
+import Server.Database.Functions (date_part_age)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
 import Shared.User (IU)
@@ -45,12 +46,11 @@ description,
 k.current_karma karma,
 k.position """
 
-userPresentationFields2 :: _
 userPresentationFields2 =
       (u ... _id # as _id) /\
       _avatar /\
       _gender /\
-      _birthday /\
+      (date_part_age ("year" /\ _birthday) # as _age) /\
       _name /\
       _headline /\
       _description /\
@@ -84,9 +84,8 @@ suggest loggedUserID skip = case _ of
       where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> @id "
             rest = " and u.active and not exists (select 1 from blocks where blocker in (@id, u.id) and blocked in (@id, u.id)) order by s.id limit @page offset @skip) t order by random()"
 
---add pg function for  age(now() at time zone 'utc', first_message_date))and use on userpresentation fields too
 presentContacts :: Int -> Int -> ServerEffect (Array FlatContact)
-presentContacts loggedUserID skip = SD.unsafeQuery ("select distinct h.date, sender, date_part('day', age(now() at time zone 'utc', first_message_date)), " <> userPresentationFields <>
+presentContacts loggedUserID skip = SD.unsafeQuery ("select distinct h.date, sender, date_part_age('day', first_message_date), " <> userPresentationFields <>
                                       "from" <> usersTable <> """join histories h on (u.id = h.sender and h.recipient = @sender or u.id = h.recipient and h.sender = @sender)
                                          where not exists (select 1 from blocks where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
                                           order by date desc limit @page offset @skip""") {sender: loggedUserID, page: contactsPerPage, skip}
