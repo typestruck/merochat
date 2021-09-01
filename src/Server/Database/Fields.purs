@@ -32,6 +32,9 @@ u = Proxy
 l :: Proxy "l"
 l = Proxy
 
+h :: Proxy "h"
+h = Proxy
+
 lu :: Proxy "lu"
 lu = Proxy
 

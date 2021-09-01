@@ -1,7 +1,7 @@
 module Server.IM.Database where
 
 import Droplet.Language
-import Prelude hiding (join)
+import Prelude hiding (join, not)
 import Server.Database.Blocks
 import Server.Database.Countries
 import Server.Database.Fields
@@ -24,7 +24,8 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
 import Server.Database as SD
-import Server.Database.Functions (date_part_age)
+import Server.Database.Functions
+import Server.Database.Histories
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
 import Shared.User (IU)
@@ -66,13 +67,10 @@ usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 usersTable2 :: _
 usersTable2 = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
 
-messagePresentationFields :: String
-messagePresentationFields = " id, sender, recipient, date, content, status "
-
 presentUser :: Int -> ServerEffect (Maybe _)
 presentUser loggedUserID = SD.single $ select userPresentationFields2 # from usersTable2 # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
 
---fit online status here
+--refactor: improve this
 suggest :: Int -> Int -> Maybe ArrayPrimaryKey -> ServerEffect (Array IMUser)
 suggest loggedUserID skip = case _ of
       Just (ArrayPrimaryKey []) ->
@@ -84,23 +82,20 @@ suggest loggedUserID skip = case _ of
       where select = "select * from (select" <> userPresentationFields <> "from"  <> usersTable <> "join suggestions s on u.id = suggested where u.id <> @id "
             rest = " and u.active and not exists (select 1 from blocks where blocker in (@id, u.id) and blocked in (@id, u.id)) order by s.id limit @page offset @skip) t order by random()"
 
-presentContacts :: Int -> Int -> ServerEffect (Array FlatContact)
-presentContacts loggedUserID skip = SD.unsafeQuery ("select distinct h.date, sender, date_part_age('day', first_message_date), " <> userPresentationFields <>
-                                      "from" <> usersTable <> """join histories h on (u.id = h.sender and h.recipient = @sender or u.id = h.recipient and h.sender = @sender)
-                                         where not exists (select 1 from blocks where blocker = h.recipient and blocked = h.sender or blocker = h.sender and blocked = h.recipient)
-                                          order by date desc limit @page offset @skip""") {sender: loggedUserID, page: contactsPerPage, skip}
+presentContacts :: Int -> Int -> ServerEffect (Array _)
+presentContacts loggedUserID skip = SD.query $ select (distinct $ (h ... _date # as _date) /\ _sender /\ (datetime_part_age ("day" /\ _first_message_date) # as _first_message_date) /\ userPresentationFields2) # from (join usersTable2 (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID)) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (h ... _date # desc) # limit contactsPerPage # offset skip
 
 --needs to handle impersonations
 presentSingleContact :: Int -> Int -> ServerEffect FlatContact
 presentSingleContact loggedUserID otherID = SU.fromJust <$> SD.unsafeSingle (("select coalesce(h.date, now() at time zone 'utc'), coalesce(sender, @otherID), coalesce(first_message_date, now() at time zone 'utc'), " <> userPresentationFields <>
                                       "from" <> usersTable <> "left join histories h on (u.id = h.recipient and h.sender = @id or u.id = h.sender and h.recipient = @id) where u.id = @otherID")) {id: loggedUserID, otherID}
 
-presentSelectedContacts :: Int -> Array Int -> ServerEffect (Array FlatContact)
+presentSelectedContacts :: Int -> Array Int -> ServerEffect (Array _)
 presentSelectedContacts loggedUserID ids
       | DA.null ids = pure []
-      | otherwise = SD.unsafeQuery ("select distinct h.date, sender, first_message_date," <> userPresentationFields <> "from" <> usersTable <> "join histories h on (u.id = h.sender and h.recipient = @sender or u.id = h.recipient and h.sender = @sender) where u.id = any(@recipient)") { sender: loggedUserID , recipient: ids }
+      | otherwise = SD.query $ select (distinct $ (h ... _date # as _date) /\ _sender /\ _first_message_date /\ userPresentationFields2) # from (join usersTable2 (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID)) # wher (in_ (u ... _id) ids)
 
---there must be a better way to do this
+--refactor: improve this
 chatHistoryFor :: Int -> Array Int -> ServerEffect (Array HistoryMessage)
 chatHistoryFor loggedUserID otherIDs
       | DA.null otherIDs = pure []
@@ -109,6 +104,7 @@ chatHistoryFor loggedUserID otherIDs
             select n =
                   let parameter = show n
                   in "((select" <> messagePresentationFields <> "from messages where sender = @sender and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = @sender order by date desc limit @page) union (select" <> messagePresentationFields <> "from messages where recipient = @sender and sender = " <> parameter <> " and status < @status order by date desc))"
+            messagePresentationFields = " id, sender, recipient, date, content, status "
 
 chatHistorySince :: Int -> Int -> ServerEffect (Array HistoryMessage)
 chatHistorySince loggedUserID lastID = SD.query $ select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status) # from messages # wher (_recipient .=. loggedUserID .&&. _id .>. lastID .&&. _status .<. Delivered) # orderBy (_date /\ _sender)
@@ -121,14 +117,14 @@ messsageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id
 
 insertMessage :: forall r. Int -> Int -> Int -> String -> BaseEffect { pool :: Pool | r } Int
 insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ \connection -> do
-      SD.unsafeExecuteWith connection "select insert_history(@sender, @recipient)" { sender : loggedUserID, recipient }
+      void $ SD.singleWith connection $ select (insert_history (loggedUserID /\ recipient) # as u)
       _.id <<< SU.fromJust <$> (SD.singleWith connection $ insert # into messages (_sender /\ _recipient /\ _temporary_id /\ _content) # values (loggedUserID /\ recipient /\ temporaryID /\ content) # returning _id)
 
+--refactor: add multiple values to droplet to update here
 insertKarma :: forall r. Int -> Int -> Tuple Int Int -> BaseEffect { pool :: Pool | r } Unit
 insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
       void $ SD.unsafeExecute "insert into karma_histories(amount, target) values (@senderKarma, @senderID), (@recipientKarma, @recipientID)" ({senderKarma, senderID: loggedUserID, recipientKarma, recipientID: otherID})
 
---when using an array parameter, any must be used instead of in
 changeStatus :: forall r. Int -> MessageStatus -> Array Int -> BaseEffect { pool :: Pool | r } Unit
 changeStatus loggedUserID status ids = SD.execute $ update messages # set (_status /\ status) # wher (_recipient .=. loggedUserID .&&. (_id `in_` ids))
 
