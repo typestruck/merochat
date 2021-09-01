@@ -8,7 +8,7 @@ data RequestStatus = Success | Fail
 
 derive instance eqRequestStatus :: Eq RequestStatus
 
-type CurrentWebSocket = {
-    ponged :: Boolean,
-    webSocket :: WebSocket
-}
+type CurrentWebSocket =
+      { ponged :: Boolean
+      , webSocket :: WebSocket
+      }

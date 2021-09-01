@@ -15,10 +15,12 @@ fortunate = do
       niceOnes <- DU.replicateA 5 <<< R.liftEffect $ ER.randomInt 1 69
       lastOne <- R.liftEffect $ ER.randomInt 1 26
       pure <<< DS.joinWith " " <<< map pad $ DA.snoc niceOnes lastOne
-      where pad n =
-                  let digits = show n
-                  in
-                        if DS.length digits == 1 then
-                              "0" <> digits
-                         else
-                              digits
+      where
+      pad n =
+            let
+                  digits = show n
+            in
+                  if DS.length digits == 1 then
+                        "0" <> digits
+                  else
+                        digits

@@ -42,21 +42,21 @@ startWebSocketServer configuration storageDetails = do
       SW.onServerClose webSocketServer (const (ET.clearInterval intervalID))
 
 startHTTPServer :: Configuration -> Ref StorageDetails -> Effect Unit
-startHTTPServer configuration@{port} storageDetails = do
+startHTTPServer configuration@{ port } storageDetails = do
       pool <- SD.newPool configuration
-      EA.launchAff_ $ PS.startGuarded (defaultOpts { port = port }) spec {
-            guards: guards configuration,
-            handlers: SH.handlers { storageDetails, configuration, pool, session: { userID: Nothing } }
-      }
+      EA.launchAff_ $ PS.startGuarded (defaultOpts { port = port }) spec
+            { guards: guards configuration
+            , handlers: SH.handlers { storageDetails, configuration, pool, session: { userID: Nothing } }
+            }
       EC.log $ "HTTP now up on http://localhost:" <> show port
 
 createStorageDetails :: Effect (Ref StorageDetails)
 createStorageDetails = do
       authenticationKey <- CF.storageAuthenticationKey
-      ER.new $ {
-            accountAuthorizationToken: Nothing,
-            uploadAuthorizationToken: Nothing,
-            uploadUrl: Nothing,
-            apiUrl: Nothing,
-            authenticationKey
-      }
+      ER.new $
+            { accountAuthorizationToken: Nothing
+            , uploadAuthorizationToken: Nothing
+            , uploadUrl: Nothing
+            , apiUrl: Nothing
+            , authenticationKey
+            }

@@ -12,10 +12,10 @@ import Shared.Unsafe as SU
 
 pathery :: ContentType -> String -> String
 pathery contentType file = case contentType of
-    JS -> jsBasePath <> fileName file <> ".bundle.js"
-    CSS -> cssBasePath <> fileName file <> ".css"
-    PNG -> imageBasePath <> file <> ".png"
-    _ -> file
+      JS -> jsBasePath <> fileName file <> ".bundle.js"
+      CSS -> cssBasePath <> fileName file <> ".css"
+      PNG -> imageBasePath <> file <> ".png"
+      _ -> file
 
 jsBasePath :: String
 jsBasePath = if development then "/client/javascript/" else productionBasePath
@@ -25,8 +25,8 @@ cssBasePath = if development then "/client/css/" else productionBasePath
 
 fileName :: String -> String
 fileName file
-    | development = SU.fromJust <<< DA.head $ DS.split (Pattern ".") file
-    | otherwise = file
+      | development = SU.fromJust <<< DA.head $ DS.split (Pattern ".") file
+      | otherwise = file
 
 updateHash :: String
 updateHash = commonJSHash <> otherJSHash <> imJSHash <> emojiJSHash <> imCSSHash

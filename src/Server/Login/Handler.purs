@@ -21,8 +21,8 @@ import Server.Response as SR
 login :: forall r. { | r } -> ServerEffect Html
 login _ = SR.serveTemplate SLT.template
 
-logon :: forall r. {body :: RegisterLogin | r } -> ServerEffect (Response Ok)
+logon :: forall r. { body :: RegisterLogin | r } -> ServerEffect (Response Ok)
 logon { body } = do
       token <- SLA.login body
       cookieHeader <- SC.makeCookieHeader token
-      pure <<< PSR.setHeaders (PH.fromFoldable [cookieHeader]) $ PSR.ok ok
+      pure <<< PSR.setHeaders (PH.fromFoldable [ cookieHeader ]) $ PSR.ok ok

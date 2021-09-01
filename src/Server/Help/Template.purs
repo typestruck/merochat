@@ -17,23 +17,24 @@ import Shared.Types (ContentType(..))
 
 template :: Effect String
 template = do
-      contents <- ST.template externalDefaultParameters {
-            css = externalDefaultParameters.css <> [HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.5c2d5d65952114e0b0e3"]],
-            javascript = [HE.script' [HA.type' "text/javascript", HA.src <<< SPT.pathery JS $ "help." <> helpJSHash]],
-            content = externalDefaultParameters.content <> content
-      }
+      contents <- ST.template externalDefaultParameters
+            { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.5c2d5d65952114e0b0e3" ] ]
+            , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src <<< SPT.pathery JS $ "help." <> helpJSHash ] ]
+            , content = externalDefaultParameters.content <> content
+            }
       FRS.render contents
-      where content = [
-                  HE.div (HA.class' "external-help") [
-                        HE.div (HA.class' "modal-menu") [
-                              HE.div [HA.class' "entry selected", HA.id "faq-link"] "FAQ",
-                              HE.div [HA.class' "entry", HA.id "terms-link"] "Terms and conditions",
-                              HE.div [HA.class' "entry", HA.id "privacy-link"] "Privacy policy"
-                        ],
-                        HE.div (HA.class' "help") [
-                              HE.div "faq" SA.faq,
-                              HE.div [HA.id "terms", HA.class' "hidden"] STM.terms,
-                              HE.div [HA.id "privacy", HA.class' "hidden"] SP.privacy
-                        ]
-                  ]
+      where
+      content =
+            [ HE.div (HA.class' "external-help")
+                    [ HE.div (HA.class' "modal-menu")
+                            [ HE.div [ HA.class' "entry selected", HA.id "faq-link" ] "FAQ"
+                            , HE.div [ HA.class' "entry", HA.id "terms-link" ] "Terms and conditions"
+                            , HE.div [ HA.class' "entry", HA.id "privacy-link" ] "Privacy policy"
+                            ]
+                    , HE.div (HA.class' "help")
+                            [ HE.div "faq" SA.faq
+                            , HE.div [ HA.id "terms", HA.class' "hidden" ] STM.terms
+                            , HE.div [ HA.id "privacy", HA.class' "hidden" ] SP.privacy
+                            ]
+                    ]
             ]

@@ -67,7 +67,7 @@ confirm message = do
       HWH.confirm message window
 
 -- | Adds an event to the given element.
-addEventListener :: forall a . Element -> EventType -> (Event -> Effect a) -> Effect Unit
+addEventListener :: forall a. Element -> EventType -> (Event -> Effect a) -> Effect Unit
 addEventListener element eventType handler = do
       listener <- WET.eventListener handler
       WET.addEventListener eventType listener false $ WDE.toEventTarget element
@@ -145,9 +145,10 @@ createElement tag = do
 onEnter :: Element -> Effect Unit -> Effect Unit
 onEnter element action = do
       addEventListener element keyup go
-      where go event = do
-                  let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
-                  when (pressed == "Enter") action
+      where
+      go event = do
+            let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
+            when (pressed == "Enter") action
 
 preventStop :: Event -> Effect Unit
 preventStop event = do

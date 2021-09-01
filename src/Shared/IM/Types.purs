@@ -57,192 +57,195 @@ import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Web.Event.Internal.Types (Event)
 
-
 type IMUser = Record IU
 
 newtype DateTimeWrapper = DateTimeWrapper DateTime
 
-
 type Suggestion = IMUser
 
-type BasicMessage fields = {
-      id :: Int,
-      experimenting :: Maybe ExperimentPayload |
-      fields
-}
+type BasicMessage fields =
+      { id :: Int
+      , experimenting :: Maybe ExperimentPayload
+      | fields
+      }
 
-type ClientMessagePayload = BasicMessage (
-      content :: String,
-      userID :: Int,
-      date :: DateTimeWrapper
-)
+type ClientMessagePayload = BasicMessage
+      ( content :: String
+      , userID :: Int
+      , date :: DateTimeWrapper
+      )
 
-type BaseContact fields = {
-      shouldFetchChatHistory :: Boolean, -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
-      available :: Boolean,
-      chatAge :: Number, --Days,
-      chatStarter :: Int,
-      impersonating :: Maybe Int |
-      fields
-}
+type BaseContact fields =
+      { -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
+        shouldFetchChatHistory :: Boolean
+      , available :: Boolean
+      --Days,
+      , chatAge :: Number
+      , chatStarter :: Int
+      , impersonating :: Maybe Int
+      | fields
+      }
 
-type Contact = BaseContact (
-      user :: IMUser,
-      history :: Array HistoryMessage
-)
+type Contact = BaseContact
+      ( user :: IMUser
+      , history :: Array HistoryMessage
+      )
 
-type HistoryMessage = {
-      id :: Int,
-      sender :: Int,
-      recipient :: Int,
-      date :: DateTimeWrapper,
-      content :: String,
-      status :: MessageStatus
-}
+type HistoryMessage =
+      { id :: Int
+      , sender :: Int
+      , recipient :: Int
+      , date :: DateTimeWrapper
+      , content :: String
+      , status :: MessageStatus
+      }
 
-data MessageStatus =
-      Errored |
-      Sent |
-      Received |
-      Delivered |
-      Read
+data MessageStatus
+      = Errored
+      | Sent
+      | Received
+      | Delivered
+      | Read
 
-type MessageIDTemporary = {
-      id :: Int,
-      temporaryID :: Int
-}
+type MessageIDTemporary =
+      { id :: Int
+      , temporaryID :: Int
+      }
 
-type MissedEvents = {
-      contacts :: Array Contact,
-      messageIDs :: Array MessageIDTemporary
-}
-
+type MissedEvents =
+      { contacts :: Array Contact
+      , messageIDs :: Array MessageIDTemporary
+      }
 
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
-type IM = (
-      suggestions :: Array Suggestion,
-      contacts :: Array Contact,
-      --in case a message from someone blocked was already midway
-      blockedUsers :: Array Int,
-      temporaryID :: Int,
-      freeToFetchChatHistory :: Boolean,
-      freeToFetchContactList :: Boolean,
-      freeToFetchSuggestions :: Boolean,
-      selectedImage :: Maybe String,
-      imageCaption :: Maybe String,
-      messageEnter :: Boolean,
-      link :: Maybe String,
-      suggestionsPage :: Int,
-      linkText :: Maybe String,
-      isWebSocketConnected :: Boolean,
-      erroredFields :: Array String,
-      fortune :: Maybe String,
-      failedRequests :: Array RequestFailure,
-      errorMessage :: String,
-      experimenting :: Maybe ExperimentData,
-      modalsLoaded :: Array ShowUserMenuModal,
-      reportReason :: Maybe ReportReason,
-      reportComment :: Maybe String,
-      --the current logged in user
-      user :: IMUser,
-      --indexes
-      suggesting :: Maybe Int,
-      chatting :: Maybe Int,
-      smallScreen :: Boolean,
-      --used to signal that the page should be reloaded
-      hash :: String,
-      --visibility switches
-      initialScreen :: Boolean, --used on mobile to switch screens
-      hasTriedToConnectYet :: Boolean,
-      fullContactProfileVisible :: Boolean,
-      imUpdated :: Boolean,
-      enableNotificationsVisible :: Boolean,
-      toggleContextMenu :: ShowContextMenu,
-      toggleModal :: ShowUserMenuModal,
-      toggleChatModal :: ShowChatModal
-)
+type IM =
+      ( suggestions :: Array Suggestion
+      , contacts :: Array Contact
+      ,
+        --in case a message from someone blocked was already midway
+        blockedUsers :: Array Int
+      , temporaryID :: Int
+      , freeToFetchChatHistory :: Boolean
+      , freeToFetchContactList :: Boolean
+      , freeToFetchSuggestions :: Boolean
+      , selectedImage :: Maybe String
+      , imageCaption :: Maybe String
+      , messageEnter :: Boolean
+      , link :: Maybe String
+      , suggestionsPage :: Int
+      , linkText :: Maybe String
+      , isWebSocketConnected :: Boolean
+      , erroredFields :: Array String
+      , fortune :: Maybe String
+      , failedRequests :: Array RequestFailure
+      , errorMessage :: String
+      , experimenting :: Maybe ExperimentData
+      , modalsLoaded :: Array ShowUserMenuModal
+      , reportReason :: Maybe ReportReason
+      , reportComment :: Maybe String
+      ,
+        --the current logged in user
+        user :: IMUser
+      ,
+        --indexes
+        suggesting :: Maybe Int
+      , chatting :: Maybe Int
+      , smallScreen :: Boolean
+      ,
+        --used to signal that the page should be reloaded
+        hash :: String
+      ,
+        --visibility switches
+        initialScreen :: Boolean
+      , --used on mobile to switch screens
+        hasTriedToConnectYet :: Boolean
+      , fullContactProfileVisible :: Boolean
+      , imUpdated :: Boolean
+      , enableNotificationsVisible :: Boolean
+      , toggleContextMenu :: ShowContextMenu
+      , toggleModal :: ShowUserMenuModal
+      , toggleChatModal :: ShowChatModal
+      )
 
 type IMModel = Record IM
 
-data ShowChatModal =
-      HideChatModal |
-      ShowSelectedImage |
-      ShowPreview |
-      ShowEmojis |
-      ShowLinkForm
+data ShowChatModal
+      = HideChatModal
+      | ShowSelectedImage
+      | ShowPreview
+      | ShowEmojis
+      | ShowLinkForm
 
-data ShowContextMenu =
-      HideContextMenu |
-      ShowUserContextMenu |
-      ShowSuggestionContextMenu |
-      ShowCompactProfileContextMenu |
-      ShowFullProfileContextMenu
+data ShowContextMenu
+      = HideContextMenu
+      | ShowUserContextMenu
+      | ShowSuggestionContextMenu
+      | ShowCompactProfileContextMenu
+      | ShowFullProfileContextMenu
 
-data ShowUserMenuModal =
-      HideUserMenuModal |
-      ConfirmLogout |
-      ConfirmTermination |
-      ShowExperiments |
-      ShowProfile |
-      ShowSettings |
-      ShowLeaderboard |
-      ShowHelp |
-      ShowBacker |
-      ShowReport Int
+data ShowUserMenuModal
+      = HideUserMenuModal
+      | ConfirmLogout
+      | ConfirmTermination
+      | ShowExperiments
+      | ShowProfile
+      | ShowSettings
+      | ShowLeaderboard
+      | ShowHelp
+      | ShowBacker
+      | ShowReport Int
 
+type Stats =
+      { characters :: Number
+      , interest :: Number
+      }
 
-type Stats = {
-    characters :: Number,
-    interest :: Number
-}
+type Turn =
+      { senderStats :: Stats
+      , recipientStats :: Stats
+      , chatAge :: Number
+      , -- Days,
+        replyDelay :: Number --Seconds
+      }
 
-type Turn = {
-    senderStats :: Stats,
-    recipientStats:: Stats,
-    chatAge :: Number, -- Days,
-    replyDelay :: Number --Seconds
-}
+data ProfilePresentation
+      = FullContactProfile
+      | CurrentSuggestion
+      | OtherSuggestion
 
-data ProfilePresentation =
-      FullContactProfile |
-      CurrentSuggestion |
-      OtherSuggestion
+data MessageContent
+      = Image String String
+      | --caption & base64
+        Text String
 
-data MessageContent =
-      Image String String | --caption & base64
-      Text String
+data Markup
+      = Bold
+      | Italic
+      | Strike
+      | Heading
+      | OrderedList
+      | UnorderedList
 
-data Markup =
-      Bold |
-      Italic |
-      Strike |
-      Heading |
-      OrderedList |
-      UnorderedList
+type RequestFailure =
+      { request :: RetryableRequest
+      , errorMessage :: String
+      }
 
-
-
-type RequestFailure = {
-      request :: RetryableRequest,
-      errorMessage :: String
-}
-
-data RetryableRequest =
-      FetchHistory Boolean |
-      FetchContacts Boolean |
-      CheckMissedEvents |
-      ToggleModal ShowUserMenuModal |
-      BlockUser Int |
-      PreviousSuggestion |
-      NextSuggestion |
-      ReportUser Int
-
+data RetryableRequest
+      = FetchHistory Boolean
+      | FetchContacts Boolean
+      | CheckMissedEvents
+      | ToggleModal ShowUserMenuModal
+      | BlockUser Int
+      | PreviousSuggestion
+      | NextSuggestion
+      | ReportUser Int
 
 -- | Errors that should be reported back to the user
-data ResponseError =
-      BadRequest { reason :: String } |
-      InternalError { reason :: String, context :: Maybe DatabaseError } |
-      ExpiredSession
+data ResponseError
+      = BadRequest { reason :: String }
+      | InternalError { reason :: String, context :: Maybe DatabaseError }
+      | ExpiredSession
 
 newtype DateWrapper = DateWrapper Date
 
@@ -266,135 +269,142 @@ instance FromValue MessageStatus where
 
 data ReportReason = DatingContent | Harrassment | HateSpeech | Spam | OtherReason
 
-data IMMessage =
-      --history
-      CheckFetchHistory |
-      DisplayHistory (Array HistoryMessage)|
-      --user menu
-      ToggleInitialScreen Boolean |
-      Logout |
-      SetContextMenuToggle ShowContextMenu |
-      SetModalContents (Maybe String) ElementID String |
-      --contact
-      ResumeChat (Tuple Int (Maybe Int)) |
-      UpdateReadCount |
-      CheckFetchContacts |
-      DisplayContacts (Array Contact) |
-      DisplayNewContacts (Array Contact) |
-      DisplayImpersonatedContact Int HistoryMessage (Array Contact) |
-      ResumeMissedEvents MissedEvents |
-      --suggestion
-      FetchMoreSuggestions |
-      ResumeSuggesting |
-      DisplayMoreSuggestions (Array Suggestion) |
-      --chat
-      SetSelectedImage (Maybe String) |
-      ToggleContactProfile |
-      DropFile Event |
-      ToggleMessageEnter |
-      FocusInput ElementID |
-      EnterBeforeSendMessage Event |
-      ForceBeforeSendMessage |
-      ResizeChatInput Event |
-      BeforeSendMessage MessageContent |
-      SendMessage MessageContent DateTimeWrapper |
-      SetMessageContent (Maybe Int) String |
-      Apply Markup |
-      SetSmallScreen |
-      SetEmoji Event |
-      InsertLink |
-      --main
-      AskChatExperiment |
-      SetChatExperiment (Maybe ExperimentData) |
-      ReloadPage |
-      ToggleUserContextMenu Event |
-      SpecialRequest RetryableRequest |
-      ReceiveMessage WebSocketPayloadClient Boolean |
-      PreventStop Event |
-      AskNotification |
-      ToggleAskNotification |
-      SetNameFromProfile String |
-      ToggleConnected Boolean |
-      SetField (IMModel -> IMModel) |
-      ToggleFortune Boolean |
-      DisplayFortune String |
-      RequestFailed RequestFailure |
-      ToggleChatModal ShowChatModal
+data IMMessage
+      =
+        --history
+        CheckFetchHistory
+      | DisplayHistory (Array HistoryMessage)
+      |
+        --user menu
+        ToggleInitialScreen Boolean
+      | Logout
+      | SetContextMenuToggle ShowContextMenu
+      | SetModalContents (Maybe String) ElementID String
+      |
+        --contact
+        ResumeChat (Tuple Int (Maybe Int))
+      | UpdateReadCount
+      | CheckFetchContacts
+      | DisplayContacts (Array Contact)
+      | DisplayNewContacts (Array Contact)
+      | DisplayImpersonatedContact Int HistoryMessage (Array Contact)
+      | ResumeMissedEvents MissedEvents
+      |
+        --suggestion
+        FetchMoreSuggestions
+      | ResumeSuggesting
+      | DisplayMoreSuggestions (Array Suggestion)
+      |
+        --chat
+        SetSelectedImage (Maybe String)
+      | ToggleContactProfile
+      | DropFile Event
+      | ToggleMessageEnter
+      | FocusInput ElementID
+      | EnterBeforeSendMessage Event
+      | ForceBeforeSendMessage
+      | ResizeChatInput Event
+      | BeforeSendMessage MessageContent
+      | SendMessage MessageContent DateTimeWrapper
+      | SetMessageContent (Maybe Int) String
+      | Apply Markup
+      | SetSmallScreen
+      | SetEmoji Event
+      | InsertLink
+      |
+        --main
+        AskChatExperiment
+      | SetChatExperiment (Maybe ExperimentData)
+      | ReloadPage
+      | ToggleUserContextMenu Event
+      | SpecialRequest RetryableRequest
+      | ReceiveMessage WebSocketPayloadClient Boolean
+      | PreventStop Event
+      | AskNotification
+      | ToggleAskNotification
+      | SetNameFromProfile String
+      | ToggleConnected Boolean
+      | SetField (IMModel -> IMModel)
+      | ToggleFortune Boolean
+      | DisplayFortune String
+      | RequestFailed RequestFailure
+      | ToggleChatModal ShowChatModal
 
-data WebSocketPayloadServer =
-      UpdateHash |
-      Ping |
-      OutgoingMessage (BasicMessage (
-            userID :: Int,
-            content :: MessageContent,
-            turn :: Maybe Turn
-      )) |
-      ChangeStatus {
-            userID :: Int,
-            status :: MessageStatus,
-            persisting :: Boolean, -- in some cases status changs should be not persisted to the database
-            --alternatively, update by user?
-            ids :: Array Int
-      } |
-      ToBlock {
-            id :: Int
-      }
+data WebSocketPayloadServer
+      = UpdateHash
+      | Ping
+      | OutgoingMessage
+              ( BasicMessage
+                      ( userID :: Int
+                      , content :: MessageContent
+                      , turn :: Maybe Turn
+                      )
+              )
+      | ChangeStatus
+              { userID :: Int
+              , status :: MessageStatus
+              , persisting :: Boolean
+              , -- in some cases status changs should be not persisted to the database
+                --alternatively, update by user?
+                ids :: Array Int
+              }
+      | ToBlock
+              { id :: Int
+              }
 
-data ElementID =
-      UserContextMenu |
-      SuggestionContextMenu |
-      CompactProfileContextMenu |
-      FullProfileContextMenu |
-      ImageFileInput |
-      ChatInputSuggestion |
-      ChatInput |
-      ContactList |
-      ImageFormCaption |
-      PasswordDiv |
-      ConfirmPasswordInput |
-      LinkFormUrl |
-      MessageHistory |
-      Favicon |
-      ProfileEditionRoot |
-      ChatInputPreview |
-      SettingsEditionRoot |
-      KarmaLeaderboard |
-      ExperimentsRoot |
-      HelpRoot |
-      TermsLink |
-      PrivacyLink |
-      Faq |
-      TermsSection |
-      PasswordInput |
-      EmailDiv |
-      PrivacySection |
-      EmailInput |
-      BackerRoot |
-      ConfirmPassword |
-      FaqLink |
-      AvatarFileInput
+data ElementID
+      = UserContextMenu
+      | SuggestionContextMenu
+      | CompactProfileContextMenu
+      | FullProfileContextMenu
+      | ImageFileInput
+      | ChatInputSuggestion
+      | ChatInput
+      | ContactList
+      | ImageFormCaption
+      | PasswordDiv
+      | ConfirmPasswordInput
+      | LinkFormUrl
+      | MessageHistory
+      | Favicon
+      | ProfileEditionRoot
+      | ChatInputPreview
+      | SettingsEditionRoot
+      | KarmaLeaderboard
+      | ExperimentsRoot
+      | HelpRoot
+      | TermsLink
+      | PrivacyLink
+      | Faq
+      | TermsSection
+      | PasswordInput
+      | EmailDiv
+      | PrivacySection
+      | EmailInput
+      | BackerRoot
+      | ConfirmPassword
+      | FaqLink
+      | AvatarFileInput
 
+data FullWebSocketPayloadClient
+      = Pong
+      | Content WebSocketPayloadClient
 
-
-data FullWebSocketPayloadClient =
-      Pong |
-      Content WebSocketPayloadClient
-
-data WebSocketPayloadClient =
-      CurrentHash String |
-      NewIncomingMessage ClientMessagePayload |
-      ServerReceivedMessage {
-          previousID :: Int,
-          id :: Int,
-          userID :: Int
-      } |
-      ServerChangedStatus {
-            ids :: Array Int,
-            status :: MessageStatus,
-            userID :: Int
-      } |
-      BeenBlocked { id :: Int } |
-      PayloadError { origin :: WebSocketPayloadServer, context :: Maybe DatabaseError }
+data WebSocketPayloadClient
+      = CurrentHash String
+      | NewIncomingMessage ClientMessagePayload
+      | ServerReceivedMessage
+              { previousID :: Int
+              , id :: Int
+              , userID :: Int
+              }
+      | ServerChangedStatus
+              { ids :: Array Int
+              , status :: MessageStatus
+              , userID :: Int
+              }
+      | BeenBlocked { id :: Int }
+      | PayloadError { origin :: WebSocketPayloadServer, context :: Maybe DatabaseError }
 
 data DatabaseError = MissingForeignKey
 
@@ -416,8 +426,7 @@ instance contentReportReason :: Show ReportReason where
 derive instance ordReportReason :: Ord ReportReason
 derive instance ordMessageStatus :: Ord MessageStatus
 
-
-instance decodeJsonReportReason :: DecodeJson ReportReason  where
+instance decodeJsonReportReason :: DecodeJson ReportReason where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
@@ -460,7 +469,6 @@ instance enumReportReason :: Enum ReportReason where
             HateSpeech -> Just Harrassment
             Spam -> Just HateSpeech
             OtherReason -> Just Spam
-
 
 instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
       cardinality = Cardinality 1
@@ -517,9 +525,6 @@ instance boundedEnumReportReason :: BoundedEnum ReportReason where
             255 -> Just OtherReason
             _ -> Nothing
 
-
-
-
 instance decodeJsonMDateTime :: DecodeJson DateTimeWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldnt parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 instance decodeJsonMDate :: DecodeJson DateWrapper where
@@ -531,8 +536,7 @@ instance decodeJsonMessageContent :: DecodeJson MessageContent where
 instance decodeJsonShowModal :: DecodeJson ShowUserMenuModal where
       decodeJson = DADGR.genericDecodeJson
 
-
-instance decodeJsonWebSocketPayloadClient :: DecodeJson WebSocketPayloadClient  where
+instance decodeJsonWebSocketPayloadClient :: DecodeJson WebSocketPayloadClient where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowContextMenu :: DecodeJson ShowContextMenu where
       decodeJson = DADGR.genericDecodeJson
@@ -542,7 +546,6 @@ instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where
       decodeJson = DADGR.genericDecodeJson
-
 
 instance encodeJsonMDateTime :: EncodeJson DateTimeWrapper where
       encodeJson = DAC.fromNumber <<< SDT.dateTimeToNumber
@@ -555,7 +558,6 @@ instance encodeJsonMessageContent :: EncodeJson MessageContent where
 instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
-
 instance encodeJsonWebSocketPayloadClient :: EncodeJson WebSocketPayloadClient where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
@@ -566,8 +568,6 @@ instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
       encodeJson = DAEGR.genericEncodeJson
 instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
       encodeJson = DAEGR.genericEncodeJson
-
-
 
 instance hashableIMSelector :: Hashable ElementID where
       hash = HS.hash <<< show
@@ -634,10 +634,8 @@ instance showElementID :: Show ElementID where
 instance encodeQueryParamMDateTime :: EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< show <<< SDT.dateTimeToNumber
 
-
-
 instance readForeignMDatee :: ReadForeign DateWrapper where
-      readImpl foreignDate = DateWrapper <<< DTT.date <<<  DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
+      readImpl foreignDate = DateWrapper <<< DTT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
 instance readForeignMDateTime :: ReadForeign DateTimeWrapper where
       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
 
@@ -645,7 +643,7 @@ instance decodeQueryMDateTime :: DecodeQueryParam DateTimeWrapper where
       decodeQueryParam query key =
             case FO.lookup key query of
                   Nothing -> Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [value] -> DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) (DDI.instant <<< DTD.Milliseconds =<< DNM.fromString value)
+                  Just [ value ] -> DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) (DDI.instant <<< DTD.Milliseconds =<< DNM.fromString value)
                   _ -> errorDecoding query key
 
 instance writeForeignMDateTime :: WriteForeign DateTimeWrapper where
@@ -653,7 +651,6 @@ instance writeForeignMDateTime :: WriteForeign DateTimeWrapper where
 
 instance writeForeignMDate :: WriteForeign DateWrapper where
       writeImpl = F.unsafeToForeign <<< SDT.dateToNumber
-
 
 derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
 derive instance newtypeMDate :: Newtype DateWrapper _
@@ -666,9 +663,7 @@ derive instance eqShowChatModal :: Eq ShowChatModal
 derive instance eqMDateTime :: Eq DateTimeWrapper
 derive instance eqMDate :: Eq DateWrapper
 
-
 derive instance eqShowModal :: Eq ShowUserMenuModal
-
 
 derive instance genericResponseError :: Generic ResponseError _
 derive instance genericMDateTime :: Generic DateTimeWrapper _
@@ -679,18 +674,15 @@ derive instance genericFullWebSocketPayloadServer :: Generic FullWebSocketPayloa
 derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
 derive instance genericShowModal :: Generic ShowUserMenuModal _
 
-
 derive instance genericShowContextMenu :: Generic ShowContextMenu _
 derive instance genericDatabaseError :: Generic DatabaseError _
 derive instance genericRetryableRequest :: Generic RetryableRequest _
 derive instance genericShowChatModal :: Generic ShowChatModal _
 
-
-
 errorDecoding :: forall a. Object (Array String) -> String -> Either DecodeError a
-errorDecoding queryObj key = Left $ QueryDecodeError {
-      values: [],
-      message: "Could not decode parameter " <> key,
-      key,
-      queryObj
-}
+errorDecoding queryObj key = Left $ QueryDecodeError
+      { values: []
+      , message: "Could not decode parameter " <> key
+      , key
+      , queryObj
+      }

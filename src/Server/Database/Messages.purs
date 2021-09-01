@@ -2,21 +2,21 @@ module Server.Database.Messages where
 
 import Type.Proxy (Proxy(..))
 import Droplet.Language
-import Data.DateTime(DateTime)
+import Data.DateTime (DateTime)
 import Shared.IM.Types
 import Shared.Types
-import Data.Maybe(Maybe(..))
+import Data.Maybe (Maybe(..))
 
-type Messages = (
-      id :: Auto Int,
-      temporary_id :: Int,
-      sender :: Int,
-      recipient :: Int,
-      date :: Default DateTimeWrapper,
-      content :: String,
-      status :: Default MessageStatus,
-      visualized :: Maybe DateTime
-)
+type Messages =
+      ( id :: Auto Int
+      , temporary_id :: Int
+      , sender :: Int
+      , recipient :: Int
+      , date :: Default DateTimeWrapper
+      , content :: String
+      , status :: Default MessageStatus
+      , visualized :: Maybe DateTime
+      )
 
 messages :: Table "messages" Messages
 messages = Table

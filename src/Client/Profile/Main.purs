@@ -17,12 +17,12 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 main :: Effect Unit
 main = do
-      FAE.resumeMount (QuerySelector "#profile-edition-form") profileID {
-            view: SPV.view,
-            subscribe: [FS.onCustomEvent setChatExperiment SetProfileChatExperiment],
-            init: Nothing,
-            update: CPU.update
-      }
+      FAE.resumeMount (QuerySelector "#profile-edition-form") profileID
+            { view: SPV.view
+            , subscribe: [ FS.onCustomEvent setChatExperiment SetProfileChatExperiment ]
+            , init: Nothing
+            , update: CPU.update
+            }
       --a pain, but a chat experiment might be going on before loading the modal
       FS.send imID AskChatExperiment
       --avatar changes

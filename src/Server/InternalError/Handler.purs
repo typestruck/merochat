@@ -14,4 +14,4 @@ import Server.InternalError.Template as SIT
 internalError :: String -> Effect (Response String)
 internalError message = do
       contents <- SIT.template message
-      pure <<< PSR.setHeaders (PH.fromFoldable [Tuple "content-type" html]) $ PSR.internalError contents
+      pure <<< PSR.setHeaders (PH.fromFoldable [ Tuple "content-type" html ]) $ PSR.internalError contents

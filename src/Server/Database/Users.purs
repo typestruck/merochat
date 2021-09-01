@@ -1,30 +1,30 @@
-module Server.Database.Users  where
+module Server.Database.Users where
 
 import Server.Types
 import Shared.Types
 import Prelude
 import Droplet.Language
-import Type.Proxy(Proxy(..))
-import Data.DateTime(DateTime)
-import Data.Date(Date)
+import Type.Proxy (Proxy(..))
+import Data.DateTime (DateTime)
+import Data.Date (Date)
 import Data.Maybe (Maybe)
 
 import Server.Database as SD
 
-type Users = (
-      id :: Auto Int,
-      password :: String,
-      name :: String,
-      headline :: String,
-      joined :: Default DateTime,
-      email :: String,
-      birthday :: Maybe Date,
-      description :: String,
-      avatar :: Maybe String,
-      gender :: Maybe Gender,
-      country :: Maybe Int,
-      active :: Default Boolean
-)
+type Users =
+      ( id :: Auto Int
+      , password :: String
+      , name :: String
+      , headline :: String
+      , joined :: Default DateTime
+      , email :: String
+      , birthday :: Maybe Date
+      , description :: String
+      , avatar :: Maybe String
+      , gender :: Maybe Gender
+      , country :: Maybe Int
+      , active :: Default Boolean
+      )
 
 users :: Table "users" Users
 users = Table
@@ -64,5 +64,5 @@ baseQuery = "select id, email, password from users where active and "
 userBy :: By -> ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
       Email value -> SD.unsafeSingle (baseQuery <> "lower(email) = lower(@email)") { email: value }
-      ID value -> SD.unsafeSingle (baseQuery <> "id = @id") {id: value}
+      ID value -> SD.unsafeSingle (baseQuery <> "id = @id") { id: value }
 

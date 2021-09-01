@@ -14,7 +14,7 @@ import Shared.Backer.View as SBV
 
 template :: Effect String
 template = do
-      contents <- ST.template externalDefaultParameters {
-            content = externalDefaultParameters.content <> [SBV.view]
-      }
+      contents <- ST.template externalDefaultParameters
+            { content = externalDefaultParameters.content <> [ SBV.view ]
+            }
       FRS.render contents

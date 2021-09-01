@@ -1,4 +1,4 @@
-module  Server.Leaderboard.Handler where
+module Server.Leaderboard.Handler where
 
 import Prelude
 import Server.Types

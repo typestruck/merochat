@@ -13,7 +13,7 @@ import Data.Maybe (Maybe(..))
 import Effect.Exception.Unsafe as EEU
 
 unsafeIndex :: forall a. Array a -> Int -> a
-unsafeIndex array i = fromJust  $ DA.index array i
+unsafeIndex array i = fromJust $ DA.index array i
 
 infixl 8 unsafeIndex as !@
 

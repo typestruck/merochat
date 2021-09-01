@@ -26,9 +26,10 @@ main = do
       terms <- CCD.unsafeGetElementByID TermsSection
       privacy <- CCD.unsafeGetElementByID PrivacySection
 
-      let   unselectAll = do
-                  DT.traverse_ (WDE.setAttribute "class" "entry") [faqLink, termsLink, privacyLink]
-                  DT.traverse_ (WDE.setAttribute "class" "hidden") [faq, terms, privacy]
+      let
+            unselectAll = do
+                  DT.traverse_ (WDE.setAttribute "class" "entry") [ faqLink, termsLink, privacyLink ]
+                  DT.traverse_ (WDE.setAttribute "class" "hidden") [ faq, terms, privacy ]
             select link tab = do
                   unselectAll
                   WDE.setAttribute "class" "entry selected" link

@@ -22,8 +22,8 @@ register captchaResponse = do
             Just rl ->
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
-                   else EA.launchAff_ do
-                        status <- CCA.formRequest $ request.register $ { body: rl { captchaResponse = captchaResponse }}
+                  else EA.launchAff_ do
+                        status <- CCA.formRequest $ request.register $ { body: rl { captchaResponse = captchaResponse } }
                         liftEffect $ case status of
                               Success -> CCL.setLocation $ routes.im.get {}
                               Fail -> CCC.grecaptchaReset

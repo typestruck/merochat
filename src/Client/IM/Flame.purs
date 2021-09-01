@@ -10,7 +10,6 @@ import Flame ((:>))
 import Flame as F
 import Flame.Application.Effectful as FAE
 
-
 -- | This action has no further effects
 type NoMessages = Tuple IMModel (Array (Aff (Maybe IMMessage)))
 
@@ -35,8 +34,8 @@ justNext model message = model :> [ pure <<< Just $ message ]
 
 -- Helper to perform a single effect that does not raise a new message
 nothingNext :: IMModel -> Aff Unit -> Tuple IMModel (Array (Aff (Maybe IMMessage)))
-nothingNext model aff = model :> [
-        do
-                aff
-                pure Nothing
-]
+nothingNext model aff = model :>
+      [ do
+              aff
+              pure Nothing
+      ]

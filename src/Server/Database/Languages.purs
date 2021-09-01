@@ -4,10 +4,10 @@ import Droplet.Language
 
 import Type.Proxy (Proxy(..))
 
-type Languages = (
-      id :: Auto Int,
-      name :: String
-)
+type Languages =
+      ( id :: Auto Int
+      , name :: String
+      )
 
 languages :: Table "languages" Languages
 languages = Table

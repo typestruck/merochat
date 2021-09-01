@@ -2,14 +2,14 @@ module Server.Database.KarmaHistories where
 
 import Droplet.Language
 import Type.Proxy (Proxy(..))
-import Data.DateTime(DateTime)
+import Data.DateTime (DateTime)
 
-type KarmaHistories = (
-      id :: Auto Int,
-      target :: Int,
-      amount :: Int,
-      date :: Default DateTime
-)
+type KarmaHistories =
+      ( id :: Auto Int
+      , target :: Int
+      , amount :: Int
+      , date :: Default DateTime
+      )
 
 karma_histories :: Table "karma_histories" KarmaHistories
 karma_histories = Table

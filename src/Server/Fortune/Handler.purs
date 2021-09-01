@@ -1,4 +1,4 @@
-module  Server.Fortune.Handler where
+module Server.Fortune.Handler where
 
 import Prelude
 import Server.Types

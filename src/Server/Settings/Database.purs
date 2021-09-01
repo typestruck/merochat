@@ -19,4 +19,3 @@ changePassword loggedUserID password = SD.execute $ update users # set (_passwor
 terminateAccount :: Int -> ServerEffect Unit
 terminateAccount loggedUserID = SD.execute $ delete # from users # wher (_id .=. loggedUserID) --cascades
 
-

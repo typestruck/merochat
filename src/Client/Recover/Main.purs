@@ -17,14 +17,14 @@ import Shared.Routes (routes)
 
 recover :: Maybe String -> Effect Unit
 recover captchaResponse = do
-     registerLogin <- CCA.validateEmail
-     case registerLogin of
+      registerLogin <- CCA.validateEmail
+      case registerLogin of
             Nothing -> pure unit
             Just email ->
                   if DM.isNothing captchaResponse then
                         CCC.grecaptchaExecute
-                   else EA.launchAff_ do
-                        status <- CCA.formRequest $ request.recover.post {body: { email, captchaResponse } }
+                  else EA.launchAff_ do
+                        status <- CCA.formRequest $ request.recover.post { body: { email, captchaResponse } }
                         liftEffect $ when (status == Fail) CCC.grecaptchaReset
 
 -- | Callback for grecaptcha

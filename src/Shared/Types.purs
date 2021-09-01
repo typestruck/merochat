@@ -61,144 +61,138 @@ foreign import data Trie :: Type
 
 type NoBody = {}
 
-
-type EmailCaptcha r = {
-      email:: String,
-      captchaResponse:: Maybe String |
-      r
-}
+type EmailCaptcha r =
+      { email :: String
+      , captchaResponse :: Maybe String
+      | r
+      }
 
 -- | Fields for registration or login
 type RegisterLogin = (EmailCaptcha (password :: String))
 
-type RegisterLoginUser = {
-      id :: Int,
-      email :: String,
-      password :: String
-}
+type RegisterLoginUser =
+      { id :: Int
+      , email :: String
+      , password :: String
+      }
 
 type RecoverAccount = EmailCaptcha ()
 
+type ResetPassword =
+      { token :: String
+      , password :: String
+      }
 
+data Generate
+      = Name
+      | Headline
+      | Description
 
-type ResetPassword =  {
-      token :: String,
-      password :: String
-}
+data By
+      = ID Int
+      | Email String
 
-data Generate =
-      Name |
-      Headline |
-      Description
+type Report =
+      { reason :: ReportReason
+      , comment :: Maybe String
+      , userID :: Int
+      }
 
-data By =
-      ID Int |
-      Email String
+type InternalHelpModel =
+      { toggleHelp :: DisplayHelpSection
+      }
 
-
-type Report = {
-      reason :: ReportReason,
-      comment :: Maybe String,
-      userID :: Int
-}
-
-type InternalHelpModel = {
-      toggleHelp :: DisplayHelpSection
-}
-
-data DisplayHelpSection =
-      FAQ |
-      Terms |
-      Privacy
+data DisplayHelpSection
+      = FAQ
+      | Terms
+      | Privacy
 
 data InternalHelpMessage =
       ToggleHelpSection DisplayHelpSection
 
 data MountPoint = IM | Profile
 
-type PU = (BasicUser (
-      gender :: Maybe Gender,
-      country :: Maybe Int,
-      languages :: Array Int,
-      age :: Maybe DateWrapper
-))
+type PU =
+      ( BasicUser
+              ( gender :: Maybe Gender
+              , country :: Maybe Int
+              , languages :: Array Int
+              , age :: Maybe DateWrapper
+              )
+      )
 
 type ProfileUser = Record PU
 
 type Choice = Maybe
 
-type PM = (
-      user :: ProfileUser,
-      nameInputed :: Maybe String,
-      headlineInputed :: Maybe String,
-      ageInputed :: Choice (Maybe DateWrapper),
-      genderInputed :: Choice (Maybe Gender),
-      countryInputed :: Choice (Maybe Int),
-      languagesInputed :: Maybe Int,
-      languagesInputedList :: Maybe (Array Int),
-      tagsInputed :: Maybe String,
-      tagsInputedList :: Maybe (Array String),
-      descriptionInputed :: Maybe String,
-      generating :: Maybe Generate,
-      countries :: Array {id :: Int, name :: String},
-      languages :: Array {id :: Int, name :: String},
-      hideSuccessMessage :: Boolean,
-      experimenting :: Maybe ExperimentData
-)
+type PM =
+      ( user :: ProfileUser
+      , nameInputed :: Maybe String
+      , headlineInputed :: Maybe String
+      , ageInputed :: Choice (Maybe DateWrapper)
+      , genderInputed :: Choice (Maybe Gender)
+      , countryInputed :: Choice (Maybe Int)
+      , languagesInputed :: Maybe Int
+      , languagesInputedList :: Maybe (Array Int)
+      , tagsInputed :: Maybe String
+      , tagsInputedList :: Maybe (Array String)
+      , descriptionInputed :: Maybe String
+      , generating :: Maybe Generate
+      , countries :: Array { id :: Int, name :: String }
+      , languages :: Array { id :: Int, name :: String }
+      , hideSuccessMessage :: Boolean
+      , experimenting :: Maybe ExperimentData
+      )
 
 --used to generically set records
 type ProfileModel = Record PM
 
 newtype ProfileUserWrapper = ProfileUserWrapper ProfileUser
 
-data ProfileMessage =
-      SetPField (ProfileModel -> ProfileModel) |
-      SelectAvatar |
-      SetAvatar String |
-      SetGenerate Generate |
-      SetProfileChatExperiment (Maybe ExperimentData) |
-      SaveProfile
+data ProfileMessage
+      = SetPField (ProfileModel -> ProfileModel)
+      | SelectAvatar
+      | SetAvatar String
+      | SetGenerate Generate
+      | SetProfileChatExperiment (Maybe ExperimentData)
+      | SaveProfile
 
-type SM = (
-      email :: String,
-      emailConfirmation :: String,
-      password :: String,
-      erroredFields :: Array String,
-      passwordConfirmation :: String,
-      confirmTermination :: Boolean
-)
+type SM =
+      ( email :: String
+      , emailConfirmation :: String
+      , password :: String
+      , erroredFields :: Array String
+      , passwordConfirmation :: String
+      , confirmTermination :: Boolean
+      )
 
 type SettingsModel = Record SM
 
-data SettingsMessage =
-      SetSField (SettingsModel -> SettingsModel) |
-      ChangeEmail |
-      ChangePassword |
-      ToggleTerminateAccount |
-      TerminateAccount --very bad
+data SettingsMessage
+      = SetSField (SettingsModel -> SettingsModel)
+      | ChangeEmail
+      | ChangePassword
+      | ToggleTerminateAccount
+      | TerminateAccount --very bad
 
 data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
 --should be in user
-data Gender =
-      Female |
-      Male |
-      NonBinary |
-      Other
+data Gender
+      = Female
+      | Male
+      | NonBinary
+      | Other
 
 newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)
 
 derive instance eqGender :: Eq Gender
 
-
 derive instance genericGenerate :: Generic Generate _
 
 derive instance eqGenerate :: Eq Generate
 
-
 --there is nothing simple about using purescript-simple-json with types other than record
-
-
 
 instance contentMountPoint :: Show MountPoint where
       show = case _ of
@@ -221,37 +215,30 @@ instance decodeQueryGenerate :: DecodeQueryParam Generate where
       decodeQueryParam query key =
             case FO.lookup key query of
                   Nothing -> Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [value] -> DM.maybe (errorDecoding query key) Right $ DSR.read value
+                  Just [ value ] -> DM.maybe (errorDecoding query key) Right $ DSR.read value
                   _ -> errorDecoding query key
-
-
-
 
 instance decodeQueryArrayPrimaryKey :: DecodeQueryParam ArrayPrimaryKey where
       decodeQueryParam query key =
             case FO.lookup key query of
                   Nothing -> Left $ QueryParamNotFound { key, queryObj: query }
                   --this is terrible
-                  Just [value] -> Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
+                  Just [ value ] -> Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
                   _ -> errorDecoding query key
 
-
 errorDecoding :: forall a. Object (Array String) -> String -> Either DecodeError a
-errorDecoding queryObj key = Left $ QueryDecodeError {
-      values: [],
-      message: "Could not decode parameter " <> key,
-      key,
-      queryObj
-}
-
+errorDecoding queryObj key = Left $ QueryDecodeError
+      { values: []
+      , message: "Could not decode parameter " <> key
+      , key
+      , queryObj
+      }
 
 instance encodeQueryGenerate :: EncodeQueryParam Generate where
       encodeQueryParam = Just <<< show
 
-
 instance decodeJsonGender :: DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
-
 
 instance encodeJsonGender :: EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
@@ -271,7 +258,6 @@ derive instance genericGender :: Generic Gender _
 instance writeForeignGender :: WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
 
-
 instance genderToValue :: ToValue Gender where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
@@ -283,49 +269,47 @@ instance encodeJsonGenerate :: EncodeJson Generate where
 instance encodeJsonDisplayHelpSection :: EncodeJson DisplayHelpSection where
       encodeJson = DAEGR.genericEncodeJson
 
-
 derive instance eqDisplayHelpSection :: Eq DisplayHelpSection
-
 
 instance decodeJsonGenerate :: DecodeJson Generate where
       decodeJson = DADGR.genericDecodeJson
 instance decodeJsonDisplayHelpSection :: DecodeJson DisplayHelpSection where
       decodeJson = DADGR.genericDecodeJson
 
-
 -- match both on file extension or content type
 instance contentTypeRead :: Read ContentType where
       read v =
             Just $
                   if value == ".json" || value == show JSON then JSON
-                   else if value == ".js" || value == show JS then JS
-                   else if value == ".gif" || value == show GIF then GIF
-                   else if value == ".jpeg" || value == ".jpg" || value == show JPEG then JPEG
-                   else if value == ".png" || value == show PNG then PNG
-                   else if value == ".css" || value == show CSS then CSS
-                   else if value == ".html" || value == show HTML then HTML
-                   else OctetStream
-            where value = DS.trim $ DS.toLower v
+                  else if value == ".js" || value == show JS then JS
+                  else if value == ".gif" || value == show GIF then GIF
+                  else if value == ".jpeg" || value == ".jpg" || value == show JPEG then JPEG
+                  else if value == ".png" || value == show PNG then PNG
+                  else if value == ".css" || value == show CSS then CSS
+                  else if value == ".html" || value == show HTML then HTML
+                  else OctetStream
+            where
+            value = DS.trim $ DS.toLower v
 
 derive instance ooGender :: Ord Gender
 
 --should just use Enum
 instance readGender :: Read Gender where
       read input =
-          case DS.toLower $ DS.trim input of
-              "female" -> Just Female
-              "male" -> Just Male
-              "non binary" -> Just NonBinary
-              "other" -> Just Other
-              _ -> Nothing
+            case DS.toLower $ DS.trim input of
+                  "female" -> Just Female
+                  "male" -> Just Male
+                  "non binary" -> Just NonBinary
+                  "other" -> Just Other
+                  _ -> Nothing
 
 instance readGenerate :: Read Generate where
       read input =
-          case DS.toLower $ DS.trim input of
-              "name" -> Just Name
-              "headline" -> Just Headline
-              "description" -> Just Description
-              _ -> Nothing
+            case DS.toLower $ DS.trim input of
+                  "name" -> Just Name
+                  "headline" -> Just Headline
+                  "description" -> Just Description
+                  _ -> Nothing
 
 instance oGender :: Bounded Gender where
       bottom = Female
@@ -360,6 +344,5 @@ instance gEnum :: Enum Gender where
             NonBinary -> Just Male
             Other -> Just NonBinary
 
-
 instance geFromValue :: FromValue Gender where
-      fromValue v = map (SU.fromJust <<< DE.toEnum)  (DL.fromValue v :: Either String Int)
+      fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v :: Either String Int)

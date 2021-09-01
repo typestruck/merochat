@@ -43,7 +43,8 @@ setUpBase64Reader fileReader message appID = do
 
 readBase64 :: FileReader -> Maybe FileList -> Effect Unit
 readBase64 fileReader maybeFileList = do
-      let   maybeFile = do
+      let
+            maybeFile = do
                   fileList <- maybeFileList
                   WFL.item 0 fileList
       case maybeFile of

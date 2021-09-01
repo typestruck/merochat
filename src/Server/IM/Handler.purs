@@ -2,6 +2,7 @@ module Server.IM.Handler where
 
 import Prelude
 import Server.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Array as DA
@@ -15,8 +16,8 @@ import Run as R
 import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
+import Server.IM.Flat (fromFlatUser)
 import Server.IM.Template as SIT
-import Shared.IM.Types
 
 im :: { guards :: { loggedUserID :: Int } } -> ServerEffect (Response String)
 im { guards: { loggedUserID } } = do
@@ -27,8 +28,8 @@ im { guards: { loggedUserID } } = do
             Just user -> do
                   suggestions <- SIA.suggest loggedUserID 0 Nothing
                   contacts <- SIA.listContacts loggedUserID 0
-                  contents <- R.liftEffect $ SIT.template { contacts, suggestions, user }
-                  pure <<< PSR.setHeaders (PH.fromFoldable [Tuple "content-type" html, Tuple "cache-control" "no-store, max-age=0"]) $ PSR.ok contents
+                  contents <- R.liftEffect $ SIT.template { contacts, suggestions, user: fromFlatUser user }
+                  pure <<< PSR.setHeaders (PH.fromFoldable [ Tuple "content-type" html, Tuple "cache-control" "no-store, max-age=0" ]) $ PSR.ok contents
 
 contacts :: { guards :: { loggedUserID :: Int }, query :: { skip :: Int } } -> ServerEffect (Array Contact)
 contacts { guards: { loggedUserID }, query: { skip } } = SIA.listContacts loggedUserID skip

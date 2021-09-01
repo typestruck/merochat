@@ -36,11 +36,13 @@ foreign import fullDate :: Number -> String
 
 ageFrom :: Maybe Date -> Maybe Int
 ageFrom = ageFrom' now
-      where now = EU.unsafePerformEffect EN.nowDate
+      where
+      now = EU.unsafePerformEffect EN.nowDate
 
 ageFrom' :: Date -> Maybe Date -> Maybe Int
 ageFrom' now birthday = calculate <$> birthday
-      where calculate b = DE.fromEnum (DD.year now) - DE.fromEnum (DD.year b) - if dayDiff (DateTime now zeroTime) < dayDiff (DateTime b zeroTime) then 1 else 0
+      where
+      calculate b = DE.fromEnum (DD.year now) - DE.fromEnum (DD.year b) - if dayDiff (DateTime now zeroTime) < dayDiff (DateTime b zeroTime) then 1 else 0
 
 --minimum age to sign up is 13
 latestEligibleBirthday :: Effect Date
@@ -77,11 +79,12 @@ dateTimeToNumber :: forall n. Newtype n DateTime => n -> Number
 dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwrap
 
 formatISODate :: forall n. Newtype n Date => n -> String
-formatISODate dateWrapper = DA.intercalate "-" $ map (pad <<< show) [DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date]
-      where date = DN.unwrap dateWrapper
-            pad value = case DS.length value of
-                  1 -> "0" <> value
-                  _ -> value
+formatISODate dateWrapper = DA.intercalate "-" $ map (pad <<< show) [ DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date ]
+      where
+      date = DN.unwrap dateWrapper
+      pad value = case DS.length value of
+            1 -> "0" <> value
+            _ -> value
 
 unformatISODate :: String -> Maybe Date
 unformatISODate value = do
@@ -89,12 +92,13 @@ unformatISODate value = do
       month <- parseUnit 1
       day <- parseUnit 2
       pure $ DD.canonicalDate year month day
-      where split = DS.split (Pattern "-") value
-            parseUnit :: forall v. BoundedEnum v => Int -> Maybe v
-            parseUnit n = do
-                  raw <- split !! n
-                  integered <- DI.fromString raw
-                  DE.toEnum integered
+      where
+      split = DS.split (Pattern "-") value
+      parseUnit :: forall v. BoundedEnum v => Int -> Maybe v
+      parseUnit n = do
+            raw <- split !! n
+            integered <- DI.fromString raw
+            DE.toEnum integered
 
 unsafeNow :: DateTime
 unsafeNow = EU.unsafePerformEffect EN.nowDateTime
@@ -111,28 +115,31 @@ ago :: DateTime -> String
 ago dateTime =
       if days == 0 then
             localDateTimeWith time dateTime
-       else if days == 1 then
+      else if days == 1 then
             "Yesterday"
-       else if days >= 2 && days <= 7 then
+      else if days >= 2 && days <= 7 then
             localDateTimeWith dayOfTheWeek dateTime
-       else
+      else
             localDateTimeWith fullDate dateTime
-      where days = dayDiff dateTime
+      where
+      days = dayDiff dateTime
 
 agoWithTime :: DateTime -> String
 agoWithTime dateTime =
       if days == 0 then
             timeString
-       else
+      else
             ago dateTime <> " " <> timeString
-      where days = dayDiff dateTime
-            timeString = localDateTimeWith time dateTime
+      where
+      days = dayDiff dateTime
+      timeString = localDateTimeWith time dateTime
 
 dayDiff :: DateTime -> Int
 dayDiff dateTime = days now - days dateTime
-      where firstDay = DateTime (DD.canonicalDate (DD.year $ DDT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
-            now = unsafeNow
-            days dt = DI.floor $ DN.unwrap (DDT.diff dt firstDay :: Days)
+      where
+      firstDay = DateTime (DD.canonicalDate (DD.year $ DDT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
+      now = unsafeNow
+      days dt = DI.floor $ DN.unwrap (DDT.diff dt firstDay :: Days)
 
 localDateTimeWith :: _ -> DateTime -> String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime

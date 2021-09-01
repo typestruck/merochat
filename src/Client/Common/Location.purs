@@ -30,7 +30,7 @@ path :: Effect String
 path = do
       window <- WH.window
       location <- WHW.location window
-      search' <-WHL.search location
+      search' <- WHL.search location
       pathname <- WHL.pathname location
       pure $ pathname <> search'
 

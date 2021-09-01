@@ -55,7 +55,7 @@ handleConnection :: Configuration -> Pool -> Ref (HashMap Int AliveWebSocketConn
 handleConnection { tokenSecret } pool allConnections storageDetails connection request = do
       maybeUserID <- ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked <- FO.lookup "cookie" $ NH.requestHeaders request
-            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _ ) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
+            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
       case maybeUserID of
             Nothing -> do
                   SW.terminate connection
@@ -66,21 +66,22 @@ handleConnection { tokenSecret } pool allConnections storageDetails connection r
                   SW.onError connection handleError
                   SW.onClose connection (handleClose allConnections sessionUserID)
                   SW.onMessage connection (runMessageHandler sessionUserID)
-      where runMessageHandler sessionUserID (WebSocketMessage message) = do
-                  case SJ.fromJSON message of
-                        Right payload -> do
-                              let run = R.runBaseAff' <<< RE.catch (\e -> reportError payload (checkInternalError e) e) <<< RR.runReader { storageDetails, allConnections, pool, sessionUserID, connection } $ handleMessage payload
-                              EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
-                        Left error -> do
-                              SW.terminate connection
-                              EC.log $ "terminated due to seriliazation error: " <> error
+      where
+      runMessageHandler sessionUserID (WebSocketMessage message) = do
+            case SJ.fromJSON message of
+                  Right payload -> do
+                        let run = R.runBaseAff' <<< RE.catch (\e -> reportError payload (checkInternalError e) e) <<< RR.runReader { storageDetails, allConnections, pool, sessionUserID, connection } $ handleMessage payload
+                        EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
+                  Left error -> do
+                        SW.terminate connection
+                        EC.log $ "terminated due to seriliazation error: " <> error
 
-            reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> Maybe DatabaseError -> a -> b Unit
-            reportError origin context _ = sendWebSocketMessage connection <<< Content $ PayloadError { origin, context }
+      reportError :: forall a b. MonadEffect b => WebSocketPayloadServer -> Maybe DatabaseError -> a -> b Unit
+      reportError origin context _ = sendWebSocketMessage connection <<< Content $ PayloadError { origin, context }
 
-            checkInternalError = case _ of
-                  InternalError { context } -> context
-                  _ -> Nothing
+      checkInternalError = case _ of
+            InternalError { context } -> context
+            _ -> Nothing
 
 handleError :: Error -> Effect Unit
 handleError = EC.log <<< show
@@ -89,7 +90,7 @@ handleClose :: Ref (HashMap Int AliveWebSocketConnection) -> Int -> CloseCode ->
 handleClose allConnections id _ _ = ER.modify_ (DH.delete id) allConnections
 
 --REFACTOR: untangle the im logic from the websocket logic
-handleMessage ::  WebSocketPayloadServer -> WebSocketEffect
+handleMessage :: WebSocketPayloadServer -> WebSocketEffect
 handleMessage payload = do
       { connection, sessionUserID, allConnections } <- RR.ask
       case payload of
@@ -110,15 +111,15 @@ handleMessage payload = do
                   when persisting $ SID.changeStatus sessionUserID status ids
                   possibleSenderConnection <- R.liftEffect (DH.lookup sender <$> ER.read allConnections)
                   whenJust possibleSenderConnection $ \{ connection: senderConnection } ->
-                        sendWebSocketMessage senderConnection <<< Content $ ServerChangedStatus {
-                              ids,
-                              status,
-                              userID: sessionUserID
-                        }
+                        sendWebSocketMessage senderConnection <<< Content $ ServerChangedStatus
+                              { ids
+                              , status
+                              , userID: sessionUserID
+                              }
             ToBlock { id } -> do
                   possibleConnection <- R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \{ connection: recipientConnection } -> sendWebSocketMessage recipientConnection <<< Content $ BeenBlocked { id: sessionUserID }
-            OutgoingMessage { id: temporaryID , userID: recipient, content, turn, experimenting } -> do
+            OutgoingMessage { id: temporaryID, userID: recipient, content, turn, experimenting } -> do
                   date <- R.liftEffect $ map DateTimeWrapper EN.nowDateTime
                   Tuple messageID finalContent <- case experimenting of
                         --impersonating experiment messages are not saved
@@ -127,27 +128,28 @@ handleMessage payload = do
                               pure $ Tuple temporaryID msg
                         _ ->
                               SIA.processMessage sessionUserID recipient temporaryID content
-                  sendWebSocketMessage connection <<< Content $ ServerReceivedMessage {
-                        previousID: temporaryID,
-                        id: messageID,
-                        userID: recipient
-                  }
+                  sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
+                        { previousID: temporaryID
+                        , id: messageID
+                        , userID: recipient
+                        }
 
                   possibleRecipientConnection <- R.liftEffect (DH.lookup recipient <$> ER.read allConnections)
                   whenJust possibleRecipientConnection $ \{ connection: recipientConnection } ->
-                        sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage {
-                              id : messageID,
-                              userID: sessionUserID,
-                              content: finalContent,
-                              experimenting: experimenting,
-                              date
-                        }
+                        sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage
+                              { id: messageID
+                              , userID: sessionUserID
+                              , content: finalContent
+                              , experimenting: experimenting
+                              , date
+                              }
                   --pass along karma calculation to wheel
                   whenJust turn (SIA.processKarma sessionUserID recipient)
-      where whenJust :: forall v. Maybe v -> (v -> WebSocketEffect) -> WebSocketEffect
-            whenJust value f = case value of
-                  Nothing -> pure unit
-                  Just v -> f v
+      where
+      whenJust :: forall v. Maybe v -> (v -> WebSocketEffect) -> WebSocketEffect
+      whenJust value f = case value of
+            Nothing -> pure unit
+            Just v -> f v
 
 sendWebSocketMessage :: forall b. MonadEffect b => WebSocketConnection -> FullWebSocketPayloadClient -> b Unit
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJSON
@@ -157,10 +159,11 @@ checkLastSeen allConnections = do
       connections <- ER.read allConnections
       now <- EN.nowDateTime
       DF.traverse_ (check now) $ DH.toArrayBy Tuple connections
-      where check now (Tuple id { lastSeen, connection })
-                  | hasExpired lastSeen now = do
-                        ER.modify_ (DH.delete id) allConnections
-                        SW.terminate connection
-                  | otherwise = pure unit
+      where
+      check now (Tuple id { lastSeen, connection })
+            | hasExpired lastSeen now = do
+                    ER.modify_ (DH.delete id) allConnections
+                    SW.terminate connection
+            | otherwise = pure unit
 
-            hasExpired lastSeen now = aliveDelayMinutes <= DI.floor (DN.unwrap (DDT.diff now lastSeen :: Minutes))
+      hasExpired lastSeen now = aliveDelayMinutes <= DI.floor (DN.unwrap (DDT.diff now lastSeen :: Minutes))

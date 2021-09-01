@@ -9,6 +9,6 @@ import Flame (ListUpdate)
 update :: ListUpdate InternalHelpModel InternalHelpMessage
 update model =
       case _ of
-            ToggleHelpSection toggle -> F.noMessages $ model {
-                toggleHelp = toggle
-            }
+            ToggleHelpSection toggle -> F.noMessages $ model
+                  { toggleHelp = toggle
+                  }

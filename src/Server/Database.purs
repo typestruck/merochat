@@ -8,7 +8,7 @@ import Control.Monad.Except as CME
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Droplet.Driver(PgError(..), Connection, Pool)
+import Droplet.Driver (PgError(..), Connection, Pool)
 import Data.Either as DT
 import Effect (Effect)
 import Effect.Class (liftEffect)
@@ -63,43 +63,46 @@ hoistMaybe action = do
             Nothing -> pure unit
             Just err -> RE.throw err
 
-newPool ∷ Configuration -> Effect Pool
+newPool :: Configuration -> Effect Pool
 newPool { databaseHost } = do
       setUpConversions
-      DD.newPool $ (DD.defaultConfiguration "melanchat") {
-            user = Just "melanchat",
-            host = databaseHost,
-            idleTimeoutMillis = Just 1000
-      }
+      DD.newPool $ (DD.defaultConfiguration "melanchat")
+            { user = Just "melanchat"
+            , host = databaseHost
+            , idleTimeoutMillis = Just 1000
+            }
 
 withConnection :: forall r result. (Connection -> DatabaseEffect result) -> BaseEffect { pool :: Pool | r } result
 withConnection handler = do
       { pool } <- RR.ask
       result <- R.liftAff $ DD.withConnection pool runConnection
       finish result
-      where runConnection = R.runBaseAff <<< RE.runExcept <<< case _ of
-                  Right c -> handler c
-                  Left err -> RE.throw err
+      where
+      runConnection = R.runBaseAff <<< RE.runExcept <<< case _ of
+            Right c -> handler c
+            Left err -> RE.throw err
 
-            finish = case _ of
-                  Right result -> pure result
-                  Left error -> throwError error
+      finish = case _ of
+            Right result -> pure result
+            Left error -> throwError error
 
 withTransaction :: forall result r. (Connection -> DatabaseEffect result) -> BaseEffect { pool :: Pool | r } result
 withTransaction handler = do
       { pool } <- RR.ask
       result <- R.liftAff (DD.withTransaction pool (R.runBaseAff <<< RE.runExcept <<< handler) :: Aff (Either PgError (Either PgError result)))
       finish result
-      where  finish = case _ of
-                  Right result -> DT.either throwError pure result
-                  Left error -> throwError error
+      where
+      finish = case _ of
+            Right result -> DT.either throwError pure result
+            Left error -> throwError error
 
 throwError :: forall r error. PgError -> BaseEffect { pool :: Pool | r } error
 throwError error = do
       liftEffect $ EC.log errorMessage
       RE.throw $ SIT.InternalError { reason: errorMessage, context: checkRevelanceError error }
-      where errorMessage = show error
-            checkRevelanceError = case _ of
-                  --this is absolutely vile
-                  IntegrityError _ -> Just MissingForeignKey
-                  _ -> Nothing
+      where
+      errorMessage = show error
+      checkRevelanceError = case _ of
+            --this is absolutely vile
+            IntegrityError _ -> Just MissingForeignKey
+            _ -> Nothing

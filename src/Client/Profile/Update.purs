@@ -15,7 +15,7 @@ import Data.Newtype as DN
 import Data.String as DS
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
-import Type.Proxy(Proxy(..))
+import Type.Proxy (Proxy(..))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
@@ -52,22 +52,26 @@ update rc@{ model, message, display } =
             SetProfileChatExperiment experiment -> setChatExperiment experiment
             SaveProfile -> saveProfile rc
 
-setGenerated :: forall field fieldInputed r u . IsSymbol field => Cons field String r PU => IsSymbol fieldInputed => Append field "Inputed" fieldInputed => Cons fieldInputed (Maybe String) u PM => Environment ProfileModel ProfileMessage -> Generate -> Proxy field -> Int -> Aff (ProfileModel -> ProfileModel)
+setGenerated :: forall field fieldInputed r u. IsSymbol field => Cons field String r PU => IsSymbol fieldInputed => Append field "Inputed" fieldInputed => Cons fieldInputed (Maybe String) u PM => Environment ProfileModel ProfileMessage -> Generate -> Proxy field -> Int -> Aff (ProfileModel -> ProfileModel)
 setGenerated { model, display } what field characters = do
       display $ _ { generating = Just what }
-      let   fieldInputed = TDS.append field (Proxy :: Proxy "Inputed")
+      let
+            fieldInputed = TDS.append field (Proxy :: Proxy "Inputed")
             trimmed = DS.trim <<< DM.fromMaybe "" $ R.get fieldInputed model
 
-      toSet <- if DS.null trimmed then do
+      toSet <-
+            if DS.null trimmed then do
                   result <- request.profile.generate { query: { what } }
                   case result of
                         Right r -> pure <<< _.body $ DN.unwrap r
                         _ -> pure $ R.get field model.user --if the request fails, just pretend it generated the same field
             else
                   pure trimmed
-      pure (\model ->  R.set fieldInputed Nothing <<< SS.setUserField field (DS.take characters toSet) $ model {
-            generating = Nothing
-      })
+      pure
+            ( \model -> R.set fieldInputed Nothing <<< SS.setUserField field (DS.take characters toSet) $ model
+                    { generating = Nothing
+                    }
+            )
 
 selectAvatar :: Aff (ProfileModel -> ProfileModel)
 selectAvatar = do
@@ -80,14 +84,14 @@ setChatExperiment :: Maybe ExperimentData -> Aff (ProfileModel -> ProfileModel)
 setChatExperiment experimenting = FAE.diff { experimenting }
 
 saveProfile :: AffUpdate ProfileModel ProfileMessage
-saveProfile {display, model : { user: user@{ name }} } = do
+saveProfile { display, model: { user: user@{ name } } } = do
       status <- CNN.formRequest profileEditionId $ request.profile.post { body: user }
       case status of
             Success -> do
-                  display $ FAE.diff' { hideSuccessMessage : false }
+                  display $ FAE.diff' { hideSuccessMessage: false }
                   liftEffect <<<
                         --let im know that the name has changed
                         FS.send imID $ SetNameFromProfile name
                   EA.delay $ Milliseconds 3000.0
-                  FAE.diff { hideSuccessMessage : true }
+                  FAE.diff { hideSuccessMessage: true }
             _ -> FAE.noChanges

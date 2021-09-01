@@ -2,16 +2,16 @@ module Server.Database.KarmaLeaderboard where
 
 import Droplet.Language
 import Type.Proxy (Proxy(..))
-import Data.DateTime(DateTime)
+import Data.DateTime (DateTime)
 
-type KarmaLeaderboard = (
-      id :: Auto Int,
-      ranker :: Int,
-      position :: Int,
-      current_karma :: Int,
-      gained :: Int,
-      date :: Default DateTime
-)
+type KarmaLeaderboard =
+      ( id :: Auto Int
+      , ranker :: Int
+      , position :: Int
+      , current_karma :: Int
+      , gained :: Int
+      , date :: Default DateTime
+      )
 
 karma_leaderboard :: Table "karma_leaderboard" KarmaLeaderboard
 karma_leaderboard = Table

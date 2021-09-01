@@ -8,7 +8,7 @@ import Prelude
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Type.Proxy(Proxy(..))
+import Type.Proxy (Proxy(..))
 import Effect (Effect)
 import Effect.Exception (Error)
 import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3)
@@ -19,10 +19,10 @@ import Type.Row (class Lacks, class Cons, class Union)
 
 foreign import data WebSocketServer :: Type
 foreign import data WebSocketConnection :: Type
-foreign import createWebSocketServer_ :: forall options . EffectFn2 options (EffectFn1 Unit Unit) WebSocketServer
-foreign import onConnection_ :: EffectFn2 WebSocketServer (EffectFn2 WebSocketConnection Request Unit)Unit
-foreign import onServerError_  :: EffectFn2 WebSocketServer (EffectFn1 Error Unit) Unit
-foreign import onServerClose_  :: EffectFn2 WebSocketServer (EffectFn1 Unit Unit) Unit
+foreign import createWebSocketServer_ :: forall options. EffectFn2 options (EffectFn1 Unit Unit) WebSocketServer
+foreign import onConnection_ :: EffectFn2 WebSocketServer (EffectFn2 WebSocketConnection Request Unit) Unit
+foreign import onServerError_ :: EffectFn2 WebSocketServer (EffectFn1 Error Unit) Unit
+foreign import onServerClose_ :: EffectFn2 WebSocketServer (EffectFn1 Unit Unit) Unit
 foreign import onMessage_ :: EffectFn2 WebSocketConnection (EffectFn1 WebSocketMessage Unit) Unit
 foreign import onClose_ :: EffectFn2 WebSocketConnection (EffectFn2 CloseCode CloseReason Unit) Unit
 foreign import onError_ :: EffectFn2 WebSocketConnection (EffectFn1 Error Unit) Unit
@@ -32,16 +32,16 @@ foreign import sendMessage_ :: EffectFn2 WebSocketConnection WebSocketMessage Un
 foreign import close_ :: EffectFn3 WebSocketConnection CloseCode CloseReason Unit
 foreign import terminate_ :: EffectFn1 WebSocketConnection Unit
 
-type AliveWebSocketConnection = {
-        connection :: WebSocketConnection,
-        lastSeen :: DateTime
-}
+type AliveWebSocketConnection =
+      { connection :: WebSocketConnection
+      , lastSeen :: DateTime
+      }
 
 newtype WebSocketMessage = WebSocketMessage String
 derive newtype instance showWSM :: Show WebSocketMessage
 derive instance newtypeWSM :: Newtype WebSocketMessage _
 
-type WebSocketServerOptions = (host :: String, backlog :: Int )
+type WebSocketServerOptions = (host :: String, backlog :: Int)
 
 -- | The port to listen on if calling createWebSocketServerWithPort
 newtype Port = Port Int
@@ -53,10 +53,11 @@ newtype CloseReason = CloseReason String
 -- |
 -- | The supplied callback is called when the created HTTP server
 -- | starts listening.
-createWebSocketServerWithPort :: forall options options' trash . Union options options' WebSocketServerOptions => Lacks "port" options => Cons "port" Port options trash => Port -> { | options } -> (Unit -> Effect Unit) -> Effect WebSocketServer
+createWebSocketServerWithPort :: forall options options' trash. Union options options' WebSocketServerOptions => Lacks "port" options => Cons "port" Port options trash => Port -> { | options } -> (Unit -> Effect Unit) -> Effect WebSocketServer
 createWebSocketServerWithPort (Port port) options callback = EU.runEffectFn2 createWebSocketServer_ options' callback'
-        where   options' = R.insert (Proxy :: Proxy "port") port options
-                callback' = EU.mkEffectFn1 callback
+      where
+      options' = R.insert (Proxy :: Proxy "port") port options
+      callback' = EU.mkEffectFn1 callback
 
 -- | Attaches a connection event handler to a WebSocketServer
 onConnection :: WebSocketServer -> (WebSocketConnection -> Request -> Effect Unit) -> Effect Unit

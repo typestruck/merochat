@@ -40,16 +40,16 @@ recover { email: rawEmail, captchaResponse } = do
             Just { id } -> do
                   token <- R.liftEffect (DU.toString <$> DU.genUUID)
                   SRD.insertRecover id token
-                  contents <- R.liftEffect <<< FRS.render $ HE.html_ [
-                        HE.head_ $ HE.title "MelanChat password recovery",
-                        HE.body_ [
-                              HE.text "Hello!",
-                              HE.br,
-                              HE.br,
-                              HE.a (HA.href $ DS.joinWith "" ["https://", domain, routes.recover.get {query: { token: Just token }}]) "Click here to reset your password.",
-                              HE.text " If you didn't ask to recover your password, just ignore this email. Your account will be safe."
+                  contents <- R.liftEffect <<< FRS.render $ HE.html_
+                        [ HE.head_ $ HE.title "MelanChat password recovery"
+                        , HE.body_
+                                [ HE.text "Hello!"
+                                , HE.br
+                                , HE.br
+                                , HE.a (HA.href $ DS.joinWith "" [ "https://", domain, routes.recover.get { query: { token: Just token } } ]) "Click here to reset your password."
+                                , HE.text " If you didn't ask to recover your password, just ignore this email. Your account will be safe."
+                                ]
                         ]
-                  ]
                   SE.sendEmail email "Reset password" contents
                   pure ok
 

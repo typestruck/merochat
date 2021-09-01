@@ -25,12 +25,13 @@ import Shared.Path as SP
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
 
-type Notification = {
-      body :: String,
-      icon :: String,
-      -- uses a custom event to let Main know of this
-      handler :: Effect Unit
-}
+type Notification =
+      { body :: String
+      , icon :: String
+      ,
+        -- uses a custom event to let Main know of this
+        handler :: Effect Unit
+      }
 
 foreign import createNotification_ :: EffectFn1 Notification Unit
 
@@ -44,17 +45,21 @@ notify :: IMModel -> Array (Tuple Int (Maybe Int)) -> Effect Unit
 notify model@{ user: { id }, contacts, smallScreen } userIDs = do
       updateTabCount id contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
-      where contactUsers = DA.filter byKeys contacts
-            createNotification' { impersonating, user } = createNotification {
-                  body: "New message from " <> (case impersonating of
-                        Nothing -> user
-                        Just id -> SU.fromJust $ HS.lookup id impersonations).name,
-                  icon: SP.pathery PNG "loading",
-                  --move to given chat when clicking on system notification
-                  handler: FS.send imID <<< ResumeChat $ Tuple user.id impersonating
+      where
+      contactUsers = DA.filter byKeys contacts
+      createNotification' { impersonating, user } = createNotification
+            { body: "New message from " <>
+                    ( case impersonating of
+                            Nothing -> user
+                            Just id -> SU.fromJust $ HS.lookup id impersonations
+                    ).name
+            , icon: SP.pathery PNG "loading"
+            ,
+              --move to given chat when clicking on system notification
+              handler: FS.send imID <<< ResumeChat $ Tuple user.id impersonating
             }
 
-            byKeys cnt = DA.any (\(Tuple id impersonating) -> cnt.user.id == id && cnt.impersonating == impersonating) userIDs
+      byKeys cnt = DA.any (\(Tuple id impersonating) -> cnt.user.id == id && cnt.impersonating == impersonating) userIDs
 
 notify' :: IMModel -> Array (Tuple Int (Maybe Int)) -> Aff (Maybe IMMessage)
 notify' model userIDs = do
@@ -66,4 +71,5 @@ updateTabCount id contacts = do
       CCD.setTitle $ SIU.title unreadChats
       faviconElement <- CCD.unsafeGetElementByID Favicon
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
-      where unreadChats = SIU.countUnreadChats id contacts
+      where
+      unreadChats = SIU.countUnreadChats id contacts

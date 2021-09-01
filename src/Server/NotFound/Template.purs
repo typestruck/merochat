@@ -13,12 +13,13 @@ template :: Effect String
 template = do
       contents <- ST.template externalDefaultParameters { content = content }
       FRS.render contents
-      where content = [
-                  HE.div (HA.class' "green-box") [
-                        HE.div (HA.class' "error-page") [
-                              HE.div (HA.class' "error-page-code") "404",
-                              HE.div_ "The requested page could not be found"
+      where
+      content =
+            [ HE.div (HA.class' "green-box")
+                    [ HE.div (HA.class' "error-page")
+                            [ HE.div (HA.class' "error-page-code") "404"
+                            , HE.div_ "The requested page could not be found"
 
-                        ]
-                  ]
+                            ]
+                    ]
             ]

@@ -53,99 +53,100 @@ imageTooBigMessage = "Max allowed size for pictures is " <> maxImageSizeKB
 saveBase64File :: forall r. String -> BaseEffect { storageDetails :: Ref StorageDetails | r } String
 saveBase64File input =
       case DS.split (Pattern ",") input of
-            [mediaType, base64] -> do
+            [ mediaType, base64 ] -> do
                   if FD.any (_ == mediaType) $ DH.keys allowedMediaTypes then do
                         buffer <- R.liftEffect $ NB.fromString base64 Base64
                         bufferSize <- R.liftEffect $ NB.size buffer
                         if bufferSize > maxImageSize then
-                                    SR.throwBadRequest imageTooBigMessage
+                              SR.throwBadRequest imageTooBigMessage
+                        else do
+                              uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
+                              let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
+                              if development then
+                                    R.liftAff $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
                               else do
-                                    uuid <- R.liftEffect (DU.toString <$> DU.genUUID)
-                                    let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
-                                    if development then
-                                          R.liftAff $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
-                                    else do
-                                          { storageDetails } <- RR.ask
-                                          getAuthorizationToken storageDetails
-                                          getUploadUrl storageDetails
-                                          uploadFile storageDetails fileName buffer
+                                    { storageDetails } <- RR.ask
+                                    getAuthorizationToken storageDetails
+                                    getUploadUrl storageDetails
+                                    uploadFile storageDetails fileName buffer
 
-                                    pure fileName
+                              pure fileName
                   else
                         invalidImage
             _ -> invalidImage
-      where invalidImage = SR.throwBadRequest invalidImageMessage
-            bucketId = "14b84c0cac42e8747562021d"
+      where
+      invalidImage = SR.throwBadRequest invalidImageMessage
+      bucketId = "14b84c0cac42e8747562021d"
 
-            getAuthorizationToken :: Ref StorageDetails -> _
-            getAuthorizationToken storageDetails = do
-                  { authenticationKey, accountAuthorizationToken, apiUrl } <- R.liftEffect $ ER.read storageDetails
-                  case accountAuthorizationToken, apiUrl of
-                        Just _, Just _ -> pure unit
-                        _, _ -> do
-                              response <- R.liftAff <<< A.request $ A.defaultRequest {
-                                    url = "https://api.backblazeb2.com/b2api/v2/b2_authorize_account",
-                                    method = Left GET,
-                                    responseFormat = RF.json,
-                                    headers = [RequestHeader "Authorization" $ "Basic " <> authenticationKey ]
+      getAuthorizationToken :: Ref StorageDetails -> _
+      getAuthorizationToken storageDetails = do
+            { authenticationKey, accountAuthorizationToken, apiUrl } <- R.liftEffect $ ER.read storageDetails
+            case accountAuthorizationToken, apiUrl of
+                  Just _, Just _ -> pure unit
+                  _, _ -> do
+                        response <- R.liftAff <<< A.request $ A.defaultRequest
+                              { url = "https://api.backblazeb2.com/b2api/v2/b2_authorize_account"
+                              , method = Left GET
+                              , responseFormat = RF.json
+                              , headers = [ RequestHeader "Authorization" $ "Basic " <> authenticationKey ]
                               }
-                              case response of
-                                    Right { body, statusText } -> do
-                                          let authorization = SU.fromRight (DAD.decodeJson body) :: AuthorizeAccountResponse
-                                          R.liftEffect $ ER.modify_ ( _ { apiUrl = Just authorization.apiUrl, accountAuthorizationToken = Just authorization.authorizationToken}) storageDetails
-                                    Left left -> SR.throwInternalError $ A.printError left
+                        case response of
+                              Right { body, statusText } -> do
+                                    let authorization = SU.fromRight (DAD.decodeJson body) :: AuthorizeAccountResponse
+                                    R.liftEffect $ ER.modify_ (_ { apiUrl = Just authorization.apiUrl, accountAuthorizationToken = Just authorization.authorizationToken }) storageDetails
+                              Left left -> SR.throwInternalError $ A.printError left
 
-            getUploadUrl :: Ref StorageDetails -> _
-            getUploadUrl storageDetails = do
-                  { accountAuthorizationToken, apiUrl, uploadAuthorizationToken, uploadUrl } <- R.liftEffect $ ER.read storageDetails
-                  case uploadAuthorizationToken, uploadUrl of
-                        Just t, Just u -> pure unit
-                        _, _ -> do
-                              response <- R.liftAff <<< A.request $ A.defaultRequest {
-                                    url = SU.fromJust apiUrl <> "/b2api/v2/b2_get_upload_url",
-                                    method = Left POST,
-                                    responseFormat = RF.json,
-                                    headers = [RequestHeader "Authorization" $ SU.fromJust accountAuthorizationToken],
-                                    content = Just <<< Json $ DAD.encodeJson { bucketId }
+      getUploadUrl :: Ref StorageDetails -> _
+      getUploadUrl storageDetails = do
+            { accountAuthorizationToken, apiUrl, uploadAuthorizationToken, uploadUrl } <- R.liftEffect $ ER.read storageDetails
+            case uploadAuthorizationToken, uploadUrl of
+                  Just t, Just u -> pure unit
+                  _, _ -> do
+                        response <- R.liftAff <<< A.request $ A.defaultRequest
+                              { url = SU.fromJust apiUrl <> "/b2api/v2/b2_get_upload_url"
+                              , method = Left POST
+                              , responseFormat = RF.json
+                              , headers = [ RequestHeader "Authorization" $ SU.fromJust accountAuthorizationToken ]
+                              , content = Just <<< Json $ DAD.encodeJson { bucketId }
                               }
-                              case response of
-                                    Right { status, body, statusText } -> do
-                                          if status == StatusCode 200 then do
-                                                let upload = SU.fromRight (DAD.decodeJson body) :: GetUploadUrlResponse
-                                                R.liftEffect $ ER.modify_ ( _ { uploadAuthorizationToken = Just upload.authorizationToken, uploadUrl = Just upload.uploadUrl }) storageDetails
-                                           else if status == StatusCode 401 then do
-                                                R.liftEffect $ ER.modify_ ( _ { uploadAuthorizationToken = Nothing, uploadUrl = Nothing, accountAuthorizationToken = Nothing, apiUrl = Nothing }) storageDetails
+                        case response of
+                              Right { status, body, statusText } -> do
+                                    if status == StatusCode 200 then do
+                                          let upload = SU.fromRight (DAD.decodeJson body) :: GetUploadUrlResponse
+                                          R.liftEffect $ ER.modify_ (_ { uploadAuthorizationToken = Just upload.authorizationToken, uploadUrl = Just upload.uploadUrl }) storageDetails
+                                    else if status == StatusCode 401 then do
+                                          R.liftEffect $ ER.modify_ (_ { uploadAuthorizationToken = Nothing, uploadUrl = Nothing, accountAuthorizationToken = Nothing, apiUrl = Nothing }) storageDetails
 
-                                                void $ saveBase64File input
-                                                pure unit
-                                           else
-                                                SR.throwInternalError statusText
-                                    Left left -> SR.throwInternalError $ A.printError left
+                                          void $ saveBase64File input
+                                          pure unit
+                                    else
+                                          SR.throwInternalError statusText
+                              Left left -> SR.throwInternalError $ A.printError left
 
-            uploadFile :: Ref StorageDetails -> String -> Buffer -> _
-            uploadFile storageDetails fileName buffer = do
-                  { uploadAuthorizationToken, uploadUrl } <- R.liftEffect $ ER.read storageDetails
-                  response <- R.liftAff <<< A.request $ A.defaultRequest {
-                        url = SU.fromJust uploadUrl,
-                        method = Left POST,
-                        responseFormat = RF.json,
-                        headers = [
-                              RequestHeader "Authorization" $ SU.fromJust uploadAuthorizationToken,
-                              RequestHeader "X-Bz-File-Name" $ "upload/" <> fileName,
-                              RequestHeader "content-type" "b2/x-auto",
-                              RequestHeader "X-Bz-Content-Sha1" $ sha1 buffer
-                        ],
-                        content = Just $ ARB.arrayView (UC.unsafeCoerce buffer)
+      uploadFile :: Ref StorageDetails -> String -> Buffer -> _
+      uploadFile storageDetails fileName buffer = do
+            { uploadAuthorizationToken, uploadUrl } <- R.liftEffect $ ER.read storageDetails
+            response <- R.liftAff <<< A.request $ A.defaultRequest
+                  { url = SU.fromJust uploadUrl
+                  , method = Left POST
+                  , responseFormat = RF.json
+                  , headers =
+                          [ RequestHeader "Authorization" $ SU.fromJust uploadAuthorizationToken
+                          , RequestHeader "X-Bz-File-Name" $ "upload/" <> fileName
+                          , RequestHeader "content-type" "b2/x-auto"
+                          , RequestHeader "X-Bz-Content-Sha1" $ sha1 buffer
+                          ]
+                  , content = Just $ ARB.arrayView (UC.unsafeCoerce buffer)
                   }
-                  case response of
-                        Right { status, body, statusText } -> do
-                              if status == StatusCode 200 then do
-                                    pure unit
-                               else if status == StatusCode 401 then do
-                                    R.liftEffect $ ER.modify_ ( _ { uploadAuthorizationToken = Nothing, uploadUrl = Nothing }) storageDetails
+            case response of
+                  Right { status, body, statusText } -> do
+                        if status == StatusCode 200 then do
+                              pure unit
+                        else if status == StatusCode 401 then do
+                              R.liftEffect $ ER.modify_ (_ { uploadAuthorizationToken = Nothing, uploadUrl = Nothing }) storageDetails
 
-                                    void $ saveBase64File input
-                                    pure unit
-                               else
-                                    SR.throwInternalError statusText
-                        Left left -> SR.throwInternalError $ A.printError left
+                              void $ saveBase64File input
+                              pure unit
+                        else
+                              SR.throwInternalError statusText
+                  Left left -> SR.throwInternalError $ A.printError left

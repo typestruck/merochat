@@ -34,4 +34,5 @@ avatarIndex index = mod index differentAvatarImages + 1
 
 avatarColorClass :: Maybe Int -> String
 avatarColorClass index = " avatar-color-" <> show (mod (SU.fromJust index) colorClasses + 1)
-      where colorClasses = 4
+      where
+      colorClasses = 4

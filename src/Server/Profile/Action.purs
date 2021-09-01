@@ -54,18 +54,21 @@ saveProfile loggedUserID profileUser@{ name, age, headline, description, avatar,
       updatedAvatar <- case avatar of
             Nothing -> pure Nothing
             Just path ->
-                  let fileName = DS.replace (Pattern $ imageBasePath <> "upload/") (Replacement "") path in
-                  --likely a base64 image
-                  if fileName == path then
-                        Just <$> SF.saveBase64File path
-                   else
-                        pure $ Just fileName
-      SPD.saveProfile {
-            user: profileUser { id = loggedUserID },
-            avatar: updatedAvatar,
-            languages,
-            tags
-      }
+                  let
+                        fileName = DS.replace (Pattern $ imageBasePath <> "upload/") (Replacement "") path
+                  in
+                        --likely a base64 image
+                        if fileName == path then
+                              Just <$> SF.saveBase64File path
+                        else
+                              pure $ Just fileName
+      SPD.saveProfile
+            { user: profileUser { id = loggedUserID }
+            , avatar: updatedAvatar
+            , languages
+            , tags
+            }
       pure ok
-      where isNull = DS.null <<< DS.trim
-            anyFieldIsTooBig = DS.length name > nameMaxCharacters || DS.length headline > headlineMaxCharacters || DS.length description > descriptionMaxCharacters || DA.any ((_ > tagMaxCharacters) <<< DS.length) tags
+      where
+      isNull = DS.null <<< DS.trim
+      anyFieldIsTooBig = DS.length name > nameMaxCharacters || DS.length headline > headlineMaxCharacters || DS.length description > descriptionMaxCharacters || DA.any ((_ > tagMaxCharacters) <<< DS.length) tags

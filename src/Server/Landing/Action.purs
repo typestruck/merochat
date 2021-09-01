@@ -20,11 +20,11 @@ register { captchaResponse, email: rawEmail, password } = do
       name <- SB.generateName
       headline <- SB.generateHeadline
       description <- SB.generateDescription
-      id <- SLD.createUser {
-            password: hash,
-            email,
-            name,
-            headline,
-            description
-      }
+      id <- SLD.createUser
+            { password: hash
+            , email
+            , name
+            , headline
+            , description
+            }
       ST.createToken id

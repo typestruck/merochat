@@ -18,15 +18,16 @@ view model@{ experiments, section, current } = case current of
             --likely to be the same for all experiments
             HE.div (HA.class' "chat-experiments") $ SEI.joined profile
       _ ->
-            HE.div (HA.class' "chat-experiments") [
-                  HE.link [HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "experiments." <> experimentsCSSHash],
-                  HE.span (HA.class' "duller") "Choose a chat experiment from the list bellow. The experiment will last until you leave it or refresh the page",
-                  HE.div (HA.class' "all-experiments")  $ map toDiv experiments
-            ]
-      where toDiv {name, description, code} = HE.div (HA.class' "experiment") [
-                  HE.a (HA.class' "experiment-name") name,
-                  HE.span_ description,
-                  HE.fragment $ extra model code
+            HE.div (HA.class' "chat-experiments")
+                  [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "experiments." <> experimentsCSSHash ]
+                  , HE.span (HA.class' "duller") "Choose a chat experiment from the list bellow. The experiment will last until you leave it or refresh the page"
+                  , HE.div (HA.class' "all-experiments") $ map toDiv experiments
+                  ]
+      where
+      toDiv { name, description, code } = HE.div (HA.class' "experiment")
+            [ HE.a (HA.class' "experiment-name") name
+            , HE.span_ description
+            , HE.fragment $ extra model code
             ]
 
 extra :: ChatExperimentModel -> ExperimentData -> Html ChatExperimentMessage

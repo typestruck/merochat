@@ -43,48 +43,52 @@ formRequest formSelector aff = do
             Left err -> do
                   setLoading previousLabel $ errorMessage err
                   pure Fail
-      where formSelectorID = if DS.take 1 formSelector == "."  then formSelector else  "#" <> formSelector
-            buttonSelector = formSelectorID <> " input[type=button], " <> formSelectorID <> " button"
-            errorMessageSelector = formSelectorID <> " .request-error-message"
+      where
+      formSelectorID = if DS.take 1 formSelector == "." then formSelector else "#" <> formSelector
+      buttonSelector = formSelectorID <> " input[type=button], " <> formSelectorID <> " button"
+      errorMessageSelector = formSelectorID <> " .request-error-message"
 
-            loadingMessage baseText =
-                  let split = DS.split (Pattern " ") baseText
-                  in DS.joinWith " " <<< DM.fromMaybe [] $ DA.modifyAt 0 continuous split
+      loadingMessage baseText =
+            let
+                  split = DS.split (Pattern " ") baseText
+            in
+                  DS.joinWith " " <<< DM.fromMaybe [] $ DA.modifyAt 0 continuous split
 
-            continuous word =
-                  let   suffix = "ing"
-                        {before, after} = DS.splitAt (DS.length word - 1) word
-                  in
-                        if after == "e" then
-                              before <> suffix
-                         else if DS.length before == 2 && isVowel (DS.drop 1 before) then
-                              before <> after <> after <> suffix
-                         else
-                              word <> suffix
+      continuous word =
+            let
+                  suffix = "ing"
+                  { before, after } = DS.splitAt (DS.length word - 1) word
+            in
+                  if after == "e" then
+                        before <> suffix
+                  else if DS.length before == 2 && isVowel (DS.drop 1 before) then
+                        before <> after <> after <> suffix
+                  else
+                        word <> suffix
 
-            isVowel letter = DA.elem letter ["a", "e", "i", "o", "u"]
+      isVowel letter = DA.elem letter [ "a", "e", "i", "o", "u" ]
 
-            setLoading buttonText errorText = liftEffect do
-                  button <- liftEffect $ CCD.unsafeQuerySelector buttonSelector
-                  errorElement <- liftEffect $ CCD.unsafeQuerySelector errorMessageSelector
-                  CCD.toggleDisabled button
-                  CCD.setValue button buttonText
-                  CCD.setInnerHTML errorElement errorText
+      setLoading buttonText errorText = liftEffect do
+            button <- liftEffect $ CCD.unsafeQuerySelector buttonSelector
+            errorElement <- liftEffect $ CCD.unsafeQuerySelector errorMessageSelector
+            CCD.toggleDisabled button
+            CCD.setValue button buttonText
+            CCD.setInnerHTML errorElement errorText
 
-            notifySuccess = liftEffect do
-                  formDiv <- CCD.unsafeQuerySelector formSelectorID
-                  existingClasses <- WDE.className formDiv
-                  WDE.setClassName (existingClasses <> " input success") formDiv
+      notifySuccess = liftEffect do
+            formDiv <- CCD.unsafeQuerySelector formSelectorID
+            existingClasses <- WDE.className formDiv
+            WDE.setClassName (existingClasses <> " input success") formDiv
 
 -- | Performs a request that has can be retried through the UI in case of errors
 retryableResponse :: forall response. RetryableRequest -> (response -> IMMessage) -> Aff (ClientResponse response) -> Aff (Maybe IMMessage)
 retryableResponse requestMessage message aff = do
       result <- aff
       case result of
-            Right r -> pure <<< Just <<< message <<< _.body $  DN.unwrap r
+            Right r -> pure <<< Just <<< message <<< _.body $ DN.unwrap r
             Left err -> do
                   logError err
-                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage : errorMessage err }
+                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage: errorMessage err }
 
 -- | Perform a request, throwing on errors
 silentResponse :: forall a. Aff (ClientResponse a) -> Aff a
@@ -94,7 +98,7 @@ silentResponse aff = do
             Right r -> pure <<< _.body $ DN.unwrap r
             Left err -> CMEC.throwError <<< EE.error $ "Response error: " <> show err
 
-defaultResponse :: forall r . Aff (ClientResponse r) -> Aff (Either ClientError r)
+defaultResponse :: forall r. Aff (ClientResponse r) -> Aff (Either ClientError r)
 defaultResponse aff = map (_.body <<< DN.unwrap) <$> aff
 
 logError :: forall e. Show e => e -> Aff Unit

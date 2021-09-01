@@ -2,15 +2,15 @@ module Server.Database.Recoveries where
 
 import Type.Proxy (Proxy(..))
 import Droplet.Language
-import Data.DateTime(DateTime)
+import Data.DateTime (DateTime)
 
-type Recoveries = (
-      id :: Auto Int,
-      uuid :: String,
-      created :: Default DateTime,
-      active :: Default Boolean,
-      recoverer :: Int
-)
+type Recoveries =
+      ( id :: Auto Int
+      , uuid :: String
+      , created :: Default DateTime
+      , active :: Default Boolean
+      , recoverer :: Int
+      )
 
 recoveries :: Table "recoveries" Recoveries
 recoveries = Table

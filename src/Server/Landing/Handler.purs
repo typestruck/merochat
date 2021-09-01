@@ -22,4 +22,4 @@ register :: forall r. { body :: RegisterLogin | r } -> ServerEffect (Response Ok
 register { body } = do
       token <- SLA.register body
       cookieHeader <- SC.makeCookieHeader token
-      pure <<< PSR.setHeaders (PH.fromFoldable [cookieHeader]) $ PSR.ok ok
+      pure <<< PSR.setHeaders (PH.fromFoldable [ cookieHeader ]) $ PSR.ok ok

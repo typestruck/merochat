@@ -38,11 +38,11 @@ validateEmailPassword = do
 
       case maybeEmail, maybePassword of
             (Just email), (Just password) ->
-                  pure $ Just {
-                        email: email,
-                        password: password,
-                        captchaResponse: Nothing
-                  }
+                  pure $ Just
+                        { email: email
+                        , password: password
+                        , captchaResponse: Nothing
+                        }
             _, _ -> pure Nothing
 
 validateEmail :: Effect (Maybe String)
@@ -58,7 +58,7 @@ validateEmail = do
                   if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then do
                         WDE.setClassName "input error" emailDiv
                         pure Nothing
-                   else
+                  else
                         pure $ Just email
 
 validatePassword :: Effect (Maybe String)
@@ -74,7 +74,7 @@ validatePassword = do
                   if DS.length password < passwordMinCharacters then do
                         WDE.setClassName "input error" passwordDiv
                         pure Nothing
-                   else
+                  else
                         pure $ Just password
 
 validateConfirmPassword :: Effect Unit
@@ -89,7 +89,7 @@ validateConfirmPassword = do
 
                   if DS.length password < passwordMinCharacters then do
                         WDE.setClassName "input error" confirmPasswordElement
-                   else
+                  else
                         pure unit
 
 registerEvents :: Effect Unit -> Effect Unit
@@ -104,13 +104,14 @@ registerEvents callback = do
       listenIfExists confirmPasswordElement validateConfirmPassword
       CCD.addEventListener formDiv keyup onEnter
       CCD.addEventListener button click (const callback)
-      where onEnter event = do
-                  let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
-                  when (pressed == "Enter") callback
-            listenIfExists :: forall a. Maybe Element -> Effect a -> Effect Unit
-            listenIfExists maybeElement handler = case maybeElement of
-                  Nothing -> pure unit
-                  Just element -> CCD.addEventListener element change (const handler)
+      where
+      onEnter event = do
+            let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
+            when (pressed == "Enter") callback
+      listenIfExists :: forall a. Maybe Element -> Effect a -> Effect Unit
+      listenIfExists maybeElement handler = case maybeElement of
+            Nothing -> pure unit
+            Just element -> CCD.addEventListener element change (const handler)
 
 formRequest :: forall a. Aff (ClientResponse a) -> Aff RequestStatus
 formRequest = CNN.formRequest formSelector

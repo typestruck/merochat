@@ -10,9 +10,9 @@ import Shared.InternalHelp.View as SIHV
 
 main :: Effect Unit
 main =
-      F.resumeMount_ (QuerySelector ".internal-help") {
-            view: SIHV.view,
-            subscribe: [],
-            init: [],
-            update: CIHU.update
-      }
+      F.resumeMount_ (QuerySelector ".internal-help")
+            { view: SIHV.view
+            , subscribe: []
+            , init: []
+            , update: CIHU.update
+            }

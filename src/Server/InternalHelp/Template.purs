@@ -10,9 +10,9 @@ import Shared.Types
 
 template :: Effect String
 template =
-      F.preMount (QuerySelector ".internal-help") {
-            view: SIHV.view,
-            init: {
-                  toggleHelp: FAQ
+      F.preMount (QuerySelector ".internal-help")
+            { view: SIHV.view
+            , init:
+                    { toggleHelp: FAQ
+                    }
             }
-      }

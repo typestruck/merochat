@@ -21,17 +21,17 @@ import Server.Response as SR
 
 validateCaptcha :: Maybe String -> ServerEffect Unit
 validateCaptcha captchaResponse = do
-      { configuration : { captchaSecret } } <- RR.ask
+      { configuration: { captchaSecret } } <- RR.ask
       unless development do
-            response <- R.liftAff <<< A.request $ A.defaultRequest {
-                  url = "https://www.google.com/recaptcha/api/siteverify",
-                  method = Left POST,
-                  responseFormat = RF.json,
-                  content = Just <<< RB.formURLEncoded $ DF.fromArray [
-                        Tuple "secret" $ Just captchaSecret,
-                        Tuple "response" captchaResponse
-                  ]
-            }
+            response <- R.liftAff <<< A.request $ A.defaultRequest
+                  { url = "https://www.google.com/recaptcha/api/siteverify"
+                  , method = Left POST
+                  , responseFormat = RF.json
+                  , content = Just <<< RB.formURLEncoded $ DF.fromArray
+                          [ Tuple "secret" $ Just captchaSecret
+                          , Tuple "response" captchaResponse
+                          ]
+                  }
             case response of
                   Right { status, body, statusText } ->
                         if status == StatusCode 200 then
@@ -40,6 +40,7 @@ validateCaptcha captchaResponse = do
                               SR.throwBadRequest statusText
                   Left left -> SR.throwInternalError $ A.printError left
 
-      where finishWithCaptcha (CaptchaResponse { success })
-                  | success = pure unit
-                  | otherwise = SR.throwBadRequest "Incorrect captcha"
+      where
+      finishWithCaptcha (CaptchaResponse { success })
+            | success = pure unit
+            | otherwise = SR.throwBadRequest "Incorrect captcha"

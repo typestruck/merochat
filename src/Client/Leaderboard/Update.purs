@@ -9,6 +9,6 @@ import Flame (ListUpdate)
 update :: ListUpdate LeaderboardModel LeaderboardMessage
 update model =
       case _ of
-            ToggleBoardDisplay toggle -> F.noMessages $ model {
-                toggleBoard = toggle
-            }
+            ToggleBoardDisplay toggle -> F.noMessages $ model
+                  { toggleBoard = toggle
+                  }

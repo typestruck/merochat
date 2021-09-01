@@ -1,6 +1,6 @@
 module Server.Database.Fields where
 
-import Type.Proxy(Proxy(..))
+import Type.Proxy (Proxy(..))
 
 _id :: Proxy "id"
 _id = Proxy
@@ -42,4 +42,4 @@ tu :: Proxy "tu"
 tu = Proxy
 
 _age :: Proxy "age"
-_age  = Proxy
+_age = Proxy

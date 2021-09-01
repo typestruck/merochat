@@ -1,4 +1,4 @@
-module  Server.Profile.Handler where
+module Server.Profile.Handler where
 
 import Prelude
 import Server.Types
@@ -15,11 +15,11 @@ profile { guards: { loggedUserID } } = do
       profileUser <- SPD.presentProfile loggedUserID
       countries <- SPD.presentCountries
       languages <- SPD.presentLanguages
-      R.liftEffect $ SPT.template {
-            user: profileUser,
-            countries,
-            languages
-      }
+      R.liftEffect $ SPT.template
+            { user: profileUser
+            , countries
+            , languages
+            }
 
 profileUpdate :: { guards :: { loggedUserID :: Int }, body :: ProfileUser } -> ServerEffect Ok
 profileUpdate { guards: { loggedUserID }, body } = SPA.saveProfile loggedUserID body

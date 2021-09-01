@@ -1,13 +1,13 @@
 module Shared.Experiments.Types where
 
-import Data.Maybe(Maybe(..))
+import Data.Maybe (Maybe(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic as DGRS
 import Prelude
 
-import Data.Either(Either(..))
+import Data.Either (Either(..))
 import Droplet.Language
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
@@ -18,40 +18,40 @@ import Shared.User
 
 type ImpersonationProfile = Record IU
 
-type BaseChatExperiment fields = {
-      id :: Int,
-      name :: String,
-      description :: String |
-      fields
-}
+type BaseChatExperiment fields =
+      { id :: Int
+      , name :: String
+      , description :: String
+      | fields
+      }
 
 type ChatExperiment = BaseChatExperiment (code :: ExperimentData)
 
-data ChatExperimentMessage =
-      QuitExperiment |
-      JoinExperiment ExperimentData |
-      ToggleSection ChatExperimentSection |
-      ConfirmImpersonation (Maybe ImpersonationProfile)
+data ChatExperimentMessage
+      = QuitExperiment
+      | JoinExperiment ExperimentData
+      | ToggleSection ChatExperimentSection
+      | ConfirmImpersonation (Maybe ImpersonationProfile)
 
-data ChatExperimentSection =
-      HideSections |
-      Characters |
-      HistoricalFigures |
-      Celebrities
+data ChatExperimentSection
+      = HideSections
+      | Characters
+      | HistoricalFigures
+      | Celebrities
 
-type ChatExperimentModel = {
-      experiments :: Array ChatExperiment,
-      section :: ChatExperimentSection,
-      current :: Maybe ExperimentData,
-      impersonation :: Maybe ImpersonationProfile
-}
+type ChatExperimentModel =
+      { experiments :: Array ChatExperiment
+      , section :: ChatExperimentSection
+      , current :: Maybe ExperimentData
+      , impersonation :: Maybe ImpersonationProfile
+      }
 --refactor: this type is being used in a very bonkers way, pls fix his shit
 data ExperimentData = Impersonation (Maybe ImpersonationProfile)
 
-data ExperimentPayload = ImpersonationPayload {
-      id :: Int,
-      sender :: Boolean
-}
+data ExperimentPayload = ImpersonationPayload
+      { id :: Int
+      , sender :: Boolean
+      }
 
 derive instance genericChatExperimentSection :: Generic ChatExperimentSection _
 derive instance genericExperimentCode :: Generic ExperimentData _
@@ -67,14 +67,14 @@ instance encodeJsonExperimentCode :: EncodeJson ExperimentData where
 instance encodeJsonChatExperimentSection :: EncodeJson ChatExperimentSection where
       encodeJson = DAEGR.genericEncodeJson
 
-instance decodeJsonExperimentCode :: DecodeJson ExperimentData  where
+instance decodeJsonExperimentCode :: DecodeJson ExperimentData where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonExperimentPayload :: DecodeJson ExperimentPayload  where
+instance decodeJsonExperimentPayload :: DecodeJson ExperimentPayload where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonChatExperimentSection :: DecodeJson ChatExperimentSection  where
+instance decodeJsonChatExperimentSection :: DecodeJson ChatExperimentSection where
       decodeJson = DADGR.genericDecodeJson
 
-derive instance ordExperimentData  :: Ord ExperimentData
+derive instance ordExperimentData :: Ord ExperimentData
 
 instance boundedExperimentCode :: Bounded ExperimentData where
       bottom = Impersonation Nothing
@@ -84,11 +84,11 @@ instance boundedEnumExperimentCode :: BoundedEnum ExperimentData where
       cardinality = Cardinality 1
 
       fromEnum = case _ of
-          Impersonation _ -> 0
+            Impersonation _ -> 0
 
       toEnum = case _ of
-          0 -> Just $ Impersonation Nothing
-          _ -> Nothing
+            0 -> Just $ Impersonation Nothing
+            _ -> Nothing
 
 instance enumExperimentCode :: Enum ExperimentData where
       succ = case _ of

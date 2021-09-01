@@ -15,17 +15,21 @@ import Flame.Subscription.Unsafe.CustomEvent as FSUC
 update :: ListUpdate ChatExperimentModel ChatExperimentMessage
 update model =
       case _ of
-            QuitExperiment -> model :> [ do
-                  liftEffect CCL.reload
-                  pure Nothing
-            ]
-            JoinExperiment code -> model {
-                  section = HideSections,
-                  current = Just code
-            } :> dispatchEvent (Just code)
+            QuitExperiment -> model :>
+                  [ do
+                          liftEffect CCL.reload
+                          pure Nothing
+                  ]
+            JoinExperiment code ->
+                  model
+                        { section = HideSections
+                        , current = Just code
+                        } :> dispatchEvent (Just code)
             ToggleSection section -> F.noMessages $ model { section = section }
             ConfirmImpersonation profile -> F.noMessages model { impersonation = profile }
-      where dispatchEvent payload = [ liftEffect do
-                  FSUC.broadcast setChatExperiment payload
-                  pure Nothing
+      where
+      dispatchEvent payload =
+            [ liftEffect do
+                    FSUC.broadcast setChatExperiment payload
+                    pure Nothing
             ]

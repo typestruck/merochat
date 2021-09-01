@@ -35,66 +35,73 @@ class ToRouteList (routesSpecList :: RowList Type) (basePath :: Symbol) (basePar
 instance ToRouteList Nil basePath baseParams (Record ()) where
       makeRouteList _ _ _ = {}
 
-instance (
-      IsSymbol parentName,
-      IsSymbol basePath,
-      IsSymbol path,
-      EncodeUrl path childParams,
-      Union parentSpec DefaultParentRoute mergedSpec,
-      Nub mergedSpec parentSpecWithDefaults,
-      TypeEquals (Record parentSpecWithDefaults) { params :: Record parentParams, guards :: parentGuards | childRoutes },
-      Union baseParams parentParams childParams,
-      Cons parentName (Record childClient) remClient client,
-      RowToList childRoutes childRoutesList,
-      Append basePath path childBasePath,
-      ToRouteList childRoutesList childBasePath childParams (Record childClient),
-      Lacks parentName remClient,
-      ToRouteList remRoutes basePath baseParams (Record remClient)
-) => ToRouteList (Cons parentName (Routes path (Record parentSpec)) remRoutes) basePath baseParams (Record client) where
+instance
+      ( IsSymbol parentName
+      , IsSymbol basePath
+      , IsSymbol path
+      , EncodeUrl path childParams
+      , Union parentSpec DefaultParentRoute mergedSpec
+      , Nub mergedSpec parentSpecWithDefaults
+      , TypeEquals (Record parentSpecWithDefaults) { params :: Record parentParams, guards :: parentGuards | childRoutes }
+      , Union baseParams parentParams childParams
+      , Cons parentName (Record childClient) remClient client
+      , RowToList childRoutes childRoutesList
+      , Append basePath path childBasePath
+      , ToRouteList childRoutesList childBasePath childParams (Record childClient)
+      , Lacks parentName remClient
+      , ToRouteList remRoutes basePath baseParams (Record remClient)
+      ) =>
+      ToRouteList (Cons parentName (Routes path (Record parentSpec)) remRoutes) basePath baseParams (Record client) where
       makeRouteList _ basePath baseParams =
             R.insert (Proxy :: _ parentName) childRoutes $ makeRouteList (Proxy :: _ remRoutes) basePath baseParams
-            where childRoutes = makeRouteList (Proxy :: _ childRoutesList) (Proxy :: _ childBasePath) (Proxy :: _ (Record childParams))
+            where
+            childRoutes = makeRouteList (Proxy :: _ childRoutesList) (Proxy :: _ childBasePath) (Proxy :: _ (Record childParams))
 
-instance (
-      IsSymbol routeName,
-      IsSymbol path,
-      Cons routeName (ToString payload) remClient client,
-      Lacks routeName remClient,
-      ToUrlString (Route "GET" path routeSpec) basePath baseParams payload,
-      ToRouteList remRoutes basePath baseParams (Record remClient)
-) => ToRouteList (Cons routeName (Route "GET" path routeSpec) remRoutes) basePath baseParams (Record client) where
+instance
+      ( IsSymbol routeName
+      , IsSymbol path
+      , Cons routeName (ToString payload) remClient client
+      , Lacks routeName remClient
+      , ToUrlString (Route "GET" path routeSpec) basePath baseParams payload
+      , ToRouteList remRoutes basePath baseParams (Record remClient)
+      ) =>
+      ToRouteList (Cons routeName (Route "GET" path routeSpec) remRoutes) basePath baseParams (Record client) where
       makeRouteList _ _ _ = R.insert (Proxy :: _ routeName) asString rest
-            where rest = makeRouteList (Proxy :: _ remRoutes) (Proxy :: _ basePath) (Proxy :: _ (Record baseParams))
-                  asString :: ToString payload
-                  asString payload =
-                        makeUrlString (Route :: Route "GET" path routeSpec) (Proxy :: _ basePath) (Proxy :: _ (Record baseParams)) payload
+            where
+            rest = makeRouteList (Proxy :: _ remRoutes) (Proxy :: _ basePath) (Proxy :: _ (Record baseParams))
+            asString :: ToString payload
+            asString payload =
+                  makeUrlString (Route :: Route "GET" path routeSpec) (Proxy :: _ basePath) (Proxy :: _ (Record baseParams)) payload
 
-else instance (
-      Lacks routeName client,
-      ToRouteList remRoutes basePath baseParams (Record client)
-) => ToRouteList (Cons routeName (Route method path routeSpec) remRoutes) basePath baseParams (Record client) where
+else instance
+      ( Lacks routeName client
+      , ToRouteList remRoutes basePath baseParams (Record client)
+      ) =>
+      ToRouteList (Cons routeName (Route method path routeSpec) remRoutes) basePath baseParams (Record client) where
       makeRouteList _ _ _ = makeRouteList (Proxy :: _ remRoutes) (Proxy :: _ basePath) (Proxy :: _ (Record baseParams))
-
 
 class ToUrlString route (basePath :: Symbol) (baseParams :: Row Type) payload | route baseParams basePath -> payload where
       makeUrlString :: route -> Proxy basePath -> Proxy (Record baseParams) -> ToString payload
 
-instance (
-      Lacks "body" route,
-      Union route DefaultRouteSpec mergedRoute,
-      Nub mergedRoute routeWithDefaults,
-      TypeEquals (Record routeWithDefaults) {
-            params :: Record params,
-            query :: query
-            | r
-      },
-      Union baseParams params fullUrlParams,
-      Symbol.Append basePath path fullPath,
-      RowToList fullUrlParams fullParamsList,
-      EncodeUrlWithParams fullPath fullParamsList payload,
-      EncodeOptionalQuery fullPath query payload
-) => ToUrlString (Route "GET" path (Record route)) basePath baseParams (Record payload) where
+instance
+      ( Lacks "body" route
+      , Union route DefaultRouteSpec mergedRoute
+      , Nub mergedRoute routeWithDefaults
+      , TypeEquals (Record routeWithDefaults)
+              { params :: Record params
+              , query :: query
+              | r
+              }
+      , Union baseParams params fullUrlParams
+      , Symbol.Append basePath path fullPath
+      , RowToList fullUrlParams fullParamsList
+      , EncodeUrlWithParams fullPath fullParamsList payload
+      , EncodeOptionalQuery fullPath query payload
+      ) =>
+      ToUrlString (Route "GET" path (Record route)) basePath baseParams (Record payload) where
       makeUrlString _ _ _ payload =
-            let   urlPath = encodeUrlWithParams defaultOpts (Proxy :: _ fullPath) (Proxy :: _ fullParamsList) payload
+            let
+                  urlPath = encodeUrlWithParams defaultOpts (Proxy :: _ fullPath) (Proxy :: _ fullParamsList) payload
                   urlQuery = encodeOptionalQuery (Proxy :: _ fullPath) (Proxy :: _ query) payload
-            in (if DS.null urlPath then "/" else urlPath) <> urlQuery
+            in
+                  (if DS.null urlPath then "/" else urlPath) <> urlQuery

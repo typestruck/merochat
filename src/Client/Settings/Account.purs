@@ -11,7 +11,7 @@ import Data.Symbol (class IsSymbol)
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Type.Proxy(Proxy(..))
+import Type.Proxy (Proxy(..))
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Payload.Client (ClientResponse)
@@ -28,7 +28,7 @@ update { model, message } =
             TerminateAccount -> terminateAccount
 
 toggleTerminateAccount :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-toggleTerminateAccount _ = pure (\model -> model { confirmTermination = not model.confirmTermination})
+toggleTerminateAccount _ = pure (\model -> model { confirmTermination = not model.confirmTermination })
 
 changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
 changeEmail model@({ email, emailConfirmation }) = requestAndLogout (Proxy :: Proxy "email") $ request.settings.account.email { body: { email } }
@@ -45,4 +45,4 @@ requestAndLogout field aff = do
       FAE.noChanges
 
 terminateAccount :: Aff (SettingsModel -> SettingsModel)
-terminateAccount = requestAndLogout (Proxy :: Proxy "confirmTermination") $ request.settings.account.terminate { body:{} }
+terminateAccount = requestAndLogout (Proxy :: Proxy "confirmTermination") $ request.settings.account.terminate { body: {} }

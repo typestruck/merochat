@@ -8,15 +8,15 @@ import Shared.Types
 
 template :: Effect String
 template =
-      F.preMount (QuerySelector ".settings-edition") {
-            view: SSV.view,
-            init: {
-                  email: "",
-                  emailConfirmation: "",
-                  password: "",
-                  passwordConfirmation: "",
-                  confirmTermination: false,
-                  erroredFields: []
+      F.preMount (QuerySelector ".settings-edition")
+            { view: SSV.view
+            , init:
+                    { email: ""
+                    , emailConfirmation: ""
+                    , password: ""
+                    , passwordConfirmation: ""
+                    , confirmTermination: false
+                    , erroredFields: []
+                    }
             }
-      }
 
