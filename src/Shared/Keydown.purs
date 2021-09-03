@@ -12,7 +12,7 @@ import Shared.Unsafe as SU
 import Web.Event.Event (Event)
 import Web.UIEvent.KeyboardEvent as WUK
 
-keyDownOn :: Key -> (Event -> IMMessage) -> NodeData IMMessage
+keyDownOn ∷ Key → (Event → IMMessage) → NodeData IMMessage
 keyDownOn keyName message = HA.createRawEvent "keydown" handler
       where
       handler event = do

@@ -9,7 +9,7 @@ import Flame.Html.Element as HE
 import Shared.Path as SPT
 import Shared.Types (ContentType(..))
 
-view :: Html Unit
+view ∷ Html Unit
 view = HE.div (HA.class' "backer")
       [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SPT.pathery CSS $ "backer." <> backerCSSHash ]
       , HE.strong_ "MelanChat depends on people like you to keep running"

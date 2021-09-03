@@ -7,7 +7,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Routes (routes)
 
-terms :: forall m. Html m
+terms ∷ ∀ m. Html m
 terms =
       HE.div (HA.class' "terms")
             [ HE.h2 (HA.class' "no-padding") "Introduction and agreement"

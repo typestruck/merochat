@@ -12,10 +12,10 @@ import Data.Either (Either(..))
 import Data.Either as DT
 import Data.Generic.Rep (class Generic)
 
-fromJSON :: forall v value. Generic value v => DecodeRep v => String -> Either String value
+fromJSON ∷ ∀ v value. Generic value v ⇒ DecodeRep v ⇒ String → Either String value
 fromJSON content = do
-      json <- DAP.jsonParser content
+      json ← DAP.jsonParser content
       DT.either (Left <<< show) Right $ DADGR.genericDecodeJson json
 
-toJSON :: forall v value. Generic value v => EncodeRep v => value -> String
+toJSON ∷ ∀ v value. Generic value v ⇒ EncodeRep v ⇒ value → String
 toJSON = DAC.stringify <<< DAEGR.genericEncodeJson

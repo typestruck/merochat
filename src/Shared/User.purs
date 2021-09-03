@@ -14,22 +14,22 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 
 type BasicUser fields =
-      ( id :: Int
-      , name :: String
-      , headline :: String
-      , description :: String
-      , avatar :: Maybe String
-      , tags :: Array String
-      , karma :: Int
-      , karmaPosition :: Int
+      ( id ∷ Int
+      , name ∷ String
+      , headline ∷ String
+      , description ∷ String
+      , avatar ∷ Maybe String
+      , tags ∷ Array String
+      , karma ∷ Int
+      , karmaPosition ∷ Int
       | fields
       )
 
 type IU =
       ( BasicUser
-              ( gender :: Maybe String
-              , country :: Maybe String
-              , languages :: Array String
-              , age :: Maybe Int
+              ( gender ∷ Maybe String
+              , country ∷ Maybe String
+              , languages ∷ Array String
+              , age ∷ Maybe Int
               )
       )

@@ -15,23 +15,27 @@ import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
-tests :: TestSuite
+tests ∷ TestSuite
 tests = do
       TU.suite "im history update" do
             TU.test "displayHistory sets freeToFetchChatHistory" do
-                  let m@{ freeToFetchChatHistory } = DT.fst <<< CIH.displayHistory [historyMessage] $ model {
-                        chatting = Just 0,
-                        contacts = [contact],
-                        freeToFetchChatHistory = false
-                  }
+                  let
+                        m@{ freeToFetchChatHistory } = DT.fst <<< CIH.displayHistory [ historyMessage ] $ model
+                              { chatting = Just 0
+                              , contacts = [ contact ]
+                              , freeToFetchChatHistory = false
+                              }
                   TUA.equal true freeToFetchChatHistory
 
             TU.test "displayHistory unsets shouldFetchChatHistory" do
-                  let m@{ contacts } = DT.fst <<< CIH.displayHistory [historyMessage] $ model {
-                        chatting = Just 0,
-                        contacts = [contact {
-                              shouldFetchChatHistory = true
-                        }],
-                        freeToFetchChatHistory = false
-                  }
-                  TUA.equal [contact { history = [historyMessage], shouldFetchChatHistory = false}] contacts
+                  let
+                        m@{ contacts } = DT.fst <<< CIH.displayHistory [ historyMessage ] $ model
+                              { chatting = Just 0
+                              , contacts =
+                                      [ contact
+                                              { shouldFetchChatHistory = true
+                                              }
+                                      ]
+                              , freeToFetchChatHistory = false
+                              }
+                  TUA.equal [ contact { history = [ historyMessage ], shouldFetchChatHistory = false } ] contacts

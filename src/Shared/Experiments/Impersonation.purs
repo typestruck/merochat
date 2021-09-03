@@ -17,13 +17,13 @@ import Shared.Avatar as SA
 import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
 
-joined :: ImpersonationProfile -> Html ChatExperimentMessage
+joined ∷ ImpersonationProfile → Html ChatExperimentMessage
 joined profile = HE.div (HA.class' "exit-impersonation")
       [ HE.strong_ "You have already joined the Impersonation Experiment"
       , HE.button [ HA.class' "green-button danger exit-experiment", HA.onClick QuitExperiment ] "Exit"
       ]
 
-view :: ChatExperimentModel -> Html ChatExperimentMessage
+view ∷ ChatExperimentModel → Html ChatExperimentMessage
 view { section, impersonation } = HE.div (HA.class' "impersonation")
       [ header Characters "Characters"
       , profiles Characters [ batman ]
@@ -58,7 +58,7 @@ view { section, impersonation } = HE.div (HA.class' "impersonation")
                     ]
             ]
 
-batman :: ImpersonationProfile
+batman ∷ ImpersonationProfile
 batman =
       { id: 1
       , name: "Batman"
@@ -74,7 +74,7 @@ batman =
       , age: Just 34
       }
 
-socrates :: ImpersonationProfile
+socrates ∷ ImpersonationProfile
 socrates =
       { id: 2
       , name: "Socrates"
@@ -95,7 +95,7 @@ Crito, we owe a rooster to Asclepius, make this offering to him and do not forge
       , age: Just 71
       }
 
-nicolasCage :: ImpersonationProfile
+nicolasCage ∷ ImpersonationProfile
 nicolasCage =
       { id: 3
       , name: "Nicolas Cage"
@@ -114,8 +114,8 @@ Let me thank the awesome, multi-talented Mike Figgis. My incredible, amazing co-
       , age: Just 57
       }
 
-impersonations :: HashMap Int ImpersonationProfile
+impersonations ∷ HashMap Int ImpersonationProfile
 impersonations = DH.fromFoldable [ Tuple batman.id batman, Tuple socrates.id socrates, Tuple nicolasCage.id nicolasCage ]
 
-welcomeMessage :: String -> _
+welcomeMessage ∷ String → _
 welcomeMessage name = { welcome: "You are impersonating: " <> name, first: "Tip: quit the experiment at any time ", second: "to go back to your chats" }

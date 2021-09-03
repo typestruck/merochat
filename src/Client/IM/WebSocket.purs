@@ -16,9 +16,9 @@ import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSWS
 import Web.Socket.WebSocket hiding (sendString, create) as WSW
 
-createWebSocket :: Effect WebSocket
+createWebSocket ∷ Effect WebSocket
 createWebSocket = do
-      hostName <- CCD.hostName
+      hostName ← CCD.hostName
       WSWS.create (protocol <> hostName <> endpoint) []
       where
       protocol
@@ -28,5 +28,5 @@ createWebSocket = do
             | development = ":" <> show port
             | otherwise = "/ws"
 
-sendPayload :: WebSocket -> WebSocketPayloadServer -> Effect Unit
+sendPayload ∷ WebSocket → WebSocketPayloadServer → Effect Unit
 sendPayload ws = WSWS.sendString ws <<< SJ.toJSON

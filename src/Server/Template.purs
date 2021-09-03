@@ -15,15 +15,15 @@ import Shared.Routes (routes)
 import Shared.Types (ContentType(..))
 
 type Parameters a =
-      { title :: String
-      , favicon :: String
-      , javascript :: Array (Html a)
-      , css :: Array (Html a)
-      , content :: Array (Html a)
-      , footer :: Array (Html a)
+      { title ∷ String
+      , favicon ∷ String
+      , javascript ∷ Array (Html a)
+      , css ∷ Array (Html a)
+      , content ∷ Array (Html a)
+      , footer ∷ Array (Html a)
       }
 
-defaultParameters :: forall a. Parameters a
+defaultParameters ∷ ∀ a. Parameters a
 defaultParameters =
       { title: "MelanChat - Friendly Random Chat"
       , favicon: imageBasePath <> "favicon.ico"
@@ -34,7 +34,7 @@ defaultParameters =
       , footer: []
       }
 
-externalDefaultParameters :: forall a. Parameters a
+externalDefaultParameters ∷ ∀ a. Parameters a
 externalDefaultParameters = defaultParameters
       { css =
               [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80" ]
@@ -52,10 +52,10 @@ externalDefaultParameters = defaultParameters
       , footer = [ externalFooter ]
       }
 
-template :: forall a. Parameters a -> Effect (Html a)
+template ∷ ∀ a. Parameters a → Effect (Html a)
 template = pure <<< templateWith
 
-templateWith :: forall a. Parameters a -> Html a
+templateWith ∷ ∀ a. Parameters a → Html a
 templateWith parameters@{ title, content, css, footer, favicon } =
       HE.html (HA.lang "en")
             [ HE.head_
@@ -76,7 +76,7 @@ templateWith parameters@{ title, content, css, footer, favicon } =
             , HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "common." <> commonJSHash ]
             ] <> parameters.javascript
 
-externalFooter :: forall a. Html a
+externalFooter ∷ ∀ a. Html a
 externalFooter =
       HE.div (HA.class' "footer")
             [ HE.a (HA.href $ routes.landing {}) <<< HE.img <<< HA.src $ SP.pathery PNG "logo-small"

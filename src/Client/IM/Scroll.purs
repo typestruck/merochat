@@ -10,17 +10,17 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 
-scrollLastMessage :: Effect Unit
+scrollLastMessage ∷ Effect Unit
 scrollLastMessage = do
-      node <- CCD.unsafeGetElementByID MessageHistory
+      node ← CCD.unsafeGetElementByID MessageHistory
       CCD.scrollDown node
 
-scrollLastMessage' :: Aff (Maybe IMMessage)
+scrollLastMessage' ∷ Aff (Maybe IMMessage)
 scrollLastMessage' = do
       liftEffect scrollLastMessage
       pure Nothing
 
-scrollIntoView :: HistoryMessage -> Effect Unit
+scrollIntoView ∷ HistoryMessage → Effect Unit
 scrollIntoView message = do
-      element <- CCD.unsafeQuerySelector <<< ("#m" <> _) <<< show $ message.id
+      element ← CCD.unsafeQuerySelector <<< ("#m" <> _) <<< show $ message.id
       CCD.scrollIntoView element

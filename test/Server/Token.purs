@@ -12,13 +12,13 @@ import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
-tests :: TestSuite
+tests ∷ TestSuite
 tests = do
       TU.suite "token" do
             TU.test "encoding decoding" do
                   TS.serverAction do
                         let id = 23
-                        { configuration :configuration } <- RR.ask
-                        token <- ST.createToken id
-                        userID <- SU.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecret token)
+                        { configuration: configuration } ← RR.ask
+                        token ← ST.createToken id
+                        userID ← SU.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecret token)
                         R.liftAff $ TUA.equal id userID

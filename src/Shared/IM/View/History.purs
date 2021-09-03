@@ -18,14 +18,14 @@ import Shared.DateTime as SD
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
-history :: IMModel -> Maybe Contact -> Html IMMessage
+history ∷ IMModel → Maybe Contact → Html IMMessage
 history { user: { id: senderID, avatar: senderAvatar }, experimenting, chatting, failedRequests, freeToFetchChatHistory } contact =
       HE.div [ HA.class' { "message-history": true, hidden: DM.isNothing contact }, HA.id "message-history", HA.onScroll CheckFetchHistory ] chatHistory
       where
       chatHistory =
             case contact of
-                  Nothing -> [ retryOrWarning ]
-                  Just recipient@{ shouldFetchChatHistory, available } ->
+                  Nothing → [ retryOrWarning ]
+                  Just recipient@{ shouldFetchChatHistory, available } →
                         if available then
                               let
                                     entries = retryOrWarning : display recipient
@@ -35,16 +35,16 @@ history { user: { id: senderID, avatar: senderAvatar }, experimenting, chatting,
                               []
 
       retryOrWarning = case experimenting of
-            Just (Impersonation (Just { name })) ->
+            Just (Impersonation (Just { name })) →
                   HE.div (HA.class' "imp impersonation-warning-history")
                         [ HE.div_
                                 [ HE.text "You are impersonating "
                                 , HE.strong_ name
                                 ]
                         ]
-            _ ->
+            _ →
                   SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
-      display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i -> entry avatar (map _.sender (history !! (i - 1)))) history
+      display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i → entry avatar (map _.sender (history !! (i - 1)))) history
 
       entry recipientAvatar previousSender { id, status, date, sender, content } =
             let

@@ -4,6 +4,6 @@
   "operatorsFile": null,
   "ribbon": 1,
   "typeArrowPlacement": "last",
-  "unicode": "never",
+  "unicode": "always",
   "width": null
 }

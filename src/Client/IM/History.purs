@@ -20,18 +20,18 @@ import Shared.IM.Contact as SIC
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 
-checkFetchHistory :: IMModel -> MoreMessages
+checkFetchHistory ∷ IMModel → MoreMessages
 checkFetchHistory model@{ freeToFetchChatHistory }
       | freeToFetchChatHistory = model :> [ Just <<< SpecialRequest <<< FetchHistory <$> getScrollTop ]
 
               where
               getScrollTop = liftEffect do
-                    element <- CCD.unsafeGetElementByID MessageHistory
+                    element ← CCD.unsafeGetElementByID MessageHistory
                     (_ < 1.0) <$> WDE.scrollTop element
 
       | otherwise = F.noMessages model
 
-fetchHistory :: Boolean -> IMModel -> MoreMessages
+fetchHistory ∷ Boolean → IMModel → MoreMessages
 fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
       | shouldFetch =
               let
@@ -45,14 +45,14 @@ fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
                                 } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history } }) ]
       | otherwise = F.noMessages model
 
-displayHistory :: Array HistoryMessage -> IMModel -> NoMessages
+displayHistory ∷ Array HistoryMessage → IMModel → NoMessages
 displayHistory chatHistory model@{ chatting, contacts } =
       let
             contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
             updatedModel = model
                   { freeToFetchChatHistory = true
                   , contacts = SU.fromJust do
-                          index <- chatting
+                          index ← chatting
                           let
                                 contact' = contact
                                       { shouldFetchChatHistory = false

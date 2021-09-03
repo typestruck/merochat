@@ -24,23 +24,23 @@ import Server.Token as ST
 import Shared.Options.Domain (domain)
 import Shared.Routes (routes)
 
-accountNotFound :: String
+accountNotFound ∷ String
 accountNotFound = "Could not find an account with this email"
 
-invalidRecovery :: String
+invalidRecovery ∷ String
 invalidRecovery = "Invalid recovery link"
 
-recover :: RecoverAccount -> ServerEffect Ok
+recover ∷ RecoverAccount → ServerEffect Ok
 recover { email: rawEmail, captchaResponse } = do
       SC.validateCaptcha captchaResponse
-      email <- SA.validateEmail rawEmail
-      user <- SDU.userBy $ Email email
+      email ← SA.validateEmail rawEmail
+      user ← SDU.userBy $ Email email
       case user of
-            Nothing -> SR.throwBadRequest accountNotFound
-            Just { id } -> do
-                  token <- R.liftEffect (DU.toString <$> DU.genUUID)
+            Nothing → SR.throwBadRequest accountNotFound
+            Just { id } → do
+                  token ← R.liftEffect (DU.toString <$> DU.genUUID)
                   SRD.insertRecover id token
-                  contents <- R.liftEffect <<< FRS.render $ HE.html_
+                  contents ← R.liftEffect <<< FRS.render $ HE.html_
                         [ HE.head_ $ HE.title "MelanChat password recovery"
                         , HE.body_
                                 [ HE.text "Hello!"
@@ -53,13 +53,13 @@ recover { email: rawEmail, captchaResponse } = do
                   SE.sendEmail email "Reset password" contents
                   pure ok
 
-reset :: ResetPassword -> ServerEffect Ok
+reset ∷ ResetPassword → ServerEffect Ok
 reset { token, password } = do
-      hash <- SA.validatePassword password
-      maybeID <- SRD.selectRecoverer token
+      hash ← SA.validatePassword password
+      maybeID ← SRD.selectRecoverer token
       case maybeID of
-            Nothing -> SR.throwBadRequest invalidRecovery
-            Just id -> do
-                  hashedPassword <- ST.hashPassword password
+            Nothing → SR.throwBadRequest invalidRecovery
+            Just id → do
+                  hashedPassword ← ST.hashPassword password
                   SRD.recoverPassword token id hashedPassword
                   pure ok

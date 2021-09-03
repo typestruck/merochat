@@ -9,9 +9,9 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 
-template :: String -> Effect String
+template ∷ String → Effect String
 template reason = do
-      contents <- ST.template externalDefaultParameters { content = content }
+      contents ← ST.template externalDefaultParameters { content = content }
       FRS.render contents
       where
       content =

@@ -27,17 +27,17 @@ import Type.Data.Symbol as TDS
 import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 
-view :: SettingsModel -> Html SettingsMessage
+view ∷ SettingsModel → Html SettingsMessage
 view model =
       HE.div (HA.class' "settings-edition")
             [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "settings.6390cea6e61528add6f3" ]
             , account model
             ]
 
-formId :: forall field. IsSymbol field => Proxy field -> String
+formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"
 
-account :: SettingsModel -> Html SettingsMessage
+account ∷ SettingsModel → Html SettingsMessage
 account model@{ erroredFields, confirmTermination } =
       HE.div (HA.class' "settings-section")
             [ HE.div (HA.class' "section-label")
@@ -51,9 +51,9 @@ account model@{ erroredFields, confirmTermination } =
             , HE.div_
                     [
                       --REFACTOR: this be ugly
-                      fieldConfirmationSection (Proxy :: Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
-                    , fieldConfirmationSection (Proxy :: Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
-                    , HE.div (formId (Proxy :: Proxy "confirmTermination"))
+                      fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
+                    , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
+                    , HE.div (formId (Proxy ∷ Proxy "confirmTermination"))
                             [ HE.label_ "Permanently delete all my data and close my account"
                             , HE.div (HA.class' "section-buttons margined")
                                     [ HE.input [ HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ]
@@ -77,13 +77,13 @@ account model@{ erroredFields, confirmTermination } =
                     ]
             ]
       where
-      fieldConfirmationSection :: forall field fieldConfirmation r t. IsSymbol field => Cons field String r SM => Append field "Confirmation" fieldConfirmation => IsSymbol fieldConfirmation => Cons fieldConfirmation String t SM => Proxy field -> String -> Int -> (String -> Boolean) -> String -> SettingsMessage -> Html SettingsMessage
+      fieldConfirmationSection ∷ ∀ field fieldConfirmation r t. IsSymbol field ⇒ Cons field String r SM ⇒ Append field "Confirmation" fieldConfirmation ⇒ IsSymbol fieldConfirmation ⇒ Cons fieldConfirmation String t SM ⇒ Proxy field → String → Int → (String → Boolean) → String → SettingsMessage → Html SettingsMessage
       fieldConfirmationSection field inputType maxChars validator fieldErrorMessage message =
             let
                   stringField = TDS.reflectSymbol field
                   capitalizedStringField = capitalize stringField
                   fieldValue = R.get field model
-                  fieldConfirmation = TDS.append field (Proxy :: Proxy "Confirmation")
+                  fieldConfirmation = TDS.append field (Proxy ∷ Proxy "Confirmation")
                   stringFieldConfirmation = TDS.reflectSymbol fieldConfirmation
                   fieldConfirmationValue = R.get fieldConfirmation model
                   hasErrors = DA.elem stringField erroredFields
@@ -118,27 +118,27 @@ account model@{ erroredFields, confirmTermination } =
                                 ]
                         ]
 
-onChangeValue :: forall message. ToSpecialEvent message String
+onChangeValue ∷ ∀ message. ToSpecialEvent message String
 onChangeValue constructor = HA.createRawEvent "change" handler
       where
       handler event = Just <<< constructor <$> CCD.value (extractElement event)
       extractElement event = SU.fromJust do
-            target <- WEE.target event
+            target ← WEE.target event
             WDE.fromEventTarget target
 
-validateEmail :: String -> Boolean
+validateEmail ∷ String → Boolean
 validateEmail email = DS.contains (Pattern "@") email && DS.contains (Pattern ".") email
 
-validateEmailConfirmation :: String -> String -> Boolean
+validateEmailConfirmation ∷ String → String → Boolean
 validateEmailConfirmation email confirmation = email == confirmation
 
-validatePassword :: String -> Boolean
+validatePassword ∷ String → Boolean
 validatePassword password = DS.length password >= passwordMinCharacters
 
-validatePasswordConfirmation :: String -> String -> Boolean
+validatePasswordConfirmation ∷ String → String → Boolean
 validatePasswordConfirmation password confirmation = password == confirmation
 
-setValidatedField :: forall field r. IsSymbol field => Cons field String r SM => (String -> Boolean) -> Proxy field -> String -> SettingsMessage
+setValidatedField ∷ ∀ field r. IsSymbol field ⇒ Cons field String r SM ⇒ (String → Boolean) → Proxy field → String → SettingsMessage
 setValidatedField validator field value = SetSField validated
       where
       stringField = TDS.reflectSymbol field
@@ -151,7 +151,7 @@ setValidatedField validator field value = SetSField validated
                                 stringField : model.erroredFields
                   }
 
-capitalize :: String -> String
+capitalize ∷ String → String
 capitalize str = case DS.uncons str of
-      Just o -> (DS.toUpper $ DSC.singleton o.head) <> o.tail
-      _ -> str
+      Just o → (DS.toUpper $ DSC.singleton o.head) <> o.tail
+      _ → str

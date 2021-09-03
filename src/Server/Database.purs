@@ -25,78 +25,74 @@ import Run.Reader as RR
 import Shared.Types as ST
 import Shared.Unsafe as SU
 
---this makes pg interpret bigints as ints (since we don't use them)
-foreign import setUpConversions :: Effect Unit
+query q = withConnection $ \connection → hoist $ DD.query connection q
 
-query q = withConnection $ \connection -> hoist $ DD.query connection q
-
-single q = withConnection $ \connection -> singleWith connection q
+single q = withConnection $ \connection → singleWith connection q
 
 singleWith connection q = hoist $ DD.single connection q
 
-execute q = withConnection $ \connection -> executeWith connection q
+execute q = withConnection $ \connection → executeWith connection q
 
 executeWith connection q = hoistMaybe $ DD.execute connection q
 
-unsafeQuery q parameters = withConnection $ \connection -> unsafeQueryWith connection q parameters
+unsafeQuery q parameters = withConnection $ \connection → unsafeQueryWith connection q parameters
 
 unsafeQueryWith connection q parameters = hoist $ DDU.unsafeQuery connection Nothing q parameters
 
-unsafeSingle q parameters = withConnection $ \connection -> unsafeSingleWith connection q parameters
+unsafeSingle q parameters = withConnection $ \connection → unsafeSingleWith connection q parameters
 
 unsafeSingleWith connection q parameters = hoist $ DDU.unsafeSingle connection Nothing q parameters
 
-unsafeExecute q parameters = withConnection $ \connection -> unsafeExecuteWith connection q parameters
+unsafeExecute q parameters = withConnection $ \connection → unsafeExecuteWith connection q parameters
 
 unsafeExecuteWith connection q parameters = hoistMaybe $ DDU.unsafeExecute connection Nothing q parameters
 
 --hoist :: Aff (Either PgError result) -> DatabaseEffect result
 hoist action = do
-      result <- R.liftAff action
+      result ← R.liftAff action
       case result of
-            Right r -> pure r
-            Left err -> RE.throw err
+            Right r → pure r
+            Left err → RE.throw err
 
 hoistMaybe action = do
-      result <- R.liftAff action
+      result ← R.liftAff action
       case result of
-            Nothing -> pure unit
-            Just err -> RE.throw err
+            Nothing → pure unit
+            Just err → RE.throw err
 
-newPool :: Configuration -> Effect Pool
-newPool { databaseHost } = do
-      setUpConversions
+newPool ∷ Configuration → Effect Pool
+newPool { databaseHost } =
       DD.newPool $ (DD.defaultConfiguration "melanchat")
             { user = Just "melanchat"
             , host = databaseHost
             , idleTimeoutMillis = Just 1000
             }
 
-withConnection :: forall r result. (Connection -> DatabaseEffect result) -> BaseEffect { pool :: Pool | r } result
+withConnection ∷ ∀ r result. (Connection → DatabaseEffect result) → BaseEffect { pool ∷ Pool | r } result
 withConnection handler = do
-      { pool } <- RR.ask
-      result <- R.liftAff $ DD.withConnection pool runConnection
+      { pool } ← RR.ask
+      result ← R.liftAff $ DD.withConnection pool runConnection
       finish result
       where
       runConnection = R.runBaseAff <<< RE.runExcept <<< case _ of
-            Right c -> handler c
-            Left err -> RE.throw err
+            Right c → handler c
+            Left err → RE.throw err
 
       finish = case _ of
-            Right result -> pure result
-            Left error -> throwError error
+            Right result → pure result
+            Left error → throwError error
 
-withTransaction :: forall result r. (Connection -> DatabaseEffect result) -> BaseEffect { pool :: Pool | r } result
+withTransaction ∷ ∀ result r. (Connection → DatabaseEffect result) → BaseEffect { pool ∷ Pool | r } result
 withTransaction handler = do
-      { pool } <- RR.ask
-      result <- R.liftAff (DD.withTransaction pool (R.runBaseAff <<< RE.runExcept <<< handler) :: Aff (Either PgError (Either PgError result)))
+      { pool } ← RR.ask
+      result ← R.liftAff (DD.withTransaction pool (R.runBaseAff <<< RE.runExcept <<< handler) ∷ Aff (Either PgError (Either PgError result)))
       finish result
       where
       finish = case _ of
-            Right result -> DT.either throwError pure result
-            Left error -> throwError error
+            Right result → DT.either throwError pure result
+            Left error → throwError error
 
-throwError :: forall r error. PgError -> BaseEffect { pool :: Pool | r } error
+throwError ∷ ∀ r error. PgError → BaseEffect { pool ∷ Pool | r } error
 throwError error = do
       liftEffect $ EC.log errorMessage
       RE.throw $ SIT.InternalError { reason: errorMessage, context: checkRevelanceError error }
@@ -104,5 +100,5 @@ throwError error = do
       errorMessage = show error
       checkRevelanceError = case _ of
             --this is absolutely vile
-            IntegrityError _ -> Just MissingForeignKey
-            _ -> Nothing
+            IntegrityError _ → Just MissingForeignKey
+            _ → Nothing

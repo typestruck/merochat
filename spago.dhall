@@ -41,7 +41,6 @@ You can edit this file as you like.
   , "maybe"
   , "newtype"
   , "node-buffer"
-  , "node-fs"
   , "node-fs-aff"
   , "node-http"
   , "node-process"

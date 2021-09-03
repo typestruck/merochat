@@ -11,5 +11,5 @@ import Server.Types (ServerEffect)
 import Server.Database.Experiments
 
 --could also order by popularity
-fecthExperiments :: ServerEffect (Array ChatExperiment)
+fecthExperiments ∷ ServerEffect (Array ChatExperiment)
 fecthExperiments = SD.query $ select (_id /\ _code /\ _name /\ _description) # from experiments # orderBy (_added # desc)

@@ -12,9 +12,9 @@ import Shared.Path as SPT
 import Shared.Types (ContentType(..))
 import Shared.Backer.View as SBV
 
-template :: Effect String
+template ∷ Effect String
 template = do
-      contents <- ST.template externalDefaultParameters
+      contents ← ST.template externalDefaultParameters
             { content = externalDefaultParameters.content <> [ SBV.view ]
             }
       FRS.render contents

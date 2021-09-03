@@ -17,7 +17,7 @@ import Shared.Leaderboard.View as SLV
 import Server.Template as ST
 import Shared.Avatar as SA
 
-template :: { top10 :: Array LeaderboardUser, userPosition :: Int, inBetween10 :: Array LeaderboardUser } -> Effect String
+template ∷ { top10 ∷ Array LeaderboardUser, userPosition ∷ Int, inBetween10 ∷ Array LeaderboardUser } → Effect String
 template { top10, inBetween10, userPosition } =
       F.preMount (QuerySelector ".karma-leaderboard")
             { view: SLV.view

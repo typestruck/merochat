@@ -15,17 +15,17 @@ import Data.Argonaut.Encode.Generic as DAEGR
 import Shared.User
 
 type LeaderboardUser =
-      { position :: Int
-      , karma :: Int
-      , avatar :: Maybe String
-      , name :: String
+      { position ∷ Int
+      , karma ∷ Int
+      , avatar ∷ Maybe String
+      , name ∷ String
       }
 
 type LeaderboardModel =
-      { top10 :: Array LeaderboardUser
-      , inBetween10 :: Array LeaderboardUser
-      , userPosition :: Int
-      , toggleBoard :: ToggleBoard
+      { top10 ∷ Array LeaderboardUser
+      , inBetween10 ∷ Array LeaderboardUser
+      , userPosition ∷ Int
+      , toggleBoard ∷ ToggleBoard
       }
 
 data LeaderboardMessage =
@@ -35,12 +35,12 @@ data ToggleBoard
       = InBetween10
       | Top10
 
-instance encodeJsonToggleBoard :: EncodeJson ToggleBoard where
+instance encodeJsonToggleBoard ∷ EncodeJson ToggleBoard where
       encodeJson = DAEGR.genericEncodeJson
 
-instance decodeJsonToggleBoard :: DecodeJson ToggleBoard where
+instance decodeJsonToggleBoard ∷ DecodeJson ToggleBoard where
       decodeJson = DADGR.genericDecodeJson
 
-derive instance genericToggleBoard :: Generic ToggleBoard _
+derive instance genericToggleBoard ∷ Generic ToggleBoard _
 
-derive instance eqToggleBoard :: Eq ToggleBoard
+derive instance eqToggleBoard ∷ Eq ToggleBoard

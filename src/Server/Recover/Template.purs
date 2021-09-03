@@ -14,9 +14,9 @@ import Shared.Path as SP
 import Shared.Routes (routes)
 import Shared.Types (ContentType(..))
 
-template :: Maybe String -> Effect String
+template ∷ Maybe String → Effect String
 template token = do
-      contents <- ST.template externalDefaultParameters
+      contents ← ST.template externalDefaultParameters
             { content = externalDefaultParameters.content <> content
             , javascript = javascript
             }
@@ -29,7 +29,7 @@ template token = do
       content =
             [ HE.div (HA.class' "green-area green-box")
                     [ case token of
-                            Nothing ->
+                            Nothing →
                                   HE.fragment
                                         [ HE.h2 (HA.class' "ext-heading") "Recover account"
                                         , HE.div (HA.class' "form-up")
@@ -46,7 +46,7 @@ template token = do
                                                 , HE.div' [ HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible" ]
                                                 ]
                                         ]
-                            Just t ->
+                            Just t →
                                   HE.fragment
                                         [ HE.h2 (HA.class' "ext-heading") "Reset password"
                                         , HE.div (HA.class' "form-up")

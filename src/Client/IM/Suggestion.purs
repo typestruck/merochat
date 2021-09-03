@@ -21,7 +21,7 @@ import Flame as F
 import Shared.Options.Page (suggestionsPerPage)
 import Web.Socket.WebSocket (WebSocket)
 
-nextSuggestion :: IMModel -> MoreMessages
+nextSuggestion ∷ IMModel → MoreMessages
 nextSuggestion model@{ suggestions, suggesting } =
       let
             next = DM.maybe 0 (_ + 1) suggesting
@@ -35,7 +35,7 @@ nextSuggestion model@{ suggestions, suggesting } =
                         , chatting = Nothing
                         }
 
-previousSuggestion :: IMModel -> MoreMessages
+previousSuggestion ∷ IMModel → MoreMessages
 previousSuggestion model@{ suggesting } =
       let
             previous = DM.maybe 0 (_ - 1) suggesting
@@ -49,7 +49,7 @@ previousSuggestion model@{ suggesting } =
                         , chatting = Nothing
                         }
 
-fetchMoreSuggestions :: IMModel -> NextMessage
+fetchMoreSuggestions ∷ IMModel → NextMessage
 fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } =
       model
             { freeToFetchSuggestions = false
@@ -59,13 +59,13 @@ fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } =
                     { query:
                             { skip: suggestionsPerPage * suggestionsPage
                             , avoid: case experimenting of
-                                    Just (Impersonation (Just _)) -> Just <<< ArrayPrimaryKey $ map (_.id <<< _.user) contacts
-                                    _ -> Nothing
+                                    Just (Impersonation (Just _)) → Just <<< ArrayPrimaryKey $ map (_.id <<< _.user) contacts
+                                    _ → Nothing
                             }
                     }
             ]
 
-displayMoreSuggestions :: Array Suggestion -> IMModel -> MoreMessages
+displayMoreSuggestions ∷ Array Suggestion → IMModel → MoreMessages
 displayMoreSuggestions suggestions model@{ suggestionsPage } =
       --if we looped through all the suggestions, retry
       if suggestionsSize == 0 && suggestionsPage > 0 then
@@ -85,20 +85,20 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
 
-blockUser :: WebSocket -> Int -> IMModel -> NextMessage
+blockUser ∷ WebSocket → Int → IMModel → NextMessage
 blockUser webSocket blocked model@{ blockedUsers } =
       updateAfterBlock blocked model :>
             [ do
-                    result <- CCN.defaultResponse $ request.im.block { body: { id: blocked } }
+                    result ← CCN.defaultResponse $ request.im.block { body: { id: blocked } }
                     case result of
                           --refactor: either make errorMessage maybe or get rid of it
-                          Left _ -> pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage: "" }
-                          _ -> do
+                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage: "" }
+                          _ → do
                                 liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked }
                                 pure Nothing
             ]
 
-updateAfterBlock :: Int -> IMModel -> IMModel
+updateAfterBlock ∷ Int → IMModel → IMModel
 updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       model
             { contacts = DA.filter ((blocked /= _) <<< fromContact) contacts
@@ -113,12 +113,12 @@ updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       fromContact { user } = fromUser user
       fromUser { id } = id
 
-toggleContactProfile :: IMModel -> NoMessages
+toggleContactProfile ∷ IMModel → NoMessages
 toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model
       { fullContactProfileVisible = not fullContactProfileVisible
       }
 
-resumeSuggesting :: IMModel -> NoMessages
+resumeSuggesting ∷ IMModel → NoMessages
 resumeSuggesting model@{ suggestions, suggesting } = F.noMessages $ model
       { chatting = Nothing
       , suggesting = if DA.length suggestions <= 1 then Just 0 else suggesting

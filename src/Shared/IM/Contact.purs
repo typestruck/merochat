@@ -7,7 +7,7 @@ import Shared.IM.Types
 import Shared.Unsafe as SU
 import Prelude
 
-defaultContact :: Int -> IMUser -> Contact
+defaultContact ∷ Int → IMUser → Contact
 defaultContact id chatted =
       { available: true
       , shouldFetchChatHistory: false
@@ -18,7 +18,7 @@ defaultContact id chatted =
       , chatAge: 0.0
       }
 
-chattingContact :: Array Contact -> Maybe Int -> Contact
+chattingContact ∷ Array Contact → Maybe Int → Contact
 chattingContact contacts chatting = SU.fromJust do
-      index <- chatting
+      index ← chatting
       contacts !! index

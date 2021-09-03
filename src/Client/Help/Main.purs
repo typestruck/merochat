@@ -16,15 +16,15 @@ import Web.HTML.Window as WHW
 import Shared.IM.Types
 
 -- :(
-main :: Effect Unit
+main ∷ Effect Unit
 main = do
-      hash <- CCL.hash
-      faqLink <- CCD.unsafeGetElementByID FaqLink
-      termsLink <- CCD.unsafeGetElementByID TermsLink
-      privacyLink <- CCD.unsafeGetElementByID PrivacyLink
-      faq <- CCD.unsafeGetElementByID Faq
-      terms <- CCD.unsafeGetElementByID TermsSection
-      privacy <- CCD.unsafeGetElementByID PrivacySection
+      hash ← CCL.hash
+      faqLink ← CCD.unsafeGetElementByID FaqLink
+      termsLink ← CCD.unsafeGetElementByID TermsLink
+      privacyLink ← CCD.unsafeGetElementByID PrivacyLink
+      faq ← CCD.unsafeGetElementByID Faq
+      terms ← CCD.unsafeGetElementByID TermsSection
+      privacy ← CCD.unsafeGetElementByID PrivacySection
 
       let
             unselectAll = do
@@ -36,16 +36,16 @@ main = do
                   WDE.setAttribute "class" "" tab
             showTab =
                   case _ of
-                        "#terms" -> select termsLink terms
-                        "#privacy" -> select privacyLink privacy
-                        _ -> select faqLink faq
+                        "#terms" → select termsLink terms
+                        "#privacy" → select privacyLink privacy
+                        _ → select faqLink faq
 
       CCD.addEventListener faqLink click (const (CCL.setHash Faq))
       CCD.addEventListener termsLink click (const (CCL.setHash TermsSection))
       CCD.addEventListener privacyLink click (const (CCL.setHash PrivacySection))
 
-      hashListener <- WET.eventListener $ const (CCL.hash >>= showTab)
-      window <- WH.window
+      hashListener ← WET.eventListener $ const (CCL.hash >>= showTab)
+      window ← WH.window
       WET.addEventListener hashchange hashListener false $ WHW.toEventTarget window
 
       showTab hash

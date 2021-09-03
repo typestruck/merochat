@@ -14,7 +14,7 @@ import Shared.IM.Svg as SIS
 import Shared.IM.Types
 import Shared.Avatar as SA
 
-suggestions :: IMModel -> Html IMMessage
+suggestions ∷ IMModel → Html IMMessage
 suggestions { contacts, suggesting, chatting, suggestions }
       | DM.isJust chatting =
               HE.div (HA.class' "side-suggestions-container")
@@ -25,7 +25,7 @@ suggestions { contacts, suggesting, chatting, suggestions }
                     ]
       | otherwise =
               case suggs of
-                    Just { avatar, name } | not $ DA.null contacts -> HE.div (HA.class' "side-suggestions-container")
+                    Just { avatar, name } | not $ DA.null contacts → HE.div (HA.class' "side-suggestions-container")
                           [ HE.div [ HA.class' "side-suggestion", HA.title "Your chat suggestions" ]
                                   [ HE.div (HA.class' "avatar-contact-list-div faded")
                                           [ let
@@ -47,14 +47,14 @@ suggestions { contacts, suggesting, chatting, suggestions }
                                           ]
                                   ]
                           ]
-                    _ -> HE.div' (HA.class' "side-suggestions-container")
+                    _ → HE.div' (HA.class' "side-suggestions-container")
 
               where
               suggs = do
-                    index <- suggesting
+                    index ← suggesting
                     suggestions !! index
 
               getAvatar index = do
-                    i <- index
-                    user <- suggestions !! i
+                    i ← index
+                    user ← suggestions !! i
                     user.avatar

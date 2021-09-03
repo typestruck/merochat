@@ -26,7 +26,7 @@ import Shared.IM.Types
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
 
-contactList :: Boolean -> IMModel -> Html IMMessage
+contactList ∷ Boolean → IMModel → Html IMMessage
 contactList isClientRender { failedRequests, chatting, experimenting, contacts, user: { id: userID } } = HE.div [ HA.onScroll CheckFetchContacts, HA.class' "contact-list", HA.id "contact-list" ] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
       where --the ordering of the contact list is only done for the dom nodes
       -- model.contacts is left unchanged
@@ -37,8 +37,8 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
       suggestionsCall =
             let
                   { welcome, first, second } = case experimenting of
-                        Just (Impersonation (Just { name })) -> SEI.welcomeMessage name
-                        _ -> { welcome: "Welcome!", first: "Tap on either of the arrows to see ", second: "your chat suggestions" }
+                        Just (Impersonation (Just { name })) → SEI.welcomeMessage name
+                        _ → { welcome: "Welcome!", first: "Tap on either of the arrows to see ", second: "your chat suggestions" }
             in
                   HE.div (HA.class' "suggestions-call")
                         [ HE.div (HA.onClick $ ToggleInitialScreen false) $ SIVP.backArrow
@@ -51,7 +51,7 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
                         ]
 
       getDate history = do
-            { date: DateTimeWrapper md } <- DA.last history
+            { date: DateTimeWrapper md } ← DA.last history
             pure md
       compareDateUnread contact anotherContact = compare (getDate anotherContact.history) (getDate contact.history)
 
@@ -62,12 +62,12 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
       lastStatus = DM.fromMaybe "" <<< map (show <<< _.status)
       lastDate = DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date)
       chattingID = do
-            index <- chatting
-            { user: { id } } <- contacts !! index
+            index ← chatting
+            { user: { id } } ← contacts !! index
             pure id
       impersonatingID = do
-            index <- chatting
-            { impersonating } <- contacts !! index
+            index ← chatting
+            { impersonating } ← contacts !! index
             impersonating
 
       --it is using the history for the existing contact, not the impersonation
@@ -76,8 +76,8 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
                   index' = Just index
                   --refactor: a neater way to do experiment that dont litter the code with case of
                   userProfile = case impersonating of
-                        Just impersonationID -> SU.fromJust $ DH.lookup impersonationID impersonations
-                        _ -> user
+                        Just impersonationID → SU.fromJust $ DH.lookup impersonationID impersonations
+                        _ → user
                   numberUnreadMessages = countUnread history
                   maybeMessage = DA.last history
 

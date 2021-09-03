@@ -9,7 +9,7 @@ import Flame.Application.Effectful as FAE
 import Shared.Settings.View as SSV
 import Web.DOM.ParentNode (QuerySelector(..))
 
-main :: Effect Unit
+main ∷ Effect Unit
 main =
       FAE.resumeMount_ (QuerySelector ".settings-edition")
             { view: SSV.view

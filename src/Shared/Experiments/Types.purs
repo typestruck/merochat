@@ -19,13 +19,13 @@ import Shared.User
 type ImpersonationProfile = Record IU
 
 type BaseChatExperiment fields =
-      { id :: Int
-      , name :: String
-      , description :: String
+      { id ∷ Int
+      , name ∷ String
+      , description ∷ String
       | fields
       }
 
-type ChatExperiment = BaseChatExperiment (code :: ExperimentData)
+type ChatExperiment = BaseChatExperiment (code ∷ ExperimentData)
 
 data ChatExperimentMessage
       = QuitExperiment
@@ -40,66 +40,66 @@ data ChatExperimentSection
       | Celebrities
 
 type ChatExperimentModel =
-      { experiments :: Array ChatExperiment
-      , section :: ChatExperimentSection
-      , current :: Maybe ExperimentData
-      , impersonation :: Maybe ImpersonationProfile
+      { experiments ∷ Array ChatExperiment
+      , section ∷ ChatExperimentSection
+      , current ∷ Maybe ExperimentData
+      , impersonation ∷ Maybe ImpersonationProfile
       }
 --refactor: this type is being used in a very bonkers way, pls fix his shit
 data ExperimentData = Impersonation (Maybe ImpersonationProfile)
 
 data ExperimentPayload = ImpersonationPayload
-      { id :: Int
-      , sender :: Boolean
+      { id ∷ Int
+      , sender ∷ Boolean
       }
 
-derive instance genericChatExperimentSection :: Generic ChatExperimentSection _
-derive instance genericExperimentCode :: Generic ExperimentData _
-derive instance genericExperimentPayload :: Generic ExperimentPayload _
+derive instance genericChatExperimentSection ∷ Generic ChatExperimentSection _
+derive instance genericExperimentCode ∷ Generic ExperimentData _
+derive instance genericExperimentPayload ∷ Generic ExperimentPayload _
 
-derive instance eqChatExperimentSection :: Eq ChatExperimentSection
-derive instance eqExperimentCode :: Eq ExperimentData
+derive instance eqChatExperimentSection ∷ Eq ChatExperimentSection
+derive instance eqExperimentCode ∷ Eq ExperimentData
 
-instance encodeJsonExperimentPayload :: EncodeJson ExperimentPayload where
+instance encodeJsonExperimentPayload ∷ EncodeJson ExperimentPayload where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonExperimentCode :: EncodeJson ExperimentData where
+instance encodeJsonExperimentCode ∷ EncodeJson ExperimentData where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonChatExperimentSection :: EncodeJson ChatExperimentSection where
+instance encodeJsonChatExperimentSection ∷ EncodeJson ChatExperimentSection where
       encodeJson = DAEGR.genericEncodeJson
 
-instance decodeJsonExperimentCode :: DecodeJson ExperimentData where
+instance decodeJsonExperimentCode ∷ DecodeJson ExperimentData where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonExperimentPayload :: DecodeJson ExperimentPayload where
+instance decodeJsonExperimentPayload ∷ DecodeJson ExperimentPayload where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonChatExperimentSection :: DecodeJson ChatExperimentSection where
+instance decodeJsonChatExperimentSection ∷ DecodeJson ChatExperimentSection where
       decodeJson = DADGR.genericDecodeJson
 
-derive instance ordExperimentData :: Ord ExperimentData
+derive instance ordExperimentData ∷ Ord ExperimentData
 
-instance boundedExperimentCode :: Bounded ExperimentData where
+instance boundedExperimentCode ∷ Bounded ExperimentData where
       bottom = Impersonation Nothing
       top = Impersonation Nothing
 
-instance boundedEnumExperimentCode :: BoundedEnum ExperimentData where
+instance boundedEnumExperimentCode ∷ BoundedEnum ExperimentData where
       cardinality = Cardinality 1
 
       fromEnum = case _ of
-            Impersonation _ -> 0
+            Impersonation _ → 0
 
       toEnum = case _ of
-            0 -> Just $ Impersonation Nothing
-            _ -> Nothing
+            0 → Just $ Impersonation Nothing
+            _ → Nothing
 
-instance enumExperimentCode :: Enum ExperimentData where
+instance enumExperimentCode ∷ Enum ExperimentData where
       succ = case _ of
-            Impersonation _ -> Nothing
+            Impersonation _ → Nothing
 
       pred = case _ of
-            Impersonation _JsonBoolean -> Nothing
+            Impersonation _JsonBoolean → Nothing
 
-instance showExperimentPayload :: Show ExperimentPayload where
+instance showExperimentPayload ∷ Show ExperimentPayload where
       show = DGRS.genericShow
 
 --placeholder
-instance experimentDataFromValue :: FromValue ExperimentData where
+instance experimentDataFromValue ∷ FromValue ExperimentData where
       fromValue = Right <<< const (Impersonation Nothing)

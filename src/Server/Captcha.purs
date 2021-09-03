@@ -19,11 +19,11 @@ import Run as R
 import Run.Reader as RR
 import Server.Response as SR
 
-validateCaptcha :: Maybe String -> ServerEffect Unit
+validateCaptcha ∷ Maybe String → ServerEffect Unit
 validateCaptcha captchaResponse = do
-      { configuration: { captchaSecret } } <- RR.ask
+      { configuration: { captchaSecret } } ← RR.ask
       unless development do
-            response <- R.liftAff <<< A.request $ A.defaultRequest
+            response ← R.liftAff <<< A.request $ A.defaultRequest
                   { url = "https://www.google.com/recaptcha/api/siteverify"
                   , method = Left POST
                   , responseFormat = RF.json
@@ -33,12 +33,12 @@ validateCaptcha captchaResponse = do
                           ]
                   }
             case response of
-                  Right { status, body, statusText } ->
+                  Right { status, body, statusText } →
                         if status == StatusCode 200 then
                               DE.either (SR.throwInternalError <<< show) finishWithCaptcha $ DAD.decodeJson body
                         else
                               SR.throwBadRequest statusText
-                  Left left -> SR.throwInternalError $ A.printError left
+                  Left left → SR.throwInternalError $ A.printError left
 
       where
       finishWithCaptcha (CaptchaResponse { success })

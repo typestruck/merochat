@@ -4,7 +4,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 
-privacy :: forall m. Html m
+privacy ∷ ∀ m. Html m
 privacy =
       HE.div (HA.class' "terms")
             [ HE.h2 (HA.class' "no-padding") "Introduction"

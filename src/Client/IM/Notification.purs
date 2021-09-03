@@ -26,22 +26,22 @@ import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
 
 type Notification =
-      { body :: String
-      , icon :: String
+      { body ∷ String
+      , icon ∷ String
       ,
         -- uses a custom event to let Main know of this
-        handler :: Effect Unit
+        handler ∷ Effect Unit
       }
 
-foreign import createNotification_ :: EffectFn1 Notification Unit
+foreign import createNotification_ ∷ EffectFn1 Notification Unit
 
-createNotification :: Notification -> Effect Unit
+createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
-notifyUnreadChats :: IMModel -> Array (Tuple Int (Maybe Int)) -> NextMessage
+notifyUnreadChats ∷ IMModel → Array (Tuple Int (Maybe Int)) → NextMessage
 notifyUnreadChats model userIDs = CIF.nothingNext model <<< liftEffect $ notify model userIDs
 
-notify :: IMModel -> Array (Tuple Int (Maybe Int)) -> Effect Unit
+notify ∷ IMModel → Array (Tuple Int (Maybe Int)) → Effect Unit
 notify model@{ user: { id }, contacts, smallScreen } userIDs = do
       updateTabCount id contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
@@ -50,8 +50,8 @@ notify model@{ user: { id }, contacts, smallScreen } userIDs = do
       createNotification' { impersonating, user } = createNotification
             { body: "New message from " <>
                     ( case impersonating of
-                            Nothing -> user
-                            Just id -> SU.fromJust $ HS.lookup id impersonations
+                            Nothing → user
+                            Just id → SU.fromJust $ HS.lookup id impersonations
                     ).name
             , icon: SP.pathery PNG "loading"
             ,
@@ -59,17 +59,17 @@ notify model@{ user: { id }, contacts, smallScreen } userIDs = do
               handler: FS.send imID <<< ResumeChat $ Tuple user.id impersonating
             }
 
-      byKeys cnt = DA.any (\(Tuple id impersonating) -> cnt.user.id == id && cnt.impersonating == impersonating) userIDs
+      byKeys cnt = DA.any (\(Tuple id impersonating) → cnt.user.id == id && cnt.impersonating == impersonating) userIDs
 
-notify' :: IMModel -> Array (Tuple Int (Maybe Int)) -> Aff (Maybe IMMessage)
+notify' ∷ IMModel → Array (Tuple Int (Maybe Int)) → Aff (Maybe IMMessage)
 notify' model userIDs = do
       liftEffect $ notify model userIDs
       pure Nothing
 
-updateTabCount :: Int -> Array Contact -> Effect Unit
+updateTabCount ∷ Int → Array Contact → Effect Unit
 updateTabCount id contacts = do
       CCD.setTitle $ SIU.title unreadChats
-      faviconElement <- CCD.unsafeGetElementByID Favicon
+      faviconElement ← CCD.unsafeGetElementByID Favicon
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
       where
       unreadChats = SIU.countUnreadChats id contacts

@@ -7,7 +7,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Routes (routes)
 
-faq :: forall m. Html m
+faq ∷ ∀ m. Html m
 faq =
       HE.div (HA.class' "terms")
             [ HE.ul (HA.class' "bulleted no-padding")

@@ -15,9 +15,9 @@ import Server.Terms as STM
 import Shared.Path as SPT
 import Shared.Types (ContentType(..))
 
-template :: Effect String
+template ∷ Effect String
 template = do
-      contents <- ST.template externalDefaultParameters
+      contents ← ST.template externalDefaultParameters
             { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.5c2d5d65952114e0b0e3" ] ]
             , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src <<< SPT.pathery JS $ "help." <> helpJSHash ] ]
             , content = externalDefaultParameters.content <> content

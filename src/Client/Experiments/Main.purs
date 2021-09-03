@@ -8,7 +8,7 @@ import Flame (QuerySelector(..))
 import Flame as F
 import Shared.Experiments.View as SEV
 
-main :: Effect Unit
+main ∷ Effect Unit
 main =
       F.resumeMount_ (QuerySelector ".chat-experiments")
             { view: SEV.view

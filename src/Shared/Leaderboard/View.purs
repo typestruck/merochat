@@ -13,7 +13,7 @@ import Shared.Path as SP
 import Shared.Leaderboard.Types
 import Environment (leaderboardCSSHash)
 
-view :: LeaderboardModel -> Html LeaderboardMessage
+view ∷ LeaderboardModel → Html LeaderboardMessage
 view { top10, inBetween10, userPosition, toggleBoard } =
       HE.div (HA.class' "karma-leaderboard")
             [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "leaderboard." <> leaderboardCSSHash ]

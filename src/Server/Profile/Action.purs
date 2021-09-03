@@ -20,40 +20,40 @@ import Shared.DateTime as SDT
 import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 
-missingRequiredFieldsMessage :: String
+missingRequiredFieldsMessage ∷ String
 missingRequiredFieldsMessage = "Name, headline and description are mandatory"
 
-tooManyTagsMessage :: String
+tooManyTagsMessage ∷ String
 tooManyTagsMessage = "Number of tags larger than " <> show maxTags <> " limit"
 
-tooManyLanguagesMessage :: String
+tooManyLanguagesMessage ∷ String
 tooManyLanguagesMessage = "Number of languages larger than " <> show maxLanguages <> " limit"
 
-tooYoungMessage :: String
+tooYoungMessage ∷ String
 tooYoungMessage = "You must be over 13 years old in order to use MelanChat"
 
-fieldTooBigMessage :: String
+fieldTooBigMessage ∷ String
 fieldTooBigMessage = "Field exceeded max value"
 
-generate :: Generate -> ServerEffect String
+generate ∷ Generate → ServerEffect String
 generate =
       case _ of
-            Name -> SB.generateName
-            Headline -> SB.generateHeadline
-            Description -> SB.generateDescription
+            Name → SB.generateName
+            Headline → SB.generateHeadline
+            Description → SB.generateDescription
 
-saveProfile :: Int -> ProfileUser -> ServerEffect Ok
+saveProfile ∷ Int → ProfileUser → ServerEffect Ok
 saveProfile loggedUserID profileUser@{ name, age, headline, description, avatar, languages, tags } = do
       when (isNull name || isNull headline || isNull description) $ SR.throwBadRequest missingRequiredFieldsMessage
       when anyFieldIsTooBig $ SR.throwBadRequest fieldTooBigMessage
       when (DA.length tags > maxTags) $ SR.throwBadRequest tooManyTagsMessage
       when (DA.length languages > maxLanguages) $ SR.throwBadRequest tooManyLanguagesMessage
-      thirteen <- Just <$> R.liftEffect SDT.latestEligibleBirthday
+      thirteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map DN.unwrap age > thirteen) $ SR.throwBadRequest tooYoungMessage
 
-      updatedAvatar <- case avatar of
-            Nothing -> pure Nothing
-            Just path ->
+      updatedAvatar ← case avatar of
+            Nothing → pure Nothing
+            Just path →
                   let
                         fileName = DS.replace (Pattern $ imageBasePath <> "upload/") (Replacement "") path
                   in

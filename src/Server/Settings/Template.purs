@@ -6,7 +6,7 @@ import Flame as F
 import Shared.Settings.View as SSV
 import Shared.Types
 
-template :: Effect String
+template ∷ Effect String
 template =
       F.preMount (QuerySelector ".settings-edition")
             { view: SSV.view

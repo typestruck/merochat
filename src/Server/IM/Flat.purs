@@ -11,41 +11,41 @@ import Shared.IM.Types (Contact, IMUser)
 import Shared.Types (Gender)
 
 type FlatFields rest =
-      { age :: Maybe Number
-      , avatar :: Maybe String
-      , country :: Maybe String
-      , description :: String
-      , gender :: Maybe Gender
-      , headline :: String
-      , id :: Int
-      , karma :: Int
-      , karmaPosition :: Int
-      , languages :: Maybe String
-      , name :: String
-      , tags :: Maybe String
+      { age ∷ Maybe Number
+      , avatar ∷ Maybe String
+      , country ∷ Maybe String
+      , description ∷ String
+      , gender ∷ Maybe Gender
+      , headline ∷ String
+      , id ∷ Int
+      , karma ∷ Int
+      , karmaPosition ∷ Int
+      , languages ∷ Maybe String
+      , name ∷ String
+      , tags ∷ Maybe String
       | rest
       }
 
 type FlatUser = FlatFields ()
 
 type FlatContact =
-      { age :: Maybe Number
-      , avatar :: Maybe String
-      , chatAge :: Maybe Number
-      , chatStarter :: Int
-      , country :: Maybe String
-      , description :: String
-      , gender :: Maybe Gender
-      , headline :: String
-      , id :: Int
-      , karma :: Int
-      , languages :: Maybe String
-      , name :: String
-      , karmaPosition :: Int
-      , tags :: Maybe String
+      { age ∷ Maybe Number
+      , avatar ∷ Maybe String
+      , chatAge ∷ Maybe Number
+      , chatStarter ∷ Int
+      , country ∷ Maybe String
+      , description ∷ String
+      , gender ∷ Maybe Gender
+      , headline ∷ String
+      , id ∷ Int
+      , karma ∷ Int
+      , languages ∷ Maybe String
+      , name ∷ String
+      , karmaPosition ∷ Int
+      , tags ∷ Maybe String
       }
 
-fromFlatContact :: FlatContact -> Contact
+fromFlatContact ∷ FlatContact → Contact
 fromFlatContact fc =
       { shouldFetchChatHistory: true
       , available: true
@@ -56,7 +56,7 @@ fromFlatContact fc =
       , user: fromFlatUser fc
       }
 
-fromFlatUser :: forall r. FlatFields r -> IMUser
+fromFlatUser ∷ ∀ r. FlatFields r → IMUser
 fromFlatUser fc =
       { id: fc.id
       , name: fc.name

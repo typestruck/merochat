@@ -12,12 +12,12 @@ import Shared.Experiments.Types
 import Shared.Experiments.Impersonation as SEI
 import Shared.Path as SP
 
-view :: ChatExperimentModel -> Html ChatExperimentMessage
+view ∷ ChatExperimentModel → Html ChatExperimentMessage
 view model@{ experiments, section, current } = case current of
-      Just (Impersonation (Just profile)) ->
+      Just (Impersonation (Just profile)) →
             --likely to be the same for all experiments
             HE.div (HA.class' "chat-experiments") $ SEI.joined profile
-      _ ->
+      _ →
             HE.div (HA.class' "chat-experiments")
                   [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "experiments." <> experimentsCSSHash ]
                   , HE.span (HA.class' "duller") "Choose a chat experiment from the list bellow. The experiment will last until you leave it or refresh the page"
@@ -30,6 +30,6 @@ view model@{ experiments, section, current } = case current of
             , HE.fragment $ extra model code
             ]
 
-extra :: ChatExperimentModel -> ExperimentData -> Html ChatExperimentMessage
+extra ∷ ChatExperimentModel → ExperimentData → Html ChatExperimentMessage
 extra model = case _ of
-      Impersonation _ -> SEI.view model
+      Impersonation _ → SEI.view model

@@ -20,29 +20,31 @@ import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
-tests :: TestSuite
+tests ∷ TestSuite
 tests = do
       TU.suite "im chat update" do
             TU.test "beforeSendMessage adds new contact from suggestion" do
-                  let   model' = model {
-                              suggestions = suggestion : modelSuggestions,
-                              chatting = Nothing,
-                              suggesting = Just 0
-                        }
+                  let
+                        model' = model
+                              { suggestions = suggestion : modelSuggestions
+                              , chatting = Nothing
+                              , suggesting = Just 0
+                              }
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
-                  TUA.equal ( _.user <$> DA.head contacts) $ Just suggestion
+                  TUA.equal (_.user <$> DA.head contacts) $ Just suggestion
 
             TU.test "beforeSendMessage sets chatting to 0" do
-                  let   model' = model {
-                              suggestions = suggestion : modelSuggestions,
-                              chatting = Nothing,
-                              suggesting = Just 0
-                        }
+                  let
+                        model' = model
+                              { suggestions = suggestion : modelSuggestions
+                              , chatting = Nothing
+                              , suggesting = Just 0
+                              }
                         { chatting } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (Just 0) chatting
 
             TU.test "sendMessage bumps temporary id" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let m@{ temporaryID } = DT.fst $ CIC.sendMessage webSocket content date model
                   TUA.equal 1 temporaryID
 
@@ -50,104 +52,114 @@ tests = do
                   TUA.equal 2 temporaryID
 
             TU.test "sendMessage adds message to history" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage webSocket content date model
+                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  let
+                        { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage webSocket content date model
                         user = SN.fromJust do
-                              index <- chatting
+                              index ← chatting
                               contacts !! index
 
-                  TUA.equal [{
-                        date: (user.history !@ 0).date,
-                        recipient: user.user.id,
-                        status: Sent,
-                        id: 1,
-                        content: "test",
-                        sender: userID
-                  }] user.history
+                  TUA.equal
+                        [ { date: (user.history !@ 0).date
+                          , recipient: user.user.id
+                          , status: Sent
+                          , id: 1
+                          , content: "test"
+                          , sender: userID
+                          }
+                        ]
+                        user.history
 
             TU.test "sendMessage adds markdown image to history" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let   { contacts, chatting } = DT.fst <<< CIC.sendMessage webSocket (Image caption image) date $ model {
-                              selectedImage = Just image,
-                              imageCaption = Just caption
-                        }
+                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  let
+                        { contacts, chatting } = DT.fst <<< CIC.sendMessage webSocket (Image caption image) date $ model
+                              { selectedImage = Just image
+                              , imageCaption = Just caption
+                              }
                         entry = SN.fromJust do
-                              index <- chatting
+                              index ← chatting
                               contacts !! index
 
-                  TUA.equal ("!["<> caption<> "]("<> image <>")") (entry.history !@ 0).content
+                  TUA.equal ("![" <> caption <> "](" <> image <> ")") (entry.history !@ 0).content
 
             TU.test "sendMessage resets input fields" do
-                  date <- liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage webSocket content date $ model {
-                        selectedImage = Just image,
-                        imageCaption = Just caption
-                  }
+                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  let
+                        { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage webSocket content date $ model
+                              { selectedImage = Just image
+                              , imageCaption = Just caption
+                              }
                   TUA.equal Nothing selectedImage
                   TUA.equal Nothing imageCaption
 
             TU.test "makeTurn calculate turn" do
-                  let   contact' = contact {
-                              history = [recipientMessage, senderMessage]
-                        }
-                        turn = Just {
-                              chatAge: 0.0,
-                              recipientStats: {
-                                    characters: 4.0,
-                                    interest: 1.0
-                              },
-                              replyDelay: 0.0,
-                              senderStats: {
-                                    characters: 4.0,
-                                    interest: 1.0
+                  let
+                        contact' = contact
+                              { history = [ recipientMessage, senderMessage ]
                               }
-                        }
+                        turn = Just
+                              { chatAge: 0.0
+                              , recipientStats:
+                                      { characters: 4.0
+                                      , interest: 1.0
+                                      }
+                              , replyDelay: 0.0
+                              , senderStats:
+                                      { characters: 4.0
+                                      , interest: 1.0
+                                      }
+                              }
                   TUA.equal turn $ CIC.makeTurn contact' imUserID
 
             TU.test "makeTurn don't calculate turn for recipient" do
                   TUA.equal Nothing $ CIC.makeTurn contact 90000
 
             TU.test "makeTurn don't calculate turn if last message isn't from the sender" do
-                  let contact' = contact {
-                        history = [recipientMessage, recipientMessage]
-                  }
+                  let
+                        contact' = contact
+                              { history = [ recipientMessage, recipientMessage ]
+                              }
 
                   TUA.equal Nothing $ CIC.makeTurn contact' contactID
 
             TU.test "setSelectedImage sets file" do
-                  let { selectedImage, erroredFields } = DT.fst <<< CIC.setSelectedImage (Just image) $ model {
-                        erroredFields = [],
-                        selectedImage = Nothing
-                  }
+                  let
+                        { selectedImage, erroredFields } = DT.fst <<< CIC.setSelectedImage (Just image) $ model
+                              { erroredFields = []
+                              , selectedImage = Nothing
+                              }
                   TUA.equal (Just image) selectedImage
                   TUA.equal [] erroredFields
 
             TU.test "setSelectedImage validates files too long" do
-                  let { erroredFields } = DT.fst <<< CIC.setSelectedImage (Just <<< DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a") $ model {
-                        erroredFields = []
-                  }
-                  TUA.equal ["selectedImage"] erroredFields
+                  let
+                        { erroredFields } = DT.fst <<< CIC.setSelectedImage (Just <<< DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a") $ model
+                              { erroredFields = []
+                              }
+                  TUA.equal [ "selectedImage" ] erroredFields
 
-      where getHistory contacts = do
-                  { history } <- DA.head contacts
-                  DA.head history
-            getMessageID contacts = do
-                  { id } <- getHistory contacts
-                  pure id
+      where
+      getHistory contacts = do
+            { history } ← DA.head contacts
+            DA.head history
+      getMessageID contacts = do
+            { id } ← getHistory contacts
+            pure id
 
-            content = Text "test"
-            { id: recipientID } = imUser
-            messageID = 1
-            newMessageID = 101
-            { suggestions : modelSuggestions } = model
+      content = Text "test"
+      { id: recipientID } = imUser
+      messageID = 1
+      newMessageID = 101
+      { suggestions: modelSuggestions } = model
 
-            recipientMessage = historyMessage {
-                  sender = anotherIMUserID,
-                  recipient = imUserID
+      recipientMessage = historyMessage
+            { sender = anotherIMUserID
+            , recipient = imUserID
             }
-            senderMessage = historyMessage {
-                  sender = imUserID,
-                  recipient = anotherIMUserID
+      senderMessage = historyMessage
+            { sender = imUserID
+            , recipient = anotherIMUserID
             }
-            image = "base64"
-            caption = "caption"
+      image = "base64"
+      caption = "caption"

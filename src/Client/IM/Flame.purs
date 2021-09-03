@@ -29,11 +29,11 @@ diffNext fields affs model = FAE.diff' fields model :> affs
 next = pure <<< Just
 
 -- | Helper to raise a new message without performing an effect
-justNext :: IMModel -> IMMessage -> NextMessage
+justNext ∷ IMModel → IMMessage → NextMessage
 justNext model message = model :> [ pure <<< Just $ message ]
 
 -- Helper to perform a single effect that does not raise a new message
-nothingNext :: IMModel -> Aff Unit -> Tuple IMModel (Array (Aff (Maybe IMMessage)))
+nothingNext ∷ IMModel → Aff Unit → Tuple IMModel (Array (Aff (Maybe IMMessage)))
 nothingNext model aff = model :>
       [ do
               aff

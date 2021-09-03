@@ -6,9 +6,9 @@ import Shared.Types
 import Flame as F
 import Flame (ListUpdate)
 
-update :: ListUpdate InternalHelpModel InternalHelpMessage
+update ∷ ListUpdate InternalHelpModel InternalHelpMessage
 update model =
       case _ of
-            ToggleHelpSection toggle -> F.noMessages $ model
+            ToggleHelpSection toggle → F.noMessages $ model
                   { toggleHelp = toggle
                   }

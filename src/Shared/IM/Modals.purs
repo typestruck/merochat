@@ -15,15 +15,15 @@ import Shared.IM.Types
 import Shared.IM.Svg as SIA
 import Shared.IM.View.Retry as SIVR
 
-modals :: IMModel -> Html IMMessage
+modals ∷ IMModel → Html IMMessage
 modals { toggleModal: toggle, failedRequests, erroredFields } =
       HE.div (HA.class' { "modal-placeholder-overlay": true, "hidden": toggle == HideUserMenuModal })
             [ case toggle of
-                    ShowReport reportedID ->
+                    ShowReport reportedID →
                           HE.div (HA.class' "confirmation report")
                                 [ HE.span (HA.class' "report-title") "Report user"
                                 , HE.div (HA.class' "report-reasons") $ DA.mapWithIndex toRadio [ DatingContent, Harrassment, HateSpeech, Spam, OtherReason ]
-                                , HE.span [ HA.class' { "error-message": true, "invisible": not (DA.elem (TDS.reflectSymbol (Proxy :: Proxy "reportReason")) erroredFields) } ] "Please choose a reason"
+                                , HE.span [ HA.class' { "error-message": true, "invisible": not (DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "reportReason")) erroredFields) } ] "Please choose a reason"
                                 , HE.div (HA.class' "report-comment")
                                         [ HE.label_ "Comment"
                                         , HE.input [ HA.type' "text", HA.maxlength 300, HA.class' "modal-input", HA.onInput setReportComment ]
@@ -33,7 +33,7 @@ modals { toggleModal: toggle, failedRequests, erroredFields } =
                                         , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ ReportUser reportedID ] "Report"
                                         ]
                                 ]
-                    ConfirmLogout ->
+                    ConfirmLogout →
                           HE.div (HA.class' "confirmation")
                                 [ HE.span (HA.class' "bold") "Do you really want to log out?"
                                 , HE.div (HA.class' "buttons")
@@ -41,7 +41,7 @@ modals { toggleModal: toggle, failedRequests, erroredFields } =
                                         , HE.button [ HA.class' "green-button danger", HA.onClick Logout ] "Logout"
                                         ]
                                 ]
-                    _ ->
+                    _ →
                           HE.div (HA.class' "modal-placeholder")
                                 [ HE.div (HA.class' "modal-menu-mobile")
                                         [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ]

@@ -31,10 +31,10 @@ import Web.DOM.Element as WDE
 import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
-resumeChat :: Int -> Maybe Int -> IMModel -> MoreMessages
+resumeChat ∷ Int → Maybe Int → IMModel → MoreMessages
 resumeChat searchID impersonating model@{ contacts, chatting, smallScreen } =
       let
-            index = DA.findIndex (\cnt -> cnt.user.id == searchID && cnt.impersonating == impersonating) contacts
+            index = DA.findIndex (\cnt → cnt.user.id == searchID && cnt.impersonating == impersonating) contacts
             cnt@{ shouldFetchChatHistory, user: { id } } = SIC.chattingContact contacts index
       in
             if index == chatting then
@@ -56,30 +56,30 @@ resumeChat searchID impersonating model@{ contacts, chatting, smallScreen } =
       where
       smallScreenEffect = if smallScreen then [] else [ CIF.next $ FocusInput ChatInput ]
 
-markRead :: WebSocket -> IMModel -> MoreMessages
+markRead ∷ WebSocket → IMModel → MoreMessages
 markRead webSocket =
       case _ of
             model@
                   { user: { id: userID }
                   , contacts
                   , chatting: Just index
-                  } -> updateStatus model
+                  } → updateStatus model
                   { newStatus: Read
                   , index
                   , webSocket
                   , sessionUserID: userID
                   , contacts
                   }
-            model -> F.noMessages model
+            model → F.noMessages model
 
-updateStatus ::
-      IMModel ->
-      { sessionUserID :: Int
-      , webSocket :: WebSocket
-      , contacts :: Array Contact
-      , index :: Int
-      , newStatus :: MessageStatus
-      } ->
+updateStatus ∷
+      IMModel →
+      { sessionUserID ∷ Int
+      , webSocket ∷ WebSocket
+      , contacts ∷ Array Contact
+      , index ∷ Int
+      , newStatus ∷ MessageStatus
+      } →
       MoreMessages
 updateStatus model@{ experimenting } { webSocket, index, sessionUserID, contacts, newStatus } =
       let
@@ -114,27 +114,27 @@ updateStatus model@{ experimenting } { webSocket, index, sessionUserID, contacts
             , status: newStatus
             , ids: messages
             , persisting: case experimenting of
-                    Just (Impersonation (Just _)) -> false
-                    _ -> true
+                    Just (Impersonation (Just _)) → false
+                    _ → true
             }
 
       alertUnread contacts = CIUN.updateTabCount sessionUserID contacts
 
-checkFetchContacts :: IMModel -> MoreMessages
+checkFetchContacts ∷ IMModel → MoreMessages
 checkFetchContacts model@{ contacts, freeToFetchContactList }
       | freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
               where
               getScrollBottom = liftEffect do
-                    element <- CCD.unsafeGetElementByID ContactList
-                    top <- WDE.scrollTop element
-                    height <- WDE.scrollHeight element
-                    offset <- WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
+                    element ← CCD.unsafeGetElementByID ContactList
+                    top ← WDE.scrollTop element
+                    height ← WDE.scrollHeight element
+                    offset ← WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
                     pure $ top == height - offset
 
       | otherwise = F.noMessages model
 
-fetchContacts :: Boolean -> IMModel -> MoreMessages
+fetchContacts ∷ Boolean → IMModel → MoreMessages
 fetchContacts shouldFetch model@{ contacts, freeToFetchContactList, experimenting }
       | shouldFetch =
               model
@@ -143,18 +143,18 @@ fetchContacts shouldFetch model@{ contacts, freeToFetchContactList, experimentin
       | otherwise = F.noMessages model
 
 --paginated contacts
-displayContacts :: Array Contact -> IMModel -> MoreMessages
+displayContacts ∷ Array Contact → IMModel → MoreMessages
 displayContacts newContacts model@{ contacts } = updateDisplayContacts newContacts [] model
 
 --new chats
-displayNewContacts :: Array Contact -> IMModel -> MoreMessages
-displayNewContacts newContacts model@{ contacts } = updateDisplayContacts newContacts (map (\cnt -> Tuple cnt.user.id cnt.impersonating) newContacts) model
+displayNewContacts ∷ Array Contact → IMModel → MoreMessages
+displayNewContacts newContacts model@{ contacts } = updateDisplayContacts newContacts (map (\cnt → Tuple cnt.user.id cnt.impersonating) newContacts) model
 
 --new chats from impersonation experiment
-displayImpersonatedContacts :: Int -> HistoryMessage -> Array Contact -> IMModel -> MoreMessages
+displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → IMModel → MoreMessages
 displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
 
-resumeMissedEvents :: MissedEvents -> IMModel -> MoreMessages
+resumeMissedEvents ∷ MissedEvents → IMModel → MoreMessages
 resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
       let
             missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
@@ -166,7 +166,7 @@ resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, us
                             --wew lass
                             contacts = missedFromNewContacts <> missedFromExistingContacts
                           }
-                  ) $ map (\cnt -> Tuple cnt.user.id cnt.impersonating) missedContacts
+                  ) $ map (\cnt → Tuple cnt.user.id cnt.impersonating) missedContacts
       where
       messageMap = DH.fromArrayBy _.temporaryID _.id messageIDs
       markSenderError contact@{ history } = contact
@@ -190,9 +190,9 @@ resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, us
       getNew (Tuple newIndex _) = missedContacts !@ newIndex
 
       getExisting (Tuple existingIndex contactsIndex) = SU.fromJust do
-            index <- contactsIndex
-            currentContact <- contacts !! index
-            contact <- missedContacts !! existingIndex
+            index ← contactsIndex
+            currentContact ← contacts !! index
+            contact ← missedContacts !! existingIndex
             pure <<< Tuple index $ currentContact
                   { history = currentContact.history <> contact.history
                   }
@@ -200,7 +200,7 @@ resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, us
       findContact { user: { id } } = DA.findIndex (sameContact id) contacts
       sameContact userID { user: { id } } = userID == id
 
-updateDisplayContacts :: Array Contact -> Array (Tuple Int (Maybe Int)) -> IMModel -> MoreMessages
+updateDisplayContacts ∷ Array Contact → Array (Tuple Int (Maybe Int)) → IMModel → MoreMessages
 updateDisplayContacts newContacts userIDs model@{ contacts } =
       CIU.notifyUnreadChats
             ( model

@@ -12,21 +12,21 @@ import Server.Types (ServerEffect)
 import Shared.Options.Domain (domain)
 import Environment (development)
 
-cookieHeader :: String
+cookieHeader ∷ String
 cookieHeader = "Set-Cookie"
 
-makeCookieHeader :: String -> ServerEffect (Tuple String String)
+makeCookieHeader ∷ String → ServerEffect (Tuple String String)
 makeCookieHeader = pure <<< Tuple cookieHeader <<< BC.encode <<< makeCookie
 
-makeExpiredCookieHeader :: Tuple String String
+makeExpiredCookieHeader ∷ Tuple String String
 makeExpiredCookieHeader = Tuple cookieHeader $ BC.encode expiredCookie
       where
-      expiredCookie :: SetCookie
+      expiredCookie ∷ SetCookie
       expiredCookie = DN.over SetCookie expire $ makeCookie ""
       expire cookie = cookie
             { opts = map update' cookie.opts
             }
-      update' :: CookieOpts -> CookieOpts
+      update' ∷ CookieOpts → CookieOpts
       update' = DN.over CookieOpts update
       update cookie = cookie
             { maxAge = Nothing
@@ -41,10 +41,10 @@ makeExpiredCookieHeader = Tuple cookieHeader $ BC.encode expiredCookie
                     }
             }
 
-cookieName :: String
+cookieName ∷ String
 cookieName = "melanchat"
 
-makeCookie :: String -> SetCookie
+makeCookie ∷ String → SetCookie
 makeCookie value =
       SetCookie
             { cookie: Cookie { key: cookieName, value }

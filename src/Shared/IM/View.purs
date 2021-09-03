@@ -19,7 +19,7 @@ import Shared.IM.View.UserMenu as SIVU
 import Shared.Unsafe ((!@))
 import Shared.IM.Types
 
-view :: Boolean -> IMModel -> Html IMMessage
+view ∷ Boolean → IMModel → Html IMMessage
 view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, imUpdated, isWebSocketConnected, toggleModal, smallScreen } = HE.div [ HA.class' "im" ]
       [ HE.div (HA.class' { "contact-box": true, "current-mobile-screen": initialScreen })
               [ SIVU.userMenu model

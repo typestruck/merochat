@@ -10,17 +10,17 @@ import Server.Captcha as SC
 import Server.Landing.Database as SLD
 import Server.Token as ST
 
-register :: RegisterLogin -> ServerEffect String
+register ∷ RegisterLogin → ServerEffect String
 register { captchaResponse, email: rawEmail, password } = do
       SC.validateCaptcha captchaResponse
-      email <- SA.validateEmail rawEmail
-      hash <- SA.validatePassword password
+      email ← SA.validateEmail rawEmail
+      hash ← SA.validatePassword password
       SA.validateExistingEmail email
 
-      name <- SB.generateName
-      headline <- SB.generateHeadline
-      description <- SB.generateDescription
-      id <- SLD.createUser
+      name ← SB.generateName
+      headline ← SB.generateHeadline
+      description ← SB.generateDescription
+      id ← SLD.createUser
             { password: hash
             , email
             , name

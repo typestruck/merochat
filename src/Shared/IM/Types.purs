@@ -64,40 +64,40 @@ newtype DateTimeWrapper = DateTimeWrapper DateTime
 type Suggestion = IMUser
 
 type BasicMessage fields =
-      { id :: Int
-      , experimenting :: Maybe ExperimentPayload
+      { id ∷ Int
+      , experimenting ∷ Maybe ExperimentPayload
       | fields
       }
 
 type ClientMessagePayload = BasicMessage
-      ( content :: String
-      , userID :: Int
-      , date :: DateTimeWrapper
+      ( content ∷ String
+      , userID ∷ Int
+      , date ∷ DateTimeWrapper
       )
 
 type BaseContact fields =
       { -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
-        shouldFetchChatHistory :: Boolean
-      , available :: Boolean
+        shouldFetchChatHistory ∷ Boolean
+      , available ∷ Boolean
       --Days,
-      , chatAge :: Number
-      , chatStarter :: Int
-      , impersonating :: Maybe Int
+      , chatAge ∷ Number
+      , chatStarter ∷ Int
+      , impersonating ∷ Maybe Int
       | fields
       }
 
 type Contact = BaseContact
-      ( user :: IMUser
-      , history :: Array HistoryMessage
+      ( user ∷ IMUser
+      , history ∷ Array HistoryMessage
       )
 
 type HistoryMessage =
-      { id :: Int
-      , sender :: Int
-      , recipient :: Int
-      , date :: DateTimeWrapper
-      , content :: String
-      , status :: MessageStatus
+      { id ∷ Int
+      , sender ∷ Int
+      , recipient ∷ Int
+      , date ∷ DateTimeWrapper
+      , content ∷ String
+      , status ∷ MessageStatus
       }
 
 data MessageStatus
@@ -108,63 +108,63 @@ data MessageStatus
       | Read
 
 type MessageIDTemporary =
-      { id :: Int
-      , temporaryID :: Int
+      { id ∷ Int
+      , temporaryID ∷ Int
       }
 
 type MissedEvents =
-      { contacts :: Array Contact
-      , messageIDs :: Array MessageIDTemporary
+      { contacts ∷ Array Contact
+      , messageIDs ∷ Array MessageIDTemporary
       }
 
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
 type IM =
-      ( suggestions :: Array Suggestion
-      , contacts :: Array Contact
+      ( suggestions ∷ Array Suggestion
+      , contacts ∷ Array Contact
       ,
         --in case a message from someone blocked was already midway
-        blockedUsers :: Array Int
-      , temporaryID :: Int
-      , freeToFetchChatHistory :: Boolean
-      , freeToFetchContactList :: Boolean
-      , freeToFetchSuggestions :: Boolean
-      , selectedImage :: Maybe String
-      , imageCaption :: Maybe String
-      , messageEnter :: Boolean
-      , link :: Maybe String
-      , suggestionsPage :: Int
-      , linkText :: Maybe String
-      , isWebSocketConnected :: Boolean
-      , erroredFields :: Array String
-      , fortune :: Maybe String
-      , failedRequests :: Array RequestFailure
-      , errorMessage :: String
-      , experimenting :: Maybe ExperimentData
-      , modalsLoaded :: Array ShowUserMenuModal
-      , reportReason :: Maybe ReportReason
-      , reportComment :: Maybe String
+        blockedUsers ∷ Array Int
+      , temporaryID ∷ Int
+      , freeToFetchChatHistory ∷ Boolean
+      , freeToFetchContactList ∷ Boolean
+      , freeToFetchSuggestions ∷ Boolean
+      , selectedImage ∷ Maybe String
+      , imageCaption ∷ Maybe String
+      , messageEnter ∷ Boolean
+      , link ∷ Maybe String
+      , suggestionsPage ∷ Int
+      , linkText ∷ Maybe String
+      , isWebSocketConnected ∷ Boolean
+      , erroredFields ∷ Array String
+      , fortune ∷ Maybe String
+      , failedRequests ∷ Array RequestFailure
+      , errorMessage ∷ String
+      , experimenting ∷ Maybe ExperimentData
+      , modalsLoaded ∷ Array ShowUserMenuModal
+      , reportReason ∷ Maybe ReportReason
+      , reportComment ∷ Maybe String
       ,
         --the current logged in user
-        user :: IMUser
+        user ∷ IMUser
       ,
         --indexes
-        suggesting :: Maybe Int
-      , chatting :: Maybe Int
-      , smallScreen :: Boolean
+        suggesting ∷ Maybe Int
+      , chatting ∷ Maybe Int
+      , smallScreen ∷ Boolean
       ,
         --used to signal that the page should be reloaded
-        hash :: String
+        hash ∷ String
       ,
         --visibility switches
-        initialScreen :: Boolean
+        initialScreen ∷ Boolean
       , --used on mobile to switch screens
-        hasTriedToConnectYet :: Boolean
-      , fullContactProfileVisible :: Boolean
-      , imUpdated :: Boolean
-      , enableNotificationsVisible :: Boolean
-      , toggleContextMenu :: ShowContextMenu
-      , toggleModal :: ShowUserMenuModal
-      , toggleChatModal :: ShowChatModal
+        hasTriedToConnectYet ∷ Boolean
+      , fullContactProfileVisible ∷ Boolean
+      , imUpdated ∷ Boolean
+      , enableNotificationsVisible ∷ Boolean
+      , toggleContextMenu ∷ ShowContextMenu
+      , toggleModal ∷ ShowUserMenuModal
+      , toggleChatModal ∷ ShowChatModal
       )
 
 type IMModel = Record IM
@@ -196,16 +196,16 @@ data ShowUserMenuModal
       | ShowReport Int
 
 type Stats =
-      { characters :: Number
-      , interest :: Number
+      { characters ∷ Number
+      , interest ∷ Number
       }
 
 type Turn =
-      { senderStats :: Stats
-      , recipientStats :: Stats
-      , chatAge :: Number
+      { senderStats ∷ Stats
+      , recipientStats ∷ Stats
+      , chatAge ∷ Number
       , -- Days,
-        replyDelay :: Number --Seconds
+        replyDelay ∷ Number --Seconds
       }
 
 data ProfilePresentation
@@ -227,8 +227,8 @@ data Markup
       | UnorderedList
 
 type RequestFailure =
-      { request :: RetryableRequest
-      , errorMessage :: String
+      { request ∷ RetryableRequest
+      , errorMessage ∷ String
       }
 
 data RetryableRequest
@@ -243,29 +243,29 @@ data RetryableRequest
 
 -- | Errors that should be reported back to the user
 data ResponseError
-      = BadRequest { reason :: String }
-      | InternalError { reason :: String, context :: Maybe DatabaseError }
+      = BadRequest { reason ∷ String }
+      | InternalError { reason ∷ String, context ∷ Maybe DatabaseError }
       | ExpiredSession
 
 newtype DateWrapper = DateWrapper Date
 
 instance FromValue DateWrapper where
-      fromValue v = map DateWrapper (DL.fromValue v :: Either String Date)
+      fromValue v = map DateWrapper (DL.fromValue v ∷ Either String Date)
 
 instance FromValue DateTimeWrapper where
-      fromValue v = map DateTimeWrapper (DL.fromValue v :: Either String DateTime)
+      fromValue v = map DateTimeWrapper (DL.fromValue v ∷ Either String DateTime)
 
 instance ToValue MessageStatus where
       toValue v = F.unsafeToForeign $ DE.fromEnum v
 
 instance FromValue ReportReason where
-      fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v :: Either String Int)
+      fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v ∷ Either String Int)
 
 instance ToValue ReportReason where
       toValue v = F.unsafeToForeign $ DE.fromEnum v
 
 instance FromValue MessageStatus where
-      fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v :: Either String Int)
+      fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v ∷ Either String Int)
 
 data ReportReason = DatingContent | Harrassment | HateSpeech | Spam | OtherReason
 
@@ -324,7 +324,7 @@ data IMMessage
       | ToggleAskNotification
       | SetNameFromProfile String
       | ToggleConnected Boolean
-      | SetField (IMModel -> IMModel)
+      | SetField (IMModel → IMModel)
       | ToggleFortune Boolean
       | DisplayFortune String
       | RequestFailed RequestFailure
@@ -335,21 +335,21 @@ data WebSocketPayloadServer
       | Ping
       | OutgoingMessage
               ( BasicMessage
-                      ( userID :: Int
-                      , content :: MessageContent
-                      , turn :: Maybe Turn
+                      ( userID ∷ Int
+                      , content ∷ MessageContent
+                      , turn ∷ Maybe Turn
                       )
               )
       | ChangeStatus
-              { userID :: Int
-              , status :: MessageStatus
-              , persisting :: Boolean
+              { userID ∷ Int
+              , status ∷ MessageStatus
+              , persisting ∷ Boolean
               , -- in some cases status changs should be not persisted to the database
                 --alternatively, update by user?
-                ids :: Array Int
+                ids ∷ Array Int
               }
       | ToBlock
-              { id :: Int
+              { id ∷ Int
               }
 
 data ElementID
@@ -394,292 +394,292 @@ data WebSocketPayloadClient
       = CurrentHash String
       | NewIncomingMessage ClientMessagePayload
       | ServerReceivedMessage
-              { previousID :: Int
-              , id :: Int
-              , userID :: Int
+              { previousID ∷ Int
+              , id ∷ Int
+              , userID ∷ Int
               }
       | ServerChangedStatus
-              { ids :: Array Int
-              , status :: MessageStatus
-              , userID :: Int
+              { ids ∷ Array Int
+              , status ∷ MessageStatus
+              , userID ∷ Int
               }
-      | BeenBlocked { id :: Int }
-      | PayloadError { origin :: WebSocketPayloadServer, context :: Maybe DatabaseError }
+      | BeenBlocked { id ∷ Int }
+      | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
 data DatabaseError = MissingForeignKey
 
-instance showMessageStatus :: Show MessageStatus where
+instance showMessageStatus ∷ Show MessageStatus where
       show = case _ of
-            Errored -> "Failed to send"
-            Sent -> "Sending"
-            Received -> "Sent"
-            Delivered -> "Unread"
-            Read -> "Read"
-instance contentReportReason :: Show ReportReason where
+            Errored → "Failed to send"
+            Sent → "Sending"
+            Received → "Sent"
+            Delivered → "Unread"
+            Read → "Read"
+instance contentReportReason ∷ Show ReportReason where
       show = case _ of
-            DatingContent -> "Dating content"
-            Harrassment -> "Harrassment/Bullying"
-            HateSpeech -> "Hate Speech/Call to violence"
-            Spam -> "Spam/Product placement"
-            OtherReason -> "Other"
+            DatingContent → "Dating content"
+            Harrassment → "Harrassment/Bullying"
+            HateSpeech → "Hate Speech/Call to violence"
+            Spam → "Spam/Product placement"
+            OtherReason → "Other"
 
-derive instance ordReportReason :: Ord ReportReason
-derive instance ordMessageStatus :: Ord MessageStatus
+derive instance ordReportReason ∷ Ord ReportReason
+derive instance ordMessageStatus ∷ Ord MessageStatus
 
-instance decodeJsonReportReason :: DecodeJson ReportReason where
+instance decodeJsonReportReason ∷ DecodeJson ReportReason where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonMessageStatus :: DecodeJson MessageStatus where
+instance decodeJsonMessageStatus ∷ DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 
-instance encodeJsonReportReason :: EncodeJson ReportReason where
+instance encodeJsonReportReason ∷ EncodeJson ReportReason where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonMessageStatus :: EncodeJson MessageStatus where
+instance encodeJsonMessageStatus ∷ EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
 
-instance readForeignMessageStatus :: ReadForeign MessageStatus where
+instance readForeignMessageStatus ∷ ReadForeign MessageStatus where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
-instance readForeignReportReason :: ReadForeign ReportReason where
+instance readForeignReportReason ∷ ReadForeign ReportReason where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
 
-instance writeForeignReportReason :: WriteForeign ReportReason where
+instance writeForeignReportReason ∷ WriteForeign ReportReason where
       writeImpl reason = F.unsafeToForeign $ DE.fromEnum reason
-instance writeForeignMessageStatus :: WriteForeign MessageStatus where
+instance writeForeignMessageStatus ∷ WriteForeign MessageStatus where
       writeImpl messageStatus = F.unsafeToForeign $ DE.fromEnum messageStatus
 
-derive instance genericMessageStatus :: Generic MessageStatus _
-derive instance genericReportReason :: Generic ReportReason _
+derive instance genericMessageStatus ∷ Generic MessageStatus _
+derive instance genericReportReason ∷ Generic ReportReason _
 
-derive instance eqReportReason :: Eq ReportReason
-derive instance eqMessageStatus :: Eq MessageStatus
+derive instance eqReportReason ∷ Eq ReportReason
+derive instance eqMessageStatus ∷ Eq MessageStatus
 
-instance boundedMessageStatus :: Bounded MessageStatus where
+instance boundedMessageStatus ∷ Bounded MessageStatus where
       bottom = Received
       top = Read
-instance enumReportReason :: Enum ReportReason where
+instance enumReportReason ∷ Enum ReportReason where
       succ = case _ of
-            DatingContent -> Just Harrassment
-            Harrassment -> Just HateSpeech
-            HateSpeech -> Just Spam
-            Spam -> Just OtherReason
-            OtherReason -> Nothing
+            DatingContent → Just Harrassment
+            Harrassment → Just HateSpeech
+            HateSpeech → Just Spam
+            Spam → Just OtherReason
+            OtherReason → Nothing
 
       pred = case _ of
-            DatingContent -> Nothing
-            Harrassment -> Just DatingContent
-            HateSpeech -> Just Harrassment
-            Spam -> Just HateSpeech
-            OtherReason -> Just Spam
+            DatingContent → Nothing
+            Harrassment → Just DatingContent
+            HateSpeech → Just Harrassment
+            Spam → Just HateSpeech
+            OtherReason → Just Spam
 
-instance boundedEnumMessageStatus :: BoundedEnum MessageStatus where
+instance boundedEnumMessageStatus ∷ BoundedEnum MessageStatus where
       cardinality = Cardinality 1
 
       fromEnum = case _ of
-            Errored -> -1
-            Sent -> 0
-            Received -> 1
-            Delivered -> 2
-            Read -> 3
+            Errored → -1
+            Sent → 0
+            Received → 1
+            Delivered → 2
+            Read → 3
 
       toEnum = case _ of
-            -1 -> Just Errored
-            0 -> Just Sent
-            1 -> Just Received
-            2 -> Just Delivered
-            3 -> Just Read
-            _ -> Nothing
+            -1 → Just Errored
+            0 → Just Sent
+            1 → Just Received
+            2 → Just Delivered
+            3 → Just Read
+            _ → Nothing
 
-instance enumMessageStatus :: Enum MessageStatus where
+instance enumMessageStatus ∷ Enum MessageStatus where
       succ = case _ of
-            Errored -> Just Received
-            Sent -> Just Sent
-            Received -> Just Delivered
-            Delivered -> Just Read
-            Read -> Nothing
+            Errored → Just Received
+            Sent → Just Sent
+            Received → Just Delivered
+            Delivered → Just Read
+            Read → Nothing
 
       pred = case _ of
-            Errored -> Nothing
-            Sent -> Just Sent
-            Received -> Just Errored
-            Delivered -> Just Received
-            Read -> Just Delivered
+            Errored → Nothing
+            Sent → Just Sent
+            Received → Just Errored
+            Delivered → Just Received
+            Read → Just Delivered
 
-instance boundedReportReason :: Bounded ReportReason where
+instance boundedReportReason ∷ Bounded ReportReason where
       bottom = DatingContent
       top = OtherReason
 
-instance boundedEnumReportReason :: BoundedEnum ReportReason where
+instance boundedEnumReportReason ∷ BoundedEnum ReportReason where
       cardinality = Cardinality 1
 
       fromEnum = case _ of
-            DatingContent -> 0
-            Harrassment -> 1
-            HateSpeech -> 2
-            Spam -> 3
-            OtherReason -> 255
+            DatingContent → 0
+            Harrassment → 1
+            HateSpeech → 2
+            Spam → 3
+            OtherReason → 255
 
       toEnum = case _ of
-            0 -> Just DatingContent
-            1 -> Just Harrassment
-            2 -> Just HateSpeech
-            3 -> Just Spam
-            255 -> Just OtherReason
-            _ -> Nothing
+            0 → Just DatingContent
+            1 → Just Harrassment
+            2 → Just HateSpeech
+            3 → Just Spam
+            255 → Just OtherReason
+            _ → Nothing
 
-instance decodeJsonMDateTime :: DecodeJson DateTimeWrapper where
+instance decodeJsonMDateTime ∷ DecodeJson DateTimeWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldnt parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
-instance decodeJsonMDate :: DecodeJson DateWrapper where
+instance decodeJsonMDate ∷ DecodeJson DateWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldnt parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
-instance decodeJsonWebSocketPayloadServer :: DecodeJson WebSocketPayloadServer where
+instance decodeJsonWebSocketPayloadServer ∷ DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonMessageContent :: DecodeJson MessageContent where
+instance decodeJsonMessageContent ∷ DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonShowModal :: DecodeJson ShowUserMenuModal where
-      decodeJson = DADGR.genericDecodeJson
-
-instance decodeJsonWebSocketPayloadClient :: DecodeJson WebSocketPayloadClient where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonShowContextMenu :: DecodeJson ShowContextMenu where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonPayloadErrorContext :: DecodeJson DatabaseError where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonRetryableRequest :: DecodeJson RetryableRequest where
-      decodeJson = DADGR.genericDecodeJson
-instance decodeJsonShowChatModal :: DecodeJson ShowChatModal where
+instance decodeJsonShowModal ∷ DecodeJson ShowUserMenuModal where
       decodeJson = DADGR.genericDecodeJson
 
-instance encodeJsonMDateTime :: EncodeJson DateTimeWrapper where
+instance decodeJsonWebSocketPayloadClient ∷ DecodeJson WebSocketPayloadClient where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonShowContextMenu ∷ DecodeJson ShowContextMenu where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonPayloadErrorContext ∷ DecodeJson DatabaseError where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonRetryableRequest ∷ DecodeJson RetryableRequest where
+      decodeJson = DADGR.genericDecodeJson
+instance decodeJsonShowChatModal ∷ DecodeJson ShowChatModal where
+      decodeJson = DADGR.genericDecodeJson
+
+instance encodeJsonMDateTime ∷ EncodeJson DateTimeWrapper where
       encodeJson = DAC.fromNumber <<< SDT.dateTimeToNumber
-instance encodeJsonMDate :: EncodeJson DateWrapper where
+instance encodeJsonMDate ∷ EncodeJson DateWrapper where
       encodeJson = DAC.fromNumber <<< SDT.dateToNumber
-instance encodeJsonWebSocketPayloadServer :: EncodeJson WebSocketPayloadServer where
+instance encodeJsonWebSocketPayloadServer ∷ EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonMessageContent :: EncodeJson MessageContent where
+instance encodeJsonMessageContent ∷ EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonShowModal :: EncodeJson ShowUserMenuModal where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance encodeJsonWebSocketPayloadClient :: EncodeJson WebSocketPayloadClient where
-      encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonShowContextMenu :: EncodeJson ShowContextMenu where
-      encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonPayloadErrorContext :: EncodeJson DatabaseError where
-      encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonRetryableRequest :: EncodeJson RetryableRequest where
-      encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonShowChatModal :: EncodeJson ShowChatModal where
+instance encodeJsonShowModal ∷ EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
 
-instance hashableIMSelector :: Hashable ElementID where
+instance encodeJsonWebSocketPayloadClient ∷ EncodeJson WebSocketPayloadClient where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonShowContextMenu ∷ EncodeJson ShowContextMenu where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonPayloadErrorContext ∷ EncodeJson DatabaseError where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonRetryableRequest ∷ EncodeJson RetryableRequest where
+      encodeJson = DAEGR.genericEncodeJson
+instance encodeJsonShowChatModal ∷ EncodeJson ShowChatModal where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance hashableIMSelector ∷ Hashable ElementID where
       hash = HS.hash <<< show
 
-instance showResponseError :: Show ResponseError where
+instance showResponseError ∷ Show ResponseError where
       show = DGRS.genericShow
-instance showShowUserMenuModal :: Show ShowUserMenuModal where
+instance showShowUserMenuModal ∷ Show ShowUserMenuModal where
       show = case _ of
-            ShowProfile -> "Your profile"
-            ShowSettings -> "Your settings"
-            ShowLeaderboard -> "Karma leaderboard"
-            ShowHelp -> "Help"
-            ShowExperiments -> "Chat experiments"
-            ShowBacker -> "Backing"
-            _ -> ""
-instance showMDateTime :: Show DateTimeWrapper where
+            ShowProfile → "Your profile"
+            ShowSettings → "Your settings"
+            ShowLeaderboard → "Karma leaderboard"
+            ShowHelp → "Help"
+            ShowExperiments → "Chat experiments"
+            ShowBacker → "Backing"
+            _ → ""
+instance showMDateTime ∷ Show DateTimeWrapper where
       show = DGRS.genericShow
-instance showMDate :: Show DateWrapper where
+instance showMDate ∷ Show DateWrapper where
       show = DGRS.genericShow
-instance showMessageContent :: Show MessageContent where
+instance showMessageContent ∷ Show MessageContent where
       show = DGRS.genericShow
-instance showWebSocketPayloadClient :: Show WebSocketPayloadClient where
+instance showWebSocketPayloadClient ∷ Show WebSocketPayloadClient where
       show = DGRS.genericShow
-instance showPayloadErrorContext :: Show DatabaseError where
+instance showPayloadErrorContext ∷ Show DatabaseError where
       show = DGRS.genericShow
-instance showWebSocketPayloadServer :: Show WebSocketPayloadServer where
+instance showWebSocketPayloadServer ∷ Show WebSocketPayloadServer where
       show = DGRS.genericShow
 
-instance showElementID :: Show ElementID where
+instance showElementID ∷ Show ElementID where
       show = case _ of
-            UserContextMenu -> "user-context-menu"
-            SuggestionContextMenu -> "suggestion-context-menu"
-            CompactProfileContextMenu -> "compact-profile-context-menu"
-            FullProfileContextMenu -> "full-profile-context-menu"
-            ImageFileInput -> "image-file-input"
-            ContactList -> "contact-list"
-            LinkFormUrl -> "link-form-url"
-            ChatInput -> "chat-input"
-            ChatInputSuggestion -> "chat-input-suggestion"
-            ImageFormCaption -> "image-form-caption"
-            MessageHistory -> "message-history"
-            Favicon -> "favicon"
-            ConfirmPasswordInput -> "#confirm-password-input"
-            PasswordDiv -> "password"
-            TermsLink -> "terms-link"
-            PrivacyLink -> "privacy-link"
-            Faq -> "faq"
-            TermsSection -> "terms"
-            EmailDiv -> "email"
-            EmailInput -> "email-input"
-            PrivacySection -> "privacy"
-            ConfirmPassword -> "confirm-password"
-            FaqLink -> "faq-link"
-            BackerRoot -> "backer-root"
-            ChatInputPreview -> "chat-input-preview"
-            ProfileEditionRoot -> "profile-edition-root"
-            SettingsEditionRoot -> "settings-edition-root"
-            KarmaLeaderboard -> "karma-leaderboard-root"
-            HelpRoot -> "help-root"
-            ExperimentsRoot -> "experiments-root"
-            PasswordInput -> "password-input"
-            AvatarFileInput -> "avatar-file-input"
+            UserContextMenu → "user-context-menu"
+            SuggestionContextMenu → "suggestion-context-menu"
+            CompactProfileContextMenu → "compact-profile-context-menu"
+            FullProfileContextMenu → "full-profile-context-menu"
+            ImageFileInput → "image-file-input"
+            ContactList → "contact-list"
+            LinkFormUrl → "link-form-url"
+            ChatInput → "chat-input"
+            ChatInputSuggestion → "chat-input-suggestion"
+            ImageFormCaption → "image-form-caption"
+            MessageHistory → "message-history"
+            Favicon → "favicon"
+            ConfirmPasswordInput → "#confirm-password-input"
+            PasswordDiv → "password"
+            TermsLink → "terms-link"
+            PrivacyLink → "privacy-link"
+            Faq → "faq"
+            TermsSection → "terms"
+            EmailDiv → "email"
+            EmailInput → "email-input"
+            PrivacySection → "privacy"
+            ConfirmPassword → "confirm-password"
+            FaqLink → "faq-link"
+            BackerRoot → "backer-root"
+            ChatInputPreview → "chat-input-preview"
+            ProfileEditionRoot → "profile-edition-root"
+            SettingsEditionRoot → "settings-edition-root"
+            KarmaLeaderboard → "karma-leaderboard-root"
+            HelpRoot → "help-root"
+            ExperimentsRoot → "experiments-root"
+            PasswordInput → "password-input"
+            AvatarFileInput → "avatar-file-input"
 
-instance encodeQueryParamMDateTime :: EncodeQueryParam DateTimeWrapper where
+instance encodeQueryParamMDateTime ∷ EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< show <<< SDT.dateTimeToNumber
 
-instance readForeignMDatee :: ReadForeign DateWrapper where
+instance readForeignMDatee ∷ ReadForeign DateWrapper where
       readImpl foreignDate = DateWrapper <<< DTT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
-instance readForeignMDateTime :: ReadForeign DateTimeWrapper where
+instance readForeignMDateTime ∷ ReadForeign DateTimeWrapper where
       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
 
-instance decodeQueryMDateTime :: DecodeQueryParam DateTimeWrapper where
+instance decodeQueryMDateTime ∷ DecodeQueryParam DateTimeWrapper where
       decodeQueryParam query key =
             case FO.lookup key query of
-                  Nothing -> Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [ value ] -> DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) (DDI.instant <<< DTD.Milliseconds =<< DNM.fromString value)
-                  _ -> errorDecoding query key
+                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
+                  Just [ value ] → DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) (DDI.instant <<< DTD.Milliseconds =<< DNM.fromString value)
+                  _ → errorDecoding query key
 
-instance writeForeignMDateTime :: WriteForeign DateTimeWrapper where
+instance writeForeignMDateTime ∷ WriteForeign DateTimeWrapper where
       writeImpl = F.unsafeToForeign <<< SDT.dateTimeToNumber
 
-instance writeForeignMDate :: WriteForeign DateWrapper where
+instance writeForeignMDate ∷ WriteForeign DateWrapper where
       writeImpl = F.unsafeToForeign <<< SDT.dateToNumber
 
-derive instance newtypeMDateTime :: Newtype DateTimeWrapper _
-derive instance newtypeMDate :: Newtype DateWrapper _
-derive instance eqIMSelector :: Eq ElementID
-derive instance eqShowContextMenu :: Eq ShowContextMenu
-derive instance eqDatabaseError :: Eq DatabaseError
-derive instance eqFullContactProfile :: Eq ProfilePresentation
-derive instance eqRetryableRequest :: Eq RetryableRequest
-derive instance eqShowChatModal :: Eq ShowChatModal
-derive instance eqMDateTime :: Eq DateTimeWrapper
-derive instance eqMDate :: Eq DateWrapper
+derive instance newtypeMDateTime ∷ Newtype DateTimeWrapper _
+derive instance newtypeMDate ∷ Newtype DateWrapper _
+derive instance eqIMSelector ∷ Eq ElementID
+derive instance eqShowContextMenu ∷ Eq ShowContextMenu
+derive instance eqDatabaseError ∷ Eq DatabaseError
+derive instance eqFullContactProfile ∷ Eq ProfilePresentation
+derive instance eqRetryableRequest ∷ Eq RetryableRequest
+derive instance eqShowChatModal ∷ Eq ShowChatModal
+derive instance eqMDateTime ∷ Eq DateTimeWrapper
+derive instance eqMDate ∷ Eq DateWrapper
 
-derive instance eqShowModal :: Eq ShowUserMenuModal
+derive instance eqShowModal ∷ Eq ShowUserMenuModal
 
-derive instance genericResponseError :: Generic ResponseError _
-derive instance genericMDateTime :: Generic DateTimeWrapper _
-derive instance genericMDate :: Generic DateWrapper _
-derive instance genericMessageContent :: Generic MessageContent _
-derive instance genericWebSocketPayloadServer :: Generic WebSocketPayloadClient _
-derive instance genericFullWebSocketPayloadServer :: Generic FullWebSocketPayloadClient _
-derive instance genericWebSocketPayloadClient :: Generic WebSocketPayloadServer _
-derive instance genericShowModal :: Generic ShowUserMenuModal _
+derive instance genericResponseError ∷ Generic ResponseError _
+derive instance genericMDateTime ∷ Generic DateTimeWrapper _
+derive instance genericMDate ∷ Generic DateWrapper _
+derive instance genericMessageContent ∷ Generic MessageContent _
+derive instance genericWebSocketPayloadServer ∷ Generic WebSocketPayloadClient _
+derive instance genericFullWebSocketPayloadServer ∷ Generic FullWebSocketPayloadClient _
+derive instance genericWebSocketPayloadClient ∷ Generic WebSocketPayloadServer _
+derive instance genericShowModal ∷ Generic ShowUserMenuModal _
 
-derive instance genericShowContextMenu :: Generic ShowContextMenu _
-derive instance genericDatabaseError :: Generic DatabaseError _
-derive instance genericRetryableRequest :: Generic RetryableRequest _
-derive instance genericShowChatModal :: Generic ShowChatModal _
+derive instance genericShowContextMenu ∷ Generic ShowContextMenu _
+derive instance genericDatabaseError ∷ Generic DatabaseError _
+derive instance genericRetryableRequest ∷ Generic RetryableRequest _
+derive instance genericShowChatModal ∷ Generic ShowChatModal _
 
-errorDecoding :: forall a. Object (Array String) -> String -> Either DecodeError a
+errorDecoding ∷ ∀ a. Object (Array String) → String → Either DecodeError a
 errorDecoding queryObj key = Left $ QueryDecodeError
       { values: []
       , message: "Could not decode parameter " <> key

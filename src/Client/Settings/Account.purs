@@ -18,31 +18,31 @@ import Payload.Client (ClientResponse)
 import Shared.Routes (routes)
 import Shared.Settings.View as SSV
 
-update :: AffUpdate SettingsModel SettingsMessage
+update ∷ AffUpdate SettingsModel SettingsMessage
 update { model, message } =
       case message of
-            SetSField setter -> pure setter
-            ChangeEmail -> changeEmail model
-            ChangePassword -> changePassword model
-            ToggleTerminateAccount -> toggleTerminateAccount model
-            TerminateAccount -> terminateAccount
+            SetSField setter → pure setter
+            ChangeEmail → changeEmail model
+            ChangePassword → changePassword model
+            ToggleTerminateAccount → toggleTerminateAccount model
+            TerminateAccount → terminateAccount
 
-toggleTerminateAccount :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-toggleTerminateAccount _ = pure (\model -> model { confirmTermination = not model.confirmTermination })
+toggleTerminateAccount ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
+toggleTerminateAccount _ = pure (\model → model { confirmTermination = not model.confirmTermination })
 
-changeEmail :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changeEmail model@({ email, emailConfirmation }) = requestAndLogout (Proxy :: Proxy "email") $ request.settings.account.email { body: { email } }
+changeEmail ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
+changeEmail model@({ email, emailConfirmation }) = requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email } }
 
-changePassword :: SettingsModel -> Aff (SettingsModel -> SettingsModel)
-changePassword model@({ password, passwordConfirmation }) = requestAndLogout (Proxy :: Proxy "password") $ request.settings.account.password { body: { password } }
+changePassword ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
+changePassword model@({ password, passwordConfirmation }) = requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password } }
 
-requestAndLogout :: forall v field. IsSymbol field => Proxy field -> Aff (ClientResponse v) -> Aff (SettingsModel -> SettingsModel)
+requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (SettingsModel → SettingsModel)
 requestAndLogout field aff = do
-      status <- CNN.formRequest (SSV.formId field) aff
+      status ← CNN.formRequest (SSV.formId field) aff
       when (status == Success) $ do
             EA.delay $ Milliseconds 3000.0
             liftEffect <<< CCL.setLocation $ routes.login.get {}
       FAE.noChanges
 
-terminateAccount :: Aff (SettingsModel -> SettingsModel)
-terminateAccount = requestAndLogout (Proxy :: Proxy "confirmTermination") $ request.settings.account.terminate { body: {} }
+terminateAccount ∷ Aff (SettingsModel → SettingsModel)
+terminateAccount = requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ request.settings.account.terminate { body: {} }

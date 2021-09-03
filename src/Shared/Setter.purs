@@ -12,5 +12,5 @@ setUserField field value model = model
       { user = R.set field value model.user
       }
 
-setIMField :: forall field r v. IsSymbol field => Cons field v r IM => Proxy field -> v -> IMMessage
+setIMField ∷ ∀ field r v. IsSymbol field ⇒ Cons field v r IM ⇒ Proxy field → v → IMMessage
 setIMField field = SetField <<< R.set field

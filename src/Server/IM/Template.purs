@@ -20,18 +20,18 @@ import Shared.IM.View as SIV
 import Shared.Path (updateHash)
 import Shared.Path as SP
 
-template ::
-      { contacts :: Array Contact
-      , suggestions :: Array Suggestion
-      , user :: IMUser
-      } ->
+template ∷
+      { contacts ∷ Array Contact
+      , suggestions ∷ Array Suggestion
+      , user ∷ IMUser
+      } →
       Effect String
 template { contacts, suggestions, user } = do
       let
             unreadChats = SIU.countUnreadChats user.id contacts
             suggestionsCount = DA.length suggestions
       F.preMount (QuerySelector ".im")
-            { view: \model -> ST.templateWith $ defaultParameters
+            { view: \model → ST.templateWith $ defaultParameters
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
                     , content = [ SIV.view false model ]

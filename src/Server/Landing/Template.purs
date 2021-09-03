@@ -14,9 +14,9 @@ import Shared.Path as SP
 import Shared.Routes (routes)
 import Shared.Types (ContentType(..))
 
-template :: Effect String
+template ∷ Effect String
 template = do
-      contents <- ST.template defaultParameters
+      contents ← ST.template defaultParameters
             { content = content
             , javascript = javascript
             , css = css

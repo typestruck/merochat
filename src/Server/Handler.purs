@@ -39,7 +39,7 @@ import Server.Settings.Handler as SSH
 import Shared.IM.Types (ResponseError(..))
 import Shared.Routes (routes)
 
-handlers :: ServerReader -> _
+handlers ∷ ServerReader → _
 handlers reading =
       { landing: runHTML reading SLH.landing
       , register: runJSON reading SLH.register
@@ -87,7 +87,7 @@ handlers reading =
       , notFound: runHTML reading SNH.notFound
       }
 
-runHTML :: forall a b. ServerReader -> (a -> ServerEffect b) -> a -> Aff (Either (Response String) b)
+runHTML ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
 runHTML reading handler input = run `EA.catchError` catch
       where
       run = R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right $ handler input
@@ -96,31 +96,31 @@ runHTML reading handler input = run `EA.catchError` catch
             R.liftEffect do
                   EC.log $ "server error " <> show ohno
                   map Left $ case ohno of
-                        BadRequest { reason } -> SIEH.internalError reason
-                        InternalError { reason } -> SIEH.internalError reason
-                        ExpiredSession -> pure $ SL.logout (routes.login.get {}) ""
+                        BadRequest { reason } → SIEH.internalError reason
+                        InternalError { reason } → SIEH.internalError reason
+                        ExpiredSession → pure $ SL.logout (routes.login.get {}) ""
 
-runJSON :: forall a b. ServerReader -> (a -> ServerEffect b) -> a -> Aff (Either (Response String) b)
+runJSON ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
 runJSON reading handler =
       R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right <<< handler
       where
       requestError ohno = do
             R.liftEffect <<< EC.log $ "server error " <> show ohno
             pure <<< Left $ case ohno of
-                  BadRequest { reason } -> PSR.badRequest reason
-                  InternalError { reason } -> PSR.internalError reason
-                  ExpiredSession -> PSR.unauthorized ""
+                  BadRequest { reason } → PSR.badRequest reason
+                  InternalError { reason } → PSR.internalError reason
+                  ExpiredSession → PSR.unauthorized ""
 
-developmentFiles :: { params :: { path :: List String } } -> Aff File
+developmentFiles ∷ { params ∷ { path ∷ List String } } → Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}
       where
       clientBaseFolder = "src/Client/"
       distBaseFolder = "dist/development/"
       fullPath = case path of
-            Cons "media" (Cons file Nil) -> clientBaseFolder <> "media/" <> file
-            Cons "media" (Cons "upload" (Cons file Nil)) -> clientBaseFolder <> "media/upload/" <> file
+            Cons "media" (Cons file Nil) → clientBaseFolder <> "media/" <> file
+            Cons "media" (Cons "upload" (Cons file Nil)) → clientBaseFolder <> "media/upload/" <> file
             --js files are expected to be named like module.bundle.js
             -- they are served from webpack output
-            Cons "javascript" (Cons file Nil) -> distBaseFolder <> file
-            Cons folder (Cons file Nil) -> clientBaseFolder <> folder <> "/" <> file
-            _ -> distBaseFolder <> DS.joinWith "/" (DL.toUnfoldable path)
+            Cons "javascript" (Cons file Nil) → distBaseFolder <> file
+            Cons folder (Cons file Nil) → clientBaseFolder <> folder <> "/" <> file
+            _ → distBaseFolder <> DS.joinWith "/" (DL.toUnfoldable path)

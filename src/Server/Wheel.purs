@@ -18,7 +18,7 @@ import Data.Tuple (Tuple(..))
 -- | New chat bonus is how fresh a chat is, more karma should be earned on the first day of a chat than that on the 30000th
 -- | Fast reply tries to assert how "instantaneuous" a given conversation is, by making some assumptions about how many characters should have been typed in the time it took for a reply to be sent
 -- | The sender gets a bonus on karma earned
-karmaFrom :: Turn -> Tuple Int Int
+karmaFrom ∷ Turn → Tuple Int Int
 karmaFrom { senderStats, recipientStats, chatAge, replyDelay } =
       let
             grossSender = karma senderStats

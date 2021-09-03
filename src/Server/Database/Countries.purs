@@ -4,9 +4,9 @@ import Type.Proxy (Proxy(..))
 import Droplet.Language
 
 type Countries =
-      ( id :: Auto Int
-      , name :: String
+      ( id ∷ Auto Int
+      , name ∷ String
       )
 
-countries :: Table "countries" Countries
+countries ∷ Table "countries" Countries
 countries = Table
