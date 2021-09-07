@@ -12,12 +12,14 @@ import Server.Database.Languages
 import Server.Database.LanguagesUsers
 import Server.Database.Messages
 import Server.Database.Reports
+import Server.Database.Suggestions
 import Server.Database.Tags
 import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Types
 import Shared.IM.Types
 import Shared.Types
+
 import Data.Array as DA
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
@@ -25,13 +27,15 @@ import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
+import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
+import Droplet.Language.Internal.Definition (Path)
 import Server.Database as SD
-import Server.Database.Suggestions
 import Server.IM.Flat (FlatContact, FlatUser)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
 import Shared.User (IU)
 import Type.Proxy (Proxy(..))
+import Unsafe.Coerce (unsafeCoerce)
 
 _chatStarter ∷ Proxy "chatStarter"
 _chatStarter = Proxy
@@ -88,25 +92,28 @@ presentUser loggedUserID = SD.single $ select userPresentationFields2 # from use
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array _)
 suggest loggedUserID skip = case _ of
       Just (ArrayPrimaryKey []) → -- no users to avoid when impersonating
-            SD.query $ baseQuery identity
+            SD.query $ suggestBaseQuery skip baseFilter
       Just (ArrayPrimaryKey keys) → -- users to avoid when impersonating
-            SD.query <<< baseQuery $ \ft -> ft .&&. not (in_ (u ... _id) keys)
+            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (in_ (u ... _id) keys))
       _ → -- default case
-            SD.query <<< baseQuery $ \ft -> ft .&&. not (exists $ select (1 # as u) # from histories # wher (_sender .=. loggedUserID .&&. _recipient .=. u ... _id .||. _sender .=. u ... _id .&&. _recipient .=. loggedUserID))
+            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (exists $ select (1 # as u) # from histories # wher (_sender .=. loggedUserID .&&. _recipient .=. u ... _id .||. _sender .=. u ... _id .&&. _recipient .=. loggedUserID)))
       where
-      baseQuery filter =
-            select star
-                  # from
-                        ( select userPresentationFields2
-                                # from (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested))
-                                # wher (filter (u ... _id .<>. loggedUserID .&&. _active .=. true .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserID .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserID))))
-                                # orderBy (s ... _id)
-                                # limit suggestionsPerPage
-                                # offset skip
-                                # as t
-                        )
-                  #
-                        orderBy random
+      baseFilter = (u ... _id .<>. loggedUserID .&&. _active .=. true .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserID .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserID)))
+
+-- top level to avoid monomorphic filter
+suggestBaseQuery skip filter =
+      select star
+            # from
+                  ( select userPresentationFields2
+                          # from (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested))
+                          # wher filter
+                          # orderBy (s ... _id)
+                          # limit suggestionsPerPage
+                          # offset skip
+                          # as t
+                  )
+            #
+                  orderBy random
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContact)
 presentContacts loggedUserID skip = SD.query $ select contactPresentationFields # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (h ... _date # desc) # limit contactsPerPage # offset skip

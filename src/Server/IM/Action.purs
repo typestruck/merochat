@@ -80,7 +80,7 @@ blockUser loggedUserID userID = do
 
 listMissedEvents ∷ Int → Maybe Int → Maybe Int → ServerEffect MissedEvents
 listMissedEvents loggedUserID lastSenderID lastRecipientID = do
-      messageIDs ← DM.maybe (pure []) (SID.messsageIDsFor loggedUserID) lastSenderID
+      messageIDs ← DM.maybe (pure []) (SID.messageIDsFor loggedUserID) lastSenderID
       history ← DM.maybe (pure []) (SID.chatHistorySince loggedUserID) lastRecipientID
       contacts ← SID.presentSelectedContacts loggedUserID <<< DA.nubEq $ map _.sender history
       let userHistory = DF.foldl intoHashMap DH.empty history
