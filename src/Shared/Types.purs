@@ -3,59 +3,38 @@ module Shared.Types where
 --refactor: split into apt modules
 
 import Prelude
+import Shared.Experiments.Types (ExperimentData)
+import Shared.IM.Types (DatabaseError, DateWrapper, ReportReason)
+import Shared.User (BasicUser)
 
-import Control.Monad.Except as CME
-import Data.Argonaut.Core as DAC
-import Shared.Experiments.Types
-import Data.Argonaut.Core as DAP
 import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Array as DA
-import Data.Bifunctor as DB
-import Data.DateTime (Date, DateTime)
-import Data.DateTime as DTT
-import Data.DateTime.Instant as DDI
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Show.Generic as DGRS
-import Data.Hashable (class Hashable)
-import Data.Hashable as HS
-import Droplet.Language (class ToValue, class FromValue)
-import Droplet.Language as DL
-import Shared.IM.Types
 import Data.Int as DI
-import Data.List.NonEmpty as DLN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Number as DNM
-import Data.Newtype (class Newtype)
-import Data.String (Pattern(..))
+import Data.Show.Generic as DGRS
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
 import Data.String.Regex as DSRG
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
-import Data.Time.Duration as DTD
-import Data.Traversable as DT
-import Data.Tuple (Tuple)
-import Shared.User
-import Foreign (F, Foreign, ForeignError(..))
+import Droplet.Language (class ToValue, class FromValue)
+import Droplet.Language as DL
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Shared.DateTime as SDT
-import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
-import Web.Event.Internal.Types (Event)
 
 foreign import data Trie ∷ Type
 
@@ -66,6 +45,17 @@ type EmailCaptcha r =
       , captchaResponse ∷ Maybe String
       | r
       }
+
+-- | Errors that should be reported back to the user
+data ResponseError
+      = BadRequest { reason ∷ String }
+      | InternalError { reason ∷ String, context ∷ Maybe DatabaseError }
+      | ExpiredSession
+
+instance showResponseError ∷ Show ResponseError where
+      show = DGRS.genericShow
+
+derive instance genericResponseError ∷ Generic ResponseError _
 
 -- | Fields for registration or login
 type RegisterLogin = (EmailCaptcha (password ∷ String))

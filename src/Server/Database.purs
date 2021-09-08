@@ -95,10 +95,10 @@ withTransaction handler = do
 throwError ∷ ∀ r error. PgError → BaseEffect { pool ∷ Pool | r } error
 throwError error = do
       liftEffect $ EC.log errorMessage
-      RE.throw $ SIT.InternalError { reason: errorMessage, context: checkRevelanceError error }
+      RE.throw $ ST.InternalError { reason: errorMessage, context: checkRelevanceError error }
       where
       errorMessage = show error
-      checkRevelanceError = case _ of
+      checkRelevanceError = case _ of
             --this is absolutely vile
             IntegrityError _ → Just MissingForeignKey
             _ → Nothing

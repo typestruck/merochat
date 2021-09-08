@@ -22,7 +22,7 @@ modals { toggleModal: toggle, failedRequests, erroredFields } =
                     ShowReport reportedID →
                           HE.div (HA.class' "confirmation report")
                                 [ HE.span (HA.class' "report-title") "Report user"
-                                , HE.div (HA.class' "report-reasons") $ DA.mapWithIndex toRadio [ DatingContent, Harrassment, HateSpeech, Spam, OtherReason ]
+                                , HE.div (HA.class' "report-reasons") $ DA.mapWithIndex toRadio [ DatingContent, Harassment, HateSpeech, Spam, OtherReason ]
                                 , HE.span [ HA.class' { "error-message": true, "invisible": not (DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "reportReason")) erroredFields) } ] "Please choose a reason"
                                 , HE.div (HA.class' "report-comment")
                                         [ HE.label_ "Comment"

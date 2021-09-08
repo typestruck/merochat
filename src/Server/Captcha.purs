@@ -7,6 +7,7 @@ import Affjax as A
 import Affjax.RequestBody as RB
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))
+import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode as DAD
 import Data.Either (Either(..))
 import Data.Either as DE
@@ -18,6 +19,10 @@ import Environment (development)
 import Run as R
 import Run.Reader as RR
 import Server.Response as SR
+
+newtype CaptchaResponse = CaptchaResponse
+      { success ∷ Boolean
+      }
 
 validateCaptcha ∷ Maybe String → ServerEffect Unit
 validateCaptcha captchaResponse = do
@@ -44,3 +49,9 @@ validateCaptcha captchaResponse = do
       finishWithCaptcha (CaptchaResponse { success })
             | success = pure unit
             | otherwise = SR.throwBadRequest "Incorrect captcha"
+
+instance DecodeJson CaptchaResponse where
+      decodeJson json = do
+            object ← DAD.decodeJson json
+            success ← DAD.getField object "success"
+            pure $ CaptchaResponse { success }

@@ -1,8 +1,7 @@
---missing tests
 module Server.Profile.Action where
 
 import Prelude
-import Server.Types hiding (ThreeKAction(..))
+import Server.Types
 import Shared.Types
 
 import Data.Array as DA

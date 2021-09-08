@@ -43,6 +43,16 @@ import Web.File.Blob (Blob)
 
 foreign import sha1 ∷ Buffer → String
 
+type AuthorizeAccountResponse =
+      { authorizationToken ∷ String
+      , apiUrl ∷ String
+      }
+
+type GetUploadUrlResponse =
+      { authorizationToken ∷ String
+      , uploadUrl ∷ String
+      }
+
 invalidImageMessage ∷ String
 invalidImageMessage = "Invalid image"
 

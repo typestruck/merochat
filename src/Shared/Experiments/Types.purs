@@ -2,19 +2,17 @@ module Shared.Experiments.Types where
 
 import Data.Maybe (Maybe(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
-import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic as DGRS
 import Prelude
 
 import Data.Either (Either(..))
-import Droplet.Language
+import Droplet.Language (class FromValue)
 import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
-import Shared.User
+import Shared.User (IU)
 
 type ImpersonationProfile = Record IU
 
@@ -53,53 +51,49 @@ data ExperimentPayload = ImpersonationPayload
       , sender ∷ Boolean
       }
 
-derive instance genericChatExperimentSection ∷ Generic ChatExperimentSection _
-derive instance genericExperimentCode ∷ Generic ExperimentData _
-derive instance genericExperimentPayload ∷ Generic ExperimentPayload _
+derive instance Generic ChatExperimentSection _
+derive instance Generic ExperimentData _
+derive instance Generic ExperimentPayload _
 
-derive instance eqChatExperimentSection ∷ Eq ChatExperimentSection
-derive instance eqExperimentCode ∷ Eq ExperimentData
+derive instance Eq ChatExperimentSection
+derive instance Eq ExperimentData
 
-instance encodeJsonExperimentPayload ∷ EncodeJson ExperimentPayload where
+instance EncodeJson ExperimentPayload where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonExperimentCode ∷ EncodeJson ExperimentData where
+instance EncodeJson ExperimentData where
       encodeJson = DAEGR.genericEncodeJson
-instance encodeJsonChatExperimentSection ∷ EncodeJson ChatExperimentSection where
+instance EncodeJson ChatExperimentSection where
       encodeJson = DAEGR.genericEncodeJson
 
-instance decodeJsonExperimentCode ∷ DecodeJson ExperimentData where
+instance DecodeJson ExperimentData where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonExperimentPayload ∷ DecodeJson ExperimentPayload where
+instance DecodeJson ExperimentPayload where
       decodeJson = DADGR.genericDecodeJson
-instance decodeJsonChatExperimentSection ∷ DecodeJson ChatExperimentSection where
+instance DecodeJson ChatExperimentSection where
       decodeJson = DADGR.genericDecodeJson
 
-derive instance ordExperimentData ∷ Ord ExperimentData
+derive instance Ord ExperimentData
 
-instance boundedExperimentCode ∷ Bounded ExperimentData where
+instance Bounded ExperimentData where
       bottom = Impersonation Nothing
       top = Impersonation Nothing
 
-instance boundedEnumExperimentCode ∷ BoundedEnum ExperimentData where
+instance BoundedEnum ExperimentData where
       cardinality = Cardinality 1
-
       fromEnum = case _ of
             Impersonation _ → 0
-
       toEnum = case _ of
             0 → Just $ Impersonation Nothing
             _ → Nothing
 
-instance enumExperimentCode ∷ Enum ExperimentData where
+instance Enum ExperimentData where
       succ = case _ of
             Impersonation _ → Nothing
-
       pred = case _ of
             Impersonation _JsonBoolean → Nothing
 
-instance showExperimentPayload ∷ Show ExperimentPayload where
+instance Show ExperimentPayload where
       show = DGRS.genericShow
 
---placeholder
-instance experimentDataFromValue ∷ FromValue ExperimentData where
+instance FromValue ExperimentData where
       fromValue = Right <<< const (Impersonation Nothing)
