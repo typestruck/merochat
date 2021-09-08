@@ -118,7 +118,7 @@ let additions =
 -}
 let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20210826/packages.dhall sha256:eee0765aa98e0da8fc414768870ad588e7cada060f9f7c23c37385c169f74d9f
-  with purescript-droplet = ../purescript-droplet/spago.dhall as Location
+ -- with purescript-droplet = ../purescript-droplet/spago.dhall as Location
 
 let overrides = {=}
 
@@ -188,7 +188,7 @@ let additions =
           , "unsafe-coerce"
           ]
         , repo = "https://github.com/easafe/purescript-droplet.git"
-        , version = "dfcc99584b7fad648f10418fa180769027d62dec"
+        , version = "e8905bee51013bc0340b382c9616c54fade7cbbd"
         }
       }
 

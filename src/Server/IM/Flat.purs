@@ -2,6 +2,7 @@ module Server.IM.Flat where
 
 import Prelude
 
+import Data.DateTime (DateTime)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -28,22 +29,12 @@ type FlatFields rest =
 
 type FlatUser = FlatFields ()
 
-type FlatContact =
-      { age ∷ Maybe Number
-      , avatar ∷ Maybe String
-      , chatAge ∷ Maybe Number
+type FlatContact = FlatFields
+      ( chatAge ∷ Maybe Number
       , chatStarter ∷ Int
-      , country ∷ Maybe String
-      , description ∷ String
-      , gender ∷ Maybe Gender
-      , headline ∷ String
-      , id ∷ Int
-      , karma ∷ Int
-      , languages ∷ Maybe String
-      , name ∷ String
-      , karmaPosition ∷ Int
-      , tags ∷ Maybe String
-      }
+      -- only used for ordering
+      , "h.date" ∷ DateTime
+      )
 
 fromFlatContact ∷ FlatContact → Contact
 fromFlatContact fc =

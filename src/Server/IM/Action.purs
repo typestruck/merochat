@@ -6,10 +6,8 @@ import Prelude
 import Data.Array as DA
 import Data.Foldable as DF
 import Data.HashMap as DH
-import Data.Int as DI
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Maybe as DM
-import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Droplet.Driver (Pool)
@@ -18,6 +16,7 @@ import Server.Email as SE
 import Server.File as SF
 import Server.IM.Database as SID
 import Server.IM.Flat (fromFlatContact)
+import Server.IM.Flat as SIF
 import Server.Ok (ok)
 import Server.Types (BaseEffect, Ok, ServerEffect, StorageDetails)
 import Server.Wheel as SW
@@ -29,7 +28,7 @@ import Shared.Unsafe as SU
 foreign import sanitize ∷ String → String
 
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array Suggestion)
-suggest loggedUserID skip = SID.suggest loggedUserID skip
+suggest loggedUserID skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserID skip keys
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserID skip = do

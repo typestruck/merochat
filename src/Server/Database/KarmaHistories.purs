@@ -19,6 +19,3 @@ _target = Proxy
 
 _amount ∷ Proxy "amount"
 _amount = Proxy
-
-_date ∷ Proxy "date"
-_date = Proxy

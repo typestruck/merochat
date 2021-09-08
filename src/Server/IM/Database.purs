@@ -29,13 +29,13 @@ import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
 import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
 import Droplet.Language.Internal.Definition (Path)
+import Droplet.Language.Internal.Query (query)
 import Server.Database as SD
+import Server.Database.KarmaHistories
 import Server.IM.Flat (FlatContact, FlatUser)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
-import Shared.User (IU)
 import Type.Proxy (Proxy(..))
-import Unsafe.Coerce (unsafeCoerce)
 
 _chatStarter ∷ Proxy "chatStarter"
 _chatStarter = Proxy
@@ -75,7 +75,7 @@ userPresentationFields2 =
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
-contactPresentationFields = distinct $ (_sender # as _chatStarter) /\ (datetime_part_age ("day" /\ _first_message_date) # as _chatAge) /\ userPresentationFields2
+contactPresentationFields = distinct $ (_sender # as _chatStarter) /\  (h ... _date) /\ (datetime_part_age ("day" /\ _first_message_date) # as _chatAge) /\ userPresentationFields2
 
 contactsSource ∷ Int → _
 contactsSource loggedUserID = join usersSource (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID)
@@ -89,7 +89,10 @@ usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=.
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserID = SD.single $ select userPresentationFields2 # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
 
-suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array _)
+q :: Int -> _
+q loggedUserID = select userPresentationFields2 # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
+
+suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array FlatUser)
 suggest loggedUserID skip = case _ of
       Just (ArrayPrimaryKey []) → -- no users to avoid when impersonating
             SD.query $ suggestBaseQuery skip baseFilter
@@ -154,8 +157,8 @@ chatHistorySince loggedUserID lastID = SD.query $ select (_id /\ _sender /\ _rec
 chatHistoryBetween ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 chatHistoryBetween loggedUserID otherID skip = SD.query $ select star # from (select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status) # from messages # wher (_sender .=. loggedUserID .&&. _recipient .=. otherID .||. _sender .=. otherID .&&. _recipient .=. loggedUserID) # orderBy (_date # desc) # limit messagesPerPage # offset skip # as c) # orderBy _date
 
-messsageIDsFor ∷ Int → Int → ServerEffect (Array MessageIDTemporary)
-messsageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ Proxy "temporaryID"))) # from messages # wher (_sender .=. loggedUserID .&&. _id .>. messageID)
+messageIDsFor ∷ Int → Int → ServerEffect (Array MessageIDTemporary)
+messageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ Proxy "temporaryID"))) # from messages # wher (_sender .=. loggedUserID .&&. _id .>. messageID)
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ \connection → do
@@ -165,7 +168,10 @@ insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ 
 --refactor: add multiple values to droplet to update here
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
-      void $ SD.unsafeExecute "insert into karma_histories(amount, target) values (@senderKarma, @senderID), (@recipientKarma, @recipientID)" ({ senderKarma, senderID: loggedUserID, recipientKarma, recipientID: otherID })
+      void <<< SD.execute $ insert # into karma_histories (_amount /\ _target) # values
+            [ senderKarma /\ loggedUserID
+            , recipientKarma /\ otherID
+            ]
 
 changeStatus ∷ ∀ r. Int → MessageStatus → Array Int → BaseEffect { pool ∷ Pool | r } Unit
 changeStatus loggedUserID status ids = SD.execute $ update messages # set (_status /\ status) # wher (_recipient .=. loggedUserID .&&. (_id `in_` ids))

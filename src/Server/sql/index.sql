@@ -164,7 +164,7 @@ create table histories
     sender integer not null,
     recipient integer not null,
     first_message_date timestamp not null default (now() at time zone 'utc'),
-    date timestamp not null default (now() at time zone 'utc'),
+    date timestamp not null default (now() at time zone 'utc'), -- date of last message sent
     sender_archived boolean not null default false,
     recipient_archived boolean not null default false,
 

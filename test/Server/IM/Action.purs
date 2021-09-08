@@ -35,7 +35,7 @@ import Test.Unit.Assert as TUA
 tests ∷ TestSuite
 tests = do
       TU.suite "im actions" do
-            TU.testOnly "suggest filters out blocked users"
+            TU.test "suggest filters out blocked users"
                   $ TS.serverAction
                   $ do
                         Tuple userID anotherUserID ← setUpUsers
@@ -107,7 +107,7 @@ tests = do
                         Tuple userID anotherUserID ← setUpUsers
                         SIA.processMessage userID anotherUserID 2 <<< Image "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 
-            TU.test "listContacts orders contacts by descreasing date"
+            TU.test "listContacts orders contacts by decreasing date"
                   $ TS.serverAction
                   $ do
                         Tuple userID anotherUserID ← setUpUsers
