@@ -4,7 +4,7 @@ const path = require('path');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
-//const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
     mode: 'production',
@@ -38,7 +38,7 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css',
         }),
-      //  new BundleAnalyzerPlugin()
+        new BundleAnalyzerPlugin()
     ],
     module: {
         rules: [
@@ -60,15 +60,7 @@ module.exports = {
         moduleIds: 'deterministic',
         splitChunks: {
             chunks: 'all',
-            name: 'other',
-            cacheGroups: {
-                common: {
-                    name: 'common',
-                    test(module) {
-                        return module.resource && /(.*)(Shared\.Types|Client\.Common\.Network|Shared\.Routes)(.*)/.test(module.resource)
-                    }
-                }
-            }
+            name: 'other'
         },
         minimizer: [
             new TerserPlugin(),

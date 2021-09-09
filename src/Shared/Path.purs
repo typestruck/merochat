@@ -5,7 +5,7 @@ import Prelude
 import Data.Array as DA
 import Data.String (Pattern(..))
 import Data.String as DS
-import Environment (commonJSHash, development, emojiJSHash, imCSSHash, imJSHash, otherJSHash)
+import Environment (commonJSHash, development, emojiJSHash, imCSSHash, imJSHash)
 import Shared.Options.File (imageBasePath, productionBasePath)
 import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
@@ -29,4 +29,4 @@ fileName file
       | otherwise = file
 
 updateHash ∷ String
-updateHash = commonJSHash <> otherJSHash <> imJSHash <> emojiJSHash <> imCSSHash
+updateHash = commonJSHash <> imJSHash <> emojiJSHash <> imCSSHash
