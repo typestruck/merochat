@@ -5,7 +5,7 @@ import Prelude
 
 import Data.String as DS
 import Effect (Effect)
-import Environment (commonJSHash, baseCSSHash)
+import Environment (baseCSSHash, commonJSHash, externalCSSHash)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -37,7 +37,7 @@ defaultParameters =
 externalDefaultParameters ∷ ∀ a. Parameters a
 externalDefaultParameters = defaultParameters
       { css =
-              [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80" ]
+              [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "external." <> externalCSSHash ]
               ]
       , content =
               [ HE.div (HA.class' "header")

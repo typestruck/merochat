@@ -60,7 +60,7 @@ module.exports = {
         moduleIds: 'deterministic',
         splitChunks: {
             chunks: 'all',
-            name: 'other'
+            name: 'common'
         },
         minimizer: [
             new TerserPlugin(),
