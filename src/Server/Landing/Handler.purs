@@ -1,19 +1,17 @@
 module Server.Landing.Handler where
 
 import Prelude
-import Server.Types
-import Shared.Types
+import Server.Types (Html, Ok, ServerEffect)
 
-import Data.Tuple (Tuple(..))
 import Payload.Headers as PH
-import Payload.ResponseTypes (Empty(..), Response)
+import Payload.ResponseTypes (Response)
 import Payload.Server.Response as PSR
-import Run.Reader as RR
 import Server.Cookies as SC
 import Server.Landing.Action as SLA
 import Server.Landing.Template as SLT
 import Server.Ok (ok)
 import Server.Response as SR
+import Shared.Account (RegisterLogin)
 
 landing ∷ ∀ r. { | r } → ServerEffect Html
 landing _ = SR.serveTemplate SLT.template

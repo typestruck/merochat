@@ -1,24 +1,24 @@
 module Server.Profile.Database where
 
+import Droplet.Language
 import Prelude
+import Server.Database.Countries
+import Server.Database.Fields
+import Server.Database.Languages
+import Server.Database.LanguagesUsers
+import Server.Database.TagsUsers
+import Server.Database.Users
+import Server.Types
+import Shared.Types
 
 import Data.Maybe (Maybe(..))
+import Data.Newtype as DN
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
-import Server.Types
-import Server.Database.Fields
-import Server.Database.Users
+import Shared.Profile.Types (ProfileUser)
 import Shared.Unsafe as SU
-
-import Server.Database.LanguagesUsers
-import Server.Database.Languages
-import Server.Database.Countries
-import Droplet.Language
-import Data.Newtype as DN
-import Server.Database.TagsUsers
-import Shared.Types
 
 profilePresentationFields ∷ String
 profilePresentationFields =
@@ -80,4 +80,3 @@ saveProfile
             )
             tags
       DT.traverse (\tid → SD.executeWith connection (insert # into tags_users (_creator /\ _tag) # values (id /\ (SU.fromJust tid).id))) tagIDs
-

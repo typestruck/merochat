@@ -1,29 +1,23 @@
 module Server.Database where
 
+import Effect.Aff (Aff)
 import Prelude
-import Server.Types
-import Shared.Types
+import Server.Types (BaseEffect, Configuration, DatabaseEffect)
 
-import Control.Monad.Except as CME
-import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Either as DT
 import Data.Maybe (Maybe(..))
 import Droplet.Driver (PgError(..), Connection, Pool)
-import Data.Either as DT
+import Droplet.Driver as DD
+import Droplet.Driver.Unsafe as DDU
 import Effect (Effect)
 import Effect.Class (liftEffect)
-import Effect.Aff
 import Effect.Console as EC
-import Effect.Exception.Unsafe as EEU
-import Shared.IM.Types as SIT
-import Droplet.Driver as DD
-import Shared.IM.Types
-import Droplet.Driver.Unsafe as DDU
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
-import Shared.Types as ST
-import Shared.Unsafe as SU
+import Shared.ResponseError (DatabaseError(..))
+import Shared.ResponseError as ST
 
 query q = withConnection $ \connection → hoist $ DD.query connection q
 

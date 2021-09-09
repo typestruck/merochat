@@ -9,6 +9,7 @@ import Server.AccountValidation as SA
 import Server.Database.Users as SDU
 import Server.Response as SR
 import Server.Token as ST
+import Shared.Account (RegisterLogin)
 
 invalidLogin ∷ String
 invalidLogin = "Email not registered or incorrect password"

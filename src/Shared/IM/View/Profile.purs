@@ -1,6 +1,8 @@
 module Shared.IM.View.Profile where
 
 import Prelude
+import Shared.Experiments.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Array ((!!), (..), (:))
@@ -8,13 +10,10 @@ import Data.Array as DA
 import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Shared.Experiments.Types
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.IM.Types
-
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
 import Shared.IM.Svg as SIA
@@ -23,6 +22,7 @@ import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Shared.User (Gender(..))
 
 --refactor: break this shit down into right modules
 

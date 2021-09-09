@@ -10,14 +10,15 @@ import Data.Newtype as DN
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Run as R
-import Server.ThreeK as SB
 import Server.File as SF
 import Server.Ok (ok)
 import Server.Profile.Database as SPD
 import Server.Response as SR
+import Server.ThreeK as SB
 import Shared.DateTime as SDT
 import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
+import Shared.Profile.Types (Generate(..), ProfileUser)
 
 missingRequiredFieldsMessage ∷ String
 missingRequiredFieldsMessage = "Name, headline and description are mandatory"

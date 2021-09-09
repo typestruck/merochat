@@ -1,15 +1,17 @@
 module Server.Database.Users where
 
+import Droplet.Language
+import Prelude
 import Server.Types
 import Shared.Types
-import Prelude
-import Droplet.Language
-import Type.Proxy (Proxy(..))
-import Data.DateTime (DateTime)
-import Data.Date (Date)
-import Data.Maybe (Maybe)
 
+import Data.Date (Date)
+import Data.DateTime (DateTime)
+import Data.Maybe (Maybe)
 import Server.Database as SD
+import Shared.Account (RegisterLoginUser)
+import Shared.User (Gender)
+import Type.Proxy (Proxy(..))
 
 type Users =
       ( id ∷ Auto Int
@@ -65,4 +67,3 @@ userBy ∷ By → ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
       Email value → SD.unsafeSingle (baseQuery <> "lower(email) = lower(@email)") { email: value }
       ID value → SD.unsafeSingle (baseQuery <> "id = @id") { id: value }
-

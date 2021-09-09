@@ -9,7 +9,7 @@ import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
 import Shared.IM.Types (Contact, IMUser)
-import Shared.Types (Gender)
+import Shared.User (Gender)
 
 type FlatFields rest =
       { age ∷ Maybe Number

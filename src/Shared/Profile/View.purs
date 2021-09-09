@@ -1,6 +1,8 @@
 module Shared.Profile.View where
 
 import Prelude
+import Shared.Experiments.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Array ((:))
@@ -10,20 +12,17 @@ import Data.HashMap as DH
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Shared.Experiments.Types
 import Data.Newtype as DN
 import Data.String as DS
 import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol)
 import Data.Tuple (Tuple(..))
-import Shared.IM.Types
 import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 import Prim.Row (class Cons)
-import Type.Proxy (Proxy(..))
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
@@ -33,9 +32,13 @@ import Shared.IM.View.Profile as SIVP
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Path as SP
+import Shared.Profile.Types (Generate(..), PM, PU, ProfileMessage(..), ProfileModel, Choice)
 import Shared.Setter as SS
 import Shared.Unsafe as SU
+import Shared.User (Gender(..))
+import Test.Spec.Runner.Event (Name)
 import Type.Data.Symbol as TDS
+import Type.Proxy (Proxy(..))
 
 profileEditionId ∷ String
 profileEditionId = "profile-edition-form"

@@ -5,10 +5,11 @@ import Server.Types
 import Shared.Types
 
 import Server.AccountValidation as SA
-import Server.ThreeK as SB
 import Server.Captcha as SC
 import Server.Landing.Database as SLD
+import Server.ThreeK as SB
 import Server.Token as ST
+import Shared.Account (RegisterLogin)
 
 register ∷ RegisterLogin → ServerEffect String
 register { captchaResponse, email: rawEmail, password } = do

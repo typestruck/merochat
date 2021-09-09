@@ -8,6 +8,7 @@ import Data.Maybe (Maybe)
 import Server.Recover.Action as SRA
 import Server.Recover.Template as SRT
 import Server.Response as SR
+import Shared.Account (ResetPassword, RecoverAccount)
 
 recover ∷ ∀ r. { query ∷ { token ∷ Maybe String } | r } → ServerEffect Html
 recover { query: { token } } = SR.serveTemplate $ SRT.template token

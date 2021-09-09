@@ -36,6 +36,7 @@ import Server.NotFound.Handler as SNH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
+import Shared.ResponseError (ResponseError(..))
 import Shared.Routes (routes)
 
 handlers ∷ ServerReader → _

@@ -2,6 +2,8 @@ module Client.IM.Main where
 --refactor: this file needs to be broken down into modules
 
 import Prelude
+import Shared.Experiments.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.DOM (setChatExperiment)
@@ -20,7 +22,6 @@ import Client.IM.History as CIH
 import Client.IM.Notification as CIUC
 import Client.IM.Scroll as CISM
 import Client.IM.Suggestion as CIS
-import Type.Proxy (Proxy(..))
 import Client.IM.UserMenu as CIU
 import Client.IM.WebSocket (WebSocket, onClose, onMessage, onOpen)
 import Client.IM.WebSocket as CIW
@@ -30,7 +31,6 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
@@ -52,15 +52,15 @@ import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Options.MountPoint (imID, profileID)
+import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
 import Shared.Unsafe ((!@))
-import Shared.Experiments.Types
 import Shared.Unsafe as SU
+import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
-import Shared.IM.Types
 import Web.Event.Internal.Types (Event)
 import Web.File.FileReader as WFR
 import Web.HTML as WH

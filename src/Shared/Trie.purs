@@ -5,7 +5,8 @@ import Prelude
 
 import Data.Function.Uncurried (Fn1, Fn2)
 import Data.Function.Uncurried as DFU
-import Shared.Types
+
+foreign import data Trie ∷ Type
 
 foreign import makeTrie_ ∷ Fn1 (Array { k ∷ String, s ∷ String }) Trie
 foreign import complete_ ∷ Fn2 Trie String (Array { k ∷ String, s ∷ String })

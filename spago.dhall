@@ -59,6 +59,7 @@ You can edit this file as you like.
   , "run"
   , "simple-json"
   , "simple-jwt"
+  , "spec"
   , "strings"
   , "test-unit"
   , "transformers"

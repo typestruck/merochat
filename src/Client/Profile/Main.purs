@@ -1,6 +1,7 @@
 module Client.Profile.Main where
 
 import Prelude
+import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.DOM (setChatExperiment)
@@ -8,10 +9,10 @@ import Client.Common.File as CCF
 import Client.Profile.Update as CPU
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Shared.IM.Types
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Shared.Options.MountPoint (imID, profileID)
+import Shared.Profile.Types (ProfileMessage(..))
 import Shared.Profile.View as SPV
 import Web.DOM.ParentNode (QuerySelector(..))
 

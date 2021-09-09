@@ -20,6 +20,9 @@ _sender = Proxy
 _recipient ∷ Proxy "recipient"
 _recipient = Proxy
 
+_age ∷ Proxy "age"
+_age = Proxy
+
 c ∷ Proxy "c"
 c = Proxy
 
@@ -28,24 +31,3 @@ k = Proxy
 
 u ∷ Proxy "u"
 u = Proxy
-
-l ∷ Proxy "l"
-l = Proxy
-
-h ∷ Proxy "h"
-h = Proxy
-
-s ∷ Proxy "s"
-s = Proxy
-
-t ∷ Proxy "t"
-t = Proxy
-
-lu ∷ Proxy "lu"
-lu = Proxy
-
-tu ∷ Proxy "tu"
-tu = Proxy
-
-_age ∷ Proxy "age"
-_age = Proxy

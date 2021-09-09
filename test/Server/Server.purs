@@ -2,10 +2,12 @@ module Test.Server where
 
 import Prelude
 import Server.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Maybe (Maybe(..))
-
+import Droplet.Driver (Pool)
+import Droplet.Driver as DD
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -16,11 +18,9 @@ import Run.Except as RE
 import Run.Reader as RR
 import Server.Configuration as SC
 import Server.Database as SD
-import Shared.IM.Types
+import Shared.ResponseError (ResponseError(..))
 import Test.Server.Model (storageDetails)
 import Test.Unit (failure) as TUA
-import Droplet.Driver (Pool)
-import Droplet.Driver as DD
 import Test.Unit as TU
 import Test.Unit.Assert (equal) as TUA
 import Type.Row (type (+))

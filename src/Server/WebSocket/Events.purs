@@ -44,6 +44,7 @@ import Server.WebSocket (CloseCode, CloseReason, AliveWebSocketConnection, WebSo
 import Server.WebSocket as SW
 import Shared.JSON as SJ
 import Shared.Path (updateHash)
+import Shared.ResponseError (DatabaseError, ResponseError(..))
 
 aliveDelay ∷ Int
 aliveDelay = 1000 * 60 * aliveDelayMinutes
@@ -74,7 +75,7 @@ handleConnection { tokenSecret } pool allConnections storageDetails connection r
                         EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
                   Left error → do
                         SW.terminate connection
-                        EC.log $ "terminated due to seriliazation error: " <> error
+                        EC.log $ "terminated due to serialization error: " <> error
 
       reportError ∷ ∀ a b. MonadEffect b ⇒ WebSocketPayloadServer → Maybe DatabaseError → a → b Unit
       reportError origin context _ = sendWebSocketMessage connection <<< Content $ PayloadError { origin, context }

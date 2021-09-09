@@ -75,7 +75,7 @@ userPresentationFields2 =
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
-contactPresentationFields = distinct $ (_sender # as _chatStarter) /\  (h ... _date) /\ (datetime_part_age ("day" /\ _first_message_date) # as _chatAge) /\ userPresentationFields2
+contactPresentationFields = distinct $ (_sender # as _chatStarter) /\ (h ... _date) /\ (datetime_part_age ("day" /\ _first_message_date) # as _chatAge) /\ userPresentationFields2
 
 contactsSource ∷ Int → _
 contactsSource loggedUserID = join usersSource (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID)
@@ -89,7 +89,7 @@ usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=.
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserID = SD.single $ select userPresentationFields2 # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
 
-q :: Int -> _
+q ∷ Int → _
 q loggedUserID = select userPresentationFields2 # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
 
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array FlatUser)
@@ -186,3 +186,21 @@ insertReport ∷ Int → Report → ServerEffect Unit
 insertReport loggedUserID { userID, comment, reason } = SD.withTransaction $ \connection → do
       SD.executeWith connection $ blockQuery loggedUserID userID
       SD.executeWith connection $ insert # into reports (_reporter /\ _reported /\ _reason /\ _comment) # values (loggedUserID /\ userID /\ reason /\ comment)
+
+l ∷ Proxy "l"
+l = Proxy
+
+h ∷ Proxy "h"
+h = Proxy
+
+s ∷ Proxy "s"
+s = Proxy
+
+t ∷ Proxy "t"
+t = Proxy
+
+lu ∷ Proxy "lu"
+lu = Proxy
+
+tu ∷ Proxy "tu"
+tu = Proxy

@@ -1,13 +1,10 @@
 module Server.Profile.Template where
 
-import Prelude
-import Shared.Types
-
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple)
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
+import Shared.Profile.Types (ProfileUser)
 import Shared.Profile.View as SPV
 
 template ∷ { user ∷ ProfileUser, countries ∷ Array { id ∷ Int, name ∷ String }, languages ∷ Array { id ∷ Int, name ∷ String } } → Effect String
@@ -33,4 +30,3 @@ template { user: user, countries, languages } = do
                     , languages
                     }
             }
-

@@ -1,19 +1,19 @@
 module Test.Client.IM.Main where
 
 import Prelude
+import Shared.Experiments.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Client.IM.Main as CIM
-import Shared.IM.Types
-
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
-import Shared.Experiments.Types
 import Effect.Now as EN
 import Shared.Experiments.Impersonation (batman)
+import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
 import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, webSocket)
 import Test.Unit (TestSuite)

@@ -11,12 +11,13 @@ import Data.Symbol (class IsSymbol)
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Type.Proxy (Proxy(..))
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Payload.Client (ClientResponse)
 import Shared.Routes (routes)
+import Shared.Settings.Types (SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
+import Type.Proxy (Proxy(..))
 
 update ∷ AffUpdate SettingsModel SettingsMessage
 update { model, message } =

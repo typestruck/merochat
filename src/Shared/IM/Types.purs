@@ -9,6 +9,7 @@ import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Array as DA
 import Data.DateTime (Date, DateTime)
 import Data.DateTime as DTT
 import Data.DateTime.Instant as DDI
@@ -18,11 +19,15 @@ import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Hashable (class Hashable)
 import Data.Hashable as HS
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Number as DNM
 import Data.Show.Generic as DGRS
+import Data.String.Regex as DSRG
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe as DSRU
 import Data.Time.Duration as DTD
 import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
@@ -34,6 +39,7 @@ import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime as SDT
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
+import Shared.ResponseError (DatabaseError)
 import Shared.Unsafe as SU
 import Shared.User (IU)
 import Simple.JSON (class ReadForeign, class WriteForeign)
@@ -42,6 +48,12 @@ import Web.Event.Internal.Types (Event)
 type IMUser = Record IU
 
 newtype DateTimeWrapper = DateTimeWrapper DateTime
+
+type Report =
+      { reason ∷ ReportReason
+      , comment ∷ Maybe String
+      , userID ∷ Int
+      }
 
 type Suggestion = IMUser
 
@@ -364,7 +376,7 @@ data WebSocketPayloadClient
       | BeenBlocked { id ∷ Int }
       | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
-data DatabaseError = MissingForeignKey
+newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)
 
 derive instance Ord ReportReason
 derive instance Ord MessageStatus
@@ -445,9 +457,9 @@ instance Enum MessageStatus where
             Read → Just Delivered
 
 instance DecodeJson DateTimeWrapper where
-      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldnt parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 instance DecodeJson DateWrapper where
-      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldnt parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 instance DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
 instance DecodeJson MessageContent where
@@ -457,8 +469,6 @@ instance DecodeJson ShowUserMenuModal where
 instance DecodeJson WebSocketPayloadClient where
       decodeJson = DADGR.genericDecodeJson
 instance DecodeJson ShowContextMenu where
-      decodeJson = DADGR.genericDecodeJson
-instance DecodeJson DatabaseError where
       decodeJson = DADGR.genericDecodeJson
 instance DecodeJson RetryableRequest where
       decodeJson = DADGR.genericDecodeJson
@@ -482,8 +492,6 @@ instance EncodeJson ShowUserMenuModal where
 instance EncodeJson WebSocketPayloadClient where
       encodeJson = DAEGR.genericEncodeJson
 instance EncodeJson ShowContextMenu where
-      encodeJson = DAEGR.genericEncodeJson
-instance EncodeJson DatabaseError where
       encodeJson = DAEGR.genericEncodeJson
 instance EncodeJson RetryableRequest where
       encodeJson = DAEGR.genericEncodeJson
@@ -528,8 +536,7 @@ instance Show MessageContent where
       show = DGRS.genericShow
 instance Show WebSocketPayloadClient where
       show = DGRS.genericShow
-instance Show DatabaseError where
-      show = DGRS.genericShow
+
 instance Show WebSocketPayloadServer where
       show = DGRS.genericShow
 instance Show ElementID where
@@ -569,12 +576,21 @@ instance Show ElementID where
 
 instance EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< show <<< SDT.dateTimeToNumber
+instance EncodeQueryParam ArrayPrimaryKey where
+      encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
 
 instance ReadForeign DateWrapper where
       readImpl foreignDate = DateWrapper <<< DTT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
 instance ReadForeign DateTimeWrapper where
       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
 
+instance DecodeQueryParam ArrayPrimaryKey where
+      decodeQueryParam query key =
+            case FO.lookup key query of
+                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
+                  --this is terrible
+                  Just [ value ] → Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
+                  _ → errorDecoding query key
 instance DecodeQueryParam DateTimeWrapper where
       decodeQueryParam query key =
             case FO.lookup key query of
@@ -592,7 +608,7 @@ derive instance Newtype DateWrapper _
 
 derive instance Eq ElementID
 derive instance Eq ShowContextMenu
-derive instance Eq DatabaseError
+
 derive instance Eq ProfilePresentation
 derive instance Eq RetryableRequest
 derive instance Eq ShowChatModal
@@ -613,7 +629,7 @@ derive instance Generic WebSocketPayloadServer _
 derive instance Generic ShowUserMenuModal _
 
 derive instance Generic ShowContextMenu _
-derive instance Generic DatabaseError _
+
 derive instance Generic RetryableRequest _
 derive instance Generic ShowChatModal _
 

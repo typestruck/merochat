@@ -1,6 +1,8 @@
 module Client.Profile.Update where
 
 import Prelude
+import Shared.Experiments.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Client.Common.DOM as CCD
@@ -15,7 +17,6 @@ import Data.Newtype as DN
 import Data.String as DS
 import Data.Symbol (class IsSymbol)
 import Effect (Effect)
-import Type.Proxy (Proxy(..))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
@@ -25,14 +26,14 @@ import Flame.Subscription as FS
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
-import Shared.IM.Types
-import Shared.Experiments.Types
 import Shared.JSON as SJ
 import Shared.Options.MountPoint (imID)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
+import Shared.Profile.Types (Generate(..), PU, ProfileMessage(..), ProfileModel, PM)
 import Shared.Profile.View (profileEditionId)
 import Shared.Setter as SS
 import Type.Data.Symbol as TDS
+import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 
 getFileInput ∷ Effect Element

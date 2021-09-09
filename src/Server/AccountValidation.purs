@@ -10,7 +10,6 @@ import Server.Database.Users as SDU
 import Server.Response as SR
 import Server.Token as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
-import Shared.Types (By(..))
 
 invalidEmailMessage ∷ String
 invalidEmailMessage = "Invalid email"

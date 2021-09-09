@@ -9,6 +9,7 @@ import Run as R
 import Server.Profile.Action as SPA
 import Server.Profile.Database as SPD
 import Server.Profile.Template as SPT
+import Shared.Profile.Types (Generate, ProfileUser)
 
 profile ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
 profile { guards: { loggedUserID } } = do
@@ -25,4 +26,4 @@ profileUpdate ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ ProfileUser } 
 profileUpdate { guards: { loggedUserID }, body } = SPA.saveProfile loggedUserID body
 
 generate ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { what ∷ Generate } } → ServerEffect String
-generate { guards: { loggedUserID }, query: { what } } = SPA.generate what
+generate { query: { what } } = SPA.generate what

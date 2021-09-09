@@ -1,6 +1,7 @@
 module Shared.Experiments.Impersonation where
 
 import Prelude
+import Shared.Experiments.Types
 import Shared.Types
 
 import Data.Array as DA
@@ -12,10 +13,10 @@ import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.Types
 import Shared.Avatar as SA
 import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
+import Shared.User (Gender(..))
 
 joined ∷ ImpersonationProfile → Html ChatExperimentMessage
 joined profile = HE.div (HA.class' "exit-impersonation")

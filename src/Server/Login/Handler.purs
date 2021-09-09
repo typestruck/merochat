@@ -17,6 +17,7 @@ import Server.Login.Action as SLA
 import Server.Login.Template as SLT
 import Server.Ok (ok)
 import Server.Response as SR
+import Shared.Account (RegisterLogin)
 
 login ∷ ∀ r. { | r } → ServerEffect Html
 login _ = SR.serveTemplate SLT.template

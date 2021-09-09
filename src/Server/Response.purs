@@ -1,13 +1,13 @@
 module Server.Response where
 
 import Prelude
-import Server.Types
-import Shared.Types
-import Shared.IM.Types
+import Server.Types (BaseEffect, Html(..), ServerEffect)
+
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Run as R
 import Run.Except as RE
+import Shared.ResponseError (ResponseError(..))
 
 serveTemplate ∷ Effect String → ServerEffect Html
 serveTemplate template = do

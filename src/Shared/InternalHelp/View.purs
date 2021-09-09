@@ -7,8 +7,9 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Server.Faq as SH
-import Server.Terms as ST
 import Server.Privacy as SP
+import Server.Terms as ST
+import Shared.InternalHelp.Types (DisplayHelpSection(..), InternalHelpMessage(..), InternalHelpModel)
 import Shared.Path as SPT
 
 view ∷ InternalHelpModel → Html InternalHelpMessage

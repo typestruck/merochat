@@ -1,10 +1,10 @@
 module Client.InternalHelp.Update where
 
 import Prelude
-import Shared.Types
 
-import Flame as F
 import Flame (ListUpdate)
+import Flame as F
+import Shared.InternalHelp.Types (InternalHelpMessage(..), InternalHelpModel)
 
 update ∷ ListUpdate InternalHelpModel InternalHelpMessage
 update model =

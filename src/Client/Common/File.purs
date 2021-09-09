@@ -8,7 +8,7 @@ import Effect (Effect)
 import Flame (AppId)
 import Flame.Subscription as FS
 import Foreign as F
-import Shared.Types (MountPoint)
+import Shared.Options.MountPoint (MountPoint)
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.Event.EventTarget as WET

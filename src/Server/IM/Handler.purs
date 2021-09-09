@@ -18,6 +18,7 @@ import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Flat (fromFlatUser)
 import Server.IM.Template as SIT
+import Shared.ResponseError (ResponseError(..))
 
 im ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect (Response String)
 im { guards: { loggedUserID } } = do

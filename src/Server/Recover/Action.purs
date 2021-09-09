@@ -21,6 +21,7 @@ import Server.Ok (ok)
 import Server.Recover.Database as SRD
 import Server.Response as SR
 import Server.Token as ST
+import Shared.Account (ResetPassword, RecoverAccount)
 import Shared.Options.Domain (domain)
 import Shared.Routes (routes)
 

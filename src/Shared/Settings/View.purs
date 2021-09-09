@@ -1,7 +1,7 @@
 module Shared.Settings.View where
 
 import Prelude
-import Shared.Types
+import Shared.Types (ContentType(..))
 
 import Client.Common.DOM as CCD
 import Data.Array ((:))
@@ -10,20 +10,20 @@ import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodePoints as DSC
-import Type.Proxy (Proxy(..))
 import Data.Symbol (class IsSymbol)
 import Flame (Html)
 import Flame.Html.Attribute (ToSpecialEvent)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Type.Proxy (Proxy(..))
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
+import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel)
 import Shared.Unsafe as SU
 import Type.Data.Symbol as TDS
+import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 
