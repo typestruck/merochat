@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Environment (recoverJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
@@ -23,7 +24,7 @@ template token = do
       FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.pathery JS "recover.1a5fa8368956a8294e65" ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "recover." <> recoverJSHash ]
             , HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
       content =

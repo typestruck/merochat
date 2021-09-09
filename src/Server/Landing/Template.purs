@@ -4,6 +4,7 @@ import Prelude
 
 import Data.String as DS
 import Effect (Effect)
+import Environment (externalCSSHash, landingCSSHash, landingJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
@@ -24,7 +25,7 @@ template = do
       FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.pathery JS "landing.e73af710139b0b4b7561" ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.pathery JS $ "landing." <> landingJSHash ]
             , HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
       css =
@@ -33,8 +34,8 @@ template = do
                         background: url(https://static.melan.chat/file/ourmelon/landing-medium.png) no-repeat fixed;
                         background-size: cover;
                   }"""
-            , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "external.9361845d640d2fa7ac80" ]
-            , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "landing.b437cef6db9d74e21536" ]
+            , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "external." <> externalCSSHash ]
+            , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "landing." <> landingCSSHash ]
             ]
       content =
             [ HE.div (HA.class' "landing")

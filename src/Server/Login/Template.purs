@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Environment (loginJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
@@ -23,7 +24,7 @@ template = do
       FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.pathery JS "login.987f0b7b7b052fcf9ad2" ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "login." <> loginJSHash ]
             ]
       content =
             [ HE.div (HA.class' "green-area green-box")
