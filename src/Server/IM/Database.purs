@@ -7,6 +7,7 @@ import Server.Database.Countries
 import Server.Database.Fields
 import Server.Database.Functions
 import Server.Database.Histories
+import Server.Database.KarmaHistories
 import Server.Database.KarmaLeaderboard
 import Server.Database.Languages
 import Server.Database.LanguagesUsers
@@ -25,17 +26,18 @@ import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
 import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
 import Droplet.Language.Internal.Definition (Path)
+import Droplet.Language.Internal.Function (PgFunction)
 import Droplet.Language.Internal.Query (query)
 import Server.Database as SD
-import Server.Database.KarmaHistories
-import Server.IM.Flat (FlatContact, FlatUser)
+import Server.IM.Flat (FlatUser, FlatContact)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
+import Unsafe.Coerce (unsafeCoerce)
 
 _chatStarter ∷ Proxy "chatStarter"
 _chatStarter = Proxy
@@ -46,12 +48,15 @@ _chatAge = Proxy
 _karmaPosition ∷ Proxy "karmaPosition"
 _karmaPosition = Proxy
 
+_lastMessageDate :: Proxy "lastMessageDate"
+_lastMessageDate = Proxy
+
 userPresentationFields ∷ String
 userPresentationFields =
       """ u.id,
 avatar,
 gender,
-date_part('year', age(now() at time zone 'utc', birthday)) as age,
+date_part('year', age(utc_now(), birthday)) as age,
 name,
 headline,
 description,
@@ -75,7 +80,7 @@ userPresentationFields2 =
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
-contactPresentationFields = distinct $ (_sender # as _chatStarter) /\ (h ... _date) /\ (datetime_part_age ("day" /\ _first_message_date) # as _chatAge) /\ userPresentationFields2
+contactPresentationFields uid = distinct $ (coalesce(_sender /\ uid) # as _chatStarter) /\ (coalesce (h ... _date /\ utc_now) # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce(_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields2
 
 contactsSource ∷ Int → _
 contactsSource loggedUserID = join usersSource (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID)
@@ -115,27 +120,22 @@ suggestBaseQuery skip filter =
                           # offset skip
                           # as t
                   )
-            #
-                  orderBy random
+            # orderBy random
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContact)
-presentContacts loggedUserID skip = SD.query $ select contactPresentationFields # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (h ... _date # desc) # limit contactsPerPage # offset skip
+presentContacts loggedUserID skip = SD.query $ select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (_lastMessageDate # desc) # limit contactsPerPage # offset skip
 
 --needs to handle impersonations
-presentSingleContact ∷ Int → Int → ServerEffect FlatContact
-presentSingleContact loggedUserID otherID = SU.fromJust <$> SD.unsafeSingle
-      ( ( "select coalesce(h.date, now() at time zone 'utc'), coalesce(sender, @otherID), coalesce(first_message_date, now() at time zone 'utc'), " <> userPresentationFields
-                <> "from"
-                <> usersTable
-                <> "left join histories h on (u.id = h.recipient and h.sender = @id or u.id = h.sender and h.recipient = @id) where u.id = @otherID"
-        )
-      )
-      { id: loggedUserID, otherID }
+presentSingleContact ∷ Int → Int → ServerEffect _
+presentSingleContact loggedUserID otherID = map SU.fromJust <<< SD.single $
+      select (contactPresentationFields loggedUserID)
+            # from (leftJoin usersSource (histories # as h) # on (u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID .&&. u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID))
+            # wher (u ... _id .=. otherID)
 
 presentSelectedContacts ∷ Int → Array Int → ServerEffect (Array FlatContact)
 presentSelectedContacts loggedUserID ids
       | DA.null ids = pure []
-      | otherwise = SD.query $ select contactPresentationFields # from (contactsSource loggedUserID) # wher (in_ (u ... _id) ids)
+      | otherwise = SD.query $ select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (in_ (u ... _id) ids)
 
 --refactor: improve this
 chatHistoryFor ∷ Int → Array Int → ServerEffect (Array HistoryMessage)
@@ -155,7 +155,17 @@ chatHistorySince ∷ Int → Int → ServerEffect (Array HistoryMessage)
 chatHistorySince loggedUserID lastID = SD.query $ select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status) # from messages # wher (_recipient .=. loggedUserID .&&. _id .>. lastID .&&. _status .<. Delivered) # orderBy (_date /\ _sender)
 
 chatHistoryBetween ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
-chatHistoryBetween loggedUserID otherID skip = SD.query $ select star # from (select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status) # from messages # wher (_sender .=. loggedUserID .&&. _recipient .=. otherID .||. _sender .=. otherID .&&. _recipient .=. loggedUserID) # orderBy (_date # desc) # limit messagesPerPage # offset skip # as c) # orderBy _date
+chatHistoryBetween loggedUserID otherID skip = SD.query $ select star
+      # from
+            ( select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status)
+                    # from messages
+                    # wher (_sender .=. loggedUserID .&&. _recipient .=. otherID .||. _sender .=. otherID .&&. _recipient .=. loggedUserID)
+                    # orderBy (_date # desc)
+                    # limit messagesPerPage
+                    # offset skip
+                    # as c
+            )
+      # orderBy _date
 
 messageIDsFor ∷ Int → Int → ServerEffect (Array MessageIDTemporary)
 messageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ Proxy "temporaryID"))) # from messages # wher (_sender .=. loggedUserID .&&. _id .>. messageID)

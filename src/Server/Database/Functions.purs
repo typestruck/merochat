@@ -15,3 +15,6 @@ datetime_part_age = function "date_part_age"
 
 insert_history ∷ FunctionSignature (Int /\ Int) Unit
 insert_history = function "insert_history"
+
+utc_now ∷ FunctionSignature' DateTime
+utc_now = function' "utc_now"

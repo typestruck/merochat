@@ -1,4 +1,13 @@
-﻿create table countries
+﻿create or replace function utc_now()
+  returns timestamptz as
+$body$
+begin
+    return now() at time zone 'utc';
+end;
+  $body$
+  language plpgsql;
+
+create table countries
 (
     id integer generated always as identity primary key,
     name text not null
@@ -9,7 +18,7 @@ create table users
     id integer generated always as identity primary key,
     name text not null,
     password text not null,
-    joined timestamp default (now() at time zone 'utc'),
+    joined timestamptz default (utc_now()),
     email text not null,
     birthday date,
     gender text,
@@ -28,10 +37,10 @@ create table messages
     temporary_id integer not null,
     sender integer not null,
     recipient integer not null,
-    date timestamp not null default (now() at time zone 'utc'),
+    date timestamptz not null default (now()),
     content text not null,
     status smallint not null default 1,
-    visualized timestamp,
+    visualized timestamptz,
 
     constraint from_user_message foreign key (sender) references users(id) on delete cascade,
     constraint to_user_message foreign key (recipient) references users(id) on delete cascade
@@ -82,7 +91,7 @@ create table recoveries
 (
     id integer generated always as identity primary key,
     uuid char(36) not null,
-    created timestamp default (now() at time zone 'utc'),
+    created timestamptz default (utc_now()),
     active boolean default true,
     recoverer integer not null,
     constraint recoverer foreign key (recoverer) references users(id) on delete cascade
@@ -93,7 +102,7 @@ create table karma_histories
     id integer generated always as identity primary key,
     target integer not null,
     amount integer not null,
-    date timestamp not null default (now() at time zone 'utc'),
+    date timestamptz not null default (utc_now()),
 
     constraint target_karma_history foreign key (target) references users(id) on delete cascade
 );
@@ -109,7 +118,7 @@ begin
             target,
             amount
     from karma_histories
-    where extract(epoch from (now() at time zone 'utc') - date ) / 3600 <= hours_time;
+    where extract(epoch from (utc_now()) - date ) / 3600 <= hours_time;
     delete from karma_histories k
     where exists(select t.id from temp_karmas t where t.id = k.id);
     insert into karma_histories(target, amount)
@@ -132,7 +141,7 @@ create table karma_leaderboard
     position integer not null,
     current_karma integer not null,
     gained integer not null,
-    date timestamp not null default (now() at time zone 'utc'),
+    date timestamptz not null default (utc_now()),
 
     constraint ranker_user foreign key (ranker) references users(id) on delete cascade
 );
@@ -163,8 +172,8 @@ create table histories
     id integer generated always as identity primary key,
     sender integer not null,
     recipient integer not null,
-    first_message_date timestamp not null default (now() at time zone 'utc'),
-    date timestamp not null default (now() at time zone 'utc'), -- date of last message sent
+    first_message_date timestamptz not null default (utc_now()),
+    date timestamptz not null default (utc_now()), -- date of last message sent
     sender_archived boolean not null default false,
     recipient_archived boolean not null default false,
 
@@ -189,7 +198,7 @@ create table reports
     comment text,
     reason smallint not null,
     reporter integer not null,
-    date timestamp not null default (now() at time zone 'utc'),
+    date timestamptz not null default (utc_now()),
     reported integer not null,
     constraint reporter_user foreign key (reporter) references users(id) on delete cascade,
     constraint reported_user foreign key (reported) references users(id) on delete cascade
@@ -260,7 +269,7 @@ create table experiments
     code integer not null,
     name text not null,
     description text not null,
-    added timestamp not null default (now() at time zone 'utc')
+    added timestamptz not null default (utc_now())
 );
 
 create or replace function insert_history
@@ -268,12 +277,12 @@ create or replace function insert_history
 $$
 begin
     if exists(select 1 from histories where sender = recipient_id and recipient = sender_id) then
-        update histories set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc') where sender = recipient_id and recipient = sender_id;
+        update histories set sender_archived = false, recipient_archived = false, date = (utc_now()) where sender = recipient_id and recipient = sender_id;
     else
         insert into histories (sender, recipient)
         values (sender_id, recipient_id)
         on conflict (sender, recipient) do
-        update set sender_archived = false, recipient_archived = false, date = (now() at time zone 'utc');
+        update set sender_archived = false, recipient_archived = false, date = (utc_now());
     end if;
 end;
   $$
@@ -290,11 +299,11 @@ end;
   $body$
   language plpgsql;
 
-create or replace function date_part_age(part text, tm timestamp with time zone)
+create or replace function date_part_age(part text, tm timestamptz)
   returns integer as
 $body$
 begin
-    return date_part(part, age(now() at time zone 'utc', tm));
+    return date_part(part, age(utc_now(), tm));
 end;
   $body$
   language plpgsql;
@@ -316,15 +325,9 @@ values
     ('Breton'),
     ('Burmese'),
     ('Bulgarian'),
+    ('Cebuano'),
+    ('Cantonese'),
     ('Catalan'),
-    ('Chinese-Gan'),
-    ('Chinese-Hakka'),
-    ('Chinese-Jinyu'),
-    ('Chinese-Mandarin'),
-    ('Chinese-MinNan'),
-    ('Chinese-Wu'),
-    ('Chinese-Xiang'),
-    ('Chinese-Yue (Cantonese)'),
     ('Cornish'),
     ('Croatian'),
     ('Czech'),
@@ -333,7 +336,6 @@ values
     ('English'),
     ('Esperanto'),
     ('Estonian'),
-    ('Euchee/Yuchi'),
     ('Faroese'),
     ('Finnish'),
     ('French'),
@@ -341,6 +343,7 @@ values
     ('German'),
     ('Georgian'),
     ('Greek'),
+    ('Guarani'),
     ('Gujarati'),
     ('Haitian Creole'),
     ('Hausa'),
@@ -357,6 +360,7 @@ values
     ('Javanese'),
     ('Kannada'),
     ('Khmer'),
+    ('Klingon'),
     ('Konkani'),
     ('Korean'),
     ('Kurdish'),
@@ -368,16 +372,16 @@ values
     ('Maithili'),
     ('Malay'),
     ('Malayalam'),
+    ('Mandarin'),
     ('Manx'),
     ('Marathi'),
     ('Mongolian'),
     ('Mongul'),
-    ('Navajo/Dine'),
+    ('Navajo'),
     ('Norwegian'),
-    ('Ojibwe/Anishnaabeg'),
+    ('Ojibwe'),
     ('Oriya'),
-    ('Panjabi-Eastern'),
-    ('Panjabi-Western'),
+    ('Panjabi'),
     ('Papiamentu'),
     ('Pashto'),
     ('Persian'),
@@ -389,7 +393,6 @@ values
     ('Sauk'),
     ('Scots Gaelic'),
     ('Serbian'),
-    ('Serbo-Croatian'),
     ('Sindhi'),
     ('Sioux'),
     ('Slovak'),
@@ -410,10 +413,12 @@ values
     ('Uzbek'),
     ('Vietnamese'),
     ('Wampanoag'),
+    ('Waray'),
     ('Welsh'),
     ('Wolof'),
     ('Yiddish'),
     ('Yoruba'),
+    ('Yuchi'),
     ('Zulu'),
     ('Other');
 
@@ -459,8 +464,7 @@ values
     ('China'),
     ('Colombia'),
     ('Comoros'),
-    ('Congo (Brazzaville)'),
-    ('Congo (Kinshasa)'),
+    ('Congo'),
     ('Costa Rica'),
     ('Cote d''Ivoire'),
     ('Croatia'),

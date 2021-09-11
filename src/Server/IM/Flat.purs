@@ -9,6 +9,7 @@ import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
 import Shared.IM.Types (Contact, IMUser)
+import Shared.Unsafe as SU
 import Shared.User (Gender)
 
 type FlatFields rest =
@@ -31,9 +32,9 @@ type FlatUser = FlatFields ()
 
 type FlatContact = FlatFields
       ( chatAge ∷ Maybe Number
-      , chatStarter ∷ Int
+      , chatStarter ∷ Maybe Int
       -- only used for ordering
-      , "h.date" ∷ DateTime
+      , lastMessageDate ∷ Maybe DateTime
       )
 
 fromFlatContact ∷ FlatContact → Contact
@@ -41,7 +42,7 @@ fromFlatContact fc =
       { shouldFetchChatHistory: true
       , available: true
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
-      , chatStarter: fc.chatStarter
+      , chatStarter: SU.fromJust fc.chatStarter
       , impersonating: Nothing
       , history: []
       , user: fromFlatUser fc

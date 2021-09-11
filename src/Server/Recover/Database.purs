@@ -18,7 +18,7 @@ insertRecover id token = void <<< SD.execute $ insert # into recoveries (_uuid /
 
 selectRecoverer ∷ String → ServerEffect (Maybe Int)
 selectRecoverer token = do
-      result ← SD.unsafeSingle "select recoverer from recoveries where uuid = @token and active = true and created >= (now() at time zone 'utc') - interval '1 day'" { token } ∷ BaseEffect _ (Maybe { recoverer ∷ Int })
+      result ← SD.unsafeSingle "select recoverer from recoveries where uuid = @token and active = true and created >= (utc_now()) - interval '1 day'" { token } ∷ BaseEffect _ (Maybe { recoverer ∷ Int })
       pure (_.recoverer <$> result)
 
 recoverPassword ∷ String → Int → String → ServerEffect Unit

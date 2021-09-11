@@ -34,7 +34,7 @@ import Test.Unit.Assert as TUA
 
 tests ∷ TestSuite
 tests = do
-      TU.suite "im actions" do
+      TU.suiteOnly "im actions" do
             TU.test "suggest filters out blocked users"
                   $ TS.serverAction
                   $ do
@@ -119,6 +119,16 @@ tests = do
                         R.liftAff <<< TUA.equal 2 $ DA.length contacts
                         R.liftAff $ TUA.equal yetAnotherUserID (contacts !@ 0).user.id
                         R.liftAff $ TUA.equal anotherUserID (contacts !@ 1).user.id
+
+            TU.test "listSingleContact returns chat history"
+                  $ TS.serverAction
+                  $ do
+                        Tuple userID anotherUserID ← setUpUsers
+                        firstId /\ _ <- SIA.processMessage userID anotherUserID 1 $ Text "oi"
+                        secondId /\ _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
+                        contact ← SIA.listSingleContact userID anotherUserID
+                        R.liftAff $ TUA.equal anotherUserID contact.user.id
+                        R.liftAff $ TUA.equal [firstId, secondId] (_.id <$> contact.history)
 
             TU.test "listContacts matches contact and (first message) chat history"
                   $ TS.serverAction

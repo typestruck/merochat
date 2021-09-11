@@ -14,7 +14,6 @@ You can edit this file as you like.
   , "argonaut-generic"
   , "arraybuffer-types"
   , "arrays"
-  , "bifunctors"
   , "bigints"
   , "browser-cookies"
   , "console"
