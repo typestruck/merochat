@@ -1,4 +1,4 @@
-module Server.IM.Flat where
+module Server.IM.Database.Flat where
 
 import Prelude
 

@@ -4,16 +4,16 @@ import Prelude
 import Server.Types
 import Shared.Types
 
-import Data.Newtype as DN
 import Run as R
 import Server.Profile.Action as SPA
 import Server.Profile.Database as SPD
+import Server.Profile.Database.Flat as SPDF
 import Server.Profile.Template as SPT
 import Shared.Profile.Types (Generate, ProfileUser)
 
 profile ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
 profile { guards: { loggedUserID } } = do
-      profileUser ← SPD.presentProfile loggedUserID
+      profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserID
       countries ← SPD.presentCountries
       languages ← SPD.presentLanguages
       R.liftEffect $ SPT.template

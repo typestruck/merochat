@@ -33,40 +33,13 @@ import Droplet.Language.Internal.Definition (Path)
 import Droplet.Language.Internal.Function (PgFunction)
 import Droplet.Language.Internal.Query (query)
 import Server.Database as SD
-import Server.IM.Flat (FlatUser, FlatContact)
+import Server.IM.Database.Flat (FlatUser, FlatContact)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
 
-_chatStarter ∷ Proxy "chatStarter"
-_chatStarter = Proxy
-
-_chatAge ∷ Proxy "chatAge"
-_chatAge = Proxy
-
-_karmaPosition ∷ Proxy "karmaPosition"
-_karmaPosition = Proxy
-
-_lastMessageDate :: Proxy "lastMessageDate"
-_lastMessageDate = Proxy
-
-userPresentationFields ∷ String
 userPresentationFields =
-      """ u.id,
-avatar,
-gender,
-date_part('year', age(utc_now(), birthday)) as age,
-name,
-headline,
-description,
-(select name from countries where id = country) country,
-(select string_agg(l.name, ','  order by name) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
-(select string_agg(name, '\n' order by l.id) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
-k.current_karma karma,
-k.position """
-
-userPresentationFields2 =
       (u ... _id # as _id)
             /\ _avatar
             /\ _gender
@@ -80,22 +53,19 @@ userPresentationFields2 =
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
-contactPresentationFields uid = distinct $ (coalesce(_sender /\ uid) # as _chatStarter) /\ (coalesce (h ... _date /\ utc_now) # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce(_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields2
+contactPresentationFields uid = distinct $ (coalesce(_sender /\ uid) # as _chatStarter) /\ (coalesce (h ... _date /\ utc_now) # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce(_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields
 
 contactsSource ∷ Int → _
 contactsSource loggedUserID = join usersSource (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID)
-
-usersTable ∷ String
-usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
 
 usersSource ∷ _
 usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
 
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
-presentUser loggedUserID = SD.single $ select userPresentationFields2 # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
+presentUser loggedUserID = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
 
 q ∷ Int → _
-q loggedUserID = select userPresentationFields2 # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
+q loggedUserID = select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
 
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array FlatUser)
 suggest loggedUserID skip = case _ of
@@ -112,7 +82,7 @@ suggest loggedUserID skip = case _ of
 suggestBaseQuery skip filter =
       select star
             # from
-                  ( select userPresentationFields2
+                  ( select userPresentationFields
                           # from (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested))
                           # wher filter
                           # orderBy (s ... _id)
@@ -197,8 +167,14 @@ insertReport loggedUserID { userID, comment, reason } = SD.withTransaction $ \co
       SD.executeWith connection $ blockQuery loggedUserID userID
       SD.executeWith connection $ insert # into reports (_reporter /\ _reported /\ _reason /\ _comment) # values (loggedUserID /\ userID /\ reason /\ comment)
 
-l ∷ Proxy "l"
-l = Proxy
+_chatStarter ∷ Proxy "chatStarter"
+_chatStarter = Proxy
+
+_chatAge ∷ Proxy "chatAge"
+_chatAge = Proxy
+
+_lastMessageDate :: Proxy "lastMessageDate"
+_lastMessageDate = Proxy
 
 h ∷ Proxy "h"
 h = Proxy
@@ -208,9 +184,3 @@ s = Proxy
 
 t ∷ Proxy "t"
 t = Proxy
-
-lu ∷ Proxy "lu"
-lu = Proxy
-
-tu ∷ Proxy "tu"
-tu = Proxy

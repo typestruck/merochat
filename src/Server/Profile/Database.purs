@@ -1,13 +1,16 @@
 module Server.Profile.Database where
 
 import Droplet.Language
-import Prelude
+import Prelude hiding (join)
 import Server.Database.Countries
 import Server.Database.Fields
+import Server.Database.KarmaLeaderboard
 import Server.Database.Languages
 import Server.Database.LanguagesUsers
+import Server.Database.Tags
 import Server.Database.TagsUsers
 import Server.Database.Users
+import Server.Profile.Database.Flat
 import Server.Types
 import Shared.Types
 
@@ -17,29 +20,27 @@ import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
+import Server.Database.Functions
 import Shared.Profile.Types (ProfileUser)
 import Shared.Unsafe as SU
 
-profilePresentationFields ∷ String
-profilePresentationFields =
-      """ u.id,
-avatar,
-gender,
-birthday,
-name,
-headline,
-description,
-country,
-(select array_agg(l.id) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
-(select string_agg(name, '\n' order by l.id) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
-k.current_karma karma,
-k.position """
-
-usersTable ∷ String
-usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
-
-presentProfile ∷ Int → ServerEffect ProfileUser
-presentProfile loggedUserID = map SU.fromJust $ SD.unsafeSingle ("select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = @id") { id: loggedUserID }
+presentProfile ∷ Int → ServerEffect FlatProfileUser
+presentProfile loggedUserID = map SU.fromJust <<< SD.single $ select profilePresentationFields # from source # wher filtered
+      where
+      profilePresentationFields = (u ... _id # as _id)
+            /\ _avatar
+            /\ _gender
+            /\ _birthday
+            /\ _name
+            /\ _headline
+            /\ _description
+            /\ _country
+            /\ (select (int_array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)))
+            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)))
+            /\ (k ... _current_karma # as _karma)
+            /\ (_position # as _karmaPosition)
+      source = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
+      filtered = (u ... _id .=. loggedUserID)
 
 presentCountries ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name

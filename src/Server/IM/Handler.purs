@@ -16,7 +16,7 @@ import Run as R
 import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
-import Server.IM.Flat (fromFlatUser)
+import Server.IM.Database.Flat (fromFlatUser)
 import Server.IM.Template as SIT
 import Shared.ResponseError (ResponseError(..))
 

@@ -15,8 +15,8 @@ import Effect.Ref (Ref)
 import Server.Email as SE
 import Server.File as SF
 import Server.IM.Database as SID
-import Server.IM.Flat (fromFlatContact)
-import Server.IM.Flat as SIF
+import Server.IM.Database.Flat (fromFlatContact)
+import Server.IM.Database.Flat as SIF
 import Server.Ok (ok)
 import Server.Types (BaseEffect, Ok, ServerEffect, StorageDetails)
 import Server.Wheel as SW

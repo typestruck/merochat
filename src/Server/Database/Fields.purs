@@ -31,3 +31,12 @@ k = Proxy
 
 u ∷ Proxy "u"
 u = Proxy
+
+l ∷ Proxy "l"
+l = Proxy
+
+lu ∷ Proxy "lu"
+lu = Proxy
+
+tu ∷ Proxy "tu"
+tu = Proxy

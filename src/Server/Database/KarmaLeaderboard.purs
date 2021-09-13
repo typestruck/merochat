@@ -30,3 +30,7 @@ _gained = Proxy
 
 _karma ∷ Proxy "karma"
 _karma = Proxy
+
+
+_karmaPosition ∷ Proxy "karmaPosition"
+_karmaPosition = Proxy
