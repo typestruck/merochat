@@ -16,6 +16,7 @@ import Server.Database as SD
 insertRecover ∷ Int → String → ServerEffect Unit
 insertRecover id token = void <<< SD.execute $ insert # into recoveries (_uuid /\ _recoverer) # values (token /\ id)
 
+--refactor: doesn't need to calculate the date with sql
 selectRecoverer ∷ String → ServerEffect (Maybe Int)
 selectRecoverer token = do
       result ← SD.unsafeSingle "select recoverer from recoveries where uuid = @token and active = true and created >= (utc_now()) - interval '1 day'" { token } ∷ BaseEffect _ (Maybe { recoverer ∷ Int })

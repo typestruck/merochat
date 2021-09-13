@@ -1,30 +1,31 @@
 module Test.Server.Landing.Action where
 
+import Droplet.Language
 import Prelude
-import Shared.Types
+import Server.Database.Fields
+import Server.Database.KarmaHistories
+import Server.Database.KarmaLeaderboard
+import Server.Database.Suggestions
 import Server.Types
-import Data.Maybe (Maybe(..))
+import Shared.Types
 
+import Data.BigInt as BG
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.String as DS
 import Run as R
 import Server.AccountValidation (emailAlreadyRegisteredMessage, invalidEmailMessage, invalidPasswordMessage)
 import Server.Database as SD
 import Server.Database.Users as SDU
 import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
-import Server.Database.KarmaHistories
-import Server.Database.KarmaLeaderboard
-import Server.Database.Suggestions
-import Data.BigInt as BG
 import Server.Token as ST
 import Shared.Unsafe as SU
 import Test.Server as TS
-
 import Test.Server.User (email, password)
 import Test.Server.User as STU
-import Droplet.Language
 import Test.Unit (TestSuite)
 import Test.Unit as TU
-import Server.Database.Fields
 import Test.Unit.Assert as TUA
 
 tests ∷ TestSuite
@@ -71,7 +72,7 @@ tests = do
             TU.test "register creates user"
                   $ TS.serverAction
                   $ do
-                        _ ← SLA.register $
+                        void <<< SLA.register $
                               { email
                               , password
                               , captchaResponse: Nothing
@@ -82,6 +83,18 @@ tests = do
                               Just user → do
                                     hashed ← ST.hashPassword password
                                     R.liftAff $ TUA.equal hashed user.password
+
+            TU.test "register lowercases emails"
+                  $ TS.serverAction
+                  $ do
+                        let upcaseEmail = "EMAIL@EMAIL.CO.NZ"
+                        void <<< SLA.register $
+                              { email: upcaseEmail
+                              , password
+                              , captchaResponse: Nothing
+                              }
+                        maybeUser ← SDU.userBy <<< Email $ DS.toLower upcaseEmail
+                        when (DM.isNothing maybeUser) <<< R.liftAff $ TU.failure "user not created!"
 
             TU.test "register creates karma"
                   $ TS.serverAction

@@ -8,7 +8,9 @@ import Shared.Types
 import Data.Date (Date)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
+import Data.Tuple.Nested (type (/\), (/\))
 import Server.Database as SD
+import Server.Database.Fields
 import Shared.Account (RegisterLoginUser)
 import Shared.User (Gender)
 import Type.Proxy (Proxy(..))
@@ -58,12 +60,9 @@ _gender = Proxy
 _country ∷ Proxy "country"
 _country = Proxy
 
-baseQuery ∷ String
-baseQuery = "select id, email, password from users where active and "
-
---refactor: emails should be inserted/updated as lowered
--- and not use lower()
 userBy ∷ By → ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
-      Email value → SD.unsafeSingle (baseQuery <> "lower(email) = lower(@email)") { email: value }
-      ID value → SD.unsafeSingle (baseQuery <> "id = @id") { id: value }
+      Email value → SD.single $ baseQuery (\ft -> ft .&&. _email .=. value)
+      ID value → SD.single $ baseQuery (\ft -> ft .&&. _id .=. value)
+
+baseQuery ft = select (_id /\ _email /\ _password) # from users # wher (ft (_active .=. true))

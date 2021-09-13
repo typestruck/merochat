@@ -10,9 +10,9 @@ import Data.Tuple.Nested ((/\))
 import Droplet.Language
 import Server.Database.Users
 import Server.Database.Fields
-import Shared.Unsafe as SU
 import Server.Database.KarmaHistories
 
+--refactor: add support on droplet
 createUser ∷ { email ∷ String, name ∷ String, password ∷ String, headline ∷ String, description ∷ String } → ServerEffect Int
 createUser user = SD.withTransaction $ \connection → do
       userID ← _.id <<< SU.fromJust <$> (SD.singleWith connection (insert # into users (_name /\ _password /\ _email /\ _headline /\ _description) # values (user.name /\ user.password /\ user.email /\ user.headline /\ user.description) # returning _id) ∷ DatabaseEffect (Maybe { id ∷ Int }))

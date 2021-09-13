@@ -22,7 +22,7 @@ emailAlreadyRegisteredMessage = "Email already registered"
 
 validateEmail ∷ String → ServerEffect String
 validateEmail rawEmail = do
-      let email = DS.trim rawEmail
+      let email = DS.toLower $ DS.trim rawEmail
       when (DS.length email > emailMaxCharacters || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email)) $ SR.throwBadRequest invalidEmailMessage
       pure email
 

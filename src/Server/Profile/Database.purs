@@ -48,6 +48,7 @@ presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _
 presentLanguages ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
 
+--refactor: add to droplet: with, on conflict
 saveProfile ∷ { user ∷ ProfileUser, avatar ∷ Maybe String, languages ∷ Array Int, tags ∷ Array String } → ServerEffect Unit
 saveProfile
       { user: { id, name, headline, description, country, gender, age }
@@ -73,8 +74,7 @@ saveProfile
       SD.executeWith connection $ delete # from tags_users # wher (_creator .=. id)
       tagIDs ∷ Array (Maybe { id ∷ Int }) ← DT.traverse
             ( \name → SD.unsafeSingleWith connection
-                    ( """
-            with ins as (insert into tags (name) values (@name) on conflict on constraint unique_tag do nothing returning id)
+                    ( """with ins as (insert into tags (name) values (@name) on conflict on constraint unique_tag do nothing returning id)
             select coalesce ((select id from ins), (select id from tags where name = @name)) as id"""
                     )
                     { name }

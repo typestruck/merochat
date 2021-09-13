@@ -4,6 +4,7 @@ import Prelude
 import Server.Types
 import Shared.Types
 
+import Data.String as DS
 import Server.AccountValidation as SA
 import Server.Captcha as SC
 import Server.Landing.Database as SLD
