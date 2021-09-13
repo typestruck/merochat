@@ -34,7 +34,7 @@ import Test.Unit.Assert as TUA
 
 tests ∷ TestSuite
 tests = do
-      TU.suiteOnly "im actions" do
+      TU.suite "im actions" do
             TU.test "suggest filters out blocked users"
                   $ TS.serverAction
                   $ do
