@@ -27,6 +27,7 @@ import Data.Maybe (Maybe(..))
 import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
+import Debug (spy)
 import Droplet.Driver (Pool)
 import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
 import Droplet.Language.Internal.Definition (Path)
@@ -93,7 +94,10 @@ suggestBaseQuery skip filter =
             # orderBy random
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContact)
-presentContacts loggedUserID skip = SD.query $ select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (_lastMessageDate # desc) # limit contactsPerPage # offset skip
+presentContacts loggedUserID skip =do
+      let q = spy "q" (spyQuery (select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (_lastMessageDate # desc) # limit contactsPerPage # offset skip)).query
+
+      SD.query $ select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (_lastMessageDate # desc) # limit contactsPerPage # offset skip
 
 --needs to handle impersonations
 presentSingleContact ∷ Int → Int → ServerEffect _
@@ -107,7 +111,8 @@ presentSelectedContacts loggedUserID ids
       | DA.null ids = pure []
       | otherwise = SD.query $ select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (in_ (u ... _id) ids)
 
---refactor: improve this
+--refactor: presentContacts and chatHistoryFor can be combined into a single query with something like this
+-- select coalesce("h"."date", utc_now()) AS "lastMessageDate", s.sender, s.recipient, s.date, s.content, s.status from users u join histories h on u.id = h.sender and h.recipient = 4 or u.id = h.recipient and h.sender = 4, lateral  (select * from (select row_number() over (order by date, sender, recipient desc) as n, id, sender, recipient, date, content, status from  messages m where m.sender = h.sender and m.recipient = h.recipient or m.sender = h.recipient and m.recipient = h.sender order by date, sender, recipient desc ) b where status < 2 or n <= 15) s  order by "lastMessageDate";
 chatHistoryFor ∷ Int → Array Int → ServerEffect (Array HistoryMessage)
 chatHistoryFor loggedUserID otherIDs
       | DA.null otherIDs = pure []
