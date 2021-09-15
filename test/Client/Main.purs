@@ -9,7 +9,7 @@ import Test.Client.IM.Contacts as TCICN
 import Test.Client.IM.Main as TCIM
 import Test.Client.IM.History as TCIH
 
-tests :: TestSuite
+tests ∷ TestSuite
 tests = do
       TCIS.tests
       TCIC.tests

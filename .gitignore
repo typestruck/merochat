@@ -9,7 +9,7 @@ generated-docs
 .psa*
 .pulp_cache
 .vscode
-src/Client/media/upload
+src/Client/media/upload/
 configuration.json
 old/
 fix

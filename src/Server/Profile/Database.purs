@@ -1,63 +1,83 @@
 module Server.Profile.Database where
 
-import Prelude
-
-import Data.Maybe (Maybe)
-import Data.Traversable as DT
-import Data.Tuple (Tuple)
-import Data.Tuple.Nested ((/\))
-import Database.PostgreSQL (Query(..), Row0(..), Row1(..), Row2(..))
-import Server.Database as SD
+import Droplet.Language
+import Prelude hiding (join)
+import Server.Database.Countries
+import Server.Database.Fields
+import Server.Database.KarmaLeaderboard
+import Server.Database.Languages
+import Server.Database.LanguagesUsers
+import Server.Database.Tags
+import Server.Database.TagsUsers
+import Server.Database.Users
+import Server.Profile.Database.Flat
 import Server.Types
 import Shared.Types
 
-profilePresentationFields :: String
-profilePresentationFields = """ u.id,
-avatar,
-gender,
-birthday,
-name,
-headline,
-description,
-country,
-(select array_agg(l.id) from languages l join languages_users lu on l.id = lu.language and lu.speaker = u.id ) languages,
-(select string_agg(name, '\n' order by l.id) from tags l join tags_users tu on l.id = tu.tag and tu.creator = u.id ) tags,
-k.current_karma karma,
-k.position """
+import Data.Maybe (Maybe(..))
+import Data.Newtype as DN
+import Data.Traversable as DT
+import Data.Tuple (Tuple)
+import Data.Tuple.Nested ((/\))
+import Server.Database as SD
+import Server.Database.Functions
+import Shared.Profile.Types (ProfileUser)
+import Shared.Unsafe as SU
 
-usersTable :: String
-usersTable = " users u join karma_leaderboard k on u.id = k.ranker "
+presentProfile ∷ Int → ServerEffect FlatProfileUser
+presentProfile loggedUserID = map SU.fromJust <<< SD.single $ select profilePresentationFields # from source # wher filtered
+      where
+      profilePresentationFields = (u ... _id # as _id)
+            /\ _avatar
+            /\ _gender
+            /\ _birthday
+            /\ _name
+            /\ _headline
+            /\ _description
+            /\ _country
+            /\ (select (int_array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)))
+            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)))
+            /\ (k ... _current_karma # as _karma)
+            /\ (_position # as _karmaPosition)
+      source = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
+      filtered = (u ... _id .=. loggedUserID)
 
-presentProfile :: PrimaryKey -> ServerEffect ProfileUserWrapper
-presentProfile loggedUserID = SD.single' (Query $ "select" <> profilePresentationFields <> "from" <> usersTable <> " where u.id = $1") $ Row1 loggedUserID
+presentCountries ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
+presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name
 
-presentCountries :: ServerEffect (Array (Tuple PrimaryKey String))
-presentCountries = SD.select (Query "select id, name from countries order by name") Row0
+presentLanguages ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
+presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
 
-presentLanguages :: ServerEffect (Array (Tuple PrimaryKey String))
-presentLanguages = SD.select (Query "select id, name from languages order by name") Row0
-
-saveProfile :: { user :: ProfileUser, avatar :: Maybe String, languages :: Array PrimaryKey, tags :: Array String } -> ServerEffect Unit
-saveProfile {
-    user: { id, name, headline, description, country, gender, age },
-    avatar,
-    languages,
-    tags
-} = SD.withTransaction $ \connection -> void do
-        SD.executeWith connection (Query """update users
-                             set avatar = $2,
-                                 name = $3,
-                                 headline = $4,
-                                 description = $5,
-                                 country = $6,
-                                 gender = $7,
-                                 birthday = $8
-                             where id = $1""") (id /\ avatar /\ name /\ headline /\ description /\ country /\ gender /\ (map (\(DateWrapper d) -> d) age))
-        SD.executeWith connection (Query """delete from languages_users where speaker = $1""") $ Row1 id
-        void $ DT.traverse (SD.executeWith connection (Query """insert into languages_users (speaker, language) values ($1, $2)""") <<< Row2 id) languages
-        SD.executeWith connection (Query """delete from tags_users where creator = $1""") $ Row1 id
-        tagIDs :: Array PrimaryKey <- DT.traverse (SD.scalarWith connection (Query """
-            with ins as (insert into tags (name) values ($1) on conflict on constraint unique_tag do nothing returning id)
-            select coalesce ((select id from ins), (select id from tags where name = $1))""") <<< Row1) tags
-        DT.traverse (SD.executeWith connection (Query """insert into tags_users (creator, tag) values ($1, $2)""") <<< Row2 id) tagIDs
-
+--refactor: add to droplet: with, on conflict
+saveProfile ∷ { user ∷ ProfileUser, avatar ∷ Maybe String, languages ∷ Array Int, tags ∷ Array String } → ServerEffect Unit
+saveProfile
+      { user: { id, name, headline, description, country, gender, age }
+      , avatar
+      , languages
+      , tags
+      } = SD.withTransaction $ \connection → void do
+      SD.executeWith connection $
+            update users
+                  # set
+                        ( (_avatar /\ avatar)
+                                /\ (_name /\ name)
+                                /\ (_headline /\ headline)
+                                /\ (_description /\ description)
+                                /\ (_country /\ country)
+                                /\ (_gender /\ gender)
+                                /\
+                                      (_birthday /\ map DN.unwrap age)
+                        )
+                  # wher (_id .=. id)
+      SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. id)
+      void $ DT.traverse (\lang → SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (id /\ lang)) languages
+      SD.executeWith connection $ delete # from tags_users # wher (_creator .=. id)
+      tagIDs ∷ Array (Maybe { id ∷ Int }) ← DT.traverse
+            ( \name → SD.unsafeSingleWith connection
+                    ( """with ins as (insert into tags (name) values (@name) on conflict on constraint unique_tag do nothing returning id)
+            select coalesce ((select id from ins), (select id from tags where name = @name)) as id"""
+                    )
+                    { name }
+            )
+            tags
+      DT.traverse (\tid → SD.executeWith connection (insert # into tags_users (_creator /\ _tag) # values (id /\ (SU.fromJust tid).id))) tagIDs

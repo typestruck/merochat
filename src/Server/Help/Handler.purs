@@ -6,5 +6,5 @@ import Server.Types
 import Server.Help.Template as SHT
 import Server.Response as SR
 
-help :: forall r. { | r  } -> ServerEffect Html
+help ∷ ∀ r. { | r } → ServerEffect Html
 help _ = SR.serveTemplate $ SHT.template

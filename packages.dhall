@@ -116,10 +116,9 @@ let additions =
   }
 -------------------------------
 -}
-
-
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20201206/packages.dhall sha256:c9ffd7577fb8ee2197309591d7ccc0f506ee37b9078866f0ef159f5abbb1b32b
+      https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20210826/packages.dhall sha256:eee0765aa98e0da8fc414768870ad588e7cada060f9f7c23c37385c169f74d9f
+ -- with purescript-droplet = ../purescript-droplet/spago.dhall as Location
 
 let overrides = {=}
 
@@ -144,40 +143,7 @@ let additions =
           , "typelevel-prelude"
           ]
         , repo = "https://github.com/hoodunit/purescript-payload.git"
-        , version = "v0.3.1"
-        }
-      , postgresql-client =
-        { dependencies =
-          [ "aff"
-          , "argonaut"
-          , "arrays"
-          , "assert"
-          , "bifunctors"
-          , "bytestrings"
-          , "console"
-          , "datetime"
-          , "decimals"
-          , "effect"
-          , "either"
-          , "exceptions"
-          , "foldable-traversable"
-          , "foreign"
-          , "foreign-generic"
-          , "foreign-object"
-          , "js-date"
-          , "lists"
-          , "maybe"
-          , "newtype"
-          , "nullable"
-          , "prelude"
-          , "psci-support"
-          , "string-parsers"
-          , "test-unit"
-          , "transformers"
-          , "tuples"
-          ]
-        , repo = "https://github.com/rightfold/purescript-postgresql-client.git"
-        , version = "v3.0.2"
+        , version = "15b4954e086336fa2840da3d9738d25f7cb02d6d"
         }
       , browser-cookies =
         { dependencies =
@@ -192,26 +158,38 @@ let additions =
         , repo = "https://github.com/vilu/purescript-browser-cookies.git"
         , version = "v0.0.1"
         }
-      , flame =
+      , droplet =
         { dependencies =
-          [ "prelude"
+          [ "aff"
+          , "arrays"
+          , "bifunctors"
           , "console"
+          , "datetime"
+          , "debug"
           , "effect"
-          , "web-events"
-          , "web-dom"
-          , "web-html"
-          , "nullable"
-          , "aff"
-          , "signal"
+          , "either"
+          , "enums"
+          , "exceptions"
+          , "foldable-traversable"
+          , "foreign"
           , "foreign-object"
-          , "argonaut-generic"
+          , "integers"
+          , "bigints"
+          , "maybe"
+          , "newtype"
+          , "nullable"
+          , "partial"
+          , "prelude"
+          , "profunctor"
+          , "record"
+          , "strings"
+          , "transformers"
+          , "tuples"
+          , "unsafe-coerce"
           ]
-        , repo = "https://github.com/easafe/purescript-flame.git"
-        , version = "f09c1f61ba51e391e3cf55a377cdc3d2946b90a5"
+        , repo = "https://github.com/easafe/purescript-droplet.git"
+        , version = "8b02067d5517f1b9b3eb336e1dfd1ebdae5daa35"
         }
       }
 
-in  (    upstream
-    //  overrides
-    //  additions)
-  --with flame = ../purescript-flame/spago.dhall as Location
+in  upstream // overrides // additions

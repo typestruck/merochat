@@ -8,12 +8,13 @@ import Data.Maybe (Maybe)
 import Server.Recover.Action as SRA
 import Server.Recover.Template as SRT
 import Server.Response as SR
+import Shared.Account (ResetPassword, RecoverAccount)
 
-recover :: forall r. { query :: { token :: Maybe String } | r } -> ServerEffect Html
+recover ∷ ∀ r. { query ∷ { token ∷ Maybe String } | r } → ServerEffect Html
 recover { query: { token } } = SR.serveTemplate $ SRT.template token
 
-recoverAccount :: forall r. { body :: RecoverAccount | r } -> ServerEffect Ok
+recoverAccount ∷ ∀ r. { body ∷ RecoverAccount | r } → ServerEffect Ok
 recoverAccount { body } = SRA.recover body
 
-reset :: forall r. { body :: ResetPassword | r } -> ServerEffect Ok
+reset ∷ ∀ r. { body ∷ ResetPassword | r } → ServerEffect Ok
 reset { body } = SRA.reset body

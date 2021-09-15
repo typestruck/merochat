@@ -1,4 +1,4 @@
 module Shared.Options.WebSocket where
 
-port :: Int
+port ∷ Int
 port = 1339

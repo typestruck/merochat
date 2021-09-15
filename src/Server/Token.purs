@@ -19,15 +19,15 @@ import Run as R
 import Data.Int as DI
 import Run.Reader as RR
 
-hashPassword :: String -> ServerEffect String
+hashPassword ∷ String → ServerEffect String
 hashPassword password = do
-      { configuration: { salt } } <- RR.ask
+      { configuration: { salt } } ← RR.ask
       R.liftEffect $ NCH.hex NCHA.SHA512 salt password
 
-createToken :: PrimaryKey -> ServerEffect String
+createToken ∷ Int → ServerEffect String
 createToken id = do
-      { configuration: { tokenSecret } } <- RR.ask
+      { configuration: { tokenSecret } } ← RR.ask
       NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show id)
 
-userIDFromToken :: String -> String -> Effect (Maybe PrimaryKey)
+userIDFromToken ∷ String → String → Effect (Maybe Int)
 userIDFromToken secret = map (DE.either (const Nothing) DI.fromString) <<< NSJ.decode secret <<< NSJ.fromString

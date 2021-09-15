@@ -1,0 +1,25 @@
+module Server.Database.Functions where
+
+import Droplet.Language
+import Prelude
+
+import Data.DateTime (Date, DateTime)
+import Data.Maybe (Maybe)
+import Data.Tuple.Nested (type (/\))
+
+--refactor: split this appropriately
+date_part_age ∷ FunctionSignature (String /\ Date) (Maybe Number)
+date_part_age = function "date_part_age"
+
+datetime_part_age ∷ FunctionSignature (String /\ DateTime) (Maybe Number)
+datetime_part_age = function "date_part_age"
+
+insert_history ∷ FunctionSignature (Int /\ Int) Unit
+insert_history = function "insert_history"
+
+utc_now ∷ FunctionSignature' DateTime
+utc_now = function' "utc_now"
+
+--i cant be bothered to type array_agg into droplet
+int_array_agg :: FunctionSignature Int (Maybe (Array Int))
+int_array_agg = function "array_agg"

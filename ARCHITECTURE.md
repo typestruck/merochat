@@ -4,7 +4,7 @@ This is a high level overview of MelanChat sources.
 
 ## Project structure
 
-Server side code (to be run with node.js) lies in src/Server. Likewise, client code (to be loaded by a browser) is located in src/Client. There is an extra folder under src namely Shared which constais code used by both server and client side.
+Server side code (to be run with node.js) lies in src/Server. Likewise, client code (to be loaded by a browser) is located in src/Client. There is an extra folder under src namely Shared which contains code used by both server and client side.
 
 An extra folder at the root, Environment, is included at compile time to determine if the code is being run in production or development mode.
 
@@ -20,7 +20,7 @@ External pages might use browsers API for DOM manipulation instead of a framewor
 
 #### Internal pages
 
-Internal pages require login to be accessed. Non logged users will be redirect to /login upon trying to access them. However, there is only a single entry point exposed to the user, /im. The IM page lazy loads other entry points (like user settings, karma leaboard or user profile edition) and renders them without URL changes.
+Internal pages require login to be accessed. Non logged users will be redirect to /login upon trying to access them. However, there is only a single entry point exposed to the user, /im. The IM page lazy loads other entry points (like user settings, karma leaderboard or user profile edition) and renders them without URL changes.
 
 IM uses purescript-flame as web framework. `Client.IM.Main` kickstarts the application, wires document/window events, handles websocket events and call the appropriated methods for each `IMMessage`. Most logical page divisions will have its own file to process given `IMMessage`s, e.g., there is a contact list, history, chat etc module.
 
@@ -51,7 +51,5 @@ There is a folder for each route (e.g. /im, /landing etc). Each folder always ha
 * Pages are always rendered server side so `Template` modules use `view`s from the Shared folder
 
 * Sessions are cookie based. The logged in user id is always available to `Handler` modules via `guards :: { loggedUserID :: PrimaryKey }` in case of internal pages
-
-* The return of a database query is usually a `newtype` over the the record used on client side
 
 * There is a server for HTTP requests and another for websockets. The websocket server uses a wrapper for the ws library

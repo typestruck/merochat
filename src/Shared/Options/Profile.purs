@@ -1,28 +1,28 @@
 module Shared.Options.Profile where
 
-nameMaxCharacters :: Int
+nameMaxCharacters ∷ Int
 nameMaxCharacters = 40
 
-headlineMaxCharacters :: Int
+headlineMaxCharacters ∷ Int
 headlineMaxCharacters = 100
 
-emailMaxCharacters :: Int
+emailMaxCharacters ∷ Int
 emailMaxCharacters = 254
 
-maxLanguages :: Int
+maxLanguages ∷ Int
 maxLanguages = 4
 
-maxTags :: Int
+maxTags ∷ Int
 maxTags = 10
 
-tagMaxCharacters :: Int
+tagMaxCharacters ∷ Int
 tagMaxCharacters = 40
 
-descriptionMaxCharacters :: Int
-descriptionMaxCharacters = 1000
+descriptionMaxCharacters ∷ Int
+descriptionMaxCharacters = 400
 
-passwordMinCharacters :: Int
+passwordMinCharacters ∷ Int
 passwordMinCharacters = 5
 
-passwordMaxCharacters :: Int
+passwordMaxCharacters ∷ Int
 passwordMaxCharacters = 128

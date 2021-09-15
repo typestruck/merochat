@@ -1,25 +1,23 @@
 module Server.Landing.Handler where
 
 import Prelude
-import Server.Types
-import Shared.Types
+import Server.Types (Html, Ok, ServerEffect)
 
-import Data.Tuple (Tuple(..))
 import Payload.Headers as PH
-import Payload.ResponseTypes (Empty(..), Response)
+import Payload.ResponseTypes (Response)
 import Payload.Server.Response as PSR
-import Run.Reader as RR
 import Server.Cookies as SC
 import Server.Landing.Action as SLA
 import Server.Landing.Template as SLT
 import Server.Ok (ok)
 import Server.Response as SR
+import Shared.Account (RegisterLogin)
 
-landing :: forall r. { | r } -> ServerEffect Html
+landing ∷ ∀ r. { | r } → ServerEffect Html
 landing _ = SR.serveTemplate SLT.template
 
-register :: forall r. { body :: RegisterLogin | r } -> ServerEffect (Response Ok)
+register ∷ ∀ r. { body ∷ RegisterLogin | r } → ServerEffect (Response Ok)
 register { body } = do
-      token <- SLA.register body
-      cookieHeader <- SC.makeCookieHeader token
-      pure <<< PSR.setHeaders (PH.fromFoldable [cookieHeader]) $ PSR.ok ok
+      token ← SLA.register body
+      cookieHeader ← SC.makeCookieHeader token
+      pure <<< PSR.setHeaders (PH.fromFoldable [ cookieHeader ]) $ PSR.ok ok

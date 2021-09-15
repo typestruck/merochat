@@ -8,7 +8,7 @@ import Effect (Effect)
 import Flame (AppId)
 import Flame.Subscription as FS
 import Foreign as F
-import Shared.Types (MountPoint)
+import Shared.Options.MountPoint (MountPoint)
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.Event.EventTarget as WET
@@ -21,31 +21,32 @@ import Web.HTML.Event.EventTypes (change, load)
 import Web.HTML.HTMLElement as WHH
 import Web.HTML.HTMLInputElement as WHI
 
-triggerFileSelect :: Element -> Effect Unit
+triggerFileSelect ∷ Element → Effect Unit
 triggerFileSelect = WHH.click <<< SU.fromJust <<< WHH.fromElement
 
-setUpFileChange :: forall message. (String -> message) -> Element -> AppId MountPoint message -> Effect Unit
+setUpFileChange ∷ ∀ message. (String → message) → Element → AppId MountPoint message → Effect Unit
 setUpFileChange message input appID = do
-      fileReader <- WFR.fileReader
+      fileReader ← WFR.fileReader
       setUpBase64Reader fileReader message appID
-      CCD.addEventListener input change $ \_ -> do
+      CCD.addEventListener input change $ \_ → do
             let htmlInput = SU.fromJust $ WHI.fromElement input
-            maybeFileList <- WHI.files htmlInput
+            maybeFileList ← WHI.files htmlInput
             readBase64 fileReader maybeFileList
             WHI.setValue "" htmlInput
 
-setUpBase64Reader :: forall message. FileReader -> (String -> message) -> AppId MountPoint message -> Effect Unit
+setUpBase64Reader ∷ ∀ message. FileReader → (String → message) → AppId MountPoint message → Effect Unit
 setUpBase64Reader fileReader message appID = do
-      handler <- WET.eventListener $ \_ -> do
-            foreignBase64 <- WFR.result fileReader
-            FS.send appID $ message (F.unsafeFromForeign foreignBase64 :: String)
+      handler ← WET.eventListener $ \_ → do
+            foreignBase64 ← WFR.result fileReader
+            FS.send appID $ message (F.unsafeFromForeign foreignBase64 ∷ String)
       WET.addEventListener load handler false $ WFR.toEventTarget fileReader
 
-readBase64 :: FileReader -> Maybe FileList -> Effect Unit
+readBase64 ∷ FileReader → Maybe FileList → Effect Unit
 readBase64 fileReader maybeFileList = do
-      let   maybeFile = do
-                  fileList <- maybeFileList
+      let
+            maybeFile = do
+                  fileList ← maybeFileList
                   WFL.item 0 fileList
       case maybeFile of
-            Nothing -> pure unit
-            Just file -> WFR.readAsDataURL (WFF.toBlob file) fileReader
+            Nothing → pure unit
+            Just file → WFR.readAsDataURL (WFF.toBlob file) fileReader

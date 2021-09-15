@@ -8,5 +8,5 @@ import Server.Logout as SL
 import Server.Ok (ok)
 import Shared.Routes (routes)
 
-logout :: forall r. { | r } -> ServerEffect (Response Ok)
+logout ∷ ∀ r. { | r } → ServerEffect (Response Ok)
 logout _ = pure $ SL.logout (routes.login.get {}) ok

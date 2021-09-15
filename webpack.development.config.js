@@ -57,15 +57,7 @@ module.exports = {
             moduleIds: 'deterministic',
             splitChunks: {
                   chunks: 'all',
-                  name: 'other',
-                  cacheGroups: {
-                        common: {
-                              name: 'common',
-                              test(module) {
-                                    return module.resource && /(.*)(Shared\.Types|Client\.Common\.Network|Shared\.Routes)(.*)/.test(module.resource);
-                              }
-                        }
-                  }
+                  name: 'common'
             },
             minimize: false
       },
