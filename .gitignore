@@ -13,6 +13,7 @@ src/Client/media/upload/
 configuration.json
 old/
 fix
+distcopy/
 todo
 dce-output/
 .cache/

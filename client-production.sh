@@ -59,4 +59,3 @@ git commit -m 'Updated hashs'
 git push
 
 rm -rf $copy_folder
-
