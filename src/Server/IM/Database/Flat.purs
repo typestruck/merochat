@@ -11,6 +11,7 @@ import Data.String as DS
 import Shared.IM.Types (Contact, IMUser)
 import Shared.Unsafe as SU
 import Shared.User (Gender)
+import Server.Database.Flat as SDF
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -54,14 +55,12 @@ fromFlatUser fc =
       , name: fc.name
       , headline: fc.headline
       , description: fc.description
-      , avatar: fc.avatar
-      , tags: splitAgg "\\n" fc.tags
+      , avatar: SDF.parseAvatar fc.avatar
+      , tags: SDF.splitAgg "\\n" fc.tags
       , karma: fc.karma
       , karmaPosition: fc.karmaPosition
       , gender: show <$> fc.gender
       , country: fc.country
-      , languages: splitAgg "," fc.languages
+      , languages: SDF.splitAgg "," fc.languages
       , age: DI.ceil <$> fc.age
       }
-      where
-      splitAgg pattern = DM.maybe [] (DS.split (Pattern pattern))

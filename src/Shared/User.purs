@@ -74,7 +74,7 @@ instance ToValue Gender where
 
 derive instance Ord Gender
 
---refactor: should just use Enum
+--refactor: should just use Enum (have to fix read/writeforeign instances for gender)
 instance Read Gender where
       read input =
             case DS.toLower $ DS.trim input of

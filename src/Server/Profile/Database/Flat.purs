@@ -10,21 +10,7 @@ import Data.String as DS
 import Shared.IM.Types (DateWrapper(..))
 import Shared.Profile.Types (ProfileUser)
 import Shared.User (Gender)
-
---  ( id ∷ Int
---       , name ∷ String
---       , headline ∷ String
---       , description ∷ String
---       , avatar ∷ Maybe String
---       , tags ∷ Array String
---       , karma ∷ Int
---       , karmaPosition ∷ Int
-
---  gender ∷ Maybe Gender
---               , country ∷ Maybe Int
---               , languages ∷ Array Int
---               , age ∷ Maybe DateWrapper
---               )
+import Server.Database.Flat as SDF
 
 type FlatProfileUser =
       { avatar ∷ Maybe String
@@ -43,7 +29,7 @@ type FlatProfileUser =
 
 fromFlatProfileUser ∷ FlatProfileUser → ProfileUser
 fromFlatProfileUser fu =
-      { avatar: fu.avatar
+      { avatar: SDF.parseAvatar fu.avatar
       , age: DateWrapper <$> fu.birthday
       , country: fu.country
       , description: fu.description
@@ -54,7 +40,5 @@ fromFlatProfileUser fu =
       , karmaPosition: fu.karmaPosition
       , languages: DM.fromMaybe [] fu.languages
       , name: fu.name
-      , tags: splitAgg "\\n" fu.tags
+      , tags: SDF.splitAgg "\\n" fu.tags
       }
-      where
-      splitAgg pattern = DM.maybe [] (DS.split (Pattern pattern))

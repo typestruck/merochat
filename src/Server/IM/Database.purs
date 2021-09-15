@@ -94,9 +94,7 @@ suggestBaseQuery skip filter =
             # orderBy random
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContact)
-presentContacts loggedUserID skip =do
-      let q = spy "q" (spyQuery (select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (_lastMessageDate # desc) # limit contactsPerPage # offset skip)).query
-
+presentContacts loggedUserID skip =
       SD.query $ select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (_lastMessageDate # desc) # limit contactsPerPage # offset skip
 
 --needs to handle impersonations

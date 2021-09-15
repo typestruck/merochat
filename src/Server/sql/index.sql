@@ -21,7 +21,7 @@ create table users
     joined timestamptz default (utc_now()),
     email text not null,
     birthday date,
-    gender text,
+    gender smallint,
     headline text not null,
     avatar text,
     description text not null,
