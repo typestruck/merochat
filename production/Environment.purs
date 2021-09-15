@@ -11,7 +11,7 @@ baseCSSHash :: String
 baseCSSHash = "768271ce06fa68cc4b3d"
 
 commonJSHash :: String
-commonJSHash = "ff2e902b674ab033e244"
+commonJSHash = "3e4ab815fb68729a3bbd"
 
 emojiJSHash :: String
 emojiJSHash = "16c6eb82ac41c946ac97"
