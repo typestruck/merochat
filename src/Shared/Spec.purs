@@ -11,6 +11,7 @@ import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword)
 import Shared.Profile.Types (Generate, ProfileUser)
+import Shared.User (ProfileVisibility)
 
 type NoBody = {}
 
@@ -137,6 +138,10 @@ spec ∷
                                                 , terminate ∷
                                                         POST "/account/terminate"
                                                               { body ∷ NoBody
+                                                              , response ∷ Ok
+                                                              }
+                                                , visibility :: POST "/account/visibility"
+                                                              { body ∷ ProfileVisibility
                                                               , response ∷ Ok
                                                               }
                                                 }

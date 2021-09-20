@@ -5,6 +5,8 @@ import Prelude
 import Client.Common.DOM as CCD
 import Data.Array ((:))
 import Data.Array as DA
+import Data.Enum as DE
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
@@ -20,7 +22,7 @@ import Prim.Symbol (class Append)
 import Record as R
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
-import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel)
+import Shared.Settings.Types (ProfileVisibilityId(..), SM, SettingsMessage(..), SettingsModel)
 import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -59,24 +61,28 @@ account model@{ erroredFields, confirmTermination, profileVisibility } =
                     ]
             ]
       where
-      visibility = HE.div_
+      visibility = HE.div (show ProfileVisibilityId)
             [ HE.label_ "Profile visibility"
             , HE.div (HA.class' "section-buttons")
-                    [ HE.select (HA.class' "modal-input")
-                            [ HE.option_ "Show profile (default)"
-                            , HE.option_ "Show profile only to contacts"
-                            , HE.option_ "Do not show profile"
+                    [ HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
+                            [ HE.option (HA.value <<< show $ DE.fromEnum Everyone) "Show profile (default)"
+                            , HE.option (HA.value <<< show $ DE.fromEnum Contacts) "Show profile only to contacts"
+                            , HE.option (HA.value <<< show $ DE.fromEnum Nobody) "Do not show profile"
                             ]
                     ]
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] "All users can see your profile and send you messages"
-            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Contacts } ] "Only users you have previously messaged can see your profile or send you messages"
+            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Contacts } ]
+                    [ HE.text "Only users you have previously messaged can see your"
+                    , HE.br
+                    , HE.text "profile or send you messages"
+                    ]
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Nobody } ] "No one can see your profile or message you"
             , HE.br
             , HE.input
                     [ HA.type' "button"
                     , HA.class' "green-button"
                     , HA.value "Change visibility"
-                    --     , HA.onClick messageIfValidated
+                    , HA.onClick ChangeVisibility
                     ]
             , HE.span' (HA.class' "request-error-message")
             , HE.span (HA.class' "success-message")

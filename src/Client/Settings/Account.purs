@@ -15,8 +15,9 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Payload.Client (ClientResponse)
 import Shared.Routes (routes)
-import Shared.Settings.Types (SettingsMessage(..), SettingsModel)
+import Shared.Settings.Types (ProfileVisibilityId(..), SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
+import Shared.User (ProfileVisibility)
 import Type.Proxy (Proxy(..))
 
 update ∷ AffUpdate SettingsModel SettingsMessage
@@ -27,15 +28,26 @@ update { model, message } =
             ChangePassword → changePassword model
             ToggleTerminateAccount → toggleTerminateAccount model
             TerminateAccount → terminateAccount
+            ChangeVisibility -> changeVisibility model
+
+changeVisibility ∷ AffUpdate SettingsModel SettingsMessage
+changeVisibility {display, model: {profileVisibility}} = do
+      status ← CNN.formRequest (show ProfileVisibilityId) $ request.settings.account.visibility { body: profileVisibility }
+      case status of
+            Success → do
+                  display $ FAE.diff' { hideSuccessMessage: false }
+                  EA.delay $ Milliseconds 3000.0
+                  FAE.diff { hideSuccessMessage: true }
+            _ → FAE.noChanges
 
 toggleTerminateAccount ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
 toggleTerminateAccount _ = pure (\model → model { confirmTermination = not model.confirmTermination })
 
 changeEmail ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
-changeEmail model@({ email, emailConfirmation }) = requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email } }
+changeEmail { email, emailConfirmation } = requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email } }
 
 changePassword ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
-changePassword model@({ password, passwordConfirmation }) = requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password } }
+changePassword { password, passwordConfirmation } = requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password } }
 
 requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (SettingsModel → SettingsModel)
 requestAndLogout field aff = do

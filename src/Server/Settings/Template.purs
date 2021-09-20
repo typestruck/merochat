@@ -20,5 +20,6 @@ template profileVisibility =
                     , confirmTermination: false
                     , profileVisibility
                     , erroredFields: []
+                    , hideSuccessMessage: true
                     }
             }

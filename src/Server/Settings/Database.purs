@@ -5,7 +5,6 @@ import Prelude
 import Server.Database.Fields
 import Server.Database.Users
 
-import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Types (ServerEffect)
 import Shared.Unsafe as SU
@@ -22,3 +21,6 @@ terminateAccount loggedUserID = SD.execute $ delete # from users # wher (_id .=.
 
 profileVisibility ∷ Int → ServerEffect ProfileVisibility
 profileVisibility loggedUserID = _.visibility <<< SU.fromJust <$> (SD.single $ select _visibility # from users # wher (_id .=. loggedUserID))
+
+changeVisibility :: Int -> ProfileVisibility -> ServerEffect Unit
+changeVisibility loggedUserId pv = SD.execute $ update users # set (_visibility .=. pv) # wher (_id .=. loggedUserId)

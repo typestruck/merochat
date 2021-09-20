@@ -7,9 +7,11 @@ import Shared.Types
 import Payload.ResponseTypes (Response)
 import Run as R
 import Server.Logout as SL
+import Server.Ok (ok)
 import Server.Settings.Action as SSA
 import Server.Settings.Database as SSD
 import Server.Settings.Template as SST
+import Shared.User (ProfileVisibility)
 
 settings ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
 settings { guards: { loggedUserID } } = do
@@ -30,3 +32,8 @@ accountTerminate ∷ ∀ r. { guards ∷ { loggedUserID ∷ Int } | r } → Serv
 accountTerminate { guards: { loggedUserID } } = do
       SSA.terminateAccount loggedUserID
       pure SL.expireCookies
+
+changeVisibility ∷ { guards ∷ { loggedUserID ∷ Int }, body :: ProfileVisibility } → ServerEffect Ok
+changeVisibility { guards: { loggedUserID }, body } = do
+      SSA.changeVisibility loggedUserID body
+      pure ok

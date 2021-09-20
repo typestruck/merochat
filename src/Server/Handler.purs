@@ -69,6 +69,7 @@ handlers reading =
                       { email: runJSON reading SSH.accountEmail
                       , password: runJSON reading SSH.accountPassword
                       , terminate: runJSON reading SSH.accountTerminate
+                      , visibility: runJSON reading SSH.changeVisibility
                       }
               }
       , recover:
