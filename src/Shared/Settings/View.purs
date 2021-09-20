@@ -10,6 +10,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodePoints as DSC
 import Data.Symbol (class IsSymbol)
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute (ToSpecialEvent)
 import Flame.Html.Attribute as HA
@@ -22,6 +23,7 @@ import Shared.Path as SP
 import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel)
 import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
+import Shared.User (ProfileVisibility(..))
 import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
@@ -38,7 +40,7 @@ formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"
 
 account ∷ SettingsModel → Html SettingsMessage
-account model@{ erroredFields, confirmTermination } =
+account model@{ erroredFields, confirmTermination, profileVisibility } =
       HE.div (HA.class' "settings-section")
             [ HE.div (HA.class' "section-label")
                     [ HE.div (HA.class' "bold") "Account"
@@ -49,51 +51,62 @@ account model@{ erroredFields, confirmTermination } =
                             ]
                     ]
             , HE.div_
-                    [
-                      profileVisibility
-                      --REFACTOR: this be ugly
+                    [ visibility
+                    --REFACTOR: this be ugly
                     , fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
                     , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
                     , terminate
-            ]
-        ]
-      where
-        profileVisibility = HE.div_ [
-                HE.label_ "Profile visibility",
-                HE.div (HA.class' "section-buttons") [
-                        HE.select_ [
-                                HE.option_ "Show profile (default)",
-                                HE.option_ "Show profile only to contacts",
-                                HE.option_ "Do not show profile"
-                                ]
-                ],
-                HE.div [HA.class' "duller"] "All users can see your profile and send you messages",
-                HE.div [HA.class' "duller"] "Only users you have previously messaged can see your profile or send you messages",
-                HE.div [HA.class' "duller"] "No one can see your profile or message you"
-        ]
-        terminate = HE.div (formId (Proxy ∷ Proxy "confirmTermination"))
-                            [ HE.label_ "Permanently delete all my data and close my account"
-                            , HE.div (HA.class' "section-buttons margined")
-                                    [ HE.input [ HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ]
-                                    , HE.span' (HA.class' "request-error-message")
-                                    , HE.span (HA.class' "success-message")
-                                            [ HE.text "Account terminated!"
-                                            , HE.br
-                                            , HE.text "You will be logged out..."
-                                            ]
-                                    ]
-                            , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: not confirmTermination })
-                                    [ HE.div (HA.class' "confirmation")
-                                            [ HE.span (HA.class' "bold") "Do you really want to terminate your account? All of your data will be permanently lost."
-                                            , HE.div (HA.class' "buttons")
-                                                    [ HE.button [ HA.class' "cancel", HA.onClick ToggleTerminateAccount ] "Cancel"
-                                                    , HE.button [ HA.class' "green-button danger", HA.onClick TerminateAccount ] "Terminate"
-                                                    ]
-                                            ]
-                                    ]
                     ]
-        fieldConfirmationSection ∷ ∀ field fieldConfirmation r t. IsSymbol field ⇒ Cons field String r SM ⇒ Append field "Confirmation" fieldConfirmation ⇒ IsSymbol fieldConfirmation ⇒ Cons fieldConfirmation String t SM ⇒ Proxy field → String → Int → (String → Boolean) → String → SettingsMessage → Html SettingsMessage
-        fieldConfirmationSection field inputType maxChars validator fieldErrorMessage message =
+            ]
+      where
+      visibility = HE.div_
+            [ HE.label_ "Profile visibility"
+            , HE.div (HA.class' "section-buttons")
+                    [ HE.select (HA.class' "modal-input")
+                            [ HE.option_ "Show profile (default)"
+                            , HE.option_ "Show profile only to contacts"
+                            , HE.option_ "Do not show profile"
+                            ]
+                    ]
+            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] "All users can see your profile and send you messages"
+            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Contacts } ] "Only users you have previously messaged can see your profile or send you messages"
+            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Nobody } ] "No one can see your profile or message you"
+            , HE.br
+            , HE.input
+                    [ HA.type' "button"
+                    , HA.class' "green-button"
+                    , HA.value "Change visibility"
+                    --     , HA.onClick messageIfValidated
+                    ]
+            , HE.span' (HA.class' "request-error-message")
+            , HE.span (HA.class' "success-message")
+                    [ HE.text "Profile visibility changed!"
+                    ]
+
+            ]
+      terminate = HE.div (formId (Proxy ∷ Proxy "confirmTermination"))
+            [ HE.label_ "Permanently delete all my data and close my account"
+            , HE.div (HA.class' "section-buttons margined")
+                    [ HE.input [ HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ]
+                    , HE.span' (HA.class' "request-error-message")
+                    , HE.span (HA.class' "success-message")
+                            [ HE.text "Account terminated!"
+                            , HE.br
+                            , HE.text "You will be logged out..."
+                            ]
+                    ]
+            , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: not confirmTermination })
+                    [ HE.div (HA.class' "confirmation")
+                            [ HE.span (HA.class' "bold") "Do you really want to terminate your account? All of your data will be permanently lost."
+                            , HE.div (HA.class' "buttons")
+                                    [ HE.button [ HA.class' "cancel", HA.onClick ToggleTerminateAccount ] "Cancel"
+                                    , HE.button [ HA.class' "green-button danger", HA.onClick TerminateAccount ] "Terminate"
+                                    ]
+                            ]
+                    ]
+            ]
+      fieldConfirmationSection ∷ ∀ field fieldConfirmation r t. IsSymbol field ⇒ Cons field String r SM ⇒ Append field "Confirmation" fieldConfirmation ⇒ IsSymbol fieldConfirmation ⇒ Cons fieldConfirmation String t SM ⇒ Proxy field → String → Int → (String → Boolean) → String → SettingsMessage → Html SettingsMessage
+      fieldConfirmationSection field inputType maxChars validator fieldErrorMessage message =
             let
                   stringField = TDS.reflectSymbol field
                   capitalizedStringField = capitalize stringField
@@ -132,7 +145,6 @@ account model@{ erroredFields, confirmTermination } =
                                         ]
                                 ]
                         ]
-
 
 onChangeValue ∷ ∀ message. ToSpecialEvent message String
 onChangeValue constructor = HA.createRawEvent "change" handler

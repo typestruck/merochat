@@ -26,7 +26,7 @@ create table users
     avatar text,
     description text not null,
     country integer,
-    active boolean not null default true,
+    visibility smallint not null default 1,
 
     constraint country_user foreign key (country) references countries(id)
 );

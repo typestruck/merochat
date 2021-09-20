@@ -36,6 +36,7 @@ import Server.Database as SD
 import Server.IM.Database.Flat (FlatUser, FlatContact)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
+import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -62,10 +63,7 @@ usersSource ∷ _
 usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
 
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
-presentUser loggedUserID = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
-
-q ∷ Int → _
-q loggedUserID = select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserID .&&. _active .=. true)
+presentUser loggedUserID = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserID .&&. _visibility .<>. TemporarilyBanned)
 
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array FlatUser)
 suggest loggedUserID skip = case _ of
@@ -76,7 +74,7 @@ suggest loggedUserID skip = case _ of
       _ → -- default case
             SD.query $ suggestBaseQuery skip (baseFilter .&&. not (exists $ select (1 # as u) # from histories # wher (_sender .=. loggedUserID .&&. _recipient .=. u ... _id .||. _sender .=. u ... _id .&&. _recipient .=. loggedUserID)))
       where
-      baseFilter = (u ... _id .<>. loggedUserID .&&. _active .=. true .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserID .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserID)))
+      baseFilter = (u ... _id .<>. loggedUserID .&&. _visibility .=. Everyone .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserID .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserID)))
 
 -- top level to avoid monomorphic filter
 suggestBaseQuery skip filter =

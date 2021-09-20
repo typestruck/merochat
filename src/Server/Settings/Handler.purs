@@ -8,10 +8,13 @@ import Payload.ResponseTypes (Response)
 import Run as R
 import Server.Logout as SL
 import Server.Settings.Action as SSA
+import Server.Settings.Database as SSD
 import Server.Settings.Template as SST
 
 settings ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
-settings { guards: { loggedUserID } } = R.liftEffect SST.template
+settings { guards: { loggedUserID } } = do
+      profileVisibility <- SSD.profileVisibility loggedUserID
+      R.liftEffect $ SST.template profileVisibility
 
 accountEmail ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ { email ∷ String } } → ServerEffect (Response Ok)
 accountEmail { guards: { loggedUserID }, body: { email } } = do
@@ -27,4 +30,3 @@ accountTerminate ∷ ∀ r. { guards ∷ { loggedUserID ∷ Int } | r } → Serv
 accountTerminate { guards: { loggedUserID } } = do
       SSA.terminateAccount loggedUserID
       pure SL.expireCookies
-
