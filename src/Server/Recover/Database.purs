@@ -24,5 +24,5 @@ selectRecoverer token = do
 
 recoverPassword ∷ String → Int → String → ServerEffect Unit
 recoverPassword token id password = SD.withTransaction $ \connection → do
-      SD.executeWith connection $ update recoveries # set (_active /\ false) # wher (_uuid .=. token)
-      SD.executeWith connection $ update users # set (_password /\ password) # wher (_id .=. id)
+      SD.executeWith connection $ update recoveries # set (_active .=. false) # wher (_uuid .=. token)
+      SD.executeWith connection $ update users # set (_password .=. password) # wher (_id .=. id)

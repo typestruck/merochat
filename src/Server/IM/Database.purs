@@ -32,7 +32,6 @@ import Droplet.Driver (Pool)
 import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
 import Droplet.Language.Internal.Definition (Path)
 import Droplet.Language.Internal.Function (PgFunction)
-import Droplet.Language.Internal.Query (query)
 import Server.Database as SD
 import Server.IM.Database.Flat (FlatUser, FlatContact)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
@@ -157,7 +156,7 @@ insertKarma loggedUserID otherID (Tuple senderKarma recipientKarma) =
             ]
 
 changeStatus ∷ ∀ r. Int → MessageStatus → Array Int → BaseEffect { pool ∷ Pool | r } Unit
-changeStatus loggedUserID status ids = SD.execute $ update messages # set (_status /\ status) # wher (_recipient .=. loggedUserID .&&. (_id `in_` ids))
+changeStatus loggedUserID status ids = SD.execute $ update messages # set (_status .=. status) # wher (_recipient .=. loggedUserID .&&. (_id `in_` ids))
 
 insertBlock ∷ Int → Int → ServerEffect Unit
 insertBlock loggedUserID blocked = SD.execute $ blockQuery loggedUserID blocked

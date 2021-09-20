@@ -1,7 +1,6 @@
 module Shared.Settings.View where
 
 import Prelude
-import Shared.Types (ContentType(..))
 
 import Client.Common.DOM as CCD
 import Data.Array ((:))
@@ -21,6 +20,7 @@ import Record as R
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
 import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel)
+import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
 import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
@@ -43,17 +43,35 @@ account model@{ erroredFields, confirmTermination } =
             [ HE.div (HA.class' "section-label")
                     [ HE.div (HA.class' "bold") "Account"
                     , HE.div (HA.class' "duller")
-                            [ HE.text "Change your password, email"
+                            [ HE.text "Change your settings"
                             , HE.br
                             , HE.text "or close your account"
                             ]
                     ]
             , HE.div_
                     [
+                      profileVisibility
                       --REFACTOR: this be ugly
-                      fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
+                    , fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
                     , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
-                    , HE.div (formId (Proxy ∷ Proxy "confirmTermination"))
+                    , terminate
+            ]
+        ]
+      where
+        profileVisibility = HE.div_ [
+                HE.label_ "Profile visibility",
+                HE.div (HA.class' "section-buttons") [
+                        HE.select_ [
+                                HE.option_ "Show profile (default)",
+                                HE.option_ "Show profile only to contacts",
+                                HE.option_ "Do not show profile"
+                                ]
+                ],
+                HE.div [HA.class' "duller"] "All users can see your profile and send you messages",
+                HE.div [HA.class' "duller"] "Only users you have previously messaged can see your profile or send you messages",
+                HE.div [HA.class' "duller"] "No one can see your profile or message you"
+        ]
+        terminate = HE.div (formId (Proxy ∷ Proxy "confirmTermination"))
                             [ HE.label_ "Permanently delete all my data and close my account"
                             , HE.div (HA.class' "section-buttons margined")
                                     [ HE.input [ HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ]
@@ -73,12 +91,9 @@ account model@{ erroredFields, confirmTermination } =
                                                     ]
                                             ]
                                     ]
-                            ]
                     ]
-            ]
-      where
-      fieldConfirmationSection ∷ ∀ field fieldConfirmation r t. IsSymbol field ⇒ Cons field String r SM ⇒ Append field "Confirmation" fieldConfirmation ⇒ IsSymbol fieldConfirmation ⇒ Cons fieldConfirmation String t SM ⇒ Proxy field → String → Int → (String → Boolean) → String → SettingsMessage → Html SettingsMessage
-      fieldConfirmationSection field inputType maxChars validator fieldErrorMessage message =
+        fieldConfirmationSection ∷ ∀ field fieldConfirmation r t. IsSymbol field ⇒ Cons field String r SM ⇒ Append field "Confirmation" fieldConfirmation ⇒ IsSymbol fieldConfirmation ⇒ Cons fieldConfirmation String t SM ⇒ Proxy field → String → Int → (String → Boolean) → String → SettingsMessage → Html SettingsMessage
+        fieldConfirmationSection field inputType maxChars validator fieldErrorMessage message =
             let
                   stringField = TDS.reflectSymbol field
                   capitalizedStringField = capitalize stringField
@@ -99,12 +114,12 @@ account model@{ erroredFields, confirmTermination } =
                   HE.div (formId field)
                         [ HE.div (HA.class' { errored: hasErrors })
                                 [ HE.label_ capitalizedStringField
-                                , HE.input [ HA.type' inputType, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field), HA.autocomplete $ "new-" <> stringField ]
+                                , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field), HA.autocomplete $ "new-" <> stringField ]
                                 , HE.div (HA.class' "error-message") fieldErrorMessage
                                 ]
                         , HE.div (HA.class' { errored: hasConfirmationErrors })
                                 [ HE.label_ $ "Confirm " <> stringField
-                                , HE.input [ HA.type' inputType, HA.autocomplete $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation) ]
+                                , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.autocomplete $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation) ]
                                 , HE.div (HA.class' "error-message") $ capitalizedStringField <> " confirmation must match " <> stringField
                                 ]
                         , HE.div (HA.class' "section-buttons")
@@ -117,6 +132,7 @@ account model@{ erroredFields, confirmTermination } =
                                         ]
                                 ]
                         ]
+
 
 onChangeValue ∷ ∀ message. ToSpecialEvent message String
 onChangeValue constructor = HA.createRawEvent "change" handler
