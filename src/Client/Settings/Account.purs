@@ -21,21 +21,21 @@ import Shared.User (ProfileVisibility)
 import Type.Proxy (Proxy(..))
 
 update ∷ AffUpdate SettingsModel SettingsMessage
-update { model, message } =
+update w@{ model, message } =
       case message of
             SetSField setter → pure setter
             ChangeEmail → changeEmail model
             ChangePassword → changePassword model
             ToggleTerminateAccount → toggleTerminateAccount model
             TerminateAccount → terminateAccount
-            ChangeVisibility -> changeVisibility model
+            ChangeVisibility -> changeVisibility w
 
 changeVisibility ∷ AffUpdate SettingsModel SettingsMessage
 changeVisibility {display, model: {profileVisibility}} = do
       status ← CNN.formRequest (show ProfileVisibilityId) $ request.settings.account.visibility { body: profileVisibility }
       case status of
             Success → do
-                  display $ FAE.diff' { hideSuccessMessage: false }
+                  display $ _ { hideSuccessMessage = false }
                   EA.delay $ Milliseconds 3000.0
                   FAE.diff { hideSuccessMessage: true }
             _ → FAE.noChanges

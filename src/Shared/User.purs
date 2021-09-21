@@ -7,9 +7,11 @@ import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Either (Either)
+import Data.Either as DET
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Data.String.Read (class Read)
@@ -17,6 +19,9 @@ import Data.String.Read as DSR
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
+import Payload.Client.EncodeBody (class EncodeBody)
+import Payload.ContentType (class HasContentType, json)
+import Payload.Server.DecodeBody (class DecodeBody)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
@@ -172,3 +177,12 @@ instance FromValue ProfileVisibility where
 
 instance ToValue ProfileVisibility where
       toValue = F.unsafeToForeign <<< DE.fromEnum
+
+instance HasContentType ProfileVisibility where
+      getContentType = const json
+
+instance EncodeBody ProfileVisibility where
+      encodeBody = show <<< DE.fromEnum
+
+instance DecodeBody ProfileVisibility where
+      decodeBody s = DET.note ("Could not decode body " <> s) (DE.toEnum =<< DI.fromString s)

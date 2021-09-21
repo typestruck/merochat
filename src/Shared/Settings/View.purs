@@ -63,13 +63,12 @@ account model@{ erroredFields, confirmTermination, profileVisibility } =
       where
       visibility = HE.div (show ProfileVisibilityId)
             [ HE.label_ "Profile visibility"
-            , HE.div (HA.class' "section-buttons")
-                    [ HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-                            [ HE.option (HA.value <<< show $ DE.fromEnum Everyone) "Show profile (default)"
-                            , HE.option (HA.value <<< show $ DE.fromEnum Contacts) "Show profile only to contacts"
-                            , HE.option (HA.value <<< show $ DE.fromEnum Nobody) "Do not show profile"
-                            ]
+            , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
+                    [ HE.option [HA.selected $ profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone] "Show profile (default)"
+                    , HE.option [HA.selected $ profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts] "Show profile only to contacts"
+                    , HE.option [HA.selected $ profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody] "Do not show profile"
                     ]
+
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] "All users can see your profile and send you messages"
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Contacts } ]
                     [ HE.text "Only users you have previously messaged can see your"
@@ -78,15 +77,17 @@ account model@{ erroredFields, confirmTermination, profileVisibility } =
                     ]
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Nobody } ] "No one can see your profile or message you"
             , HE.br
-            , HE.input
-                    [ HA.type' "button"
-                    , HA.class' "green-button"
-                    , HA.value "Change visibility"
-                    , HA.onClick ChangeVisibility
-                    ]
-            , HE.span' (HA.class' "request-error-message")
-            , HE.span (HA.class' "success-message")
-                    [ HE.text "Profile visibility changed!"
+            , HE.div (HA.class' "section-buttons")
+                    [ HE.input
+                            [ HA.type' "button"
+                            , HA.class' "green-button"
+                            , HA.value "Change visibility"
+                            , HA.onClick ChangeVisibility
+                            ]
+                    , HE.span' (HA.class' "request-error-message")
+                    , HE.span (HA.class' "success-message")
+                            [ HE.text "Profile visibility changed!"
+                            ]
                     ]
 
             ]
