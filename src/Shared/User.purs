@@ -13,6 +13,7 @@ import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
+import Data.Show.Generic as DSG
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
@@ -43,6 +44,7 @@ type IU =
               , country ∷ Maybe String
               , languages ∷ Array String
               , age ∷ Maybe Int
+              , profileVisibility :: ProfileVisibility
               )
       )
 
@@ -72,19 +74,27 @@ instance EncodeJson ProfileVisibility where
       encodeJson = DAEGR.genericEncodeJson
 
 instance Show Gender where
-      show Female = "Female"
-      show Male = "Male"
-      show NonBinary = "Non binary"
-      show Other = "Other"
+      show = case _ of
+            Female -> "Female"
+            Male -> "Male"
+            NonBinary -> "Non binary"
+            Other -> "Other"
+instance Show ProfileVisibility where
+      show = DSG.genericShow
+
 
 instance ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
+instance ReadForeign ProfileVisibility where
+      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
 
 derive instance Generic Gender _
 derive instance Generic ProfileVisibility _
 
 instance WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
+instance WriteForeign ProfileVisibility where
+      writeImpl = F.unsafeToForeign <<< DE.fromEnum
 
 instance ToValue Gender where
       toValue = F.unsafeToForeign <<< DE.fromEnum

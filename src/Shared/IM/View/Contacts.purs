@@ -1,6 +1,8 @@
 module Shared.IM.View.Contacts where
 
 import Prelude
+import Shared.Experiments.Types
+import Shared.IM.Types
 import Shared.Types
 
 import Data.Array ((!!), (:))
@@ -8,7 +10,6 @@ import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.HashMap as DH
-import Shared.Experiments.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
@@ -22,13 +23,17 @@ import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
 import Shared.IM.View.Profile as SIVP
 import Shared.IM.View.Retry as SIVR
-import Shared.IM.Types
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
+import Shared.User (ProfileVisibility(..))
 
 contactList ∷ Boolean → IMModel → Html IMMessage
-contactList isClientRender { failedRequests, chatting, experimenting, contacts, user: { id: userID } } = HE.div [ HA.onScroll CheckFetchContacts, HA.class' "contact-list", HA.id "contact-list" ] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
-      where --the ordering of the contact list is only done for the dom nodes
+contactList isClientRender { failedRequests, chatting, experimenting, contacts, user: { id: userID, profileVisibility } } =
+      case profileVisibility of
+            Nobody -> HE.div' [ HA.class' "contact-list", HA.id "contact-list" ]
+            _ -> HE.div [ HA.onScroll CheckFetchContacts, HA.class' "contact-list", HA.id "contact-list" ] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
+      where
+      --the ordering of the contact list is only done for the dom nodes
       -- model.contacts is left unchanged
       allContacts
             | DA.null contacts = [ suggestionsCall ]

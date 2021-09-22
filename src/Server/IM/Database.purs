@@ -46,6 +46,7 @@ userPresentationFields =
             /\ _gender
             /\ (date_part_age ("year" /\ _birthday) # as _age)
             /\ _name
+            /\ (_visibility # as profileVisibility)
             /\ _headline
             /\ _description
             /\ (select _name # from countries # wher (_id .=. u ... _country) # as _country)
@@ -54,7 +55,7 @@ userPresentationFields =
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
-contactPresentationFields uid = distinct $ (coalesce(_sender /\ uid) # as _chatStarter) /\ (coalesce (h ... _date /\ utc_now) # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce(_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields
+contactPresentationFields uid = distinct $ (coalesce (_sender /\ uid) # as _chatStarter) /\ (coalesce (h ... _date /\ utc_now) # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce (_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields
 
 contactsSource ∷ Int → _
 contactsSource loggedUserID = join usersSource (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID)
@@ -92,7 +93,12 @@ suggestBaseQuery skip filter =
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContact)
 presentContacts loggedUserID skip =
-      SD.query $ select (contactPresentationFields loggedUserID) # from (contactsSource loggedUserID) # wher (not $ exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))) # orderBy (_lastMessageDate # desc) # limit contactsPerPage # offset skip
+      SD.query $ select (contactPresentationFields loggedUserID)
+            # from (contactsSource loggedUserID)
+            # wher ((_visibility .=. Contacts .||. _visibility .=. Everyone) .&&. not (exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))))
+            # orderBy (_lastMessageDate # desc)
+            # limit contactsPerPage
+            # offset skip
 
 --needs to handle impersonations
 presentSingleContact ∷ Int → Int → ServerEffect _
@@ -173,7 +179,7 @@ _chatStarter = Proxy
 _chatAge ∷ Proxy "chatAge"
 _chatAge = Proxy
 
-_lastMessageDate :: Proxy "lastMessageDate"
+_lastMessageDate ∷ Proxy "lastMessageDate"
 _lastMessageDate = Proxy
 
 h ∷ Proxy "h"
@@ -184,3 +190,6 @@ s = Proxy
 
 t ∷ Proxy "t"
 t = Proxy
+
+profileVisibility :: Proxy "profileVisibility"
+profileVisibility = Proxy

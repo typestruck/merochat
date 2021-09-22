@@ -42,7 +42,7 @@ formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"
 
 account ∷ SettingsModel → Html SettingsMessage
-account model@{ erroredFields, confirmTermination, profileVisibility } =
+account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVisibility } =
       HE.div (HA.class' "settings-section")
             [ HE.div (HA.class' "section-label")
                     [ HE.div (HA.class' "bold") "Account"
@@ -85,7 +85,7 @@ account model@{ erroredFields, confirmTermination, profileVisibility } =
                             , HA.onClick ChangeVisibility
                             ]
                     , HE.span' (HA.class' "request-error-message")
-                    , HE.span (HA.class' "success-message")
+                    , HE.span (HA.class' {"success-message":true, hidden: hideSuccessMessage})
                             [ HE.text "Profile visibility changed!"
                             ]
                     ]

@@ -41,7 +41,7 @@ import Shared.DateTime as SDT
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.ResponseError (DatabaseError)
 import Shared.Unsafe as SU
-import Shared.User (IU)
+import Shared.User (IU, ProfileVisibility)
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Web.Event.Internal.Types (Event)
 

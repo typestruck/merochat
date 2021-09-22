@@ -22,14 +22,16 @@ import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
-import Shared.User (Gender(..))
+import Shared.User (Gender(..), ProfileVisibility(..))
 
 --refactor: break this shit down into right modules
 
 profile ∷ IMModel → Html IMMessage
-profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible } =
+profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, user } =
       if DA.null suggestions && DM.isNothing chatting then
             emptySuggestions
+      else if user.profileVisibility /= Everyone then
+            suggestionWarning
       else
             case chatting, suggesting of
                   i@(Just index), _ →
@@ -44,9 +46,10 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
                                     contact model cnt
                   Nothing, (Just index) → suggestion model index
                   _, _ → emptySuggestions
-      --this will need improvement
       where
       emptySuggestions = HE.div (HA.class' { "suggestion empty retry": true, hidden: DM.isJust chatting }) $ SIVR.retryForm "Could not find new suggestions" $ SpecialRequest NextSuggestion
+
+      suggestionWarning = HE.div (HA.class' { "suggestion": true, hidden: DM.isJust chatting }) $ welcome user
 
 unavailable ∷ String → Html IMMessage
 unavailable name =
@@ -100,10 +103,7 @@ suggestion model@{ user, suggestions, experimenting } index =
                                       , HE.div (HA.class' "welcome-new") $ first <> second
                                       ]
                     _ →
-                          HE.div (HA.class' "card-top-header")
-                                [ HE.div (HA.class' "welcome") $ "Welcome, " <> user.name
-                                , HE.div (HA.class' "welcome-new") "Here are your newest chat suggestions"
-                                ]
+                          welcome user
             , HE.div (HA.class' "cards") cards
             ]
       where
@@ -116,6 +116,26 @@ suggestion model@{ user, suggestions, experimenting } index =
                         2 | index == 0 → dummyCard model : available
                         2 | index > 0 → DA.snoc available (dummyCard model)
                         _ → available
+
+welcome :: forall t4.
+  { name :: String
+  , profileVisibility :: ProfileVisibility
+  | t4
+  }
+  -> Html IMMessage
+welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")
+      [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
+      , HE.div (HA.class' "welcome-new") $ case profileVisibility of
+              Nobody → warn "hidden"
+              Contacts → warn "contacts only"
+              _ → [HE.text "Here are your newest chat suggestions"]
+      ]
+      where
+      warn level =
+            [ HE.text $ "Your profile is set to " <> level <>". Change your "
+            , HE.a (HA.onClick (SpecialRequest $ ToggleModal ShowSettings)) " settings "
+            , HE.text "to see new chat suggestions"
+            ]
 
 card ∷ IMModel → Int → Int → Suggestion → Html IMMessage
 card model suggesting index suggestion =
@@ -138,6 +158,7 @@ dummySuggestion =
       , description: "Many years later, as he faced the firing squad, Colonel Aureliano Buendía was to remember that distant afternoon when his father took him to discover ice. At that time Macondo was a village of twenty adobe houses, built on the bank of a river of clear water that ran along a bed of polished stones, which were white and enormous, like prehistoric eggs. The world was so recent that many things lacked names, and in order to indicate them it was necessary to point. Every year during the month of March a family of ragged gypsies would set up their tents near the village, and with a great uproar of pipes and kettledrums they would display new inventions. First they brought the magnet."
       , avatar: Nothing
       , tags: []
+      , profileVisibility: Everyone
       , karma: 321
       , karmaPosition: 90
       , gender: Just $ show Female

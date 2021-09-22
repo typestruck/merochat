@@ -16,7 +16,7 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Options.File (imageBasePath)
 import Shared.Unsafe as SU
-import Shared.User (Gender(..))
+import Shared.User (Gender(..), ProfileVisibility(..))
 
 joined ∷ ImpersonationProfile → Html ChatExperimentMessage
 joined profile = HE.div (HA.class' "exit-impersonation")
@@ -72,6 +72,7 @@ batman =
       , gender: Just $ show Male
       , country: Just "Gotham"
       , languages: []
+      , profileVisibility: Everyone
       , age: Just 34
       }
 
@@ -81,6 +82,7 @@ socrates =
       , name: "Socrates"
       , avatar: Just $ imageBasePath <> "socrates_Sting_wikimedia.png"
       , headline: "I know that I know nothing"
+      , profileVisibility: Everyone
       , description:
               """Crito, we owe a rooster to Asclepius. Please, don't forget to pay the debt.
 
@@ -102,6 +104,7 @@ nicolasCage =
       , name: "Nicolas Cage"
       , avatar: Just $ imageBasePath <> "nicolas_cage_hiclipart.png"
       , headline: "I think I jump around more when I'm alone"
+      , profileVisibility: Everyone
       , description:
               """Oh, boy! Oh, boy! Three and a half million dollar budget, some 16mm film stock thrown in, and I'm holding one of these. I have got to thank the members of the Academy for this, for including me in this group of super talents and for helping me blur the line between art and commerce with this award. I know it's not hip to say it, but I just love acting, and I hope that there'll be more encouragement for alternative movies where we can experiment and fast forward into the future of acting.
 

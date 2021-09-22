@@ -8,10 +8,10 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
+import Server.Database.Flat as SDF
 import Shared.IM.Types (Contact, IMUser)
 import Shared.Unsafe as SU
-import Shared.User (Gender)
-import Server.Database.Flat as SDF
+import Shared.User (Gender, ProfileVisibility)
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -24,6 +24,7 @@ type FlatFields rest =
       , karma ∷ Int
       , karmaPosition ∷ Int
       , languages ∷ Maybe String
+      , profileVisibility :: ProfileVisibility
       , name ∷ String
       , tags ∷ Maybe String
       | rest
@@ -54,6 +55,7 @@ fromFlatUser fc =
       { id: fc.id
       , name: fc.name
       , headline: fc.headline
+      , profileVisibility : fc.profileVisibility
       , description: fc.description
       , avatar: SDF.parseAvatar fc.avatar
       , tags: SDF.splitAgg "\\n" fc.tags
