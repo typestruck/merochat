@@ -11,6 +11,7 @@ import Data.String as DS
 import Server.Database.Flat as SDF
 import Shared.IM.Types (Contact, IMUser)
 import Shared.Unsafe as SU
+import Shared.Avatar as SA
 import Shared.User (Gender, ProfileVisibility)
 
 type FlatFields rest =
@@ -57,7 +58,7 @@ fromFlatUser fc =
       , headline: fc.headline
       , profileVisibility : fc.profileVisibility
       , description: fc.description
-      , avatar: SDF.parseAvatar fc.avatar
+      , avatar: SA.parseAvatar fc.avatar
       , tags: SDF.splitAgg "\\n" fc.tags
       , karma: fc.karma
       , karmaPosition: fc.karmaPosition

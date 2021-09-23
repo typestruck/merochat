@@ -7,6 +7,7 @@ import Data.Maybe as DM
 import Shared.Path as SP
 import Shared.Types (ContentType(..))
 import Shared.Unsafe as SU
+import Shared.Options.File (imageBasePath)
 
 defaultAvatarName ∷ String
 defaultAvatarName = baseFileName <> show "1"
@@ -36,3 +37,5 @@ avatarColorClass ∷ Maybe Int → String
 avatarColorClass index = " avatar-color-" <> show (mod (SU.fromJust index) colorClasses + 1)
       where
       colorClasses = 4
+
+parseAvatar avatar = (imageBasePath <> _) <<< ("upload/" <> _ ) <$> avatar
