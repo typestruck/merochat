@@ -22,7 +22,10 @@ module.exports = {
         leaderboard: ['./loader/leaderboard.bundle.js', './src/Client/css/leaderboard.css'],
         help: ['./loader/help.bundle.js', './src/Client/css/help.css'],
         internalHelp: './loader/internalHelp.bundle.js',
-        settings: ['./loader/settings.bundle.js', './src/Client/css/settings.css'],
+        settings: {
+            import: ['./loader/settings.bundle.js', './src/Client/css/settings.css'],
+            dependOn: 'im'
+        },
         experiments: ['./loader/experiments.bundle.js', './src/Client/css/experiments.css'],
         recover: './loader/recover.bundle.js',
         emoji: './output/Shared.IM.Emoji/index.js',

@@ -13,11 +13,13 @@ import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
+import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
+import Shared.IM.Types (IMMessage(..))
+import Shared.Options.MountPoint (imID)
 import Shared.Routes (routes)
 import Shared.Settings.Types (ProfileVisibilityId(..), SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
-import Shared.User (ProfileVisibility)
 import Type.Proxy (Proxy(..))
 
 update ∷ AffUpdate SettingsModel SettingsMessage
@@ -36,6 +38,9 @@ changeVisibility {display, model: {profileVisibility}} = do
       case status of
             Success → do
                   display $ _ { hideSuccessMessage = false }
+                  liftEffect <<<
+                        --let im know that the settings has changed
+                        FS.send imID $ SetProfileVisibility profileVisibility
                   EA.delay $ Milliseconds 3000.0
                   FAE.diff { hideSuccessMessage: true }
             _ → FAE.noChanges
@@ -44,10 +49,10 @@ toggleTerminateAccount ∷ SettingsModel → Aff (SettingsModel → SettingsMode
 toggleTerminateAccount _ = pure (\model → model { confirmTermination = not model.confirmTermination })
 
 changeEmail ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
-changeEmail { email, emailConfirmation } = requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email } }
+changeEmail { email } = requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email } }
 
 changePassword ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
-changePassword { password, passwordConfirmation } = requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password } }
+changePassword { password } = requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password } }
 
 requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (SettingsModel → SettingsModel)
 requestAndLogout field aff = do

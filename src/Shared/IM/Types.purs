@@ -298,6 +298,7 @@ data IMMessage
       | ToggleFortune Boolean
       | DisplayFortune String
       | RequestFailed RequestFailure
+      | SetProfileVisibility ProfileVisibility
       | ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer
