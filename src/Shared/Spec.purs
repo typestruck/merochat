@@ -61,8 +61,8 @@ spec ∷
                                                 , response ∷ Array Contact
                                                 }
                                   , singleContact ∷
-                                          GET "/contact?id=<id>"
-                                                { query ∷ { id ∷ Int }
+                                          GET "/contact?id=<id>&contactsOnly=<contactsOnly>"
+                                                { query ∷ { id ∷ Int, contactsOnly :: Boolean }
                                                 , response ∷ Array Contact
                                                 }
                                   , history ∷

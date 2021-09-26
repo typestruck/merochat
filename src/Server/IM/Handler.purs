@@ -36,8 +36,12 @@ contacts ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { skip ∷ Int } }
 contacts { guards: { loggedUserID }, query: { skip } } = SIA.listContacts loggedUserID skip
 
 --refactor: maybe contact instead of array contact
-singleContact ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { id ∷ Int } } → ServerEffect (Array Contact)
-singleContact { guards: { loggedUserID }, query: { id } } = DA.singleton <$> SIA.listSingleContact loggedUserID id
+singleContact ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { id ∷ Int, contactsOnly :: Boolean } } → ServerEffect (Array Contact)
+singleContact { guards: { loggedUserID }, query: { id, contactsOnly } } = do
+      c <- SIA.listSingleContact loggedUserID id contactsOnly
+      pure $ case c of
+            Just contact -> [contact]
+            _ -> []
 
 history ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { skip ∷ Int, with ∷ Int } } → ServerEffect (Array HistoryMessage)
 history { guards: { loggedUserID }, query: { with, skip } } = SIA.resumeChatHistory loggedUserID with skip

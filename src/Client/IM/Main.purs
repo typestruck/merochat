@@ -349,7 +349,7 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID, contactsOnly : profileVisibility == Contacts } }) ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right

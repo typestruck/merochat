@@ -6,7 +6,7 @@ import Prelude
 import Data.Array as DA
 import Data.Foldable as DF
 import Data.HashMap as DH
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Data.Tuple (Tuple(..))
@@ -44,13 +44,16 @@ listContacts loggedUserID skip = do
             { history = SU.fromJust $ DH.lookup id userHistory
             }
 
-listSingleContact ∷ Int → Int → ServerEffect Contact
-listSingleContact loggedUserID userID = do
-      contact ← fromFlatContact <$> SID.presentSingleContact loggedUserID userID
-      history ← SID.chatHistoryBetween loggedUserID userID 0
-      pure $ contact
-            { history = history
-            }
+listSingleContact ∷ Int → Int → Boolean -> ServerEffect (Maybe Contact)
+listSingleContact loggedUserID userID contactsOnly = do
+      c ← SID.presentSingleContact loggedUserID userID contactsOnly
+      case c of
+            Just contact -> do
+                  history ← SID.chatHistoryBetween loggedUserID userID 0
+                  pure <<< Just $ (fromFlatContact contact)
+                        { history = history
+                        }
+            _ -> pure Nothing
 
 processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { storageDetails ∷ Ref StorageDetails, pool ∷ Pool | r } (Tuple Int String)
 processMessage loggedUserID userID temporaryID content = do

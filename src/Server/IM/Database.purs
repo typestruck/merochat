@@ -101,11 +101,11 @@ presentContacts loggedUserID skip =
             # offset skip
 
 --needs to handle impersonations
-presentSingleContact ∷ Int → Int → ServerEffect _
-presentSingleContact loggedUserID otherID = map SU.fromJust <<< SD.single $
+presentSingleContact ∷ Int → Int → Boolean -> ServerEffect (Maybe FlatContact)
+presentSingleContact loggedUserID otherID contactsOnly = SD.single $
       select (contactPresentationFields loggedUserID)
             # from (leftJoin usersSource (histories # as h) # on (u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID .&&. u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID))
-            # wher (u ... _id .=. otherID)
+            # wher (u ... _id .=. otherID .&&. (contactsOnly .=. false .||. (h ... _id # isNotNull)))
 
 presentSelectedContacts ∷ Int → Array Int → ServerEffect (Array FlatContact)
 presentSelectedContacts loggedUserID ids

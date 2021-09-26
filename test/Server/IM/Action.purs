@@ -26,6 +26,7 @@ import Server.IM.Database as SID
 import Server.Landing.Database as SLD
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
+import Shared.Unsafe as SU
 import Test.Server as TS
 import Test.Server.Model (baseUser)
 import Test.Unit (TestSuite)
@@ -126,7 +127,8 @@ tests = do
                         Tuple userID anotherUserID ← setUpUsers
                         firstId /\ _ <- SIA.processMessage userID anotherUserID 1 $ Text "oi"
                         secondId /\ _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
-                        contact ← SIA.listSingleContact userID anotherUserID
+                        c ← SIA.listSingleContact userID anotherUserID false
+                        let contact = SU.fromJust c
                         R.liftAff $ TUA.equal anotherUserID contact.user.id
                         R.liftAff $ TUA.equal [firstId, secondId] (_.id <$> contact.history)
 
