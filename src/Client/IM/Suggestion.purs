@@ -94,7 +94,7 @@ blockUser webSocket blocked model@{ blockedUsers } =
                           --refactor: either make errorMessage maybe or get rid of it
                           Left _ → pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage: "" }
                           _ → do
-                                liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked }
+                                liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: blocked }
                                 pure Nothing
             ]
 

@@ -28,10 +28,10 @@ import Shared.User (Gender(..), ProfileVisibility(..))
 
 profile ∷ IMModel → Html IMMessage
 profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, user } =
-      if DA.null suggestions && DM.isNothing chatting then
-            emptySuggestions
-      else if user.profileVisibility /= Everyone then
+      if user.profileVisibility /= Everyone && DM.isNothing chatting then
             suggestionWarning
+      else if DA.null suggestions && DM.isNothing chatting then
+            emptySuggestions
       else
             case chatting, suggesting of
                   i@(Just index), _ →

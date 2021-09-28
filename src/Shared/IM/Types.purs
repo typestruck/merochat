@@ -315,11 +315,11 @@ data WebSocketPayloadServer
               { userID ∷ Int
               , status ∷ MessageStatus
               , persisting ∷ Boolean
-              , -- in some cases status changs should be not persisted to the database
+              , -- in some cases status changes should be not persisted to the database
                 --alternatively, update by user?
                 ids ∷ Array Int
               }
-      | ToBlock
+      | UnavailableFor
               { id ∷ Int
               }
 
@@ -374,7 +374,7 @@ data WebSocketPayloadClient
               , status ∷ MessageStatus
               , userID ∷ Int
               }
-      | BeenBlocked { id ∷ Int }
+      | ContactUnavailable { id ∷ Int } --either block or chang of privacy settings
       | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
 newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)

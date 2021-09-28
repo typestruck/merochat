@@ -192,7 +192,7 @@ report userID webSocket model@{ reportReason, reportComment } = case reportReaso
                           case result of
                                 Left _ → pure <<< Just $ RequestFailed { request: ReportUser userID, errorMessage: "" }
                                 _ → do
-                                      liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: userID }
+                                      liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userID }
                                       pure Nothing
                   ]
       Nothing → F.noMessages $ model
@@ -323,12 +323,14 @@ receiveMessage
             F.noMessages $ model
                   { contacts = updateStatus currentContacts userID ids status
                   }
-      BeenBlocked { id } →
+      ContactUnavailable { id } →
             F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
       NewIncomingMessage payload@{ id: messageID, userID, content: messageContent, date: messageDate, experimenting } →
             --(for now) if the experiments don't match, discard the message
-            if DA.elem userID blockedUsers || not (match userID experimenting) || profileVisibility == Nobody then
+            if DA.elem userID blockedUsers || not (match userID experimenting) then
                   F.noMessages model
+            else if profileVisibility == Nobody then
+                  CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userID }
             else
                   let
                         model' = unsuggest userID model

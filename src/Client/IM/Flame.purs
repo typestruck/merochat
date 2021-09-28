@@ -19,12 +19,6 @@ type MoreMessages = Tuple IMModel (Array (Aff (Maybe IMMessage)))
 -- | This action has a single further effect
 type NextMessage = Tuple IMModel (Array (Aff (Maybe IMMessage)))
 
--- | Helper to clean up updating a model when no new messages will be raised
-diff fields = F.noMessages <<< FAE.diff' fields
-
--- | Helper to clean up updating a model when new messages will be raised
-diffNext fields affs model = FAE.diff' fields model :> affs
-
 -- | Same as pure <<< Just
 next = pure <<< Just
 
