@@ -1,12 +1,22 @@
-module Shared.Types where
+module Shared.ContentType where
 
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Data.Newtype (class Newtype)
 import Data.String as DS
 import Data.String.Read (class Read)
+import Payload.ContentType (html)
+import Payload.Headers as PH
+import Payload.ResponseTypes as PR
+import Payload.Server.Response (class EncodeResponse)
 
-data ContentType = JSON | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
+
+newtype Html = Html String
+
+
+data ContentType = JSON
+      | JS | GIF | JPEG | PNG | CSS | HTML | OctetStream
 
 instance contentTypeShow ∷ Show ContentType where
       show JSON = "application/json"
@@ -32,3 +42,12 @@ instance contentTypeRead ∷ Read ContentType where
                   else OctetStream
             where
             value = DS.trim $ DS.toLower v
+
+derive instance Newtype Html _
+
+instance EncodeResponse Html where
+      encodeResponse (PR.Response { status, headers, body: Html contents }) = pure $ PR.Response
+            { headers: PH.setIfNotDefined "content-type" html headers
+            , body: PR.StringBody contents
+            , status
+            }

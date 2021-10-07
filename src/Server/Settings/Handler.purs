@@ -2,12 +2,12 @@ module Server.Settings.Handler where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Payload.ResponseTypes (Response)
 import Run as R
 import Server.Logout as SL
-import Server.Ok (ok)
+import Server.Ok (Ok, ok)
 import Server.Settings.Action as SSA
 import Server.Settings.Database as SSD
 import Server.Settings.Template as SST

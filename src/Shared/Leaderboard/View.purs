@@ -1,7 +1,7 @@
 module Shared.Leaderboard.View where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))

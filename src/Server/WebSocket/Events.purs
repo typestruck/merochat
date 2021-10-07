@@ -4,7 +4,7 @@ import Prelude
 import Server.Types
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA

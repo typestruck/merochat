@@ -2,7 +2,7 @@ module Server.Settings.Action where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Server.AccountValidation as SA
 import Server.Settings.Database as SSD

@@ -13,7 +13,7 @@ import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Server.Terms as STM
 import Shared.Path as SPT
-import Shared.Types (ContentType(..))
+import Shared.ContentType (ContentType(..))
 
 template ∷ Effect String
 template = do

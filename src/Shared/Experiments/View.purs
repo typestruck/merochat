@@ -1,7 +1,7 @@
 module Shared.Experiments.View where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Environment (experimentsCSSHash)

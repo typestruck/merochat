@@ -2,7 +2,7 @@ module Client.Common.Network where
 
 import Client.Common.Types
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.DOM as CCD
 import Control.Monad.Error.Class as CMEC
@@ -109,4 +109,3 @@ errorMessage = case _ of
       DecodeError { response: Response { body } } → "Server sent an unexpected response"
       StatusError { response: Response { body } } → body
       RequestError { message } → message
-

@@ -23,7 +23,7 @@ import Record as R
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
 import Shared.Settings.Types (ProfileVisibilityId(..), SM, SettingsMessage(..), SettingsModel)
-import Shared.Types (ContentType(..))
+import Shared.ContentType (ContentType(..))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Data.Symbol as TDS

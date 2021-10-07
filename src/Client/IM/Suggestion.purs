@@ -1,7 +1,7 @@
 module Client.IM.Suggestion where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN

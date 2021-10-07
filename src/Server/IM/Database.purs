@@ -19,7 +19,7 @@ import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array as DA
 import Data.DateTime (DateTime(..))

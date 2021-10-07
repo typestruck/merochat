@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Shared.Path as SP
-import Shared.Types (ContentType(..))
+import Shared.ContentType (ContentType(..))
 import Shared.Unsafe as SU
 import Shared.Options.File (imageBasePath)
 

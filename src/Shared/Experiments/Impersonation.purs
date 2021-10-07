@@ -2,7 +2,7 @@ module Shared.Experiments.Impersonation where
 
 import Prelude
 import Shared.Experiments.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array as DA
 import Data.HashMap (HashMap)

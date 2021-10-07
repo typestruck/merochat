@@ -3,7 +3,7 @@ module Test.Client.IM.Main where
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 
 import Client.IM.Main as CIM
 import Data.Array as DA

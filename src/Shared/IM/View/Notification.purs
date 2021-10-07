@@ -1,7 +1,7 @@
 module Shared.IM.View.Notification where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Flame (Html)
 import Shared.IM.Types

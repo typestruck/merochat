@@ -2,9 +2,10 @@ module Server.Profile.Handler where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Run as R
+import Server.Ok
 import Server.Profile.Action as SPA
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF

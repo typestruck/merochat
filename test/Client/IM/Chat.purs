@@ -1,7 +1,7 @@
 module Test.Client.IM.Chat where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.IM.Chat as CIC
 import Data.Array ((!!), (:))

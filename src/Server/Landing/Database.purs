@@ -1,7 +1,7 @@
 module Server.Landing.Database where
 
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 import Prelude
 import Server.Database as SD
 import Shared.Unsafe as SU

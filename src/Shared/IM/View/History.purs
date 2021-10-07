@@ -1,7 +1,7 @@
 module Shared.IM.View.History where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array ((!!), (:))
 import Data.Array as DA

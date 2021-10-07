@@ -1,6 +1,6 @@
 module Server.Settings.Template where
 
-import Shared.Types
+import Shared.ContentType
 
 import Effect (Effect)
 import Flame (QuerySelector(..))

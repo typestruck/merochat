@@ -1,7 +1,7 @@
 module Client.IM.UserMenu where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.DOM (setChatExperiment)
 import Client.Common.DOM as CCD

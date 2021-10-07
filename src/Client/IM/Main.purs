@@ -4,7 +4,7 @@ module Client.IM.Main where
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 import Shared.User
 
 import Client.Common.DOM (setChatExperiment)

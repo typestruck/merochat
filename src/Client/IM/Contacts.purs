@@ -1,7 +1,7 @@
 module Client.IM.Contacts where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)

@@ -22,9 +22,6 @@ import Server.WebSocket (WebSocketConnection, AliveWebSocketConnection)
 import Shared.ResponseError (ResponseError)
 import Type.Row (type (+))
 
-type Ok = Record ()
-
-newtype Html = Html String
 
 type Configuration =
       { port ∷ Int
@@ -78,12 +75,3 @@ type StorageDetails =
 data By
       = ID Int
       | Email String
-
-derive instance Newtype Html _
-
-instance EncodeResponse Html where
-      encodeResponse (PR.Response { status, headers, body: Html contents }) = pure $ PR.Response
-            { headers: PH.setIfNotDefined "content-type" html headers
-            , body: PR.StringBody contents
-            , status
-            }

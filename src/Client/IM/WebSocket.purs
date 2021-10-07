@@ -1,7 +1,7 @@
 module Client.IM.WebSocket (sendPayload, module WSW, module WSEM, module WSEE, createWebSocket) where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.Location as CCD
 import Data.Boolean (otherwise)

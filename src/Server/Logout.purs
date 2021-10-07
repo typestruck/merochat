@@ -7,8 +7,7 @@ import Payload.Headers as PH
 import Payload.ResponseTypes (Response)
 import Payload.Server.Response as PSR
 import Server.Cookies as SC
-import Server.Ok (ok)
-import Server.Types (Ok)
+import Server.Ok
 
 logout ∷ ∀ r. String → r → Response r
 logout route = PSR.setHeaders headers <<< PSR.found

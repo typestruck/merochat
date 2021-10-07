@@ -4,7 +4,7 @@ import Droplet.Language
 import Prelude
 import Server.Database.Fields
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Date (Date)
 import Data.DateTime (DateTime)

@@ -3,7 +3,7 @@ module Shared.IM.View.Contacts where
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array ((!!), (:))
 import Data.Array as DA

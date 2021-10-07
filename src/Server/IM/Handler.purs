@@ -2,8 +2,8 @@ module Server.IM.Handler where
 
 import Prelude
 import Server.Types
+import Shared.ContentType
 import Shared.IM.Types
-import Shared.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -18,6 +18,7 @@ import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.IM.Database.Flat (fromFlatUser)
 import Server.IM.Template as SIT
+import Server.Ok (Ok)
 import Shared.ResponseError (ResponseError(..))
 
 im ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect (Response String)

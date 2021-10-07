@@ -17,8 +17,8 @@ import Server.File as SF
 import Server.IM.Database as SID
 import Server.IM.Database.Flat (fromFlatContact)
 import Server.IM.Database.Flat as SIF
-import Server.Ok (ok)
-import Server.Types (BaseEffect, Ok, ServerEffect, StorageDetails)
+import Server.Ok
+import Server.Types (BaseEffect, ServerEffect, StorageDetails)
 import Server.Wheel as SW
 import Shared.IM.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
 import Shared.Options.File (imageBasePath)

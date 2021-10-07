@@ -1,7 +1,7 @@
 module Client.IM.Scroll where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.DOM as CCD
 import Shared.IM.Types

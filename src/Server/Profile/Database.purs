@@ -12,7 +12,7 @@ import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Profile.Database.Flat
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN

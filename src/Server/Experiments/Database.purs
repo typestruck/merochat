@@ -1,6 +1,6 @@
 module Server.Experiments.Database where
 
-import Shared.Types
+import Shared.ContentType
 import Prelude
 import Shared.Experiments.Types
 import Server.Database as SD

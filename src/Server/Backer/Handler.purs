@@ -5,6 +5,7 @@ import Server.Types
 
 import Server.Backer.Template as SBT
 import Server.Response as SR
+import Shared.ContentType (Html(..))
 
 backer ∷ ∀ r. { | r } → ServerEffect Html
 backer _ = SR.serveTemplate $ SBT.template

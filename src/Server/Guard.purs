@@ -2,7 +2,7 @@ module Server.Guard where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Either (Either(..))
 import Data.Map as DM

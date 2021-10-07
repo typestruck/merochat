@@ -3,7 +3,7 @@ module Client.Profile.Update where
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
