@@ -5,8 +5,8 @@ import Prelude
 import Server.Database.Blocks
 import Server.Database.Fields
 import Server.Database.Histories
-import Shared.IM.Types
 import Shared.ContentType
+import Shared.IM.Types
 
 import Data.Array as DA
 import Data.BigInt as BI
@@ -24,9 +24,11 @@ import Server.File (imageTooBigMessage, invalidImageMessage)
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
 import Server.Landing.Database as SLD
+import Server.Settings.Action as SSA
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Shared.User (ProfileVisibility(..))
 import Test.Server as TS
 import Test.Server.Model (baseUser)
 import Test.Unit (TestSuite)
@@ -46,6 +48,22 @@ tests = do
                         void $ SIA.blockUser userID anotherUserID
                         suggestions' ← SIA.suggest userID 0 Nothing
                         R.liftAff <<< TUA.equal 0 $ DA.length suggestions'
+
+            TU.test "suggest respects visibility hidden visibility"
+                  $ TS.serverAction
+                  $ do
+                        Tuple userID anotherUserID ← setUpUsers
+                        SSA.changeVisibility anotherUserID Nobody
+                        suggestions ← SIA.suggest userID 0 Nothing
+                        R.liftAff $ TUA.equal [] suggestions
+
+            TU.test "suggest respects visibility contacts only visibility"
+                  $ TS.serverAction
+                  $ do
+                        Tuple userID anotherUserID ← setUpUsers
+                        SSA.changeVisibility anotherUserID Contacts
+                        suggestions ← SIA.suggest userID 0 Nothing
+                        R.liftAff $ TUA.equal [] suggestions
 
             TU.test "suggest includes all users if impersonating"
                   $ TS.serverAction
@@ -131,6 +149,16 @@ tests = do
                         let contact = SU.fromJust c
                         R.liftAff $ TUA.equal anotherUserID contact.user.id
                         R.liftAff $ TUA.equal [firstId, secondId] (_.id <$> contact.history)
+
+            TU.test "listSingleContact respects contacts only visibility"
+                  $ TS.serverAction
+                  $ do
+                        Tuple userID anotherUserID ← setUpUsers
+                        c ← SIA.listSingleContact userID anotherUserID true
+                        R.liftAff $ TUA.equal Nothing c
+                        void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
+                        cc ← SIA.listSingleContact userID anotherUserID true
+                        R.liftAff $ TUA.equal (Just anotherUserID) (_.id <<< _.user <$> cc)
 
             TU.test "listContacts matches contact and (first message) chat history"
                   $ TS.serverAction

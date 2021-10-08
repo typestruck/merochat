@@ -18,8 +18,8 @@ import Server.Database.Tags
 import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Types
-import Shared.IM.Types
 import Shared.ContentType
+import Shared.IM.Types
 
 import Data.Array as DA
 import Data.DateTime (DateTime(..))
@@ -32,6 +32,8 @@ import Droplet.Driver (Pool)
 import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
 import Droplet.Language.Internal.Definition (Path)
 import Droplet.Language.Internal.Function (PgFunction)
+import Effect.Class (liftEffect)
+import Effect.Console (log)
 import Server.Database as SD
 import Server.IM.Database.Flat (FlatUser, FlatContact)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
@@ -103,8 +105,8 @@ presentContacts loggedUserID skip =
 --needs to handle impersonations
 presentSingleContact ∷ Int → Int → Boolean -> ServerEffect (Maybe FlatContact)
 presentSingleContact loggedUserID otherID contactsOnly = SD.single $
-      select (contactPresentationFields loggedUserID)
-            # from (leftJoin usersSource (histories # as h) # on (u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID .&&. u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID))
+            select (contactPresentationFields loggedUserID)
+            # from (leftJoin usersSource (histories # as h) # on (u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserID .||. u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserID))
             # wher (u ... _id .=. otherID .&&. (contactsOnly .=. false .||. (h ... _id # isNotNull)))
 
 presentSelectedContacts ∷ Int → Array Int → ServerEffect (Array FlatContact)

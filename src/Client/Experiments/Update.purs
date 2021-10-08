@@ -30,6 +30,7 @@ update model =
       where
       dispatchEvent payload =
             [ liftEffect do
+                    --refactor: if experimnts depends on im on webpack this can be safe
                     FSUC.broadcast setChatExperiment payload
                     pure Nothing
             ]
