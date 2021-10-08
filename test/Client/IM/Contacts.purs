@@ -1,7 +1,7 @@
 module Test.Client.IM.Contacts where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.IM.Contacts as CICN
 import Data.Maybe (Maybe(..))

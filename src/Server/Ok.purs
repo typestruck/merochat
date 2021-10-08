@@ -1,6 +1,6 @@
 module Server.Ok where
 
-import Server.Types
+type Ok = Record ()
 
 ok ∷ Ok
 ok = {}

@@ -4,7 +4,7 @@ import Prelude
 import Server.Types
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
@@ -99,12 +99,13 @@ handleMessage payload = do
                   sendWebSocketMessage connection <<< Content $ CurrentHash updateHash
             Ping → do
                   possibleConnection ← R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
-                  case possibleConnection of
-                        --shouldnt be possible 🤔
-                        Nothing → R.liftEffect $ do
+                  if DM.isNothing possibleConnection then
+                        --shouldn't be possible 🤔
+                        R.liftEffect $ do
                               EC.log "ping without saved connection"
                               SW.terminate connection
-                        Just { lastSeen } → R.liftEffect $ do
+                  else
+                        R.liftEffect $ do
                               now ← EN.nowDateTime
                               ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserID) allConnections
                               sendWebSocketMessage connection Pong
@@ -117,14 +118,14 @@ handleMessage payload = do
                               , status
                               , userID: sessionUserID
                               }
-            ToBlock { id } → do
+            UnavailableFor { id } → do
                   possibleConnection ← R.liftEffect (DH.lookup id <$> ER.read allConnections)
-                  whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ BeenBlocked { id: sessionUserID }
+                  whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactUnavailable { id: sessionUserID }
             OutgoingMessage { id: temporaryID, userID: recipient, content, turn, experimenting } → do
                   date ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
                   Tuple messageID finalContent ← case experimenting of
                         --impersonating experiment messages are not saved
-                        Just (ImpersonationPayload id) → do
+                        Just (ImpersonationPayload _) → do
                               msg ← SIA.processMessageContent content
                               pure $ Tuple temporaryID msg
                         _ →

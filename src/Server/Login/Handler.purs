@@ -2,7 +2,7 @@ module Server.Login.Handler where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Either as DE
 import Data.Maybe (Maybe)
@@ -15,7 +15,7 @@ import Run.Reader as RR
 import Server.Cookies as SC
 import Server.Login.Action as SLA
 import Server.Login.Template as SLT
-import Server.Ok (ok)
+import Server.Ok (Ok, ok)
 import Server.Response as SR
 import Shared.Account (RegisterLogin)
 

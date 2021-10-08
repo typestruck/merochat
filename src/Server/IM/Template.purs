@@ -1,7 +1,7 @@
 module Server.IM.Template where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array as DA
 import Data.HashSet as DHS

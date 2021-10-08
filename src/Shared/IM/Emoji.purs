@@ -1,7 +1,7 @@
 module Shared.IM.Emoji where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array as DA
 import Data.Tuple (Tuple(..))

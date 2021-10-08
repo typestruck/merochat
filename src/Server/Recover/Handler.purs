@@ -2,9 +2,10 @@ module Server.Recover.Handler where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Maybe (Maybe)
+import Server.Ok
 import Server.Recover.Action as SRA
 import Server.Recover.Template as SRT
 import Server.Response as SR

@@ -1,13 +1,15 @@
 module Server.Settings.Template where
 
+import Shared.ContentType
+
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Shared.Settings.View as SSV
-import Shared.Types
+import Shared.User (ProfileVisibility)
 
-template ∷ Effect String
-template =
+template ∷ ProfileVisibility -> Effect String
+template profileVisibility =
       F.preMount (QuerySelector ".settings-edition")
             { view: SSV.view
             , init:
@@ -16,7 +18,8 @@ template =
                     , password: ""
                     , passwordConfirmation: ""
                     , confirmTermination: false
+                    , profileVisibility
                     , erroredFields: []
+                    , hideSuccessMessage: true
                     }
             }
-

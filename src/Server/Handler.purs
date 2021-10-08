@@ -2,7 +2,7 @@ module Server.Handler where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Either (Either(..))
 import Data.List (List(..))
@@ -69,6 +69,7 @@ handlers reading =
                       { email: runJSON reading SSH.accountEmail
                       , password: runJSON reading SSH.accountPassword
                       , terminate: runJSON reading SSH.accountTerminate
+                      , visibility: runJSON reading SSH.changeVisibility
                       }
               }
       , recover:

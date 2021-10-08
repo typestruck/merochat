@@ -1,7 +1,7 @@
 module Shared.IM.View.Chat where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.DOM as CCD
 import Control.Alt ((<|>))

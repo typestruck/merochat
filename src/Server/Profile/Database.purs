@@ -12,7 +12,7 @@ import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Profile.Database.Flat
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
@@ -59,14 +59,14 @@ saveProfile
       SD.executeWith connection $
             update users
                   # set
-                        ( (_avatar /\ avatar)
-                                /\ (_name /\ name)
-                                /\ (_headline /\ headline)
-                                /\ (_description /\ description)
-                                /\ (_country /\ country)
-                                /\ (_gender /\ gender)
+                        ( (_avatar .=. avatar)
+                                /\ (_name .=. name)
+                                /\ (_headline .=. headline)
+                                /\ (_description .=. description)
+                                /\ (_country .=. country)
+                                /\ (_gender .=. gender)
                                 /\
-                                      (_birthday /\ map DN.unwrap age)
+                                      (_birthday .=. map DN.unwrap age)
                         )
                   # wher (_id .=. id)
       SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. id)

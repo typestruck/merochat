@@ -7,7 +7,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Environment (commonJSHash, development, emojiJSHash, imCSSHash, imJSHash)
 import Shared.Options.File (imageBasePath, productionBasePath)
-import Shared.Types (ContentType(..))
+import Shared.ContentType (ContentType(..))
 import Shared.Unsafe as SU
 
 pathery ∷ ContentType → String → String

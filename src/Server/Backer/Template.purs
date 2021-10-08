@@ -9,7 +9,7 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Path as SPT
-import Shared.Types (ContentType(..))
+import Shared.ContentType (ContentType(..))
 import Shared.Backer.View as SBV
 
 template ∷ Effect String

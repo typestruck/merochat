@@ -2,7 +2,7 @@ module Server.Profile.Action where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -11,7 +11,7 @@ import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Run as R
 import Server.File as SF
-import Server.Ok (ok)
+import Server.Ok (Ok, ok)
 import Server.Profile.Database as SPD
 import Server.Response as SR
 import Server.ThreeK as SB

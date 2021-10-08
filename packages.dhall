@@ -123,29 +123,7 @@ let upstream =
 let overrides = {=}
 
 let additions =
-      { payload =
-        { dependencies =
-          [ "aff"
-          , "affjax"
-          , "console"
-          , "debug"
-          , "effect"
-          , "foreign-generic"
-          , "node-fs"
-          , "node-fs-aff"
-          , "node-http"
-          , "prelude"
-          , "psci-support"
-          , "record"
-          , "simple-json"
-          , "stringutils"
-          , "test-unit"
-          , "typelevel-prelude"
-          ]
-        , repo = "https://github.com/hoodunit/purescript-payload.git"
-        , version = "15b4954e086336fa2840da3d9738d25f7cb02d6d"
-        }
-      , browser-cookies =
+      { browser-cookies =
         { dependencies =
           [ "prelude"
           , "console"
@@ -188,7 +166,7 @@ let additions =
           , "unsafe-coerce"
           ]
         , repo = "https://github.com/easafe/purescript-droplet.git"
-        , version = "8b02067d5517f1b9b3eb336e1dfd1ebdae5daa35"
+        , version = "574ca989df0ca8d465903c2463d8a15c12f005cc"
         }
       }
 

@@ -3,7 +3,7 @@ module Server.Recover.Action where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Data.String as DS
@@ -17,7 +17,7 @@ import Server.AccountValidation as SA
 import Server.Captcha as SC
 import Server.Database.Users as SDU
 import Server.Email as SE
-import Server.Ok (ok)
+import Server.Ok (Ok, ok)
 import Server.Recover.Database as SRD
 import Server.Response as SR
 import Server.Token as ST

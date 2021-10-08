@@ -1,7 +1,7 @@
 module Shared.Newtype where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN

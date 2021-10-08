@@ -2,17 +2,17 @@ module Server.Database.Users where
 
 import Droplet.Language
 import Prelude
+import Server.Database.Fields
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Date (Date)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Data.Tuple.Nested (type (/\), (/\))
 import Server.Database as SD
-import Server.Database.Fields
 import Shared.Account (RegisterLoginUser)
-import Shared.User (Gender)
+import Shared.User (Gender, ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
 type Users =
@@ -27,7 +27,7 @@ type Users =
       , avatar ∷ Maybe String
       , gender ∷ Maybe Gender
       , country ∷ Maybe Int
-      , active ∷ Default Boolean
+      , visibility ∷ Default ProfileVisibility
       )
 
 users ∷ Table "users" Users
@@ -60,9 +60,12 @@ _gender = Proxy
 _country ∷ Proxy "country"
 _country = Proxy
 
+_visibility ∷ Proxy "visibility"
+_visibility = Proxy
+
 userBy ∷ By → ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
       Email value → SD.single $ baseQuery (\ft -> ft .&&. _email .=. value)
       ID value → SD.single $ baseQuery (\ft -> ft .&&. _id .=. value)
 
-baseQuery ft = select (_id /\ _email /\ _password) # from users # wher (ft (_active .=. true))
+baseQuery ft = select (_id /\ _email /\ _password) # from users # wher (ft (_visibility .<>. TemporarilyBanned))

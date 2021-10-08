@@ -1,16 +1,17 @@
 module Shared.Spec where
 
 import Prelude
-import Server.Types
+import Shared.ContentType
 import Shared.IM.Types
-import Shared.Types
 
 import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
+import Server.Ok
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword)
 import Shared.Profile.Types (Generate, ProfileUser)
+import Shared.User (ProfileVisibility)
 
 type NoBody = {}
 
@@ -60,8 +61,8 @@ spec ∷
                                                 , response ∷ Array Contact
                                                 }
                                   , singleContact ∷
-                                          GET "/contact?id=<id>"
-                                                { query ∷ { id ∷ Int }
+                                          GET "/contact?id=<id>&contactsOnly=<contactsOnly>"
+                                                { query ∷ { id ∷ Int, contactsOnly :: Boolean }
                                                 , response ∷ Array Contact
                                                 }
                                   , history ∷
@@ -137,6 +138,10 @@ spec ∷
                                                 , terminate ∷
                                                         POST "/account/terminate"
                                                               { body ∷ NoBody
+                                                              , response ∷ Ok
+                                                              }
+                                                , visibility :: POST "/account/visibility"
+                                                              { body ∷ ProfileVisibility
                                                               , response ∷ Ok
                                                               }
                                                 }

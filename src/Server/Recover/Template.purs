@@ -13,7 +13,7 @@ import Server.Template as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
 import Shared.Routes (routes)
-import Shared.Types (ContentType(..))
+import Shared.ContentType (ContentType(..))
 
 template ∷ Maybe String → Effect String
 template token = do

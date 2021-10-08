@@ -1,7 +1,7 @@
 module Client.IM.Suggestion where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
@@ -94,7 +94,7 @@ blockUser webSocket blocked model@{ blockedUsers } =
                           --refactor: either make errorMessage maybe or get rid of it
                           Left _ → pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage: "" }
                           _ → do
-                                liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: blocked }
+                                liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: blocked }
                                 pure Nothing
             ]
 

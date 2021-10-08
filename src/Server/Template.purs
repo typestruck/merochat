@@ -12,7 +12,7 @@ import Flame.Html.Element as HE
 import Shared.Options.File (imageBasePath)
 import Shared.Path as SP
 import Shared.Routes (routes)
-import Shared.Types (ContentType(..))
+import Shared.ContentType (ContentType(..))
 
 type Parameters a =
       { title ∷ String

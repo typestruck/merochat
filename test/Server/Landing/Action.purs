@@ -7,7 +7,7 @@ import Server.Database.KarmaHistories
 import Server.Database.KarmaLeaderboard
 import Server.Database.Suggestions
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.BigInt as BG
 import Data.Maybe (Maybe(..))

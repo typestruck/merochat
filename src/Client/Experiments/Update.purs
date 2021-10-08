@@ -1,7 +1,7 @@
 module Client.Experiments.Update where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Client.Common.DOM (setChatExperiment)
 import Client.Common.Location as CCL
@@ -30,6 +30,7 @@ update model =
       where
       dispatchEvent payload =
             [ liftEffect do
+                    --refactor: if experimnts depends on im on webpack this can be safe
                     FSUC.broadcast setChatExperiment payload
                     pure Nothing
             ]

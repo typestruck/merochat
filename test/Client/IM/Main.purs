@@ -3,7 +3,7 @@ module Test.Client.IM.Main where
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
 
 import Client.IM.Main as CIM
 import Data.Array as DA
@@ -94,7 +94,7 @@ tests = do
             TU.test "receiveMessage marks blocker users as unavailable" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (BeenBlocked { id: contact.user.id }) $ model
+                        { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { id: contact.user.id }) $ model
                               { contacts = [ contact ]
                               , chatting = Nothing
                               }
@@ -104,7 +104,7 @@ tests = do
             TU.test "receiveMessage removes blocker users from suggestions" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { suggestions } = DT.fst <<< CIM.receiveMessage webSocket true (BeenBlocked { id: contact.user.id }) $ model
+                        { suggestions } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { id: contact.user.id }) $ model
                               { suggestions = [ contact.user ]
                               , chatting = Nothing
                               }

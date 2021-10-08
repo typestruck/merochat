@@ -2,7 +2,7 @@ module Server.Token where
 
 import Prelude
 import Server.Types
-import Shared.Types
+import Shared.ContentType
 
 import Data.Array.NonEmpty as DAN
 import Data.Either as DE

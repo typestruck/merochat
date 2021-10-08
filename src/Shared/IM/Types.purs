@@ -41,7 +41,7 @@ import Shared.DateTime as SDT
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.ResponseError (DatabaseError)
 import Shared.Unsafe as SU
-import Shared.User (IU)
+import Shared.User (IU, ProfileVisibility)
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Web.Event.Internal.Types (Event)
 
@@ -298,6 +298,7 @@ data IMMessage
       | ToggleFortune Boolean
       | DisplayFortune String
       | RequestFailed RequestFailure
+      | SetProfileVisibility ProfileVisibility
       | ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer
@@ -314,11 +315,11 @@ data WebSocketPayloadServer
               { userID ∷ Int
               , status ∷ MessageStatus
               , persisting ∷ Boolean
-              , -- in some cases status changs should be not persisted to the database
+              , -- in some cases status changes should be not persisted to the database
                 --alternatively, update by user?
                 ids ∷ Array Int
               }
-      | ToBlock
+      | UnavailableFor
               { id ∷ Int
               }
 
@@ -373,7 +374,7 @@ data WebSocketPayloadClient
               , status ∷ MessageStatus
               , userID ∷ Int
               }
-      | BeenBlocked { id ∷ Int }
+      | ContactUnavailable { id ∷ Int } --either block or chang of privacy settings
       | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
 newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)

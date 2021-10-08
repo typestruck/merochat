@@ -6,9 +6,6 @@
     "url": "https://github.com/melanchat/melanchat.git"
   },
   "description": "Friendly random chat",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "build": "spago build -p development/Environment.purs",
     "test": "spago test -p development/Environment.purs",

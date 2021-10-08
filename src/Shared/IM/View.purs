@@ -1,7 +1,7 @@
 module Shared.IM.View where
 
 import Prelude
-import Shared.Types
+import Shared.ContentType
 
 import Data.String as DS
 import Flame (Html)
@@ -37,4 +37,3 @@ view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, i
               , SIVC.chat model
               ]
       ]
-

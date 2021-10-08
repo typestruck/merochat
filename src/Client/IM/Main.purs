@@ -4,7 +4,8 @@ module Client.IM.Main where
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.Types
+import Shared.ContentType
+import Shared.User
 
 import Client.Common.DOM (setChatExperiment)
 import Client.Common.DOM as CCD
@@ -16,7 +17,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Types (CurrentWebSocket)
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Notification as CIUC
@@ -170,8 +171,12 @@ update { webSocketRef, fileReader } model =
             DisplayFortune sequence → displayFortune sequence model
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userID) → report userID webSocket model
+            SetProfileVisibility pv -> setProfileVisibility pv model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+setProfileVisibility :: ProfileVisibility → IMModel → NoMessages
+setProfileVisibility pv model@{user} = F.noMessages model { user = user { profileVisibility = pv } }
 
 report ∷ Int → WebSocket → IMModel → MoreMessages
 report userID webSocket model@{ reportReason, reportComment } = case reportReason of
@@ -187,7 +192,7 @@ report userID webSocket model@{ reportReason, reportComment } = case reportReaso
                           case result of
                                 Left _ → pure <<< Just $ RequestFailed { request: ReportUser userID, errorMessage: "" }
                                 _ → do
-                                      liftEffect <<< CIW.sendPayload webSocket $ ToBlock { id: userID }
+                                      liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userID }
                                       pure Nothing
                   ]
       Nothing → F.noMessages $ model
@@ -300,7 +305,7 @@ receiveMessage
       isFocused
       wsPayload
       model@
-            { user: { id: recipientID }
+            { user: { id: recipientID, profileVisibility }
             , contacts: currentContacts
             , suggestions
             , hash
@@ -318,12 +323,14 @@ receiveMessage
             F.noMessages $ model
                   { contacts = updateStatus currentContacts userID ids status
                   }
-      BeenBlocked { id } →
+      ContactUnavailable { id } →
             F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
       NewIncomingMessage payload@{ id: messageID, userID, content: messageContent, date: messageDate, experimenting } →
-            --(for now) if the experiments dont match, discard the message
+            --(for now) if the experiments don't match, discard the message
             if DA.elem userID blockedUsers || not (match userID experimenting) then
                   F.noMessages model
+            else if profileVisibility == Nobody then
+                  CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userID }
             else
                   let
                         model' = unsuggest userID model
@@ -344,7 +351,7 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID, contactsOnly : profileVisibility == Contacts } }) ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right

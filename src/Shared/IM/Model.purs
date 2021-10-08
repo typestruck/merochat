@@ -1,5 +1,5 @@
 module Shared.IM.Model where
 
-import Shared.Types
+import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
