@@ -1,4 +1,4 @@
-![logo](src/Client/media/logo-small.png) [![Build Status](https://travis-ci.org/melanchat/melanchat.svg?branch=master)](https://travis-ci.com/melanchat/melanchat)
+![logo](src/Client/media/logo-small.png)  ![build status](https://github.com/easafe/purescript-melanchat/actions/workflows/CI.yml/badge.svg)
 
 MelanChat is a friendly random chat!
 
