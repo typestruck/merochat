@@ -72,8 +72,11 @@ saveBase64File input =
                         else do
                               uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
                               let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
-                              if development then
-                                    R.liftAff $ NFS.writeFile ("src/Client/media/upload/" <> fileName) buffer
+                              if development then do
+                                    let localPath = "src/Client/media/upload/"
+                                    exists <- R.liftAff $ NFS.exists localPath
+                                    unless exists <<< R.liftAff $ NFS.mkdir localPath
+                                    R.liftAff $ NFS.writeFile (localPath <> fileName) buffer
                               else do
                                     { storageDetails } ← RR.ask
                                     getAuthorizationToken storageDetails
