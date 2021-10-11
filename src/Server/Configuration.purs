@@ -58,12 +58,8 @@ readConfiguration =
             v ← value
             DI.fromString v
 
-isCLI ∷ Effect Boolean
-isCLI = falseUnless <$> NP.lookupEnv "CLI"
-
 storageAuthenticationKey ∷ Effect String
 storageAuthenticationKey = DM.fromMaybe "" <$> NP.lookupEnv "STORAGE_KEY"
 
 falseUnless ∷ Maybe String → Boolean
 falseUnless = DM.maybe false (_ == "true")
-

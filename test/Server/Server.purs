@@ -32,6 +32,7 @@ newTestPool ∷ Configuration → Effect Pool
 newTestPool { databaseHost } =
       DD.newPool $ (DD.defaultConfiguration "melanchat_test")
             { user = Just "melanchat_test"
+            , password = Just "melanchat_test"
             , host = databaseHost
             , idleTimeoutMillis = Just 1000
             }

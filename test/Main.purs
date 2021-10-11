@@ -11,9 +11,7 @@ import Test.Unit.Main as TUM
 
 main ∷ Effect Unit
 main = do
-      cli ← SC.isCLI
       TUM.runTest do
-            unless cli TSM.tests
+            TSM.tests
             TSRM.tests
             TCM.tests
-

@@ -42,17 +42,6 @@ do
     fi
 done
 
-# might be better to wait some before deleting older files
-# for entry in `ls $copy_folder`
-# do
-#     if [ ! -f "$dist_folder/$entry" ]
-#     then
-#         echo "Deleted file: $dist_folder/$entry"
-#     fi
-# done
-
-#b2-linux
-
 git add $production_file
 git add $development_file
 git commit -m 'Updated hashs'
