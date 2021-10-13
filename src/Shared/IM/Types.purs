@@ -82,6 +82,7 @@ type BaseContact fields =
 
 type Contact = BaseContact
       ( user ∷ IMUser
+      , typing ∷ Boolean
       , history ∷ Array HistoryMessage
       )
 

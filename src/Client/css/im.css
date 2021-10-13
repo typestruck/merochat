@@ -123,6 +123,10 @@ body {
     border-bottom: 1px solid #4E4E4E;
     border-top: 1px solid #4E4E4E;
 }
+.typing {
+    font-style: italic;
+    margin-bottom: 10px;
+}
 
 .send-box {
     display: flex;
@@ -289,7 +293,7 @@ blockquote {
 .contact-list-last-message {
     font-size: 1.1em;
     overflow-y: hidden;
-    max-height: 25px;
+    max-height: 27px;
     color: rgb(238, 238, 238, 0.8)
 }
 
@@ -2170,6 +2174,7 @@ select {
     .svg-back-suggestions {
         margin-right: 28px;
     }
+    .typing {margin-bottom:5px}
     .contact-profile {
         padding: 5px 15px;
     }

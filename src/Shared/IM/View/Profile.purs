@@ -1,9 +1,9 @@
 module Shared.IM.View.Profile where
 
 import Prelude
+import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.ContentType
 
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
@@ -64,13 +64,14 @@ unavailable name =
             ]
 
 contact ∷ IMModel → Contact → Html IMMessage
-contact model@{ chatting, toggleContextMenu } cnt@{ impersonating, user: { id } } =
+contact model@{ chatting, toggleContextMenu, contacts } cnt@{ impersonating, user: { id } } =
       HE.div (HA.class' "profile-contact")
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
                     , HE.img $ [ HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfile
                     , HE.div (HA.class' "profile-contact-header" : showProfile)
-                            [ HE.h1 (HA.class' "contact-name") name
+                            [ HE.h1 (HA.class' "contact-name") name,
+                              typing
                             ]
                     , HE.div [ HA.class' "profile-contact-deets" ] <<<
                             HE.div [ HA.class' "outer-user-menu" ]
@@ -89,6 +90,7 @@ contact model@{ chatting, toggleContextMenu } cnt@{ impersonating, user: { id } 
       { name, avatar } = case impersonating of
             Just impersonationID → SU.fromJust $ HS.lookup impersonationID impersonations
             _ → cnt.user
+      typing = HE.div (HA.class' {"duller typing": true, hidden: not (contacts !@ SU.fromJust chatting).typing}) "Typing..."
 
 suggestion ∷ IMModel → Int → Html IMMessage
 suggestion model@{ user, suggestions, experimenting } index =
