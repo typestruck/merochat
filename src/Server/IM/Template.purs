@@ -2,11 +2,13 @@ module Server.IM.Template where
 
 import Prelude
 import Shared.ContentType
+import Shared.IM.Types
 
 import Data.Array as DA
 import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Now as EN
 import Environment (emojiJSHash, imCSSHash, imJSHash)
 import Flame (QuerySelector(..))
 import Flame as F
@@ -15,7 +17,6 @@ import Flame.Html.Element as HE
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.IM.Unread as SIU
-import Shared.IM.Types
 import Shared.IM.View as SIV
 import Shared.Path (updateHash)
 import Shared.Path as SP
@@ -30,6 +31,7 @@ template { contacts, suggestions, user } = do
       let
             unreadChats = SIU.countUnreadChats user.id contacts
             suggestionsCount = DA.length suggestions
+      lt <- EN.nowDateTime
       F.preMount (QuerySelector ".im")
             { view: \model → ST.templateWith $ defaultParameters
                     { title = SIU.title unreadChats
@@ -47,6 +49,7 @@ template { contacts, suggestions, user } = do
                     , freeToFetchChatHistory: true
                     , suggestionsPage: 0
                     , errorMessage: ""
+                    , lastTyping: DateTimeWrapper lt
                     , smallScreen: false
                     , initialScreen: true
                     , enableNotificationsVisible: false

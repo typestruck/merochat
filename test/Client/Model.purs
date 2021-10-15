@@ -28,6 +28,7 @@ model =
       , freeToFetchSuggestions: true
       , initialScreen: true
       , suggestionsPage: 0
+      , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , hash: ""
       , freeToFetchContactList: true
       , errorMessage: ""
@@ -104,7 +105,7 @@ historyMessage =
       { id: 1
       , sender: imUserID
       , recipient: contactID
-      , date: DateTimeWrapper <<< EU.unsafePerformEffect $ EN.nowDateTime
+      , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , content: "test"
       , status: Received
       }

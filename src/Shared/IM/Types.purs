@@ -116,9 +116,8 @@ type MissedEvents =
 type IM =
       ( suggestions ∷ Array Suggestion
       , contacts ∷ Array Contact
-      ,
-        --in case a message from someone blocked was already midway
-        blockedUsers ∷ Array Int
+      --in case a message from someone blocked was already midway
+      , blockedUsers ∷ Array Int
       , temporaryID ∷ Int
       , freeToFetchChatHistory ∷ Boolean
       , freeToFetchContactList ∷ Boolean
@@ -138,22 +137,18 @@ type IM =
       , modalsLoaded ∷ Array ShowUserMenuModal
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
-      ,
-        --the current logged in user
-        user ∷ IMUser
-      ,
-        --indexes
-        suggesting ∷ Maybe Int
+      , lastTyping :: DateTimeWrapper
+      --the current logged in user
+      , user ∷ IMUser
+      --indexes
+      , suggesting ∷ Maybe Int
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
-      ,
-        --used to signal that the page should be reloaded
-        hash ∷ String
-      ,
-        --visibility switches
-        initialScreen ∷ Boolean
-      , --used on mobile to switch screens
-        hasTriedToConnectYet ∷ Boolean
+      --used to signal that the page should be reloaded
+      , hash ∷ String
+      --visibility switches
+      , initialScreen ∷ Boolean --used on mobile to switch screens
+      , hasTriedToConnectYet ∷ Boolean
       , fullContactProfileVisible ∷ Boolean
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
@@ -245,29 +240,29 @@ data IMMessage
         --history
         CheckFetchHistory
       | DisplayHistory (Array HistoryMessage)
-      |
-        --user menu
-        ToggleInitialScreen Boolean
+
+      --user menu
+      | ToggleInitialScreen Boolean
       | Logout
       | SetContextMenuToggle ShowContextMenu
       | SetModalContents (Maybe String) ElementID String
-      |
-        --contact
-        ResumeChat (Tuple Int (Maybe Int))
+
+      --contact
+      | ResumeChat (Tuple Int (Maybe Int))
       | UpdateReadCount
       | CheckFetchContacts
       | DisplayContacts (Array Contact)
       | DisplayNewContacts (Array Contact)
       | DisplayImpersonatedContact Int HistoryMessage (Array Contact)
       | ResumeMissedEvents MissedEvents
-      |
-        --suggestion
-        FetchMoreSuggestions
+
+      --suggestion
+      | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
-      |
-        --chat
-        SetSelectedImage (Maybe String)
+
+      --chat
+      | SetSelectedImage (Maybe String)
       | ToggleContactProfile
       | DropFile Event
       | ToggleMessageEnter
@@ -282,9 +277,10 @@ data IMMessage
       | SetSmallScreen
       | SetEmoji Event
       | InsertLink
-      |
-        --main
-        AskChatExperiment
+      | CheckTyping String
+      | NoTyping Int
+      --main
+      | AskChatExperiment
       | SetChatExperiment (Maybe ExperimentData)
       | ReloadPage
       | ToggleUserContextMenu Event
@@ -305,6 +301,7 @@ data IMMessage
 data WebSocketPayloadServer
       = UpdateHash
       | Ping
+      | Typing { id :: Int }
       | OutgoingMessage
               ( BasicMessage
                       ( userID ∷ Int
@@ -365,6 +362,7 @@ data FullWebSocketPayloadClient
 data WebSocketPayloadClient
       = CurrentHash String
       | NewIncomingMessage ClientMessagePayload
+      | ContactTyping { id :: Int }
       | ServerReceivedMessage
               { previousID ∷ Int
               , id ∷ Int

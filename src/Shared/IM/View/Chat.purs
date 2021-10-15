@@ -2,6 +2,7 @@ module Shared.IM.View.Chat where
 
 import Prelude
 import Shared.ContentType
+import Shared.IM.Types
 
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
@@ -11,9 +12,8 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol (class IsSymbol)
 import Data.Symbol as TDS
-import Type.Proxy (Proxy(..))
 import Data.Tuple (Tuple(..))
-import Shared.IM.Types
+import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -24,12 +24,11 @@ import Shared.IM.Svg as SIS
 import Shared.Keydown as SK
 import Shared.Options.File (maxImageSizeKB)
 import Shared.Setter as SS
-
-
+import Type.Proxy (Proxy(..))
 
 chat ∷ IMModel → Html IMMessage
 chat model@{ chatting } =
-      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal) ]
+      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal), HA.onKeydown (CheckTyping <<< DT.snd) ]
             [ linkModal model
             , imageModal model
             , chatBarInput ChatInput model

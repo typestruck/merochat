@@ -97,6 +97,9 @@ handleMessage payload = do
       case payload of
             UpdateHash →
                   sendWebSocketMessage connection <<< Content $ CurrentHash updateHash
+            Typing { id  } -> do
+                  possibleConnection ← R.liftEffect (DH.lookup id <$> ER.read allConnections)
+                  whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactTyping { id: sessionUserID }
             Ping → do
                   possibleConnection ← R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
                   if DM.isNothing possibleConnection then
