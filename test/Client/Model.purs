@@ -26,6 +26,7 @@ model ∷ IMModel
 model =
       { modalsLoaded: []
       , freeToFetchSuggestions: true
+      , typingIds : []
       , initialScreen: true
       , suggestionsPage: 0
       , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime

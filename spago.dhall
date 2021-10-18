@@ -56,6 +56,7 @@ You can edit this file as you like.
   , "record"
   , "refs"
   , "run"
+  , "safe-coerce"
   , "simple-json"
   , "simple-jwt"
   , "spec"

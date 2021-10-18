@@ -14,6 +14,7 @@ import Data.Symbol (class IsSymbol)
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -28,7 +29,7 @@ import Type.Proxy (Proxy(..))
 
 chat ∷ IMModel → Html IMMessage
 chat model@{ chatting } =
-      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal), HA.onKeydown (CheckTyping <<< DT.snd) ]
+      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal) ]
             [ linkModal model
             , imageModal model
             , chatBarInput ChatInput model
@@ -108,6 +109,8 @@ chatBarInput
               , HE.div [ HA.class' { "chat-input-area": true, side: not messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
+                              (if elementID == ChatInput then [HA.onKeydown (CheckTyping <<< DT.snd)] else [])
+                              <>
                               [ HA.rows 1
                               , HA.class' "chat-input"
                               , HA.id $ show elementID
@@ -117,7 +120,7 @@ chatBarInput
                               , HA.onInput' ResizeChatInput
                               , HA.autocomplete "off"
                               ]
-                      , HE.div (HA.class' "chat-right-buttons")
+                              , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
                               , sendButton messageEnter
                               ]

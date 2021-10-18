@@ -33,6 +33,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
+import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (liftEffect)
@@ -50,6 +51,7 @@ import Flame.Subscription.Document as FSD
 import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Flame.Subscription.Window as FSW
 import Foreign as FO
+import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
@@ -130,6 +132,7 @@ update { webSocketRef, fileReader } model =
             FocusInput elementID → focusInput elementID model
             CheckTyping text -> CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
             NoTyping id -> F.noMessages $ CIC.updateTyping id false model
+            TypingId id -> F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
             --contacts
             ResumeChat (Tuple id impersonating) → CICN.resumeChat id impersonating model
             UpdateReadCount → CICN.markRead webSocket model
@@ -311,6 +314,7 @@ receiveMessage
             { user: { id: recipientID, profileVisibility }
             , contacts: currentContacts
             , suggestions
+            , typingIds
             , hash
             , blockedUsers
             } = case wsPayload of
@@ -318,7 +322,11 @@ receiveMessage
             F.noMessages $ model
                   { imUpdated = newHash /= hash
                   }
-      ContactTyping { id } -> CIF.nothingNext (CIC.updateTyping id true model) <<< liftEffect <<< void <<< ET.setTimeout 375 <<< FS.send imID $ NoTyping id
+      ContactTyping { id } -> CIC.updateTyping id true model :> [liftEffect do
+            DT.traverse_ (ET.clearTimeout <<< SC.coerce) typingIds
+            newId <- ET.setTimeout 1000 <<< FS.send imID $ NoTyping id
+            pure <<< Just $ TypingId newId
+      ]
       ServerReceivedMessage { previousID, id, userID } →
             F.noMessages $ model
                   { contacts = updateTemporaryID currentContacts userID previousID id

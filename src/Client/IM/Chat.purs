@@ -27,6 +27,7 @@ import Data.Symbol as TDS
 import Data.Time.Duration (Milliseconds(..), Seconds)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -367,10 +368,10 @@ toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
 
 checkTyping :: String -> DateTime -> WebSocket -> IMModel -> MoreMessages
 checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
-      if DS.length text > minimumLength && milliseconds >= 250.0 && milliseconds <= 500.0 then
+      if DS.length text > minimumLength && milliseconds >= 150.0 && milliseconds <= 1000.0 then
             CIF.nothingNext (model { lastTyping = DateTimeWrapper now }) <<< liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }
       else
-            F.noMessages model
+            F.noMessages model { lastTyping = DateTimeWrapper now }
       where
       minimumLength = 7
       (Milliseconds milliseconds) = DT.diff now lt

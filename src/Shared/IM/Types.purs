@@ -32,6 +32,8 @@ import Data.Time.Duration as DTD
 import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
+import Effect.Timer (TimeoutId)
+import Foreign (Foreign)
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
@@ -43,6 +45,7 @@ import Shared.ResponseError (DatabaseError)
 import Shared.Unsafe as SU
 import Shared.User (IU, ProfileVisibility)
 import Simple.JSON (class ReadForeign, class WriteForeign)
+import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
 type IMUser = Record IU
@@ -138,6 +141,7 @@ type IM =
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
       , lastTyping :: DateTimeWrapper
+      , typingIds :: Array TimeoutIdWrapper -- TimeoutId constructor is private
       --the current logged in user
       , user ∷ IMUser
       --indexes
@@ -158,6 +162,8 @@ type IM =
       )
 
 type IMModel = Record IM
+
+newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
 data ShowChatModal
       = HideChatModal
@@ -279,6 +285,7 @@ data IMMessage
       | InsertLink
       | CheckTyping String
       | NoTyping Int
+      | TypingId TimeoutId
       --main
       | AskChatExperiment
       | SetChatExperiment (Maybe ExperimentData)
@@ -456,6 +463,8 @@ instance Enum MessageStatus where
             Delivered → Just Received
             Read → Just Delivered
 
+instance DecodeJson TimeoutIdWrapper where
+      decodeJson = Right <<< UC.unsafeCoerce
 instance DecodeJson DateTimeWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 instance DecodeJson DateWrapper where
@@ -479,6 +488,8 @@ instance DecodeJson ReportReason where
 instance DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 
+instance EncodeJson TimeoutIdWrapper where
+      encodeJson = UC.unsafeCoerce
 instance EncodeJson DateTimeWrapper where
       encodeJson = DAC.fromNumber <<< SDT.dateTimeToNumber
 instance EncodeJson DateWrapper where
