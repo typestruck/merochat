@@ -90,7 +90,7 @@ contact model@{ chatting, toggleContextMenu, contacts } cnt@{ impersonating, use
       { name, avatar } = case impersonating of
             Just impersonationID → SU.fromJust $ HS.lookup impersonationID impersonations
             _ → cnt.user
-      typing = HE.div (HA.class' {"duller typing": true, hidden: not (contacts !@ SU.fromJust chatting).typing}) "Typing..."
+      typing = HE.div (HA.class' {"duller typing": true, hidden: not (contacts !@ SU.fromJust chatting).typing }) "Typing..."
 
 suggestion ∷ IMModel → Int → Html IMMessage
 suggestion model@{ user, suggestions, experimenting } index =
