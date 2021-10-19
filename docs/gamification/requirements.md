@@ -255,3 +255,7 @@ Special chat features selected for random Users to take part in.
 * Debate mode
 
 * Chat as x historical figure/character/famous person
+
+* pretentious mode chat experiment
+    for "intelectuals"
+    messages wont send unless they have more characters than the previous message

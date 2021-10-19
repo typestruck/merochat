@@ -32,6 +32,8 @@ import Data.Time.Duration as DTD
 import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
+import Effect.Timer (TimeoutId)
+import Foreign (Foreign)
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
@@ -43,6 +45,7 @@ import Shared.ResponseError (DatabaseError)
 import Shared.Unsafe as SU
 import Shared.User (IU, ProfileVisibility)
 import Simple.JSON (class ReadForeign, class WriteForeign)
+import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
 type IMUser = Record IU
@@ -82,6 +85,7 @@ type BaseContact fields =
 
 type Contact = BaseContact
       ( user ∷ IMUser
+      , typing ∷ Boolean
       , history ∷ Array HistoryMessage
       )
 
@@ -115,9 +119,8 @@ type MissedEvents =
 type IM =
       ( suggestions ∷ Array Suggestion
       , contacts ∷ Array Contact
-      ,
-        --in case a message from someone blocked was already midway
-        blockedUsers ∷ Array Int
+      --in case a message from someone blocked was already midway
+      , blockedUsers ∷ Array Int
       , temporaryID ∷ Int
       , freeToFetchChatHistory ∷ Boolean
       , freeToFetchContactList ∷ Boolean
@@ -137,22 +140,19 @@ type IM =
       , modalsLoaded ∷ Array ShowUserMenuModal
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
-      ,
-        --the current logged in user
-        user ∷ IMUser
-      ,
-        --indexes
-        suggesting ∷ Maybe Int
+      , lastTyping :: DateTimeWrapper
+      , typingIds :: Array TimeoutIdWrapper -- TimeoutId constructor is private
+      --the current logged in user
+      , user ∷ IMUser
+      --indexes
+      , suggesting ∷ Maybe Int
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
-      ,
-        --used to signal that the page should be reloaded
-        hash ∷ String
-      ,
-        --visibility switches
-        initialScreen ∷ Boolean
-      , --used on mobile to switch screens
-        hasTriedToConnectYet ∷ Boolean
+      --used to signal that the page should be reloaded
+      , hash ∷ String
+      --visibility switches
+      , initialScreen ∷ Boolean --used on mobile to switch screens
+      , hasTriedToConnectYet ∷ Boolean
       , fullContactProfileVisible ∷ Boolean
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
@@ -162,6 +162,8 @@ type IM =
       )
 
 type IMModel = Record IM
+
+newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
 data ShowChatModal
       = HideChatModal
@@ -244,29 +246,29 @@ data IMMessage
         --history
         CheckFetchHistory
       | DisplayHistory (Array HistoryMessage)
-      |
-        --user menu
-        ToggleInitialScreen Boolean
+
+      --user menu
+      | ToggleInitialScreen Boolean
       | Logout
       | SetContextMenuToggle ShowContextMenu
       | SetModalContents (Maybe String) ElementID String
-      |
-        --contact
-        ResumeChat (Tuple Int (Maybe Int))
+
+      --contact
+      | ResumeChat (Tuple Int (Maybe Int))
       | UpdateReadCount
       | CheckFetchContacts
       | DisplayContacts (Array Contact)
       | DisplayNewContacts (Array Contact)
       | DisplayImpersonatedContact Int HistoryMessage (Array Contact)
       | ResumeMissedEvents MissedEvents
-      |
-        --suggestion
-        FetchMoreSuggestions
+
+      --suggestion
+      | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
-      |
-        --chat
-        SetSelectedImage (Maybe String)
+
+      --chat
+      | SetSelectedImage (Maybe String)
       | ToggleContactProfile
       | DropFile Event
       | ToggleMessageEnter
@@ -281,9 +283,11 @@ data IMMessage
       | SetSmallScreen
       | SetEmoji Event
       | InsertLink
-      |
-        --main
-        AskChatExperiment
+      | CheckTyping String
+      | NoTyping Int
+      | TypingId TimeoutId
+      --main
+      | AskChatExperiment
       | SetChatExperiment (Maybe ExperimentData)
       | ReloadPage
       | ToggleUserContextMenu Event
@@ -304,6 +308,7 @@ data IMMessage
 data WebSocketPayloadServer
       = UpdateHash
       | Ping
+      | Typing { id :: Int }
       | OutgoingMessage
               ( BasicMessage
                       ( userID ∷ Int
@@ -364,6 +369,7 @@ data FullWebSocketPayloadClient
 data WebSocketPayloadClient
       = CurrentHash String
       | NewIncomingMessage ClientMessagePayload
+      | ContactTyping { id :: Int }
       | ServerReceivedMessage
               { previousID ∷ Int
               , id ∷ Int
@@ -457,6 +463,8 @@ instance Enum MessageStatus where
             Delivered → Just Received
             Read → Just Delivered
 
+instance DecodeJson TimeoutIdWrapper where
+      decodeJson = Right <<< UC.unsafeCoerce
 instance DecodeJson DateTimeWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 instance DecodeJson DateWrapper where
@@ -480,6 +488,8 @@ instance DecodeJson ReportReason where
 instance DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 
+instance EncodeJson TimeoutIdWrapper where
+      encodeJson = UC.unsafeCoerce
 instance EncodeJson DateTimeWrapper where
       encodeJson = DAC.fromNumber <<< SDT.dateTimeToNumber
 instance EncodeJson DateWrapper where

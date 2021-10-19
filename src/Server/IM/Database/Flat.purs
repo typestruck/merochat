@@ -25,7 +25,7 @@ type FlatFields rest =
       , karma ∷ Int
       , karmaPosition ∷ Int
       , languages ∷ Maybe String
-      , profileVisibility :: ProfileVisibility
+      , profileVisibility ∷ ProfileVisibility
       , name ∷ String
       , tags ∷ Maybe String
       | rest
@@ -49,6 +49,7 @@ fromFlatContact fc =
       , impersonating: Nothing
       , history: []
       , user: fromFlatUser fc
+      , typing: false
       }
 
 fromFlatUser ∷ ∀ r. FlatFields r → IMUser
@@ -56,7 +57,7 @@ fromFlatUser fc =
       { id: fc.id
       , name: fc.name
       , headline: fc.headline
-      , profileVisibility : fc.profileVisibility
+      , profileVisibility: fc.profileVisibility
       , description: fc.description
       , avatar: SA.parseAvatar fc.avatar
       , tags: SDF.splitAgg "\\n" fc.tags

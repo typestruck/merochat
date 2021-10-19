@@ -106,7 +106,7 @@ updateStatus model@{ experimenting } { webSocket, index, sessionUserID, contacts
             | otherwise = historyEntry
 
       updateContacts contactRead@{ history } = model
-            { contacts = SU.fromJust $ DA.updateAt index (contactRead { history = map read history }) contacts
+            { contacts = SU.fromJust $ DA.updateAt index (contactRead { history = map read history, typing = false }) contacts
             }
 
       changeStatus contactUserID messages = CIW.sendPayload webSocket $ ChangeStatus

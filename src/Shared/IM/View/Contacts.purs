@@ -76,7 +76,7 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
             impersonating
 
       --it is using the history for the existing contact, not the impersonation
-      contactEntry index { history, user, impersonating } =
+      contactEntry index { history, user, impersonating, typing } =
             let
                   index' = Just index
                   --refactor: a neater way to do experiment that dont litter the code with case of
@@ -93,7 +93,8 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
                                 [ HE.span (HA.class' "contact-name") userProfile.name
-                                , HE.div' [ HA.class' "contact-list-last-message", HA.innerHtml <<< SM.parseRestricted $ lastMessage maybeMessage ]
+                                , HE.div' [ HA.class' {"contact-list-last-message": true, hidden:  typing}, HA.innerHtml <<< SM.parseRestricted $ lastMessage maybeMessage ],
+                                HE.div [ HA.class' {"contact-list-last-message typing": true, hidden: not typing} ] $ HE.p_ "Typing..."
                                 ]
                         , HE.div (HA.class' "contact-options")
                                 [ HE.span (HA.class' { duller: true, invisible: not isClientRender }) $ lastDate maybeMessage

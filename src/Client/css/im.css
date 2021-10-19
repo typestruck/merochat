@@ -123,6 +123,9 @@ body {
     border-bottom: 1px solid #4E4E4E;
     border-top: 1px solid #4E4E4E;
 }
+.typing {
+    font-style: italic;
+}
 
 .send-box {
     display: flex;
@@ -289,7 +292,7 @@ blockquote {
 .contact-list-last-message {
     font-size: 1.1em;
     overflow-y: hidden;
-    max-height: 25px;
+    max-height: 27px;
     color: rgb(238, 238, 238, 0.8)
 }
 
@@ -406,10 +409,6 @@ blockquote {
     padding-left: 5px;
 }
 
-.profile-contact-header h1 {
-    margin: 5px 0px
-}
-
 .skip {
     align-self: center;
 }
@@ -494,7 +493,6 @@ blockquote {
 
 .recipient-message {
     flex-flow: row;
-    /* margin-right: auto; */
     align-self: flex-start;
 }
 
@@ -1748,6 +1746,7 @@ select {
     .contact-options {
         font-weight: lighter;
     }
+
     .avatar-contact-list-div {
         min-width: 36px;
         min-height: 36px;

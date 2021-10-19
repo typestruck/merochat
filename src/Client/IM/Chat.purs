@@ -2,46 +2,47 @@ module Client.IM.Chat where
 
 import Prelude
 import Shared.ContentType
+import Shared.Experiments.Types
+import Shared.IM.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
 import Data.Array ((!!))
 import Data.Array as DA
-import Data.DateTime as DT
 import Data.Array.NonEmpty as DAN
+import Data.DateTime (DateTime(..))
+import Data.DateTime as DT
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
 import Data.String as DS
-
 import Data.String.CodeUnits as DSC
-import Type.Proxy (Proxy(..))
 import Data.Symbol as TDS
-import Data.Time.Duration (Seconds)
+import Data.Time.Duration (Milliseconds(..), Seconds)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
-import Shared.IM.Types
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.IM.Contact as SIC
-import Shared.Experiments.Types
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
@@ -55,7 +56,7 @@ import Web.Socket.WebSocket (WebSocket)
 
 foreign import resizeTextarea_ ∷ EffectFn1 Element Unit
 
--- this event is filterd to run only on Enter keydown
+-- this event is filtered to run only on Enter keydown
 enterBeforeSendMessage ∷ Event → IMModel → NoMessages
 enterBeforeSendMessage event model@{ messageEnter } =
       model :> if messageEnter then [ prevent, getMessage model ] else []
@@ -364,3 +365,19 @@ toggleMessageEnter ∷ IMModel → NoMessages
 toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
       { messageEnter = not messageEnter
       }
+
+checkTyping :: String -> DateTime -> WebSocket -> IMModel -> MoreMessages
+checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
+      if DS.length text > minimumLength && milliseconds >= 150.0 && milliseconds <= 1000.0 then
+            CIF.nothingNext (model { lastTyping = DateTimeWrapper now }) <<< liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }
+      else
+            F.noMessages model { lastTyping = DateTimeWrapper now }
+      where
+      minimumLength = 7
+      (Milliseconds milliseconds) = DT.diff now lt
+
+updateTyping :: Int -> Boolean -> IMModel -> IMModel
+updateTyping userId status model@{ contacts } = model {contacts = upd <$> contacts}
+      where upd contact@{ user : { id }}
+                  | id == userId = contact { typing = status }
+                  | otherwise = contact

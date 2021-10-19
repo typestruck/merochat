@@ -2,21 +2,19 @@ module Shared.IM.View.Chat where
 
 import Prelude
 import Shared.ContentType
+import Shared.IM.Types
 
-import Client.Common.DOM as CCD
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String as DS
 import Data.Symbol (class IsSymbol)
 import Data.Symbol as TDS
-import Type.Proxy (Proxy(..))
 import Data.Tuple (Tuple(..))
-import Effect.Unsafe as EU
-import Shared.IM.Types
+import Data.Tuple as DT
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -25,19 +23,19 @@ import Shared.Experiments.Impersonation (impersonations)
 import Shared.IM.Emoji as SIE
 import Shared.IM.Svg as SIS
 import Shared.Keydown as SK
-import Shared.Markdown as SM
 import Shared.Options.File (maxImageSizeKB)
 import Shared.Setter as SS
+import Type.Proxy (Proxy(..))
 
 chat ∷ IMModel → Html IMMessage
 chat model@{ chatting } =
-      HE.div [ HA.class' { "send-box": true, "hidden": DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal) ]
+      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal) ]
             [ linkModal model
             , imageModal model
             , chatBarInput ChatInput model
             ]
 
---REFACTOR: replace sproxy usage with just SetField (all the fields are known!)
+--REFACTOR: replace proxy usage with just SetField (all the fields are known!)
 linkModal ∷ IMModel → Html IMMessage
 linkModal { toggleChatModal, linkText, link, erroredFields } =
       HE.div [ HA.class' { "link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm } ]
@@ -89,7 +87,7 @@ chatBarInput
       [ emojiModal model
       , HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview })
               [ HE.div [ HA.class' "chat-input-options" ]
-                      [ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32 boio-2", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
+                      [ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
                       ]
               , HE.div' [ HA.id $ show ChatInputPreview, HA.class' "chat-input-preview message-content" ]
               ]
@@ -111,6 +109,8 @@ chatBarInput
               , HE.div [ HA.class' { "chat-input-area": true, side: not messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
+                              (if elementID == ChatInput then [HA.onKeydown (CheckTyping <<< DT.snd)] else [])
+                              <>
                               [ HA.rows 1
                               , HA.class' "chat-input"
                               , HA.id $ show elementID
@@ -120,7 +120,7 @@ chatBarInput
                               , HA.onInput' ResizeChatInput
                               , HA.autocomplete "off"
                               ]
-                      , HE.div (HA.class' "chat-right-buttons")
+                              , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
                               , sendButton messageEnter
                               ]
@@ -151,7 +151,7 @@ setJust ∷ ∀ t7 t8 t9. IsSymbol t8 ⇒ Cons t8 (Maybe t9) t7 IM ⇒ Proxy t8 
 setJust field = SS.setIMField field <<< Just
 
 bold ∷ Html IMMessage
-bold = HE.svg [ HA.class' "svg-20 boio", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
+bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
       [ HE.title "Bold"
       , HE.path' $ HA.d "M278,205.35q0,20.73-8.74,37a77.48,77.48,0,0,1-24,27.05,114.73,114.73,0,0,1-38.9,18q-21.21,5.38-53.75,5.37H22V7.16H138.13q36.18,0,53,2.3a112.71,112.71,0,0,1,33.24,10.17q17.11,8.27,25.44,22.15t8.33,31.76q0,20.73-11.46,36.54c-7.64,10.58-18.41,18.77-32.34,24.67v1.53q29.31,5.55,46.51,23T278,205.35ZM179.14,87.93a30.65,30.65,0,0,0-3.73-14.2q-3.71-7.11-13.16-10.55c-5.62-2-12.63-3.15-21-3.37s-20.15-.27-35.28-.27H98.75V120h12.06q18.28,0,31.13-.57t20.31-3.84q10.44-4.4,13.65-11.4A38.23,38.23,0,0,0,179.14,87.93ZM197.8,204.2c0-9.07-1.84-16.09-5.51-21s-9.92-8.61-18.75-11.05c-6-1.67-14.3-2.55-24.86-2.69s-21.59-.19-33.08-.19H98.75v71.18h5.61q32.49,0,46.52-.19a70.8,70.8,0,0,0,25.87-5q12-4.8,16.56-12.77A36.38,36.38,0,0,0,197.8,204.2Z"
       ]

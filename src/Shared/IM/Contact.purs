@@ -16,6 +16,7 @@ defaultContact id chatted =
       , chatStarter: id
       , history: []
       , chatAge: 0.0
+      , typing: false
       }
 
 chattingContact ∷ Array Contact → Maybe Int → Contact
