@@ -307,7 +307,7 @@ data IMMessage
 
 data WebSocketPayloadServer
       = UpdateHash
-      | Ping
+      | Ping { isActive :: Boolean }
       | Typing { id :: Int }
       | OutgoingMessage
               ( BasicMessage

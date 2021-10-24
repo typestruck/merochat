@@ -34,10 +34,11 @@ main = do
 startWebSocketServer ∷ Configuration → Ref StorageDetails → Effect Unit
 startWebSocketServer configuration storageDetails = do
       allConnections ← ER.new DH.empty
+      availability ← ER.new DH.empty
       webSocketServer ← SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
-      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections storageDetails)
+      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections storageDetails availability)
       intervalID ← ET.setInterval aliveDelay (SWE.checkLastSeen allConnections)
       SW.onServerClose webSocketServer (const (ET.clearInterval intervalID))
 

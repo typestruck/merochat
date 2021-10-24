@@ -604,9 +604,10 @@ setUpWebSocket webSocketRef = do
 
       ping = ET.setInterval (1000 * 60) do
             { webSocket, ponged } ← ER.read webSocketRef
+            isFocused ← CCD.documentHasFocus
             if ponged then do
                   pong false
-                  CIW.sendPayload webSocket Ping
+                  CIW.sendPayload webSocket $ Ping { isActive: isFocused}
             else
                   CIW.close webSocket
 
