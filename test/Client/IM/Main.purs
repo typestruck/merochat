@@ -91,7 +91,7 @@ tests = do
                                     , chatting = Nothing
                                     }
 
-                  TUA.equal [ contact { user { availability = None } } ] contacts
+                  TUA.equal [ contact { user { availability = Unavailable } } ] contacts
 
             TU.test "receiveMessage marks blocker users as unavailable" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -101,7 +101,7 @@ tests = do
                               , chatting = Nothing
                               }
 
-                  TUA.equal [ contact { user { availability = None } } ] contacts
+                  TUA.equal [ contact { user { availability = Unavailable } } ] contacts
 
             TU.test "receiveMessage removes blocker users from suggestions" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
