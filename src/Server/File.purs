@@ -28,7 +28,6 @@ import Environment (development)
 import Foreign.Object as FO
 import Node.Buffer (Buffer)
 import Node.Buffer as NB
-import Node.Crypto.Hash (Algorithm(..))
 import Node.Crypto.Hash as NCH
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as NFS

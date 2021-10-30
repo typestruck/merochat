@@ -16,6 +16,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug (spy)
 import Flame (Html)
+import Shared.User
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Prim.Row (class Cons)
@@ -128,7 +129,7 @@ chatBarInput
               ]
       ]
       where
-      available = DM.fromMaybe true $ getContact _.available
+      available = DM.fromMaybe true $ getContact ((_ /= Unavailable) <<< _.availability <<< _.user)
       recipientName = DM.fromMaybe "" $ impersonationName <|> getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
 
       impersonationName = do

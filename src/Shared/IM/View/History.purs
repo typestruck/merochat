@@ -10,6 +10,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Flame (Html)
 import Flame.Html.Attribute as HA
+import Shared.User
 import Flame.Html.Element as HE
 import Shared.Experiments.Types
 import Shared.Avatar as SA
@@ -25,14 +26,14 @@ history { user: { id: senderID, avatar: senderAvatar }, experimenting, chatting,
       chatHistory =
             case contact of
                   Nothing → [ retryOrWarning ]
-                  Just recipient@{ shouldFetchChatHistory, available } →
-                        if available then
+                  Just recipient@{ shouldFetchChatHistory, user: { availability } } →
+                        if availability == Unavailable then
+                              []
+                        else
                               let
                                     entries = retryOrWarning : display recipient
                               in
                                     if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries else entries
-                        else
-                              []
 
       retryOrWarning = case experimenting of
             Just (Impersonation (Just { name })) →

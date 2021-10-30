@@ -22,7 +22,7 @@ import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
-import Shared.User (Gender(..), ProfileVisibility(..))
+import Shared.User
 
 --refactor: break this shit down into right modules
 
@@ -36,9 +36,9 @@ profile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileV
             case chatting, suggesting of
                   i@(Just index), _ →
                         let
-                              cnt@{ user: { name }, available, impersonating } = contacts !@ index
+                              cnt@{ user: { name, availability }, impersonating } = contacts !@ index
                         in
-                              if not available then
+                              if availability == Unavailable then
                                     unavailable name
                               else if fullContactProfileVisible then
                                     fullProfile FullContactProfile i model impersonating cnt.user
@@ -160,6 +160,7 @@ dummySuggestion =
       , description: "Many years later, as he faced the firing squad, Colonel Aureliano Buendía was to remember that distant afternoon when his father took him to discover ice. At that time Macondo was a village of twenty adobe houses, built on the bank of a river of clear water that ran along a bed of polished stones, which were white and enormous, like prehistoric eggs. The world was so recent that many things lacked names, and in order to indicate them it was necessary to point. Every year during the month of March a family of ragged gypsies would set up their tents near the village, and with a great uproar of pipes and kettledrums they would display new inventions. First they brought the magnet."
       , avatar: Nothing
       , tags: []
+      , availability: Online
       , profileVisibility: Everyone
       , karma: 321
       , karmaPosition: 90

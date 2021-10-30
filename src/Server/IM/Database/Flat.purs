@@ -12,7 +12,7 @@ import Server.Database.Flat as SDF
 import Shared.IM.Types (Contact, IMUser)
 import Shared.Unsafe as SU
 import Shared.Avatar as SA
-import Shared.User (Gender, ProfileVisibility)
+import Shared.User
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -43,7 +43,6 @@ type FlatContact = FlatFields
 fromFlatContact ∷ FlatContact → Contact
 fromFlatContact fc =
       { shouldFetchChatHistory: true
-      , available: true
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
       , chatStarter: SU.fromJust fc.chatStarter
       , impersonating: Nothing
@@ -58,6 +57,7 @@ fromFlatUser fc =
       , name: fc.name
       , headline: fc.headline
       , profileVisibility: fc.profileVisibility
+      , availability: None
       , description: fc.description
       , avatar: SA.parseAvatar fc.avatar
       , tags: SDF.splitAgg "\\n" fc.tags

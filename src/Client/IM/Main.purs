@@ -53,6 +53,7 @@ import Flame.Subscription.Window as FSW
 import Foreign as FO
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
+import Data.HashMap as DH
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Options.MountPoint (imID, profileID)
@@ -130,9 +131,9 @@ update { webSocketRef, fileReader } model =
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
             FocusInput elementID → focusInput elementID model
-            CheckTyping text -> CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
-            NoTyping id -> F.noMessages $ CIC.updateTyping id false model
-            TypingId id -> F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
+            CheckTyping text → CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
+            NoTyping id → F.noMessages $ CIC.updateTyping id false model
+            TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
             --contacts
             ResumeChat (Tuple id impersonating) → CICN.resumeChat id impersonating model
             UpdateReadCount → CICN.markRead webSocket model
@@ -177,12 +178,31 @@ update { webSocketRef, fileReader } model =
             DisplayFortune sequence → displayFortune sequence model
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userID) → report userID webSocket model
-            SetProfileVisibility pv -> setProfileVisibility pv model
+            SendPing isActive → sendPing webSocket isActive model
+            SetProfileVisibility pv → setProfileVisibility pv model
+            DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
 
-setProfileVisibility :: ProfileVisibility → IMModel → NoMessages
-setProfileVisibility pv model@{user} = F.noMessages model { user = user { profileVisibility = pv } }
+displayAvailability ∷ AvailabilityStatus → IMModel → NoMessages
+displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
+      { contacts = map updateContact contacts
+      , suggestions = map updateUser suggestions
+      }
+      where
+      availability = DH.fromArray $ map (\{ id, status } → Tuple id status) avl
+      updateContact contact@{ user: { id } } = case DH.lookup id availability of
+            Just status → contact { user { availability = status } }
+            Nothing → contact
+      updateUser user@{ id } = case DH.lookup id availability of
+            Just status → user { availability = status }
+            Nothing → user
+
+sendPing ∷ WebSocket → Boolean → IMModel → NoMessages
+sendPing webSocket isActive model@{ contacts, suggestions } = CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ Ping { isActive, statusFor: map (_.id <<< _.user) contacts <> map _.id suggestions }
+
+setProfileVisibility ∷ ProfileVisibility → IMModel → NoMessages
+setProfileVisibility pv model@{ user } = F.noMessages model { user = user { profileVisibility = pv } }
 
 report ∷ Int → WebSocket → IMModel → MoreMessages
 report userID webSocket model@{ reportReason, reportComment } = case reportReason of
@@ -322,11 +342,12 @@ receiveMessage
             F.noMessages $ model
                   { imUpdated = newHash /= hash
                   }
-      ContactTyping { id } -> CIC.updateTyping id true model :> [liftEffect do
-            DT.traverse_ (ET.clearTimeout <<< SC.coerce) typingIds
-            newId <- ET.setTimeout 1000 <<< FS.send imID $ NoTyping id
-            pure <<< Just $ TypingId newId
-      ]
+      ContactTyping { id } → CIC.updateTyping id true model :>
+            [ liftEffect do
+                    DT.traverse_ (ET.clearTimeout <<< SC.coerce) typingIds
+                    newId ← ET.setTimeout 1000 <<< FS.send imID $ NoTyping id
+                    pure <<< Just $ TypingId newId
+            ]
       ServerReceivedMessage { previousID, id, userID } →
             F.noMessages $ model
                   { contacts = updateTemporaryID currentContacts userID previousID id
@@ -363,7 +384,7 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID, contactsOnly : profileVisibility == Contacts } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID, contactsOnly: profileVisibility == Contacts } }) ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right
@@ -506,7 +527,9 @@ markContactUnavailable contacts userID = updateContact <$> contacts
       where
       updateContact contact@{ user: { id }, history }
             | id == userID = contact
-                    { available = false
+                    { user
+                            { availability = Unavailable
+                            }
                     }
             | otherwise = contact
 
@@ -602,12 +625,12 @@ setUpWebSocket webSocketRef = do
             FS.send imID $ ToggleConnected true
             askForUpdates
 
-      ping = ET.setInterval (1000 * 60) do
+      ping = ET.setInterval (1000 * 30) do
             { webSocket, ponged } ← ER.read webSocketRef
             isFocused ← CCD.documentHasFocus
             if ponged then do
                   pong false
-                  CIW.sendPayload webSocket $ Ping { isActive: isFocused}
+                  FS.send imID $ SendPing isFocused
             else
                   CIW.close webSocket
 
@@ -617,7 +640,9 @@ setUpWebSocket webSocketRef = do
                   message = SU.fromRight $ SJ.fromJSON payload
             isFocused ← CCD.documentHasFocus
             case message of
-                  Pong → pong true
+                  Pong { status } → do
+                        FS.send imID $ DisplayAvailability status
+                        pong true
                   Content cnt → FS.send imID $ ReceiveMessage cnt isFocused
 
       pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
@@ -629,7 +654,7 @@ setUpWebSocket webSocketRef = do
       close timerIDs _ = do
             FS.send imID $ ToggleConnected false
             { reconnectID, pingID } ← ER.read timerIDs
-            newPingID ← case pingID of
+            case pingID of
                   Nothing → pure unit
                   Just id → do
                         ET.clearInterval id
@@ -643,7 +668,7 @@ setUpWebSocket webSocketRef = do
                   ER.modify_ (_ { reconnectID = Just id }) timerIDs
 
 setSmallScreen ∷ IMModel → NoMessages
-setSmallScreen model@{ messageEnter } =
+setSmallScreen model =
       F.noMessages $ model
             { messageEnter = false
             , smallScreen = true

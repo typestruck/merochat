@@ -11,6 +11,8 @@ import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.Experiments.Impersonation (batman)
 import Shared.Unsafe ((!@))
+import Shared.User
+import Shared.DateTime
 import Test.Client.Model (contact, historyMessage, imUser, imUserID, model, webSocket)
 import Test.Unit (TestSuite)
 import Shared.IM.Types

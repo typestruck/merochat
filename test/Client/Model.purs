@@ -11,8 +11,9 @@ import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
+import Shared.DateTime
 import Shared.IM.Contact as SIC
-import Shared.User (ProfileVisibility(..))
+import Shared.User
 import Unsafe.Coerce as UC
 import Web.DOM (Element)
 import Web.Socket.WebSocket (WebSocket)
@@ -75,6 +76,7 @@ imUser =
       , profileVisibility : Everyone
       , avatar: Nothing
       , country: Nothing
+      , availability: None
       , languages: []
       , tags: []
       , headline: ""

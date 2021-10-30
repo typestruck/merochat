@@ -30,6 +30,7 @@ import Effect.Console as EC
 import Effect.Exception (Error)
 import Effect.Now as EN
 import Effect.Ref (Ref)
+import Shared.DateTime(DateTimeWrapper(..))
 import Effect.Ref as ER
 import Foreign.Object as FO
 import Node.HTTP (Request)
@@ -45,6 +46,7 @@ import Server.WebSocket (CloseCode, CloseReason, AliveWebSocketConnection, WebSo
 import Server.WebSocket as SW
 import Shared.JSON as SJ
 import Shared.Path (updateHash)
+import Shared.User
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 
 type WebSocketEffect = BaseEffect WebSocketReader Unit
@@ -53,17 +55,16 @@ type WebSocketReader = BaseReader
       ( sessionUserID ∷ Int
       , connection ∷ WebSocketConnection
       , allConnections ∷ Ref (HashMap Int AliveWebSocketConnection)
-      , availability :: Ref (HashMap Int Availability)
+      , availability ∷ Ref (HashMap Int Availability)
       )
 
-data Availability = Online | LastSeen DateTime
 aliveDelay ∷ Int
 aliveDelay = 1000 * 60 * aliveDelayMinutes
 
 aliveDelayMinutes ∷ Int
-aliveDelayMinutes = 10
+aliveDelayMinutes = 5
 
-handleConnection ∷ Configuration → Pool → Ref (HashMap Int AliveWebSocketConnection) → Ref StorageDetails → Ref (HashMap Int Availability) -> WebSocketConnection → Request → Effect Unit
+handleConnection ∷ Configuration → Pool → Ref (HashMap Int AliveWebSocketConnection) → Ref StorageDetails → Ref (HashMap Int Availability) → WebSocketConnection → Request → Effect Unit
 handleConnection { tokenSecret } pool allConnections storageDetails availability connection request = do
       maybeUserID ← ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
@@ -109,23 +110,23 @@ handleMessage payload = do
       case payload of
             UpdateHash →
                   sendWebSocketMessage connection <<< Content $ CurrentHash updateHash
-            Typing { id  } -> do
+            Typing { id } → do
                   possibleConnection ← R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactTyping { id: sessionUserID }
-            Ping { isActive } → do
+            Ping { isActive, statusFor } → do
                   possibleConnection ← R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
                   if DM.isNothing possibleConnection then
                         --shouldn't be possible 🤔
                         R.liftEffect $ do
                               EC.log "ping without saved connection"
                               SW.terminate connection
-                              ER.modify_ (DH.delete sessionUserID) availability
                   else
                         R.liftEffect $ do
                               now ← EN.nowDateTime
                               ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserID) allConnections
                               ER.modify_ (DH.alter (updateAvailability isActive now) sessionUserID) availability
-                              sendWebSocketMessage connection Pong
+                              avl ← ER.read availability
+                              sendWebSocketMessage connection $ Pong { status: map (makeAvailability avl) statusFor }
             ChangeStatus { userID: sender, status, ids, persisting } → do
                   when persisting $ SID.changeStatus sessionUserID status ids
                   possibleSenderConnection ← R.liftEffect (DH.lookup sender <$> ER.read allConnections)
@@ -170,15 +171,23 @@ handleMessage payload = do
             Nothing → pure unit
             Just v → f v
 
+      makeAvailability avl forId =
+            { id: forId
+            , status: case DH.lookup forId avl of
+                    Nothing → None
+                    Just status → status
+            }
+
       updateAvailability isActive date av
             | isActive = Just Online
             | otherwise = case av of
-                  ls@(Just (LastSeen _)) -> ls
-                  _ -> Just $ LastSeen date
+                    ls@(Just (LastSeen _)) → ls
+                    _ → Just <<< LastSeen $ DateTimeWrapper date
 
 sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWebSocketPayloadClient → b Unit
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJSON
 
+-- | Connections are dropped after 5 minutes of inactivity
 checkLastSeen ∷ Ref (HashMap Int AliveWebSocketConnection) → Effect Unit
 checkLastSeen allConnections = do
       connections ← ER.read allConnections

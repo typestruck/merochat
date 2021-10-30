@@ -14,6 +14,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
+import Shared.DateTime (DateTimeWrapper(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE

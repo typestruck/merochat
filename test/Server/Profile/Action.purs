@@ -17,6 +17,7 @@ import Server.Database.Fields
 import Server.Database.Users
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
+import Shared.User
 
 tests ∷ TestSuite
 tests = do
@@ -25,7 +26,20 @@ tests = do
                   $ TS.serverAction
                   $ do
                         userID ← SLD.createUser $ baseUser { email = "b@b.com" }
-                        void $ SPA.saveProfile userID { id: userID, karma: 0, karmaPosition: 0, gender: Nothing, country: Nothing, name: "a", age: Nothing, headline: "a", description: "a", avatar: Just $ imageBasePath <> "upload/avatar.png", languages: [], tags: [] }
+                        void $ SPA.saveProfile userID
+                              { id: userID
+                              , karma: 0
+                              , karmaPosition: 0
+                              , availability: None
+                              , gender: Nothing
+                              , country: Nothing
+                              , name: "a"
+                              , age: Nothing
+                              , headline: "a"
+                              , description: "a"
+                              , avatar: Just $ imageBasePath <> "upload/avatar.png"
+                              , languages: []
+                              , tags: []
+                              }
                         avatar ← SD.single $ select _avatar # from users # wher (_id .=. userID)
                         R.liftAff $ TUA.equal (Just { avatar: Just "avatar.png" }) avatar
-

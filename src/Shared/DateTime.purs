@@ -2,6 +2,8 @@ module Shared.DateTime where
 
 import Prelude
 
+
+import Data.Show.Generic as DGRS
 import Data.Array ((!!))
 import Data.Date (Date)
 import Data.Date as DD
@@ -12,27 +14,49 @@ import Data.Enum (class BoundedEnum)
 import Data.Enum as DE
 import Data.Function.Uncurried as DFU
 import Data.Int as DI
+import Simple.JSON (class ReadForeign, class WriteForeign)
 import Data.Int as DIN
 import Data.Interval (DurationComponent(..))
+import Payload.Client.QueryParams (class EncodeQueryParam)
+import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Data.List as DA
 import Data.List as DL
 import Data.Maybe (Maybe(..))
+import Data.Generic.Rep (class Generic)
+import Foreign.Object (Object)
+import Foreign.Object as FO
+import Droplet.Language (class FromValue, class ToValue)
+import Data.Argonaut.Core as DAC
+import Data.Number as DNM
+import Data.Argonaut.Core as DAP
 import Data.Newtype (class Newtype)
+import Droplet.Language as DL
 import Data.Newtype as DN
 import Data.String (Pattern(..))
+import Data.Either (Either(..))
 import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Time.Duration as DTD
 import Effect (Effect)
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign (Foreign, ForeignError(..), F)
 import Foreign as F
 import Shared.Unsafe as SU
+import Data.Argonaut.Decode (class DecodeJson)
+import Data.Argonaut.Decode as DAD
+import Data.Argonaut.Decode.Generic as DADGR
+import Data.Argonaut.Encode (class EncodeJson)
+import Data.Argonaut.Encode.Generic as DAEGR
+
 
 foreign import time ∷ Number → String
 foreign import dayOfTheWeek ∷ Number → String
 foreign import fullDate ∷ Number → String
+
+newtype DateTimeWrapper = DateTimeWrapper DateTime
 
 ageFrom ∷ Maybe Date → Maybe Int
 ageFrom = ageFrom' now
@@ -143,3 +167,49 @@ dayDiff dateTime = days now - days dateTime
 
 localDateTimeWith ∷ _ → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
+
+
+instance DecodeJson DateTimeWrapper where
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
+
+instance EncodeJson DateTimeWrapper where
+      encodeJson = DAC.fromNumber <<< dateTimeToNumber
+
+derive instance Ord DateTimeWrapper
+
+derive instance Newtype DateTimeWrapper _
+
+derive instance Generic DateTimeWrapper _
+
+instance FromValue DateTimeWrapper where
+      fromValue v = map DateTimeWrapper (DL.fromValue v ∷ Either String DateTime)
+
+derive instance Eq DateTimeWrapper
+
+instance WriteForeign DateTimeWrapper where
+      writeImpl = F.unsafeToForeign <<< dateTimeToNumber
+
+instance Show DateTimeWrapper where
+      show = DGRS.genericShow
+
+instance EncodeQueryParam DateTimeWrapper where
+      encodeQueryParam = Just <<< show <<< dateTimeToNumber
+
+instance ReadForeign DateTimeWrapper where
+      readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
+
+instance DecodeQueryParam DateTimeWrapper where
+      decodeQueryParam query key =
+            case FO.lookup key query of
+                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
+                  Just [ value ] → DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) (DDI.instant <<< DTD.Milliseconds =<< DNM.fromString value)
+                  _ → errorDecoding query key
+
+
+errorDecoding ∷ ∀ a. Object (Array String) → String → Either DecodeError a
+errorDecoding queryObj key = Left $ QueryDecodeError
+      { values: []
+      , message: "Could not decode parameter " <> key
+      , key
+      , queryObj
+      }

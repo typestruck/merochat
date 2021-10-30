@@ -4,6 +4,7 @@ import Type.Proxy (Proxy(..))
 import Droplet.Language
 import Data.DateTime (DateTime)
 import Shared.IM.Types
+import Shared.DateTime
 import Shared.ContentType
 import Data.Maybe (Maybe(..))
 

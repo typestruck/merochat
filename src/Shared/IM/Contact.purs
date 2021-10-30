@@ -9,8 +9,7 @@ import Prelude
 
 defaultContact ∷ Int → IMUser → Contact
 defaultContact id chatted =
-      { available: true
-      , shouldFetchChatHistory: false
+      {  shouldFetchChatHistory: false
       , user: chatted
       , impersonating: Nothing
       , chatStarter: id

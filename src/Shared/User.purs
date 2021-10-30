@@ -15,7 +15,9 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic as DSG
 import Data.String as DS
+import Unsafe.Coerce as UC
 import Data.String.Read (class Read)
+import Shared.DateTime
 import Data.String.Read as DSR
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
@@ -31,6 +33,7 @@ type BasicUser fields =
       , name ∷ String
       , headline ∷ String
       , description ∷ String
+      , availability ∷ Availability
       , avatar ∷ Maybe String
       , tags ∷ Array String
       , karma ∷ Int
@@ -48,6 +51,12 @@ type IU =
               )
       )
 
+data Availability =
+      Online
+      | LastSeen DateTimeWrapper
+      | Unavailable -- blocked/deleted/set to private
+      | None --work around lack of persistence
+
 data Gender
       = Female
       | Male
@@ -62,7 +71,10 @@ data ProfileVisibility
 
 derive instance Eq ProfileVisibility
 derive instance Eq Gender
+derive instance Eq Availability
 
+instance DecodeJson Availability where
+      decodeJson = DADGR.genericDecodeJson
 instance DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
 instance DecodeJson ProfileVisibility where
@@ -71,6 +83,8 @@ instance DecodeJson ProfileVisibility where
 instance EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
 instance EncodeJson ProfileVisibility where
+      encodeJson = DAEGR.genericEncodeJson
+instance EncodeJson Availability where
       encodeJson = DAEGR.genericEncodeJson
 
 instance Show Gender where
@@ -81,25 +95,32 @@ instance Show Gender where
             Other -> "Other"
 instance Show ProfileVisibility where
       show = DSG.genericShow
-
+instance Show Availability where
+      show = DSG.genericShow
 
 instance ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
 instance ReadForeign ProfileVisibility where
       readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
+instance ReadForeign Availability where
+      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
 
 derive instance Generic Gender _
+derive instance Generic Availability _
 derive instance Generic ProfileVisibility _
 
 instance WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
 instance WriteForeign ProfileVisibility where
       writeImpl = F.unsafeToForeign <<< DE.fromEnum
+instance WriteForeign Availability where
+      writeImpl = F.unsafeToForeign <<< DE.fromEnum
 
 instance ToValue Gender where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
 derive instance Ord Gender
+derive instance Ord Availability
 derive instance Ord ProfileVisibility
 
 --refactor: should just use Enum (have to fix read/writeforeign instances for gender)
@@ -145,7 +166,6 @@ instance Enum Gender where
             NonBinary → Just Male
             Other → Just NonBinary
 
-
 instance Bounded ProfileVisibility where
       bottom = Everyone
       top = TemporarilyBanned
@@ -178,6 +198,39 @@ instance Enum ProfileVisibility where
             Contacts → Just Everyone
             Nobody → Just Contacts
             TemporarilyBanned → Just Nobody
+
+instance Bounded Availability where
+      bottom = Online
+      top = None
+
+instance BoundedEnum Availability where
+      cardinality = Cardinality 1
+
+      fromEnum = case _ of
+            Online → 0
+            LastSeen _ → 1
+            Unavailable → 2
+            None → 3
+
+      toEnum = case _ of
+            0 → Just Online
+            1 → Just (LastSeen $ UC.unsafeCoerce 3)
+            2 → Just Unavailable
+            3 → Just None
+            _ → Nothing
+
+instance Enum Availability where
+      succ = case _ of
+            Online → Just (LastSeen $ UC.unsafeCoerce 3)
+            LastSeen _ → Just Unavailable
+            Unavailable → Just None
+            None → Nothing
+
+      pred = case _ of
+            Online → Nothing
+            LastSeen _ → Just Online
+            Unavailable → Just (LastSeen $ UC.unsafeCoerce 3)
+            None → Just Unavailable
 
 instance FromValue Gender where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)

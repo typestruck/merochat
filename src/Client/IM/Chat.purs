@@ -16,6 +16,7 @@ import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime(..))
 import Data.DateTime as DT
+import Shared.DateTime(DateTimeWrapper(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
