@@ -22,7 +22,6 @@ import Server.WebSocket (WebSocketConnection, AliveWebSocketConnection)
 import Shared.ResponseError (ResponseError)
 import Type.Row (type (+))
 
-
 type Configuration =
       { port ∷ Int
       , captchaSecret ∷ String
@@ -45,12 +44,6 @@ type BaseReader extension =
       | extension
       }
 
-type WebSocketReader = BaseReader
-      ( sessionUserID ∷ Int
-      , connection ∷ WebSocketConnection
-      , allConnections ∷ Ref (HashMap Int AliveWebSocketConnection)
-      )
-
 type ServerReader = BaseReader
       ( configuration ∷ Configuration
       , session ∷ Session
@@ -61,8 +54,6 @@ type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) 
 type DatabaseEffect a = Run (EXCEPT PgError + AFF + ()) a
 
 type ServerEffect a = BaseEffect ServerReader a
-
-type WebSocketEffect = BaseEffect WebSocketReader Unit
 
 type StorageDetails =
       { authenticationKey ∷ String

@@ -13,10 +13,12 @@ import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Experiments.Impersonation (batman)
+import Shared.User
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
 import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, webSocket)
 import Test.Unit (TestSuite)
+import Shared.DateTime (DateTimeWrapper(..))
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
@@ -89,7 +91,7 @@ tests = do
                                     , chatting = Nothing
                                     }
 
-                  TUA.equal [ contact { available = false } ] contacts
+                  TUA.equal [ contact { user { availability = Unavailable } } ] contacts
 
             TU.test "receiveMessage marks blocker users as unavailable" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -99,7 +101,7 @@ tests = do
                               , chatting = Nothing
                               }
 
-                  TUA.equal [ contact { available = false } ] contacts
+                  TUA.equal [ contact { user { availability = Unavailable } } ] contacts
 
             TU.test "receiveMessage removes blocker users from suggestions" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime

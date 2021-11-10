@@ -1605,6 +1605,10 @@ select {
     margin: 7px 0;
 }
 
+.online-status {
+    margin-bottom: 7px;
+}
+
 .profile-karma {
     margin-bottom: 7px;
 }

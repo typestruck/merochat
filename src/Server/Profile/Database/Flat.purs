@@ -10,7 +10,7 @@ import Data.String as DS
 import Shared.IM.Types (DateWrapper(..))
 import Shared.Profile.Types (ProfileUser)
 import Shared.Avatar as SA
-import Shared.User (Gender)
+import Shared.User
 import Server.Database.Flat as SDF
 
 type FlatProfileUser =
@@ -36,6 +36,7 @@ fromFlatProfileUser fu =
       , description: fu.description
       , gender: fu.gender
       , headline: fu.headline
+      , availability: None
       , id: fu.id
       , karma: fu.karma
       , karmaPosition: fu.karmaPosition

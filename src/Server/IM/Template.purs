@@ -15,6 +15,7 @@ import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Server.Template (defaultParameters)
+import Shared.DateTime (DateTimeWrapper(..))
 import Server.Template as ST
 import Shared.IM.Unread as SIU
 import Shared.IM.View as SIV

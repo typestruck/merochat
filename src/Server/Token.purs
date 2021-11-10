@@ -17,12 +17,17 @@ import Node.Crypto.Hmac as NCH
 import Node.Simple.Jwt as NSJ
 import Run as R
 import Data.Int as DI
+import Node.Buffer as NB
 import Run.Reader as RR
+import Node.Encoding (Encoding(..))
 
 hashPassword ∷ String → ServerEffect String
 hashPassword password = do
       { configuration: { salt } } ← RR.ask
-      R.liftEffect $ NCH.hex NCHA.SHA512 salt password
+      R.liftEffect do
+            key ← NB.fromString salt UTF8
+            buffer ← NB.fromString password UTF8
+            NCH.createHmac "sha512" key >>= NCH.update buffer >>= NCH.digest >>= NB.toString Hex
 
 createToken ∷ Int → ServerEffect String
 createToken id = do
