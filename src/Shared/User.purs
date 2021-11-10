@@ -26,6 +26,7 @@ import Payload.Client.EncodeBody (class EncodeBody)
 import Payload.ContentType (class HasContentType, json)
 import Payload.Server.DecodeBody (class DecodeBody)
 import Shared.Unsafe as SU
+import Shared.DateTime as SDT
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
 type BasicUser fields =
@@ -96,7 +97,11 @@ instance Show Gender where
 instance Show ProfileVisibility where
       show = DSG.genericShow
 instance Show Availability where
-      show = DSG.genericShow
+      show = case _ of
+            Online -> "Online"
+            LastSeen (DateTimeWrapper dt) -> "Last seen " <> SDT.ago dt
+            Unavailable -> "Unavailable"
+            None -> ""
 
 instance ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender

@@ -72,6 +72,7 @@ import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.Event.PopStateEvent.EventTypes (popstate)
 import Web.HTML.HTMLElement as WHHE
+import Debug
 import Web.HTML.Window as WHW
 
 main ∷ Effect Unit
@@ -625,7 +626,11 @@ setUpWebSocket webSocketRef = do
             FS.send imID $ ToggleConnected true
             askForUpdates
 
-      ping = ET.setInterval (1000 * 30) do
+      ping = do
+            pingAction --first run of setInterval is after the delay
+            ET.setInterval (1000 * 30) pingAction
+
+      pingAction = do
             { webSocket, ponged } ← ER.read webSocketRef
             isFocused ← CCD.documentHasFocus
             if ponged then do

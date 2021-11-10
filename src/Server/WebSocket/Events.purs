@@ -20,7 +20,6 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
-import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
 import Effect.Aff as CMEC
@@ -114,6 +113,7 @@ handleMessage payload = do
                   possibleConnection ← R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactTyping { id: sessionUserID }
             Ping { isActive, statusFor } → do
+
                   possibleConnection ← R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
                   if DM.isNothing possibleConnection then
                         --shouldn't be possible 🤔
@@ -122,6 +122,9 @@ handleMessage payload = do
                               SW.terminate connection
                   else
                         R.liftEffect $ do
+                              --pings fulfill two purposes
+                              -- keep the connection alive
+                              -- maintain online status
                               now ← EN.nowDateTime
                               ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserID) allConnections
                               ER.modify_ (DH.alter (updateAvailability isActive now) sessionUserID) availability
