@@ -126,8 +126,8 @@ update { webSocketRef, fileReader } model =
             BeforeSendMessage content → CIC.beforeSendMessage content model
             SendMessage content date → CIC.sendMessage webSocket content date model
             SetMessageContent cursor content → CIC.setMessage cursor content model
-            Apply markup → CIC.applyMarkup markup model
             SetSelectedImage maybeBase64 → CIC.setSelectedImage maybeBase64 model
+            Apply markup → CIC.applyMarkup markup model
             SetSmallScreen → setSmallScreen model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model

@@ -7,7 +7,6 @@ development_file="development/Environment.purs"
 bucket="ourmelon"
 css_suffix="CSSHash"
 js_suffix='JSHash'
-#remote_files=`b2-linux ls ourmelon --long`
 
 mkdir -p $copy_folder
 cp $dist_folder/* $copy_folder
@@ -44,7 +43,7 @@ done
 
 git add $production_file
 git add $development_file
-git commit -m 'Updated hashs'
+git commit -m 'Update hashs'
 git push
 
 rm -rf $copy_folder
