@@ -39,7 +39,7 @@ startWebSocketServer configuration storageDetails = do
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections storageDetails availability)
-      intervalID ← ET.setInterval aliveDelay (SWE.checkLastSeen allConnections)
+      intervalID ← ET.setInterval aliveDelay (SWE.checkLastSeen allConnections availability)
       SW.onServerClose webSocketServer (const (ET.clearInterval intervalID))
 
 startHTTPServer ∷ Configuration → Ref StorageDetails → Effect Unit

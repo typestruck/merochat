@@ -191,8 +191,8 @@ sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWe
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJSON
 
 -- | Connections are dropped after 5 minutes of inactivity
-checkLastSeen ∷ Ref (HashMap Int AliveWebSocketConnection) → Effect Unit
-checkLastSeen allConnections = do
+checkLastSeen ∷ Ref (HashMap Int AliveWebSocketConnection) → Ref (HashMap Int Availability) -> Effect Unit
+checkLastSeen allConnections availability = do
       connections ← ER.read allConnections
       now ← EN.nowDateTime
       DF.traverse_ (check now) $ DH.toArrayBy Tuple connections
@@ -200,6 +200,7 @@ checkLastSeen allConnections = do
       check now (Tuple id { lastSeen, connection })
             | hasExpired lastSeen now = do
                     ER.modify_ (DH.delete id) allConnections
+                    ER.modify_ (DH.insert id (LastSeen $ DateTimeWrapper lastSeen)) availability
                     SW.terminate connection
             | otherwise = pure unit
 
