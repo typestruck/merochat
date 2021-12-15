@@ -20,10 +20,10 @@ import Flame.Html.Element as HE
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
+import Shared.ContentType (ContentType(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
 import Shared.Settings.Types (ProfileVisibilityId(..), SM, SettingsMessage(..), SettingsModel)
-import Shared.ContentType (ContentType(..))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Data.Symbol as TDS
@@ -44,29 +44,47 @@ formId field = TDS.reflectSymbol field <> "-form"
 account ∷ SettingsModel → Html SettingsMessage
 account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVisibility } =
       HE.div (HA.class' "settings-section")
-            [ HE.div (HA.class' "section-label")
-                    [ HE.div (HA.class' "bold") "Account"
-                    , HE.div (HA.class' "duller")
-                            [ HE.text "Change your settings"
-                            , HE.br
-                            , HE.text "or close your account"
+            [ HE.div (HA.class' "settings-part")
+                    [ HE.div (HA.class' "section-label")
+                            [ HE.div (HA.class' "bold") "Privacy"
+                            , HE.div (HA.class' "duller")
+                                    [ HE.text "Change your profile"
+                                    , HE.br
+                                    , HE.text "privacy settings"
+                                    ]
+                            ]
+                    , HE.div_
+                            [ visibility
+                            , HE.label_ "Chat settings"
+                            , HE.input [ HA.id "read-toggle", HA.type' "checkbox" ]
+                            , HE.label [ HA.for "read-toggle", HA.class' "inline" ] "Read receipts"
                             ]
                     ]
-            , HE.div_
-                    [ visibility
-                    --REFACTOR: this be ugly
-                    , fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
-                    , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
-                    , terminate
+            , HE.div (HA.class' "settings-part")
+                    [ HE.div (HA.class' "section-label")
+                            [ HE.div (HA.class' "bold") "Account"
+                            , HE.div (HA.class' "duller")
+                                    [ HE.text "Change your settings"
+                                    , HE.br
+                                    , HE.text "or close your account"
+                                    ]
+                            ]
+                    , HE.div_
+                            [
+                              --REFACTOR: this be ugly
+                              fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
+                            , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
+                            , terminate
+                            ]
                     ]
             ]
       where
       visibility = HE.div (show ProfileVisibilityId)
             [ HE.label_ "Profile visibility"
             , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-                    [ HE.option [HA.selected $ profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone] "Show profile (default)"
-                    , HE.option [HA.selected $ profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts] "Show profile only to contacts"
-                    , HE.option [HA.selected $ profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody] "Do not show profile"
+                    [ HE.option [ HA.selected $ profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] "Show profile (default)"
+                    , HE.option [ HA.selected $ profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] "Show profile only to contacts"
+                    , HE.option [ HA.selected $ profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] "Do not show profile"
                     ]
 
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] "All users can see your profile and send you messages"
@@ -85,7 +103,7 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                             , HA.onClick ChangeVisibility
                             ]
                     , HE.span' (HA.class' "request-error-message")
-                    , HE.span (HA.class' {"success-message":true, hidden: hideSuccessMessage})
+                    , HE.span (HA.class' { "success-message": true, hidden: hideSuccessMessage })
                             [ HE.text "Profile visibility changed!"
                             ]
                     ]
@@ -112,6 +130,7 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                             ]
                     ]
             ]
+
       fieldConfirmationSection ∷ ∀ field fieldConfirmation r t. IsSymbol field ⇒ Cons field String r SM ⇒ Append field "Confirmation" fieldConfirmation ⇒ IsSymbol fieldConfirmation ⇒ Cons fieldConfirmation String t SM ⇒ Proxy field → String → Int → (String → Boolean) → String → SettingsMessage → Html SettingsMessage
       fieldConfirmationSection field inputType maxChars validator fieldErrorMessage message =
             let

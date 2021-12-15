@@ -1709,11 +1709,20 @@ select {
     margin-right: 20px;
 }
 
-/* dry this shite  */
-
 .suggestion.old~.message-history {
     display: none;
 }
+
+.settings-section {
+    flex-direction: column;
+}
+
+.settings-part {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+/* dry this shite  */
 
 @media (max-width:1279px) {
     .im {
@@ -1765,6 +1774,9 @@ select {
     }
     .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
         display: none;
+    }
+    .settings-part {
+        flex-direction: column;
     }
     .mobile-profile-header {
         display: flex;
@@ -1936,9 +1948,6 @@ select {
     }
     .chat-experiments, .profile-contact {
         padding: 10px;
-    }
-    .settings-section {
-        flex-direction: column;
     }
     .modal-input {
         width: auto;
