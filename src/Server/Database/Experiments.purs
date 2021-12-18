@@ -6,14 +6,15 @@ import Data.Date (Date)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Shared.Experiments.Types (ExperimentData)
+import Data.Tuple.Nested (type (/\))
 import Type.Proxy (Proxy(..))
 
 type Experiments =
-      ( id ∷ Auto Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
       , code ∷ ExperimentData
       , name ∷ String
       , description ∷ String
-      , added ∷ Default DateTime
+      , added ∷ Column DateTime Default
       )
 
 experiments ∷ Table "experiments" Experiments

@@ -1,21 +1,24 @@
 module Server.Database.Messages where
 
-import Type.Proxy (Proxy(..))
 import Droplet.Language
-import Data.DateTime (DateTime)
-import Shared.IM.Types
-import Shared.DateTime
 import Shared.ContentType
+import Shared.DateTime
+import Shared.IM.Types
+import Prim hiding (Constraint)
+import Data.DateTime (DateTime)
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested (type (/\))
+import Server.Database.Users (UsersTable)
+import Type.Proxy (Proxy(..))
 
 type Messages =
-      ( id ∷ Auto Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
       , temporary_id ∷ Int
-      , sender ∷ Int
-      , recipient ∷ Int
-      , date ∷ Default DateTimeWrapper
+      , sender ∷ Column Int (Constraint "from_user_message" (ForeignKey "id" UsersTable))
+      , recipient ∷ Column Int (Constraint "to_user_message" (ForeignKey "id" UsersTable))
+      , date ∷ Column DateTimeWrapper Default
       , content ∷ String
-      , status ∷ Default MessageStatus
+      , status ∷ Column MessageStatus Default
       , visualized ∷ Maybe DateTime
       )
 

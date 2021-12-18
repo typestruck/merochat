@@ -11,26 +11,29 @@ import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Data.Tuple.Nested (type (/\), (/\))
 import Server.Database as SD
+import Server.Database.Countries (CountriesTable)
 import Shared.Account (RegisterLoginUser)
 import Shared.User (Gender, ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
 type Users =
-      ( id ∷ Auto Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
       , password ∷ String
       , name ∷ String
       , headline ∷ String
-      , joined ∷ Default DateTime
+      , joined ∷ Column DateTime Default
       , email ∷ String
       , birthday ∷ Maybe Date
       , description ∷ String
       , avatar ∷ Maybe String
       , gender ∷ Maybe Gender
-      , country ∷ Maybe Int
-      , visibility ∷ Default ProfileVisibility
+      , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
+      , visibility ∷ Column ProfileVisibility Default
       )
 
-users ∷ Table "users" Users
+type UsersTable = Table "users" Users
+
+users ∷ UsersTable
 users = Table
 
 _password ∷ Proxy "password"

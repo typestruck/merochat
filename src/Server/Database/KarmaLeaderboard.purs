@@ -1,16 +1,18 @@
 module Server.Database.KarmaLeaderboard where
 
 import Droplet.Language
+import Data.Tuple.Nested (type (/\))
 import Type.Proxy (Proxy(..))
 import Data.DateTime (DateTime)
+import Server.Database.Users (UsersTable)
 
 type KarmaLeaderboard =
-      ( id ∷ Auto Int
-      , ranker ∷ Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
+      , ranker ∷ Column Int (ForeignKey "id" UsersTable)
       , position ∷ Int
       , current_karma ∷ Int
       , gained ∷ Int
-      , date ∷ Default DateTime
+      , date ∷ Column DateTime Default
       )
 
 karma_leaderboard ∷ Table "karma_leaderboard" KarmaLeaderboard
