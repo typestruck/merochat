@@ -5,15 +5,17 @@ import Droplet.Language
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Shared.IM.Types (ReportReason)
+import Server.Database.Users (UsersTable)
+import Data.Tuple.Nested (type (/\))
 import Type.Proxy (Proxy(..))
 
 type Reports =
-      ( id ∷ Auto Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
       , comment ∷ Maybe String
       , reason ∷ ReportReason
-      , reporter ∷ Int
-      , date ∷ Default DateTime
-      , reported ∷ Int
+      , reporter ∷ Column Int (ForeignKey "id" UsersTable)
+      , date ∷ Column DateTime Default
+      , reported ∷ Column Int (ForeignKey "id" UsersTable)
       )
 
 reports ∷ Table "reports" Reports

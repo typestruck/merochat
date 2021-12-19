@@ -1,14 +1,17 @@
 module Server.Database.KarmaHistories where
 
 import Droplet.Language
-import Type.Proxy (Proxy(..))
+
 import Data.DateTime (DateTime)
+import Data.Tuple.Nested (type (/\))
+import Server.Database.Users (UsersTable)
+import Type.Proxy (Proxy(..))
 
 type KarmaHistories =
-      ( id ∷ Auto Int
-      , target ∷ Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
+      , target ∷ Column Int (ForeignKey "id" UsersTable)
       , amount ∷ Int
-      , date ∷ Default DateTime
+      , date ∷ Column DateTime Default
       )
 
 karma_histories ∷ Table "karma_histories" KarmaHistories
