@@ -1,25 +1,24 @@
 module Server.Settings.Template where
 
-import Shared.ContentType
 
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
+import Record as R
+import Shared.Settings.Types (PrivacySettings)
 import Shared.Settings.View as SSV
-import Shared.User (ProfileVisibility)
 
-template ∷ ProfileVisibility -> Effect String
-template profileVisibility =
+template ∷ PrivacySettings -> Effect String
+template settings =
       F.preMount (QuerySelector ".settings-edition")
             { view: SSV.view
             , init:
-                    { email: ""
+                   R.merge { email: ""
                     , emailConfirmation: ""
                     , password: ""
                     , passwordConfirmation: ""
                     , confirmTermination: false
-                    , profileVisibility
                     , erroredFields: []
                     , hideSuccessMessage: true
-                    }
+                    } settings
             }

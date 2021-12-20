@@ -64,6 +64,10 @@ batman =
       { id: 1
       , name: "Batman"
       , availability: None
+      , readReceipts: true
+      , messageTimestamps: true
+      , typingStatus: true
+      , onlineStatus: true
       , avatar: Just $ imageBasePath <> "batman_noun_project_Anusha_Narvekar.png"
       , headline: "*raspy voice* I am Batman"
       , description: "I am not afraid of bats. Don't tell Robin I am here."
@@ -85,6 +89,10 @@ socrates =
       , headline: "I know that I know nothing"
       , profileVisibility: Everyone
       , availability: None
+      , readReceipts: true
+      , messageTimestamps: true
+      , typingStatus: true
+      , onlineStatus: true
       , description:
               """Crito, we owe a rooster to Asclepius. Please, don't forget to pay the debt.
 
@@ -107,6 +115,10 @@ nicolasCage =
       , avatar: Just $ imageBasePath <> "nicolas_cage_hiclipart.png"
       , headline: "I think I jump around more when I'm alone"
       , profileVisibility: Everyone
+      , readReceipts: true
+      , messageTimestamps: true
+      , typingStatus: true
+      , onlineStatus: true
       , availability: None
       , description:
               """Oh, boy! Oh, boy! Three and a half million dollar budget, some 16mm film stock thrown in, and I'm holding one of these. I have got to thank the members of the Academy for this, for including me in this group of super talents and for helping me blur the line between art and commerce with this award. I know it's not hip to say it, but I just love acting, and I hope that there'll be more encouragement for alternative movies where we can experiment and fast forward into the future of acting.

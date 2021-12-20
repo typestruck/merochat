@@ -166,6 +166,10 @@ dummySuggestion =
       , tags: []
       , availability: Online
       , profileVisibility: Everyone
+      , readReceipts: true
+      , messageTimestamps: true
+      , typingStatus: true
+      , onlineStatus: true
       , karma: 321
       , karmaPosition: 90
       , gender: Just $ show Female

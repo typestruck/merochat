@@ -49,6 +49,10 @@ userPresentationFields =
             /\ (date_part_age ("year" /\ _birthday) # as _age)
             /\ _name
             /\ (_visibility # as profileVisibility)
+            /\ (_readReceipts # as readReceipts)
+            /\ (_typingStatus # as typingStatus)
+            /\ (_onlineStatus # as onlineStatus)
+            /\ (_messageTimestamps # as messageTimestamps)
             /\ _headline
             /\ _description
             /\ (select _name # from countries # wher (_id .=. u ... _country) # as _country)
@@ -192,6 +196,3 @@ s = Proxy
 
 t ∷ Proxy "t"
 t = Proxy
-
-profileVisibility :: Proxy "profileVisibility"
-profileVisibility = Proxy

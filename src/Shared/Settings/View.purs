@@ -23,7 +23,7 @@ import Record as R
 import Shared.ContentType (ContentType(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
-import Shared.Settings.Types (ProfileVisibilityId(..), SM, SettingsMessage(..), SettingsModel)
+import Shared.Settings.Types (PrivacySettingsId(..), SM, SettingsMessage(..), SettingsModel)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Data.Symbol as TDS
@@ -42,44 +42,27 @@ formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"
 
 account ∷ SettingsModel → Html SettingsMessage
-account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVisibility } =
+account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVisibility, readReceipts, onlineStatus, messageTimestamps, typingStatus } =
       HE.div (HA.class' "settings-section")
             [ HE.div (HA.class' "settings-part")
-                    [ HE.div (HA.class' "section-label")
-                            [ HE.div (HA.class' "bold") "Privacy"
-                            , HE.div (HA.class' "duller")
-                                    [ HE.text "Change your profile"
-                                    , HE.br
-                                    , HE.text "privacy settings"
-                                    ]
-                            ]
-                    , HE.div_
-                            [ visibility
-                            , HE.label_ "Chat settings"
-                            , HE.input [ HA.id "read-toggle", HA.type' "checkbox" ]
-                            , HE.label [ HA.for "read-toggle", HA.class' "inline" ] "Read receipts"
-                            ]
+                    [ privacyHeader
+                    , privacySection
                     ]
             , HE.div (HA.class' "settings-part")
-                    [ HE.div (HA.class' "section-label")
-                            [ HE.div (HA.class' "bold") "Account"
-                            , HE.div (HA.class' "duller")
-                                    [ HE.text "Change your settings"
-                                    , HE.br
-                                    , HE.text "or close your account"
-                                    ]
-                            ]
-                    , HE.div_
-                            [
-                              --REFACTOR: this be ugly
-                              fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
-                            , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
-                            , terminate
-                            ]
+                    [ accountHeader
+                    , accountSection
                     ]
             ]
       where
-      visibility = HE.div (show ProfileVisibilityId)
+      privacyHeader = HE.div (HA.class' "section-label")
+            [ HE.div (HA.class' "bold") "Privacy"
+            , HE.div (HA.class' "duller")
+                    [ HE.text "Change your profile"
+                    , HE.br
+                    , HE.text "privacy settings"
+                    ]
+            ]
+      privacySection = HE.div (show PrivacySettingsId)
             [ HE.label_ "Profile visibility"
             , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
                     [ HE.option [ HA.selected $ profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] "Show profile (default)"
@@ -94,20 +77,51 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                     , HE.text "profile or send you messages"
                     ]
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Nobody } ] "No one can see your profile or message you"
+            , HE.label_ "Chat display settings"
+            , HE.div_
+                    [ HE.input [ HA.id "read-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked readReceipts, HA.onChange (SetSField (_ { readReceipts = not readReceipts })) ]
+                    , HE.label [ HA.for "read-toggle", HA.class' "inline" ] "Read receipts"
+                    ]
+            , HE.div_
+                    [ HE.input [ HA.id "online-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked onlineStatus, HA.onChange (SetSField (_ { onlineStatus = not onlineStatus })) ]
+                    , HE.label [ HA.for "online-toggle", HA.class' "inline" ] "Online status"
+                    ]
+            , HE.div_
+                    [ HE.input [ HA.id "message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked messageTimestamps, HA.onChange (SetSField (_ { messageTimestamps = not messageTimestamps })) ]
+                    , HE.label [ HA.for "message-toggle", HA.class' "inline" ] "Message timestamps"
+                    ]
+            , HE.div_
+                    [ HE.input [ HA.id "typing-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked typingStatus, HA.onChange (SetSField (_ { typingStatus = not typingStatus })) ]
+                    , HE.label [ HA.for "typing-toggle", HA.class' "inline" ] "Typing status"
+                    ]
             , HE.br
-            , HE.div (HA.class' "section-buttons")
+            , HE.div (HA.class' "section-buttons privacy")
                     [ HE.input
                             [ HA.type' "button"
                             , HA.class' "green-button"
-                            , HA.value "Change visibility"
-                            , HA.onClick ChangeVisibility
+                            , HA.value "Change privacy settings"
+                            , HA.onClick ChangePrivacySettings
                             ]
                     , HE.span' (HA.class' "request-error-message")
                     , HE.span (HA.class' { "success-message": true, hidden: hideSuccessMessage })
-                            [ HE.text "Profile visibility changed!"
+                            [ HE.text "Privacy settings changed!"
                             ]
                     ]
-
+            ]
+      accountHeader = HE.div (HA.class' "section-label")
+            [ HE.div (HA.class' "bold") "Account"
+            , HE.div (HA.class' "duller")
+                    [ HE.text "Change your settings"
+                    , HE.br
+                    , HE.text "or close your account"
+                    ]
+            ]
+      accountSection = HE.div_
+            [
+              --REFACTOR: this be ugly
+              fieldConfirmationSection (Proxy ∷ Proxy "email") "text" emailMaxCharacters validateEmail "Please enter a valid email" ChangeEmail
+            , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
+            , terminate
             ]
       terminate = HE.div (formId (Proxy ∷ Proxy "confirmTermination"))
             [ HE.label_ "Permanently delete all my data and close my account"

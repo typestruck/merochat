@@ -10,22 +10,32 @@ type SM =
       , password ∷ String
       , erroredFields ∷ Array String
       , passwordConfirmation ∷ String
-      , profileVisibility :: ProfileVisibility
-      , hideSuccessMessage :: Boolean
+      , hideSuccessMessage ∷ Boolean
       , confirmTermination ∷ Boolean
+      | PS
       )
+
+type PS =
+      ( readReceipts ∷ Boolean
+      , typingStatus ∷ Boolean
+      , profileVisibility ∷ ProfileVisibility
+      , onlineStatus ∷ Boolean
+      , messageTimestamps ∷ Boolean
+      )
+
+type PrivacySettings = Record PS
 
 type SettingsModel = Record SM
 
 data SettingsMessage
       = SetSField (SettingsModel → SettingsModel)
       | ChangeEmail
+      | ChangePrivacySettings
       | ChangePassword
       | ToggleTerminateAccount
-      | ChangeVisibility
       | TerminateAccount --very bad
 
-data ProfileVisibilityId = ProfileVisibilityId
+data PrivacySettingsId = PrivacySettingsId
 
-instance Show ProfileVisibilityId where
-      show _ = "profile-visibility"
+instance Show PrivacySettingsId where
+      show _ = "privacy-settings"

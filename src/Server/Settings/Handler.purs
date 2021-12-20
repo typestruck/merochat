@@ -11,12 +11,13 @@ import Server.Ok (Ok, ok)
 import Server.Settings.Action as SSA
 import Server.Settings.Database as SSD
 import Server.Settings.Template as SST
+import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileVisibility)
 
 settings ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
 settings { guards: { loggedUserID } } = do
-      profileVisibility <- SSD.profileVisibility loggedUserID
-      R.liftEffect $ SST.template profileVisibility
+      privacySettings <- SSD.privacySettings loggedUserID
+      R.liftEffect $ SST.template privacySettings
 
 accountEmail ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ { email ∷ String } } → ServerEffect (Response Ok)
 accountEmail { guards: { loggedUserID }, body: { email } } = do
@@ -33,7 +34,7 @@ accountTerminate { guards: { loggedUserID } } = do
       SSA.terminateAccount loggedUserID
       pure SL.expireCookies
 
-changeVisibility ∷ { guards ∷ { loggedUserID ∷ Int }, body :: ProfileVisibility } → ServerEffect Ok
-changeVisibility { guards: { loggedUserID }, body } = do
-      SSA.changeVisibility loggedUserID body
+changePrivacy ∷ { guards ∷ { loggedUserID ∷ Int }, body :: PrivacySettings } → ServerEffect Ok
+changePrivacy { guards: { loggedUserID }, body } = do
+      SSA.changePrivacySettings loggedUserID body
       pure ok

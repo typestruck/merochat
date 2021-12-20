@@ -27,7 +27,7 @@ model ∷ IMModel
 model =
       { modalsLoaded: []
       , freeToFetchSuggestions: true
-      , typingIds : []
+      , typingIds: []
       , initialScreen: true
       , suggestionsPage: 0
       , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
@@ -73,7 +73,11 @@ imUser =
       , age: Nothing
       , name: "test"
       , id: imUserID
-      , profileVisibility : Everyone
+      , profileVisibility: Everyone
+      , readReceipts: true
+      , messageTimestamps: true
+      , typingStatus: true
+      , onlineStatus: true
       , avatar: Nothing
       , country: Nothing
       , availability: None

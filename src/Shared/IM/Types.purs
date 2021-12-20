@@ -1,6 +1,7 @@
 module Shared.IM.Types where
 
 import Prelude
+import Shared.User
 
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Core as DAP
@@ -39,13 +40,12 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Shared.DateTime as SDT
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime as SDT
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.ResponseError (DatabaseError)
+import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
-
-import Shared.User
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
@@ -303,7 +303,7 @@ data IMMessage
       | ToggleFortune Boolean
       | DisplayFortune String
       | RequestFailed RequestFailure
-      | SetProfileVisibility ProfileVisibility
+      | SetPrivacySettings PrivacySettings
       | ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer

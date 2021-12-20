@@ -5,10 +5,15 @@ import Prelude
 import Server.Database.Fields
 import Server.Database.Users
 
+import Data.Tuple.Nested ((/\))
 import Server.Database as SD
+import Server.Database.Types (Checked(..))
+import Server.Settings.Database.Flat as SSDF
 import Server.Types (ServerEffect)
+import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility)
+import Type.Proxy (Proxy(..))
 
 changeEmail ∷ Int → String → ServerEffect Unit
 changeEmail loggedUserID email = SD.execute $ update users # set (_email .=. email) # wher (_id .=. loggedUserID)
@@ -19,8 +24,25 @@ changePassword loggedUserID password = SD.execute $ update users # set (_passwor
 terminateAccount ∷ Int → ServerEffect Unit
 terminateAccount loggedUserID = SD.execute $ delete # from users # wher (_id .=. loggedUserID) --cascades
 
-profileVisibility ∷ Int → ServerEffect ProfileVisibility
-profileVisibility loggedUserID = _.visibility <<< SU.fromJust <$> (SD.single $ select _visibility # from users # wher (_id .=. loggedUserID))
+privacySettings ∷ Int → ServerEffect PrivacySettings
+privacySettings loggedUserID = SSDF.toPrivacySettings <<< SU.fromJust <$>
+      ( SD.single $
+              select
+                    ( (_visibility # as profileVisibility)
+                            /\ (_readReceipts # as readReceipts)
+                            /\ (_typingStatus # as typingStatus)
+                            /\ (_onlineStatus # as onlineStatus)
+                            /\ (_messageTimestamps # as messageTimestamps)
+                    ) # from users # wher (_id .=. loggedUserID)
+      )
 
-changeVisibility :: Int -> ProfileVisibility -> ServerEffect Unit
-changeVisibility loggedUserId pv = SD.execute $ update users # set (_visibility .=. pv) # wher (_id .=. loggedUserId)
+changePrivacySettings ∷ Int → PrivacySettings → ServerEffect Unit
+changePrivacySettings loggedUserId { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } = SD.execute $ update users
+      # set
+              ( (_visibility .=. profileVisibility)
+                      /\ (_readReceipts .=. Checked readReceipts)
+                      /\ (_typingStatus .=. Checked typingStatus)
+                      /\ (_onlineStatus .=. Checked onlineStatus)
+                      /\ (_messageTimestamps .=. Checked messageTimestamps)
+              )
+      # wher (_id .=. loggedUserId)
