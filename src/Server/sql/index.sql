@@ -30,7 +30,7 @@ create table users
     read_receipts boolean not null default true,
     typing_status boolean not null default true,
     online_status boolean not null default true,
-    message_timestamp boolean not null default true,
+    message_timestamps boolean not null default true,
 
     constraint country_user foreign key (country) references countries(id)
 );

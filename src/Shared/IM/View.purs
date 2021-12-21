@@ -1,7 +1,6 @@
 module Shared.IM.View where
 
 import Prelude
-import Shared.ContentType
 
 import Data.String as DS
 import Flame (Html)
@@ -20,7 +19,7 @@ import Shared.Unsafe ((!@))
 import Shared.IM.Types
 
 view ∷ Boolean → IMModel → Html IMMessage
-view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, suggestions, suggesting, chatting, contacts, hasTriedToConnectYet, imUpdated, isWebSocketConnected, toggleModal, smallScreen } = HE.div [ HA.class' "im" ]
+view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, chatting, contacts, imUpdated, smallScreen } = HE.div [ HA.class' "im" ]
       [ HE.div (HA.class' { "contact-box": true, "current-mobile-screen": initialScreen })
               [ SIVU.userMenu model
               , SIVN.reloadPage imUpdated

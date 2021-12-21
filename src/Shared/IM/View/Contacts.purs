@@ -13,94 +13,115 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
-import Shared.DateTime (DateTimeWrapper(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
-import Shared.IM.View.Profile as SIVP
+import Shared.IM.View.Profile (backArrow, nextArrow)
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 
+-- | Users that have exchanged messages with the current logged in user
 contactList ∷ Boolean → IMModel → Html IMMessage
-contactList isClientRender { failedRequests, chatting, experimenting, contacts, user: { id: userID, profileVisibility } } =
+contactList isClientRender { failedRequests, chatting, experimenting, contacts, user: { id: loggedUserId, profileVisibility, messageTimestamps } } =
       case profileVisibility of
-            Nobody -> HE.div' [ HA.class' "contact-list", HA.id "contact-list" ]
-            _ -> HE.div [ HA.onScroll CheckFetchContacts, HA.class' "contact-list", HA.id "contact-list" ] $ retryMissedEvents : DA.snoc allContacts retryFetchContacts
-      where
-      --the ordering of the contact list is only done for the dom nodes
-      -- model.contacts is left unchanged
-      allContacts
-            | DA.null contacts = [ suggestionsCall ]
-            | otherwise = DA.mapWithIndex contactEntry $ DA.sortBy compareDateUnread contacts
-
-      suggestionsCall =
-            let
-                  { welcome, first, second } = case experimenting of
-                        Just (Impersonation (Just { name })) → SEI.welcomeMessage name
-                        _ → { welcome: "Welcome!", first: "Tap on either of the arrows to see ", second: "your chat suggestions" }
-            in
-                  HE.div (HA.class' "suggestions-call")
-                        [ HE.div (HA.onClick $ ToggleInitialScreen false) $ SIVP.backArrow
-                        , HE.div (HA.class' { "suggestions-call-middle": true, "welcome-imp": DM.isJust experimenting })
-                                [ HE.div (HA.class' "welcome-suggestions-call") $ welcome
-                                , HE.div_ first
-                                , HE.div_ second
-                                ]
-                        , HE.div (HA.onClick $ ToggleInitialScreen false) $ SIVP.nextArrow
+            Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]
+            _ →
+                  HE.div
+                        [ HA.id $ show ContactList
+                        , HA.onScroll CheckFetchContacts
+                        , HA.class' "contact-list"
                         ]
+                        $ retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts
+      where
+      -- | Contact list sorting is only done for the dom nodes, model.contacts is left unchanged
+      displayContactList
+            | DA.null contacts = [ suggestionsCall ]
+            | otherwise =
+                    DA.mapWithIndex displayContactListEntry <<<
+                          DA.sortBy compareLastDate
+                          $ DA.filter (not <<< DA.null <<< _.history) contacts -- might want to look into this: before sending a message, we need to run an effect; in this meanwhile history is empty
 
-      getDate history = do
-            { date: DateTimeWrapper md } ← DA.last history
-            pure md
-      compareDateUnread contact anotherContact = compare (getDate anotherContact.history) (getDate contact.history)
-
-      unread total { status, sender } = total + DE.fromEnum (sender /= userID && status < Read)
-      countUnread = DF.foldl unread 0
-
-      lastMessage = DM.fromMaybe "" <<< map _.content
-      lastStatus = DM.fromMaybe "" <<< map (show <<< _.status)
-      lastDate = DM.fromMaybe "" <<< map (SD.ago <<< DN.unwrap <<< _.date)
-      chattingID = do
-            index ← chatting
-            { user: { id } } ← contacts !! index
-            pure id
-      impersonatingID = do
-            index ← chatting
-            { impersonating } ← contacts !! index
-            impersonating
-
-      contactEntry index { history, user, impersonating, typing } =
+      displayContactListEntry index { history, user, impersonating, typing } =
             let
-                  index' = Just index
-                  --refactor: a neater way to do experiment that dont litter the code with case of
+                  justIndex = Just index
+                  --refactor: a neater way to do experiment that don't litter the code with case of
                   userProfile = case impersonating of
                         Just impersonationID → SU.fromJust $ DH.lookup impersonationID impersonations
                         _ → user
                   numberUnreadMessages = countUnread history
-                  maybeMessage = DA.last history
-
+                  lastHistoryEntry = SU.fromJust $ DA.last history
             in
-                  HE.div [ HA.class' { contact: true, "chatting-contact": chattingID == Just user.id && impersonatingID == impersonating }, HA.onClick <<< ResumeChat $ Tuple user.id impersonating ]
+                  HE.div
+                        [ HA.class' { contact: true, "chatting-contact": chattingId == Just user.id && impersonatingId == impersonating }
+                        , HA.onClick <<< ResumeChat $ Tuple user.id impersonating
+                        ]
                         [ HE.div (HA.class' "avatar-contact-list-div")
-                                [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass index', HA.src $ SA.avatarForRecipient index' userProfile.avatar ]
+                                [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass justIndex, HA.src $ SA.avatarForRecipient justIndex userProfile.avatar ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
                                 [ HE.span (HA.class' "contact-name") userProfile.name
-                                , HE.div' [ HA.class' {"contact-list-last-message": true, hidden:  typing}, HA.innerHtml <<< SM.parseRestricted $ lastMessage maybeMessage ],
-                                HE.div [ HA.class' {"contact-list-last-message typing": true, hidden: not typing} ] $ HE.p_ "Typing..."
+                                , HE.div' [ HA.class' { "contact-list-last-message": true, hidden: typing }, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
+                                , HE.div [ HA.class' { "contact-list-last-message typing": true, hidden: not typing } ] $ HE.p_ "Typing..."
                                 ]
                         , HE.div (HA.class' "contact-options")
-                                [ HE.span (HA.class' { duller: true, invisible: not isClientRender }) $ lastDate maybeMessage
+                                [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not userProfile.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
                                 , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
-                                , HE.div (HA.class' { duller: true, hidden: numberUnreadMessages > 0 || map _.sender maybeMessage == Just user.id }) $ lastStatus maybeMessage
+                                , HE.div (HA.class' { duller: true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == user.id }) $ show lastHistoryEntry.status
                                 ]
                         ]
 
-      retryMissedEvents = SIVR.retry "Failed to sync contacts. You might have missed messages." CheckMissedEvents failedRequests
-      retryFetchContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) failedRequests
+      -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users/impersonations
+      suggestionsCall =
+            let
+                  { welcome, first, second } = case experimenting of
+                        Just (Impersonation (Just { name })) → SEI.welcomeMessage name
+                        _ → welcomeMessage
+            in
+                  HE.div (HA.class' "suggestions-call")
+                        [ HE.div (HA.onClick $ ToggleInitialScreen false) backArrow
+                        , HE.div (HA.class' { "suggestions-call-middle": true, "welcome-impersonation": DM.isJust experimenting })
+                                [ HE.div (HA.class' "welcome-suggestions-call") $ welcome
+                                , HE.div_ first
+                                , HE.div_ second
+                                ]
+                        , HE.div (HA.onClick $ ToggleInitialScreen false) nextArrow
+                        ]
+
+      welcomeMessage =
+            { welcome: "Welcome!"
+            , first: "Tap on either of the arrows to see "
+            , second: "your chat suggestions"
+            }
+
+      compareLastDate contact anotherContact = compare (getDate anotherContact.history) (getDate contact.history)
+
+      getDate history = do
+            { date: DateTimeWrapper md } ← DA.last history
+            pure md
+
+      countUnread = DF.foldl unread 0
+
+      unread total { status, sender } = total + DE.fromEnum (sender /= loggedUserId && status < Read)
+
+      chattingId = do
+            index ← chatting
+            { user: { id } } ← contacts !! index
+            pure id
+
+      impersonatingId = do
+            index ← chatting
+            { impersonating } ← contacts !! index
+            impersonating
+
+      -- | Displayed if loading contact from an incoming message fails
+      retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." CheckMissedEvents failedRequests
+
+      -- | Displayed if loading contact list fails
+      retryLoadingContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) failedRequests
