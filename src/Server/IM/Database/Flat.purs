@@ -13,7 +13,7 @@ import Safe.Coerce as SC
 import Server.Database.Flat as SDF
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
-import Shared.IM.Types (Contact, IMUser)
+import Shared.IM.Types (Contact, ImUser)
 import Shared.Unsafe as SU
 
 type FlatFields rest =
@@ -57,7 +57,7 @@ fromFlatContact fc =
       , typing: false
       }
 
-fromFlatUser ∷ ∀ r. FlatFields r → IMUser
+fromFlatUser ∷ ∀ r. FlatFields r → ImUser
 fromFlatUser fc =
       { id: fc.id
       , name: fc.name

@@ -150,7 +150,7 @@ chatHistoryBetween loggedUserID otherID skip = SD.query $ select star
       # orderBy _date
 
 messageIDsFor ∷ Int → Int → ServerEffect (Array MessageIDTemporary)
-messageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ Proxy "temporaryID"))) # from messages # wher (_sender .=. loggedUserID .&&. _id .>. messageID)
+messageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryID"))) # from messages # wher (_sender .=. loggedUserID .&&. _id .>. messageID)
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ \connection → do

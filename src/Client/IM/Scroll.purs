@@ -22,5 +22,5 @@ scrollLastMessage' = do
 
 scrollIntoView ∷ HistoryMessage → Effect Unit
 scrollIntoView message = do
-      element ← CCD.unsafeQuerySelector <<< ("#m" <> _) <<< show $ message.id
+      element ← CCD.unsafeQuerySelector ("#m" <> show message.id)
       CCD.scrollIntoView element

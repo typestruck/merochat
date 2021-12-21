@@ -7,7 +7,7 @@ import Shared.IM.Types
 import Shared.Unsafe as SU
 import Prelude
 
-defaultContact ∷ Int → IMUser → Contact
+defaultContact ∷ Int → ImUser → Contact
 defaultContact id chatted =
       {  shouldFetchChatHistory: false
       , user: chatted

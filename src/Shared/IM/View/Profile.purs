@@ -204,7 +204,7 @@ nextArrow = HE.svg [ HA.class' "svg-55", HA.viewBox "0 0 16 16" ]
       , HE.polygon' [ HA.class' "fillless strokeless", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
       ]
 
-fullProfile ∷ ProfilePresentation → Maybe Int → IMModel → Maybe Int → IMUser → Html IMMessage
+fullProfile ∷ ProfilePresentation → Maybe Int → IMModel → Maybe Int → ImUser → Html IMMessage
 fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } impersonating user@{ id } =
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
@@ -248,7 +248,7 @@ blockReport id =
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
       ]
 
-displayUserProfile ∷ ∀ message. Maybe Int → IMUser → Array (Html message)
+displayUserProfile ∷ ∀ message. Maybe Int → ImUser → Array (Html message)
 displayUserProfile index { id, karmaPosition, name, availability, avatar, age, karma, headline, gender, country, languages, tags, description } =
       [ HE.img [ HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar ]
       , HE.h1 (HA.class' "profile-name") name

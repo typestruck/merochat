@@ -3,7 +3,6 @@ module Shared.IM.View.Contacts where
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.ContentType
 
 import Data.Array ((!!), (:))
 import Data.Array as DA
@@ -76,7 +75,6 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
             { impersonating } ← contacts !! index
             impersonating
 
-      --it is using the history for the existing contact, not the impersonation
       contactEntry index { history, user, impersonating, typing } =
             let
                   index' = Just index

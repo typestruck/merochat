@@ -33,7 +33,7 @@ view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, i
       , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]
               [ HE.div (HA.class' { "suggestion-box-error": true, flexed: not $ DS.null errorMessage }) errorMessage
               , SIVP.profile model
-              , SIVH.history model $ map (contacts !@ _) chatting
+              , SIVH.chatHistory model $ map (contacts !@ _) chatting
               , SIVC.chat model
               ]
       ]

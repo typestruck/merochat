@@ -1,7 +1,6 @@
 module Shared.IM.View.History where
 
 import Prelude
-import Shared.ContentType
 
 import Data.Array ((!!), (:))
 import Data.Array as DA
@@ -13,28 +12,34 @@ import Flame.Html.Attribute as HA
 import Shared.User
 import Flame.Html.Element as HE
 import Shared.Experiments.Types
-import Shared.Avatar as SA
 import Shared.IM.Types
 import Shared.DateTime as SD
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
-history ∷ IMModel → Maybe Contact → Html IMMessage
-history { user: { id: senderID, avatar: senderAvatar }, experimenting, chatting, failedRequests, freeToFetchChatHistory } contact =
-      HE.div [ HA.class' { "message-history": true, hidden: DM.isNothing contact }, HA.id "message-history", HA.onScroll CheckFetchHistory ] chatHistory
+-- | Messages in a chat history
+chatHistory ∷ IMModel → Maybe Contact → Html IMMessage
+chatHistory { user: { id: loggedUserId, messageTimestamps }, experimenting, failedRequests, freeToFetchChatHistory } contact =
+      HE.div
+            [ HA.id $ show MessageHistory
+            , HA.class' { "message-history": true, hidden: DM.isNothing contact }
+            , HA.onScroll CheckFetchHistory
+            ]
+            chatHistoryWindow
       where
-      chatHistory =
+      chatHistoryWindow =
             case contact of
                   Nothing → [ retryOrWarning ]
                   Just recipient@{ shouldFetchChatHistory, user: { availability } } →
-                        if availability == Unavailable then
-                              []
+                        if availability == Unavailable then []
                         else
                               let
-                                    entries = retryOrWarning : display recipient
+                                    entries = retryOrWarning : displayChatHistory recipient
                               in
-                                    if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries else entries
+                                    if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries
+                                    else entries
 
+      -- | If we don't have a contact, either an error occurred or we are impersonating, which can't fail
       retryOrWarning = case experimenting of
             Just (Impersonation (Just { name })) →
                   HE.div (HA.class' "imp impersonation-warning-history")
@@ -43,32 +48,36 @@ history { user: { id: senderID, avatar: senderAvatar }, experimenting, chatting,
                                 , HE.strong_ name
                                 ]
                         ]
-            _ →
-                  SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
-      display recipient@{ history, user: { avatar } } = DA.mapWithIndex (\i → entry avatar (map _.sender (history !! (i - 1)))) history
+            _ → SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
 
-      entry recipientAvatar previousSender { id, status, date, sender, content } =
+      displayChatHistory { history, user } = DA.mapWithIndex (\i → chatHistoryEntry user $ map _.sender (history !! (i - 1))) history
+
+      chatHistoryEntry chatPartner previousSender { id, status, date, sender, content } =
             let
-                  sameSender = sender == senderID
-                  avatar =
-                        if senderID == sender then
-                              SA.avatarForSender senderAvatar
-                        else
-                              SA.avatarForRecipient chatting recipientAvatar
+                  incomingMessage = sender /= loggedUserId
+                  noTimestamps = not messageTimestamps || not chatPartner.messageTimestamps
             in
                   HE.div
                         ( HA.class'
                                 { message: true
-                                , "sender-message": sameSender
-                                , "recipient-message": not sameSender
-                                , "no-avatar-message": previousSender == Just sender
+                                , "outgoing-message": sender == loggedUserId
+                                , "incoming-message": incomingMessage
+                                , "same-bubble-message": previousSender == Just sender -- only the first message in a row has a bubble handle
                                 }
                         )
-                        [ HE.div [ HA.class' "message-content", HA.id $ "m" <> show id ]
+                        [ HE.div
+                                [ HA.class' "message-content", HA.id $ "m" <> show id ] -- id is used to scroll into view
                                 [ HE.div' [ HA.innerHtml $ SM.parse content ]
-                                , HE.div (HA.class' { duller: status /= Errored, "error-message": status == Errored, "message-status": true })
-                                        [ HE.text <<< SD.agoWithTime $ DN.unwrap date
-                                        , HE.span (HA.class' { hidden: not sameSender }) $ " - " <> show status
+                                , HE.div
+                                        ( HA.class'
+                                                { duller: status /= Errored
+                                                , "error-message": status == Errored
+                                                , "message-status": true
+                                                }
+                                        )
+                                        [ HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
+                                        , HE.span (HA.class' { hidden: noTimestamps || incomingMessage }) " - "
+                                        , HE.span (HA.class' { hidden: incomingMessage }) $ show status
                                         ]
                                 ]
                         ]

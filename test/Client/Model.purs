@@ -64,15 +64,15 @@ model =
       , chatting: Just 0
       }
 
-imUserID ∷ Int
-imUserID = 23
+imUserId ∷ Int
+imUserId = 23
 
-imUser ∷ IMUser
+imUser ∷ ImUser
 imUser =
       { karmaPosition: 1
       , age: Nothing
       , name: "test"
-      , id: imUserID
+      , id: imUserId
       , profileVisibility: Everyone
       , readReceipts: true
       , messageTimestamps: true
@@ -89,17 +89,17 @@ imUser =
       , karma: 5
       }
 
-anotherIMUserID ∷ Int
-anotherIMUserID = 90
+anotherImUserId ∷ Int
+anotherImUserId = 90
 
 contactID ∷ Int
-contactID = anotherIMUserID
+contactID = anotherImUserId
 
-anotherIMUser ∷ IMUser
-anotherIMUser = imUser { id = anotherIMUserID }
+anotherImUser ∷ ImUser
+anotherImUser = imUser { id = anotherImUserId }
 
 contact ∷ Contact
-contact = SIC.defaultContact imUserID anotherIMUser
+contact = SIC.defaultContact imUserId anotherImUser
 
 suggestionID ∷ Int
 suggestionID = 300
@@ -110,7 +110,7 @@ suggestion = imUser { id = suggestionID }
 historyMessage ∷ HistoryMessage
 historyMessage =
       { id: 1
-      , sender: imUserID
+      , sender: imUserId
       , recipient: contactID
       , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , content: "test"
