@@ -1,4 +1,4 @@
-module Shared.IM.View.Contacts where
+module Shared.IM.View.ContactList where
 
 import Prelude
 import Shared.Experiments.Types
@@ -21,7 +21,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
-import Shared.IM.View.Profile (backArrow, nextArrow)
+import Shared.IM.Svg (backArrow, nextArrow)
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe as SU

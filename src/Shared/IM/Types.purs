@@ -204,7 +204,7 @@ type Turn =
 data ProfilePresentation
       = FullContactProfile
       | CurrentSuggestion
-      | OtherSuggestion
+      | OtherSuggestions
 
 data MessageContent
       = Image String String
@@ -245,7 +245,7 @@ data IMMessage
       | DisplayHistory (Array HistoryMessage)
 
       --user menu
-      | ToggleInitialScreen Boolean
+      | ToggleInitialScreen Boolean -- | Mobile screen navigation
       | Logout
       | SetContextMenuToggle ShowContextMenu
       | SetModalContents (Maybe String) ElementID String

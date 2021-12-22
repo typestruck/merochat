@@ -1,4 +1,4 @@
-module Shared.IM.View.Suggestions where
+module Shared.IM.View.SuggestionCall where
 
 import Prelude
 import Shared.ContentType
@@ -14,8 +14,8 @@ import Shared.IM.Svg as SIS
 import Shared.IM.Types
 import Shared.Avatar as SA
 
-suggestions ∷ IMModel → Html IMMessage
-suggestions { contacts, suggesting, chatting, suggestions }
+suggestionCall ∷ IMModel → Html IMMessage
+suggestionCall { contacts, suggesting, chatting, suggestions }
       | DM.isJust chatting =
               HE.div (HA.class' "side-suggestions-container")
                     [ HE.div [ HA.class' "side-suggestion back-side-suggestion", HA.onClick ResumeSuggesting, HA.title "Browse chat suggestions again" ]

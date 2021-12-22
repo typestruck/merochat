@@ -1,4 +1,4 @@
-module Shared.IM.View.History where
+module Shared.IM.View.ChatHistory where
 
 import Prelude
 
