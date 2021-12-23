@@ -216,18 +216,9 @@ suggestionCards model@{ user, suggestions, experimenting } index =
             , HE.div (HA.class' "cards") cardTrio
             ]
       where
-      welcomeImpersonation name =
-            let
-                  { welcome, first, second } = SEI.welcomeMessage name
-            in
-                  HE.div (HA.class' "card-top-header imp")
-                        [ HE.div (HA.class' "welcome") $ welcome
-                        , HE.div (HA.class' "welcome-new") $ first <> second
-                        ]
-
       cardTrio =
             let
-                  dummyCard = card 0 dummySuggestion
+                  dummyCard = card (-1) dummySuggestion
                   available = DA.catMaybes <<< map (\i → map (card i) $ suggestions !! i) $ (index - 1) .. (index + 1)
             in
                   case DA.length available of
@@ -244,6 +235,16 @@ suggestionCards model@{ user, suggestions, experimenting } index =
                         | otherwise = [ HA.class' "card card-sides faded" ]
             in
                   HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestions) (Just index) model Nothing profile
+
+      welcomeImpersonation name =
+            let
+                  { welcome, first, second } = SEI.welcomeMessage name
+            in
+                  HE.div (HA.class' "card-top-header imp")
+                        [ HE.div (HA.class' "welcome") $ welcome
+                        , HE.div (HA.class' "welcome-new") $ first <> second
+                        ]
+
 
 welcome ∷ ImUser → Html IMMessage
 welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")

@@ -73,7 +73,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, exper
                                                 { duller: status /= Errored
                                                 , "error-message": status == Errored
                                                 , "message-status": true
-                                                }
+                                          }
                                         )
                                         [ HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
                                         , HE.span (HA.class' { hidden: noTimestamps || incomingMessage }) " - "
