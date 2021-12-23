@@ -6,7 +6,7 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.IM.View.Chat as SIVC
+import Shared.IM.View.ChatInput as SIVC
 import Shared.IM.View.ContactList as SIVCN
 import Shared.IM.View.ChatHistory as SIVH
 import Shared.IM.View.LogoMenu as SIVL

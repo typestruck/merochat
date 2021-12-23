@@ -18,7 +18,7 @@ import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
 import Shared.IM.Svg (backArrow, nextArrow)
 import Shared.IM.Svg as SIA
-import Shared.IM.View.Chat as SIVC
+import Shared.IM.View.ChatInput as SIVC
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
@@ -67,14 +67,14 @@ unavailable name =
 
 -- | Compact profile view shown by default
 compactProfile ∷ IMModel → Contact → Html IMMessage
-compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } contact@{ impersonating, user: { id, availability } } =
+compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } contact@{ impersonating, user: { id, availability, typingStatus } } =
       HE.div (HA.class' "profile-contact")
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
                     , HE.img $ [ HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
                             [ HE.h1 (HA.class' "contact-name") name
-                            , typing
+                            , typingNotice
                             , availableStatus
                             ]
                     , HE.div [ HA.class' "profile-contact-deets" ]
@@ -95,7 +95,7 @@ compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } conta
 
       isTyping = (contacts !@ SU.fromJust chatting).typing
 
-      typing = HE.div (HA.class' { "duller typing": true, hidden: not isTyping }) "Typing..."
+      typingNotice = HE.div (HA.class' { "duller typing": true, hidden: not isTyping || not loggedUser.typingStatus || not typingStatus }) "Typing..."
 
       availableStatus =
             HE.div

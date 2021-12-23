@@ -19,7 +19,7 @@ import Shared.Markdown as SM
 
 -- | Messages in a chat history
 chatHistory ∷ IMModel → Maybe Contact → Html IMMessage
-chatHistory { user: { id: loggedUserId, messageTimestamps }, experimenting, failedRequests, freeToFetchChatHistory } contact =
+chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, experimenting, failedRequests, freeToFetchChatHistory } contact =
       HE.div
             [ HA.id $ show MessageHistory
             , HA.class' { "message-history": true, hidden: DM.isNothing contact }
@@ -30,11 +30,11 @@ chatHistory { user: { id: loggedUserId, messageTimestamps }, experimenting, fail
       chatHistoryWindow =
             case contact of
                   Nothing → [ retryOrWarning ]
-                  Just recipient@{ shouldFetchChatHistory, user: { availability } } →
+                  Just profile@{ shouldFetchChatHistory, user: { availability } } →
                         if availability == Unavailable then []
                         else
                               let
-                                    entries = retryOrWarning : displayChatHistory recipient
+                                    entries = retryOrWarning : displayChatHistory profile
                               in
                                     if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries
                                     else entries
@@ -77,7 +77,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps }, experimenting, fail
                                         )
                                         [ HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
                                         , HE.span (HA.class' { hidden: noTimestamps || incomingMessage }) " - "
-                                        , HE.span (HA.class' { hidden: incomingMessage }) $ show status
+                                        , HE.span (HA.class' { hidden: incomingMessage || not readReceipts || not chatPartner.readReceipts }) $ show status
                                         ]
                                 ]
                         ]

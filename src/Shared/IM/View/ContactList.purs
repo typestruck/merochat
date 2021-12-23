@@ -29,7 +29,7 @@ import Shared.User (ProfileVisibility(..))
 
 -- | Users that have exchanged messages with the current logged in user
 contactList ∷ Boolean → IMModel → Html IMMessage
-contactList isClientRender { failedRequests, chatting, experimenting, contacts, user: { id: loggedUserId, profileVisibility, messageTimestamps } } =
+contactList isClientRender { failedRequests, chatting, experimenting, contacts, user: { id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps } } =
       case profileVisibility of
             Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]
             _ →
@@ -52,7 +52,7 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
             let
                   justIndex = Just index
                   --refactor: a neater way to do experiment that don't litter the code with case of
-                  userProfile = case impersonating of
+                  contact = case impersonating of
                         Just impersonationID → SU.fromJust $ DH.lookup impersonationID impersonations
                         _ → user
                   numberUnreadMessages = countUnread history
@@ -63,17 +63,17 @@ contactList isClientRender { failedRequests, chatting, experimenting, contacts, 
                         , HA.onClick <<< ResumeChat $ Tuple user.id impersonating
                         ]
                         [ HE.div (HA.class' "avatar-contact-list-div")
-                                [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass justIndex, HA.src $ SA.avatarForRecipient justIndex userProfile.avatar ]
+                                [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass justIndex, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
-                                [ HE.span (HA.class' "contact-name") userProfile.name
+                                [ HE.span (HA.class' "contact-name") contact.name
                                 , HE.div' [ HA.class' { "contact-list-last-message": true, hidden: typing }, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
-                                , HE.div [ HA.class' { "contact-list-last-message typing": true, hidden: not typing } ] $ HE.p_ "Typing..."
+                                , HE.div [ HA.class' { "contact-list-last-message typing": true, hidden: not typing || not typingStatus || not user.typingStatus } ] $ HE.p_ "Typing..."
                                 ]
                         , HE.div (HA.class' "contact-options")
-                                [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not userProfile.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
+                                [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not contact.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
                                 , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
-                                , HE.div (HA.class' { duller: true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == user.id }) $ show lastHistoryEntry.status
+                                , HE.div (HA.class' { duller: true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == user.id || not contact.readReceipts || not readReceipts }) $ show lastHistoryEntry.status
                                 ]
                         ]
 
