@@ -1,6 +1,7 @@
 module Shared.Spec where
 
 import Prelude
+import Server.Ok
 import Shared.ContentType
 import Shared.IM.Types
 
@@ -8,9 +9,9 @@ import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
-import Server.Ok
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword)
 import Shared.Profile.Types (Generate, ProfileUser)
+import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileVisibility)
 
 type NoBody = {}
@@ -140,8 +141,8 @@ spec ∷
                                                               { body ∷ NoBody
                                                               , response ∷ Ok
                                                               }
-                                                , visibility :: POST "/account/visibility"
-                                                              { body ∷ ProfileVisibility
+                                                , privacy :: POST "/account/privacy"
+                                                              { body ∷ PrivacySettings
                                                               , response ∷ Ok
                                                               }
                                                 }

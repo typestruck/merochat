@@ -175,10 +175,6 @@ body {
     border-radius: 100%;
 }
 
-.no-avatar-message .avatar-message {
-    visibility: hidden;
-}
-
 .svg-back-suggestions {
     width: 25px;
     height: 25px;
@@ -209,7 +205,7 @@ body {
     border-radius: 100%;
 }
 
-.avatar-settings, .sender-message .avatar-message, .avatar-profile-edition {
+.avatar-settings, .outgoing-message .avatar-message, .avatar-profile-edition {
     background: #4d4d51
 }
 
@@ -237,12 +233,12 @@ blockquote {
     border-radius: 5px;
 }
 
-.sender-message blockquote {
+.outgoing-message blockquote {
     border-left: 5px solid hsl(0, 0%, 14.6%);
     background: #373737;
 }
 
-.recipient-message blockquote {
+.incoming-message blockquote {
     border-left: 5px solid hsl(145, 36.5%, 11.7%);
     background: #1b3a28;
 }
@@ -433,28 +429,28 @@ blockquote {
     top: 0px;
 }
 
-.no-avatar-message .message-content::before {
+.same-bubble-message .message-content::before {
     display: none;
 }
 
-.recipient-message .message-content {
+.incoming-message .message-content {
     background-color: #373737;
     margin-left: 20px;
 }
 
-.sender-message .message-content {
+.outgoing-message .message-content {
     background-color: #1b3a28;
     margin-right: 20px;
 }
 
-.recipient-message .message-content::before {
+.incoming-message .message-content::before {
     background-color: #373737;
     top: 0px;
     left: -6px;
     transform: rotate( 52deg) skew( -36deg);
 }
 
-.sender-message .message-content::before {
+.outgoing-message .message-content::before {
     background-color: #1b3a28;
     right: -5px;
     transform: rotate( 0deg) skew( -35deg);
@@ -483,15 +479,15 @@ blockquote {
     margin: 2px;
 }
 
-.message.recipient-message, .message.sender-message {
+.message.incoming-message, .message.outgoing-message {
     margin-top: 15px
 }
 
-.no-avatar-message.message.recipient-message, .no-avatar-message.message.sender-message {
+.same-bubble-message.message.incoming-message, .same-bubble-message.message.outgoing-message {
     margin-top: 2px
 }
 
-.recipient-message {
+.incoming-message {
     flex-flow: row;
     align-self: flex-start;
 }
@@ -503,11 +499,11 @@ blockquote {
     border-radius: 5px;
 }
 
-.recipient-message .text {
+.incoming-message .text {
     background: #ffd1dc;
 }
 
-.sender-message {
+.outgoing-message {
     flex-flow: row-reverse;
     align-self: flex-end;
 }
@@ -1299,6 +1295,7 @@ select {
     background: #373737;
 }
 
+
 .card-center .suggestion.new .loading {
     position: absolute;
     top: 50%;
@@ -1709,11 +1706,20 @@ select {
     margin-right: 20px;
 }
 
-/* dry this shite  */
-
 .suggestion.old~.message-history {
     display: none;
 }
+
+.settings-section {
+    flex-direction: column;
+}
+
+.settings-part {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+/* dry this shite  */
 
 @media (max-width:1279px) {
     .im {
@@ -1766,6 +1772,9 @@ select {
     .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
         display: none;
     }
+    .settings-part {
+        flex-direction: column;
+    }
     .mobile-profile-header {
         display: flex;
         padding: 5px;
@@ -1787,7 +1796,7 @@ select {
         height: 43px;
         align-self: center;
     }
-    .welcome-imp {
+    .welcome-impersonation {
         color: #db5a5d
     }
     .settings .user-menu {
@@ -1895,20 +1904,20 @@ select {
     .message div {
         max-width: 100%;
     }
-    .message.recipient-message, .message.sender-message {
+    .message.incoming-message, .message.outgoing-message {
         margin-top: 8px
     }
-    .recipient-message .message-content {
+    .incoming-message .message-content {
         margin-left: 10px;
     }
-    .sender-message .message-content {
+    .outgoing-message .message-content {
         margin-right: 10px;
     }
     .message-content::before {
         height: 10px;
         width: 11px;
     }
-    .recipient-message .message-content::before {
+    .incoming-message .message-content::before {
         transform: rotate( 55deg) skew( -35deg);
     }
     .modal-placeholder {
@@ -1936,9 +1945,6 @@ select {
     }
     .chat-experiments, .profile-contact {
         padding: 10px;
-    }
-    .settings-section {
-        flex-direction: column;
     }
     .modal-input {
         width: auto;

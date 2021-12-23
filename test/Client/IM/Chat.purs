@@ -16,7 +16,7 @@ import Shared.IM.Types
 import Shared.Unsafe ((!@))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Unsafe as SN
-import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, suggestion, webSocket)
+import Test.Client.Model (anotherImUserId, contact, contactID, historyMessage, imUser, imUserId, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -111,7 +111,7 @@ tests = do
                                       , interest: 1.0
                                       }
                               }
-                  TUA.equal turn $ CIC.makeTurn contact' imUserID
+                  TUA.equal turn $ CIC.makeTurn contact' imUserId
 
             TU.test "makeTurn don't calculate turn for recipient" do
                   TUA.equal Nothing $ CIC.makeTurn contact 90000
@@ -155,12 +155,12 @@ tests = do
       { suggestions: modelSuggestions } = model
 
       recipientMessage = historyMessage
-            { sender = anotherIMUserID
-            , recipient = imUserID
+            { sender = anotherImUserId
+            , recipient = imUserId
             }
       senderMessage = historyMessage
-            { sender = imUserID
-            , recipient = anotherIMUserID
+            { sender = imUserId
+            , recipient = anotherImUserId
             }
       image = "base64"
       caption = "caption"

@@ -1,4 +1,4 @@
-module Shared.IM.View.Chat where
+module Shared.IM.View.ChatInput where
 
 import Prelude
 import Shared.ContentType

@@ -1,12 +1,16 @@
 module Server.Database.LanguagesUsers where
 
-import Type.Proxy (Proxy(..))
 import Droplet.Language
 
+import Data.Tuple.Nested (type (/\))
+import Server.Database.Users (UsersTable)
+import Type.Proxy (Proxy(..))
+import Server.Database.Languages (LanguagesTable)
+
 type LanguagesUsers =
-      ( id ∷ Auto Int
-      , speaker ∷ Int
-      , language ∷ Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
+      , speaker ∷ Column Int (ForeignKey "id" UsersTable)
+      , language ∷ Column Int (ForeignKey "id" LanguagesTable)
       )
 
 languages_users ∷ Table "languages_users" LanguagesUsers

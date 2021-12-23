@@ -28,7 +28,7 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
 import Shared.IM.Svg as SIS
-import Shared.IM.View.Profile as SIVP
+import Shared.IM.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Path as SP
@@ -311,7 +311,7 @@ view
 impersonationProfile ∷ Maybe ExperimentData → Html ProfileMessage
 impersonationProfile = case _ of
       Just (Impersonation (Just profile@{ name })) →
-            HE.div [ HA.class' "suggestion old imper" ] $ warning name : SIVP.displayUserProfile (Just 0) profile
+            HE.div [ HA.class' "suggestion old imper" ] $ warning name : SIVP.displayProfile (Just 0) profile
       _ → HE.createEmptyElement "div"
       where
       warning name = HE.div (HA.class' "imp impersonation-warning")

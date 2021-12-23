@@ -10,7 +10,7 @@ import Data.Tuple as DT
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.Unsafe ((!@))
-import Test.Client.Model (contact, contactID, historyMessage, imUser, imUserID, model, webSocket)
+import Test.Client.Model (contact, contactID, historyMessage, imUser, imUserId, model, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA

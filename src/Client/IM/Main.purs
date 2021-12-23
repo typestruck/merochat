@@ -1,6 +1,8 @@
 module Client.IM.Main where
+
 --refactor: this file needs to be broken down into modules
 
+import Debug
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
@@ -30,6 +32,7 @@ import Control.Monad.Except as CME
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
@@ -51,14 +54,15 @@ import Flame.Subscription.Document as FSD
 import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Flame.Subscription.Window as FSW
 import Foreign as FO
+import Record as R
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
-import Data.HashMap as DH
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
 import Shared.Options.MountPoint (imID, profileID)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
+import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
@@ -72,7 +76,6 @@ import Web.HTML as WH
 import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.Event.PopStateEvent.EventTypes (popstate)
 import Web.HTML.HTMLElement as WHHE
-import Debug
 import Web.HTML.Window as WHW
 
 main ∷ Effect Unit
@@ -180,7 +183,7 @@ update { webSocketRef, fileReader } model =
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userID) → report userID webSocket model
             SendPing isActive → sendPing webSocket isActive model
-            SetProfileVisibility pv → setProfileVisibility pv model
+            SetPrivacySettings ps → setPrivacySettings ps model
             DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
@@ -202,8 +205,8 @@ displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
 sendPing ∷ WebSocket → Boolean → IMModel → NoMessages
 sendPing webSocket isActive model@{ contacts, suggestions } = CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ Ping { isActive, statusFor: map (_.id <<< _.user) contacts <> map _.id suggestions }
 
-setProfileVisibility ∷ ProfileVisibility → IMModel → NoMessages
-setProfileVisibility pv model@{ user } = F.noMessages model { user = user { profileVisibility = pv } }
+setPrivacySettings ∷ PrivacySettings → IMModel → NoMessages
+setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model@{ user } = F.noMessages model { user { profileVisibility = profileVisibility, readReceipts = readReceipts, typingStatus = typingStatus, onlineStatus = onlineStatus, messageTimestamps = messageTimestamps } }
 
 report ∷ Int → WebSocket → IMModel → MoreMessages
 report userID webSocket model@{ reportReason, reportComment } = case reportReason of

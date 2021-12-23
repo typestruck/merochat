@@ -51,7 +51,6 @@ import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 
-
 foreign import time ∷ Number → String
 foreign import dayOfTheWeek ∷ Number → String
 foreign import fullDate ∷ Number → String

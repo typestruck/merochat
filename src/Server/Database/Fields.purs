@@ -40,3 +40,19 @@ lu = Proxy
 
 tu ∷ Proxy "tu"
 tu = Proxy
+
+
+profileVisibility :: Proxy "profileVisibility"
+profileVisibility = Proxy
+
+readReceipts :: Proxy  "readReceipts"
+readReceipts = Proxy
+
+typingStatus  :: Proxy "typingStatus"
+typingStatus = Proxy
+
+onlineStatus  :: Proxy "onlineStatus"
+onlineStatus = Proxy
+
+messageTimestamps :: Proxy  "messageTimestamps"
+messageTimestamps = Proxy

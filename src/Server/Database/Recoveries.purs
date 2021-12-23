@@ -1,15 +1,18 @@
 module Server.Database.Recoveries where
 
-import Type.Proxy (Proxy(..))
 import Droplet.Language
+
 import Data.DateTime (DateTime)
+import Data.Tuple.Nested (type (/\))
+import Server.Database.Users (UsersTable)
+import Type.Proxy (Proxy(..))
 
 type Recoveries =
-      ( id ∷ Auto Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
       , uuid ∷ String
-      , created ∷ Default DateTime
-      , active ∷ Default Boolean
-      , recoverer ∷ Int
+      , created ∷ Column DateTime Default
+      , active ∷ Column Boolean Default
+      , recoverer ∷ Column Int (ForeignKey "id" UsersTable)
       )
 
 recoveries ∷ Table "recoveries" Recoveries

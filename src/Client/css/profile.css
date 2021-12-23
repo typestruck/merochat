@@ -125,9 +125,14 @@ select+.save {
     margin-left: 10px
 }
 
-.modal-input {
+.modal-input,
+.modal-input-checkbox  {
     padding-right: 30px;
     margin-top: 20px;
+}
+
+.section-buttons.privacy {
+    margin-top: 30px;
 }
 
 .suggestion.contact .modal-input:focus {

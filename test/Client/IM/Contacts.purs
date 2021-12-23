@@ -13,7 +13,7 @@ import Shared.Experiments.Impersonation (batman)
 import Shared.Unsafe ((!@))
 import Shared.User
 import Shared.DateTime
-import Test.Client.Model (contact, historyMessage, imUser, imUserID, model, webSocket)
+import Test.Client.Model (contact, historyMessage, imUser, imUserId, model, webSocket)
 import Test.Unit (TestSuite)
 import Shared.IM.Types
 import Test.Unit as TU
@@ -30,7 +30,7 @@ tests = do
                               }
                   TUA.equal (Just 1) chatting
 
-                  let { chatting } = DT.fst $ CICN.resumeChat imUserID Nothing m
+                  let { chatting } = DT.fst $ CICN.resumeChat imUserId Nothing m
                   TUA.equal (Just 0) chatting
 
             TU.test "resumeChat finds impersonation contact" do

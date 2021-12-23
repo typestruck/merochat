@@ -25,7 +25,7 @@ import Shared.Path as SP
 template ∷
       { contacts ∷ Array Contact
       , suggestions ∷ Array Suggestion
-      , user ∷ IMUser
+      , user ∷ ImUser
       } →
       Effect String
 template { contacts, suggestions, user } = do

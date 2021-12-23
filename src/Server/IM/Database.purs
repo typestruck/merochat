@@ -49,6 +49,10 @@ userPresentationFields =
             /\ (date_part_age ("year" /\ _birthday) # as _age)
             /\ _name
             /\ (_visibility # as profileVisibility)
+            /\ (_readReceipts # as readReceipts)
+            /\ (_typingStatus # as typingStatus)
+            /\ (_onlineStatus # as onlineStatus)
+            /\ (_messageTimestamps # as messageTimestamps)
             /\ _headline
             /\ _description
             /\ (select _name # from countries # wher (_id .=. u ... _country) # as _country)
@@ -146,7 +150,7 @@ chatHistoryBetween loggedUserID otherID skip = SD.query $ select star
       # orderBy _date
 
 messageIDsFor ∷ Int → Int → ServerEffect (Array MessageIDTemporary)
-messageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ Proxy "temporaryID"))) # from messages # wher (_sender .=. loggedUserID .&&. _id .>. messageID)
+messageIDsFor loggedUserID messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryID"))) # from messages # wher (_sender .=. loggedUserID .&&. _id .>. messageID)
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserID recipient temporaryID content = SD.withTransaction $ \connection → do
@@ -192,6 +196,3 @@ s = Proxy
 
 t ∷ Proxy "t"
 t = Proxy
-
-profileVisibility :: Proxy "profileVisibility"
-profileVisibility = Proxy

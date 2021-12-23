@@ -53,7 +53,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                         Tuple userID anotherUserID ← setUpUsers
-                        SSA.changeVisibility anotherUserID Nobody
+                        SSA.changePrivacySettings anotherUserID { profileVisibility: Nobody, onlineStatus : true, typingStatus : true, messageTimestamps: true, readReceipts: true}
                         suggestions ← SIA.suggest userID 0 Nothing
                         R.liftAff $ TUA.equal [] suggestions
 
@@ -61,7 +61,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                         Tuple userID anotherUserID ← setUpUsers
-                        SSA.changeVisibility anotherUserID Contacts
+                        SSA.changePrivacySettings anotherUserID {profileVisibility: Contacts, onlineStatus : true, typingStatus : true, messageTimestamps: true, readReceipts: true}
                         suggestions ← SIA.suggest userID 0 Nothing
                         R.liftAff $ TUA.equal [] suggestions
 

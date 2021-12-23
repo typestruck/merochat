@@ -16,7 +16,7 @@ import Shared.Experiments.Impersonation (batman)
 import Shared.User
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
-import Test.Client.Model (anotherIMUserID, contact, contactID, historyMessage, imUser, imUserID, model, webSocket)
+import Test.Client.Model (anotherImUserId, contact, contactID, historyMessage, imUser, imUserId, model, webSocket)
 import Test.Unit (TestSuite)
 import Shared.DateTime (DateTimeWrapper(..))
 import Test.Unit as TU
@@ -43,7 +43,7 @@ tests = do
                                                               , date
                                                               , id: messageID
                                                               , recipient: recipientID
-                                                              , sender: anotherIMUserID
+                                                              , sender: anotherImUserId
                                                               , content
                                                               }
                                                             ]
@@ -186,7 +186,7 @@ tests = do
                                     ( NewIncomingMessage
                                             { id: newMessageID
                                             , experimenting: Nothing
-                                            , userID: anotherIMUserID
+                                            , userID: anotherImUserId
                                             , content
                                             , date
                                             }
@@ -201,14 +201,14 @@ tests = do
                   let
                         dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
                         anotherDummyContact = dummyContact { history = [ historyMessage, historyMessage { id = 25 } ] }
-                        { lastSentMessageID } = CIM.findLastMessages [ dummyContact, anotherDummyContact ] imUserID
+                        { lastSentMessageID } = CIM.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
                   TUA.equal (Just 25) lastSentMessageID
 
             TU.test "checkMissedEvents finds last received message id" do
                   let
                         dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
-                        anotherDummyContact = dummyContact { history = [ historyMessage { sender = anotherIMUserID, id = 25 }, historyMessage { sender = anotherIMUserID, id = 2 } ] }
-                        { lastReceivedMessageID } = CIM.findLastMessages [ dummyContact, anotherDummyContact ] imUserID
+                        anotherDummyContact = dummyContact { history = [ historyMessage { sender = anotherImUserId, id = 25 }, historyMessage { sender = anotherImUserId, id = 2 } ] }
+                        { lastReceivedMessageID } = CIM.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
                   TUA.equal (Just 25) lastReceivedMessageID
 
       where
@@ -226,8 +226,8 @@ tests = do
       { suggestions: modelSuggestions } = model
 
       recipientMessage = historyMessage
-            { sender = anotherIMUserID
-            , recipient = imUserID
+            { sender = anotherImUserId
+            , recipient = imUserId
             }
       image = "base64"
       caption = "caption"

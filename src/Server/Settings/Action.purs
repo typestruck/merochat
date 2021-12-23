@@ -6,6 +6,7 @@ import Shared.ContentType
 
 import Server.AccountValidation as SA
 import Server.Settings.Database as SSD
+import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileVisibility)
 
 changeEmail ∷ Int → String → ServerEffect Unit
@@ -22,5 +23,5 @@ changePassword loggedUserID password = do
 terminateAccount ∷ Int → ServerEffect Unit
 terminateAccount loggedUserID = SSD.terminateAccount loggedUserID
 
-changeVisibility ∷ Int → ProfileVisibility -> ServerEffect Unit
-changeVisibility loggedUserID pv = SSD.changeVisibility loggedUserID pv
+changePrivacySettings ∷ Int → PrivacySettings -> ServerEffect Unit
+changePrivacySettings loggedUserID ps = SSD.changePrivacySettings loggedUserID ps

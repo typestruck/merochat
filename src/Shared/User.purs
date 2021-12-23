@@ -48,12 +48,16 @@ type IU =
               , country ∷ Maybe String
               , languages ∷ Array String
               , age ∷ Maybe Int
-              , profileVisibility :: ProfileVisibility
+              , readReceipts ∷ Boolean
+              , typingStatus ∷ Boolean
+              , profileVisibility ∷ ProfileVisibility
+              , onlineStatus ∷ Boolean
+              , messageTimestamps ∷ Boolean
               )
       )
 
-data Availability =
-      Online
+data Availability
+      = Online
       | LastSeen DateTimeWrapper
       | Unavailable -- blocked/deleted/set to private
       | None --work around lack of persistence
@@ -76,37 +80,45 @@ derive instance Eq Availability
 
 instance DecodeJson Availability where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson ProfileVisibility where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson ProfileVisibility where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson Availability where
       encodeJson = DAEGR.genericEncodeJson
 
 instance Show Gender where
       show = case _ of
-            Female -> "Female"
-            Male -> "Male"
-            NonBinary -> "Non binary"
-            Other -> "Other"
+            Female → "Female"
+            Male → "Male"
+            NonBinary → "Non binary"
+            Other → "Other"
+
 instance Show ProfileVisibility where
       show = DSG.genericShow
+
 instance Show Availability where
       show = case _ of
-            Online -> "Online"
-            LastSeen (DateTimeWrapper dt) -> "Last seen " <> SDT.ago dt
-            Unavailable -> "Unavailable"
-            None -> ""
+            Online → "Online"
+            LastSeen (DateTimeWrapper dt) → "Last seen " <> SDT.ago dt
+            Unavailable → "Unavailable"
+            None → ""
 
 instance ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
+
 instance ReadForeign ProfileVisibility where
       readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
+
 instance ReadForeign Availability where
       readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
 
@@ -116,8 +128,10 @@ derive instance Generic ProfileVisibility _
 
 instance WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
+
 instance WriteForeign ProfileVisibility where
       writeImpl = F.unsafeToForeign <<< DE.fromEnum
+
 instance WriteForeign Availability where
       writeImpl = F.unsafeToForeign <<< DE.fromEnum
 

@@ -3,13 +3,16 @@ module Server.Database.Tags where
 import Droplet.Language
 
 import Type.Proxy (Proxy(..))
+import Data.Tuple.Nested (type (/\))
 
 type Tags =
-      ( id ∷ Auto Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
       , name ∷ String
       )
 
-tags ∷ Table "tags" Tags
+type TagsTable = Table "tags" Tags
+
+tags ∷ TagsTable
 tags = Table
 
 _tags ∷ Proxy "tags"

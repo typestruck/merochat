@@ -1,12 +1,16 @@
 module Server.Database.Blocks where
 
-import Type.Proxy (Proxy(..))
 import Droplet.Language
+import Prim hiding (Constraint)
+
+import Data.Tuple.Nested (type (/\))
+import Server.Database.Users (UsersTable)
+import Type.Proxy (Proxy(..))
 
 type Blocks =
-      ( id ∷ Auto Int
-      , blocker ∷ Int
-      , blocked ∷ Int
+      ( id ∷ Column Int (PrimaryKey /\ Identity)
+      , blocker ∷ Column Int (Constraint "blocker_user" (ForeignKey "id" UsersTable))
+      , blocked ∷ Column Int (Constraint "blocked_user" (ForeignKey "id" UsersTable))
       )
 
 blocks ∷ Table "blocks" Blocks

@@ -1,6 +1,7 @@
 module Shared.IM.Types where
 
 import Prelude
+import Shared.User
 
 import Data.Argonaut.Core as DAC
 import Data.Argonaut.Core as DAP
@@ -10,7 +11,7 @@ import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Array as DA
-import Data.DateTime (Date, DateTime)
+import Data.DateTime (Date)
 import Data.DateTime as DTT
 import Data.DateTime.Instant as DDI
 import Data.Either (Either(..))
@@ -23,7 +24,6 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Number as DNM
 import Data.Show.Generic as DGRS
 import Data.String.Regex as DSRG
 import Data.String.Regex.Flags (noFlags)
@@ -33,24 +33,22 @@ import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Effect.Timer (TimeoutId)
-import Foreign (Foreign)
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
+import Shared.DateTime (DateTimeWrapper)
 import Shared.DateTime as SDT
-import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.ResponseError (DatabaseError)
+import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
-
-import Shared.User
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
-type IMUser = Record IU
+type ImUser = Record IU
 
 type Report =
       { reason ∷ ReportReason
@@ -58,7 +56,7 @@ type Report =
       , userID ∷ Int
       }
 
-type Suggestion = IMUser
+type Suggestion = ImUser
 
 type BasicMessage fields =
       { id ∷ Int
@@ -83,7 +81,7 @@ type BaseContact fields =
       }
 
 type Contact = BaseContact
-      ( user ∷ IMUser
+      ( user ∷ ImUser
       , typing ∷ Boolean
       , history ∷ Array HistoryMessage
       )
@@ -142,7 +140,7 @@ type IM =
       , lastTyping :: DateTimeWrapper
       , typingIds :: Array TimeoutIdWrapper -- TimeoutId constructor is private
       --the current logged in user
-      , user ∷ IMUser
+      , user ∷ ImUser
       --indexes
       , suggesting ∷ Maybe Int
       , chatting ∷ Maybe Int
@@ -206,7 +204,7 @@ type Turn =
 data ProfilePresentation
       = FullContactProfile
       | CurrentSuggestion
-      | OtherSuggestion
+      | OtherSuggestions
 
 data MessageContent
       = Image String String
@@ -247,7 +245,7 @@ data IMMessage
       | DisplayHistory (Array HistoryMessage)
 
       --user menu
-      | ToggleInitialScreen Boolean
+      | ToggleInitialScreen Boolean -- | Mobile screen navigation
       | Logout
       | SetContextMenuToggle ShowContextMenu
       | SetModalContents (Maybe String) ElementID String
@@ -303,7 +301,7 @@ data IMMessage
       | ToggleFortune Boolean
       | DisplayFortune String
       | RequestFailed RequestFailure
-      | SetProfileVisibility ProfileVisibility
+      | SetPrivacySettings PrivacySettings
       | ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer
@@ -565,7 +563,7 @@ instance Show ElementID where
             ImageFormCaption → "image-form-caption"
             MessageHistory → "message-history"
             Favicon → "favicon"
-            ConfirmPasswordInput → "#confirm-password-input"
+            ConfirmPasswordInput → "confirm-password-input"
             PasswordDiv → "password"
             TermsLink → "terms-link"
             PrivacyLink → "privacy-link"

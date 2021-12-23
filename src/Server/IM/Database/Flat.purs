@@ -1,6 +1,7 @@
 module Server.IM.Database.Flat where
 
 import Prelude
+import Shared.User
 
 import Data.DateTime (DateTime)
 import Data.Int as DI
@@ -8,11 +9,12 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
+import Safe.Coerce as SC
 import Server.Database.Flat as SDF
-import Shared.IM.Types (Contact, IMUser)
-import Shared.Unsafe as SU
+import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
-import Shared.User
+import Shared.IM.Types (Contact, ImUser)
+import Shared.Unsafe as SU
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -26,6 +28,10 @@ type FlatFields rest =
       , karmaPosition ∷ Int
       , languages ∷ Maybe String
       , profileVisibility ∷ ProfileVisibility
+      , readReceipts ∷ Checked
+      , messageTimestamps ∷ Checked
+      , typingStatus ∷ Checked
+      , onlineStatus ∷ Checked
       , name ∷ String
       , tags ∷ Maybe String
       | rest
@@ -51,12 +57,16 @@ fromFlatContact fc =
       , typing: false
       }
 
-fromFlatUser ∷ ∀ r. FlatFields r → IMUser
+fromFlatUser ∷ ∀ r. FlatFields r → ImUser
 fromFlatUser fc =
       { id: fc.id
       , name: fc.name
       , headline: fc.headline
       , profileVisibility: fc.profileVisibility
+      , readReceipts: SC.coerce fc.readReceipts
+      , messageTimestamps: SC.coerce fc.messageTimestamps
+      , typingStatus: SC.coerce fc.typingStatus
+      , onlineStatus: SC.coerce fc.onlineStatus
       , availability: None
       , description: fc.description
       , avatar: SA.parseAvatar fc.avatar
