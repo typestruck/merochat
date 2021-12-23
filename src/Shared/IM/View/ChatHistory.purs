@@ -56,6 +56,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, exper
             let
                   incomingMessage = sender /= loggedUserId
                   noTimestamps = not messageTimestamps || not chatPartner.messageTimestamps
+                  noReadReceipts = not readReceipts || not chatPartner.readReceipts
             in
                   HE.div
                         ( HA.class'
@@ -76,8 +77,8 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, exper
                                           }
                                         )
                                         [ HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
-                                        , HE.span (HA.class' { hidden: noTimestamps || incomingMessage }) " - "
-                                        , HE.span (HA.class' { hidden: incomingMessage || not readReceipts || not chatPartner.readReceipts }) $ show status
+                                        , HE.span (HA.class' { hidden: incomingMessage || noTimestamps || noReadReceipts }) " - "
+                                        , HE.span (HA.class' { hidden: incomingMessage || noReadReceipts }) $ show status
                                         ]
                                 ]
                         ]
