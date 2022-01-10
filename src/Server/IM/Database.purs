@@ -55,9 +55,9 @@ userPresentationFields =
             /\ (_messageTimestamps # as messageTimestamps)
             /\ _headline
             /\ _description
-            /\ (select _name # from countries # wher (_id .=. u ... _country) # as _country)
-            /\ (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)))
-            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)))
+            /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit 1 # as _country)
+            /\ (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit 1)
+            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit 1)
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
