@@ -19,7 +19,7 @@
     "big-integer": "^1.6.48",
     "bufferutil": "^4.0.3",
     "insane": "^2.6.2",
-    "marked": "^2.0.0",
+    "marked": "^4.0.10",
     "nodemailer": "^6.4.11",
     "pg": "^8.7.1",
     "querystring-es3": "^0.2.1",
