@@ -6,8 +6,6 @@ This is a high level overview of MelanChat sources.
 
 Server side code (to be run with node.js) lies in src/Server. Likewise, client code (to be loaded by a browser) is located in src/Client. There is an extra folder under src namely Shared which contains code used by both server and client side.
 
-An extra folder at the root, Environment, is included at compile time to determine if the code is being run in production or development mode.
-
 ### Client side
 
 On client side there is a folder for each entry point. These entry points are bundled with webpack.
@@ -20,11 +18,11 @@ External pages might use browsers API for DOM manipulation instead of a framewor
 
 #### Internal pages
 
-Internal pages require login to be accessed. Non logged users will be redirect to /login upon trying to access them. However, there is only a single entry point exposed to the user, /im. The IM page lazy loads other entry points (like user settings, karma leaderboard or user profile edition) and renders them without URL changes.
+Internal pages require login to be accessed. Non logged users are redirected to /login upon trying to access them. However, there is only a single entry point exposed to the user, /im. The IM page lazy loads other entry points (like user settings, karma leaderboard or user profile edition) and renders them without URL changes.
 
-IM uses purescript-flame as web framework. `Client.IM.Main` kickstarts the application, wires document/window events, handles websocket events and call the appropriated methods for each `IMMessage`. Most logical page divisions will have its own file to process given `IMMessage`s, e.g., there is a contact list, history, chat etc module.
+IM uses purescript-flame as web framework. `Client.IM.Main` kickstarts the application, wires document/window events, handles websocket events and call the appropriated methods for each `IMMessage`. Most logical page divisions have its own file to process given `IMMessage`s, e.g., there is a contact list, history, chat etc module.
 
-Lazy loaded pages will also have their own `Main` module (e.g. `Client.Profile.Main`) that will handle events and message updates.
+Lazy loaded pages also have their own `Main` module (e.g. `Client.Profile.Main`) that will handle events and message updates.
 
 #### Miscellaneous
 

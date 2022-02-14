@@ -2,8 +2,7 @@
 
 dist_folder="dist/production"
 copy_folder="distcopy"
-production_file="production/Environment.purs"
-development_file="development/Environment.purs"
+environment_file="src/Shared/Environment.purs"
 bucket="ourmelon"
 css_suffix="CSSHash"
 js_suffix='JSHash'
@@ -14,8 +13,10 @@ cp $dist_folder/* $copy_folder
 npm run build-production-client
 find $dist_folder -size 0 -delete
 
-echo $'module Environment where\n\ndevelopment :: Boolean\ndevelopment = false\n' > $production_file
-echo $'module Environment where\n\ndevelopment :: Boolean\ndevelopment = true\n' > $development_file
+echo $'module Environment where
+
+development :: Boolean
+development = false' > $environment_file
 
 for entry in `ls $dist_folder`
 do
@@ -23,12 +24,10 @@ do
     hash=`echo $entry | perl -nle 'm/\.(.+?)\./; print $1'`
     if [ ${entry: -4} == ".css" ]
     then
-        echo -en "\n$file_name$css_suffix :: String\n$file_name$css_suffix = \"$hash\"\n" >> $production_file
-        echo -en "\n$file_name$css_suffix :: String\n$file_name$css_suffix = \"$hash\"\n" >> $development_file
+        echo -en "\n$file_name$css_suffix :: String\n$file_name$css_suffix = \"$hash\"\n" >> $environment_file
     elif [ ${entry: -3} == ".js" ]
     then
-        echo -en "\n$file_name$js_suffix :: String\n$file_name$js_suffix = \"$hash\"\n" >> $production_file
-        echo -en "\n$file_name$js_suffix :: String\n$file_name$js_suffix = \"$hash\"\n" >> $development_file
+        echo -en "\n$file_name$js_suffix :: String\n$file_name$js_suffix = \"$hash\"\n" >> $environment_file
     fi
 done
 
@@ -41,9 +40,10 @@ do
     fi
 done
 
-git add $production_file
-git add $development_file
+git add $environment_file
 git commit -m 'Update hashs'
 git push
 
 rm -rf $copy_folder
+
+sed -i -e 's/development = false/development = true/g' $environment_file
