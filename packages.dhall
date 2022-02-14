@@ -119,7 +119,11 @@ let additions =
 let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.14.4-20211026/packages.dhall sha256:2ec351f17be14b3f6421fbba36f4f01d1681e5c7f46e0c981465c4cf222de5be
 
-let overrides = {=}
+let overrides = {flame =
+      upstream.flame // { version = "v1.1.2" },
+      droplet =
+      upstream.droplet // { version = "v0.3.0" }
+      }
 
 let additions =
       { browser-cookies =
@@ -135,38 +139,7 @@ let additions =
         , repo = "https://github.com/vilu/purescript-browser-cookies.git"
         , version = "v0.0.1"
         }
-      , droplet =
-        { dependencies =
-          [ "aff"
-          , "arrays"
-          , "bifunctors"
-          , "console"
-          , "datetime"
-          , "debug"
-          , "effect"
-          , "either"
-          , "enums"
-          , "exceptions"
-          , "foldable-traversable"
-          , "foreign"
-          , "foreign-object"
-          , "integers"
-          , "bigints"
-          , "maybe"
-          , "newtype"
-          , "nullable"
-          , "partial"
-          , "prelude"
-          , "profunctor"
-          , "record"
-          , "strings"
-          , "transformers"
-          , "tuples"
-          , "unsafe-coerce"
-          ]
-        , repo = "https://github.com/easafe/purescript-droplet.git"
-        , version = "1cc16e9dcb140dda987942e2266a36569afaec37"
-        }
+
       }
 
 in  upstream // overrides // additions

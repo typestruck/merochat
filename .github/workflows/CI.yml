@@ -48,5 +48,5 @@ jobs:
             output
       - run: psql -f src/Server/sql/index.sql postgresql://melanchat_test:melanchat_test@localhost:5432/melanchat_test
       - run: npm install
-      - run: npm run build
+      - run: spago build
       - run: npm run test -- --no-install
