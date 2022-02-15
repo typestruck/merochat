@@ -19,6 +19,7 @@ import Server.IM.Database as SID
 import Server.IM.Database.Flat (fromFlatUser)
 import Server.IM.Template as SIT
 import Server.Ok (Ok)
+import Server.Response as SR
 import Shared.ResponseError (ResponseError(..))
 
 im ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect (Response String)
@@ -30,7 +31,7 @@ im { guards: { loggedUserID } } = do
             Just user → do
                   suggestions ← SIA.suggest loggedUserID 0 Nothing
                   contacts ← SIA.listContacts loggedUserID 0
-                  contents ← R.liftEffect $ SIT.template { contacts, suggestions, user: fromFlatUser user }
+                  Html contents ← SR.serveTemplate $ SIT.template { contacts, suggestions, user: fromFlatUser user }
                   pure <<< PSR.setHeaders (PH.fromFoldable [ Tuple "content-type" html, Tuple "cache-control" "no-store, max-age=0" ]) $ PSR.ok contents
 
 contacts ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { skip ∷ Int } } → ServerEffect (Array Contact)
