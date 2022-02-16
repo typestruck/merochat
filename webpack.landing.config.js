@@ -8,10 +8,10 @@ const TerserPlugin = require("terser-webpack-plugin");
 module.exports = {
     mode: 'production',
     entry: {
-        bundle: ['./src/Client/css/base.css', './src/Client/css/external.css', './src/Client/css/landing.css'],
+        style: ['./src/Client/css/base.css', './src/Client/css/external.css', './src/Client/css/landing.css'],
     },
     output: {
-        path: path.resolve(__dirname, 'dist/landing'),
+        path: path.resolve(__dirname, 'dist/production'),
         filename: '[name].[contenthash].bundle.js'
     },
     plugins: [

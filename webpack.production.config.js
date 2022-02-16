@@ -13,7 +13,6 @@ module.exports = {
             import: ['./loader/im.bundle.js', './src/Client/css/im.css'],
             dependOn: 'emoji'
         },
-        landing: ['./loader/landing.bundle.js', './src/Client/css/landing.css'],
         login: './loader/login.bundle.js',
         profile: {
             import: ['./loader/profile.bundle.js', './src/Client/css/profile.css'],

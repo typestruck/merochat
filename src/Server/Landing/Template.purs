@@ -21,6 +21,7 @@ template = do
             { content = content
             , javascript = javascript
             , css = css
+            , bundled = not development
             }
       FRS.render contents
       where

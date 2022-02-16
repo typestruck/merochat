@@ -21,6 +21,7 @@ type Parameters a =
       , css ∷ Array (Html a)
       , content ∷ Array (Html a)
       , footer ∷ Array (Html a)
+      , bundled :: Boolean
       }
 
 defaultParameters ∷ ∀ a. Parameters a
@@ -32,6 +33,7 @@ defaultParameters =
       , --REFACTOR: should just be a list of file names
         content: []
       , footer: []
+      , bundled: false
       }
 
 externalDefaultParameters ∷ ∀ a. Parameters a
@@ -56,7 +58,7 @@ template ∷ ∀ a. Parameters a → Effect (Html a)
 template = pure <<< templateWith
 
 templateWith ∷ ∀ a. Parameters a → Html a
-templateWith parameters@{ title, content, css, footer, favicon } =
+templateWith parameters@{ title, content, css, bundled, footer, favicon } =
       HE.html (HA.lang "en")
             [ HE.head_
                     ( [ HE.meta $ HA.charset "UTF-8"
@@ -72,8 +74,8 @@ templateWith parameters@{ title, content, css, footer, favicon } =
             [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "base." <> baseCSSHash ]
             ]
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "common." <> commonJSHash ]
-            ] <> parameters.javascript
+            (if bundled then [] else [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "common." <> commonJSHash ]
+            ]) <> parameters.javascript
 
 externalFooter ∷ ∀ a. Html a
 externalFooter =

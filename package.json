@@ -8,7 +8,7 @@
   "description": "Friendly random chat",
   "scripts": {
     "watch": "nodemon loader/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
-    "build-production-client": "npm run set-production && rm -rf dist && rm -rf output && spago build --purs-args '--codegen corefn,js' && zephyr Client.IM.Main Client.Experiments.Main Client.Recover.Main Client.Settings.Main Client.InternalHelp.Main Client.Help.Main Client.Leaderboard.Main Client.Profile.Main Client.Login.Main Client.Landing.Main && rm -rf output && mv dce-output output && webpack --progress --config webpack.production.config.js",
+    "build-production-client": "npm run set-production && rm -rf dist && rm -rf output && spago build --purs-args '--codegen corefn,js' && zephyr Client.IM.Main Client.Experiments.Main Client.Recover.Main Client.Settings.Main Client.InternalHelp.Main Client.Help.Main Client.Leaderboard.Main Client.Profile.Main Client.Login.Main Client.Landing.Main && rm -rf output && mv dce-output output && webpack --progress --config webpack.production.config.js && webpack --progress --config webpack.landing.config.js",
     "set-production": "sed -i -e 's/development = true/development = false/g' src/Shared/Environment.purs",
     "production-server": "git checkout src/Shared/Environment.purs && git pull --no-edit && npm run set-production && npm install && spago build && webpack --progress --config webpack.landing.config.js && chmod +x ./inline-landing.sh && ./inline-landing.sh && pm2 restart server --update-env"
   },
