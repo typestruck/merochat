@@ -24,7 +24,7 @@ function defaultOptions() {
       });
 }
 
-function restrictedoptions() {
+function restrictedOptions() {
       marked.use({
             renderer: {
                   link(_, title, text) {
@@ -47,15 +47,15 @@ function restrictedoptions() {
 exports.parse = function (plainMarkdown) {
       defaultOptions();
 
-      return marked(plainMarkdown, {
+      return marked.parse(plainMarkdown, {
             smartypants: true
       });
 }
 
 exports.parseRestricted = function(plainMarkdown) {
-      restrictedoptions();
+      restrictedOptions();
 
-      return marked(plainMarkdown, {
+      return marked.parse(plainMarkdown, {
             smartypants: true
       });
 }
