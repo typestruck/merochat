@@ -4,28 +4,35 @@ import Prelude
 
 import Data.String as DS
 import Effect (Effect)
-import Environment (landingJSHash)
+import Environment (development, landingJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
+import Shared.ContentType (ContentType(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Path as SP
 import Shared.Routes (routes)
-import Shared.ContentType (ContentType(..))
 
 template ∷ Effect String
 template = do
       contents ← ST.template defaultParameters
             { content = content
             , javascript = javascript
+            , css = css
             }
       FRS.render contents
       where
+      css
+            | development = [
+                    HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "external" ]
+                    , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "landing"  ]
+                ]
+            | otherwise = []
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.pathery JS $ "landing." <> landingJSHash ]
-            , HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
+            , HE.script' [HA.createAttribute "async" "true", HA.src "https://www.google.com/recaptcha/api.js"]
             ]
       content =
             [ HE.div (HA.class' "landing")
