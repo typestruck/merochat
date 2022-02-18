@@ -79,7 +79,7 @@ suggest loggedUserID skip = case _ of
       Just (ArrayPrimaryKey keys) → -- users to avoid when impersonating
             SD.query $ suggestBaseQuery skip (baseFilter .&&. not (in_ (u ... _id) keys))
       _ → -- default case
-            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (exists $ select (1 # as u) # from histories # wher (_sender .=. loggedUserID .&&. _recipient .=. u ... _id .||. _sender .=. u ... _id .&&. _recipient .=. loggedUserID)))
+            SD.query $ suggestBaseQuery skip baseFilter
       where
       baseFilter = (u ... _id .<>. loggedUserID .&&. _visibility .=. Everyone .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserID .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserID)))
 

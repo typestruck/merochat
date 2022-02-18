@@ -9,6 +9,7 @@ module.exports = {
     mode: 'production',
     entry: {
         style: ['./src/Client/css/base.css', './src/Client/css/external.css', './src/Client/css/landing.css'],
+        landing: './loader/landing.bundle.js'
     },
     output: {
         path: path.resolve(__dirname, 'dist/production'),
