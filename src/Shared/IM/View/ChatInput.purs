@@ -41,10 +41,10 @@ linkModal ∷ IMModel → Html IMMessage
 linkModal { toggleChatModal, linkText, link, erroredFields } =
       HE.div [ HA.class' { "link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm } ]
             [ HE.label_ "Text"
-            , HE.input [ HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (Proxy ∷ Proxy "linkText")) ]
+            , HE.input [ HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (Proxy ∷ _ "linkText")) ]
             , HE.label_ "Link"
             , HE.input [ HA.type' "text", HA.id $ show LinkFormUrl, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (Proxy ∷ Proxy "link")) ]
-            , HE.span [ HA.class' { "error-message": true, "invisible": not (link /= Nothing && DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "link")) erroredFields) } ] "Please enter a link"
+            , HE.span [ HA.class' { "error-message": true, "invisible": not $ DA.elem (TDS.reflectSymbol (Proxy ∷ _ "link")) erroredFields } ] "Please enter a link"
             , HE.div (HA.class' "buttons")
                     [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
                     , HE.button [ HA.class' "green-button", HA.onClick InsertLink ] "Insert"

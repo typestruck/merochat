@@ -326,7 +326,7 @@ insertLink ∷ IMModel → MoreMessages
 insertLink model@{ linkText, link } =
       case link of
             Nothing → F.noMessages $ model
-                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "link") ]
+                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ _ "link") ]
                   }
             Just url →
                   let

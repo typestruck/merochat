@@ -20,7 +20,7 @@ view model@{ experiments, section, current } = case current of
       _ →
             HE.div (HA.class' "chat-experiments")
                   [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "experiments." <> experimentsCSSHash ]
-                  , HE.span (HA.class' "duller") "Choose a chat experiment from the list bellow. The experiment will last until you leave it or refresh the page"
+                  , HE.span (HA.class' "duller") "Choose a chat experiment from the list bellow. The experiment will last until you exit it or refresh the page"
                   , HE.div (HA.class' "all-experiments") $ map toDiv experiments
                   ]
       where
