@@ -106,6 +106,7 @@ updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
             , blockedUsers = blocked : blockedUsers
             , chatting = Nothing
             , failedRequests = []
+            , initialScreen = true
             , toggleModal = HideUserMenuModal
             , toggleContextMenu = HideContextMenu
             }
