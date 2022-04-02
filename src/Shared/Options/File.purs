@@ -20,7 +20,7 @@ maxImageSizeKB ∷ String
 maxImageSizeKB = show base <> " KB"
 
 imageBasePath ∷ String
-imageBasePath = if development then "/client/media/" else productionBasePath
+imageBasePath = if false then "/client/media/" else productionBasePath
 
 productionBasePath ∷ String
 productionBasePath = "https://static.melan.chat/file/ourmelon/"

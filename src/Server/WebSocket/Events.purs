@@ -53,6 +53,7 @@ type WebSocketEffect = BaseEffect WebSocketReader Unit
 type WebSocketReader = BaseReader
       ( sessionUserID ∷ Int
       , connection ∷ WebSocketConnection
+      , configuration ∷ Configuration
       , allConnections ∷ Ref (HashMap Int AliveWebSocketConnection)
       , availability ∷ Ref (HashMap Int Availability)
       )
@@ -63,8 +64,8 @@ aliveDelay = 1000 * 60 * aliveDelayMinutes
 aliveDelayMinutes ∷ Int
 aliveDelayMinutes = 5
 
-handleConnection ∷ Configuration → Pool → Ref (HashMap Int AliveWebSocketConnection) → Ref StorageDetails → Ref (HashMap Int Availability) → WebSocketConnection → Request → Effect Unit
-handleConnection { tokenSecret } pool allConnections storageDetails availability connection request = do
+handleConnection ∷ Configuration → Pool → Ref (HashMap Int AliveWebSocketConnection) → Ref (HashMap Int Availability) → WebSocketConnection → Request → Effect Unit
+handleConnection configuration@{ tokenSecret } pool allConnections availability connection request = do
       maybeUserID ← ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
@@ -83,7 +84,7 @@ handleConnection { tokenSecret } pool allConnections storageDetails availability
       runMessageHandler sessionUserID (WebSocketMessage message) = do
             case SJ.fromJSON message of
                   Right payload → do
-                        let run = R.runBaseAff' <<< RE.catch (\e → reportError payload (checkInternalError e) e) <<< RR.runReader { storageDetails, allConnections, pool, sessionUserID, connection, availability } $ handleMessage payload
+                        let run = R.runBaseAff' <<< RE.catch (\e → reportError payload (checkInternalError e) e) <<< RR.runReader { allConnections, configuration, pool, sessionUserID, connection, availability } $ handleMessage payload
                         EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
                   Left error → do
                         SW.terminate connection

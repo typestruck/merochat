@@ -27,15 +27,17 @@ readConfiguration =
                   , tokenSecret: "so nice, so nice, I got you"
                   , salt: "put it back together"
                   , emailUser: ""
+                  , storageApplicationKey: ""
+                  , storageApplicationKeyId: ""
                   , emailHost: ""
                   , emailPassword: ""
                   , randomizeProfiles
                   }
       else do
             port ← parsePort <$> NP.lookupEnv "PORT"
-            variables ← DT.traverse getVariable [ "CAPTCHA_SECRET", "TOKEN_SECRET", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD", "DATABASE_HOST" ]
+            variables ← DT.traverse getVariable [ "CAPTCHA_SECRET", "TOKEN_SECRET", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD", "DATABASE_HOST", "STORAGE_APPLICATION_ID", "STORAGE_APPLICATION_KEY" ]
             case variables of
-                  [ captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host ] →
+                  [ captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host, storageApplicationKey, storageApplicationKeyId ] →
                         pure $
                               { randomizeProfiles: true
                               , port
@@ -46,6 +48,9 @@ readConfiguration =
                               , emailUser
                               , emailHost
                               , emailPassword
+                              , storageApplicationKeyId
+                              , storageApplicationKey
+
                               }
                   _ → EE.throw "Wrong number of environment variables"
       where
@@ -57,9 +62,6 @@ readConfiguration =
       parsePort value = SU.fromJust do
             v ← value
             DI.fromString v
-
-storageAuthenticationKey ∷ Effect String
-storageAuthenticationKey = DM.fromMaybe "" <$> NP.lookupEnv "STORAGE_KEY"
 
 falseUnless ∷ Maybe String → Boolean
 falseUnless = DM.maybe false (_ == "true")

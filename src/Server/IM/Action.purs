@@ -1,7 +1,7 @@
---refactor: here and other modueles only export whats needed
 module Server.IM.Action where
 
 import Prelude
+import Server.Ok
 
 import Data.Array as DA
 import Data.Foldable as DF
@@ -17,8 +17,7 @@ import Server.File as SF
 import Server.IM.Database as SID
 import Server.IM.Database.Flat (fromFlatContact)
 import Server.IM.Database.Flat as SIF
-import Server.Ok
-import Server.Types (BaseEffect, ServerEffect, StorageDetails)
+import Server.Types (BaseEffect, ServerEffect, Configuration)
 import Server.Wheel as SW
 import Shared.IM.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
 import Shared.Options.File (imageBasePath)
@@ -55,14 +54,14 @@ listSingleContact loggedUserID userID contactsOnly = do
                         }
             _ -> pure Nothing
 
-processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { storageDetails ∷ Ref StorageDetails, pool ∷ Pool | r } (Tuple Int String)
+processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration :: Configuration, pool ∷ Pool | r } (Tuple Int String)
 processMessage loggedUserID userID temporaryID content = do
       sanitized ← processMessageContent content
       id ← SID.insertMessage loggedUserID userID temporaryID sanitized
       pure $ Tuple id sanitized
 
 -- | Sanitizes markdown and handle image uploads
-processMessageContent ∷ ∀ r. MessageContent → BaseEffect { storageDetails ∷ Ref StorageDetails, pool ∷ Pool | r } String
+processMessageContent ∷ ∀ r. MessageContent → BaseEffect { configuration :: Configuration, pool ∷ Pool | r } String
 processMessageContent content = do
       message ← case content of
             Text m → pure m
