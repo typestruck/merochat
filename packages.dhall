@@ -117,12 +117,10 @@ let additions =
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.14.7-20220228/packages.dhall sha256:585403682c9378a55da644fb2edbc74d2592d18283bc9fa3457ad79398bb55bb
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.2-20220613/packages.dhall
+        sha256:99f976d547980055179de2245e428f00212e36acd55d74144eab8ad8bf8570d8
 
-let overrides =
-      { flame = upstream.flame // { version = "v1.1.2" }
-      , droplet = upstream.droplet // { version = "v0.3.0" }
-      }
+let overrides = {=}
 
 let additions =
       { browser-cookies =
@@ -137,6 +135,181 @@ let additions =
           ]
         , repo = "https://github.com/vilu/purescript-browser-cookies.git"
         , version = "v0.0.1"
+        }
+      , simple-jwt =
+        { version = "master"
+        , repo = "https://github.com/easafe/purescript-simple-jwt"
+        , dependencies =
+          [ "arrays"
+          , "console"
+          , "crypto"
+          , "effect"
+          , "either"
+          , "encoding"
+          , "maybe"
+          , "node-buffer"
+          , "prelude"
+          , "simple-json"
+          , "strings"
+          , "test-unit"
+          ]
+        }
+      , crypto =
+        { version = "252d31ae33c255cb0b24f9f91050f2746bd8bc1d"
+        , repo = "https://github.com/easafe/purescript-crypto"
+        , dependencies =
+          [ "aff"
+          , "effect"
+          , "functions"
+          , "maybe"
+          , "node-buffer"
+          , "nullable"
+          , "prelude"
+          , "test-unit"
+          ]
+        }
+      , uuid =
+        { version = "7bb5a90c9b11f6a33ac7610608a650e4d58aeac9"
+        , repo = "https://github.com/spicydonuts/purescript-uuid.git"
+        , dependencies =
+          [ "prelude"
+          , "aff"
+          , "effect"
+          , "either"
+          , "foreign-generic"
+          , "foreign"
+          , "lists"
+          , "maybe"
+          , "partial"
+          , "spec"
+          , "strings"
+          , "transformers"
+          ]
+        }
+      , foreign-generic =
+        { version = "e7fa22dc9fc2351485f2e915fa7d418ca1965c6d"
+        , repo =
+            "https://github.com/working-group-purescript-es/purescript-foreign-generic"
+        , dependencies =
+          [ "assert"
+          , "console"
+          , "effect"
+          , "exceptions"
+          , "foreign"
+          , "foreign-object"
+          , "identity"
+          , "ordered-collections"
+          , "prelude"
+          , "psci-support"
+          , "record"
+          ]
+        }
+      , simple-json =
+        { repo = "https://github.com/justinwoo/purescript-simple-json"
+        , version = "master"
+        , dependencies =
+          [ "arrays"
+          , "assert"
+          , "bifunctors"
+          , "console"
+          , "control"
+          , "effect"
+          , "either"
+          , "exceptions"
+          , "foldable-traversable"
+          , "foreign"
+          , "foreign-object"
+          , "identity"
+          , "lists"
+          , "maybe"
+          , "nonempty"
+          , "nullable"
+          , "partial"
+          , "prelude"
+          , "record"
+          , "transformers"
+          , "typelevel-prelude"
+          , "variant"
+          ]
+        }
+      , unordered-collections =
+        { version = "master"
+        , repo = "https://github.com/fehrenbach/purescript-unordered-collections"
+        , dependencies =
+          [ "arrays"
+          , "console"
+          , "effect"
+          , "either"
+          , "enums"
+          , "exceptions"
+          , "foldable-traversable"
+          , "foreign-object"
+          , "functions"
+          , "integers"
+          , "lists"
+          , "maybe"
+          , "minibench"
+          , "newtype"
+          , "nonempty"
+          , "ordered-collections"
+          , "partial"
+          , "prelude"
+          , "psci-support"
+          , "quickcheck"
+          , "record"
+          , "st"
+          , "tuples"
+          , "typelevel-prelude"
+          , "unfoldable"
+          ]
+        }
+      , payload =
+        { version = "master"
+        , repo = "https://github.com/easafe/purescript-payload"
+        , dependencies =
+          [ "aff"
+          , "affjax"
+          , "affjax-web"
+          , "arrays"
+          , "bifunctors"
+          , "console"
+          , "datetime"
+          , "effect"
+          , "either"
+          , "exceptions"
+          , "foldable-traversable"
+          , "foreign"
+          , "foreign-object"
+          , "http-methods"
+          , "integers"
+          , "js-date"
+          , "lists"
+          , "maybe"
+          , "media-types"
+          , "newtype"
+          , "node-buffer"
+          , "node-fs"
+          , "node-fs-aff"
+          , "node-http"
+          , "node-path"
+          , "node-streams"
+          , "node-url"
+          , "nullable"
+          , "ordered-collections"
+          , "prelude"
+          , "record"
+          , "refs"
+          , "simple-json"
+          , "strings"
+          , "stringutils"
+          , "test-unit"
+          , "transformers"
+          , "tuples"
+          , "type-equality"
+          , "typelevel-prelude"
+          , "unfoldable"
+          , "unsafe-coerce"
+          ]
         }
       }
 

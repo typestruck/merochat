@@ -1,12 +1,12 @@
-exports.innerHTML_ = function(element, html) {
+export function innerHTML_(element, html) {
       element.innerHTML = html;
 }
 
-exports.innerText_ = function(element) {
+export function innerText_(element) {
       return element.innerText;
 }
 
-exports.createCustomEvent_ = function(name, value) {
+export function createCustomEvent_(name, value) {
       return new CustomEvent(name, {
             detail: {
                   value: value
@@ -14,45 +14,45 @@ exports.createCustomEvent_ = function(name, value) {
       });
 }
 
-exports.customEventDetail_ = function(event) {
+export function customEventDetail_(event) {
       return event.detail.value;
 }
 
-exports.documentHasFocus = function() {
+export function documentHasFocus() {
       return document.hasFocus();
 }
 
-exports.value_ = function(element) {
+export function value_(element) {
       return element.value || element.innerText;
 }
 
-exports.setValue_ = function(element, value) {
+export function setValue_(element, value) {
       if (element.value)
             element.value = value;
       else
             element.innerText = value;
 }
 
-exports.toggleDisabled_ = function(element) {
+export function toggleDisabled_(element) {
       element.disabled = !element.disabled;
 }
 
-exports.screenWidth = function() {
+export function screenWidth() {
       return screen.width;
 }
 
-exports.requestNotificationPermission = function () {
+export function requestNotificationPermission() {
       Notification.requestPermission();
 }
 
-exports.notificationPermission = function() {
+export function notificationPermission() {
       return Notification.permission;
 }
 
-exports.pushState_ = function(location) {
+export function pushState_(location) {
       history.pushState(null, '', location);
 }
 
-exports.scrollIntoView_ = function(element) {
+export function scrollIntoView_(element) {
       element.scrollIntoView(true);
 }

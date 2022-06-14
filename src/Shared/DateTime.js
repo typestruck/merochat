@@ -2,15 +2,15 @@ var localDateFormat = new Intl.DateTimeFormat([], { dateStyle: 'short' }),
     localWeekDayFormat = new Intl.DateTimeFormat([], { weekday: 'short' }),
     localTimeFormat = new Intl.DateTimeFormat([], { timeStyle: 'short', hour12: false });
 
-exports.time = function (ms) {
+export function time(ms) {
     return localTimeFormat.format(new Date(ms));
 }
 
-exports.dayOfTheWeek = function (ms) {
+export function dayOfTheWeek(ms) {
     return localWeekDayFormat.format(new Date(ms));
 }
 
-exports.fullDate = function (ms) {
+export function fullDate(ms) {
     var dateTime = new Date(ms);
 
     return localDateFormat.format(dateTime);

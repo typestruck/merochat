@@ -1,6 +1,6 @@
-var trieSearch = require('trie-search');
+import trieSearch from 'trie-search';
 
-exports.makeTrie_ = function(value) {
+export function makeTrie_(value) {
       var trie = new trieSearch('k', {
             min: 2,
             expandRegexes: [],
@@ -11,6 +11,6 @@ exports.makeTrie_ = function(value) {
       return trie;
 }
 
-exports.complete_ = function(trie, word) {
+export function complete_(trie, word) {
       return trie.get(word);
 }

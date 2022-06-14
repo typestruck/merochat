@@ -1,1 +1,3 @@
-require('../output/Client.Experiments.Main').main();
+import { main } from '../output/Client.Experiments.Main/index.js'
+
+main();

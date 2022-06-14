@@ -15,7 +15,7 @@ import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 
 fetchTop10 ∷ ServerEffect (Array LeaderboardUser)
-fetchTop10 = avatarPath <$> (SD.query $ select (((u ... _name) # as _name) /\ ((u ... _avatar) # as _avatar) /\ ((k ... _position) # as _position) /\ ((k ... _current_karma) # as _karma)) # from (((karma_leaderboard # as k) `join` (users # as u)) # on (k ... _ranker .=. u ... _id)) # orderBy (k ... _id) # limit 10)
+fetchTop10 = avatarPath <$> (SD.query $ select (((u ... _name) # as _name) /\ ((u ... _avatar) # as _avatar) /\ ((k ... _position) # as _position) /\ ((k ... _current_karma) # as _karma)) # from (((karma_leaderboard # as k) `join` (users # as u)) # on (k ... _ranker .=. u ... _id)) # orderBy (k ... _id) # limit (Proxy :: _ 10))
 
 _karma ∷ Proxy "karma"
 _karma = Proxy

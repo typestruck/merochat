@@ -1,1 +1,3 @@
-require('../output/Client.Login.Main').main();
+import {main} from '../output/Client.Login.Main/index.js'
+
+main();

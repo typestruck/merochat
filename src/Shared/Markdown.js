@@ -1,4 +1,4 @@
-var marked = require('marked');
+import {marked} from 'marked';
 
 function defaultOptions() {
       marked.use({
@@ -44,7 +44,7 @@ function restrictedOptions() {
       });
 }
 
-exports.parse = function (plainMarkdown) {
+export function parse(plainMarkdown) {
       defaultOptions();
 
       return marked.parse(plainMarkdown, {
@@ -52,7 +52,7 @@ exports.parse = function (plainMarkdown) {
       });
 }
 
-exports.parseRestricted = function(plainMarkdown) {
+export function parseRestricted(plainMarkdown) {
       restrictedOptions();
 
       return marked.parse(plainMarkdown, {

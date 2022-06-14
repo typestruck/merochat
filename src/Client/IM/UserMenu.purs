@@ -75,5 +75,5 @@ setModalContents file root html model = CIF.nothingNext model $ loadModal root h
                   Just name → CCD.loadScript name
                   Nothing → pure unit
 
-toogleUserContextMenu ∷ ShowContextMenu → IMModel → NoMessages
-toogleUserContextMenu toggle model = F.noMessages $ model { toggleContextMenu = toggle }
+toggleUserContextMenu ∷ ShowContextMenu → IMModel → NoMessages
+toggleUserContextMenu toggle model = F.noMessages $ model { toggleContextMenu = toggle }

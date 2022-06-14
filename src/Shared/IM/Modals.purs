@@ -14,11 +14,22 @@ import Flame.Html.Element as HE
 import Shared.IM.Types
 import Shared.IM.Svg as SIA
 import Shared.IM.View.Retry as SIVR
+import Shared.Path as SP
+import Environment (helpCSSHash, profileCSSHash, settingsCSSHash, backerCSSHash, experimentsCSSHash, leaderboardCSSHash)
+
+lazyLoad name = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.pathery CSS name, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
 
 modals ∷ IMModel → Html IMMessage
 modals { toggleModal: toggle, failedRequests, erroredFields } =
       HE.div (HA.class' { "modal-placeholder-overlay": true, "hidden": toggle == HideUserMenuModal })
-            [ case toggle of
+            [ lazyLoad $ "help." <> helpCSSHash
+            , lazyLoad $ "profile." <> profileCSSHash
+            , lazyLoad $ "settings." <> settingsCSSHash
+            , lazyLoad $ "profile." <> profileCSSHash
+            , lazyLoad $ "backer." <> backerCSSHash
+            , lazyLoad $ "experiments." <> experimentsCSSHash
+            , lazyLoad $ "leaderboard." <> leaderboardCSSHash
+            , case toggle of
                     ShowReport reportedID →
                           HE.div (HA.class' "confirmation report")
                                 [ HE.span (HA.class' "report-title") "Report user"

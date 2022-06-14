@@ -1,3 +1,3 @@
-exports.getParameter_ = function(search, name) {
+export function getParameter_(search, name) {
       return (new URLSearchParams(search)).get(name) || "";
 }

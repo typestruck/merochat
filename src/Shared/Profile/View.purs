@@ -57,8 +57,7 @@ view
             } = HE.div profileEditionId
       [ impersonationProfile experimenting
       , HE.div [ HA.class' { "profile-edition suggestion contact": true, hidden: DM.isJust experimenting } ]
-              [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.pathery CSS "profile.ac60b6d1cf56812f13e6" ]
-              , HE.div (HA.class' "avatar-edition")
+              [ HE.div (HA.class' "avatar-edition")
                       [ HE.div (HA.onClick SelectAvatar)
                               [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar ]
                               , pen

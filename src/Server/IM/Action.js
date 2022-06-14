@@ -1,3 +1,2 @@
-let insane = require('insane');
-
-exports.sanitize = insane;
+import insane from 'insane';
+export {insane as sanitize};

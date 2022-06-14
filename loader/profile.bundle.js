@@ -1,1 +1,3 @@
-require('../output/Client.Profile.Main').main();
+import {main} from '../output/Client.Profile.Main/index.js'
+
+main();

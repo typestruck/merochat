@@ -3,7 +3,7 @@ let minRows = 1,
     baseScrollHeight,
     fontSize;
 
-exports.resizeTextarea_ = function (textarea) {
+export function resizeTextarea_(textarea) {
     let rows;
 
     if (baseScrollHeight === undefined) {
@@ -17,4 +17,4 @@ exports.resizeTextarea_ = function (textarea) {
     textarea.rows = minRows;
     rows = Math.ceil((textarea.scrollHeight - baseScrollHeight) / fontSize);
     textarea.rows = Math.max(minRows + rows - lenience, minRows);
-};
+}

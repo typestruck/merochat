@@ -3,7 +3,7 @@ module Server.Captcha where
 import Prelude
 import Server.Types
 
-import Affjax as A
+import Affjax.Node as A
 import Affjax.RequestBody as RB
 import Affjax.ResponseFormat as RF
 import Affjax.StatusCode (StatusCode(..))

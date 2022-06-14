@@ -26,6 +26,7 @@ import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
+
 import Data.Tuple.Nested (type (/\), (/\))
 import Debug (spy)
 import Droplet.Driver (Pool)
@@ -55,9 +56,9 @@ userPresentationFields =
             /\ (_messageTimestamps # as messageTimestamps)
             /\ _headline
             /\ _description
-            /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit 1 # as _country)
-            /\ (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit 1)
-            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit 1)
+            /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy :: _ 1) # as _country)
+            /\ (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy :: _ 1))
+            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy :: _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
@@ -91,7 +92,7 @@ suggestBaseQuery skip filter =
                           # from (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested))
                           # wher filter
                           # orderBy (s ... _id)
-                          # limit suggestionsPerPage
+                          # limit (Proxy :: Proxy 10)
                           # offset skip
                           # as t
                   )
@@ -103,7 +104,7 @@ presentContacts loggedUserID skip =
             # from (contactsSource loggedUserID)
             # wher ((_visibility .=. Contacts .||. _visibility .=. Everyone) .&&. not (exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))))
             # orderBy (_lastMessageDate # desc)
-            # limit contactsPerPage
+            # limit (Proxy :: _ 15)
             # offset skip
 
 --needs to handle impersonations
@@ -143,7 +144,7 @@ chatHistoryBetween loggedUserID otherID skip = SD.query $ select star
                     # from messages
                     # wher (_sender .=. loggedUserID .&&. _recipient .=. otherID .||. _sender .=. otherID .&&. _recipient .=. loggedUserID)
                     # orderBy (_date # desc)
-                    # limit messagesPerPage
+                    # limit (Proxy :: Proxy 25)
                     # offset skip
                     # as c
             )

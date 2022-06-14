@@ -14,8 +14,9 @@ import Effect.Uncurried as EU
 import Environment (development)
 import Node.Buffer (Buffer)
 import Node.Buffer as NB
+import Node.FS.Sync as NFS
 import Node.Encoding (Encoding(..))
-import Node.FS.Aff as NFS
+import Node.FS.Aff as NFA
 import Run as R
 import Server.Response as SR
 import Server.Types (BaseEffect, Configuration)
@@ -62,9 +63,9 @@ saveBase64File input =
                               let fileName = uuid <> SU.fromJust (DH.lookup mediaType allowedMediaTypes)
                               if development then do
                                     let localPath = "src/Client/media/upload/"
-                                    exists ← R.liftAff $ NFS.exists localPath
-                                    unless exists <<< R.liftAff $ NFS.mkdir localPath
-                                    R.liftAff $ NFS.writeFile (localPath <> fileName) buffer
+                                    exists ← R.liftEffect $ NFS.exists localPath
+                                    unless exists <<< R.liftAff $ NFA.mkdir localPath
+                                    R.liftAff $ NFA.writeFile (localPath <> fileName) buffer
                               else do
                                     liftEffect $ upload fileName buffer
                               pure fileName

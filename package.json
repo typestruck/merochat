@@ -12,6 +12,7 @@
     "set-production": "sed -i -e 's/development = true/development = false/g' src/Shared/Environment.purs",
     "production-server": "git checkout src/Shared/Environment.purs && git pull --no-edit && npm run set-production && npm install && spago build && webpack --progress --config webpack.landing.config.js && chmod +x ./inline-landing.sh && ./inline-landing.sh && pm2 restart server --update-env"
   },
+  "type": "module",
   "author": "Eduardo Asafe<e@asafe.dev>",
   "license": "AGPL-3.0-or-later",
   "dependencies": {

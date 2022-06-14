@@ -1,8 +1,8 @@
-exports.grecaptchaExecute = function () {
+export function grecaptchaExecute() {
       grecaptcha.execute()
-};
+}
 
-exports.grecaptchaReset = function () {
+export function grecaptchaReset() {
       if (typeof grecaptcha != undefined)
             grecaptcha.reset();
-};
+}

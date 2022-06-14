@@ -165,7 +165,7 @@ update { webSocketRef, fileReader } model =
             ToggleUserContextMenu event → toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) → CIU.toggleModal toggle model
             SetModalContents file root html → CIU.setModalContents file root html model
-            SetContextMenuToggle toggle → CIU.toogleUserContextMenu toggle model
+            SetContextMenuToggle toggle → CIU.toggleUserContextMenu toggle model
             --main
             AskChatExperiment → askExperiment model
             SetChatExperiment experiment → setExperiment experiment model

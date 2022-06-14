@@ -50,8 +50,9 @@ startHTTPServer ∷ Configuration → Effect Unit
 startHTTPServer configuration@{ port } = do
       pool ← SD.newPool configuration
 
-      EA.launchAff_ $ PS.startGuarded (defaultOpts { port = port }) spec
-            { guards: guards configuration
-            , handlers: SH.handlers { configuration, pool, session: { userID: Nothing } }
-            }
+      EA.launchAff_ $ void do
+            PS.startGuarded (defaultOpts { port = port }) spec
+                  { guards: guards configuration
+                  , handlers: SH.handlers { configuration, pool, session: { userID: Nothing } }
+                  }
       EC.log $ "HTTP now up on http://localhost:" <> show port

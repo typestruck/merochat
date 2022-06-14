@@ -1,1 +1,3 @@
-require('../output/Client.Help.Main').main();
+import { main } from '../output/Client.Help.Main/index.js'
+
+main();

@@ -8,6 +8,7 @@ import Server.Database.KarmaLeaderboard
 import Server.Database.Languages
 import Server.Database.LanguagesUsers
 import Server.Database.Tags
+import Type.Proxy(Proxy(..))
 import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Profile.Database.Flat
@@ -35,8 +36,8 @@ presentProfile loggedUserID = map SU.fromJust <<< SD.single $ select profilePres
             /\ _headline
             /\ _description
             /\ _country
-            /\ (select (int_array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit 1)
-            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit 1)
+            /\ (select (int_array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy :: _ 1))
+            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy :: _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
       source = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)

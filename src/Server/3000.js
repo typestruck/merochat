@@ -1,7 +1,7 @@
 let threeK;
 let placeholderCount = 0;
 
-exports.generate_ = function (use3000, what, size) {
+export function generate_(use3000, what, size) {
       if (use3000) {
             if (threeK === undefined)
                   threeK = require('../../3000.node');
@@ -10,4 +10,4 @@ exports.generate_ = function (use3000, what, size) {
       }
 
       return 'Placeholder ' + placeholderCount++;
-};
+}

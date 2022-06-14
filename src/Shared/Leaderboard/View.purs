@@ -16,8 +16,7 @@ import Environment (leaderboardCSSHash)
 view ∷ LeaderboardModel → Html LeaderboardMessage
 view { top10, inBetween10, userPosition, toggleBoard } =
       HE.div (HA.class' "karma-leaderboard")
-            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "leaderboard." <> leaderboardCSSHash ]
-            , HE.div (HA.class' "duller center")
+            [ HE.div (HA.class' "duller center")
                     [ HE.text "Earn karma by making great conversations and being a good user in general"
                     , HE.br
                     , HE.text "The more karma you have, the more messages you get, as well more access to features"

@@ -33,6 +33,7 @@ import Test.Server as TS
 import Test.Server.Model (baseUser)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
+import Type.Proxy(Proxy(..))
 import Test.Unit.Assert as TUA
 
 tests ∷ TestSuite
@@ -103,7 +104,7 @@ tests = do
                         Tuple userID anotherUserID ← setUpUsers
                         Tuple id _ ← SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         R.liftAff $ TUA.equal userID id
-                        chatStarter ← SD.single $ select _sender # from histories # orderBy _id # limit 1
+                        chatStarter ← SD.single $ select _sender # from histories # orderBy _id # limit (Proxy :: _ 1)
                         R.liftAff $ TUA.equal (Just { sender: userID }) chatStarter
 
             TU.test "processMessage accepts files"

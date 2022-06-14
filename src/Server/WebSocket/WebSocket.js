@@ -1,51 +1,51 @@
-const WebSocket = require('ws');
+import WebSocket from 'ws';
 
 /* Server methods */
-exports.createWebSocketServer_ = function (options, callback) {
+export function createWebSocketServer_(options, callback) {
       return new WebSocket.Server(options, callback);
-};
+}
 
-exports.onConnection_ = function (wss, handleConnection) {
+export function onConnection_(wss, handleConnection) {
       wss.on('connection', handleConnection);
-};
+}
 
-exports.onServerError_ = function (wss, handleError) {
+export function onServerError_(wss, handleError) {
       wss.on('error', handleError);
-};
+}
 
 /* WebSocket methods */
-exports.onMessage_ = function (ws, handleMessage) {
+export function onMessage_(ws, handleMessage) {
       ws.on('message', handleMessage);
-};
+}
 
-exports.onClose_ = function (ws, handleClose) {
+export function onClose_(ws, handleClose) {
       ws.on('close', handleClose);
-};
+}
 
-exports.onServerClose_ = function (ws, handleClose) {
+export function onServerClose_(ws, handleClose) {
       ws.on('close', handleClose);
-};
+}
 
-exports.onError_ = function (ws, handleError) {
+export function onError_(ws, handleError) {
       ws.on('error', handleError);
-};
+}
 
-exports.onPong_ = function (ws, handlePong) {
+export function onPong_(ws, handlePong) {
       ws.on('pong', handlePong);
-};
+}
 
-exports.ping_ = function (ws, pinger) {
+export function ping_(ws, pinger) {
       ws.ping(pinger);
-};
+}
 
-exports.sendMessage_ = function (ws, message) {
+export function sendMessage_(ws, message) {
       ws.send(message);
-};
+}
 
-exports.close_ = function (ws, code, reason) {
+export function close_(ws, code, reason) {
       ws.close(code, reason);
-};
+}
 
-exports.terminate_ = function (ws) {
+export function terminate_(ws) {
       ws.terminate();
-};
+}

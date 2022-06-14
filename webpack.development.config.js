@@ -1,10 +1,10 @@
 'use strict';
 
-const path = require('path');
-const webpack = require('webpack');
+import path from 'path';
+import webpack from 'webpack';
 const isWatch = process.argv.some(a => a === '--watch');
 
-module.exports = {
+export default {
       mode: 'development',
       devtool: 'eval-source-map',
 
@@ -32,7 +32,7 @@ module.exports = {
       },
 
       output: {
-            path: path.resolve(__dirname, 'dist/development'),
+            path: path.resolve(".", './dist/development'),
             filename: '[name].bundle.js'
       },
 
