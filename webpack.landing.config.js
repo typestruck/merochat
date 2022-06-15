@@ -1,6 +1,8 @@
 'use strict';
 
-const path = require('path');
+import path from 'path';
+import webpack from 'webpack';
+
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
@@ -12,7 +14,7 @@ module.exports = {
         landing: './loader/landing.bundle.js'
     },
     output: {
-        path: path.resolve(__dirname, 'dist/production'),
+        path: path.resolve(".", 'dist/production'),
         filename: '[name].[contenthash].bundle.js'
     },
     plugins: [

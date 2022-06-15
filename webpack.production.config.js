@@ -34,7 +34,7 @@ export default {
         backer: './src/Client/css/backer.css'
     },
     output: {
-        path: path.resolve(__dirname, 'dist/production'),
+        path: path.resolve(".", 'dist/production'),
         filename: '[name].[contenthash].bundle.js'
     },
     plugins: [
