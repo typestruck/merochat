@@ -1,7 +1,7 @@
 module Environment where
 
 development :: Boolean
-development = false
+development = true
 
 backerCSSHash :: String
 backerCSSHash = "9307c44a82373e9e78ef"

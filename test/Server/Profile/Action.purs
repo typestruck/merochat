@@ -21,7 +21,7 @@ import Shared.User
 
 tests ∷ TestSuite
 tests = do
-      TU.suite "landing actions" do
+      TU.suite "profile actions" do
             TU.test "saveProfile ignores current picture"
                   $ TS.serverAction
                   $ do
