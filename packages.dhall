@@ -125,16 +125,27 @@ let overrides = {=}
 let additions =
       { browser-cookies =
         { dependencies =
-          [ "prelude"
-          , "console"
-          , "effect"
-          , "maybe"
-          , "foldable-traversable"
-          , "strings"
-          , "js-date"
+          [  "arrays"
+            , "console"
+            , "control"
+            , "debug"
+            , "effect"
+            , "either"
+            , "foldable-traversable"
+            , "js-date"
+            , "lists"
+            , "maybe"
+            , "newtype"
+            , "nonempty"
+            , "parsing"
+            , "prelude"
+            , "psci-support"
+            , "quickcheck"
+            , "strings"
+            , "test-unit"
           ]
-        , repo = "https://github.com/vilu/purescript-browser-cookies.git"
-        , version = "v0.0.1"
+        , repo = "https://github.com/easafe/purescript-browser-cookies.git"
+        , version = "master"
         }
       , simple-jwt =
         { version = "master"
