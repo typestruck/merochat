@@ -7,10 +7,18 @@ bucket="ourmelon"
 css_suffix="CSSHash"
 js_suffix='JSHash'
 
+mkdir -p $dist_folder/a
 mkdir -p $copy_folder
 cp $dist_folder/* $copy_folder
 
 npm run build-production-client
+result=$?
+
+if [ "$result" -gt 0 ]; then
+  echo "FAILED"
+  exit 1
+fi
+
 find $dist_folder -size 0 -delete
 
 echo $'module Environment where

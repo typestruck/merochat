@@ -19,14 +19,23 @@ export default {
                   import: ['./loader/profile.bundle.js'],
                   dependOn: 'im'
             },
-            leaderboard: ['./loader/leaderboard.bundle.js'],
+            leaderboard: {
+                  import: ['./loader/leaderboard.bundle.js'],
+                  dependOn: 'im'
+            },
             help: ['./loader/help.bundle.js'],
-            internalHelp: './loader/internalHelp.bundle.js',
+            internalHelp: {
+                  import: ['./loader/internalHelp.bundle.js'],
+                  dependOn: 'im'
+            },
             settings: {
                   import: ['./loader/settings.bundle.js'],
                   dependOn: 'im'
             },
-            experiments: ['./loader/experiments.bundle.js'],
+            experiments: {
+                  import: ['./loader/experiments.bundle.js'],
+                  dependOn: 'im'
+            },
             recover: './loader/recover.bundle.js',
             emoji: './output/Shared.IM.Emoji/index.js'
       },

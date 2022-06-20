@@ -3,15 +3,14 @@
 import path from 'path';
 import webpack from 'webpack';
 
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TerserPlugin = require("terser-webpack-plugin");
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import TerserPlugin from "terser-webpack-plugin";
 
-module.exports = {
+export default {
     mode: 'production',
     entry: {
-        style: ['./src/Client/css/base.css', './src/Client/css/external.css', './src/Client/css/landing.css'],
-        landing: './loader/landing.bundle.js'
+        style: ['./src/Client/css/base.css', './src/Client/css/external.css', './src/Client/css/landing.css']
     },
     output: {
         path: path.resolve(".", 'dist/production'),
