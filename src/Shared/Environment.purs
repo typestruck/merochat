@@ -1,70 +1,70 @@
 module Environment where
 
 development :: Boolean
-development = true
+development = false
 
 backerCSSHash :: String
-backerCSSHash = "9307c44a82373e9e78ef"
+backerCSSHash = "3e58580beabc10819188"
 
 baseCSSHash :: String
-baseCSSHash = "fbb0afd191efbd297b58"
+baseCSSHash = "be06c5112acf188d4cd8"
 
 commonJSHash :: String
-commonJSHash = "47220903f3685edf8254"
+commonJSHash = "0bb678ae7392b748a57c"
 
 emojiJSHash :: String
-emojiJSHash = "a0e4d5821e55e124aca2"
-
-experimentsJSHash :: String
-experimentsJSHash = "4c45fc8a6e42f8697402"
+emojiJSHash = "2095717c9f496fac2e82"
 
 experimentsCSSHash :: String
-experimentsCSSHash = "fc63aa8ba700acee0172"
+experimentsCSSHash = "2e9a38a44858c519247a"
+
+experimentsJSHash :: String
+experimentsJSHash = "ab72e29996e708b339eb"
 
 externalCSSHash :: String
-externalCSSHash = "510a743bf1694afed23c"
+externalCSSHash = "9ec3c13777955bc00c64"
 
 helpCSSHash :: String
-helpCSSHash = "624634d43f319a7e9d2a"
+helpCSSHash = "0c86b8fed90c6933a556"
 
 helpJSHash :: String
-helpJSHash = "833066807b8a88b44e36"
+helpJSHash = "6cbec684d2aaa5b6bd80"
 
 imJSHash :: String
-imJSHash = "265c4f94da21d36a674a"
+imJSHash = "2b65f48e93a04140319a"
 
 imCSSHash :: String
-imCSSHash = "99fd5b3b6d66c047a2a3"
+imCSSHash = "f755b25488f66577d761"
 
 internalHelpJSHash :: String
-internalHelpJSHash = "41cd3358b433f4879893"
+internalHelpJSHash = "33d6d95156af7e7720a5"
 
 landingJSHash :: String
-landingJSHash = "64d976e06cde5592ea93"
+landingJSHash = "9ca8b49102f5af7095a6"
 
 leaderboardJSHash :: String
-leaderboardJSHash = "03803b93b61551050bd0"
+leaderboardJSHash = "6aa95d03c0368e95cdbe"
 
 leaderboardCSSHash :: String
-leaderboardCSSHash = "71494c0188987b813ff7"
+leaderboardCSSHash = "77e6e27fc9961a9dba4d"
 
 loginJSHash :: String
-loginJSHash = "7dad99fb705d9d0cecf1"
+loginJSHash = "38323798a9cb84b24203"
 
 profileCSSHash :: String
-profileCSSHash = "389dd9eabe0b6b185769"
+profileCSSHash = "39014d6d4937b2223369"
 
 profileJSHash :: String
-profileJSHash = "dfd2b0a68b53c44f80be"
+profileJSHash = "edc95914b588ef26c72b"
 
 recoverJSHash :: String
-recoverJSHash = "8e8831908eff0e0a1a24"
+recoverJSHash = "f784af17aca1b0634331"
 
 settingsJSHash :: String
-settingsJSHash = "37ff01f23fa5f11b6396"
+settingsJSHash = "078f336366d4f7af38ad"
 
 settingsCSSHash :: String
-settingsCSSHash = "aff74535ab52ff90fd31"
+settingsCSSHash = "e67c3e5f2f7fee54a27f"
 
 styleCSSHash :: String
 styleCSSHash = ""
