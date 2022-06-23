@@ -1,8 +1,8 @@
-import { main } from '../output/Client.Landing.Main/index.js'
+import * as Landing from '../output/Client.Landing.Main/index.js'
 
-window.Landing = main;
+window.Landing = Landing;
 //needed for recaptcha
 window.completeRegistration = function (cpt) {
-      return Landing.completeRegistration(cpt)();
+      return window.Landing.completeRegistration(cpt)();
 };
-Landing.main();
+window.Landing.main();

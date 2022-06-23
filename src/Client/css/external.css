@@ -70,6 +70,7 @@ a:hover, input[type=button]:hover {
       outline: none;
       background: #db5a5d;
       color: white;
+      width: 100%;
 }
 
 h2 {
