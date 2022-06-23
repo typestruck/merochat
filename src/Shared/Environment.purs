@@ -1,7 +1,7 @@
 module Environment where
 
 development :: Boolean
-development = true
+development = false
 
 backerCSSHash :: String
 backerCSSHash = "3e58580beabc10819188"
@@ -58,7 +58,7 @@ profileJSHash :: String
 profileJSHash = "d4d28531c74c023e8298"
 
 recoverJSHash :: String
-recoverJSHash = "64f63135e01743e6bd01"
+recoverJSHash = "9449f1d5a1238efa2b5d"
 
 settingsJSHash :: String
 settingsJSHash = "3a0fc94437e76309663e"
