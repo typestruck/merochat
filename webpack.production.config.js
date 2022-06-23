@@ -28,7 +28,6 @@ export default {
             import: './loader/internalHelp.bundle.js',
             dependOn: 'im'
         },
-        landing: './loader/landing.bundle.js',
         settings: {
             import: ['./loader/settings.bundle.js', './src/Client/css/settings.css'],
             dependOn: 'im'
