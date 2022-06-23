@@ -44,7 +44,7 @@ The following data about an User is visible to other Users on the application:
 
 * Gender
 
-    * M/F/O/NB
+    * M/F/NB/O
 
 * Country
 
@@ -66,7 +66,10 @@ The following data about an User is visible to other Users on the application:
 
 * Online status
 
-    * Online, Away (not active for 10 minutes), Last seen _time since last login_(for logged out Users)
+    * Online
+        * The user is on the app
+    * Last seen _time_
+        * The last time the user was in the app
 
 Conversely, the following information is private:
 
@@ -78,7 +81,13 @@ Conversely, the following information is private:
 
 * Visibility status
 
-    * Who can chat with this User: Everyone, Everyone but [Temporary Users](#user-creation), Only contact list, No one
+    * Who can chat with this User: Everyone, Every but temporary users, Only contact list, No one
+
+* Privacy status settings
+
+    Visibility of read receipts, online status, message info (including timestamps), typing status: Everyone, Every but temporary users, Only contact list, No one. Visibility is two-way, that is, if an User disables typing status, they can't see others typing status, and so on
+
+    Toggle for contact list entries: Show last message in the chat, Display headline
 
 * Reactions
 
@@ -88,15 +97,9 @@ Conversely, the following information is private:
 
     * User can tag other Users to help identifying them or remembering something
 
-* Block reason
-
-    * User can supply information while blocking another User to help identifying them or remembering something
-
 ## User Creation
 
 Besides the usual account sign up found in most websites, users may be registered as throwaways for purposes of testing the app- such users are called Temporary Users in this document. Temporary Users do not require entering any information to sign up- but expire after logout (be it by manually logging out or end of browser session) or 3 days, and cannot edit their profile. Temporary Users can be made permanent at any time by updating their setting with the necessary [information](#update-settings).
-
-Mockup of landing page with call to action for registering a new account ([#3](https://github.com/easafe/melanchat/issues/3)):
 
 ![landing page](images/registerlanding_page.png)
 
@@ -110,29 +113,17 @@ Mockup of landing page with call to action for registering a new account ([#3](h
 
 2.  Password
 
-    * No restrictions besides non blank are applied
+    * Must be at least 5 characters
 
-3. (Regular) User creation ([#5](https://github.com/easafe/melanchat/issues/5))
-
-    a) User is created with auto generated values for Avatar, Name, Headline and Description
-
-    b) Browser is redirected to /im
-
-    c) User taken through a tutorial ([#110](https://github.com/easafe/melanchat/issues/110))
+3. (Regular) User creation
 
 4. Temporary User creation
 
-    a) User is created with auto generated values for Avatar, Name, Headline and Description
-
-    b) Browser is redirected to /im
-
-    c) User taken through a tutorial and warned when the account expires
+On sign up, User is created with auto generated values for Avatar, Name, Headline and Description. Browser is redirected to /im
 
 ## Login
 
-Login works as traditional by supplying account details. Third party login strategies (i.e., Facebook or Google) are out of scope.
-
-Mockup of login page ([#4](https://github.com/easafe/melanchat/issues/4)):
+Login works as traditional by supplying email and password.
 
 ![login page](images/login.png)
 
@@ -150,23 +141,21 @@ Mockup of login page ([#4](https://github.com/easafe/melanchat/issues/4)):
 
 2. Password
 
-3. User logs in and is redirected:
-
-    * To the page they tried to access which requires to be logged in or IM page otherwise
+3. User logs in and is redirected to im
 
 ## Logout
 
 Users can manually end their session at any time.
 
-* A regular logged in User is redirected to the landing page after logging out ([#39](https://github.com/easafe/melanchat/issues/39))
+![logout page](images/logout.png)
+
+* A regular logged in User is redirected to the landing page after logging out
 
 * A temporary logged in User is forever deleted from the application after logging out
 
 ## Recover Password
 
 Users can request to reset their password in the occasion it is lost. Password reseting is done via email, by supplying a secret link- the application never emails existing passwords.
-
-Mockup of recover password page ([#47](https://github.com/easafe/melanchat/issues/47)) :
 
 ![recover page](images/recover_password.png)
 
@@ -180,33 +169,29 @@ Mockup of recover password page ([#47](https://github.com/easafe/melanchat/issue
 
 2. A reset link will be sent to the email
 
-    * The reset link expires after 1 days
+    * The reset link expires after 1 day
 
     * The reset link is invalid if already used
 
-3. The reset links leads to
+The reset links leads to
 
-    ![reset page](images/reset_password.png)
+![reset page](images/reset_password.png)
 
-    * This page is only available to non logged in Users
+* This page is only available to non logged in Users
 
-    * Logged in Users are redirected to /im
+* Logged in Users are redirected to /im
 
-    a) Password and password confirmation must match; no other restrictions are applied
+* Password and password confirmation must match and be at least 5 characters long
 
-    b) After password reset, User receives an email saying their password was reset
+* After password reset, User receives an email saying their password was reset
 
 ## Update Profile
 
-User can update their information visible to other Users here.
-
-Mockup of profile edition page:
+User can update their public information here.
 
 ![profile](images/account_profile.png)
 
-* For Temporary Users inputs are disabled and there is a link to Settings' user registration
-
-* For registered users ([#40](https://github.com/easafe/melanchat/issues/40)): click on fields to toggle instantenous edition (i.e., fields are changed as edited, no "save" button)
+* For Temporary Users edition is disabled and there is a link to register, whereas regular users click on fields to toggle edition (i.e., fields are changed as edited, no "save" button)
 
 1. Avatar
 
@@ -240,44 +225,31 @@ Mockup of profile edition page:
 
 User can update their private information here.
 
-Mockup of settings page:
-
-![settings](images/account_settings_permanent_user.png)
-
 * For Temporary Users display a [register form](#user-creation) instead
 
-1. Basic account settings ([#46](https://github.com/easafe/melanchat/issues/46))
+![settings](images/settings1.png)
+![settings](images/settings2.png)
 
-    a) Update email
+1. Profile visibility
 
-    b) Update password
+2. [Privacy settings](#user-information)
 
-    c) Delete all data associated with this User, including chats
+3. Update email
 
-2.  Chat related settings
+4. Update password
 
-    a) [Update visibility](#user-information)
+5. Delete all data associated with this User, including chats
 
-    b) Update [online status](#user-information); unchecked by default
+## Backing
 
-    c) Update typing status (see [IM](../im/requirements.md#chat-input)); unchecked by default
+![settings](images/backing.png)
 
-    d) Update message status (see [IM](../im/requirements.md#chat-history)); unchecked by default
+##  Blocked users management
 
-    e) Display headlines for each User in the contact list (see [IM](../im/requirements.md#contact-list)); unchecked by default, meaning last messages are displayed by default
+![blocked users](images/blocked_users.png)
 
-    f) Update message date (see [IM](../im/requirements.md#chat-history)); unchecked by default
+1. Number of users currently blocked
 
-3. TBD
+2. Displays list of blocked users
 
-4.  Blocked users management
-
-    a) Number of users currently blocked
-
-    b) Displays list of blocked users
-
-    ![blocked users](images/blocked_users.png)
-
-    I. Name and reason why this User was [blocked](#user-information)
-
-    II. Unblock this user
+3. Allow to unblock

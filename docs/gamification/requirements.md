@@ -256,6 +256,5 @@ Special chat features selected for random Users to take part in.
 
 * Chat as x historical figure/character/famous person
 
-* pretentious mode chat experiment
-    for "intelectuals"
-    messages wont send unless they have more characters than the previous message
+* increasingly verbose
+    messages wont send unless they have TBD more characters than the previous message

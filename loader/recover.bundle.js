@@ -1,6 +1,6 @@
-import { main } from '../output/Client.Recover.Main/index.js'
+import * as Recover from '../output/Client.Recover.Main/index.js'
 
-window.Recover = main;
+window.Recover = Recover;
 //needed for recaptcha
-window.completeRecover = function(cpt){return Recover.completeRecover(cpt)();}
-Recover.main();
+window.completeRecover = function(cpt){return window.Recover.completeRecover(cpt)();}
+window.Recover.main();
