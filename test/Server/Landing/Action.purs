@@ -40,84 +40,84 @@ tests = do
             TU.test "register does not accept empty fields"
                   $ TS.serverActionCatch (TS.catch invalidEmailMessage)
                   $ registerExceptionTest
-                        { email: ""
-                        , password: ""
-                        , captchaResponse: Nothing
-                        }
+                          { email: ""
+                          , password: ""
+                          , captchaResponse: Nothing
+                          }
 
             TU.test "register does not accept empty password"
                   $ TS.serverActionCatch (TS.catch invalidPasswordMessage)
                   $ registerExceptionTest
-                        { email
-                        , password: ""
-                        , captchaResponse: Nothing
-                        }
+                          { email
+                          , password: ""
+                          , captchaResponse: Nothing
+                          }
 
             TU.test "register does not accept existing email"
                   $ TS.serverActionCatch (TS.catch emailAlreadyRegisteredMessage)
                   $ do
-                        void $ SLD.createUser
-                              { email
-                              , name: "sdsd"
-                              , password
-                              , headline: "sd"
-                              , description: "ss"
-                              }
-                        registerExceptionTest $
-                              { email
-                              , password
-                              , captchaResponse: Nothing
-                              }
+                          void $ SLD.createUser
+                                { email
+                                , name: "sdsd"
+                                , password
+                                , headline: "sd"
+                                , description: "ss"
+                                }
+                          registerExceptionTest $
+                                { email
+                                , password
+                                , captchaResponse: Nothing
+                                }
 
             TU.test "register creates user"
                   $ TS.serverAction
                   $ do
-                        void <<< SLA.register $
-                              { email
-                              , password
-                              , captchaResponse: Nothing
-                              }
-                        maybeUser ← SDU.userBy (Email email)
-                        case maybeUser of
-                              Nothing → R.liftAff $ TU.failure "user not created!"
-                              Just user → do
-                                    hashed ← ST.hashPassword password
-                                    R.liftAff $ TUA.equal hashed user.password
+                          void <<< SLA.register $
+                                { email
+                                , password
+                                , captchaResponse: Nothing
+                                }
+                          maybeUser ← SDU.userBy (Email email)
+                          case maybeUser of
+                                Nothing → R.liftAff $ TU.failure "user not created!"
+                                Just user → do
+                                      hashed ← ST.hashPassword password
+                                      R.liftAff $ TUA.equal hashed user.password
 
             TU.test "register lowercases emails"
                   $ TS.serverAction
                   $ do
-                        let upcaseEmail = "EMAIL@EMAIL.CO.NZ"
-                        void <<< SLA.register $
-                              { email: upcaseEmail
-                              , password
-                              , captchaResponse: Nothing
-                              }
-                        maybeUser ← SDU.userBy <<< Email $ DS.toLower upcaseEmail
-                        when (DM.isNothing maybeUser) <<< R.liftAff $ TU.failure "user not created!"
+                          let upcaseEmail = "EMAIL@EMAIL.CO.NZ"
+                          void <<< SLA.register $
+                                { email: upcaseEmail
+                                , password
+                                , captchaResponse: Nothing
+                                }
+                          maybeUser ← SDU.userBy <<< Email $ DS.toLower upcaseEmail
+                          when (DM.isNothing maybeUser) <<< R.liftAff $ TU.failure "user not created!"
 
             TU.test "register creates karma"
                   $ TS.serverAction
                   $ do
-                        void $ SLA.register
-                              { email
-                              , password
-                              , captchaResponse: Nothing
-                              }
-                        { id } ← SU.fromJust <$> (SDU.userBy $ Email email)
-                        history ← SD.single $ select (count _id # as c) # from karma_histories # wher (_target .=. id)
-                        R.liftAff $ TUA.equal (Just { c: BG.fromInt 1 }) history
-                        leaderboard ← SD.single $ select (count _id # as c) # from karma_leaderboard # wher (_ranker .=. id)
-                        R.liftAff $ TUA.equal (Just { c: BG.fromInt 1 }) leaderboard
+                          void $ SLA.register
+                                { email
+                                , password
+                                , captchaResponse: Nothing
+                                }
+                          { id } ← SU.fromJust <$> (SDU.userBy $ Email email)
+                          history ← SD.single $ select (count _id # as c) # from karma_histories # wher (_target .=. id)
+                          R.liftAff $ TUA.equal (Just { c: BG.fromInt 1 }) history
+                          leaderboard ← SD.single $ select (count _id # as c) # from karma_leaderboard # wher (_ranker .=. id)
+                          R.liftAff $ TUA.equal (Just { c: BG.fromInt 1 }) leaderboard
 
             TU.test "register creates suggestion"
                   $ TS.serverAction
                   $ do
-                        void $ SLA.register
-                              { email
-                              , password
-                              , captchaResponse: Nothing
-                              }
-                        { id } ← SU.fromJust <$> (SDU.userBy $ Email email)
-                        suggestion ← SD.single $ select (count _id # as c) # from suggestions # wher (_suggested .=. id)
-                        R.liftAff $ TUA.equal (Just { c: BG.fromInt 1 }) suggestion
+                          void $ SLA.register
+                                { email
+                                , password
+                                , captchaResponse: Nothing
+                                }
+                          { id } ← SU.fromJust <$> (SDU.userBy $ Email email)
+                          suggestion ← SD.single $ select (count _id # as c) # from suggestions # wher (_suggested .=. id)
+                          R.liftAff $ TUA.equal (Just { c: BG.fromInt 1 }) suggestion

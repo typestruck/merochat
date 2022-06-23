@@ -49,7 +49,7 @@ do
 done
 
 git add $environment_file
-git commit -m 'Update hashs'
+git commit -m 'Update hashs [skip ci]'
 git push
 
 rm -rf $copy_folder
