@@ -175,6 +175,7 @@ data ShowContextMenu
       | ShowSuggestionContextMenu
       | ShowCompactProfileContextMenu
       | ShowFullProfileContextMenu
+      | ShowContactContextMenu (Tuple Int (Maybe Int))
 
 data ShowUserMenuModal
       = HideUserMenuModal
@@ -283,6 +284,7 @@ data IMMessage
       | CheckTyping String
       | NoTyping Int
       | TypingId TimeoutId
+
       --main
       | DisplayAvailability AvailabilityStatus
       | SendPing Boolean

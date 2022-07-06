@@ -291,7 +291,11 @@ blockquote {
     display: none;
 }
 
-.contact:hover .message-context-menu {
+.message-content-menu svg {
+    vertical-align: bottom;
+}
+
+.contact:hover .message-context-menu, .message-context-menu.visible  {
     display: block;
 }
 
