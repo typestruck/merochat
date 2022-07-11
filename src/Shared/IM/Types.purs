@@ -86,14 +86,16 @@ type Contact = BaseContact
       , history ∷ Array HistoryMessage
       )
 
-type HistoryMessage =
-      { id ∷ Int
-      , sender ∷ Int
+type HM r =
+      ( sender ∷ Int
       , recipient ∷ Int
       , date ∷ DateTimeWrapper
       , content ∷ String
       , status ∷ MessageStatus
-      }
+      | r
+      )
+
+type HistoryMessage = Record (HM (id ∷ Int))
 
 data MessageStatus
       = Errored
@@ -137,8 +139,8 @@ type IM =
       , modalsLoaded ∷ Array ShowUserMenuModal
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
-      , lastTyping :: DateTimeWrapper
-      , typingIds :: Array TimeoutIdWrapper -- TimeoutId constructor is private
+      , lastTyping ∷ DateTimeWrapper
+      , typingIds ∷ Array TimeoutIdWrapper -- TimeoutId constructor is private
       --the current logged in user
       , user ∷ ImUser
       --indexes
@@ -310,10 +312,11 @@ data IMMessage
 
 data WebSocketPayloadServer
       = UpdateHash
-      | Ping { isActive :: Boolean
-             , statusFor ∷ Array Int
-             }
-      | Typing { id :: Int }
+      | Ping
+              { isActive ∷ Boolean
+              , statusFor ∷ Array Int
+              }
+      | Typing { id ∷ Int }
       | OutgoingMessage
               ( BasicMessage
                       ( userID ∷ Int
@@ -367,16 +370,16 @@ data ElementID
       | FaqLink
       | AvatarFileInput
 
-type AvailabilityStatus = Array { id :: Int, status :: Availability }
+type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
 
 data FullWebSocketPayloadClient
-      = Pong { status :: AvailabilityStatus }
+      = Pong { status ∷ AvailabilityStatus }
       | Content WebSocketPayloadClient
 
 data WebSocketPayloadClient
       = CurrentHash String
       | NewIncomingMessage ClientMessagePayload
-      | ContactTyping { id :: Int }
+      | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
               { previousID ∷ Int
               , id ∷ Int
@@ -397,17 +400,20 @@ derive instance Ord MessageStatus
 
 instance ReadForeign MessageStatus where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
+
 instance ReadForeign ReportReason where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
 
 instance WriteForeign ReportReason where
       writeImpl reason = F.unsafeToForeign $ DE.fromEnum reason
+
 instance WriteForeign MessageStatus where
       writeImpl messageStatus = F.unsafeToForeign $ DE.fromEnum messageStatus
 
 instance Bounded MessageStatus where
       bottom = Received
       top = Read
+
 instance Bounded ReportReason where
       bottom = DatingContent
       top = OtherReason
@@ -427,6 +433,7 @@ instance BoundedEnum MessageStatus where
             2 → Just Delivered
             3 → Just Read
             _ → Nothing
+
 instance BoundedEnum ReportReason where
       cardinality = Cardinality 1
       fromEnum = case _ of
@@ -456,6 +463,7 @@ instance Enum ReportReason where
             HateSpeech → Just Harassment
             Spam → Just HateSpeech
             OtherReason → Just Spam
+
 instance Enum MessageStatus where
       succ = case _ of
             Errored → Just Received
@@ -470,50 +478,69 @@ instance Enum MessageStatus where
             Delivered → Just Received
             Read → Just Delivered
 
-
 instance DecodeJson TimeoutIdWrapper where
       decodeJson = Right <<< UC.unsafeCoerce
+
 instance DecodeJson DateWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
+
 instance DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson ShowUserMenuModal where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson WebSocketPayloadClient where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson ShowContextMenu where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson RetryableRequest where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson ShowChatModal where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson ReportReason where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
+
 instance EncodeJson DateWrapper where
       encodeJson = DAC.fromNumber <<< SDT.dateToNumber
+
 instance EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson MessageContent where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson ShowUserMenuModal where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson WebSocketPayloadClient where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson ShowContextMenu where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson RetryableRequest where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson ShowChatModal where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson ReportReason where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
 
@@ -527,6 +554,7 @@ instance Show MessageStatus where
             Received → "Sent"
             Delivered → "Unread"
             Read → "Read"
+
 instance Show ReportReason where
       show = case _ of
             DatingContent → "Dating content"
@@ -534,6 +562,7 @@ instance Show ReportReason where
             HateSpeech → "Hate Speech/Call to violence"
             Spam → "Spam/Product placement"
             OtherReason → "Other"
+
 instance Show ShowUserMenuModal where
       show = case _ of
             ShowProfile → "Your profile"
@@ -546,13 +575,16 @@ instance Show ShowUserMenuModal where
 
 instance showMDate ∷ Show DateWrapper where
       show = DGRS.genericShow
+
 instance Show MessageContent where
       show = DGRS.genericShow
+
 instance Show WebSocketPayloadClient where
       show = DGRS.genericShow
 
 instance Show WebSocketPayloadServer where
       show = DGRS.genericShow
+
 instance Show ElementID where
       show = case _ of
             UserContextMenu → "user-context-menu"
@@ -588,13 +620,11 @@ instance Show ElementID where
             PasswordInput → "password-input"
             AvatarFileInput → "avatar-file-input"
 
-
 instance EncodeQueryParam ArrayPrimaryKey where
       encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
 
 instance ReadForeign DateWrapper where
       readImpl foreignDate = DateWrapper <<< DTT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
-
 
 instance DecodeQueryParam ArrayPrimaryKey where
       decodeQueryParam query key =
@@ -603,7 +633,6 @@ instance DecodeQueryParam ArrayPrimaryKey where
                   --this is terrible
                   Just [ value ] → Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
                   _ → errorDecoding query key
-
 
 instance WriteForeign DateWrapper where
       writeImpl = F.unsafeToForeign <<< SDT.dateToNumber
@@ -635,16 +664,18 @@ derive instance Generic ShowChatModal _
 
 instance ToValue MessageStatus where
       toValue v = F.unsafeToForeign $ DE.fromEnum v
+
 instance ToValue ReportReason where
       toValue v = F.unsafeToForeign $ DE.fromEnum v
 
 instance FromValue ReportReason where
       fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v ∷ Either String Int)
+
 instance FromValue MessageStatus where
       fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v ∷ Either String Int)
+
 instance FromValue DateWrapper where
       fromValue v = map DateWrapper (DL.fromValue v ∷ Either String Date)
-
 
 errorDecoding ∷ ∀ a. Object (Array String) → String → Either DecodeError a
 errorDecoding queryObj key = Left $ QueryDecodeError

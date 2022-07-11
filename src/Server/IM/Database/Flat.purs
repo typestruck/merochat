@@ -3,17 +3,15 @@ module Server.IM.Database.Flat where
 import Prelude
 import Shared.User
 
-import Data.DateTime (DateTime)
+import Data.DateTime (DateTime(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String (Pattern(..))
-import Data.String as DS
 import Safe.Coerce as SC
 import Server.Database.Flat as SDF
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
-import Shared.IM.Types (Contact, ImUser)
+import Shared.IM.Types (Contact, HM, ImUser, HistoryMessage)
 import Shared.Unsafe as SU
 
 type FlatFields rest =
@@ -39,14 +37,17 @@ type FlatFields rest =
 
 type FlatUser = FlatFields ()
 
-type FlatContact = FlatFields
+type FlatC r = FlatFields
       ( chatAge ∷ Maybe Number
       , chatStarter ∷ Maybe Int
-      -- only used for ordering
-      , lastMessageDate ∷ Maybe DateTime
+      | r
       )
 
-fromFlatContact ∷ FlatContact → Contact
+type FlatContact = FlatC (lastMessageDate ∷ Maybe DateTime)
+
+type FlatContactHistoryMessage = FlatC (HM (messageId ∷ Int))
+
+fromFlatContact ∷ forall r . FlatC r → Contact
 fromFlatContact fc =
       { shouldFetchChatHistory: true
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
@@ -77,4 +78,14 @@ fromFlatUser fc =
       , country: fc.country
       , languages: SDF.splitAgg "," fc.languages
       , age: DI.ceil <$> fc.age
+      }
+
+fromFlatMessage ∷ FlatContactHistoryMessage → HistoryMessage
+fromFlatMessage fm =
+      { id: fm.messageId
+      , sender: fm.sender
+      , recipient: fm.recipient
+      , date: fm.date
+      , content: fm.content
+      , status: fm.status
       }

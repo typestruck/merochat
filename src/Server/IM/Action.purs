@@ -4,6 +4,7 @@ import Prelude
 import Server.Ok
 
 import Data.Array as DA
+import Data.Array.NonEmpty as DAN
 import Data.Foldable as DF
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
@@ -14,7 +15,7 @@ import Droplet.Driver (Pool)
 import Server.Email as SE
 import Server.File as SF
 import Server.IM.Database as SID
-import Server.IM.Database.Flat (fromFlatContact)
+import Server.IM.Database.Flat (fromFlatContact, fromFlatMessage)
 import Server.IM.Database.Flat as SIF
 import Server.Types (BaseEffect, ServerEffect, Configuration)
 import Server.Wheel as SW
@@ -28,19 +29,14 @@ suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array Sugges
 suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip keys
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
-listContacts loggedUserId skip = do
-      contacts ← (fromFlatContact <$> _) <$> SID.presentContacts loggedUserId skip
-      history ← SID.chatHistoryFor loggedUserId $ map (_.id <<< _.user) contacts
-      let userHistory = DF.foldl intoHashMap DH.empty history
-      pure $ intoContacts userHistory <$> contacts
+listContacts loggedUserId skip =
+      map chatHistory <<< DA.groupBy sameContact <$> SID.presentContacts loggedUserId skip
 
       where
-      intoHashMap hashMap m@{ sender, recipient } =
-            DH.insertWith (<>) (if sender == loggedUserId then recipient else sender) [ m ] hashMap
+      sameContact a b = a.id == b.id
 
-      intoContacts userHistory contact@{ user: { id } } = contact
-            { history = SU.fromJust $ DH.lookup id userHistory
-            }
+      chatHistory records =
+            let contact = DAN.head records in (fromFlatContact contact) { history = fromFlatMessage <$> DAN.toArray records }
 
 listSingleContact ∷ Int → Int → Boolean → ServerEffect (Maybe Contact)
 listSingleContact loggedUserId userId contactsOnly = do

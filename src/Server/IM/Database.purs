@@ -7,6 +7,7 @@ import Server.Database.Countries
 import Server.Database.Fields
 import Server.Database.Functions
 import Server.Database.Histories
+import Server.Database.Histories
 import Server.Database.KarmaHistories
 import Server.Database.KarmaLeaderboard
 import Server.Database.Languages
@@ -36,10 +37,9 @@ import Droplet.Language.Internal.Function (PgFunction)
 import Effect.Class (liftEffect)
 import Effect.Console (log)
 import Server.Database as SD
-import Server.IM.Database.Flat (FlatUser, FlatContact)
+import Server.IM.Database.Flat (FlatContact, FlatUser, FlatContactHistoryMessage)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
-import Server.Database.Histories
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
@@ -116,29 +116,62 @@ presentSelectedContacts loggedUserId ids
       | DA.null ids = pure []
       | otherwise = SD.query $ select (contactPresentationFields loggedUserId) # from (contactsSource loggedUserId) # wher (in_ (u ... _id) ids)
 
-presentContacts ∷ Int → Int → ServerEffect (Array FlatContact)
-presentContacts loggedUserId skip =
-      SD.query $ select (contactPresentationFields loggedUserId)
-            # from (contactsSource loggedUserId)
-            # wher ((_visibility .=. Contacts .||. _visibility .=. Everyone) .&&. not (exists (select (1 # as u) # from blocks # wher (_blocker .=. h ... _recipient .&&. _blocked .=. h ... _sender .||. _blocker .=. h ... _sender .&&. _blocked .=. h ... _recipient))))
-            # orderBy (_lastMessageDate # desc)
-            # limit (Proxy :: _ 15)
-            # offset skip
-
---refactor: presentContacts and chatHistoryFor can be combined into a single query with something like this
--- select coalesce("h"."date", utc_now()) AS "lastMessageDate", s.sender, s.recipient, s.date, s.content, s.status from users u join histories h on u.id = h.sender and h.recipient = 4 or u.id = h.recipient and h.sender = 4, lateral  (select * from (select row_number() over (order by date, sender, recipient desc) as n, id, sender, recipient, date, content, status from  messages m where m.sender = h.sender and m.recipient = h.recipient or m.sender = h.recipient and m.recipient = h.sender order by date, sender, recipient desc ) b where status < 2 or n <= 15) s  order by "lastMessageDate";
-chatHistoryFor ∷ Int → Array Int → ServerEffect (Array HistoryMessage)
-chatHistoryFor loggedUserId otherIDs
-      | DA.null otherIDs = pure []
-      | otherwise = SD.unsafeQuery query { sender: loggedUserId, page: initialMessagesPerPage, status: Delivered }
-              where
-              query = "select * from (" <> DS.joinWith " union all " (select <$> otherIDs) <> ") r order by date, sender, recipient"
-              select n =
-                    let
-                          parameter = show n
-                    in
-                          "((select" <> messagePresentationFields <> "from messages where sender = @sender and recipient = " <> parameter <> " or sender = " <> parameter <> " and recipient = @sender order by date desc limit @page) union (select" <> messagePresentationFields <> "from messages where recipient = @sender and sender = " <> parameter <> " and status < @status order by date desc))"
-              messagePresentationFields = " id, sender, recipient, date, content, status "
+presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
+presentContacts loggedUserId skip = SD.unsafeQuery query { loggedUserId, status: Delivered, initialMessages: initialMessagesPerPage, contact: Contacts, everyone: Everyone, limit: contactsPerPage, offset: skip }
+      where
+      query =
+            """SELECT
+        COALESCE (h.sender, @loggedUserId) "chatStarter"
+      , COALESCE (h.date, utc_now()) "lastMessageDate"
+      , date_part_age ('day', COALESCE(first_message_date, utc_now())) "chatAge"
+      , u.id
+      , avatar
+      , gender
+      , date_part_age ('year', birthday) age
+      , name
+      , visibility "profileVisibility"
+      , read_receipts "readReceipts"
+      , typing_status "typingStatus"
+      , online_status "onlineStatus"
+      , message_timestamps "messageTimestamps"
+      , headline
+      , description
+      , (SELECT name FROM countries WHERE id = u.country) country
+      , (SELECT STRING_AGG(l.name, ', ' ORDER BY name) FROM languages l JOIN languages_users lu ON l.id = lu.language AND lu.speaker = u.id) languages
+      , (SELECT STRING_AGG(t.name, '\n' ORDER BY t.id) FROM tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
+      , k.current_karma karma
+      , position "karmaPosition"
+      , s.id as "messageId"
+      , s.sender
+      , s.recipient
+      , s.date
+      , s.content
+      , s.status
+FROM
+      users u
+      JOIN karma_leaderboard k ON u.id = k.ranker
+      JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
+      , lateral (SELECT *
+                 FROM (SELECT
+                              ROW_NUMBER() OVER (ORDER BY date, sender, recipient DESC) n
+                              , id
+                              , sender
+                              , recipient
+                              , date
+                              , content
+                              , status
+                       FROM messages m
+                       WHERE m.sender = h.sender AND m.recipient = h.recipient OR
+                             m.sender = h.recipient AND m.recipient = h.sender
+                       ORDER BY date
+                              , sender
+                              , recipient DESC) b
+                 WHERE status < @status OR n <= @initialMessages) s
+WHERE (visibility = @contact OR visibility = @everyone)
+      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+ORDER BY "lastMessageDate" DESC
+LIMIT @limit
+OFFSET @offset"""
 
 chatHistorySince ∷ Int → Int → ServerEffect (Array HistoryMessage)
 chatHistorySince loggedUserId lastID = SD.query $ select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status) # from messages # wher (_recipient .=. loggedUserId .&&. _id .>. lastID .&&. _status .<. Delivered) # orderBy (_date /\ _sender)
@@ -200,9 +233,6 @@ _chatStarter = Proxy
 _chatAge ∷ Proxy "chatAge"
 _chatAge = Proxy
 
-_lastMessageDate ∷ Proxy "lastMessageDate"
-_lastMessageDate = Proxy
-
 h ∷ Proxy "h"
 h = Proxy
 
@@ -211,3 +241,6 @@ s = Proxy
 
 t ∷ Proxy "t"
 t = Proxy
+
+_lastMessageDate ∷ Proxy "lastMessageDate"
+_lastMessageDate = Proxy
