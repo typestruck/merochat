@@ -44,7 +44,7 @@ create table messages
     date timestamptz not null default (now()),
     content text not null,
     status smallint not null default 1,
-    visualized timestamptz,
+    visualized timestamptz
 
     constraint from_user_message foreign key (sender) references users(id) on delete cascade,
     constraint to_user_message foreign key (recipient) references users(id) on delete cascade
@@ -180,6 +180,8 @@ create table histories
     date timestamptz not null default (utc_now()), -- date of last message sent
     sender_archived boolean not null default false,
     recipient_archived boolean not null default false,
+    sender_deleted_to int,
+    recipient_deleted_to int,
 
     constraint from_user_message foreign key (sender) references users(id) on delete cascade,
     constraint to_user_message foreign key (recipient) references users(id) on delete cascade,

@@ -88,7 +88,7 @@ retryableResponse requestMessage message aff = do
             Right r → pure <<< Just <<< message <<< _.body $ DN.unwrap r
             Left err → do
                   logError err
-                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage: errorMessage err }
+                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage: Just $ errorMessage err }
 
 -- | Perform a request, throwing on errors
 silentResponse ∷ ∀ a. Aff (ClientResponse a) → Aff a

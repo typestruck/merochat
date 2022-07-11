@@ -162,7 +162,7 @@ handleMessage payload = do
                   whenJust possibleRecipientConnection $ \{ connection: recipientConnection } →
                         sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage
                               { id: messageID
-                              , userID: sessionUserID
+                              , userId: sessionUserID
                               , content: finalContent
                               , experimenting: experimenting
                               , date

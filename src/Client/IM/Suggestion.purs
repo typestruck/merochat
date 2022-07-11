@@ -86,13 +86,12 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
 
 blockUser ∷ WebSocket → Int → IMModel → NextMessage
-blockUser webSocket blocked model@{ blockedUsers } =
+blockUser webSocket blocked model =
       updateAfterBlock blocked model :>
             [ do
                     result ← CCN.defaultResponse $ request.im.block { body: { id: blocked } }
                     case result of
-                          --refactor: either make errorMessage maybe or get rid of it
-                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage: "" }
+                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage: Nothing }
                           _ → do
                                 liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: blocked }
                                 pure Nothing

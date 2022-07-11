@@ -53,7 +53,7 @@ type ImUser = Record IU
 type Report =
       { reason ∷ ReportReason
       , comment ∷ Maybe String
-      , userID ∷ Int
+      , userId ∷ Int
       }
 
 type Suggestion = ImUser
@@ -66,7 +66,7 @@ type BasicMessage fields =
 
 type ClientMessagePayload = BasicMessage
       ( content ∷ String
-      , userID ∷ Int
+      , userId ∷ Int
       , date ∷ DateTimeWrapper
       )
 
@@ -181,6 +181,7 @@ data ShowUserMenuModal
       = HideUserMenuModal
       | ConfirmLogout
       | ConfirmTermination
+      | ConfirmDeleteChat (Tuple Int (Maybe Int))
       | ShowExperiments
       | ShowProfile
       | ShowSettings
@@ -222,7 +223,7 @@ data Markup
 
 type RequestFailure =
       { request ∷ RetryableRequest
-      , errorMessage ∷ String
+      , errorMessage ∷ Maybe String
       }
 
 data RetryableRequest
@@ -234,6 +235,7 @@ data RetryableRequest
       | PreviousSuggestion
       | NextSuggestion
       | ReportUser Int
+      | DeleteChat (Tuple Int (Maybe Int))
 
 newtype DateWrapper = DateWrapper Date
 

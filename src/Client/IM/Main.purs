@@ -143,6 +143,7 @@ update { webSocketRef, fileReader } model =
             UpdateReadCount → CICN.markRead webSocket model
             CheckFetchContacts → CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
+            SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
             DisplayImpersonatedContact id history contacts → CICN.displayImpersonatedContacts id history contacts model
@@ -209,20 +210,20 @@ setPrivacySettings ∷ PrivacySettings → IMModel → NoMessages
 setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model@{ user } = F.noMessages model { user { profileVisibility = profileVisibility, readReceipts = readReceipts, typingStatus = typingStatus, onlineStatus = onlineStatus, messageTimestamps = messageTimestamps } }
 
 report ∷ Int → WebSocket → IMModel → MoreMessages
-report userID webSocket model@{ reportReason, reportComment } = case reportReason of
+report userId webSocket model@{ reportReason, reportComment } = case reportReason of
       Just rs →
-            CIS.updateAfterBlock userID
+            CIS.updateAfterBlock userId
                   ( model
                           { reportReason = Nothing
                           , reportComment = Nothing
                           }
                   ) :>
                   [ do
-                          result ← CCN.defaultResponse $ request.im.report { body: { userID, reason: rs, comment: reportComment } }
+                          result ← CCN.defaultResponse $ request.im.report { body: { userId, reason: rs, comment: reportComment } }
                           case result of
-                                Left _ → pure <<< Just $ RequestFailed { request: ReportUser userID, errorMessage: "" }
+                                Left _ → pure <<< Just $ RequestFailed { request: ReportUser userId, errorMessage: Nothing }
                                 _ → do
-                                      liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userID }
+                                      liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
                                       pure Nothing
                   ]
       Nothing → F.noMessages $ model
@@ -362,25 +363,25 @@ receiveMessage
                   }
       ContactUnavailable { id } →
             F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
-      NewIncomingMessage payload@{ id: messageID, userID, content: messageContent, date: messageDate, experimenting } →
+      NewIncomingMessage payload@{ id: messageID, userId, content: messageContent, date: messageDate, experimenting } →
             --(for now) if the experiments don't match, discard the message
-            if DA.elem userID blockedUsers || not (match userID experimenting) then
+            if DA.elem userId blockedUsers || not (match userId experimenting) then
                   F.noMessages model
             else if profileVisibility == Nobody then
-                  CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userID }
+                  CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
             else
                   let
-                        model' = unsuggest userID model
+                        model' = unsuggest userId model
                   in
                         case processIncomingMessage payload model' of
                               --this should also set status
-                              Left userID →
+                              Left userId →
                                     let
                                           message = case experimenting of
                                                 Just (ImpersonationPayload { id: impersonationID }) →
                                                       DisplayImpersonatedContact impersonationID
                                                             { status: Received
-                                                            , sender: userID
+                                                            , sender: userId
                                                             , recipient: recipientID
                                                             , id: messageID
                                                             , content: messageContent
@@ -388,14 +389,14 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userID, contactsOnly: profileVisibility == Contacts } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userId, contactsOnly: profileVisibility == Contacts } }) ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right
                                     updatedModel@
                                           { chatting: Just index
                                           , contacts
-                                          } | isFocused && isChatting userID updatedModel →
+                                          } | isFocused && isChatting userId updatedModel →
                                     let
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
                                                 { sessionUserID: recipientID
@@ -415,14 +416,14 @@ receiveMessage
                                                 Just (ImpersonationPayload { id: impersonationID }) → Just impersonationID
                                                 _ → Nothing
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
-                                                { index: SU.fromJust $ DA.findIndex (findContact userID impersonationID model.experimenting) contacts
+                                                { index: SU.fromJust $ DA.findIndex (findContact userId impersonationID model.experimenting) contacts
                                                 , sessionUserID: recipientID
                                                 , newStatus: Delivered
                                                 , contacts
                                                 , webSocket
                                                 }
                                     in
-                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userID impersonationID ] : messages)
+                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationID ] : messages)
 
       PayloadError payload → case payload.origin of
             OutgoingMessage { id, userID } → F.noMessages $ model
@@ -455,7 +456,7 @@ unsuggest userID model@{ suggestions, suggesting } = model
 
 processIncomingMessage ∷ ClientMessagePayload → IMModel → Either Int IMModel
 processIncomingMessage
-      { id, userID, date, content, experimenting }
+      { id, userId, date, content, experimenting }
       model@
             { user: { id: recipientID }
             , suggestions
@@ -466,13 +467,13 @@ processIncomingMessage
             Right $ model
                   { contacts = contacts'
                   }
-      Nothing → Left userID
+      Nothing → Left userId
       where
       updateHistory { id, content, date } contact@{ history } =
             contact
                   { history = DA.snoc history $
                           { status: Received
-                          , sender: userID
+                          , sender: userId
                           , recipient: recipientID
                           , id
                           , content
@@ -484,7 +485,7 @@ processIncomingMessage
             _ → Nothing
 
       findAndUpdateContactList = do
-            index ← DA.findIndex (findContact userID impersonationID model.experimenting) contacts
+            index ← DA.findIndex (findContact userId impersonationID model.experimenting) contacts
             { impersonating } ← contacts !! index
             let updated = DA.modifyAt index (updateHistory { content, id, date }) contacts
             --if impersonating, only the user can start new chats

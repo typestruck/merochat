@@ -63,7 +63,7 @@ spec ∷
                                                 }
                                   , singleContact ∷
                                           GET "/contact?id=<id>&contactsOnly=<contactsOnly>"
-                                                { query ∷ { id ∷ Int, contactsOnly :: Boolean }
+                                                { query ∷ { id ∷ Int, contactsOnly ∷ Boolean }
                                                 , response ∷ Array Contact
                                                 }
                                   , history ∷
@@ -79,6 +79,11 @@ spec ∷
                                   , block ∷
                                           POST "/block"
                                                 { body ∷ { id ∷ Int }
+                                                , response ∷ Ok
+                                                }
+                                  , delete ∷
+                                          POST "/delete"
+                                                { body ∷ { userId ∷ Int, messageId ∷ Int }
                                                 , response ∷ Ok
                                                 }
                                   , missedEvents ∷
@@ -141,7 +146,8 @@ spec ∷
                                                               { body ∷ NoBody
                                                               , response ∷ Ok
                                                               }
-                                                , privacy :: POST "/account/privacy"
+                                                , privacy ∷
+                                                        POST "/account/privacy"
                                                               { body ∷ PrivacySettings
                                                               , response ∷ Ok
                                                               }

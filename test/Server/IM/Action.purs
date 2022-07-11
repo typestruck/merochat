@@ -85,7 +85,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                         Tuple userID anotherUserID ← setUpUsers
-                        void $ SIA.reportUser userID { userID: anotherUserID, reason: Spam, comment: Nothing }
+                        void $ SIA.reportUser userID { userId: anotherUserID, reason: Spam, comment: Nothing }
                         count ← SD.single $ select (count _id # as c) # from blocks # wher (_blocker .=. userID .&&. _blocked .=. anotherUserID)
                         R.liftAff $ TUA.equal (Just { c: BI.fromInt 1 }) count
 

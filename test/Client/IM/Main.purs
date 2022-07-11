@@ -62,7 +62,7 @@ tests = do
                                             , id: newMessageID
                                             , experimenting: Nothing
                                             , content
-                                            , userID: contact.user.id
+                                            , userId: contact.user.id
                                             }
                                     ) $ model
                                     { suggestions = [ contact.user ]
@@ -123,7 +123,7 @@ tests = do
                                             , id: newMessageID
                                             , content
                                             , experimenting: Nothing
-                                            , userID: contact.user.id
+                                            , userId: contact.user.id
                                             }
                                     ) $ model
                                     { contacts = [ contact ]
@@ -148,7 +148,7 @@ tests = do
                                     ( NewIncomingMessage
                                             { id: newMessageID
                                             , experimenting: Nothing
-                                            , userID: contactID
+                                            , userId: contactID
                                             , content
                                             , date
                                             }
@@ -169,7 +169,7 @@ tests = do
                                             , id: newMessageID
                                             , content
                                             , experimenting: Just $ ImpersonationPayload { id: batman.id + 1, sender: false }
-                                            , userID: contact.user.id
+                                            , userId: contact.user.id
                                             }
                                     ) $ model
                                     { contacts = [ contact ]
@@ -186,7 +186,7 @@ tests = do
                                     ( NewIncomingMessage
                                             { id: newMessageID
                                             , experimenting: Nothing
-                                            , userID: anotherImUserId
+                                            , userId: anotherImUserId
                                             , content
                                             , date
                                             }

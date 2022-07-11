@@ -12,7 +12,6 @@ import Payload.ContentType (html)
 import Payload.Headers as PH
 import Payload.ResponseTypes (Response)
 import Payload.Server.Response as PSR
-import Run as R
 import Run.Except as RE
 import Server.IM.Action as SIA
 import Server.IM.Database as SID
@@ -38,12 +37,12 @@ contacts ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { skip ∷ Int } }
 contacts { guards: { loggedUserID }, query: { skip } } = SIA.listContacts loggedUserID skip
 
 --refactor: maybe contact instead of array contact
-singleContact ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { id ∷ Int, contactsOnly :: Boolean } } → ServerEffect (Array Contact)
+singleContact ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { id ∷ Int, contactsOnly ∷ Boolean } } → ServerEffect (Array Contact)
 singleContact { guards: { loggedUserID }, query: { id, contactsOnly } } = do
-      c <- SIA.listSingleContact loggedUserID id contactsOnly
+      c ← SIA.listSingleContact loggedUserID id contactsOnly
       pure $ case c of
-            Just contact -> [contact]
-            _ -> []
+            Just contact → [ contact ]
+            _ → []
 
 history ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { skip ∷ Int, with ∷ Int } } → ServerEffect (Array HistoryMessage)
 history { guards: { loggedUserID }, query: { with, skip } } = SIA.resumeChatHistory loggedUserID with skip
@@ -53,6 +52,9 @@ suggestions { guards: { loggedUserID }, query: { skip, avoid } } = SIA.suggest l
 
 block ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Ok
 block { guards: { loggedUserID }, body: { id } } = SIA.blockUser loggedUserID id
+
+deleteChat ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ { userId ∷ Int, messageId ∷ Int } } → ServerEffect Ok
+deleteChat { guards: { loggedUserID }, body } = SIA.deleteChat loggedUserID body
 
 missedEvents ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { lastSenderID ∷ Maybe Int, lastRecipientID ∷ Maybe Int } } → ServerEffect MissedEvents
 missedEvents { guards: { loggedUserID }, query: { lastSenderID, lastRecipientID } } = SIA.listMissedEvents loggedUserID lastSenderID lastRecipientID

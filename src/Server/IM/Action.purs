@@ -11,7 +11,6 @@ import Data.Maybe as DM
 import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Droplet.Driver (Pool)
-import Effect.Ref (Ref)
 import Server.Email as SE
 import Server.File as SF
 import Server.IM.Database as SID
@@ -26,42 +25,42 @@ import Shared.Unsafe as SU
 foreign import sanitize ∷ String → String
 
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array Suggestion)
-suggest loggedUserID skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserID skip keys
+suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip keys
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
-listContacts loggedUserID skip = do
-      contacts ← (fromFlatContact <$> _) <$> SID.presentContacts loggedUserID skip
-      history ← SID.chatHistoryFor loggedUserID $ map (_.id <<< _.user) contacts
+listContacts loggedUserId skip = do
+      contacts ← (fromFlatContact <$> _) <$> SID.presentContacts loggedUserId skip
+      history ← SID.chatHistoryFor loggedUserId $ map (_.id <<< _.user) contacts
       let userHistory = DF.foldl intoHashMap DH.empty history
       pure $ intoContacts userHistory <$> contacts
 
       where
       intoHashMap hashMap m@{ sender, recipient } =
-            DH.insertWith (<>) (if sender == loggedUserID then recipient else sender) [ m ] hashMap
+            DH.insertWith (<>) (if sender == loggedUserId then recipient else sender) [ m ] hashMap
 
       intoContacts userHistory contact@{ user: { id } } = contact
             { history = SU.fromJust $ DH.lookup id userHistory
             }
 
-listSingleContact ∷ Int → Int → Boolean -> ServerEffect (Maybe Contact)
-listSingleContact loggedUserID userID contactsOnly = do
-      c ← SID.presentSingleContact loggedUserID userID contactsOnly
+listSingleContact ∷ Int → Int → Boolean → ServerEffect (Maybe Contact)
+listSingleContact loggedUserId userId contactsOnly = do
+      c ← SID.presentSingleContact loggedUserId userId contactsOnly
       case c of
-            Just contact -> do
-                  history ← SID.chatHistoryBetween loggedUserID userID 0
+            Just contact → do
+                  history ← SID.chatHistoryBetween loggedUserId userId 0
                   pure <<< Just $ (fromFlatContact contact)
                         { history = history
                         }
-            _ -> pure Nothing
+            _ → pure Nothing
 
-processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration :: Configuration, pool ∷ Pool | r } (Tuple Int String)
-processMessage loggedUserID userID temporaryID content = do
+processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Tuple Int String)
+processMessage loggedUserId userId temporaryID content = do
       sanitized ← processMessageContent content
-      id ← SID.insertMessage loggedUserID userID temporaryID sanitized
+      id ← SID.insertMessage loggedUserId userId temporaryID sanitized
       pure $ Tuple id sanitized
 
 -- | Sanitizes markdown and handle image uploads
-processMessageContent ∷ ∀ r. MessageContent → BaseEffect { configuration :: Configuration, pool ∷ Pool | r } String
+processMessageContent ∷ ∀ r. MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } String
 processMessageContent content = do
       message ← case content of
             Text m → pure m
@@ -71,18 +70,27 @@ processMessageContent content = do
       pure <<< DS.trim $ sanitize message
 
 processKarma ∷ ∀ r. Int → Int → Turn → BaseEffect { pool ∷ Pool | r } Unit
-processKarma loggedUserID userID turn = SID.insertKarma loggedUserID userID $ SW.karmaFrom turn
+processKarma loggedUserId userId turn = SID.insertKarma loggedUserId userId $ SW.karmaFrom turn
 
 blockUser ∷ Int → Int → ServerEffect Ok
-blockUser loggedUserID userID = do
-      SID.insertBlock loggedUserID userID
+blockUser loggedUserId userId = do
+      SID.insertBlock loggedUserId userId
       pure ok
 
+deleteChat ∷ Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Ok
+deleteChat loggedUserId ids@{ userId } = do
+      entry ← SID.chatHistoryEntry loggedUserId userId
+      case entry of
+            Nothing → pure ok
+            Just { sender } → do
+                  SID.markAsDeleted (sender == loggedUserId) loggedUserId ids
+                  pure ok
+
 listMissedEvents ∷ Int → Maybe Int → Maybe Int → ServerEffect MissedEvents
-listMissedEvents loggedUserID lastSenderID lastRecipientID = do
-      messageIDs ← DM.maybe (pure []) (SID.messageIDsFor loggedUserID) lastSenderID
-      history ← DM.maybe (pure []) (SID.chatHistorySince loggedUserID) lastRecipientID
-      contacts ← SID.presentSelectedContacts loggedUserID <<< DA.nubEq $ map _.sender history
+listMissedEvents loggedUserId lastSenderID lastRecipientID = do
+      messageIDs ← DM.maybe (pure []) (SID.messageIDsFor loggedUserId) lastSenderID
+      history ← DM.maybe (pure []) (SID.chatHistorySince loggedUserId) lastRecipientID
+      contacts ← SID.presentSelectedContacts loggedUserId <<< DA.nubEq $ map _.sender history
       let userHistory = DF.foldl intoHashMap DH.empty history
       pure
             { contacts: intoContacts userHistory <$> map fromFlatContact contacts
@@ -97,10 +105,10 @@ listMissedEvents loggedUserID lastSenderID lastRecipientID = do
             }
 
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
-resumeChatHistory loggedUserID userID skip = SID.chatHistoryBetween loggedUserID userID skip
+resumeChatHistory loggedUserId userId skip = SID.chatHistoryBetween loggedUserId userId skip
 
 reportUser ∷ Int → Report → ServerEffect Ok
-reportUser loggedUserID report@{ reason, userID } = do
-      SID.insertReport loggedUserID report
-      SE.sendEmail "contact@melan.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userID <> ";"
+reportUser loggedUserId report@{ reason, userId } = do
+      SID.insertReport loggedUserId report
+      SE.sendEmail "contact@melan.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userId <> ";"
       pure ok
