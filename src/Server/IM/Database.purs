@@ -122,7 +122,7 @@ presentContacts loggedUserId skip = SD.unsafeQuery query { loggedUserId, status:
       query =
             """SELECT
         COALESCE (h.sender, @loggedUserId) "chatStarter"
-      , COALESCE (h.date, utc_now()) "lastMessageDate"
+      , h.date "lastMessageDate"
       , date_part_age ('day', COALESCE(first_message_date, utc_now())) "chatAge"
       , u.id
       , avatar
@@ -153,7 +153,7 @@ FROM
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
       , lateral (SELECT *
                  FROM (SELECT
-                              ROW_NUMBER() OVER (ORDER BY date, sender, recipient DESC) n
+                              ROW_NUMBER() OVER (ORDER BY date DESC) n
                               , id
                               , sender
                               , recipient
@@ -163,9 +163,7 @@ FROM
                        FROM messages m
                        WHERE m.sender = h.sender AND m.recipient = h.recipient OR
                              m.sender = h.recipient AND m.recipient = h.sender
-                       ORDER BY date
-                              , sender
-                              , recipient DESC) b
+                       ORDER BY date DESC) b
                  WHERE status < @status OR n <= @initialMessages) s
 WHERE (visibility = @contact OR visibility = @everyone)
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
