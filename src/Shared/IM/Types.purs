@@ -38,7 +38,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Shared.DateTime (DateTimeWrapper)
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.ResponseError (DatabaseError)
@@ -73,8 +73,8 @@ type ClientMessagePayload = BasicMessage
 type BaseContact fields =
       { -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
         shouldFetchChatHistory ∷ Boolean
-      --Days,
       , chatAge ∷ Number
+      , lastMessageDate :: DateTimeWrapper
       , chatStarter ∷ Int
       , impersonating ∷ Maybe Int
       | fields

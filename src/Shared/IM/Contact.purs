@@ -1,16 +1,21 @@
 module Shared.IM.Contact where
 
-import Data.Array ((!!))
-import Data.Maybe (Maybe(..))
+import Prelude
 import Shared.ContentType
 import Shared.IM.Types
+
+import Data.Array ((!!))
+import Data.Maybe (Maybe(..))
+import Effect.Now as EN
+import Effect.Unsafe as EU
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Unsafe as SU
-import Prelude
 
 defaultContact ∷ Int → ImUser → Contact
 defaultContact id chatted =
       {  shouldFetchChatHistory: false
       , user: chatted
+      , lastMessageDate: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , impersonating: Nothing
       , chatStarter: id
       , history: []

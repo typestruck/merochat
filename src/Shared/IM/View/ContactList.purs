@@ -109,11 +109,7 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
             , second: "your chat suggestions"
             }
 
-      compareLastDate contact anotherContact = compare (getDate anotherContact.history) (getDate contact.history)
-
-      getDate history = do
-            { date: DateTimeWrapper md } ← DA.last history
-            pure md
+      compareLastDate contact anotherContact = compare (anotherContact.lastMessageDate) (contact.lastMessageDate)
 
       countUnread = DF.foldl unread 0
 

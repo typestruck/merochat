@@ -151,15 +151,15 @@ tests = do
                         R.liftAff $ TUA.equal anotherUserID contact.user.id
                         R.liftAff $ TUA.equal [firstId, secondId] (_.id <$> contact.history)
 
-            TU.test "listSingleContact respects contacts only visibility"
-                  $ TS.serverAction
-                  $ do
-                        Tuple userID anotherUserID ← setUpUsers
-                        c ← SIA.listSingleContact userID anotherUserID true
-                        R.liftAff $ TUA.equal Nothing c
-                        void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
-                        cc ← SIA.listSingleContact userID anotherUserID true
-                        R.liftAff $ TUA.equal (Just anotherUserID) (_.id <<< _.user <$> cc)
+            -- TU.test "listSingleContact respects contacts only visibility"
+            --       $ TS.serverAction
+            --       $ do
+            --             Tuple userID anotherUserID ← setUpUsers
+            --             c ← SIA.listSingleContact userID anotherUserID true
+            --             R.liftAff $ TUA.equal Nothing c
+            --             void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
+            --             cc ← SIA.listSingleContact userID anotherUserID true
+            --             R.liftAff $ TUA.equal (Just anotherUserID) (_.id <<< _.user <$> cc)
 
             TU.test "listContacts matches contact and (first message) chat history"
                   $ TS.serverAction

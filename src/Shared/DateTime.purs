@@ -169,7 +169,7 @@ localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.
 
 
 instance DecodeJson DateTimeWrapper where
-      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber Nothing (DDI.instant <<< DTD.Milliseconds)
 
 instance EncodeJson DateTimeWrapper where
       encodeJson = DAC.fromNumber <<< dateTimeToNumber

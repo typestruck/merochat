@@ -3,7 +3,7 @@ module Server.IM.Database.Flat where
 import Prelude
 import Shared.User
 
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -11,6 +11,7 @@ import Safe.Coerce as SC
 import Server.Database.Flat as SDF
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.IM.Types (Contact, HM, ImUser, HistoryMessage)
 import Shared.Unsafe as SU
 
@@ -40,10 +41,11 @@ type FlatUser = FlatFields ()
 type FlatC r = FlatFields
       ( chatAge ∷ Maybe Number
       , chatStarter ∷ Maybe Int
+      , lastMessageDate ∷ DateTime
       | r
       )
 
-type FlatContact = FlatC (lastMessageDate ∷ Maybe DateTime)
+type FlatContact = FlatC ()
 
 type FlatContactHistoryMessage = FlatC (HM (messageId ∷ Int))
 
@@ -52,6 +54,7 @@ fromFlatContact fc =
       { shouldFetchChatHistory: true
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
       , chatStarter: SU.fromJust fc.chatStarter
+      , lastMessageDate : DateTimeWrapper fc.lastMessageDate
       , impersonating: Nothing
       , history: []
       , user: fromFlatUser fc

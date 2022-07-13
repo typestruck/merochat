@@ -37,7 +37,7 @@ import Droplet.Language.Internal.Function (PgFunction)
 import Effect.Class (liftEffect)
 import Effect.Console (log)
 import Server.Database as SD
-import Server.IM.Database.Flat (FlatContact, FlatUser, FlatContactHistoryMessage)
+import Server.IM.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -63,7 +63,7 @@ userPresentationFields =
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
-contactPresentationFields uid = distinct $ (coalesce (_sender /\ uid) # as _chatStarter) /\ (coalesce (h ... _date /\ utc_now) # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce (_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields
+contactPresentationFields uid = distinct $ (coalesce (_sender /\ uid) # as _chatStarter) /\ (h ... _date # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce (_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields
 
 senderRecipientFilter loggedUserId otherId = wher ((_sender .=. loggedUserId .&&. _recipient .=. otherId) .||. (_sender .=. otherId .&&. _recipient .=. loggedUserId))
 
@@ -104,24 +104,8 @@ suggestBaseQuery skip filter =
                   )
             # orderBy random
 
---needs to handle impersonations
-presentSingleContact ∷ Int → Int → Boolean → ServerEffect (Maybe FlatContact)
-presentSingleContact loggedUserId otherID contactsOnly = SD.single $
-      select (contactPresentationFields loggedUserId)
-            # from (leftJoin usersSource (histories # as h) # on (u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserId .||. u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserId))
-            # wher (u ... _id .=. otherID .&&. (contactsOnly .=. false .||. (h ... _id # isNotNull)))
-
-presentSelectedContacts ∷ Int → Array Int → ServerEffect (Array FlatContact)
-presentSelectedContacts loggedUserId ids
-      | DA.null ids = pure []
-      | otherwise = SD.query $ select (contactPresentationFields loggedUserId) # from (contactsSource loggedUserId) # wher (in_ (u ... _id) ids)
-
-presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
-presentContacts loggedUserId skip = SD.unsafeQuery query { loggedUserId, status: Delivered, initialMessages: initialMessagesPerPage, contact: Contacts, everyone: Everyone, limit: contactsPerPage, offset: skip }
-      where
-      query =
-            """SELECT
-        COALESCE (h.sender, @loggedUserId) "chatStarter"
+presentContactFields =
+      """" COALESCE (h.sender, @loggedUserId) "chatStarter"
       , h.date "lastMessageDate"
       , date_part_age ('day', COALESCE(first_message_date, utc_now())) "chatAge"
       , u.id
@@ -146,8 +130,22 @@ presentContacts loggedUserId skip = SD.unsafeQuery query { loggedUserId, status:
       , s.recipient
       , s.date
       , s.content
-      , s.status
-FROM
+      , s.status """
+
+presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
+presentContacts loggedUserId skip = SD.unsafeQuery query
+      { loggedUserId
+      , status: Delivered
+      , initialMessages: initialMessagesPerPage
+      , contact: Contacts
+      , everyone: Everyone
+      , limit: contactsPerPage
+      , offset: skip
+      }
+      where
+      query =
+            "SELECT" <> presentContactFields <>
+                  """FROM
       users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
@@ -171,8 +169,33 @@ ORDER BY "lastMessageDate" DESC
 LIMIT @limit
 OFFSET @offset"""
 
-chatHistorySince ∷ Int → Int → ServerEffect (Array HistoryMessage)
-chatHistorySince loggedUserId lastID = SD.query $ select (_id /\ _sender /\ _recipient /\ _date /\ _content /\ _status) # from messages # wher (_recipient .=. loggedUserId .&&. _id .>. lastID .&&. _status .<. Delivered) # orderBy (_date /\ _sender)
+--this can use droplet
+presentMissedContacts ∷ Int → Int -> ServerEffect (Array FlatContactHistoryMessage)
+presentMissedContacts loggedUserId lastId = SD.unsafeQuery query
+      { loggedUserId
+      , status: Delivered
+      , contact: Contacts
+      , everyone: Everyone
+      , lastId
+      }
+      where
+      query = "SELECT" <> presentContactFields <>
+            """FROM users u
+      JOIN karma_leaderboard k ON u.id = k.ranker
+      JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
+      JOIN messages s ON s.sender = h.sender OR s.sender = h.recipient
+WHERE (visibility = @contact OR visibility = @everyone)
+      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+      AND s.status < @status
+      AND s.recipient = @loggedUserId
+      AND s.id > @lastId
+ORDER BY "lastMessageDate" DESC, s.sender, s.date DESC"""
+
+presentSingleContact ∷ Int → Int → Boolean → ServerEffect (Maybe FlatContact)
+presentSingleContact loggedUserId otherID contactsOnly = SD.single $
+      select (contactPresentationFields loggedUserId)
+            # from (join usersSource (histories # as h) # on (u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserId .||. u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserId))
+            # wher (u ... _id .=. otherID .&&. (contactsOnly .=. false .||. (h ... _id # isNotNull)))
 
 chatHistoryBetween ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 chatHistoryBetween loggedUserId otherID skip = SD.query $ select star
@@ -187,8 +210,8 @@ chatHistoryBetween loggedUserId otherID skip = SD.query $ select star
             )
       # orderBy _date
 
-messageIDsFor ∷ Int → Int → ServerEffect (Array MessageIDTemporary)
-messageIDsFor loggedUserId messageID = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryID"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageID)
+messageIdsFor ∷ Int → Int → ServerEffect (Array MessageIDTemporary)
+messageIdsFor loggedUserId messageId = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryID"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageId)
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient temporaryID content = SD.withTransaction $ \connection → do
