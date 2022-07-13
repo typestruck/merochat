@@ -129,9 +129,6 @@ presentUserContactFields =
       , position "karmaPosition"
 """
 
-presentContactFields ∷ String
-presentContactFields = presentUserContactFields <> presentMessageContactFields
-
 presentMessageContactFields ∷ String
 presentMessageContactFields = """
       , s.id as "messageId"
@@ -140,6 +137,10 @@ presentMessageContactFields = """
       , s.date
       , s.content
       , s.status """
+
+
+presentContactFields ∷ String
+presentContactFields = presentUserContactFields <> presentMessageContactFields
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentContacts loggedUserId skip = SD.unsafeQuery query
@@ -207,7 +208,7 @@ presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
             """FROM users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
-      JOIN messages s ON s.sender = h.sender OR s.sender = h.recipient
+      JOIN messages s ON s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender
 WHERE (visibility = @contact OR visibility = @everyone)
       AND u.id = @userId
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
