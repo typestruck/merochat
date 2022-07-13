@@ -9,7 +9,6 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Data.Tuple (Tuple(..))
-import Debug
 import Droplet.Driver (Pool)
 import Server.Email as SE
 import Server.File as SF
