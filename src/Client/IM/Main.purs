@@ -243,7 +243,7 @@ setExperiment ∷ Maybe ExperimentData → IMModel → MoreMessages
 setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestionsPage } =
       model
             { chatting = Nothing
-            , temporaryID = 3000000
+            , temporaryId = 3000000
             , contacts = if impersonating then [] else contacts
             , experimenting = experiment
             , toggleModal = if toggleModal == ShowExperiments then HideUserMenuModal else toggleModal
@@ -389,7 +389,7 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message (request.im.singleContact { query: { id: userId, contactsOnly: profileVisibility == Contacts } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents ( message) (request.im.singleContact { query: { id: userId, contactsOnly: profileVisibility == Contacts } }) ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right

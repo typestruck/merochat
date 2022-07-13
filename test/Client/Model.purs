@@ -56,7 +56,7 @@ model =
       , enableNotificationsVisible: false
       , user: imUser
       , suggestions: [ suggestion ]
-      , temporaryID: 0
+      , temporaryId: 0
       , suggesting: Just 0
       , freeToFetchChatHistory: true
       , contacts: [ contact ]

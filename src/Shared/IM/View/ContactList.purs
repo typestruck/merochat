@@ -24,6 +24,7 @@ import Shared.Experiments.Impersonation as SEI
 import Shared.IM.Svg (backArrow, nextArrow)
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
+import Debug
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 
@@ -44,8 +45,8 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
       displayContactList
             | DA.null contacts = [ suggestionsCall ]
             | otherwise =
-                    DA.mapWithIndex displayContactListEntry <<<
-                          DA.sortBy compareLastDate
+                    DA.mapWithIndex displayContactListEntry
+                          <<< DA.sortBy compareLastDate
                           $ DA.filter (not <<< DA.null <<< _.history) contacts -- might want to look into this: before sending a message, we need to run an effect; in this meanwhile history is empty
 
       displayContactListEntry index { history, user, impersonating, typing } =
@@ -109,7 +110,7 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
             , second: "your chat suggestions"
             }
 
-      compareLastDate contact anotherContact = compare (anotherContact.lastMessageDate) (contact.lastMessageDate)
+      compareLastDate contact anotherContact = compare anotherContact.lastMessageDate contact.lastMessageDate
 
       countUnread = DF.foldl unread 0
 

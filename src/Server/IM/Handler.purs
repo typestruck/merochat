@@ -36,7 +36,8 @@ im { guards: { loggedUserID } } = do
 contacts ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { skip ∷ Int } } → ServerEffect (Array Contact)
 contacts { guards: { loggedUserID }, query: { skip } } = SIA.listContacts loggedUserID skip
 
-singleContact ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { id ∷ Int, contactsOnly ∷ Boolean } } → ServerEffect (Maybe Contact)
+--not sure if a bug, but payload has no DecodeResponse instance for Maybe, and sending one results in a runtime exception
+singleContact ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { id ∷ Int, contactsOnly ∷ Boolean } } → ServerEffect (Array Contact)
 singleContact { guards: { loggedUserID }, query: { id, contactsOnly } } = SIA.listSingleContact loggedUserID id contactsOnly
 
 history ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { skip ∷ Int, with ∷ Int } } → ServerEffect (Array HistoryMessage)

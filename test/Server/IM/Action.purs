@@ -33,8 +33,8 @@ import Test.Server as TS
 import Test.Server.Model (baseUser)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
-import Type.Proxy(Proxy(..))
 import Test.Unit.Assert as TUA
+import Type.Proxy (Proxy(..))
 
 tests ∷ TestSuite
 tests = do
@@ -147,19 +147,9 @@ tests = do
                         firstId /\ _ <- SIA.processMessage userID anotherUserID 1 $ Text "oi"
                         secondId /\ _ <- SIA.processMessage userID anotherUserID 2 $ Text "oi"
                         c ← SIA.listSingleContact userID anotherUserID false
-                        let contact = SU.fromJust c
+                        let contact = SU.fromJust $ DA.head c
                         R.liftAff $ TUA.equal anotherUserID contact.user.id
                         R.liftAff $ TUA.equal [firstId, secondId] (_.id <$> contact.history)
-
-            -- TU.test "listSingleContact respects contacts only visibility"
-            --       $ TS.serverAction
-            --       $ do
-            --             Tuple userID anotherUserID ← setUpUsers
-            --             c ← SIA.listSingleContact userID anotherUserID true
-            --             R.liftAff $ TUA.equal Nothing c
-            --             void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
-            --             cc ← SIA.listSingleContact userID anotherUserID true
-            --             R.liftAff $ TUA.equal (Just anotherUserID) (_.id <<< _.user <$> cc)
 
             TU.test "listContacts matches contact and (first message) chat history"
                   $ TS.serverAction
@@ -215,8 +205,8 @@ tests = do
                         void <<< SIA.processMessage userID anotherUserID 1 $ Text "oi"
                         void <<< SIA.processMessage userID yetAnotherUserID 2 $ Text "ola"
                         void <<< SIA.processMessage userID yetAnotherUserID 3 $ Text "hey"
-                        { messageIDs } ← SIA.listMissedEvents userID (Just 0) Nothing
-                        R.liftAff <<< TUA.equal [ 1, 2, 3 ] $ map _.temporaryID messageIDs
+                        { messageIds } ← SIA.listMissedEvents userID (Just 0) Nothing
+                        R.liftAff <<< TUA.equal [ 1, 2, 3 ] $ map _.temporaryId messageIds
 
       where
       setUpUsers = do

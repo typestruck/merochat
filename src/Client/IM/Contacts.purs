@@ -156,7 +156,7 @@ displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → IMM
 displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
 
 resumeMissedEvents ∷ MissedEvents → IMModel → MoreMessages
-resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
+resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =
       let
             missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
             missedFromNewContacts = map getNew new
@@ -169,7 +169,7 @@ resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, us
                           }
                   ) $ map (\cnt → Tuple cnt.user.id cnt.impersonating) missedContacts
       where
-      messageMap = DH.fromArrayBy _.temporaryID _.id messageIDs
+      messageMap = DH.fromArrayBy _.temporaryId _.id messageIds
       markSenderError contact@{ history } = contact
             { history = map updateSenderError history
             }

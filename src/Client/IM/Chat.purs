@@ -16,7 +16,7 @@ import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime(..))
 import Data.DateTime as DT
-import Shared.DateTime(DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -129,7 +129,7 @@ sendMessage
       model@
             { user: { id: senderID }
             , chatting
-            , temporaryID
+            , temporaryId
             , contacts
             , imageCaption
             , experimenting
@@ -151,10 +151,11 @@ sendMessage
       where
       index = SU.fromJust chatting
       recipient@{ user: { id: recipientID }, history } = contacts !@ index
-      newTemporaryID = temporaryID + 1
+      newTemporaryID = temporaryId + 1
 
       updatedContact = recipient
-            { history = DA.snoc history $
+            { lastMessageDate = date
+            , history = DA.snoc history $
                     { id: newTemporaryID
                     , status: Sent
                     , sender: senderID
@@ -166,7 +167,7 @@ sendMessage
                     }
             }
       updatedModel = model
-            { temporaryID = newTemporaryID
+            { temporaryId = newTemporaryID
             , imageCaption = Nothing
             , selectedImage = Nothing
             , contacts = SU.fromJust $ DA.updateAt index updatedContact contacts
@@ -367,7 +368,7 @@ toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
       { messageEnter = not messageEnter
       }
 
-checkTyping :: String -> DateTime -> WebSocket -> IMModel -> MoreMessages
+checkTyping ∷ String → DateTime → WebSocket → IMModel → MoreMessages
 checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
       if DS.length text > minimumLength && milliseconds >= 150.0 && milliseconds <= 1000.0 then
             CIF.nothingNext (model { lastTyping = DateTimeWrapper now }) <<< liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }
@@ -377,8 +378,9 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       minimumLength = 7
       (Milliseconds milliseconds) = DT.diff now lt
 
-updateTyping :: Int -> Boolean -> IMModel -> IMModel
-updateTyping userId status model@{ contacts } = model {contacts = upd <$> contacts}
-      where upd contact@{ user : { id }}
-                  | id == userId = contact { typing = status }
-                  | otherwise = contact
+updateTyping ∷ Int → Boolean → IMModel → IMModel
+updateTyping userId status model@{ contacts } = model { contacts = upd <$> contacts }
+      where
+      upd contact@{ user: { id } }
+            | id == userId = contact { typing = status }
+            | otherwise = contact

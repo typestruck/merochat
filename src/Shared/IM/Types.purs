@@ -104,14 +104,14 @@ data MessageStatus
       | Delivered
       | Read
 
-type MessageIDTemporary =
+type TemporaryMessageId =
       { id ∷ Int
-      , temporaryID ∷ Int
+      , temporaryId ∷ Int
       }
 
 type MissedEvents =
       { contacts ∷ Array Contact
-      , messageIDs ∷ Array MessageIDTemporary
+      , messageIds ∷ Array TemporaryMessageId
       }
 
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
@@ -120,7 +120,7 @@ type IM =
       , contacts ∷ Array Contact
       --in case a message from someone blocked was already midway
       , blockedUsers ∷ Array Int
-      , temporaryID ∷ Int
+      , temporaryId ∷ Int
       , freeToFetchChatHistory ∷ Boolean
       , freeToFetchContactList ∷ Boolean
       , freeToFetchSuggestions ∷ Boolean

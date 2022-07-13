@@ -15,13 +15,12 @@ import Droplet.Driver (Pool)
 import Server.Email as SE
 import Server.File as SF
 import Server.IM.Database as SID
-import Server.IM.Database.Flat (fromFlatContact, fromFlatMessage)
+import Server.IM.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.IM.Database.Flat as SIF
 import Server.Types (BaseEffect, ServerEffect, Configuration)
 import Server.Wheel as SW
 import Shared.IM.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
 import Shared.Options.File (imageBasePath)
-import Shared.Unsafe as SU
 
 foreign import sanitize ∷ String → String
 
@@ -31,29 +30,22 @@ suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUser
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
 
-listSingleContact ∷ Int → Int → Boolean → ServerEffect (Maybe Contact)
-listSingleContact loggedUserId userId contactsOnly = do
-      c ← SID.presentSingleContact loggedUserId userId contactsOnly
-      case c of
-            Just contact → do
-                  history ← SID.chatHistoryBetween loggedUserId userId 0
-                  pure $ Just (fromFlatContact contact)
-                        { history = history
-                        }
-            _ → pure Nothing
+listSingleContact ∷ Int → Int → Boolean → ServerEffect (Array Contact)
+listSingleContact loggedUserId userId contactsOnly =  presentContacts <$> SID.presentSingleContact loggedUserId userId 0
+
+resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
+resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SID.presentSingleContact loggedUserId userId skip
 
 listMissedEvents ∷ Int → Maybe Int → Maybe Int → ServerEffect MissedEvents
 listMissedEvents loggedUserId lastSenderId lastRecipientId = do
       messageIds ← DM.maybe (pure []) (SID.messageIdsFor loggedUserId) lastSenderId
-      contacts ← SID.presentMissedContacts loggedUserId lastRecipientId
+      contacts ← DM.maybe (pure []) (SID.presentMissedContacts loggedUserId) lastRecipientId
       pure
             { contacts: presentContacts contacts
             , messageIds
             }
 
-resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
-resumeChatHistory loggedUserId userId skip = SID.chatHistoryBetween loggedUserId userId skip
-
+presentContacts :: Array FlatContactHistoryMessage -> Array Contact
 presentContacts = map chatHistory <<< DA.groupBy sameContact
       where
       sameContact a b = a.id == b.id
@@ -62,9 +54,9 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
             let contact = DAN.head records in (fromFlatContact contact) { history = fromFlatMessage <$> DAN.toArray records }
 
 processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Tuple Int String)
-processMessage loggedUserId userId temporaryID content = do
+processMessage loggedUserId userId temporaryId content = do
       sanitized ← processMessageContent content
-      id ← SID.insertMessage loggedUserId userId temporaryID sanitized
+      id ← SID.insertMessage loggedUserId userId temporaryId sanitized
       pure $ Tuple id sanitized
 
 -- | Sanitizes markdown and handle image uploads
