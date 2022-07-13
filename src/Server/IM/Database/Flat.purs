@@ -40,7 +40,7 @@ type FlatUser = FlatFields ()
 
 type FlatC r = FlatFields
       ( chatAge ∷ Maybe Number
-      , chatStarter ∷ Maybe Int
+      , chatStarter ∷ Int
       , lastMessageDate ∷ DateTime
       | r
       )
@@ -53,7 +53,7 @@ fromFlatContact ∷ forall r . FlatC r → Contact
 fromFlatContact fc =
       { shouldFetchChatHistory: true
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
-      , chatStarter: SU.fromJust fc.chatStarter
+      , chatStarter: fc.chatStarter
       , lastMessageDate : DateTimeWrapper fc.lastMessageDate
       , impersonating: Nothing
       , history: []

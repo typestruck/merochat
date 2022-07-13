@@ -5,12 +5,11 @@ import Server.Ok
 
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
-import Data.Foldable as DF
-import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Data.Tuple (Tuple(..))
+import Debug
 import Droplet.Driver (Pool)
 import Server.Email as SE
 import Server.File as SF
@@ -31,7 +30,7 @@ listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
 
 listSingleContact ∷ Int → Int → Boolean → ServerEffect (Array Contact)
-listSingleContact loggedUserId userId contactsOnly =  presentContacts <$> SID.presentSingleContact loggedUserId userId 0
+listSingleContact loggedUserId userId contactsOnly = presentContacts <$> SID.presentSingleContact loggedUserId userId 0
 
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SID.presentSingleContact loggedUserId userId skip
@@ -45,7 +44,7 @@ listMissedEvents loggedUserId lastSenderId lastRecipientId = do
             , messageIds
             }
 
-presentContacts :: Array FlatContactHistoryMessage -> Array Contact
+presentContacts ∷ Array FlatContactHistoryMessage → Array Contact
 presentContacts = map chatHistory <<< DA.groupBy sameContact
       where
       sameContact a b = a.id == b.id

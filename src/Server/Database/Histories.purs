@@ -13,7 +13,7 @@ type Histories =
       , sender ∷ Column Int (ForeignKey "id" UsersTable)
       , recipient ∷ Column Int (ForeignKey "id" UsersTable)
       , first_message_date ∷ Column DateTime Default
-      , date ∷ Column DateTime Default
+      , last_message_date ∷ Column DateTime Default
       , sender_archived ∷ Column Boolean Default
       , recipient_archived ∷ Column Boolean Default
       , sender_deleted_to :: Maybe Int
@@ -25,6 +25,9 @@ histories = Table
 
 _first_message_date ∷ Proxy "first_message_date"
 _first_message_date = Proxy
+
+_last_message_date ∷ Proxy "last_message_date"
+_last_message_date = Proxy
 
 _sender_archived ∷ Proxy "_sender_archived"
 _sender_archived = Proxy

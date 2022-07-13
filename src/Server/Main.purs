@@ -2,11 +2,8 @@ module Server.Main where
 
 import Prelude
 
-import Data.Foldable as DF
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
-import Droplet.Driver.Internal.Query as DD
-import Droplet.Driver.Migration as DDM
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Console as EC

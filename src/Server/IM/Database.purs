@@ -104,10 +104,11 @@ suggestBaseQuery skip filter =
                   )
             # orderBy random
 
-presentContactFields ∷ String
-presentContactFields =
-      """    COALESCE (h.sender, @loggedUserId) "chatStarter"
-      , h.date "lastMessageDate"
+presentUserContactFields ∷ String
+presentUserContactFields =
+      """ h.sender "chatStarter"
+      , h.recipient
+      , h.last_message_date "lastMessageDate"
       , date_part_age ('day', COALESCE(first_message_date, utc_now())) "chatAge"
       , u.id
       , avatar
@@ -126,6 +127,13 @@ presentContactFields =
       , (SELECT STRING_AGG(t.name, '\n' ORDER BY t.id) FROM tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
       , k.current_karma karma
       , position "karmaPosition"
+"""
+
+presentContactFields ∷ String
+presentContactFields = presentUserContactFields <> presentMessageContactFields
+
+presentMessageContactFields ∷ String
+presentMessageContactFields = """
       , s.id as "messageId"
       , s.sender
       , s.recipient
@@ -136,7 +144,7 @@ presentContactFields =
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentContacts loggedUserId skip = SD.unsafeQuery query
       { loggedUserId
-      , status: Delivered
+      , status: Read
       , initialMessages: initialMessagesPerPage
       , contact: Contacts
       , everyone: Everyone
@@ -145,32 +153,24 @@ presentContacts loggedUserId skip = SD.unsafeQuery query
       }
       where
       query =
-            "SELECT" <> presentContactFields <>
+            "SELECT * FROM (SELECT" <> presentUserContactFields <>
                   """FROM
       users u
       JOIN karma_leaderboard k ON u.id = k.ranker
-      JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
-      , lateral (SELECT *
-                 FROM (SELECT
-                              ROW_NUMBER() OVER (ORDER BY date DESC) n
-                              , id
-                              , sender
-                              , recipient
-                              , date
-                              , content
-                              , status
-                       FROM messages m
-                       WHERE m.sender = h.sender AND m.recipient = h.recipient OR
-                             m.sender = h.recipient AND m.recipient = h.sender
-                       ORDER BY date DESC) b
-                 WHERE status < @status OR n <= @initialMessages) s
-WHERE (visibility = @contact OR visibility = @everyone)
+      JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
+      WHERE (visibility = @contact OR visibility = @everyone)
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
-ORDER BY "lastMessageDate" DESC
-LIMIT @limit
-OFFSET @offset"""
+      ORDER BY last_message_date DESC LIMIT @limit OFFSET @offset) uh
+      , LATERAL (SELECT *
+                 FROM (SELECT
+                              ROW_NUMBER() OVER (ORDER BY date DESC) n""" <> presentMessageContactFields <>
+                       """FROM messages s
+                       WHERE s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
+                             s.sender = uh.recipient AND s.recipient = uh."chatStarter"
+                       ORDER BY date DESC) b
+                 WHERE status < @status OR n <= @initialMessages) s"""
 
---this can use droplet
+--refactor: this can use droplet
 presentMissedContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentMissedContacts loggedUserId lastId = SD.unsafeQuery query
       { loggedUserId
@@ -192,18 +192,18 @@ WHERE (visibility = @contact OR visibility = @everyone)
       AND s.id > @lastId
 ORDER BY "lastMessageDate" DESC, s.sender, s.date DESC"""
 
+--refactor: this can use droplet
 presentSingleContact ∷ Int → Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
       { loggedUserId
       , userId
-      , status: Delivered
       , contact: Contacts
       , everyone: Everyone
       , messagesPerPage
       , offset
       }
       where
-      query = "SELECT" <> presentContactFields <>
+      query = "SELECT * FROM (SELECT" <> presentContactFields <>
             """FROM users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
@@ -211,10 +211,9 @@ presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
 WHERE (visibility = @contact OR visibility = @everyone)
       AND u.id = @userId
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
-      AND s.status < @status
 ORDER BY s.date DESC
 LIMIT @messagesPerPage
-OFFSET @offset"""
+OFFSET @offset) m ORDER BY m.date"""
 
 messageIdsFor ∷ Int → Int → ServerEffect (Array TemporaryMessageId)
 messageIdsFor loggedUserId messageId = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryId"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageId)
