@@ -169,7 +169,8 @@ presentContacts loggedUserId skip = SD.unsafeQuery query
                        WHERE s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
                              s.sender = uh.recipient AND s.recipient = uh."chatStarter"
                        ORDER BY date DESC) b
-                 WHERE status < @status OR n <= @initialMessages) s"""
+                 WHERE status < @status OR n <= @initialMessages
+                 ORDER BY date) s"""
 
 --refactor: this can use droplet
 presentMissedContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
@@ -191,7 +192,7 @@ WHERE (visibility = @contact OR visibility = @everyone)
       AND s.status < @status
       AND s.recipient = @loggedUserId
       AND s.id > @lastId
-ORDER BY "lastMessageDate" DESC, s.sender, s.date DESC"""
+ORDER BY "lastMessageDate" DESC, s.sender, s.date"""
 
 --refactor: this can use droplet
 presentSingleContact ∷ Int → Int → Int → ServerEffect (Array FlatContactHistoryMessage)

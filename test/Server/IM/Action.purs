@@ -1,5 +1,6 @@
 module Test.Server.IM.Action where
 
+import Debug
 import Droplet.Language
 import Prelude
 import Server.Database.Blocks
@@ -29,7 +30,6 @@ import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Test.Server as TS
-import Debug
 import Test.Server.Model (baseUser)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
@@ -81,7 +81,7 @@ tests = do
                         suggestions ← SIA.suggest userId 0 <<< Just $ ArrayPrimaryKey [ anotherUserId ]
                         R.liftAff <<< TUA.equal 0 $ DA.length suggestions
 
-            TU.testOnly "listContacts orders contacts by decreasing date of last message"
+            TU.test "listContacts orders contacts by date of last message"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -94,7 +94,7 @@ tests = do
                         R.liftAff $ TUA.equal yetAnotherUserId (contacts !@ 0).user.id
                         R.liftAff $ TUA.equal anotherUserId (contacts !@ 1).user.id
 
-            TU.testOnly "listContacts fetches only last message if all read"
+            TU.test "listContacts fetches only last message if all read"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -108,7 +108,7 @@ tests = do
                         R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 0).history
                         R.liftAff $ TUA.equal "4" ((contacts !@ 0).history !@ 0).content
 
-            TU.testOnly "listContacts fetches all unread messages"
+            TU.test "listContacts fetches all unread messages"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -120,10 +120,9 @@ tests = do
                         SID.changeStatus userId Read [1]
                         contacts ← SIA.listContacts userId 0
                         R.liftAff <<< TUA.equal 1 $ DA.length contacts
-                        --ordered by decreasing date
-                        R.liftAff <<< TUA.equal ["5", "4", "3", "2"] $ map _.content (contacts !@ 0).history
+                        R.liftAff <<< TUA.equal ["2", "3", "4", "5"] $ map _.content (contacts !@ 0).history
 
-            TU.testOnly "listContacts groups messages by contact"
+            TU.test "listContacts groups messages by contact"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -138,30 +137,10 @@ tests = do
                         void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "c"
                         contacts ← SIA.listContacts userId 0
                         R.liftAff <<< TUA.equal 2 $ DA.length contacts
-                        --ordered by decreasing date
-                        R.liftAff <<< TUA.equal ["c", "b", "a"] $ map _.content (contacts !@ 0).history
-                        R.liftAff <<< TUA.equal ["5", "4", "3", "2", "1"] $ map _.content (contacts !@ 1).history
+                        R.liftAff <<< TUA.equal ["a", "b", "c"] $ map _.content (contacts !@ 0).history
+                        R.liftAff <<< TUA.equal ["1", "2", "3", "4", "5"] $ map _.content (contacts !@ 1).history
 
-            TU.testOnly "listContacts groups messages by contact"
-                  $ TS.serverAction
-                  $ do
-                        Tuple userId anotherUserId ← setUpUsers
-                        yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
-                        void <<< SIA.processMessage anotherUserId userId 1 $ Text "1"
-                        void <<< SIA.processMessage userId anotherUserId 2 $ Text "2"
-                        void <<< SIA.processMessage anotherUserId userId 2 $ Text "3"
-                        void <<< SIA.processMessage anotherUserId userId 2 $ Text "4"
-                        void <<< SIA.processMessage userId anotherUserId 2 $ Text "5"
-                        void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "a"
-                        void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "b"
-                        void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "c"
-                        contacts ← SIA.listContacts userId 0
-                        R.liftAff <<< TUA.equal 2 $ DA.length contacts
-                        --ordered by decreasing date
-                        R.liftAff <<< TUA.equal ["c", "b", "a"] $ map _.content (contacts !@ 0).history
-                        R.liftAff <<< TUA.equal ["5", "4", "3", "2", "1"] $ map _.content (contacts !@ 1).history
-
-            TU.testOnly "listContacts paginates"
+            TU.test "listContacts paginates by contact"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -176,8 +155,30 @@ tests = do
                         void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "c"
                         contacts ← SIA.listContacts userId 1
                         R.liftAff <<< TUA.equal 1 $ DA.length contacts
-                        --ordered by decreasing date
-                        R.liftAff <<< TUA.equal ["5", "4", "3", "2", "1"] $ map _.content (contacts !@ 0).history
+                        --sort is by last_message_date
+                        R.liftAff <<< TUA.equal ["1", "2", "3", "4", "5"] $ map _.content (contacts !@ 0).history
+
+            TU.test "listSingleContact returns chat history"
+                  $ TS.serverAction
+                  $ do
+                        Tuple userId anotherUserId ← setUpUsers
+                        void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
+                        void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
+                        contacts ← SIA.listSingleContact userId anotherUserId false
+                        R.liftAff <<< TUA.equal 1 $ DA.length contacts
+                        R.liftAff $ TUA.equal anotherUserId (contacts !@ 0).user.id
+                        R.liftAff <<< TUA.equal ["oi", "ola"] $ map _.content (contacts !@ 0).history
+
+            TU.test "resumeChat paginates chat history"
+                  $ TS.serverAction
+                  $ do
+                        Tuple userId anotherUserId ← setUpUsers
+                        void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
+                        void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
+                        messages ← SIA.resumeChatHistory userId anotherUserId 1
+                        R.liftAff <<< TUA.equal 1 $ DA.length messages
+                        R.liftAff $ TUA.equal userId (messages !@ 0).sender
+                        R.liftAff <<< TUA.equal ["oi"] $ map _.content messages
 
             TU.test "report also blocks user"
                   $ TS.serverAction
@@ -225,35 +226,22 @@ tests = do
                         Tuple userId anotherUserId ← setUpUsers
                         SIA.processMessage userId anotherUserId 2 <<< Image "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 
-            TU.test "listSingleContact returns chat history"
-                  $ TS.serverAction
-                  $ do
-                        Tuple userId anotherUserId ← setUpUsers
-                        firstId /\ _ <- SIA.processMessage userId anotherUserId 1 $ Text "oi"
-                        secondId /\ _ <- SIA.processMessage userId anotherUserId 2 $ Text "oi"
-                        c ← SIA.listSingleContact userId anotherUserId false
-                        let contact = SU.fromJust $ DA.head c
-                        R.liftAff $ TUA.equal anotherUserId contact.user.id
-                        R.liftAff $ TUA.equal [firstId, secondId] (_.id <$> contact.history)
-
-            TU.test "listMissedEvents finds missed contacts"
+            TU.testOnly "listMissedEvents finds missed contacts"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
                         yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
-                        Tuple id _ ← SIA.processMessage anotherUserId userId 1 $ Text "oi"
+                        void <<< SIA.processMessage anotherUserId userId 1 $ Text "oi"
                         void <<< SIA.processMessage yetAnotherUserId userId 2 $ Text "ola"
                         void <<< SIA.processMessage yetAnotherUserId userId 3 $ Text "hey"
-                        { contacts } ← SIA.listMissedEvents userId Nothing (Just $ id - 1)
+                        { contacts } ← SIA.listMissedEvents userId Nothing $ Just 0
                         R.liftAff <<< TUA.equal 2 $ DA.length contacts
+                        R.liftAff $ TUA.equal yetAnotherUserId (contacts !@ 0).user.id
+                        R.liftAff <<< TUA.equal ["ola", "hey"] $ map _.content (contacts !@ 0).history
+                        R.liftAff $ TUA.equal anotherUserId (contacts !@ 1).user.id
+                        R.liftAff <<< TUA.equal ["oi"] $ map _.content (contacts !@ 1).history
 
-                        R.liftAff $ TUA.equal anotherUserId (contacts !@ 0).user.id
-                        R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 0).history
-
-                        R.liftAff $ TUA.equal yetAnotherUserId (contacts !@ 1).user.id
-                        R.liftAff <<< TUA.equal 2 $ DA.length (contacts !@ 1).history
-
-            TU.test "listMissedEvents ignores delivered messages"
+            TU.testOnly "listMissedEvents ignores delivered messages"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -262,12 +250,12 @@ tests = do
                         Tuple anotherID _ ← SIA.processMessage yetAnotherUserId userId 2 $ Text "ola"
                         void <<< SIA.processMessage yetAnotherUserId userId 3 $ Text "hey"
                         SID.changeStatus userId Delivered [ id, anotherID ]
-                        { contacts } ← SIA.listMissedEvents userId Nothing (Just $ id - 1)
+                        { contacts } ← SIA.listMissedEvents userId Nothing $ Just 0
                         R.liftAff <<< TUA.equal 1 $ DA.length contacts
                         R.liftAff $ TUA.equal yetAnotherUserId (contacts !@ 0).user.id
                         R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 0).history
 
-            TU.test "listMissedEvents finds temporary ids"
+            TU.testOnly "listMissedEvents finds temporary ids"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
