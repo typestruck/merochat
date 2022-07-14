@@ -224,8 +224,11 @@ deleteChat tii@(Tuple id impersonating) model@{ contacts } =
                   ]
             else []
       where
-      updatedModel = model { contacts = DA.filter (\cnt → cnt.user.id /= id && cnt.impersonating /= impersonating) contacts }
+      updatedModel = model
+            { toggleModal = HideUserMenuModal
+            , contacts = DA.filter (\cnt → cnt.user.id /= id && cnt.impersonating /= impersonating) contacts
+            }
       lastMessageId = do
-            contact <- DA.find (\cnt → cnt.user.id == id && cnt.impersonating == impersonating) contacts
-            { id } <- DA.last contact.history
+            contact ← DA.find (\cnt → cnt.user.id == id && cnt.impersonating == impersonating) contacts
+            { id } ← DA.last contact.history
             pure id

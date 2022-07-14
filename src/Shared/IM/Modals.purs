@@ -54,10 +54,10 @@ modals { toggleModal: toggle, failedRequests, erroredFields } =
                               ]
                   ConfirmDeleteChat tupleId →
                         HE.div (HA.class' "confirmation")
-                              [ HE.span (HA.class' "bold") "Do you really to delete this chat?"
+                              [ HE.span (HA.class' "bold") "Do you really want to delete this chat?"
                               , HE.div (HA.class' "buttons")
-                                    [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ DeleteChat tupleId ] "Cancel"
-                                    , HE.button [ HA.class' "green-button danger", HA.onClick Logout ] "Logout"
+                                    [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal] "Cancel"
+                                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ DeleteChat tupleId ] "Delete"
                                     ]
                               ]
                   _ →

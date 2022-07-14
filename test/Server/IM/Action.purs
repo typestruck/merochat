@@ -224,7 +224,7 @@ tests = do
                         Tuple userId anotherUserId ← setUpUsers
                         SIA.processMessage userId anotherUserId 2 <<< Image "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 
-            TU.testOnly "listMissedEvents finds missed contacts"
+            TU.test "listMissedEvents finds missed contacts"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -239,7 +239,7 @@ tests = do
                         R.liftAff $ TUA.equal anotherUserId (contacts !@ 1).user.id
                         R.liftAff <<< TUA.equal ["oi"] $ map _.content (contacts !@ 1).history
 
-            TU.testOnly "listMissedEvents ignores delivered messages"
+            TU.test "listMissedEvents ignores delivered messages"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers
@@ -253,7 +253,7 @@ tests = do
                         R.liftAff $ TUA.equal yetAnotherUserId (contacts !@ 0).user.id
                         R.liftAff <<< TUA.equal 1 $ DA.length (contacts !@ 0).history
 
-            TU.testOnly "listMissedEvents finds temporary ids"
+            TU.test "listMissedEvents finds temporary ids"
                   $ TS.serverAction
                   $ do
                         Tuple userId anotherUserId ← setUpUsers

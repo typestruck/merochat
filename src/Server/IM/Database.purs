@@ -140,7 +140,6 @@ presentMessageContactFields = """
       , s.content
       , s.status """
 
-
 presentContactFields ∷ String
 presentContactFields = presentUserContactFields <> presentMessageContactFields
 
