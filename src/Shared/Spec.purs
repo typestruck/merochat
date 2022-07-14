@@ -87,10 +87,10 @@ spec ∷
                                                 , response ∷ Ok
                                                 }
                                   , missedEvents ∷
-                                          GET "/missed?lastSenderID=<lastSenderID>&lastRecipientID=<lastRecipientID>"
+                                          GET "/missed?lastSenderID=<lastSenderID>&lastRecipientId=<lastRecipientId>"
                                                 { query ∷
                                                         { lastSenderID ∷ Maybe Int
-                                                        , lastRecipientID ∷ Maybe Int
+                                                        , lastRecipientId ∷ Maybe Int
                                                         }
                                                 , response ∷ MissedEvents
                                                 }

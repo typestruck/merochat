@@ -549,7 +549,7 @@ checkMissedEvents model@{ experimenting, contacts, user: { id } } =
                           if DM.isNothing lastSentMessageID && DM.isNothing lastReceivedMessageID then
                                 pure Nothing
                           else
-                                CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderID: lastSentMessageID, lastRecipientID: lastReceivedMessageID } })
+                                CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderID: lastSentMessageID, lastRecipientId: lastReceivedMessageID } })
                   ]
 
 findLastMessages ∷ Array Contact → Int → { lastSentMessageID ∷ Maybe Int, lastReceivedMessageID ∷ Maybe Int }
@@ -575,14 +575,14 @@ setName name model@{ user } =
             }
 
 toggleConnectedWebSocket ∷ Boolean → IMModel → MoreMessages
-toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, isWebSocketConnected, errorMessage } =
+toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage } =
       model
             { hasTriedToConnectYet = true
             , isWebSocketConnected = isConnected
             , errorMessage = if not isConnected then lostConnectionMessage else if errorMessage == lostConnectionMessage then "" else errorMessage
             } :> if hasTriedToConnectYet && isConnected then [ pure <<< Just $ SpecialRequest CheckMissedEvents ] else []
       where
-      lostConnectionMessage = "Connection to the server lost. Attempting to automaticaly reconnect..."
+      lostConnectionMessage = "Connection to the server lost. Attempting to automatically reconnect..."
 
 preventStop ∷ Event → IMModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event

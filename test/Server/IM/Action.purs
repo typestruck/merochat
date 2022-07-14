@@ -17,7 +17,6 @@ import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
-import Data.Tuple.Nested ((/\))
 import Run as R
 import Server.Database as SD
 import Server.File (imageTooBigMessage, invalidImageMessage)
@@ -27,7 +26,6 @@ import Server.Landing.Database as SLD
 import Server.Settings.Action as SSA
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
-import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Test.Server as TS
 import Test.Server.Model (baseUser)

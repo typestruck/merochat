@@ -52,8 +52,8 @@ block { guards: { loggedUserID }, body: { id } } = SIA.blockUser loggedUserID id
 deleteChat ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ { userId ∷ Int, messageId ∷ Int } } → ServerEffect Ok
 deleteChat { guards: { loggedUserID }, body } = SIA.deleteChat loggedUserID body
 
-missedEvents ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { lastSenderID ∷ Maybe Int, lastRecipientID ∷ Maybe Int } } → ServerEffect MissedEvents
-missedEvents { guards: { loggedUserID }, query: { lastSenderID, lastRecipientID } } = SIA.listMissedEvents loggedUserID lastSenderID lastRecipientID
+missedEvents ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { lastSenderID ∷ Maybe Int, lastRecipientId ∷ Maybe Int } } → ServerEffect MissedEvents
+missedEvents { guards: { loggedUserID }, query: { lastSenderID, lastRecipientId } } = SIA.listMissedEvents loggedUserID lastSenderID lastRecipientId
 
 report ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ Report } → ServerEffect Ok
 report { guards: { loggedUserID }, body } = SIA.reportUser loggedUserID body

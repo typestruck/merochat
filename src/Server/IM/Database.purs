@@ -24,8 +24,10 @@ import Shared.IM.Types
 
 import Control.Monad.List.Trans (filter)
 import Data.Array as DA
+import Data.BigInt as DB
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
@@ -219,6 +221,9 @@ OFFSET @offset) m ORDER BY m.date"""
 
 messageIdsFor ∷ Int → Int → ServerEffect (Array TemporaryMessageId)
 messageIdsFor loggedUserId messageId = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryId"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageId)
+
+countChats :: Int → ServerEffect Int
+countChats loggedUserId = map (DM.maybe 0 (SU.fromJust <<< DB.toInt <<< _.t)) $ SD.single $ select (count _id # as t) # from histories # wher (_sender .=. loggedUserId .||. _recipient .=. loggedUserId)
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ \connection → do
