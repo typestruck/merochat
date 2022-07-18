@@ -44,7 +44,7 @@ create table messages
     date timestamptz not null default (now()),
     content text not null,
     status smallint not null default 1,
-    visualized timestamptz
+    visualized timestamptz,
 
     constraint from_user_message foreign key (sender) references users(id) on delete cascade,
     constraint to_user_message foreign key (recipient) references users(id) on delete cascade
