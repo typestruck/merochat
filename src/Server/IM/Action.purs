@@ -13,6 +13,7 @@ import Droplet.Driver (Pool)
 import Server.Email as SE
 import Server.File as SF
 import Server.IM.Database as SID
+import Debug
 import Server.IM.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.IM.Database.Flat as SIF
 import Server.Types (BaseEffect, ServerEffect, Configuration)
@@ -26,7 +27,7 @@ suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array Sugges
 suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip keys
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
-listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
+listContacts loggedUserId skip =  presentContacts <$> SID.presentContacts loggedUserId skip
 
 listSingleContact ∷ Int → Int → Boolean → ServerEffect (Array Contact)
 listSingleContact loggedUserId userId contactsOnly = presentContacts <$> SID.presentSingleContact loggedUserId userId 0

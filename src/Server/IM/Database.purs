@@ -110,6 +110,8 @@ presentUserContactFields ∷ String
 presentUserContactFields =
       """ h.sender "chatStarter"
       , h.recipient
+      , h.sender_deleted_to
+      , h.recipient_deleted_to
       , h.last_message_date "lastMessageDate"
       , date_part_age ('day', COALESCE(first_message_date, utc_now())) "chatAge"
       , u.id
@@ -167,8 +169,10 @@ presentContacts loggedUserId skip = SD.unsafeQuery query
                  FROM (SELECT
                               ROW_NUMBER() OVER (ORDER BY date DESC) n""" <> presentMessageContactFields <>
                        """FROM messages s
-                       WHERE s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
-                             s.sender = uh.recipient AND s.recipient = uh."chatStarter"
+                       WHERE (s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
+                              s.sender = uh.recipient AND s.recipient = uh."chatStarter") AND
+                              NOT (uh."chatStarter" = @loggedUserId AND uh.sender_deleted_to IS NOT NULL AND s.id <= uh.sender_deleted_to OR
+                                   uh.recipient = @loggedUserId AND uh.recipient_deleted_to IS NOT NULL AND s.id <= uh.recipient_deleted_to)
                        ORDER BY date DESC) b
                  WHERE status < @status OR n <= @initialMessages
                  ORDER BY date) s"""

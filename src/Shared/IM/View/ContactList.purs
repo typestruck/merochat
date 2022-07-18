@@ -47,7 +47,7 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
             | otherwise =
                     DA.mapWithIndex displayContactListEntry
                           <<< DA.sortBy compareLastDate
-                          $ DA.filter (not <<< DA.null <<< _.history) contacts -- might want to look into this: before sending a message, we need to run an effect; in this meanwhile history is empty
+                          $ DA.filter (not <<< DA.null <<< _.history) contacts --refactor: might want to look into this: before sending a message, we need to run an effect; in this meanwhile history is empty
 
       displayContactListEntry index { history, user, impersonating, typing } =
             let
