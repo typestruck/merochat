@@ -7,24 +7,35 @@ body {
     color: rgb(238, 238, 238)
 }
 
-.profile-description p, .description-message p {
+.profile-description p,
+.description-message p {
     text-align: justify;
     hyphens: auto;
 }
 
-.profile-description ul, .description-message ul, .message ul {
+.profile-description ul,
+.description-message ul,
+.message ul {
     list-style-type: disc;
 }
 
-.profile-description ol, .profile-description ul, .description-message ul, .description-message ol, .message ol, .message ul {
+.profile-description ol,
+.profile-description ul,
+.description-message ul,
+.description-message ol,
+.message ol,
+.message ul {
     padding-left: inherit;
 }
 
-.profile-description ul li, .description-message ul li, .message ul li {
+.profile-description ul li,
+.description-message ul li,
+.message ul li {
     display: list-item;
 }
 
-.profile-description p:first-of-type, .description-message p:first-of-type {
+.profile-description p:first-of-type,
+.description-message p:first-of-type {
     margin-top: 0px;
 }
 
@@ -47,7 +58,8 @@ body {
     align-self: center;
 }
 
-.profile-description p:last-of-type, .description-message p:last-of-type {
+.profile-description p:last-of-type,
+.description-message p:last-of-type {
     margin-bottom: 0px;
 }
 
@@ -105,7 +117,8 @@ body {
     display: flex;
 }
 
-.contact-list-last-message a, .message-content a {
+.contact-list-last-message a,
+.message-content a {
     text-decoration: underline;
 }
 
@@ -123,6 +136,7 @@ body {
     border-bottom: 1px solid #4E4E4E;
     border-top: 1px solid #4E4E4E;
 }
+
 .typing {
     font-style: italic;
 }
@@ -135,7 +149,8 @@ body {
     justify-content: end;
 }
 
-.chat-input-area, .chat-input-options {
+.chat-input-area,
+.chat-input-options {
     position: relative;
     z-index: 2;
 }
@@ -151,7 +166,8 @@ body {
     align-self: baseline;
 }
 
-.profile-edition-name, .profile-name {
+.profile-edition-name,
+.profile-name {
     font-family: Verdana, "sans serif";
     font-size: 1.1em;
     margin: 0;
@@ -199,17 +215,21 @@ body {
     align-self: center;
 }
 
-.avatar-contact-list, .avatar-settings {
+.avatar-contact-list,
+.avatar-settings {
     width: 54px;
     height: 54px;
     border-radius: 100%;
 }
 
-.avatar-settings, .outgoing-message .avatar-message, .avatar-profile-edition {
+.avatar-settings,
+.outgoing-message .avatar-message,
+.avatar-profile-edition {
     background: #4d4d51
 }
 
-.avatar-profile, .avatar-profile-edition {
+.avatar-profile,
+.avatar-profile-edition {
     border-radius: 100%;
 }
 
@@ -243,7 +263,8 @@ blockquote {
     background: #1b3a28;
 }
 
-.settings, .contact {
+.settings,
+.contact {
     display: flex;
 }
 
@@ -259,6 +280,23 @@ blockquote {
     align-items: baseline;
     cursor: pointer;
     padding: 5px 10px
+}
+
+.contact:hover .unread-messages,
+.contact:hover .message-status-contact {
+    display: none;
+}
+
+.message-context-menu {
+    display: none;
+}
+
+.message-content-menu svg {
+    vertical-align: bottom;
+}
+
+.contact:hover .message-context-menu, .message-context-menu.visible  {
+    display: block;
 }
 
 .settings-name {
@@ -292,7 +330,10 @@ blockquote {
     color: rgb(238, 238, 238, 0.8)
 }
 
-.contact-name, .contact-list-last-message>*, .chat-input::placeholder, .settings-name {
+.contact-name,
+.contact-list-last-message>*,
+.chat-input::placeholder,
+.settings-name {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
@@ -322,7 +363,8 @@ blockquote {
     flex-flow: column wrap;
 }
 
-.profile-info, .profile-info-edition {
+.profile-info,
+.profile-info-edition {
     display: flex;
     flex-flow: column;
 }
@@ -342,14 +384,16 @@ blockquote {
     display: none;
 }
 
-.svg-back-card, .svg-back-profile {
+.svg-back-card,
+.svg-back-profile {
     stroke: none;
     width: 20px;
     height: 20px;
     fill: #b9c658;
 }
 
-#full-profile-context-menu, .svg-back-profile {
+#full-profile-context-menu,
+.svg-back-profile {
     padding: 10px;
 }
 
@@ -447,13 +491,13 @@ blockquote {
     background-color: #373737;
     top: 0px;
     left: -6px;
-    transform: rotate( 52deg) skew( -36deg);
+    transform: rotate(52deg) skew(-36deg);
 }
 
 .outgoing-message .message-content::before {
     background-color: #1b3a28;
     right: -5px;
-    transform: rotate( 0deg) skew( -35deg);
+    transform: rotate(0deg) skew(-35deg);
 }
 
 .message-history {
@@ -479,11 +523,13 @@ blockquote {
     margin: 2px;
 }
 
-.message.incoming-message, .message.outgoing-message {
+.message.incoming-message,
+.message.outgoing-message {
     margin-top: 15px
 }
 
-.same-bubble-message.message.incoming-message, .same-bubble-message.message.outgoing-message {
+.same-bubble-message.message.incoming-message,
+.same-bubble-message.message.outgoing-message {
     margin-top: 2px
 }
 
@@ -555,7 +601,10 @@ blockquote {
     margin: 0 auto;
 }
 
-.profile-info-edition span, .profile-info-edition img, .profile-info-edition h1, .profile-info-edition h3 {
+.profile-info-edition span,
+.profile-info-edition img,
+.profile-info-edition h1,
+.profile-info-edition h3 {
     cursor: pointer;
 }
 
@@ -647,7 +696,8 @@ svg.toolbar-action {
     align-items: center;
 }
 
-.svg-duller, .chat-input-options svg {
+.svg-duller,
+.chat-input-options svg {
     fill: rgb(238, 238, 238, 0.8);
     stroke: rgb(238, 238, 238, 0.8);
 }
@@ -674,7 +724,8 @@ svg.toolbar-action {
     display: inline;
 }
 
-.chat-input-preview, .chat-input {
+.chat-input-preview,
+.chat-input {
     border-radius: 5px;
     max-height: 150px;
     border-top-right-radius: 0;
@@ -731,7 +782,8 @@ svg.toolbar-action {
     display: inline-block;
 }
 
-.list-tags, .tag {
+.list-tags,
+.tag {
     width: max-content;
     display: inline-block;
     margin: 0 5px;
@@ -744,7 +796,9 @@ svg.toolbar-action {
     border: 1px solid #b5b7b7
 }
 
-.suggestion .tag, .list-tags, .card .tag {
+.suggestion .tag,
+.list-tags,
+.card .tag {
     background: #a6b572;
     color: #1b3a28;
 }
@@ -757,7 +811,12 @@ svg.toolbar-action {
     margin: 0 20px;
 }
 
-#experiments-root, #profile-edition-root, #settings-edition-root, #karma-leaderboard-root, #help-root, #backer-root {
+#experiments-root,
+#profile-edition-root,
+#settings-edition-root,
+#karma-leaderboard-root,
+#help-root,
+#backer-root {
     margin-top: 45px;
     display: flex;
     flex-direction: column;
@@ -833,7 +892,8 @@ svg.toolbar-action {
     margin: 10px 0;
 }
 
-.headline, .profile-edition-headline {
+.headline,
+.profile-edition-headline {
     font-size: 1.12em;
     display: inline-block;
     font-style: italic;
@@ -860,11 +920,13 @@ input:not(type=button):focus {
     border: 1px solid #b5b7b7 !important
 }
 
-.exclamation, .error-message {
+.exclamation,
+.error-message {
     color: red;
 }
 
-.message .error-message, .modal-form .error-message {
+.message .error-message,
+.modal-form .error-message {
     visibility: visible;
     display: block;
 }
@@ -889,7 +951,8 @@ input:not(type=button):focus {
     width: 45em;
 }
 
-.profile-basics, .profile-rest {
+.profile-basics,
+.profile-rest {
     display: flex;
 }
 
@@ -901,7 +964,8 @@ input:not(type=button):focus {
     text-align: center;
 }
 
-.profile-asl, .profile-karma {
+.profile-asl,
+.profile-karma {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -919,7 +983,8 @@ input:not(type=button):focus {
     margin-bottom: 15px;
 }
 
-.attachment-button, .send-button {
+.attachment-button,
+.send-button {
     width: 22px;
     height: 22px;
 }
@@ -1079,6 +1144,7 @@ select {
     20% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -1216,7 +1282,8 @@ select {
     max-width: 90%;
 }
 
-.card .link-button, .card .preview {
+.card .link-button,
+.card .preview {
     display: none;
 }
 
@@ -1324,7 +1391,7 @@ select {
     bottom: -6px;
     left: 50%;
     margin-left: -15px;
-    transform: rotate( 135deg);
+    transform: rotate(135deg);
 }
 
 .fortune svg {
@@ -1524,7 +1591,8 @@ select {
     display: none;
 }
 
-.margin-less, .margin-less-z {
+.margin-less,
+.margin-less-z {
     margin-left: -20px
 }
 
@@ -1581,7 +1649,9 @@ select {
     height: 17px;
 }
 
-.suggestions-button, .tabs, .mobile-profile-header {
+.suggestions-button,
+.tabs,
+.mobile-profile-header {
     display: none;
 }
 
@@ -1594,11 +1664,13 @@ select {
     height: 38px;
 }
 
-.profile-name, .profile-edition-name {
+.profile-name,
+.profile-edition-name {
     margin-top: 11px;
 }
 
-.headline, .profile-edition-headline {
+.headline,
+.profile-edition-headline {
     margin: 7px 0;
 }
 
@@ -1614,7 +1686,8 @@ select {
     margin-bottom: 16px;
 }
 
-.profile-description-about, .about {
+.profile-description-about,
+.about {
     margin-top: 16px;
 }
 
@@ -1683,7 +1756,8 @@ select {
     display: none;
 }
 
-.avatar-profile, .avatar-profile-edition {
+.avatar-profile,
+.avatar-profile-edition {
     width: 68px;
     height: 69px;
 }
@@ -1726,33 +1800,43 @@ select {
         display: flex;
         overflow-x: hidden
     }
+
     .contact-box.current-mobile-screen {
         min-height: 100%;
         min-width: 100%;
     }
+
     .contact-box {
         min-width: 0;
         order: 1;
     }
+
     .suggestion-box.current-mobile-screen {
         order: 0;
         min-width: 100%;
         min-height: 100%;
     }
+
     .message-history> :first-child {
         margin-top: unset !important;
     }
+
     .message-history .retry.invisible {
         visibility: unset;
         display: none;
     }
+
     .suggestion-box-error {
         text-align: center;
     }
-    .profile-contact .avatar-profile, .avatar-contact-list, .avatar-message {
+
+    .profile-contact .avatar-profile,
+    .avatar-contact-list,
+    .avatar-message {
         width: 36px;
         height: 36px;
     }
+
     .contact-options {
         font-weight: lighter;
     }
@@ -1761,29 +1845,43 @@ select {
         min-width: 36px;
         min-height: 36px;
     }
+
     .settings-mobile {
         display: flex;
         justify-content: space-between;
         padding: 5px;
     }
+
     .notification {
         padding-left: 10px;
     }
-    .card-sides, .card-top-header, .side-suggestions-container, .logo-contact-list, .fortune, .avatar-settings, .settings-name {
+
+    .card-sides,
+    .card-top-header,
+    .side-suggestions-container,
+    .logo-contact-list,
+    .fortune,
+    .avatar-settings,
+    .settings-name {
         display: none;
     }
+
     .settings-part {
         flex-direction: column;
     }
+
     .mobile-profile-header {
         display: flex;
         padding: 5px;
         margin-bottom: 5px;
         border-bottom: 1px solid black;
     }
-    .mobile-profile-header .avatar-settings, .mobile-profile-header .settings-name {
+
+    .mobile-profile-header .avatar-settings,
+    .mobile-profile-header .settings-name {
         display: block;
     }
+
     .tabs {
         display: flex;
         justify-content: space-around;
@@ -1791,14 +1889,17 @@ select {
         padding-top: 10px;
         cursor: pointer;
     }
+
     .avatar-settings {
         width: 43px;
         height: 43px;
         align-self: center;
     }
+
     .welcome-impersonation {
         color: #db5a5d
     }
+
     .settings .user-menu {
         left: 0px;
         top: 40px;
@@ -1806,9 +1907,11 @@ select {
         padding: 0px;
         padding-bottom: 5px;
     }
+
     .settings .user-menu .user-menu-item {
         padding: 10px
     }
+
     .svg-experiment {
         order: 2;
         width: 18px;
@@ -1816,43 +1919,60 @@ select {
         height: 18px;
         margin-right: 25px;
     }
+
     .suggestions-button {
         display: block;
         cursor: pointer;
         order: 3;
     }
+
     .avatar-profile {
         width: 64px;
         height: 64px;
     }
-    #profile-edition-form, .suggestion.new, .suggestion.old {
+
+    #profile-edition-form,
+    .suggestion.new,
+    .suggestion.old {
         padding: 10px 15px;
     }
-    .suggestion-cards, .cards, .card, .card-center {
+
+    .suggestion-cards,
+    .cards,
+    .card,
+    .card-center {
         max-width: 100%;
         flex-grow: 1;
         overflow: hidden;
     }
-    .profile-edition-name, .profile-name, .profile-asl {
+
+    .profile-edition-name,
+    .profile-name,
+    .profile-asl {
         text-align: center;
     }
+
     .suggestion-center .suggestion.new .tags-description {
         padding: 0;
         overflow: unset;
     }
+
     .suggestion-center {
         height: 100%;
         overflow-y: hidden;
         border: none;
         scrollbar-width: thin;
     }
+
     .suggestion.new {
         overflow-y: auto;
         flex-grow: 1;
     }
+
     .svg-back-card {
         display: block
     }
+
     .profile-context {
         align-self: stretch;
         display: flex;
@@ -1862,100 +1982,136 @@ select {
         position: sticky;
         top: 0;
     }
+
     #suggestion-context-menu {
         padding: 0;
     }
+
     .send-enter {
         display: none;
     }
+
     .suggestion-input {
         margin: 5px
     }
-    .chat-input, .chat-input:focus {
+
+    .chat-input,
+    .chat-input:focus {
         border-radius: 3px;
         border-top: 1px solid #b5b7b7;
     }
+
     .suggestion-input .chat-input {
         min-height: 0;
         max-height: 100px;
         border-radius: 5px;
     }
+
     .chat-input-options {
         display: none;
     }
+
     .profile-contact-top .svg-back-card {
         padding-right: 15px;
     }
+
     .send-box {
         margin: 0;
         padding: 10px;
         padding-bottom: 5px;
     }
+
     .message-content {
         padding: 1px 10px;
     }
+
     .message-content p {
         width: 100%;
     }
+
     .message {
         margin: 0;
         width: 85%;
     }
+
     .message div {
         max-width: 100%;
     }
-    .message.incoming-message, .message.outgoing-message {
+
+    .message.incoming-message,
+    .message.outgoing-message {
         margin-top: 8px
     }
+
     .incoming-message .message-content {
         margin-left: 10px;
     }
+
     .outgoing-message .message-content {
         margin-right: 10px;
     }
+
     .message-content::before {
         height: 10px;
         width: 11px;
     }
+
     .incoming-message .message-content::before {
-        transform: rotate( 55deg) skew( -35deg);
+        transform: rotate(55deg) skew(-35deg);
     }
+
     .modal-placeholder {
         height: 100%;
         flex-direction: column;
         width: 100%;
         padding: 0
     }
+
     .modal-menu {
         display: none;
     }
-    #help-root, #karma-leaderboard-root, #settings-edition-root, #profile-edition-root, #backer-root, #experiments-root {
+
+    #help-root,
+    #karma-leaderboard-root,
+    #settings-edition-root,
+    #profile-edition-root,
+    #backer-root,
+    #experiments-root {
         margin: 0;
         width: 100%;
         overflow-x: hidden;
     }
+
     .profile-contact-header {
         max-width: 65%;
     }
+
     .profile-contact-deets {
         margin-left: auto;
     }
+
     .profile-contact-deets .outer-user-menu {
         margin-right: -10px;
     }
-    .chat-experiments, .profile-contact {
+
+    .chat-experiments,
+    .profile-contact {
         padding: 10px;
     }
+
     .modal-input {
         width: auto;
     }
+
     .modal-menu-mobile {
         display: flex;
         padding: 10px
     }
+
     .modal-menu-mobile .svg-back-card {
         margin-right: 15px;
     }
+
     .suggestions-call {
         display: flex;
         color: #b9c658;
@@ -1964,6 +2120,7 @@ select {
         padding: 0px 10px;
         justify-content: space-between;
     }
+
     .suggestions-call-middle {
         display: flex;
         flex-direction: column;
@@ -1971,34 +2128,44 @@ select {
         text-align: center;
         font-size: 1.1em
     }
+
     .welcome-suggestions-call {
         font-size: 1.2em;
         font-weight: 600;
     }
+
     .suggestions-call .svg-55 {
         width: 30px;
         height: 30px
     }
-    .profile-tags, .tags-description {
+
+    .profile-tags,
+    .tags-description {
         max-width: 100%;
     }
+
     .tag {
         word-break: break-word;
         width: auto;
     }
+
     .settings .outer-user-menu {
         margin-left: unset;
     }
+
     .cards {
         min-width: 100%;
     }
+
     .chat-input {
         padding-left: 39px;
         padding-right: 72px;
     }
+
     .suggestion-input .chat-input {
         padding-right: 38px;
     }
+
     .confirmation {
         margin-left: 0;
         width: unset;
@@ -2007,9 +2174,12 @@ select {
         margin-top: -130px;
         padding: 10px;
     }
-    .message-history, .message-history> :last-child {
+
+    .message-history,
+    .message-history> :last-child {
         padding-bottom: 0px;
     }
+
     .image-form {
         padding: 10px;
         bottom: 0;
@@ -2020,6 +2190,7 @@ select {
         justify-content: flex-end;
         position: absolute;
     }
+
     .image-form-image {
         margin: 5px;
         position: sticky;
@@ -2031,31 +2202,39 @@ select {
         justify-content: center;
         align-items: flex-end;
     }
+
     .image-form-image img {
         max-width: 90%;
         max-height: 90%;
     }
+
     .emojis {
         padding: 5px;
         height: 300px;
     }
+
     #user-context-menu circle {
         display: none;
     }
+
     #user-context-menu rect {
         display: block;
     }
+
     .svg-user-menu-context {
         width: 24px;
         height: 24px;
     }
+
     .svg-suggestion-button {
         width: 25px;
         height: 25px;
     }
+
     .settings {
         padding: 10px;
     }
+
     .tab-item {
         display: flex;
         flex-direction: column;
@@ -2068,146 +2247,208 @@ select {
     .back-side-suggestion {
         padding: 14px 6px;
     }
+
     .card-sides {
         margin: 10px 0;
         width: calc(100vw * 0.6398243045387994);
         height: calc(100vh * 0.81640625);
     }
-    .card-center, .suggestion-center {
+
+    .card-center,
+    .suggestion-center {
         width: calc(100vw * 0.55344070278184475);
         height: calc(100vh * 0.8450520833333334);
     }
+
     .suggestion-center .suggestion.new {
         height: 596px;
     }
+
     .profile-asl {
         margin-bottom: 16px;
     }
-    .suggestion .headline, .profile-edition-headline {
+
+    .suggestion .headline,
+    .profile-edition-headline {
         max-width: 483px;
     }
+
     .profile-tags {
         max-width: 595px;
     }
-    .description-message, .profile-description, .profile-edition-description {
+
+    .description-message,
+    .profile-description,
+    .profile-edition-description {
         width: 595px;
     }
-    .avatar-settings, .profile-contact .avatar-profile, .avatar-contact-list, .avatar-message {
+
+    .avatar-settings,
+    .profile-contact .avatar-profile,
+    .avatar-contact-list,
+    .avatar-message {
         width: 44px;
         height: 44px;
     }
+
     .avatar-contact-list-div {
         min-width: 44px;
         min-height: 44px;
     }
+
     .side .chat-input {
         padding-right: 85px;
     }
-    .chat-input-preview, .chat-input, .suggestion-input .side .chat-input {
+
+    .chat-input-preview,
+    .chat-input,
+    .suggestion-input .side .chat-input {
         padding: 10px 38px;
     }
 }
 
 @media (min-width:1920px) {
-    html, body {
+
+    html,
+    body {
         font-size: 18px;
         line-height: 1.51857143;
     }
-    .profile-contact .avatar-profile, .avatar-contact-list, .avatar-settings, .avatar-message {
+
+    .profile-contact .avatar-profile,
+    .avatar-contact-list,
+    .avatar-settings,
+    .avatar-message {
         width: 64px;
         height: 64px;
     }
+
     .avatar-contact-list-div {
         min-width: 64px;
         min-height: 64px;
     }
+
     .welcome-new {
         font-size: 1.1em;
     }
+
     .card-sides {
         margin: 46px 0;
         height: calc(100vh * 0.7092592592592592);
         width: 1100px;
     }
-    .profile-description-about, .about {
+
+    .profile-description-about,
+    .about {
         margin-top: 25px;
     }
+
     .suggestion-center {
         width: 1040px;
         height: calc(100vh * 0.7944444444444444);
     }
+
     .suggestion-center .suggestion.new {
         height: calc(100vh * 0.6462962962962962);
     }
-    .avatar-profile, .avatar-profile-edition {
+
+    .avatar-profile,
+    .avatar-profile-edition {
         width: 94px;
         height: 91px;
     }
-    .profile-edition-name, .profile-name {
+
+    .profile-edition-name,
+    .profile-name {
         letter-spacing: -0.02em;
     }
+
     .profile-asl {
         max-width: 872px;
         margin-bottom: 20px;
     }
-    .suggestion .headline, .profile-edition-headline {
+
+    .suggestion .headline,
+    .profile-edition-headline {
         max-width: 670px;
     }
+
     .profile-tags {
         max-width: 872px;
     }
+
     .svg-55 {
         width: 50px;
         height: 50px
     }
+
     .suggestion-arrow {
         margin-top: -50px;
         left: 10px;
     }
+
     .suggestion-arrow:last-child {
         margin-left: -60px;
     }
-    .description-message, .profile-description, .profile-edition-description {
+
+    .description-message,
+    .profile-description,
+    .profile-edition-description {
         width: 872px;
     }
+
     .contact {
         padding: 10px;
     }
+
     .message-history> :last-child {
         padding-bottom: 20px;
     }
+
     .svg-back-suggestions {
         margin-right: 28px;
     }
+
     .contact-profile {
         padding: 5px 15px;
     }
+
     .settings {
         padding: 10px;
     }
+
     .svg-20 {
         width: 15px;
         height: 15px;
     }
+
     .svg-other {
         width: 20px;
         height: 20px;
     }
+
     .card-top-header {
         margin: 40px 0px;
     }
+
     .emoji-access {
         width: 28px;
         height: 28px;
     }
-    .attachment-button, .send-button {
+
+    .attachment-button,
+    .send-button {
         width: 32px;
         height: 32px;
     }
+
     .side .chat-input {
         padding-right: 90px;
     }
-    .chat-input-preview, .chat-input, .suggestion-input .side .chat-input {
+
+    .chat-input-preview,
+    .chat-input,
+    .suggestion-input .side .chat-input {
         padding: 10px 45px;
     }
 }

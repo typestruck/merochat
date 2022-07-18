@@ -117,32 +117,32 @@ let additions =
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.15.2-20220613/packages.dhall
-        sha256:99f976d547980055179de2245e428f00212e36acd55d74144eab8ad8bf8570d8
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.2-20220630/packages.dhall
+        sha256:691aff166010760f18ab1f4842ba6184f43747756e00579a050a2a46fa22d014
 
 let overrides = {=}
 
 let additions =
       { browser-cookies =
         { dependencies =
-          [  "arrays"
-            , "console"
-            , "control"
-            , "debug"
-            , "effect"
-            , "either"
-            , "foldable-traversable"
-            , "js-date"
-            , "lists"
-            , "maybe"
-            , "newtype"
-            , "nonempty"
-            , "parsing"
-            , "prelude"
-            , "psci-support"
-            , "quickcheck"
-            , "strings"
-            , "test-unit"
+          [ "arrays"
+          , "console"
+          , "control"
+          , "debug"
+          , "effect"
+          , "either"
+          , "foldable-traversable"
+          , "js-date"
+          , "lists"
+          , "maybe"
+          , "newtype"
+          , "nonempty"
+          , "parsing"
+          , "prelude"
+          , "psci-support"
+          , "quickcheck"
+          , "strings"
+          , "test-unit"
           ]
         , repo = "https://github.com/easafe/purescript-browser-cookies.git"
         , version = "master"
@@ -245,7 +245,8 @@ let additions =
         }
       , unordered-collections =
         { version = "master"
-        , repo = "https://github.com/fehrenbach/purescript-unordered-collections"
+        , repo =
+            "https://github.com/fehrenbach/purescript-unordered-collections"
         , dependencies =
           [ "arrays"
           , "console"

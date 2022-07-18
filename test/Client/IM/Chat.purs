@@ -46,11 +46,11 @@ tests = do
 
             TU.test "sendMessage bumps temporary id" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let m@{ temporaryID } = DT.fst $ CIC.sendMessage webSocket content date model
-                  TUA.equal 1 temporaryID
+                  let m@{ temporaryId } = DT.fst $ CIC.sendMessage webSocket content date model
+                  TUA.equal 1 temporaryId
 
-                  let { temporaryID } = DT.fst $ CIC.sendMessage webSocket content date m
-                  TUA.equal 2 temporaryID
+                  let { temporaryId } = DT.fst $ CIC.sendMessage webSocket content date m
+                  TUA.equal 2 temporaryId
 
             TU.test "sendMessage adds message to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime

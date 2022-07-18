@@ -63,7 +63,7 @@ spec ∷
                                                 }
                                   , singleContact ∷
                                           GET "/contact?id=<id>&contactsOnly=<contactsOnly>"
-                                                { query ∷ { id ∷ Int, contactsOnly :: Boolean }
+                                                { query ∷ { id ∷ Int, contactsOnly ∷ Boolean }
                                                 , response ∷ Array Contact
                                                 }
                                   , history ∷
@@ -81,11 +81,16 @@ spec ∷
                                                 { body ∷ { id ∷ Int }
                                                 , response ∷ Ok
                                                 }
+                                  , delete ∷
+                                          POST "/delete"
+                                                { body ∷ { userId ∷ Int, messageId ∷ Int }
+                                                , response ∷ Ok
+                                                }
                                   , missedEvents ∷
-                                          GET "/missed?lastSenderID=<lastSenderID>&lastRecipientID=<lastRecipientID>"
+                                          GET "/missed?lastSenderID=<lastSenderID>&lastRecipientId=<lastRecipientId>"
                                                 { query ∷
                                                         { lastSenderID ∷ Maybe Int
-                                                        , lastRecipientID ∷ Maybe Int
+                                                        , lastRecipientId ∷ Maybe Int
                                                         }
                                                 , response ∷ MissedEvents
                                                 }
@@ -141,7 +146,8 @@ spec ∷
                                                               { body ∷ NoBody
                                                               , response ∷ Ok
                                                               }
-                                                , privacy :: POST "/account/privacy"
+                                                , privacy ∷
+                                                        POST "/account/privacy"
                                                               { body ∷ PrivacySettings
                                                               , response ∷ Ok
                                                               }

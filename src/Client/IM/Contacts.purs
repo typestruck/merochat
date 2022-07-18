@@ -2,6 +2,8 @@ module Client.IM.Contacts where
 
 import Prelude
 import Shared.ContentType
+import Shared.Experiments.Types
+import Shared.IM.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)
@@ -14,16 +16,15 @@ import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
 import Data.Array ((!!), (..))
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
-import Shared.Experiments.Types
 import Flame ((:>))
 import Flame as F
-import Shared.IM.Types
 import Shared.IM.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -155,7 +156,7 @@ displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → IMM
 displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
 
 resumeMissedEvents ∷ MissedEvents → IMModel → MoreMessages
-resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, user: { id: senderID } } =
+resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =
       let
             missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
             missedFromNewContacts = map getNew new
@@ -168,13 +169,14 @@ resumeMissedEvents { contacts: missedContacts, messageIDs } model@{ contacts, us
                           }
                   ) $ map (\cnt → Tuple cnt.user.id cnt.impersonating) missedContacts
       where
-      messageMap = DH.fromArrayBy _.temporaryID _.id messageIDs
+      messageMap = DH.fromArrayBy _.temporaryId _.id messageIds
       markSenderError contact@{ history } = contact
             { history = map updateSenderError history
             }
       updateSenderError history@{ sender, status, id }
             | status == Sent && sender == senderID =
                     if DH.member id messageMap then --received or not by the server
+
                           history
                                 { status = Received
                                 , id = SU.lookup id messageMap
@@ -209,3 +211,24 @@ updateDisplayContacts newContacts userIDs model@{ contacts } =
                     }
             )
             userIDs
+
+deleteChat ∷ Tuple Int (Maybe Int) → IMModel → MoreMessages
+deleteChat tii@(Tuple id impersonating) model@{ contacts } =
+      updatedModel :>
+            if DM.isNothing impersonating then
+                  [ do
+                          result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: SU.fromJust lastMessageId } }
+                          case result of
+                                Left _ → pure <<< Just $ RequestFailed { request: DeleteChat tii, errorMessage: Nothing }
+                                _ → pure Nothing
+                  ]
+            else []
+      where
+      updatedModel = model
+            { toggleModal = HideUserMenuModal
+            , contacts = DA.filter (\cnt → cnt.user.id /= id && (cnt.impersonating == Nothing || cnt.impersonating /= impersonating)) contacts
+            }
+      lastMessageId = do
+            contact ← DA.find (\cnt → cnt.user.id == id && cnt.impersonating == impersonating) contacts
+            { id } ← DA.last contact.history
+            pure id

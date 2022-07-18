@@ -2,6 +2,9 @@ module Test.Client.IM.Contacts where
 
 import Prelude
 import Shared.ContentType
+import Shared.DateTime
+import Shared.IM.Types
+import Shared.User
 
 import Client.IM.Contacts as CICN
 import Data.Maybe (Maybe(..))
@@ -11,11 +14,8 @@ import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.Experiments.Impersonation (batman)
 import Shared.Unsafe ((!@))
-import Shared.User
-import Shared.DateTime
 import Test.Client.Model (contact, historyMessage, imUser, imUserId, model, webSocket)
 import Test.Unit (TestSuite)
-import Shared.IM.Types
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
@@ -24,7 +24,7 @@ tests = do
       TU.suite "im contacts update" do
             TU.test "resumeChat sets chatting" do
                   let
-                        m@{ chatting } = DT.fst <<< CICN.resumeChat anotherContactID Nothing $ model
+                        m@{ chatting } = DT.fst <<< CICN.resumeChat anotherContactId Nothing $ model
                               { chatting = Nothing
                               , contacts = [ contact { user = imUser }, anotherContact ]
                               }
@@ -41,7 +41,7 @@ tests = do
                               }
                   TUA.equal (Just 1) chatting
 
-            TU.test "updateStatus sets recieved messages as read" do
+            TU.test "updateStatus sets received messages as read" do
                   let
                         { contacts } = DT.fst <<< CICN.markRead webSocket $ model
                               { chatting = Just 1
@@ -58,7 +58,7 @@ tests = do
 
             TU.test "resumeMissedEvents adds missed contacts" do
                   let
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [ contact ], messageIDs: [] } $ model
+                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [ contact ], messageIds: [] } $ model
                               { contacts = []
                               }
                   TUA.equal [ contact ] contacts
@@ -66,26 +66,26 @@ tests = do
             TU.test "resumeMissedEvents adds missed messages" do
                   let
                         updated = [ contact { history = [ historyMessage ] } ]
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: updated, messageIDs: [] } $ model
+                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: updated, messageIds: [] } $ model
                               { contacts = [ contact { history = [] } ]
                               }
                   TUA.equal updated contacts
 
-            TU.test "resumeMissedEvents sets sucessfull messages" do
+            TU.test "resumeMissedEvents sets successful messages" do
                   let
-                        temporaryID = 1
+                        temporaryId = 1
                         newID = 10
                         existing =
                               [ contact
                                       { history =
                                               [ historyMessage
                                                       { status = Sent
-                                                      , id = temporaryID
+                                                      , id = temporaryId
                                                       }
                                               ]
                                       }
                               ]
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIDs: [ { id: newID, temporaryID } ] } $ model
+                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIds: [ { id: newID, temporaryId } ] } $ model
                               { contacts = existing
                               }
                         updated =
@@ -102,18 +102,18 @@ tests = do
 
             TU.test "resumeMissedEvents sets errored messages" do
                   let
-                        temporaryID = 1
+                        temporaryId = 1
                         existing =
                               [ contact
                                       { history =
                                               [ historyMessage
                                                       { status = Sent
-                                                      , id = temporaryID
+                                                      , id = temporaryId
                                                       }
                                               ]
                                       }
                               ]
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIDs: [] } $ model
+                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIds: [] } $ model
                               { contacts = existing
                               }
                         updated =
@@ -127,10 +127,16 @@ tests = do
                               ]
                   TUA.equal updated contacts
 
+            TU.test "deleteChat removes deleted contact" do
+                  let { contacts } = DT.fst <<< CICN.deleteChat (Tuple anotherContactId Nothing) $ model
+                              { contacts = [ contact, anotherContact ]
+                              }
+                  TUA.equal [ contact ] contacts
+
       where
-      anotherContactID = imUser.id + 1
+      anotherContactId = imUser.id + 1
       anotherContact = contact
-            { user = imUser { id = anotherContactID }
+            { user = imUser { id = anotherContactId }
             , history =
                     [ { id: 1
                       , status: Received

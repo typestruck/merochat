@@ -50,6 +50,7 @@ handlers reading =
               , history: runJSON reading SIH.history
               , suggestions: runJSON reading SIH.suggestions
               , block: runJSON reading SIH.block
+              , delete: runJSON reading SIH.deleteChat
               , missedEvents: runJSON reading SIH.missedEvents
               , fortune: runJSON reading SFTH.fortune
               , report: runJSON reading SIH.report

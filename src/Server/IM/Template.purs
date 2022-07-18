@@ -44,7 +44,7 @@ template { contacts, suggestions, user } = do
             , init:
                     { chatting: Nothing
                     , freeToFetchSuggestions: true
-                    , temporaryID: 0
+                    , temporaryId: 0
                     , typingIds: []
                     , modalsLoaded: []
                     , suggesting: if suggestionsCount == 0 then Nothing else if suggestionsCount == 1 then Just 0 else Just 1

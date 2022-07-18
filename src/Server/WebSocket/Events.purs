@@ -143,17 +143,17 @@ handleMessage payload = do
             UnavailableFor { id } → do
                   possibleConnection ← R.liftEffect (DH.lookup id <$> ER.read allConnections)
                   whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactUnavailable { id: sessionUserID }
-            OutgoingMessage { id: temporaryID, userID: recipient, content, turn, experimenting } → do
+            OutgoingMessage { id: temporaryId, userID: recipient, content, turn, experimenting } → do
                   date ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
                   Tuple messageID finalContent ← case experimenting of
                         --impersonating experiment messages are not saved
                         Just (ImpersonationPayload _) → do
                               msg ← SIA.processMessageContent content
-                              pure $ Tuple temporaryID msg
+                              pure $ Tuple temporaryId msg
                         _ →
-                              SIA.processMessage sessionUserID recipient temporaryID content
+                              SIA.processMessage sessionUserID recipient temporaryId content
                   sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
-                        { previousID: temporaryID
+                        { previousID: temporaryId
                         , id: messageID
                         , userID: recipient
                         }
@@ -162,7 +162,7 @@ handleMessage payload = do
                   whenJust possibleRecipientConnection $ \{ connection: recipientConnection } →
                         sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage
                               { id: messageID
-                              , userID: sessionUserID
+                              , userId: sessionUserID
                               , content: finalContent
                               , experimenting: experimenting
                               , date
