@@ -60,6 +60,14 @@ modals { toggleModal: toggle, failedRequests, erroredFields } =
                                     , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ DeleteChat tupleId ] "Delete"
                                     ]
                               ]
+                  ConfirmBlockUser tupleId →
+                        HE.div (HA.class' "confirmation")
+                              [ HE.span (HA.class' "bold") "Do you really want to block this user?"
+                              , HE.div (HA.class' "buttons")
+                                    [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal] "Cancel"
+                                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ BlockUser tupleId ] "Block"
+                                    ]
+                              ]
                   _ →
                         HE.div (HA.class' "modal-placeholder")
                               [ HE.div (HA.class' "modal-menu-mobile")

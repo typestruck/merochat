@@ -1,5 +1,6 @@
 module Shared.IM.View.SuggestionProfile (suggestionProfile, displayProfile) where
 
+import Debug
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
@@ -10,13 +11,14 @@ import Data.Array as DA
 import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple (Tuple(..))
+import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
-import Debug
 import Shared.IM.Svg (backArrow, nextArrow)
 import Shared.IM.Svg as SIA
 import Shared.IM.View.ChatInput as SIVC
@@ -82,7 +84,7 @@ compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } conta
                             <<< HE.div [ HA.class' "outer-user-menu" ]
                             <<< SIA.contextMenu
                             $ show CompactProfileContextMenu
-                    , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu } ] $ blockReport id
+                    , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu } ] <<< blockReport $ Tuple id impersonating
                     ]
             , HE.div (HA.class' "show-profile-icon-div" : showProfileAction) profileIcon
 
@@ -124,7 +126,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             , HE.div [ HA.class' "outer-user-menu" ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
-            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu } ] $ blockReport id
+            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu } ] <<< blockReport $ Tuple id impersonating
             ]
 
       profile =
@@ -155,7 +157,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
       currentSuggestionMenu = HE.div [ HA.class' "profile-context outer-user-menu" ]
             [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
             , SIA.contextMenu $ show SuggestionContextMenu
-            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu } ] $ blockReport id
+            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu } ] <<< blockReport $ Tuple id impersonating
             ]
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
@@ -201,10 +203,10 @@ displayProfile index { karmaPosition, name, availability, avatar, age, karma, he
 
       duller hidden t = HE.span (HA.class' { "duller": true, "hidden": hidden }) t
 
-blockReport ∷ Int → Array (Html IMMessage)
-blockReport id =
-      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest $ BlockUser id ] "Block"
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
+blockReport ∷ Tuple Int (Maybe Int) → Array (Html IMMessage)
+blockReport tupleId =
+      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser tupleId ] "Block"
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< ShowReport $ DT.fst tupleId ] "Report"
       ]
 
 -- | Suggestions are shown as a (three) card list

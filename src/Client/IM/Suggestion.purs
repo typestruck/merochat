@@ -2,20 +2,22 @@ module Client.IM.Suggestion where
 
 import Prelude
 import Shared.ContentType
+import Shared.Experiments.Types
+import Shared.IM.Types
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.WebSocket as CIW
 import Data.Array ((:))
-import Shared.IM.Types
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple (Tuple)
+import Data.Tuple as DT
 import Debug (spy)
 import Effect.Class (liftEffect)
-import Shared.Experiments.Types
 import Flame ((:>))
 import Flame as F
 import Shared.Options.Page (suggestionsPerPage)
@@ -85,17 +87,18 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
 
-blockUser ∷ WebSocket → Int → IMModel → NextMessage
-blockUser webSocket blocked model =
+blockUser ∷ WebSocket → Tuple Int (Maybe Int) → IMModel → NextMessage
+blockUser webSocket tupleId model =
       updateAfterBlock blocked model :>
             [ do
                     result ← CCN.defaultResponse $ request.im.block { body: { id: blocked } }
                     case result of
-                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser blocked, errorMessage: Nothing }
+                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser tupleId, errorMessage: Nothing }
                           _ → do
                                 liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: blocked }
                                 pure Nothing
             ]
+      where blocked = DT.fst tupleId
 
 updateAfterBlock ∷ Int → IMModel → IMModel
 updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =

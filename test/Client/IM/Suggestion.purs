@@ -4,6 +4,7 @@ import Prelude
 
 import Client.IM.Suggestion as CIS
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Test.Client.Model (contact, imUser, model, webSocket)
 import Test.Unit (TestSuite)
@@ -79,21 +80,21 @@ tests = do
 
             TU.test "blockUser removes user from suggestions" do
                   let
-                        { suggestions } = DT.fst <<< CIS.blockUser webSocket imUser.id $ model
+                        { suggestions } = DT.fst <<< CIS.blockUser webSocket (Tuple imUser.id Nothing) $ model
                               { suggestions = [ imUser ]
                               }
                   TUA.equal [] suggestions
 
             TU.test "blockUser removes user from contacts" do
                   let
-                        { contacts } = DT.fst <<< CIS.blockUser webSocket contact.user.id $ model
+                        { contacts } = DT.fst <<< CIS.blockUser webSocket (Tuple contact.user.id Nothing) $ model
                               { contacts = [ contact ]
                               }
                   TUA.equal [] contacts
 
             TU.test "blockUser resets chatting" do
                   let
-                        { chatting } = DT.fst <<< CIS.blockUser webSocket contact.user.id $ model
+                        { chatting } = DT.fst <<< CIS.blockUser webSocket (Tuple contact.user.id Nothing) $ model
                               { contacts = [ contact ]
                               }
                   TUA.equal Nothing chatting

@@ -184,6 +184,7 @@ data ShowUserMenuModal
       | ConfirmLogout
       | ConfirmTermination
       | ConfirmDeleteChat (Tuple Int (Maybe Int))
+      | ConfirmBlockUser (Tuple Int (Maybe Int))
       | ShowExperiments
       | ShowProfile
       | ShowSettings
@@ -233,7 +234,7 @@ data RetryableRequest
       | FetchContacts Boolean
       | CheckMissedEvents
       | ToggleModal ShowUserMenuModal
-      | BlockUser Int
+      | BlockUser (Tuple Int (Maybe Int))
       | PreviousSuggestion
       | NextSuggestion
       | ReportUser Int
