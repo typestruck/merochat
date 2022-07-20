@@ -216,14 +216,17 @@ deleteChat ∷ Tuple Int (Maybe Int) → IMModel → MoreMessages
 deleteChat tii@(Tuple id impersonating) model@{ contacts } =
       updatedModel :>
             if DM.isNothing impersonating then
-                  [ do
+                  [ backToSuggestions,
+                        do
                           result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: SU.fromJust lastMessageId } }
                           case result of
                                 Left _ → pure <<< Just $ RequestFailed { request: DeleteChat tii, errorMessage: Nothing }
                                 _ → pure Nothing
                   ]
-            else []
+            else [backToSuggestions]
       where
+      backToSuggestions = pure $ Just ResumeSuggesting
+
       updatedModel = model
             { toggleModal = HideUserMenuModal
             , contacts = DA.filter (\cnt → cnt.user.id /= id && (cnt.impersonating == Nothing || cnt.impersonating /= impersonating)) contacts
