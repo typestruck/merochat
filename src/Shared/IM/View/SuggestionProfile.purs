@@ -16,6 +16,7 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
+import Debug
 import Shared.IM.Svg (backArrow, nextArrow)
 import Shared.IM.Svg as SIA
 import Shared.IM.View.ChatInput as SIVC
@@ -140,8 +141,8 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       arrow message = HE.div (HA.class' ("suggestion-arrow" <> e) : clickMessage)
             [ case message of
-                  SpecialRequest PreviousSuggestion → backArrow
-                  _ → nextArrow
+                    SpecialRequest PreviousSuggestion → backArrow
+                    _ → nextArrow
             ]
             where
             clickMessage
@@ -234,7 +235,7 @@ suggestionCards model@{ user, suggestions, experimenting } index =
                         | isCenter = [ HA.class' "card card-center" ]
                         | otherwise = [ HA.class' "card card-sides faded" ]
             in
-                  HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestions) (Just index) model Nothing profile
+                  HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestions) (Just suggesting) model Nothing profile
 
       welcomeImpersonation name =
             let
@@ -244,7 +245,6 @@ suggestionCards model@{ user, suggestions, experimenting } index =
                         [ HE.div (HA.class' "welcome") $ welcome
                         , HE.div (HA.class' "welcome-new") $ first <> second
                         ]
-
 
 welcome ∷ ImUser → Html IMMessage
 welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")

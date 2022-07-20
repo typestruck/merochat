@@ -34,8 +34,9 @@ avatarIndex ∷ Int → Int
 avatarIndex index = mod index differentAvatarImages + 1
 
 avatarColorClass ∷ Maybe Int → String
-avatarColorClass index = " avatar-color-" <> show (mod (SU.fromJust index) colorClasses + 1)
+avatarColorClass index = " avatar-color-" <> show (mod (SU.fromJust index) totalColorClasses + 1)
       where
-      colorClasses = 4
+      totalColorClasses = 4
 
+parseAvatar ∷  Maybe String → Maybe String
 parseAvatar avatar = (imageBasePath <> _) <<< ("upload/" <> _ ) <$> avatar
