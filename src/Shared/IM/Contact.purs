@@ -13,7 +13,7 @@ import Shared.Unsafe as SU
 
 defaultContact ∷ Int → ImUser → Contact
 defaultContact id chatted =
-      {  shouldFetchChatHistory: false
+      { shouldFetchChatHistory: false
       , user: chatted
       , lastMessageDate: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , impersonating: Nothing

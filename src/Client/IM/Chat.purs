@@ -16,7 +16,6 @@ import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime(..))
 import Data.DateTime as DT
-import Shared.DateTime (DateTimeWrapper(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -38,6 +37,7 @@ import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame as F
 import Node.URL as NU
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.IM.Contact as SIC
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSize)
@@ -94,29 +94,35 @@ beforeSendMessage
       model@
             { chatting
             , user: { id }
-            , selectedImage
             , contacts
             , suggesting
             , suggestions
-            , experimenting
             } = case content of
       t@(Text message)
             | isEmpty message → F.noMessages model
-            | otherwise → snocContact :> [ nextSendMessage t ]
-      image → snocContact :> [ nextSendMessage image ]
+            | otherwise → updatedModel :> nextEffects t
+      image → updatedModel :> nextEffects image
 
       where
       isEmpty = DS.null <<< DS.trim
 
-      snocContact = case chatting, suggesting of
+      updatedModel = case chatting, suggesting of
             Nothing, (Just index) →
                   model
                         { chatting = Just 0
-                        , contacts = DA.cons (SIC.defaultContact id (suggestions !@ index)) contacts
+                        , contacts = updateContacts (suggestions !@ index)
                         , suggestions = SU.fromJust $ DA.deleteAt index suggestions
                         }
             _, _ → model
 
+      --an existing contact might be in the suggestions
+      updateContacts user
+            | DM.isJust $ DA.find (\cnt -> cnt.user.id == user.id && cnt.impersonating == Nothing) contacts = contacts
+            | otherwise = DA.cons (SIC.defaultContact id user) contacts
+
+      nextEffects c = [fetchHistory, nextSendMessage c]
+
+      fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory true
       nextSendMessage input = do
             date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
             CIF.next $ SendMessage input date

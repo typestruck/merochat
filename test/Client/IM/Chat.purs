@@ -2,6 +2,7 @@ module Test.Client.IM.Chat where
 
 import Prelude
 import Shared.ContentType
+import Shared.IM.Types
 
 import Client.IM.Chat as CIC
 import Data.Array ((!!), (:))
@@ -11,10 +12,10 @@ import Data.String as DS
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
-import Shared.Options.File (maxImageSize)
-import Shared.IM.Types
-import Shared.Unsafe ((!@))
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.IM.Contact as SIC
+import Shared.Options.File (maxImageSize)
+import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
 import Test.Client.Model (anotherImUserId, contact, contactID, historyMessage, imUser, imUserId, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
@@ -33,6 +34,17 @@ tests = do
                               }
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just suggestion
+
+            TU.test "beforeSendMessage does not add new contact from suggestion if it already is on the list" do
+                  let
+                        model' = model
+                              { suggestions = [contact.user]
+                              , chatting = Nothing
+                              , suggesting = Just 0
+                              , contacts = [contact]
+                              }
+                        { contacts } = DT.fst $ CIC.beforeSendMessage content model'
+                  TUA.equal (_.user <$> DA.head contacts) $ Just contact.user
 
             TU.test "beforeSendMessage sets chatting to 0" do
                   let
