@@ -146,13 +146,16 @@ presentContactFields ∷ String
 presentContactFields = presentUserContactFields <> presentMessageContactFields
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
-presentContacts loggedUserId skip = SD.unsafeQuery query
+presentContacts loggedUserId skip = presentNContacts loggedUserId contactsPerPage skip
+
+presentNContacts ∷ Int → Int -> Int → ServerEffect (Array FlatContactHistoryMessage)
+presentNContacts loggedUserId n skip = SD.unsafeQuery query
       { loggedUserId
       , status: Read
       , initialMessages: initialMessagesPerPage
       , contact: Contacts
       , everyone: Everyone
-      , limit: contactsPerPage
+      , limit: n
       , offset: skip
       }
       where
@@ -163,7 +166,8 @@ presentContacts loggedUserId skip = SD.unsafeQuery query
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
       WHERE (visibility = @contact OR visibility = @everyone)
-      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+            AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+            AND (h.sender = @loggedUserId AND (h.sender_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.sender_deleted_to AND (sender = @loggedUserId AND recipient = h.recipient OR sender = h.recipient AND recipient = @loggedUserId))) OR h.recipient = @loggedUserId AND (h.recipient_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.recipient_deleted_to AND (recipient = @loggedUserId AND sender = h.sender OR recipient = h.sender AND recipient = @loggedUserId))))
       ORDER BY last_message_date DESC LIMIT @limit OFFSET @offset) uh
       , LATERAL (SELECT *
                  FROM (SELECT

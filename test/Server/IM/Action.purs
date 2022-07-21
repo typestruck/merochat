@@ -36,7 +36,7 @@ import Type.Proxy (Proxy(..))
 
 tests ∷ TestSuite
 tests = do
-      TU.suite "im actions" do
+      TU.suiteOnly "im actions" do
             TU.test "suggest filters out blocked users"
                   $ TS.serverAction
                   $ do
@@ -197,6 +197,34 @@ tests = do
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           --sort is by last_message_date
                           R.liftAff <<< TUA.equal [ "1", "2", "3", "4", "5" ] $ map _.content (contacts !@ 0).history
+
+            TU.test "listContacts paginates over contacts with deleted chat histories for sender"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          yetAnotherUserId ← SLD.createUser baseUser { email = "d@d.com" }
+                          lastUserId ← SLD.createUser baseUser { email = "e@e.com" }
+                          void <<< SIA.processMessage userId anotherUserId 1 $ Text "aaaaa"
+                          void <<< SIA.processMessage userId yetAnotherUserId 1 $ Text "I"
+                          void <<< SIA.processMessage userId lastUserId 1 $ Text "1"
+                          void $ SIA.deleteChat userId { userId: yetAnotherUserId, messageId: 2 }
+                          contacts ← SID.presentNContacts userId 1 1
+                          R.liftAff <<< TUA.equal 1 $ DA.length contacts
+                          R.liftAff <<< TUA.equal [ "aaaaa" ] $ map _.content contacts
+
+            TU.test "listContacts paginates over contacts with deleted chat histories for recipient"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          yetAnotherUserId ← SLD.createUser baseUser { email = "d@d.com" }
+                          lastUserId ← SLD.createUser baseUser { email = "e@e.com" }
+                          void <<< SIA.processMessage userId anotherUserId 1 $ Text "aaaaa"
+                          void <<< SIA.processMessage yetAnotherUserId userId 1 $ Text "I"
+                          void <<< SIA.processMessage userId lastUserId 1 $ Text "1"
+                          void $ SIA.deleteChat userId { userId: yetAnotherUserId, messageId: 2 }
+                          contacts ← SID.presentNContacts userId 1 1
+                          R.liftAff <<< TUA.equal 1 $ DA.length contacts
+                          R.liftAff <<< TUA.equal [ "aaaaa" ] $ map _.content contacts
 
             TU.test "listSingleContact returns chat history"
                   $ TS.serverAction
