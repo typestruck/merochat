@@ -27,7 +27,7 @@ suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array Sugges
 suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip keys
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
-listContacts loggedUserId skip =  presentContacts <$> SID.presentContacts loggedUserId skip
+listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
 
 listSingleContact ∷ Int → Int → Boolean → ServerEffect (Array Contact)
 listSingleContact loggedUserId userId contactsOnly = presentContacts <$> SID.presentSingleContact loggedUserId userId 0

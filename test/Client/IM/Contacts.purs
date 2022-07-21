@@ -56,6 +56,13 @@ tests = do
                               }
                   TUA.equal [ contact ] contacts
 
+            TU.test "displayContacts filters duplicates" do
+                  let
+                        { contacts } = DT.fst <<< CICN.displayContacts [ contact ] $ model
+                              { contacts = [ contact ]
+                              }
+                  TUA.equal [ contact ] contacts
+
             TU.test "resumeMissedEvents adds missed contacts" do
                   let
                         { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [ contact ], messageIds: [] } $ model

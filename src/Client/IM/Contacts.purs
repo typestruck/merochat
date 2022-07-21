@@ -20,6 +20,7 @@ import Data.Either (Either(..))
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Set as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
@@ -136,7 +137,7 @@ checkFetchContacts model@{ contacts, freeToFetchContactList }
       | otherwise = F.noMessages model
 
 fetchContacts ∷ Boolean → IMModel → MoreMessages
-fetchContacts shouldFetch model@{ contacts, freeToFetchContactList, experimenting }
+fetchContacts shouldFetch model@{ contacts, experimenting }
       | shouldFetch =
               model
                     { freeToFetchContactList = false
@@ -145,11 +146,11 @@ fetchContacts shouldFetch model@{ contacts, freeToFetchContactList, experimentin
 
 --paginated contacts
 displayContacts ∷ Array Contact → IMModel → MoreMessages
-displayContacts newContacts model@{ contacts } = updateDisplayContacts newContacts [] model
+displayContacts newContacts model = updateDisplayContacts newContacts [] model
 
 --new chats
 displayNewContacts ∷ Array Contact → IMModel → MoreMessages
-displayNewContacts newContacts model@{ contacts } = updateDisplayContacts newContacts (map (\cnt → Tuple cnt.user.id cnt.impersonating) newContacts) model
+displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → Tuple cnt.user.id cnt.impersonating) newContacts) model
 
 --new chats from impersonation experiment
 displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → IMModel → MoreMessages
@@ -203,27 +204,29 @@ resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, us
       sameContact userID { user: { id } } = userID == id
 
 updateDisplayContacts ∷ Array Contact → Array (Tuple Int (Maybe Int)) → IMModel → MoreMessages
-updateDisplayContacts newContacts userIDs model@{ contacts } =
+updateDisplayContacts newContacts userIds model@{ contacts } =
       CIU.notifyUnreadChats
             ( model
-                    { contacts = contacts <> newContacts
+                    { contacts = contacts <> onlyNew
                     , freeToFetchContactList = true
                     }
             )
-            userIDs
+            userIds
+      where existingContactIds = DS.fromFoldable (_.id <<< _.user <$> contacts)
+            onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 deleteChat ∷ Tuple Int (Maybe Int) → IMModel → MoreMessages
 deleteChat tii@(Tuple id impersonating) model@{ contacts } =
       updatedModel :>
             if DM.isNothing impersonating then
-                  [ backToSuggestions,
-                        do
+                  [ backToSuggestions
+                  , do
                           result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: SU.fromJust lastMessageId } }
                           case result of
                                 Left _ → pure <<< Just $ RequestFailed { request: DeleteChat tii, errorMessage: Nothing }
                                 _ → pure Nothing
                   ]
-            else [backToSuggestions]
+            else [ backToSuggestions ]
       where
       backToSuggestions = pure $ Just ResumeSuggesting
 
