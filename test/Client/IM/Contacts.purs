@@ -35,7 +35,7 @@ tests = do
 
             TU.test "resumeChat finds impersonation contact" do
                   let
-                        m@{ chatting } = DT.fst <<< CICN.resumeChat imUser.id (Just batman.id) $ model
+                        { chatting } = DT.fst <<< CICN.resumeChat imUser.id (Just batman.id) $ model
                               { chatting = Nothing
                               , contacts = [ contact { user = imUser }, anotherContact { user = imUser, impersonating = Just batman.id } ]
                               }
