@@ -25,7 +25,7 @@ type Configuration =
       }
 
 type Session =
-      { userID ∷ Maybe Int
+      { userId ∷ Maybe Int
       }
 
 type BaseReader extension =

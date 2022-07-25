@@ -62,14 +62,14 @@ markRead ∷ WebSocket → IMModel → MoreMessages
 markRead webSocket =
       case _ of
             model@
-                  { user: { id: userID }
+                  { user: { id: userId }
                   , contacts
                   , chatting: Just index
                   } → updateStatus model
                   { newStatus: Read
                   , index
                   , webSocket
-                  , sessionUserID: userID
+                  , sessionUserID: userId
                   , contacts
                   }
             model → F.noMessages model
@@ -112,7 +112,7 @@ updateStatus model@{ experimenting } { webSocket, index, sessionUserID, contacts
             }
 
       changeStatus contactUserID messages = CIW.sendPayload webSocket $ ChangeStatus
-            { userID: contactUserID
+            { userId: contactUserID
             , status: newStatus
             , ids: messages
             , persisting: case experimenting of
@@ -201,7 +201,7 @@ resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, us
                   }
 
       findContact { user: { id } } = DA.findIndex (sameContact id) contacts
-      sameContact userID { user: { id } } = userID == id
+      sameContact userId { user: { id } } = userId == id
 
 updateDisplayContacts ∷ Array Contact → Array (Tuple Int (Maybe Int)) → IMModel → MoreMessages
 updateDisplayContacts newContacts userIds model@{ contacts } =

@@ -1,9 +1,10 @@
 module Test.Client.IM.Main where
 
 import Prelude
+import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.ContentType
+import Shared.User
 
 import Client.IM.Main as CIM
 import Data.Array as DA
@@ -12,13 +13,12 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Impersonation (batman)
-import Shared.User
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
 import Test.Client.Model (anotherImUserId, contact, contactID, historyMessage, imUser, imUserId, model, webSocket)
 import Test.Unit (TestSuite)
-import Shared.DateTime (DateTimeWrapper(..))
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
 
@@ -31,9 +31,9 @@ tests = do
                         { contacts } =
                               DT.fst <<< CIM.receiveMessage webSocket true
                                     ( ServerReceivedMessage
-                                            { previousID: messageID
+                                            { previousId: messageId
                                             , id: newMessageID
-                                            , userID: contactID
+                                            , userId: contactID
                                             }
                                     ) $ model
                                     { contacts =
@@ -41,7 +41,7 @@ tests = do
                                                     { history =
                                                             [ { status: Received
                                                               , date
-                                                              , id: messageID
+                                                              , id: messageId
                                                               , recipient: recipientID
                                                               , sender: anotherImUserId
                                                               , content
@@ -79,7 +79,7 @@ tests = do
                                     ( PayloadError
                                             { origin: OutgoingMessage
                                                     { id: 1
-                                                    , userID: contact.user.id
+                                                    , userId: contact.user.id
                                                     , content: Text content
                                                     , experimenting: Nothing
                                                     , turn: Nothing
@@ -94,19 +94,17 @@ tests = do
                   TUA.equal [ contact { user { availability = Unavailable } } ] contacts
 
             TU.test "receiveMessage marks blocker users as unavailable" do
-                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { id: contact.user.id }) $ model
-                              { contacts = [ contact ]
+                        { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { userId: contact.user.id, temporaryMessageId: Just 1 }) $ model
+                              { contacts = [ contact { history = [ historyMessage ] } ]
                               , chatting = Nothing
                               }
 
-                  TUA.equal [ contact { user { availability = Unavailable } } ] contacts
+                  TUA.equal [ contact { user { availability = Unavailable }, history = [ historyMessage { status = Errored } ] } ] contacts
 
             TU.test "receiveMessage removes blocker users from suggestions" do
-                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { suggestions } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { id: contact.user.id }) $ model
+                        { suggestions } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { userId: contact.user.id, temporaryMessageId: Nothing }) $ model
                               { suggestions = [ contact.user ]
                               , chatting = Nothing
                               }
@@ -221,7 +219,7 @@ tests = do
 
       content = "test"
       { id: recipientID } = imUser
-      messageID = 1
+      messageId = 1
       newMessageID = 101
       { suggestions: modelSuggestions } = model
 

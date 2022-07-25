@@ -32,7 +32,7 @@ checkLoggedUser { tokenSecret } request = do
       cookies ← PSG.cookies request
       maybeUserID ← liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserID of
-            Just userID → pure $ Right userID
+            Just userId → pure $ Right userId
             _ →
                   if isPost then
                         pure <<< Left $ PSR.unauthorized Empty
@@ -47,7 +47,7 @@ checkAnonymous { tokenSecret } request = do
       cookies ← PSG.cookies request
       maybeUserID ← liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserID of
-            Just userID →
+            Just userId →
                   if isPost then
                         pure <<< Left $ PSR.forbidden Empty
                   else

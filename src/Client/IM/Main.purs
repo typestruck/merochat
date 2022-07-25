@@ -59,7 +59,7 @@ import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.JSON as SJ
-import Shared.Options.MountPoint (imID, profileID)
+import Shared.Options.MountPoint (imId, profileID)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
@@ -84,7 +84,7 @@ main = do
       --web socket needs to be a ref as any time the connection can be closed and recreated by events
       webSocketRef ← ER.new { webSocket, ponged: true }
       fileReader ← WFR.fileReader
-      F.resumeMount (QuerySelector ".im") imID
+      F.resumeMount (QuerySelector ".im") imId
             { view: SIV.view true
             , subscribe:
                     [
@@ -104,15 +104,15 @@ main = do
       width ← CCD.screenWidth
       let smallScreen = width < mobileBreakpoint
       --keep track of mobile (-like) screens for things that cant be done with media queries
-      when smallScreen $ FS.send imID SetSmallScreen
+      when smallScreen $ FS.send imId SetSmallScreen
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen
       --for drag and drop
-      CCF.setUpBase64Reader fileReader (SetSelectedImage <<< Just) imID
+      CCF.setUpBase64Reader fileReader (SetSelectedImage <<< Just) imId
       --image upload
       input ← CCD.unsafeGetElementByID ImageFileInput
-      CCF.setUpFileChange (SetSelectedImage <<< Just) input imID
+      CCF.setUpFileChange (SetSelectedImage <<< Just) input imId
       --notification permission (desktop)
       unless smallScreen checkNotifications
 
@@ -182,7 +182,7 @@ update { webSocketRef, fileReader } model =
             ToggleFortune isVisible → toggleFortune isVisible model
             DisplayFortune sequence → displayFortune sequence model
             RequestFailed failure → addFailure failure model
-            SpecialRequest (ReportUser userID) → report userID webSocket model
+            SpecialRequest (ReportUser userId) → report userId webSocket model
             SendPing isActive → sendPing webSocket isActive model
             SetPrivacySettings ps → setPrivacySettings ps model
             DisplayAvailability availability → displayAvailability availability model
@@ -204,10 +204,23 @@ displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
             Nothing → user
 
 sendPing ∷ WebSocket → Boolean → IMModel → NoMessages
-sendPing webSocket isActive model@{ contacts, suggestions } = CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ Ping { isActive, statusFor: map (_.id <<< _.user) contacts <> map _.id suggestions }
+sendPing webSocket isActive model@{ contacts, suggestions } =
+      CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ Ping
+            { isActive
+            , statusFor: map _.id suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) contacts)
+            }
 
 setPrivacySettings ∷ PrivacySettings → IMModel → NoMessages
-setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model@{ user } = F.noMessages model { user { profileVisibility = profileVisibility, readReceipts = readReceipts, typingStatus = typingStatus, onlineStatus = onlineStatus, messageTimestamps = messageTimestamps } }
+setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model =
+      F.noMessages model
+            { user
+                    { profileVisibility = profileVisibility
+                    , readReceipts = readReceipts
+                    , typingStatus = typingStatus
+                    , onlineStatus = onlineStatus
+                    , messageTimestamps = messageTimestamps
+                    }
+            }
 
 report ∷ Int → WebSocket → IMModel → MoreMessages
 report userId webSocket model@{ reportReason, reportComment } = case reportReason of
@@ -349,20 +362,28 @@ receiveMessage
       ContactTyping { id } → CIC.updateTyping id true model :>
             [ liftEffect do
                     DT.traverse_ (ET.clearTimeout <<< SC.coerce) typingIds
-                    newId ← ET.setTimeout 1000 <<< FS.send imID $ NoTyping id
+                    newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping id
                     pure <<< Just $ TypingId newId
             ]
-      ServerReceivedMessage { previousID, id, userID } →
+      ServerReceivedMessage { previousId, id, userId } →
             F.noMessages $ model
-                  { contacts = updateTemporaryID currentContacts userID previousID id
+                  { contacts = updateTemporaryID currentContacts userId previousId id
                   }
-      ServerChangedStatus { ids, status, userID } →
+      ServerChangedStatus { ids, status, userId } →
             F.noMessages $ model
-                  { contacts = updateStatus currentContacts userID ids status
+                  { contacts = updateStatus currentContacts userId ids status
                   }
-      ContactUnavailable { id } →
-            F.noMessages <<< unsuggest id $ model { contacts = markContactUnavailable currentContacts id }
-      NewIncomingMessage payload@{ id: messageID, userId, content: messageContent, date: messageDate, experimenting } →
+      ContactUnavailable { userId, temporaryMessageId } →
+            F.noMessages <<< unsuggest userId $ model
+                  { contacts =
+                          let
+                                updatedContacts = markContactUnavailable currentContacts userId
+                          in
+                                case temporaryMessageId of
+                                      Nothing → updatedContacts
+                                      Just id → markErroredMessage updatedContacts userId id
+                  }
+      NewIncomingMessage payload@{ id: messageId, userId, content: messageContent, date: messageDate, experimenting } →
             --(for now) if the experiments don't match, discard the message
             if DA.elem userId blockedUsers || not (match userId experimenting) then
                   F.noMessages model
@@ -380,13 +401,13 @@ receiveMessage
                                                             { status: Received
                                                             , sender: userId
                                                             , recipient: recipientID
-                                                            , id: messageID
+                                                            , id: messageId
                                                             , content: messageContent
                                                             , date: messageDate
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents ( message) (request.im.singleContact { query: { id: userId } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents (message) (request.im.singleContact { query: { id: userId } }) ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right
@@ -423,13 +444,13 @@ receiveMessage
                                           furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationID ] : messages)
 
       PayloadError payload → case payload.origin of
-            OutgoingMessage { id, userID } → F.noMessages $ model
+            OutgoingMessage { id, userId } → F.noMessages $ model
                   { contacts =
                           --assume that it is because the other user no longer exists
                           if payload.context == Just MissingForeignKey then
-                                markContactUnavailable currentContacts userID
+                                markContactUnavailable currentContacts userId
                           else
-                                markErroredMessage currentContacts userID id
+                                markErroredMessage currentContacts userId id
                   }
             _ → F.noMessages model
       where
@@ -439,15 +460,15 @@ receiveMessage
             in
                   recipientID == senderID
 
-      match userID experimenting = case model.experimenting, experimenting of
+      match userId experimenting = case model.experimenting, experimenting of
             Just (Impersonation (Just _)), Nothing → false
             Just (Impersonation (Just { id })), Just (ImpersonationPayload { id: otherID, sender }) → id == otherID && not sender
             Nothing, Just (ImpersonationPayload { sender }) → sender
             _, _ → true
 
 unsuggest ∷ Int → IMModel → IMModel
-unsuggest userID model@{ suggestions, suggesting } = model
-      { suggestions = DA.filter ((userID /= _) <<< _.id) suggestions
+unsuggest userId model@{ suggestions, suggesting } = model
+      { suggestions = DA.filter ((userId /= _) <<< _.id) suggestions
       , suggesting = (\i → if i == 0 then 0 else i - 1) <$> suggesting
       }
 
@@ -491,44 +512,44 @@ processIncomingMessage
                   _, _, _ → updated
 
 findContact ∷ Int → Maybe Int → Maybe ExperimentData → Contact → Boolean
-findContact userID impersonationID experimenting { user: { id }, impersonating } = userID == id && (DM.isJust experimenting || impersonating == impersonationID)
+findContact userId impersonationID experimenting { user: { id }, impersonating } = userId == id && (DM.isJust experimenting || impersonating == impersonationID)
 
 updateTemporaryID ∷ Array Contact → Int → Int → Int → Array Contact
-updateTemporaryID contacts userID previousMessageID messageID = updateContactHistory contacts userID updateTemporary
+updateTemporaryID contacts userId previousMessageID messageId = updateContactHistory contacts userId updateTemporary
       where
       updateTemporary history@({ id })
-            | id == previousMessageID = history { id = messageID, status = Received }
+            | id == previousMessageID = history { id = messageId, status = Received }
             | otherwise = history
 
 updateStatus ∷ Array Contact → Int → Array Int → MessageStatus → Array Contact
-updateStatus contacts userID ids status = updateContactHistory contacts userID updateSt
+updateStatus contacts userId ids status = updateContactHistory contacts userId updateSt
       where
       updateSt history@({ id })
             | DA.elem id ids = history { status = status }
             | otherwise = history
 
 markErroredMessage ∷ Array Contact → Int → Int → Array Contact
-markErroredMessage contacts userID messageID = updateContactHistory contacts userID updateStatus
+markErroredMessage contacts userId messageId = updateContactHistory contacts userId updateStatus
       where
       updateStatus history@({ id })
-            | id == messageID = history { status = Errored }
+            | messageId == id = history { status = Errored }
             | otherwise = history
 
 --refactor: should be abstract with updateReadCount
 updateContactHistory ∷ Array Contact → Int → (HistoryMessage → HistoryMessage) → Array Contact
-updateContactHistory contacts userID f = updateContact <$> contacts
+updateContactHistory contacts userId f = updateContact <$> contacts
       where
       updateContact contact@{ user: { id }, history }
-            | id == userID = contact
+            | id == userId = contact
                     { history = f <$> history
                     }
             | otherwise = contact
 
 markContactUnavailable ∷ Array Contact → Int → Array Contact
-markContactUnavailable contacts userID = updateContact <$> contacts
+markContactUnavailable contacts userId = updateContact <$> contacts
       where
-      updateContact contact@{ user: { id }, history }
-            | id == userID = contact
+      updateContact contact@{ user: { id } }
+            | id == userId = contact
                     { user
                             { availability = Unavailable
                             }
@@ -587,7 +608,7 @@ preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop
 checkNotifications ∷ Effect Unit
 checkNotifications = do
       status ← CCD.notificationPermission
-      when (status == "default") $ FS.send imID ToggleAskNotification
+      when (status == "default") $ FS.send imId ToggleAskNotification
 
 --refactor use popstate subscription
 historyChange ∷ Boolean → Effect Unit
@@ -598,33 +619,33 @@ historyChange smallScreen = do
       where
       handler = do
             CCD.pushState $ routes.im.get {}
-            when smallScreen <<< FS.send imID $ ToggleInitialScreen true
+            when smallScreen <<< FS.send imId $ ToggleInitialScreen true
 
 setUpWebSocket ∷ Ref CurrentWebSocket → Effect Unit
 setUpWebSocket webSocketRef = do
       { webSocket } ← ER.read webSocketRef
       let webSocketTarget = CIW.toEventTarget webSocket
       --a ref is used to track reconnections and ping intervals
-      timerIDs ← ER.new { reconnectID: Nothing, pingID: Nothing }
-      openListener ← WET.eventListener (open timerIDs)
+      timerIds ← ER.new { reconnectId: Nothing, pingId: Nothing }
+      openListener ← WET.eventListener (open timerIds)
       messageListener ← WET.eventListener runMessage
-      closeListener ← WET.eventListener (close timerIDs)
+      closeListener ← WET.eventListener (close timerIds)
       WET.addEventListener onMessage messageListener false webSocketTarget
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
 
       where
-      open timerIDs _ = do
-            { reconnectID } ← ER.read timerIDs
-            case reconnectID of
+      open timerIds _ = do
+            { reconnectId } ← ER.read timerIds
+            case reconnectId of
                   Nothing → pure unit
                   Just id → do
                         ET.clearTimeout id
-                        ER.modify_ (_ { reconnectID = Nothing }) timerIDs
+                        ER.modify_ (_ { reconnectId = Nothing }) timerIds
             pong true
-            newPingID ← ping
-            ER.modify_ (_ { pingID = Just newPingID }) timerIDs
-            FS.send imID $ ToggleConnected true
+            newPingId ← ping
+            ER.modify_ (_ { pingId = Just newPingId }) timerIds
+            FS.send imId $ ToggleConnected true
             askForUpdates
 
       ping = do
@@ -636,7 +657,7 @@ setUpWebSocket webSocketRef = do
             isFocused ← CCD.documentHasFocus
             if ponged then do
                   pong false
-                  FS.send imID $ SendPing isFocused
+                  FS.send imId $ SendPing isFocused
             else
                   CIW.close webSocket
 
@@ -647,9 +668,9 @@ setUpWebSocket webSocketRef = do
             isFocused ← CCD.documentHasFocus
             case message of
                   Pong { status } → do
-                        FS.send imID $ DisplayAvailability status
+                        FS.send imId $ DisplayAvailability status
                         pong true
-                  Content cnt → FS.send imID $ ReceiveMessage cnt isFocused
+                  Content cnt → FS.send imId $ ReceiveMessage cnt isFocused
 
       pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
 
@@ -657,21 +678,21 @@ setUpWebSocket webSocketRef = do
             { webSocket } ← ER.read webSocketRef
             CIW.sendPayload webSocket UpdateHash
 
-      close timerIDs _ = do
-            FS.send imID $ ToggleConnected false
-            { reconnectID, pingID } ← ER.read timerIDs
-            case pingID of
+      close timerIds _ = do
+            FS.send imId $ ToggleConnected false
+            { reconnectId, pingId } ← ER.read timerIds
+            case pingId of
                   Nothing → pure unit
                   Just id → do
                         ET.clearInterval id
-                        ER.modify_ (_ { pingID = Nothing }) timerIDs
-            when (DM.isNothing reconnectID) do
+                        ER.modify_ (_ { pingId = Nothing }) timerIds
+            when (DM.isNothing reconnectId) do
                   milliseconds ← ERD.randomInt 2000 10000
                   id ← ET.setTimeout milliseconds <<< void $ do
                         newWebSocket ← CIW.createWebSocket
                         ER.modify_ (_ { webSocket = newWebSocket }) webSocketRef
                         setUpWebSocket webSocketRef
-                  ER.modify_ (_ { reconnectID = Just id }) timerIDs
+                  ER.modify_ (_ { reconnectId = Just id }) timerIds
 
 setSmallScreen ∷ IMModel → NoMessages
 setSmallScreen model =

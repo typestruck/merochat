@@ -10,8 +10,8 @@ data MountPoint = IM | Profile
 profileID ∷ AppId MountPoint ProfileMessage
 profileID = AppId Profile
 
-imID ∷ AppId MountPoint IMMessage
-imID = AppId IM
+imId ∷ AppId MountPoint IMMessage
+imId = AppId IM
 
 instance Show MountPoint where
       show = case _ of

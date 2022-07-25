@@ -20,7 +20,7 @@ import Effect.Uncurried as EU
 import Flame.Subscription as FS
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.IM.Unread as SIU
-import Shared.Options.MountPoint (imID)
+import Shared.Options.MountPoint (imId)
 import Shared.Path as SP
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
@@ -56,7 +56,7 @@ notify model@{ user: { id }, contacts, smallScreen } userIDs = do
             , icon: SP.pathery PNG "loading"
             ,
               --move to given chat when clicking on system notification
-              handler: FS.send imID <<< ResumeChat $ Tuple user.id impersonating
+              handler: FS.send imId <<< ResumeChat $ Tuple user.id impersonating
             }
 
       byKeys cnt = DA.any (\(Tuple id impersonating) → cnt.user.id == id && cnt.impersonating == impersonating) userIDs

@@ -25,9 +25,9 @@ tests = do
             TU.test "saveProfile ignores current picture"
                   $ TS.serverAction
                   $ do
-                        userID ← SLD.createUser $ baseUser { email = "b@b.com" }
-                        void $ SPA.saveProfile userID
-                              { id: userID
+                        userId ← SLD.createUser $ baseUser { email = "b@b.com" }
+                        void $ SPA.saveProfile userId
+                              { id: userId
                               , karma: 0
                               , karmaPosition: 0
                               , availability: None
@@ -41,5 +41,5 @@ tests = do
                               , languages: []
                               , tags: []
                               }
-                        avatar ← SD.single $ select _avatar # from users # wher (_id .=. userID)
+                        avatar ← SD.single $ select _avatar # from users # wher (_id .=. userId)
                         R.liftAff $ TUA.equal (Just { avatar: Just "avatar.png" }) avatar

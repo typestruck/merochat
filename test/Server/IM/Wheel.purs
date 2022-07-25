@@ -17,11 +17,11 @@ module Test.Server.Wheel where
 -- main = TH.hspec $ do
 --     TH.describe "karmaFrom" $ do
 --         let baseTurn = Turn
---                           { senderStats    = Stats { userID     = 1
+--                           { senderStats    = Stats { userId     = 1
 --                                                    , characters = 1
 --                                                    , interest   = 1
 --                                                    }
---                           , recipientStats = Stats { userID     = 2
+--                           , recipientStats = Stats { userId     = 2
 --                                                    , characters = 1
 --                                                    , interest   = 1
 --                                                    }
@@ -33,11 +33,11 @@ module Test.Server.Wheel where
 --             $ TQ.property
 --             $ \(Positive x) ->
 --                   let turn = Turn
---                           { senderStats    = Stats { userID     = 1
+--                           { senderStats    = Stats { userId     = 1
 --                                                    , characters = x
 --                                                    , interest   = x
 --                                                    }
---                           , recipientStats = Stats { userID     = 2
+--                           , recipientStats = Stats { userId     = 2
 --                                                    , characters = x
 --                                                    , interest   = x
 --                                                    }
@@ -87,11 +87,11 @@ module Test.Server.Wheel where
 --         TH.it "parses well formed input"
 --             $             L.parseTurn "1,2,4;4,5,6;5,0"
 --             `TH.shouldBe` Turn
---                               { senderStats    = Stats { userID     = 1
+--                               { senderStats    = Stats { userId     = 1
 --                                                        , characters = 2.0
 --                                                        , interest   = 4.0
 --                                                        }
---                               , recipientStats = Stats { userID     = 4
+--                               , recipientStats = Stats { userId     = 4
 --                                                        , characters = 5.0
 --                                                        , interest   = 6.0
 --                                                        }
@@ -101,11 +101,11 @@ module Test.Server.Wheel where
 --         TH.it "parses decimal input"
 --             $             L.parseTurn "1,2.034,4.44444;4,0.0005,1.222226;5,0"
 --             `TH.shouldBe` Turn
---                               { senderStats    = Stats { userID     = 1
+--                               { senderStats    = Stats { userId     = 1
 --                                                        , characters = 2.034
 --                                                        , interest   = 4.44444
 --                                                        }
---                               , recipientStats = Stats { userID     = 4
+--                               , recipientStats = Stats { userId     = 4
 --                                                        , characters = 0.0005
 --                                                        , interest   = 1.222226
 --                                                        }
@@ -126,4 +126,3 @@ module Test.Server.Wheel where
 --         TH.it "generates sql insert"
 --             $ L.makeInsert (DHS.fromList [(1, 5), (4, 4)])
 --             `TH.shouldBe` "insert into karma_histories (target, amount) values(1,5),(4,4)"
-

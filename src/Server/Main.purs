@@ -50,6 +50,6 @@ startHTTPServer configuration@{ port } = do
       EA.launchAff_ $ void do
             PS.startGuarded (defaultOpts { port = port }) spec
                   { guards: guards configuration
-                  , handlers: SH.handlers { configuration, pool, session: { userID: Nothing } }
+                  , handlers: SH.handlers { configuration, pool, session: { userId: Nothing } }
                   }
       EC.log $ "HTTP now up on http://localhost:" <> show port

@@ -146,7 +146,7 @@ sendMessage
       CCD.setValue input ""
       CIW.sendPayload webSocket $ OutgoingMessage
             { id: newTemporaryID
-            , userID: recipientID
+            , userId: recipientID
             , content
             , experimenting: case experimenting, recipient.impersonating of
                     Just (Impersonation (Just { id })), _ → Just $ ImpersonationPayload { id: id, sender: true }
@@ -214,13 +214,13 @@ makeTurn { chatStarter, chatAge, history } sender =
       else
             Nothing
       where
-      isNewTurn history userID = DM.fromMaybe false do
+      isNewTurn history userId = DM.fromMaybe false do
             last ← DA.last history
             beforeLast ← history !! (DA.length history - 2)
             let
                   sender = last.sender
                   recipient = beforeLast.recipient
-            pure $ sender == userID && recipient == userID
+            pure $ sender == userId && recipient == userId
 
       sameSender entry anotherEntry = entry.sender == anotherEntry.sender
       countCharacters total { content } = total + DSC.length content

@@ -320,13 +320,13 @@ data WebSocketPayloadServer
       | Typing { id ∷ Int }
       | OutgoingMessage
               ( BasicMessage
-                      ( userID ∷ Int
+                      ( userId ∷ Int
                       , content ∷ MessageContent
                       , turn ∷ Maybe Turn
                       )
               )
       | ChangeStatus
-              { userID ∷ Int
+              { userId ∷ Int
               , status ∷ MessageStatus
               , persisting ∷ Boolean
               , -- in some cases status changes should be not persisted to the database
@@ -382,16 +382,16 @@ data WebSocketPayloadClient
       | NewIncomingMessage ClientMessagePayload
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
-              { previousID ∷ Int
+              { previousId ∷ Int
               , id ∷ Int
-              , userID ∷ Int
+              , userId ∷ Int
               }
       | ServerChangedStatus
               { ids ∷ Array Int
               , status ∷ MessageStatus
-              , userID ∷ Int
+              , userId ∷ Int
               }
-      | ContactUnavailable { id ∷ Int } --either block or chang of privacy settings
+      | ContactUnavailable { userId ∷ Int, temporaryMessageId :: Maybe Int } --either block or change of privacy settings
       | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
 newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)

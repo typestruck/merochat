@@ -11,7 +11,7 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
-import Shared.Options.MountPoint (imID, profileID)
+import Shared.Options.MountPoint (imId, profileID)
 import Shared.Profile.Types (ProfileMessage(..))
 import Shared.Profile.View as SPV
 import Web.DOM.ParentNode (QuerySelector(..))
@@ -25,7 +25,7 @@ main = do
             , update: CPU.update
             }
       --a pain, but a chat experiment might be going on before loading the modal
-      FS.send imID AskChatExperiment
+      FS.send imId AskChatExperiment
       --avatar changes
       input ← CPU.getFileInput
       CCF.setUpFileChange SetAvatar input profileID

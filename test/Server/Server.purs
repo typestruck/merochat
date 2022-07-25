@@ -25,7 +25,7 @@ import Test.Unit.Assert (equal) as TUA
 import Type.Row (type (+))
 
 session ∷ Session
-session = { userID: Nothing }
+session = { userId: Nothing }
 
 newTestPool ∷ Configuration → Effect Pool
 newTestPool { databaseHost } =

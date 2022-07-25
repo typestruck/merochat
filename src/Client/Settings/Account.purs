@@ -16,7 +16,7 @@ import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Shared.IM.Types (IMMessage(..))
-import Shared.Options.MountPoint (imID)
+import Shared.Options.MountPoint (imId)
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettingsId(..), SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
@@ -40,7 +40,7 @@ changePrivacySettings { display, model: { readReceipts, typingStatus, onlineStat
                   display $ _ { hideSuccessMessage = false }
                   liftEffect <<<
                         --let im know that the settings has changed
-                        FS.send imID $ SetPrivacySettings { profileVisibility, readReceipts, typingStatus, onlineStatus, messageTimestamps }
+                        FS.send imId $ SetPrivacySettings { profileVisibility, readReceipts, typingStatus, onlineStatus, messageTimestamps }
                   EA.delay $ Milliseconds 3000.0
                   FAE.diff { hideSuccessMessage: true }
             _ → FAE.noChanges

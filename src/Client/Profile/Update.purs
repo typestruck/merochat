@@ -27,7 +27,7 @@ import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.JSON as SJ
-import Shared.Options.MountPoint (imID)
+import Shared.Options.MountPoint (imId)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 import Shared.Profile.Types (Generate(..), PU, ProfileMessage(..), ProfileModel, PM)
 import Shared.Profile.View (profileEditionId)
@@ -92,7 +92,7 @@ saveProfile { display, model: { user: user@{ name } } } = do
                   display $ FAE.diff' { hideSuccessMessage: false }
                   liftEffect <<<
                         --let im know that the name has changed
-                        FS.send imID $ SetNameFromProfile name
+                        FS.send imId $ SetNameFromProfile name
                   EA.delay $ Milliseconds 3000.0
                   FAE.diff { hideSuccessMessage: true }
             _ → FAE.noChanges

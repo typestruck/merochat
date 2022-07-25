@@ -67,7 +67,7 @@ tests = do
             TU.test "sendMessage adds message to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { user: { id: userID }, contacts, chatting } = DT.fst $ CIC.sendMessage webSocket content date model
+                        { user: { id: userId }, contacts, chatting } = DT.fst $ CIC.sendMessage webSocket content date model
                         user = SN.fromJust do
                               index ← chatting
                               contacts !! index
@@ -78,7 +78,7 @@ tests = do
                           , status: Sent
                           , id: 1
                           , content: "test"
-                          , sender: userID
+                          , sender: userId
                           }
                         ]
                         user.history
@@ -162,7 +162,7 @@ tests = do
 
       content = Text "test"
       { id: recipientID } = imUser
-      messageID = 1
+      messageId = 1
       newMessageID = 101
       { suggestions: modelSuggestions } = model
 
