@@ -1,7 +1,7 @@
 module Environment where
 
 development :: Boolean
-development = true
+development = false
 
 backerCSSHash :: String
 backerCSSHash = "3e58580beabc10819188"
@@ -10,7 +10,7 @@ baseCSSHash :: String
 baseCSSHash = "be06c5112acf188d4cd8"
 
 commonJSHash :: String
-commonJSHash = "6ae7d6a841c3a72b3837"
+commonJSHash = "767801c53c25e9e8a104"
 
 emojiJSHash :: String
 emojiJSHash = "2095717c9f496fac2e82"
@@ -30,17 +30,17 @@ helpCSSHash = "0c86b8fed90c6933a556"
 helpJSHash :: String
 helpJSHash = "171307e986f7db9a9676"
 
+imJSHash :: String
+imJSHash = "1f7c47b5ad991c058111"
+
 imCSSHash :: String
 imCSSHash = "410018b273dfc3ae4e12"
-
-imJSHash :: String
-imJSHash = "60cfea06ae6aa9e32435"
 
 internalHelpJSHash :: String
 internalHelpJSHash = "e84a87834b791d3de102"
 
 landingJSHash :: String
-landingJSHash = "9efb8b5f3b6b95e726e9"
+landingJSHash = "35e7bc5b22df45ee43e5"
 
 leaderboardJSHash :: String
 leaderboardJSHash = "0c135cccbf7c8b87a66a"
@@ -55,13 +55,13 @@ profileCSSHash :: String
 profileCSSHash = "39014d6d4937b2223369"
 
 profileJSHash :: String
-profileJSHash = "cd4496885b8b28d96b47"
+profileJSHash = "c275c6b11ebaddf6f52b"
 
 recoverJSHash :: String
 recoverJSHash = "cf62a6c57debb89b14b2"
 
 settingsJSHash :: String
-settingsJSHash = "bb32b1bce14afe2af28f"
+settingsJSHash = "b926d830ed98671bcfde"
 
 settingsCSSHash :: String
 settingsCSSHash = "e67c3e5f2f7fee54a27f"
