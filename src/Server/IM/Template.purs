@@ -14,25 +14,21 @@ import Flame (QuerySelector(..))
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Server.IM.Types (Payload)
 import Server.Template (defaultParameters)
-import Shared.DateTime (DateTimeWrapper(..))
 import Server.Template as ST
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.IM.Unread as SIU
 import Shared.IM.View as SIV
 import Shared.Path (updateHash)
 import Shared.Path as SP
 
-template ∷
-      { contacts ∷ Array Contact
-      , suggestions ∷ Array Suggestion
-      , user ∷ ImUser
-      } →
-      Effect String
+template ∷ Payload → Effect String
 template { contacts, suggestions, user } = do
       let
             unreadChats = SIU.countUnreadChats user.id contacts
             suggestionsCount = DA.length suggestions
-      lt <- EN.nowDateTime
+      lt ← EN.nowDateTime
       F.preMount (QuerySelector ".im")
             { view: \model → ST.templateWith $ defaultParameters
                     { title = SIU.title unreadChats

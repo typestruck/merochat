@@ -6,5 +6,5 @@ import Shared.ContentType
 
 import Server.Fortune.Action as SFA
 
-fortune ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
+fortune ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
 fortune _ = SFA.fortunate

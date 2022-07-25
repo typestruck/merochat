@@ -134,7 +134,8 @@ presentUserContactFields =
 """
 
 presentMessageContactFields ∷ String
-presentMessageContactFields = """
+presentMessageContactFields =
+      """
       , s.id as "messageId"
       , s.sender
       , s.recipient
@@ -148,7 +149,7 @@ presentContactFields = presentUserContactFields <> presentMessageContactFields
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentContacts loggedUserId skip = presentNContacts loggedUserId contactsPerPage skip
 
-presentNContacts ∷ Int → Int -> Int → ServerEffect (Array FlatContactHistoryMessage)
+presentNContacts ∷ Int → Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentNContacts loggedUserId n skip = SD.unsafeQuery query
       { loggedUserId
       , status: Read
@@ -159,9 +160,11 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       , offset: skip
       }
       where
+      --refactor: paginate over deleted chats in a cleaner way
       query =
-            "SELECT * FROM (SELECT" <> presentUserContactFields <>
-                  """FROM
+            "SELECT * FROM (SELECT" <> presentUserContactFields
+                  <>
+                        """FROM
       users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
@@ -171,8 +174,10 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       ORDER BY last_message_date DESC LIMIT @limit OFFSET @offset) uh
       , LATERAL (SELECT *
                  FROM (SELECT
-                              ROW_NUMBER() OVER (ORDER BY date DESC) n""" <> presentMessageContactFields <>
-                       """FROM messages s
+                              ROW_NUMBER() OVER (ORDER BY date DESC) n"""
+                  <> presentMessageContactFields
+                  <>
+                        """FROM messages s
                        WHERE (s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
                               s.sender = uh.recipient AND s.recipient = uh."chatStarter") AND
                               NOT (uh."chatStarter" = @loggedUserId AND uh.sender_deleted_to IS NOT NULL AND s.id <= uh.sender_deleted_to OR
@@ -231,15 +236,21 @@ ORDER BY "lastMessageDate" DESC, s.sender, s.date"""
 messageIdsFor ∷ Int → Int → ServerEffect (Array TemporaryMessageId)
 messageIdsFor loggedUserId messageId = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryId"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageId)
 
-countChats :: Int → ServerEffect Int
+countChats ∷ Int → ServerEffect Int
 countChats loggedUserId = map (DM.maybe 0 (SU.fromJust <<< DB.toInt <<< _.t)) $ SD.single $ select (count _id # as t) # from histories # wher (_sender .=. loggedUserId .||. _recipient .=. loggedUserId)
+
+isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
+isRecipientVisible loggedUserId userId =
+      map DM.isJust <<< SD.single $
+            select (1 # as c)
+                  # from (leftJoin (users # as u) (histories # as h) # on (_sender .=. loggedUserId .&&. _recipient .=. userId .||. _sender .=. userId .&&. _recipient .=. loggedUserId))
+                  # wher (u ... _id .=. userId .&&. not (exists $ select (1 # as c) # from blocks # wher (_blocked .=. loggedUserId .&&. _blocker .=. userId)) .&&. (u ... _visibility .=. Everyone .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date)))
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ \connection → do
       void $ SD.singleWith connection $ select (insert_history (loggedUserId /\ recipient) # as u)
       _.id <<< SU.fromJust <$> (SD.singleWith connection $ insert # into messages (_sender /\ _recipient /\ _temporary_id /\ _content) # values (loggedUserId /\ recipient /\ temporaryId /\ content) # returning _id)
 
---refactor: add multiple values to droplet to update here
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId otherID (Tuple senderKarma recipientKarma) =
       void <<< SD.execute $ insert # into karma_histories (_amount /\ _target) # values

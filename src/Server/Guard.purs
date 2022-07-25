@@ -23,7 +23,7 @@ import Shared.Routes (routes)
 
 guards ∷ Configuration → _
 guards configuration =
-      { loggedUserID: checkLoggedUser configuration
+      { loggedUserId: checkLoggedUser configuration
       , checkAnonymous: checkAnonymous configuration
       }
 

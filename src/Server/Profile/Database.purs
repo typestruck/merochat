@@ -26,7 +26,7 @@ import Shared.Profile.Types (ProfileUser)
 import Shared.Unsafe as SU
 
 presentProfile ∷ Int → ServerEffect FlatProfileUser
-presentProfile loggedUserID = map SU.fromJust <<< SD.single $ select profilePresentationFields # from source # wher filtered
+presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePresentationFields # from source # wher filtered
       where
       profilePresentationFields = (u ... _id # as _id)
             /\ _avatar
@@ -41,7 +41,7 @@ presentProfile loggedUserID = map SU.fromJust <<< SD.single $ select profilePres
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
       source = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
-      filtered = (u ... _id .=. loggedUserID)
+      filtered = (u ... _id .=. loggedUserId)
 
 presentCountries ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name

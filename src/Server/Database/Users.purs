@@ -34,6 +34,7 @@ type Users =
       , online_status ∷ Column Checked Default
       , message_timestamps ∷ Column Checked Default
       , visibility ∷ Column ProfileVisibility Default
+      , visibility_last_updated ∷ Column DateTime Default
       )
 
 type UsersTable = Table "users" Users
@@ -70,6 +71,9 @@ _country = Proxy
 
 _visibility ∷ Proxy "visibility"
 _visibility = Proxy
+
+_visibility_last_updated ∷ Proxy "visibility_last_updated"
+_visibility_last_updated = Proxy
 
 _readReceipts ∷ Proxy "read_receipts"
 _readReceipts = Proxy

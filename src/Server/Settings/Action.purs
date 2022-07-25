@@ -2,26 +2,27 @@ module Server.Settings.Action where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Server.AccountValidation as SA
 import Server.Settings.Database as SSD
 import Shared.Settings.Types (PrivacySettings)
-import Shared.User (ProfileVisibility)
+
+settings :: Int -> ServerEffect PrivacySettings
+settings loggedUserId = SSD.privacySettings loggedUserId
 
 changeEmail ∷ Int → String → ServerEffect Unit
-changeEmail loggedUserID rawEmail = do
+changeEmail loggedUserId rawEmail = do
       email ← SA.validateEmail rawEmail
       SA.validateExistingEmail email
-      SSD.changeEmail loggedUserID email
+      SSD.changeEmail loggedUserId email
 
 changePassword ∷ Int → String → ServerEffect Unit
-changePassword loggedUserID password = do
+changePassword loggedUserId password = do
       hash ← SA.validatePassword password
-      SSD.changePassword loggedUserID hash
+      SSD.changePassword loggedUserId hash
 
 terminateAccount ∷ Int → ServerEffect Unit
-terminateAccount loggedUserID = SSD.terminateAccount loggedUserID
+terminateAccount loggedUserId = SSD.terminateAccount loggedUserId
 
 changePrivacySettings ∷ Int → PrivacySettings -> ServerEffect Unit
-changePrivacySettings loggedUserID ps = SSD.changePrivacySettings loggedUserID ps
+changePrivacySettings loggedUserId ps = SSD.changePrivacySettings loggedUserId ps

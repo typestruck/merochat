@@ -117,10 +117,14 @@ let additions =
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.15.2-20220630/packages.dhall
-        sha256:691aff166010760f18ab1f4842ba6184f43747756e00579a050a2a46fa22d014
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.4-20220723/packages.dhall
+        sha256:efb50561d50d0bebe01f8e5ab21cda51662cca0f5548392bafc3216953a0ed88
 
-let overrides = {=}
+let overrides =
+      { droplet =
+              upstream.droplet
+          //  { version = "e6f3909cd3d34f4693e462605ad46beda6b0dbd1" }
+      }
 
 let additions =
       { browser-cookies =
@@ -179,15 +183,14 @@ let additions =
           , "test-unit"
           ]
         }
-      , uuid =
-        { version = "7bb5a90c9b11f6a33ac7610608a650e4d58aeac9"
+        , uuid =
+        { version = "v9.0.0"
         , repo = "https://github.com/spicydonuts/purescript-uuid.git"
         , dependencies =
           [ "prelude"
           , "aff"
           , "effect"
           , "either"
-          , "foreign-generic"
           , "foreign"
           , "lists"
           , "maybe"
@@ -195,84 +198,6 @@ let additions =
           , "spec"
           , "strings"
           , "transformers"
-          ]
-        }
-      , foreign-generic =
-        { version = "e7fa22dc9fc2351485f2e915fa7d418ca1965c6d"
-        , repo =
-            "https://github.com/working-group-purescript-es/purescript-foreign-generic"
-        , dependencies =
-          [ "assert"
-          , "console"
-          , "effect"
-          , "exceptions"
-          , "foreign"
-          , "foreign-object"
-          , "identity"
-          , "ordered-collections"
-          , "prelude"
-          , "psci-support"
-          , "record"
-          ]
-        }
-      , simple-json =
-        { repo = "https://github.com/justinwoo/purescript-simple-json"
-        , version = "master"
-        , dependencies =
-          [ "arrays"
-          , "assert"
-          , "bifunctors"
-          , "console"
-          , "control"
-          , "effect"
-          , "either"
-          , "exceptions"
-          , "foldable-traversable"
-          , "foreign"
-          , "foreign-object"
-          , "identity"
-          , "lists"
-          , "maybe"
-          , "nonempty"
-          , "nullable"
-          , "partial"
-          , "prelude"
-          , "record"
-          , "transformers"
-          , "typelevel-prelude"
-          , "variant"
-          ]
-        }
-      , unordered-collections =
-        { version = "master"
-        , repo =
-            "https://github.com/fehrenbach/purescript-unordered-collections"
-        , dependencies =
-          [ "arrays"
-          , "console"
-          , "effect"
-          , "either"
-          , "enums"
-          , "exceptions"
-          , "foldable-traversable"
-          , "foreign-object"
-          , "functions"
-          , "integers"
-          , "lists"
-          , "maybe"
-          , "minibench"
-          , "newtype"
-          , "nonempty"
-          , "ordered-collections"
-          , "partial"
-          , "prelude"
-          , "psci-support"
-          , "quickcheck"
-          , "record"
-          , "st"
-          , "tuples"
-          , "typelevel-prelude"
-          , "unfoldable"
           ]
         }
       , payload =

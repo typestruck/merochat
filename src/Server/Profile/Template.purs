@@ -4,10 +4,10 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
-import Shared.Profile.Types (ProfileUser)
+import Server.Profile.Types (Payload)
 import Shared.Profile.View as SPV
 
-template ∷ { user ∷ ProfileUser, countries ∷ Array { id ∷ Int, name ∷ String }, languages ∷ Array { id ∷ Int, name ∷ String } } → Effect String
+template ∷ Payload → Effect String
 template { user: user, countries, languages } = do
       F.preMount (QuerySelector "#profile-edition-form")
             { view: SPV.view

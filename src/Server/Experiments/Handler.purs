@@ -6,9 +6,9 @@ import Shared.ContentType
 
 import Run as R
 import Server.Experiments.Template as SET
-import Server.Experiments.Database as SED
+import Server.Experiments.Action as SEA
 
-experiments ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
+experiments ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
 experiments _ = do
-      exp ← SED.fecthExperiments
-      R.liftEffect $ SET.template exp
+      listing <- SEA.experiments
+      R.liftEffect $ SET.template listing

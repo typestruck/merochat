@@ -27,6 +27,7 @@ create table users
     description text not null,
     country integer,
     visibility smallint not null default 0,
+    visibility_last_updated timestamptz default (utc_now()),
     read_receipts boolean not null default true,
     typing_status boolean not null default true,
     online_status boolean not null default true,

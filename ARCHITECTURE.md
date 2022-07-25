@@ -48,6 +48,6 @@ There is a folder for each route (e.g. /im, /landing etc). Each folder always ha
 
 * Pages are always rendered server side so `Template` modules use `view`s from the Shared folder
 
-* Sessions are cookie based. The logged in user id is always available to `Handler` modules via `guards :: { loggedUserID :: PrimaryKey }` in case of internal pages
+* Sessions are cookie based. The logged in user id is always available to `Handler` modules via `guards :: { loggedUserId :: PrimaryKey }` in case of internal pages
 
 * There is a server for HTTP requests and another for websockets. The websocket server uses a wrapper for the ws library

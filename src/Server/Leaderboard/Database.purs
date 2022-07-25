@@ -21,7 +21,7 @@ _karma ∷ Proxy "karma"
 _karma = Proxy
 
 userPosition ∷ Int → ServerEffect Int
-userPosition loggedUserID = _.position <<< SU.fromJust <$> (SD.single $ select _position # from karma_leaderboard # wher (_ranker .=. loggedUserID))
+userPosition loggedUserId = _.position <<< SU.fromJust <$> (SD.single $ select _position # from karma_leaderboard # wher (_ranker .=. loggedUserId))
 
 --refactor: add greatest to droplet
 fetchInBetween10 ∷ Int → ServerEffect (Array LeaderboardUser)

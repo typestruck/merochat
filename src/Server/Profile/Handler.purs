@@ -2,19 +2,18 @@ module Server.Profile.Handler where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Run as R
-import Server.Ok
+import Server.Ok (Ok, ok)
 import Server.Profile.Action as SPA
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Server.Profile.Template as SPT
 import Shared.Profile.Types (Generate, ProfileUser)
 
-profile ∷ { guards ∷ { loggedUserID ∷ Int } } → ServerEffect String
-profile { guards: { loggedUserID } } = do
-      profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserID
+profile ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
+profile { guards: { loggedUserId } } = do
+      profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserId
       countries ← SPD.presentCountries
       languages ← SPD.presentLanguages
       R.liftEffect $ SPT.template
@@ -23,8 +22,10 @@ profile { guards: { loggedUserID } } = do
             , languages
             }
 
-profileUpdate ∷ { guards ∷ { loggedUserID ∷ Int }, body ∷ ProfileUser } → ServerEffect Ok
-profileUpdate { guards: { loggedUserID }, body } = SPA.saveProfile loggedUserID body
+profileUpdate ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ ProfileUser } → ServerEffect Ok
+profileUpdate { guards: { loggedUserId }, body } = do
+      SPA.saveProfile loggedUserId body
+      pure ok
 
-generate ∷ { guards ∷ { loggedUserID ∷ Int }, query ∷ { what ∷ Generate } } → ServerEffect String
+generate ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { what ∷ Generate } } → ServerEffect String
 generate { query: { what } } = SPA.generate what

@@ -336,9 +336,8 @@ receiveMessage
       isFocused
       wsPayload
       model@
-            { user: { id: recipientID, profileVisibility }
+            { user: { id: recipientID }
             , contacts: currentContacts
-            , suggestions
             , typingIds
             , hash
             , blockedUsers
@@ -367,8 +366,6 @@ receiveMessage
             --(for now) if the experiments don't match, discard the message
             if DA.elem userId blockedUsers || not (match userId experimenting) then
                   F.noMessages model
-            else if profileVisibility == Nobody then
-                  CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
             else
                   let
                         model' = unsuggest userId model
@@ -389,7 +386,7 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents ( message) (request.im.singleContact { query: { id: userId, contactsOnly: profileVisibility == Contacts } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents ( message) (request.im.singleContact { query: { id: userId } }) ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right

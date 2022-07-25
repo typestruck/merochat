@@ -6,6 +6,8 @@ import Server.Database.Fields
 import Server.Database.Users
 
 import Data.Tuple.Nested ((/\))
+import Effect.Class (liftEffect)
+import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Types (Checked(..))
 import Server.Settings.Database.Flat as SSDF
@@ -16,16 +18,16 @@ import Shared.User (ProfileVisibility)
 import Type.Proxy (Proxy(..))
 
 changeEmail ∷ Int → String → ServerEffect Unit
-changeEmail loggedUserID email = SD.execute $ update users # set (_email .=. email) # wher (_id .=. loggedUserID)
+changeEmail loggedUserId email = SD.execute $ update users # set (_email .=. email) # wher (_id .=. loggedUserId)
 
 changePassword ∷ Int → String → ServerEffect Unit
-changePassword loggedUserID password = SD.execute $ update users # set (_password .=. password) # wher (_id .=. loggedUserID)
+changePassword loggedUserId password = SD.execute $ update users # set (_password .=. password) # wher (_id .=. loggedUserId)
 
 terminateAccount ∷ Int → ServerEffect Unit
-terminateAccount loggedUserID = SD.execute $ delete # from users # wher (_id .=. loggedUserID) --cascades
+terminateAccount loggedUserId = SD.execute $ delete # from users # wher (_id .=. loggedUserId) --cascades
 
 privacySettings ∷ Int → ServerEffect PrivacySettings
-privacySettings loggedUserID = SSDF.toPrivacySettings <<< SU.fromJust <$>
+privacySettings loggedUserId = SSDF.toPrivacySettings <<< SU.fromJust <$>
       ( SD.single $
               select
                     ( (_visibility # as profileVisibility)
@@ -33,16 +35,19 @@ privacySettings loggedUserID = SSDF.toPrivacySettings <<< SU.fromJust <$>
                             /\ (_typingStatus # as typingStatus)
                             /\ (_onlineStatus # as onlineStatus)
                             /\ (_messageTimestamps # as messageTimestamps)
-                    ) # from users # wher (_id .=. loggedUserID)
+                    ) # from users # wher (_id .=. loggedUserId)
       )
 
 changePrivacySettings ∷ Int → PrivacySettings → ServerEffect Unit
-changePrivacySettings loggedUserId { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } = SD.execute $ update users
-      # set
-              ( (_visibility .=. profileVisibility)
-                      /\ (_readReceipts .=. Checked readReceipts)
-                      /\ (_typingStatus .=. Checked typingStatus)
-                      /\ (_onlineStatus .=. Checked onlineStatus)
-                      /\ (_messageTimestamps .=. Checked messageTimestamps)
-              )
-      # wher (_id .=. loggedUserId)
+changePrivacySettings loggedUserId { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } = do
+      now ← liftEffect EN.nowDateTime
+      SD.execute $ update users
+            # set
+                    ( (_visibility .=. profileVisibility)
+                            /\ (_visibility_last_updated .=. now)
+                            /\ (_readReceipts .=. Checked readReceipts)
+                            /\ (_typingStatus .=. Checked typingStatus)
+                            /\ (_onlineStatus .=. Checked onlineStatus)
+                            /\ (_messageTimestamps .=. Checked messageTimestamps)
+                    )
+            # wher (_id .=. loggedUserId)

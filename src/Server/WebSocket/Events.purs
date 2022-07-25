@@ -29,7 +29,7 @@ import Effect.Console as EC
 import Effect.Exception (Error)
 import Effect.Now as EN
 import Effect.Ref (Ref)
-import Shared.DateTime(DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper(..))
 import Effect.Ref as ER
 import Foreign.Object as FO
 import Node.HTTP (Request)
@@ -51,7 +51,7 @@ import Shared.ResponseError (DatabaseError, ResponseError(..))
 type WebSocketEffect = BaseEffect WebSocketReader Unit
 
 type WebSocketReader = BaseReader
-      ( sessionUserID ∷ Int
+      ( sessionUserId ∷ Int
       , connection ∷ WebSocketConnection
       , configuration ∷ Configuration
       , allConnections ∷ Ref (HashMap Int AliveWebSocketConnection)
@@ -73,18 +73,18 @@ handleConnection configuration@{ tokenSecret } pool allConnections availability 
             Nothing → do
                   SW.terminate connection
                   EC.log "terminated due to auth error"
-            Just sessionUserID → do
+            Just sessionUserId → do
                   now ← EN.nowDateTime
-                  ER.modify_ (DH.insert sessionUserID { lastSeen: now, connection }) allConnections
-                  ER.modify_ (DH.insert sessionUserID Online) availability
+                  ER.modify_ (DH.insert sessionUserId { lastSeen: now, connection }) allConnections
+                  ER.modify_ (DH.insert sessionUserId Online) availability
                   SW.onError connection handleError
-                  SW.onClose connection (handleClose allConnections sessionUserID)
-                  SW.onMessage connection (runMessageHandler sessionUserID)
+                  SW.onClose connection (handleClose allConnections sessionUserId)
+                  SW.onMessage connection (runMessageHandler sessionUserId)
       where
-      runMessageHandler sessionUserID (WebSocketMessage message) = do
+      runMessageHandler sessionUserId (WebSocketMessage message) = do
             case SJ.fromJSON message of
                   Right payload → do
-                        let run = R.runBaseAff' <<< RE.catch (\e → reportError payload (checkInternalError e) e) <<< RR.runReader { allConnections, configuration, pool, sessionUserID, connection, availability } $ handleMessage payload
+                        let run = R.runBaseAff' <<< RE.catch (\e → reportError payload (checkInternalError e) e) <<< RR.runReader { allConnections, configuration, pool, sessionUserId, connection, availability } $ handleMessage payload
                         EA.launchAff_ $ run `CMEC.catchError` (reportError payload Nothing)
                   Left error → do
                         SW.terminate connection
@@ -106,16 +106,16 @@ handleClose allConnections id _ _ = ER.modify_ (DH.delete id) allConnections
 --REFACTOR: untangle the im logic from the websocket logic
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do
-      { connection, sessionUserID, allConnections, availability } ← RR.ask
+      { connection, sessionUserId, allConnections, availability } ← RR.ask
       case payload of
             UpdateHash →
                   sendWebSocketMessage connection <<< Content $ CurrentHash updateHash
             Typing { id } → do
                   possibleConnection ← R.liftEffect (DH.lookup id <$> ER.read allConnections)
-                  whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactTyping { id: sessionUserID }
+                  whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactTyping { id: sessionUserId }
             Ping { isActive, statusFor } → do
 
-                  possibleConnection ← R.liftEffect (DH.lookup sessionUserID <$> ER.read allConnections)
+                  possibleConnection ← R.liftEffect (DH.lookup sessionUserId <$> ER.read allConnections)
                   if DM.isNothing possibleConnection then
                         --shouldn't be possible 🤔
                         R.liftEffect $ do
@@ -127,48 +127,52 @@ handleMessage payload = do
                               -- keep the connection alive
                               -- maintain online status
                               now ← EN.nowDateTime
-                              ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserID) allConnections
-                              ER.modify_ (DH.alter (updateAvailability isActive now) sessionUserID) availability
+                              ER.modify_ (DH.update (Just <<< (_ { lastSeen = now })) sessionUserId) allConnections
+                              ER.modify_ (DH.alter (updateAvailability isActive now) sessionUserId) availability
                               avl ← ER.read availability
                               sendWebSocketMessage connection $ Pong { status: map (makeAvailability avl) statusFor }
             ChangeStatus { userID: sender, status, ids, persisting } → do
-                  when persisting $ SID.changeStatus sessionUserID status ids
+                  when persisting $ SID.changeStatus sessionUserId status ids
                   possibleSenderConnection ← R.liftEffect (DH.lookup sender <$> ER.read allConnections)
                   whenJust possibleSenderConnection $ \{ connection: senderConnection } →
                         sendWebSocketMessage senderConnection <<< Content $ ServerChangedStatus
                               { ids
                               , status
-                              , userID: sessionUserID
+                              , userID: sessionUserId
                               }
             UnavailableFor { id } → do
                   possibleConnection ← R.liftEffect (DH.lookup id <$> ER.read allConnections)
-                  whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactUnavailable { id: sessionUserID }
+                  whenJust possibleConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactUnavailable { id: sessionUserId }
             OutgoingMessage { id: temporaryId, userID: recipient, content, turn, experimenting } → do
                   date ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  Tuple messageID finalContent ← case experimenting of
+                  processed ← case experimenting of
                         --impersonating experiment messages are not saved
                         Just (ImpersonationPayload _) → do
                               msg ← SIA.processMessageContent content
-                              pure $ Tuple temporaryId msg
+                              pure <<< Just $ Tuple temporaryId msg
                         _ →
-                              SIA.processMessage sessionUserID recipient temporaryId content
-                  sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
-                        { previousID: temporaryId
-                        , id: messageID
-                        , userID: recipient
-                        }
-
+                              SIA.processMessage sessionUserId recipient temporaryId content
                   possibleRecipientConnection ← R.liftEffect (DH.lookup recipient <$> ER.read allConnections)
-                  whenJust possibleRecipientConnection $ \{ connection: recipientConnection } →
-                        sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage
-                              { id: messageID
-                              , userId: sessionUserID
-                              , content: finalContent
-                              , experimenting: experimenting
-                              , date
-                              }
-                  --pass along karma calculation to wheel
-                  whenJust turn (SIA.processKarma sessionUserID recipient)
+                  case processed of
+                        Just (Tuple messageId finalContent) → do
+                              sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
+                                    { previousID: temporaryId
+                                    , id: messageId
+                                    , userID: recipient
+                                    }
+                              whenJust possibleRecipientConnection $ \{ connection: recipientConnection } →
+                                    sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage
+                                          { id: messageId
+                                          , userId: sessionUserId
+                                          , content: finalContent
+                                          , experimenting: experimenting
+                                          , date
+                                          }
+                              --pass along karma calculation to wheel
+                              whenJust turn (SIA.processKarma sessionUserId recipient)
+                        --meaning recipient can't be messaged
+                        Nothing →
+                              whenJust possibleRecipientConnection $ \{ connection: recipientConnection } → sendWebSocketMessage recipientConnection <<< Content $ ContactUnavailable { id: sessionUserId }
       where
       whenJust ∷ ∀ v. Maybe v → (v → WebSocketEffect) → WebSocketEffect
       whenJust value f = case value of
@@ -192,7 +196,7 @@ sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWe
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJSON
 
 -- | Connections are dropped after 5 minutes of inactivity
-checkLastSeen ∷ Ref (HashMap Int AliveWebSocketConnection) → Ref (HashMap Int Availability) -> Effect Unit
+checkLastSeen ∷ Ref (HashMap Int AliveWebSocketConnection) → Ref (HashMap Int Availability) → Effect Unit
 checkLastSeen allConnections availability = do
       connections ← ER.read allConnections
       now ← EN.nowDateTime

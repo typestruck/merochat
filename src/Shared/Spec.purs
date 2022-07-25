@@ -19,7 +19,7 @@ type NoBody = {}
 spec ∷
       Spec
             { guards ∷
-                    { loggedUserID ∷ Int
+                    { loggedUserId ∷ Int
                     , checkAnonymous ∷ Unit
                     }
             , routes ∷
@@ -51,7 +51,7 @@ spec ∷
                                   }
                     , im ∷
                             Routes "/im"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
                                           GET "/"
                                                 { response ∷ String
@@ -62,8 +62,8 @@ spec ∷
                                                 , response ∷ Array Contact
                                                 }
                                   , singleContact ∷
-                                          GET "/contact?id=<id>&contactsOnly=<contactsOnly>"
-                                                { query ∷ { id ∷ Int, contactsOnly ∷ Boolean }
+                                          GET "/contact?id=<id>"
+                                                { query ∷ { id ∷ Int }
                                                 , response ∷ Array Contact
                                                 }
                                   , history ∷
@@ -106,7 +106,7 @@ spec ∷
                                   }
                     , profile ∷
                             Routes "/profile"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
                                           GET "/"
                                                 { response ∷ String
@@ -124,7 +124,7 @@ spec ∷
                                   }
                     , settings ∷
                             Routes "/settings"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
                                           GET "/"
                                                 { response ∷ String
@@ -174,13 +174,13 @@ spec ∷
                                   }
                     , logout ∷
                             POST "/logout"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , body ∷ NoBody
                                   , response ∷ Ok
                                   }
                     , leaderboard ∷
                             GET "/leaderboard"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , response ∷ String
                                   }
                     , help ∷
@@ -189,12 +189,12 @@ spec ∷
                                   }
                     , internalHelp ∷
                             GET "/inhelp"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , response ∷ String
                                   }
                     , experiments ∷
                             GET "/experiments"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , response ∷ String
                                   }
                     , backer ∷
@@ -204,7 +204,7 @@ spec ∷
                                   }
                     , internalBacker ∷
                             GET "/inbacker"
-                                  { guards ∷ Guards ("loggedUserID" : Nil)
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
                                   , response ∷ String
                                   }
                     , developmentFiles ∷

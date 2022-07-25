@@ -2,7 +2,6 @@ module Server.Profile.Action where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -11,13 +10,14 @@ import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Run as R
 import Server.File as SF
-import Server.Ok (Ok, ok)
 import Server.Profile.Database as SPD
+import Server.Profile.Database.Flat as SPDF
 import Server.Response as SR
 import Server.ThreeK as SB
 import Shared.DateTime as SDT
 import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
+import Server.Profile.Types (Payload)
 import Shared.Profile.Types (Generate(..), ProfileUser)
 
 missingRequiredFieldsMessage ∷ String
@@ -35,6 +35,16 @@ tooYoungMessage = "You must be over 13 years old in order to use MelanChat"
 fieldTooBigMessage ∷ String
 fieldTooBigMessage = "Field exceeded max value"
 
+profile :: Int -> ServerEffect Payload
+profile loggedUserId = do
+      profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserId
+      countries ← SPD.presentCountries
+      languages ← SPD.presentLanguages
+      pure      { user: profileUser
+            , countries
+            , languages
+            }
+
 generate ∷ Generate → ServerEffect String
 generate =
       case _ of
@@ -42,8 +52,8 @@ generate =
             Headline → SB.generateHeadline
             Description → SB.generateDescription
 
-saveProfile ∷ Int → ProfileUser → ServerEffect Ok
-saveProfile loggedUserID profileUser@{ name, age, headline, description, avatar, languages, tags } = do
+saveProfile ∷ Int → ProfileUser → ServerEffect Unit
+saveProfile loggedUserId profileUser@{ name, age, headline, description, avatar, languages, tags } = do
       when (isNull name || isNull headline || isNull description) $ SR.throwBadRequest missingRequiredFieldsMessage
       when anyFieldIsTooBig $ SR.throwBadRequest fieldTooBigMessage
       when (DA.length tags > maxTags) $ SR.throwBadRequest tooManyTagsMessage
@@ -63,12 +73,11 @@ saveProfile loggedUserID profileUser@{ name, age, headline, description, avatar,
                         else
                               pure $ Just fileName
       SPD.saveProfile
-            { user: profileUser { id = loggedUserID }
+            { user: profileUser { id = loggedUserId }
             , avatar: updatedAvatar
             , languages
             , tags
             }
-      pure ok
       where
       isNull = DS.null <<< DS.trim
       anyFieldIsTooBig = DS.length name > nameMaxCharacters || DS.length headline > headlineMaxCharacters || DS.length description > descriptionMaxCharacters || DA.any ((_ > tagMaxCharacters) <<< DS.length) tags
