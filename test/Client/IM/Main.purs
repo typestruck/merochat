@@ -17,7 +17,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Impersonation (batman)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
-import Test.Client.Model (anotherImUserId, contact, contactID, historyMessage, imUser, imUserId, model, webSocket)
+import Test.Client.Model (anotherImUserId, contact, contactId, historyMessage, imUser, imUserId, model, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -33,7 +33,7 @@ tests = do
                                     ( ServerReceivedMessage
                                             { previousId: messageId
                                             , id: newMessageID
-                                            , userId: contactID
+                                            , userId: contactId
                                             }
                                     ) $ model
                                     { contacts =
@@ -146,7 +146,7 @@ tests = do
                                     ( NewIncomingMessage
                                             { id: newMessageID
                                             , experimenting: Nothing
-                                            , userId: contactID
+                                            , userId: contactId
                                             , content
                                             , date
                                             }

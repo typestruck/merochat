@@ -92,8 +92,8 @@ imUser =
 anotherImUserId ∷ Int
 anotherImUserId = 90
 
-contactID ∷ Int
-contactID = anotherImUserId
+contactId ∷ Int
+contactId = anotherImUserId
 
 anotherImUser ∷ ImUser
 anotherImUser = imUser { id = anotherImUserId }
@@ -111,7 +111,7 @@ historyMessage ∷ HistoryMessage
 historyMessage =
       { id: 1
       , sender: imUserId
-      , recipient: contactID
+      , recipient: contactId
       , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , content: "test"
       , status: Received

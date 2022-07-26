@@ -11,6 +11,7 @@ import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
+import Control.Alt ((<|>))
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
@@ -108,19 +109,19 @@ beforeSendMessage
 
       updatedModel = case chatting, suggesting of
             Nothing, (Just index) →
-                  model
-                        { chatting = Just 0
-                        , contacts = updateContacts (suggestions !@ index)
-                        , suggestions = SU.fromJust $ DA.deleteAt index suggestions
-                        }
+                  --an existing contact might be in the suggestions
+                  let
+                        user = suggestions !@ index
+                        maybeIndex = DA.findIndex (\cnt → cnt.user.id == user.id && cnt.impersonating == Nothing) contacts
+                  in
+                        model
+                              { chatting = maybeIndex <|> Just 0
+                              , contacts = if DM.isJust maybeIndex then contacts else DA.cons (SIC.defaultContact id user) contacts
+                              , suggestions = SU.fromJust $ DA.deleteAt index suggestions
+                              }
             _, _ → model
 
-      --an existing contact might be in the suggestions
-      updateContacts user
-            | DM.isJust $ DA.find (\cnt -> cnt.user.id == user.id && cnt.impersonating == Nothing) contacts = contacts
-            | otherwise = DA.cons (SIC.defaultContact id user) contacts
-
-      nextEffects c = [fetchHistory, nextSendMessage c]
+      nextEffects c = [ fetchHistory, nextSendMessage c ]
 
       fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory true
       nextSendMessage input = do

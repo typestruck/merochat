@@ -17,7 +17,7 @@ import Shared.IM.Contact as SIC
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
-import Test.Client.Model (anotherImUserId, contact, contactID, historyMessage, imUser, imUserId, model, suggestion, webSocket)
+import Test.Client.Model (anotherImUser, anotherImUserId, contact, contactId, historyMessage, imUser, imUserId, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -45,6 +45,17 @@ tests = do
                               }
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just contact.user
+
+            TU.test "beforeSendMessage sets chatting to existing contact index" do
+                  let
+                        model' = model
+                              { suggestions = [contact.user]
+                              , chatting = Nothing
+                              , suggesting = Just 0
+                              , contacts = [SIC.defaultContact 789 contact.user { id = 8}, contact]
+                              }
+                        { chatting } = DT.fst $ CIC.beforeSendMessage content model'
+                  TUA.equal (Just 1) chatting
 
             TU.test "beforeSendMessage sets chatting to 0" do
                   let
@@ -134,7 +145,7 @@ tests = do
                               { history = [ recipientMessage, recipientMessage ]
                               }
 
-                  TUA.equal Nothing $ CIC.makeTurn contact' contactID
+                  TUA.equal Nothing $ CIC.makeTurn contact' contactId
 
             TU.test "setSelectedImage sets file" do
                   let
