@@ -18,7 +18,6 @@ import Shared.Unsafe as SU
 readConfiguration ∷ Effect Configuration
 readConfiguration =
       if development then do
-            randomizeProfiles ← falseUnless <$> NP.lookupEnv "RANDOMIZE_PROFILES"
             databaseHost ← NP.lookupEnv "DATABASE_HOST"
             pure
                   { port: 8000
@@ -31,7 +30,6 @@ readConfiguration =
                   , storageApplicationKeyId: ""
                   , emailHost: ""
                   , emailPassword: ""
-                  , randomizeProfiles
                   }
       else do
             port ← parsePort <$> NP.lookupEnv "PORT"
@@ -39,8 +37,7 @@ readConfiguration =
             case variables of
                   [ captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host, storageApplicationKey, storageApplicationKeyId ] →
                         pure $
-                              { randomizeProfiles: true
-                              , port
+                              { port
                               , databaseHost: Just host
                               , captchaSecret
                               , tokenSecret

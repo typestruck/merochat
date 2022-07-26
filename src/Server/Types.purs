@@ -21,7 +21,6 @@ type Configuration =
       , emailHost ∷ String
       , emailUser ∷ String
       , emailPassword ∷ String
-      , randomizeProfiles ∷ Boolean
       }
 
 type Session =

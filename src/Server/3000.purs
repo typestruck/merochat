@@ -19,8 +19,6 @@ import Run as R
 import Run.Reader as RR
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 
-foreign import generate_ ∷ EffectFn3 Boolean Int Int String
-
 data ThreeKAction = Name | Description
 
 generateName ∷ ServerEffect String
@@ -49,11 +47,6 @@ generateHeadline = do
                         pure $ cutHeadline <> "..."
                   else
                         pure headline
-
-generate ∷ ThreeKAction → Int → ServerEffect String
-generate action size = do
-      { configuration: { randomizeProfiles } } ← RR.ask
-      R.liftEffect $ EU.runEffectFn3 generate_ randomizeProfiles (DE.fromEnum action) size
 
 instance Show ThreeKAction where
       show Name = "name"
