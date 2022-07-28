@@ -12,6 +12,8 @@ import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
+import Effect.Class (liftEffect)
+import Effect.Exception as EE
 import Effect.Random as ER
 import Effect.Uncurried (EffectFn3)
 import Effect.Uncurried as EU
@@ -47,6 +49,8 @@ generateHeadline = do
                         pure $ cutHeadline <> "..."
                   else
                         pure headline
+
+generate a b= liftEffect $ EE.throw "not yet"
 
 instance Show ThreeKAction where
       show Name = "name"
