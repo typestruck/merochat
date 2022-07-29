@@ -5,28 +5,32 @@ module Server.ThreeK
       ) where
 
 import Prelude
-import Server.Types
 
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
-import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Effect.Class (liftEffect)
 import Effect.Exception as EE
 import Effect.Random as ER
-import Effect.Uncurried (EffectFn3)
-import Effect.Uncurried as EU
 import Run as R
-import Run.Reader as RR
+import Server.ThreeK.Name as STN
+import Server.Types (ServerEffect)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 
 data ThreeKAction = Name | Description
 
+-- | Names are generated according to the following patterns:
+-- |  <adjective> [, <adjective>] <noun>
+-- | [<adjective>] <noun> [who | that] [<adverb>] <verb> [<adjective>] [<noun>] [<other>]
 generateName ∷ ServerEffect String
-generateName = do
-      size ← R.liftEffect $ ER.randomInt 10 nameMaxCharacters
-      generate Name size
+generateName  = R.liftEffect do
+      size ←  ER.randomInt 10 nameMaxCharacters
+      shouldHappen <- STN.shouldHappen 60
+      if shouldHappen  then
+            STN.simpleName size
+      else
+            STN.complexName size
 
 generateDescription ∷ ServerEffect String
 generateDescription = do
@@ -50,7 +54,7 @@ generateHeadline = do
                   else
                         pure headline
 
-generate a b= liftEffect $ EE.throw "not yet"
+generate a b = pure "AAAAAAAAAAAAAAAAAA"
 
 instance Show ThreeKAction where
       show Name = "name"
