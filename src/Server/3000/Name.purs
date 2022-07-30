@@ -83,7 +83,7 @@ getWord gClass remainingChars = do
             len = DA.length keys
 
       if len > 0 then do
-            keyIndex ← ER.randomInt 0 len
+            keyIndex ← ER.randomInt 0 (len - 1)
             let words = SU.fromJust do
                   size <- keys !! keyIndex
                   HM.lookup size sizeWords
