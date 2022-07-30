@@ -7,12 +7,17 @@ module Server.ThreeK
 import Droplet.Language
 import Prelude
 import Server.Database.StockText
+import Shared.Options.Profile
+
+import Data.Array as DA
+import Data.Reflectable as DR
+import Data.String as DS
+import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Run as R
 import Server.Database as SD
 import Server.ThreeK.Name as STN
 import Server.Types (ServerEffect)
-import Shared.Options.Profile
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 
@@ -32,5 +37,9 @@ generateName = R.liftEffect do
 generateHeadline ∷ ServerEffect String
 generateHeadline = map (_.contents <<< SU.fromJust) <<< SD.single $ select _contents # from stock_text # wher (_text_type .=. Headline) # orderBy random # limit (Proxy ∷ Proxy 1)
 
+-- | Descriptions are bullet point lists of quotes/about me/conversation starters
 generateDescription ∷ ServerEffect String
-generateDescription = pure "AAAAAAAAAAAAAAAAAA"
+generateDescription = do
+      n <- liftEffect $ ER.randomInt 1 6
+      quotes <- DR.reifyType n (\l -> SD.query $ select _contents # from stock_text # wher (_text_type .=. Description) # orderBy random # limit l)
+      pure <<< DS.joinWith "\n" $ map (("- " <> _) <<< _.contents) quotes

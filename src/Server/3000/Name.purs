@@ -87,7 +87,7 @@ getWord gClass remainingChars = do
             let words = SU.fromJust do
                   size <- keys !! keyIndex
                   HM.lookup size sizeWords
-            wordIndex ← ER.randomInt 0 $ DA.length words
+            wordIndex ← ER.randomInt 0 $ DA.length words - 1
             pure $ words !! wordIndex
       else
             pure Nothing
