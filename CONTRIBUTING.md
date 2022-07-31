@@ -26,12 +26,6 @@ MelanChat is written in PureScript, both server-side and client-side. PostgreSQL
 
     * Refresh the page after any changes :)
 
-4. (Optional) Enable randomized profile creation
-
-    * Set the environment variable `RANDOMIZE_PROFILES` (e.g., `export RANDOMIZE_PROFILES=true`)
-
-    * You may need to build the native module ([3000.node](3000.node)) for your system. The source is [here](https://github.com/melanchat/3000). Detailed instructions on how to compile the module can be found [here](https://neon-bindings.com)
-
 ## Pull requests
 
 Unless it is a small change, please include tests and a clear commit message. Bonus points if the code has documentation comments.
