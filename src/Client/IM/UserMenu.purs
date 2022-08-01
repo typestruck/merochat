@@ -20,7 +20,7 @@ import Environment (experimentsJSHash, internalHelpJSHash, leaderboardCSSHash, l
 import Flame ((:>))
 import Shared.IM.Types
 import Flame as F
-import Shared.JSON as SJ
+import Shared.Json as SJ
 import Shared.Routes (routes)
 
 toggleInitialScreen ∷ Boolean → IMModel → NoMessages

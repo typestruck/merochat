@@ -9,18 +9,18 @@ import Effect.Aff as EA
 import Effect.Console as EC
 import Effect.Ref as ER
 import Effect.Timer as ET
+import Environment (development)
 import Payload.Server (defaultOpts)
 import Payload.Server as PS
 import Server.Configuration as CF
 import Server.Database as SD
+import Server.File as SF
 import Server.Guard (guards)
 import Server.Handler as SH
 import Server.Types (Configuration)
 import Server.WebSocket (Port(..))
-import Server.File as SF
 import Server.WebSocket as SW
 import Server.WebSocket.Events (aliveDelay)
-import Environment(development)
 import Server.WebSocket.Events as SWE
 import Shared.Options.WebSocket (port)
 import Shared.Spec (spec)
@@ -40,13 +40,13 @@ startWebSocketServer configuration = do
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections availability)
-      intervalID ← ET.setInterval aliveDelay (SWE.checkLastSeen allConnections availability)
-      SW.onServerClose webSocketServer (const (ET.clearInterval intervalID))
+      let reading = { pool, availability}
+      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen allConnections availability *> SWE.persistLastSeen reading)
+      SW.onServerClose webSocketServer (const (EC.log "closing websocket server" *> ET.clearInterval intervalId *> SWE.persistLastSeen reading))
 
 startHTTPServer ∷ Configuration → Effect Unit
 startHTTPServer configuration@{ port } = do
       pool ← SD.newPool configuration
-
       EA.launchAff_ $ void do
             PS.startGuarded (defaultOpts { port = port }) spec
                   { guards: guards configuration

@@ -41,56 +41,56 @@ import Shared.Routes (routes)
 
 handlers ∷ ServerReader → _
 handlers reading =
-      { landing: runHTML reading SLH.landing
-      , register: runJSON reading SLH.register
+      { landing: runHtml reading SLH.landing
+      , register: runJson reading SLH.register
       , im:
-              { get: runHTML reading SIH.im
-              , contacts: runJSON reading SIH.contacts
-              , singleContact: runJSON reading SIH.singleContact
-              , history: runJSON reading SIH.history
-              , suggestions: runJSON reading SIH.suggestions
-              , block: runJSON reading SIH.block
-              , delete: runJSON reading SIH.deleteChat
-              , missedEvents: runJSON reading SIH.missedEvents
-              , fortune: runJSON reading SFTH.fortune
-              , report: runJSON reading SIH.report
+              { get: runHtml reading SIH.im
+              , contacts: runJson reading SIH.contacts
+              , singleContact: runJson reading SIH.singleContact
+              , history: runJson reading SIH.history
+              , suggestions: runJson reading SIH.suggestions
+              , block: runJson reading SIH.block
+              , delete: runJson reading SIH.deleteChat
+              , missedEvents: runJson reading SIH.missedEvents
+              , fortune: runJson reading SFTH.fortune
+              , report: runJson reading SIH.report
               }
       , profile:
-              { get: runJSON reading SPH.profile
-              , post: runJSON reading SPH.profileUpdate
-              , generate: runJSON reading SPH.generate
+              { get: runJson reading SPH.profile
+              , post: runJson reading SPH.profileUpdate
+              , generate: runJson reading SPH.generate
               }
       , login:
-              { get: runHTML reading SLGH.login
-              , post: runJSON reading SLGH.logon
+              { get: runHtml reading SLGH.login
+              , post: runJson reading SLGH.logon
               }
       , settings:
-              { get: runJSON reading SSH.settings
+              { get: runJson reading SSH.settings
               , account:
-                      { email: runJSON reading SSH.accountEmail
-                      , password: runJSON reading SSH.accountPassword
-                      , terminate: runJSON reading SSH.accountTerminate
-                      , privacy: runJSON reading SSH.changePrivacy
+                      { email: runJson reading SSH.accountEmail
+                      , password: runJson reading SSH.accountPassword
+                      , terminate: runJson reading SSH.accountTerminate
+                      , privacy: runJson reading SSH.changePrivacy
                       }
               }
       , recover:
-              { get: runHTML reading SRH.recover
-              , post: runJSON reading SRH.recoverAccount
-              , reset: runJSON reading SRH.reset
+              { get: runHtml reading SRH.recover
+              , post: runJson reading SRH.recoverAccount
+              , reset: runJson reading SRH.reset
               }
-      , internalHelp: runJSON reading SIHH.internalHelp
-      , leaderboard: runJSON reading SLBH.leaderboard
-      , logout: runJSON reading SLOH.logout
-      , help: runHTML reading SHH.help
-      , backer: runHTML reading SBH.backer
-      , internalBacker: runJSON reading SIBH.internalBacker
-      , experiments: runJSON reading SEH.experiments
+      , internalHelp: runJson reading SIHH.internalHelp
+      , leaderboard: runJson reading SLBH.leaderboard
+      , logout: runJson reading SLOH.logout
+      , help: runHtml reading SHH.help
+      , backer: runHtml reading SBH.backer
+      , internalBacker: runJson reading SIBH.internalBacker
+      , experiments: runJson reading SEH.experiments
       , developmentFiles: developmentFiles
-      , notFound: runHTML reading SNH.notFound
+      , notFound: runHtml reading SNH.notFound
       }
 
-runHTML ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
-runHTML reading handler input = run `EA.catchError` catch
+runHtml ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
+runHtml reading handler input = run `EA.catchError` catch
       where
       run = R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right $ handler input
       catch = liftEffect <<< map Left <<< SIEH.internalError <<< EA.message
@@ -102,8 +102,8 @@ runHTML reading handler input = run `EA.catchError` catch
                         InternalError { reason } → SIEH.internalError reason
                         ExpiredSession → pure $ SL.logout (routes.login.get {}) ""
 
-runJSON ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
-runJSON reading handler =
+runJson ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
+runJson reading handler =
       R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right <<< handler
       where
       requestError ohno = do

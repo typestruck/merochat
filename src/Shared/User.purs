@@ -59,8 +59,8 @@ type IU =
 data Availability
       = Online
       | LastSeen DateTimeWrapper
-      | Unavailable -- blocked/deleted/set to private
-      | None --work around lack of persistence
+      | Unavailable -- blocked/deleted/private profile
+      | None -- no data or private online status
 
 data Gender
       = Female

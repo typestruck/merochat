@@ -1,4 +1,4 @@
-module Shared.JSON where
+module Shared.Json where
 
 import Prelude
 
@@ -17,5 +17,5 @@ fromJSON content = do
       json ← DAP.jsonParser content
       DT.either (Left <<< show) Right $ DADGR.genericDecodeJson json
 
-toJSON ∷ ∀ v value. Generic value v ⇒ EncodeRep v ⇒ value → String
-toJSON = DAC.stringify <<< DAEGR.genericEncodeJson
+toJson ∷ ∀ v value. Generic value v ⇒ EncodeRep v ⇒ value → String
+toJson = DAC.stringify <<< DAEGR.genericEncodeJson

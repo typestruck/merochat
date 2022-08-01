@@ -31,6 +31,7 @@ import Data.Maybe as DM
 import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
+import Server.Database.LastSeen
 import Debug (spy)
 import Droplet.Driver (Pool)
 import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
@@ -279,6 +280,12 @@ insertReport loggedUserId { userId, comment, reason } = SD.withTransaction $ \co
 
 chatHistoryEntry ∷ Int → Int → _
 chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipient) # from histories # senderRecipientFilter loggedUserId otherId
+
+upsertLastSeen :: forall r. String -> BaseEffect { pool ∷ Pool | r } Unit
+upsertLastSeen jsonInput = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (who integer, date timestamptz)) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { jsonInput }
+
+queryLastSeen :: Array Int -> _
+queryLastSeen ids = SD.query $ select (_who /\ _date) # from last_seen # wher (_who `in_` ids)
 
 _chatStarter ∷ Proxy "chatStarter"
 _chatStarter = Proxy

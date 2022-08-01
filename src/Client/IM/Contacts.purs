@@ -23,6 +23,7 @@ import Data.Maybe as DM
 import Data.Set as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Debug (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -154,7 +155,7 @@ displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\
 
 --new chats from impersonation experiment
 displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → IMModel → MoreMessages
-displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
+displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] })  newContacts)
 
 resumeMissedEvents ∷ MissedEvents → IMModel → MoreMessages
 resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =
