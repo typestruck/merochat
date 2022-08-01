@@ -58,7 +58,7 @@ import Record as R
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
-import Shared.JSON as SJ
+import Shared.Json as SJ
 import Shared.Options.MountPoint (imId, profileID)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
@@ -349,7 +349,7 @@ receiveMessage
       isFocused
       wsPayload
       model@
-            { user: { id: recipientID }
+            { user: { id: recipientId }
             , contacts: currentContacts
             , typingIds
             , hash
@@ -396,18 +396,18 @@ receiveMessage
                               Left userId →
                                     let
                                           message = case experimenting of
-                                                Just (ImpersonationPayload { id: impersonationID }) →
-                                                      DisplayImpersonatedContact impersonationID
+                                                Just (ImpersonationPayload { id: impersonationId }) →
+                                                      DisplayImpersonatedContact impersonationId
                                                             { status: Received
                                                             , sender: userId
-                                                            , recipient: recipientID
+                                                            , recipient: recipientId
                                                             , id: messageId
                                                             , content: messageContent
                                                             , date: messageDate
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents (message) (request.im.singleContact { query: { id: userId } }) ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message $ request.im.singleContact { query: { id: userId } } ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right
@@ -417,7 +417,7 @@ receiveMessage
                                           } | isFocused && isChatting userId updatedModel →
                                     let
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
-                                                { sessionUserID: recipientID
+                                                { sessionUserID: recipientId
                                                 , contacts
                                                 , newStatus: Read
                                                 , webSocket
@@ -430,18 +430,18 @@ receiveMessage
                                           { contacts
                                           } →
                                     let
-                                          impersonationID = case experimenting of
-                                                Just (ImpersonationPayload { id: impersonationID }) → Just impersonationID
+                                          impersonationId = case experimenting of
+                                                Just (ImpersonationPayload { id: impersonationId }) → Just impersonationId
                                                 _ → Nothing
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
-                                                { index: SU.fromJust $ DA.findIndex (findContact userId impersonationID model.experimenting) contacts
-                                                , sessionUserID: recipientID
+                                                { index: SU.fromJust $ DA.findIndex (findContact userId impersonationId model.experimenting) contacts
+                                                , sessionUserID: recipientId
                                                 , newStatus: Delivered
                                                 , contacts
                                                 , webSocket
                                                 }
                                     in
-                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationID ] : messages)
+                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationId ] : messages)
 
       PayloadError payload → case payload.origin of
             OutgoingMessage { id, userId } → F.noMessages $ model
@@ -456,9 +456,9 @@ receiveMessage
       where
       isChatting senderID { contacts, chatting } =
             let
-                  { user: { id: recipientID }, impersonating } = contacts !@ SU.fromJust chatting
+                  { user: { id: recipientId }, impersonating } = contacts !@ SU.fromJust chatting
             in
-                  recipientID == senderID
+                  recipientId == senderID
 
       match userId experimenting = case model.experimenting, experimenting of
             Just (Impersonation (Just _)), Nothing → false
@@ -476,7 +476,7 @@ processIncomingMessage ∷ ClientMessagePayload → IMModel → Either Int IMMod
 processIncomingMessage
       { id, userId, date, content, experimenting }
       model@
-            { user: { id: recipientID }
+            { user: { id: recipientId }
             , suggestions
             , contacts
             , chatting
@@ -492,18 +492,18 @@ processIncomingMessage
                   { history = DA.snoc history $
                           { status: Received
                           , sender: userId
-                          , recipient: recipientID
+                          , recipient: recipientId
                           , id
                           , content
                           , date
                           }
                   }
-      impersonationID = case experimenting of
+      impersonationId = case experimenting of
             Just (ImpersonationPayload { id }) → Just id
             _ → Nothing
 
       findAndUpdateContactList = do
-            index ← DA.findIndex (findContact userId impersonationID model.experimenting) contacts
+            index ← DA.findIndex (findContact userId impersonationId model.experimenting) contacts
             { impersonating } ← contacts !! index
             let updated = DA.modifyAt index (updateHistory { content, id, date }) contacts
             --if impersonating, only the user can start new chats
@@ -512,7 +512,7 @@ processIncomingMessage
                   _, _, _ → updated
 
 findContact ∷ Int → Maybe Int → Maybe ExperimentData → Contact → Boolean
-findContact userId impersonationID experimenting { user: { id }, impersonating } = userId == id && (DM.isJust experimenting || impersonating == impersonationID)
+findContact userId impersonationId experimenting { user: { id }, impersonating } = userId == id && (DM.isJust experimenting || impersonating == impersonationId)
 
 updateTemporaryID ∷ Array Contact → Int → Int → Int → Array Contact
 updateTemporaryID contacts userId previousMessageID messageId = updateContactHistory contacts userId updateTemporary

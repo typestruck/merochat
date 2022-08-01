@@ -93,7 +93,7 @@ compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } conta
       showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
       { name, avatar } = case impersonating of
-            Just impersonationID → SU.fromJust $ HS.lookup impersonationID impersonations
+            Just impersonationId → SU.fromJust $ HS.lookup impersonationId impersonations
             _ → contact.user
 
       isTyping = (contacts !@ SU.fromJust chatting).typing
@@ -132,8 +132,8 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
       profile =
             displayProfile index
                   ( case impersonating of
-                          Just impersonationID →
-                                SU.fromJust $ HS.lookup impersonationID impersonations
+                          Just impersonationId →
+                                SU.fromJust $ HS.lookup impersonationId impersonations
                           _ →
                                 user
                   ) <>

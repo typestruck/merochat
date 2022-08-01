@@ -26,7 +26,7 @@ import Flame.Subscription as FS
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
-import Shared.JSON as SJ
+import Shared.Json as SJ
 import Shared.Options.MountPoint (imId)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 import Shared.Profile.Types (Generate(..), PU, ProfileMessage(..), ProfileModel, PM)

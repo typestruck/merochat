@@ -147,7 +147,7 @@ sendMessage
       CCD.setValue input ""
       CIW.sendPayload webSocket $ OutgoingMessage
             { id: newTemporaryID
-            , userId: recipientID
+            , userId: recipientId
             , content
             , experimenting: case experimenting, recipient.impersonating of
                     Just (Impersonation (Just { id })), _ → Just $ ImpersonationPayload { id: id, sender: true }
@@ -157,7 +157,7 @@ sendMessage
             }
       where
       index = SU.fromJust chatting
-      recipient@{ user: { id: recipientID }, history } = contacts !@ index
+      recipient@{ user: { id: recipientId }, history } = contacts !@ index
       newTemporaryID = temporaryId + 1
 
       updatedContact = recipient
@@ -166,7 +166,7 @@ sendMessage
                     { id: newTemporaryID
                     , status: Sent
                     , sender: senderID
-                    , recipient: recipientID
+                    , recipient: recipientId
                     , date
                     , content: case content of
                             Text message → message

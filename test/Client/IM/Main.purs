@@ -42,7 +42,7 @@ tests = do
                                                             [ { status: Received
                                                               , date
                                                               , id: messageId
-                                                              , recipient: recipientID
+                                                              , recipient: recipientId
                                                               , sender: anotherImUserId
                                                               , content
                                                               }
@@ -133,7 +133,7 @@ tests = do
                                 , id: newMessageID
                                 , content
                                 , sender: contact.user.id
-                                , recipient: recipientID
+                                , recipient: recipientId
                                 , date
                                 }
                         ) $ getHistory contacts
@@ -218,7 +218,7 @@ tests = do
             pure id
 
       content = "test"
-      { id: recipientID } = imUser
+      { id: recipientId } = imUser
       messageId = 1
       newMessageID = 101
       { suggestions: modelSuggestions } = model

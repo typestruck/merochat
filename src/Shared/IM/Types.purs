@@ -74,7 +74,7 @@ type BaseContact fields =
       { -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
         shouldFetchChatHistory ∷ Boolean
       , chatAge ∷ Number
-      , lastMessageDate :: DateTimeWrapper
+      , lastMessageDate ∷ DateTimeWrapper
       , chatStarter ∷ Int
       , impersonating ∷ Maybe Int
       | fields
@@ -318,13 +318,7 @@ data WebSocketPayloadServer
               , statusFor ∷ Array Int
               }
       | Typing { id ∷ Int }
-      | OutgoingMessage
-              ( BasicMessage
-                      ( userId ∷ Int
-                      , content ∷ MessageContent
-                      , turn ∷ Maybe Turn
-                      )
-              )
+      | OutgoingMessage OutgoingRecord
       | ChangeStatus
               { userId ∷ Int
               , status ∷ MessageStatus
@@ -336,6 +330,13 @@ data WebSocketPayloadServer
       | UnavailableFor
               { id ∷ Int
               }
+
+type OutgoingRecord =
+      BasicMessage
+            ( userId ∷ Int
+            , content ∷ MessageContent
+            , turn ∷ Maybe Turn
+            )
 
 data ElementID
       = UserContextMenu
@@ -391,7 +392,7 @@ data WebSocketPayloadClient
               , status ∷ MessageStatus
               , userId ∷ Int
               }
-      | ContactUnavailable { userId ∷ Int, temporaryMessageId :: Maybe Int } --either block or change of privacy settings
+      | ContactUnavailable { userId ∷ Int, temporaryMessageId ∷ Maybe Int } --either block or change of privacy settings
       | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
 newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)

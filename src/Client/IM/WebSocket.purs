@@ -7,7 +7,7 @@ import Client.Common.Location as CCD
 import Data.Boolean (otherwise)
 import Effect (Effect)
 import Environment (development)
-import Shared.JSON as SJ
+import Shared.Json as SJ
 import Shared.Options.WebSocket (port)
 import Web.Socket.Event.EventTypes as WSEE
 import Shared.IM.Types
@@ -29,4 +29,4 @@ createWebSocket = do
             | otherwise = "/ws"
 
 sendPayload ∷ WebSocket → WebSocketPayloadServer → Effect Unit
-sendPayload ws = WSWS.sendString ws <<< SJ.toJSON
+sendPayload ws = WSWS.sendString ws <<< SJ.toJson

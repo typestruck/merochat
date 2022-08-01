@@ -172,7 +172,7 @@ tests = do
             pure id
 
       content = Text "test"
-      { id: recipientID } = imUser
+      { id: recipientId } = imUser
       messageId = 1
       newMessageID = 101
       { suggestions: modelSuggestions } = model

@@ -54,7 +54,7 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
                   justIndex = Just index
                   --refactor: a neater way to do experiment that don't litter the code with case of
                   contact = case impersonating of
-                        Just impersonationID → SU.fromJust $ DH.lookup impersonationID impersonations
+                        Just impersonationId → SU.fromJust $ DH.lookup impersonationId impersonations
                         _ → user
                   numberUnreadMessages = countUnread history
                   lastHistoryEntry = SU.fromJust $ DA.last history

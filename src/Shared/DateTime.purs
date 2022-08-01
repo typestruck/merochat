@@ -102,9 +102,11 @@ dateTimeToNumber ∷ ∀ n. Newtype n DateTime ⇒ n → Number
 dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwrap
 
 formatISODate ∷ ∀ n. Newtype n Date ⇒ n → String
-formatISODate dateWrapper = DA.intercalate "-" $ map (pad <<< show) [ DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date ]
+formatISODate dateWrapper = formatISODate' $ DN.unwrap dateWrapper
+
+formatISODate' ∷ Date  → String
+formatISODate' date = DA.intercalate "-" $ map (pad <<< show) [ DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date ]
       where
-      date = DN.unwrap dateWrapper
       pad value = case DS.length value of
             1 → "0" <> value
             _ → value
@@ -203,7 +205,6 @@ instance DecodeQueryParam DateTimeWrapper where
                   Nothing → Left $ QueryParamNotFound { key, queryObj: query }
                   Just [ value ] → DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) (DDI.instant <<< DTD.Milliseconds =<< DNM.fromString value)
                   _ → errorDecoding query key
-
 
 errorDecoding ∷ ∀ a. Object (Array String) → String → Either DecodeError a
 errorDecoding queryObj key = Left $ QueryDecodeError
