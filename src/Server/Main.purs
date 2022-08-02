@@ -34,15 +34,13 @@ main = do
 
 startWebSocketServer ∷ Configuration → Effect Unit
 startWebSocketServer configuration = do
-      allConnections ← ER.new DH.empty
-      availability ← ER.new DH.empty
+      userAvailability ← ER.new DH.empty
       webSocketServer ← SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
-      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allConnections availability)
-      let reading = { pool, availability}
-      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen allConnections availability *> SWE.persistLastSeen reading)
-      SW.onServerClose webSocketServer (const (EC.log "closing websocket server" *> ET.clearInterval intervalId *> SWE.persistLastSeen reading))
+      SW.onConnection webSocketServer (SWE.handleConnection configuration pool userAvailability)
+      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen userAvailability *> SWE.persistLastSeen { pool, userAvailability})
+      SW.onServerClose webSocketServer (const (ET.clearInterval intervalId))
 
 startHTTPServer ∷ Configuration → Effect Unit
 startHTTPServer configuration@{ port } = do

@@ -32,11 +32,6 @@ foreign import sendMessage_ ∷ EffectFn2 WebSocketConnection WebSocketMessage U
 foreign import close_ ∷ EffectFn3 WebSocketConnection CloseCode CloseReason Unit
 foreign import terminate_ ∷ EffectFn1 WebSocketConnection Unit
 
-type AliveWebSocketConnection =
-      { connection ∷ WebSocketConnection
-      , lastSeen ∷ DateTime
-      }
-
 newtype WebSocketMessage = WebSocketMessage String
 derive newtype instance showWSM ∷ Show WebSocketMessage
 derive instance newtypeWSM ∷ Newtype WebSocketMessage _
