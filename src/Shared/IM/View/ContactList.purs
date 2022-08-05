@@ -1,5 +1,6 @@
 module Shared.IM.View.ContactList where
 
+import Debug
 import Prelude
 import Shared.Experiments.Types
 import Shared.IM.Types
@@ -24,13 +25,12 @@ import Shared.Experiments.Impersonation as SEI
 import Shared.IM.Svg (backArrow, nextArrow)
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
-import Debug
 import Shared.Unsafe as SU
-import Shared.User (ProfileVisibility(..))
+import Shared.User (Availability(..), ProfileVisibility(..))
 
 -- | Users that have exchanged messages with the current logged in user
 contactList ∷ Boolean → IMModel → Html IMMessage
-contactList isClientRender { failedRequests, chatting, toggleContextMenu, experimenting, contacts, user: { id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps } } =
+contactList isClientRender { failedRequests, chatting, toggleContextMenu, experimenting, contacts, user: { id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps,onlineStatus } } =
       case profileVisibility of
             Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]
             _ →
@@ -65,8 +65,9 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
                         [ HA.class' { contact: true, "chatting-contact": chattingId == Just user.id && impersonatingId == impersonating }
                         , HA.onClick $ ResumeChat tupleId
                         ]
-                        [ HE.div (HA.class' "avatar-contact-list-div")
+                        [ HE.div [HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
                                 [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass justIndex, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
+                                , HE.div' [ HA.class' {"online-indicator": true, hidden: contact.availability /= Online } ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
                                 [ HE.span (HA.class' "contact-name") contact.name
