@@ -61,7 +61,7 @@ template { contacts, suggestions, user } = do
                     , erroredFields: []
                     , fortune: Nothing
                     , toggleContextMenu: HideContextMenu
-                    , toggleModal: HideUserMenuModal
+                    , toggleModal: Tutorial Welcome
                     , toggleChatModal: HideChatModal
                     , experimenting: Nothing
                     , blockedUsers: []

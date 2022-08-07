@@ -1,6 +1,5 @@
 module Shared.Im.View.ContactList where
 
-import Debug
 import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
@@ -18,7 +17,6 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI

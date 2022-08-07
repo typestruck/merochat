@@ -199,6 +199,12 @@ body {
     margin: 0;
 }
 
+.step-button {
+    background: rgb(238, 238, 238);
+    color: #469bc5;
+    font-weight: bold;
+}
+
 .profile-asl div {
     margin-right: 10px;
 }
@@ -422,7 +428,7 @@ blockquote {
 }
 
 .notification-header {
-    margin:0 5px;
+    margin: 0 5px;
 }
 
 #full-profile-context-menu,
@@ -1153,6 +1159,12 @@ input:not(type=button):focus {
     background: #1b3a28;
 }
 
+.step-button {
+    background: rgb(238, 238, 238);
+    color: #4783ff;
+    font-weight: bold;
+}
+
 select {
     padding: 5px 10px;
     background: #262626;
@@ -1231,6 +1243,12 @@ select {
 
 .confirmation.report {
     height: auto;
+}
+
+.tutorial {
+    background: #469bc5;
+    border-top-left-radius: 13px;
+    border-bottom-right-radius: 13px;
 }
 
 .buttons {
