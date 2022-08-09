@@ -276,6 +276,7 @@ data IMMessage
       | DropFile Event
       | ToggleMessageEnter
       | FocusInput ElementID
+      | QuoteMessage String Event
       | EnterBeforeSendMessage Event
       | ForceBeforeSendMessage
       | ResizeChatInput Event

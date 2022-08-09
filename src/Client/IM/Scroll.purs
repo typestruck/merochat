@@ -12,7 +12,7 @@ import Effect.Class (liftEffect)
 
 scrollLastMessage ∷ Effect Unit
 scrollLastMessage = do
-      node ← CCD.unsafeGetElementByID MessageHistory
+      node ← CCD.unsafeGetElementById MessageHistory
       CCD.scrollDown node
 
 scrollLastMessage' ∷ Aff (Maybe IMMessage)

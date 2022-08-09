@@ -532,7 +532,8 @@ blockquote {
 .message {
     flex-direction: column;
     display: flex;
-    margin: 2px;
+    margin: 2px 0px;
+    min-width: 100%;
 }
 
 .message.incoming-message,
@@ -1790,6 +1791,7 @@ select {
     height: 15px;
     margin-left: auto;
     margin-right: 20px;
+    margin-bottom: 5px;
 }
 
 .suggestion.old~.message-history {

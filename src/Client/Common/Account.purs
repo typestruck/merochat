@@ -51,7 +51,7 @@ validateEmail = do
       case maybeEmailDiv of
             Nothing → pure Nothing
             Just emailDiv → do
-                  emailElement ← CCD.unsafeGetElementByID EmailDiv
+                  emailElement ← CCD.unsafeGetElementById EmailDiv
                   email ← CCD.value emailElement
                   WDE.setClassName "input" emailDiv
 
@@ -67,7 +67,7 @@ validatePassword = do
       case maybePasswordDiv of
             Nothing → pure Nothing
             Just passwordDiv → do
-                  passwordElement ← CCD.unsafeGetElementByID PasswordDiv
+                  passwordElement ← CCD.unsafeGetElementById PasswordDiv
                   password ← CCD.value passwordElement
                   WDE.setClassName "input" passwordDiv
 
@@ -83,7 +83,7 @@ validateConfirmPassword = do
       case maybeConfirmPasswordDiv of
             Nothing → pure unit
             Just confirmPasswordDiv → do
-                  confirmPasswordElement ← CCD.unsafeGetElementByID ConfirmPasswordInput
+                  confirmPasswordElement ← CCD.unsafeGetElementById ConfirmPasswordInput
                   password ← CCD.value confirmPasswordElement
                   WDE.setClassName "input" confirmPasswordDiv
 

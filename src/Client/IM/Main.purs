@@ -111,7 +111,7 @@ main = do
       --for drag and drop
       CCF.setUpBase64Reader fileReader (SetSelectedImage <<< Just) imId
       --image upload
-      input ← CCD.unsafeGetElementByID ImageFileInput
+      input ← CCD.unsafeGetElementById ImageFileInput
       CCF.setUpFileChange (SetSelectedImage <<< Just) input imId
       --notification permission (desktop)
       unless smallScreen checkNotifications
@@ -134,7 +134,8 @@ update { webSocketRef, fileReader } model =
             SetSmallScreen → setSmallScreen model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
-            FocusInput elementID → focusInput elementID model
+            FocusInput elementId → focusInput elementId model
+            QuoteMessage message event → CIC.quoteMessage message event model
             CheckTyping text → CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
             NoTyping id → F.noMessages $ CIC.updateTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }

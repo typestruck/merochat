@@ -129,7 +129,7 @@ checkFetchContacts model@{ contacts, freeToFetchContactList }
 
               where
               getScrollBottom = liftEffect do
-                    element ← CCD.unsafeGetElementByID ContactList
+                    element ← CCD.unsafeGetElementById ContactList
                     top ← WDE.scrollTop element
                     height ← WDE.scrollHeight element
                     offset ← WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element

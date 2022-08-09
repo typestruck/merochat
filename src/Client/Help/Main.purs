@@ -19,12 +19,12 @@ import Shared.IM.Types
 main ∷ Effect Unit
 main = do
       hash ← CCL.hash
-      faqLink ← CCD.unsafeGetElementByID FaqLink
-      termsLink ← CCD.unsafeGetElementByID TermsLink
-      privacyLink ← CCD.unsafeGetElementByID PrivacyLink
-      faq ← CCD.unsafeGetElementByID Faq
-      terms ← CCD.unsafeGetElementByID TermsSection
-      privacy ← CCD.unsafeGetElementByID PrivacySection
+      faqLink ← CCD.unsafeGetElementById FaqLink
+      termsLink ← CCD.unsafeGetElementById TermsLink
+      privacyLink ← CCD.unsafeGetElementById PrivacyLink
+      faq ← CCD.unsafeGetElementById Faq
+      terms ← CCD.unsafeGetElementById TermsSection
+      privacy ← CCD.unsafeGetElementById PrivacySection
 
       let
             unselectAll = do

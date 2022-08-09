@@ -1,6 +1,9 @@
 module Shared.IM.View.ChatHistory where
 
 import Prelude
+import Shared.Experiments.Types
+import Shared.IM.Types
+import Shared.User
 
 import Data.Array ((!!), (:))
 import Data.Array as DA
@@ -9,10 +12,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Flame (Html)
 import Flame.Html.Attribute as HA
-import Shared.User
 import Flame.Html.Element as HE
-import Shared.Experiments.Types
-import Shared.IM.Types
 import Shared.DateTime as SD
 import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
@@ -59,13 +59,14 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, exper
                   noReadReceipts = not readReceipts || not chatPartner.readReceipts
             in
                   HE.div
-                        ( HA.class'
+                        [ HA.class'
                                 { message: true
                                 , "outgoing-message": sender == loggedUserId
                                 , "incoming-message": incomingMessage
                                 , "same-bubble-message": previousSender == Just sender -- only the first message in a row has a bubble handle
-                                }
-                        )
+                                },
+                        HA.onDblclick' (QuoteMessage content)
+                        ]
                         [ HE.div
                                 [ HA.class' "message-content", HA.id $ "m" <> show id ] -- id is used to scroll into view
                                 [ HE.div' [ HA.innerHtml $ SM.parse content ]

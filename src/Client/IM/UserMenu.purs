@@ -68,7 +68,7 @@ setModalContents ∷ Maybe String → ElementID → String → IMModel → NextM
 setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
       where
       loadModal root html file = liftEffect do
-            element ← CCD.unsafeGetElementByID root
+            element ← CCD.unsafeGetElementById root
             CCD.setInnerHTML element html
             --scripts don't load when inserted via innerHTML
             case file of

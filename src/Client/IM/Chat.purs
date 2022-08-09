@@ -22,6 +22,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
+import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Symbol as TDS
@@ -68,8 +69,8 @@ enterBeforeSendMessage event model@{ messageEnter } =
             pure Nothing
 
 getMessage ∷ IMModel → Aff (Maybe IMMessage)
-getMessage model@{ selectedImage, imageCaption } = do
-      input ← liftEffect $ chatInput model
+getMessage model@{ selectedImage, imageCaption, chatting } = do
+      input ← liftEffect $ chatInput chatting
       value ← liftEffect $ CCD.value input
       pure <<< Just <<< BeforeSendMessage $ DM.maybe (Text value) toImage selectedImage
       where
@@ -84,8 +85,8 @@ forceBeforeSendMessage model =
             ]
 
 resizeInputEffect ∷ IMModel → Aff (Maybe IMMessage)
-resizeInputEffect model = liftEffect $ do
-      input ← chatInput model
+resizeInputEffect model@{ chatting } = liftEffect $ do
+      input ← chatInput chatting
       resizeTextarea input
       pure Nothing
 
@@ -142,7 +143,7 @@ sendMessage
             , experimenting
             } = CIF.nothingNext updatedModel $ liftEffect do
       CIS.scrollLastMessage
-      input ← chatInput model
+      input ← chatInput chatting
       WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
       CCD.setValue input ""
       CIW.sendPayload webSocket $ OutgoingMessage
@@ -228,14 +229,14 @@ makeTurn { chatStarter, chatAge, history } sender =
       getDate = DN.unwrap <<< _.date
 
 applyMarkup ∷ Markup → IMModel → MoreMessages
-applyMarkup markup model =
+applyMarkup markup model@{ chatting } =
       model :>
-            [ liftEffect (Just <$> apply markup)
+            [ liftEffect (Just <$> apply)
             , resizeInputEffect model
             ]
       where
-      apply markup = do
-            input ← chatInput model
+      apply = do
+            input ← chatInput chatting
             value ← CCD.value input
             let
                   textarea = SU.fromJust $ WHHTA.fromElement input
@@ -243,9 +244,9 @@ applyMarkup markup model =
                         Bold → Tuple "**" "**"
                         Italic → Tuple "*" "*"
                         Strike → Tuple "~" "~"
-                        Heading → Tuple "\n## " ""
-                        OrderedList → Tuple "\n1. " ""
-                        UnorderedList → Tuple "\n- " ""
+                        Heading → Tuple (plusNewLine value "## ") ""
+                        OrderedList → Tuple (plusNewLine value "1. ") ""
+                        UnorderedList → Tuple (plusNewLine value "- ") ""
             start ← WHHTA.selectionStart textarea
             end ← WHHTA.selectionEnd textarea
             let
@@ -256,21 +257,26 @@ applyMarkup markup model =
                   newValue = beforeSelection <> before <> selected <> after <> afterSelection
             pure $ SetMessageContent (Just $ end + beforeSize) newValue
 
-chatInput ∷ IMModel → Effect Element
-chatInput model@{ chatting }
-      | DM.isNothing chatting = CCD.unsafeGetElementByID ChatInputSuggestion -- suggestion card input cannot be cached
-      | otherwise = CCD.unsafeGetElementByID ChatInput
+      plusNewLine value t
+            | DS.null value = t
+            | otherwise = "\n" <> t
+
+chatInput ∷ Maybe Int → Effect Element
+chatInput chatting
+      | DM.isNothing chatting = CCD.unsafeGetElementById ChatInputSuggestion -- suggestion card input cannot be cached
+      | otherwise = CCD.unsafeGetElementById ChatInput
 
 setMessage ∷ Maybe Int → String → IMModel → NextMessage
-setMessage cursor markdown model =
+setMessage cursor markdown model@{ chatting } =
       CIF.nothingNext model <<< liftEffect $
             case cursor of
                   Just position → do
-                        input ← chatInput model
+                        input ← chatInput chatting
                         let textarea = SU.fromJust $ WHHTA.fromElement input
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setValue markdown textarea
                         WHHTA.setSelectionEnd position textarea
+                        resizeTextarea input
                   Nothing → pure unit
 
 catchFile ∷ FileReader → Event → IMModel → NoMessages
@@ -293,7 +299,7 @@ setSelectedImage maybeBase64 model@{ smallScreen } =
       isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
 toggleModal ∷ ShowChatModal → IMModel → MoreMessages
-toggleModal toggle model =
+toggleModal toggle model@{ chatting } =
       model
             { toggleChatModal = toggle
             , link = Nothing
@@ -306,24 +312,24 @@ toggleModal toggle model =
             _ → []
       where
       pickImage = liftEffect do
-            fileInput ← CCD.unsafeGetElementByID ImageFileInput
+            fileInput ← CCD.unsafeGetElementById ImageFileInput
             CCF.triggerFileSelect fileInput
             pure Nothing
 
       setPreview = liftEffect do
-            preview ← CCD.unsafeGetElementByID ChatInputPreview
-            input ← chatInput model
+            preview ← CCD.unsafeGetElementById ChatInputPreview
+            input ← chatInput chatting
             message ← CCD.value input
             CCD.setInnerHTML preview $ SM.parse message
             pure Nothing
 
 setEmoji ∷ Event → IMModel → NextMessage
-setEmoji event model =
+setEmoji event model@{ chatting } =
       model :>
             if CCD.tagNameFromTarget event == "SPAN" then
                   [ liftEffect do
                           emoji ← CCD.innerTextFromTarget event
-                          input ← chatInput model
+                          input ← chatInput chatting
                           setAtCursor input emoji
                   , pure <<< Just $ ToggleChatModal HideChatModal
                   ]
@@ -331,7 +337,7 @@ setEmoji event model =
                   []
 
 insertLink ∷ IMModel → MoreMessages
-insertLink model@{ linkText, link } =
+insertLink model@{ linkText, link, chatting } =
       case link of
             Nothing → F.noMessages $ model
                   { erroredFields = [ TDS.reflectSymbol (Proxy ∷ _ "link") ]
@@ -349,7 +355,7 @@ insertLink model@{ linkText, link } =
       where
       markdown url = "[" <> DM.fromMaybe url linkText <> "](" <> url <> ")"
       insert text = liftEffect do
-            input ← chatInput model
+            input ← chatInput chatting
             setAtCursor input $ markdown text
 
 setAtCursor ∷ Element → String → Effect (Maybe IMMessage)
@@ -384,6 +390,25 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       where
       minimumLength = 7
       (Milliseconds milliseconds) = DT.diff now lt
+
+quoteMessage ∷ String → Event → IMModel → NextMessage
+quoteMessage contents event model@{ chatting } = model :>
+      [ liftEffect do
+              classes ← WDE.className <<< SU.fromJust $ do
+                    target ← WEE.target event
+                    WDE.fromEventTarget target
+              if DS.contains (Pattern "message") classes then do
+                    input ← chatInput chatting
+                    let markup = sanitized <> "\n\n"
+                    value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
+                    setAtCursor input $ if DS.null value then markup else "\n" <> markup
+              else
+                    pure Nothing
+      ]
+      where
+      sanitized
+            | DS.take 2 contents == "![" = "> *image file*"
+            | otherwise = "> " <> contents
 
 updateTyping ∷ Int → Boolean → IMModel → IMModel
 updateTyping userId status model@{ contacts } = model { contacts = upd <$> contacts }

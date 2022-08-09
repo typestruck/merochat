@@ -37,7 +37,7 @@ import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 
 getFileInput ∷ Effect Element
-getFileInput = CCD.unsafeGetElementByID AvatarFileInput
+getFileInput = CCD.unsafeGetElementById AvatarFileInput
 
 update ∷ AffUpdate ProfileModel ProfileMessage
 update rc@{ model, message, display } =

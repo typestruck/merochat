@@ -73,8 +73,8 @@ addEventListener element eventType handler = do
       WET.addEventListener eventType listener false $ WDE.toEventTarget element
 
 -- | Selects a single element.
-unsafeGetElementByID ∷ ElementID → Effect Element
-unsafeGetElementByID elementID = do
+unsafeGetElementById ∷ ElementID → Effect Element
+unsafeGetElementById elementID = do
       maybeElement ← getElementByID elementID
       DM.maybe (EE.throwException $ EE.error $ "No element with id:" <> show elementID) pure maybeElement
 
