@@ -72,7 +72,6 @@ tests = do
                   TUA.equal [] suggestions
 
             TU.test "receiveMessage marks deleted users as unavailable" do
-                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         { contacts } =
                               DT.fst <<< CIM.receiveMessage webSocket true

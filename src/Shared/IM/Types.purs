@@ -184,7 +184,7 @@ data ShowUserMenuModal
       | ShowReport Int
       | Tutorial Step
 
-data Step = Welcome | ChatSuggestions
+data Step = Welcome | ChatSuggestions | Chatting | BackSuggestions | ChatList | OptionsMenu
 
 type Stats =
       { characters ∷ Number
@@ -194,9 +194,8 @@ type Stats =
 type Turn =
       { senderStats ∷ Stats
       , recipientStats ∷ Stats
-      , chatAge ∷ Number
-      , -- Days,
-        replyDelay ∷ Number --Seconds
+      , chatAge ∷ Number -- Days
+      , replyDelay ∷ Number --Seconds
       }
 
 data ProfilePresentation
