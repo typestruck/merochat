@@ -64,7 +64,7 @@ toggleModal mToggle model@{ modalsLoaded } =
                         [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents file root) (f {})
                         ]
 
-setModalContents ∷ Maybe String → ElementID → String → IMModel → NextMessage
+setModalContents ∷ Maybe String → ElementId → String → IMModel → NextMessage
 setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
       where
       loadModal root html file = liftEffect do

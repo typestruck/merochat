@@ -255,7 +255,7 @@ data IMMessage
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
       | Logout
       | SetContextMenuToggle ShowContextMenu
-      | SetModalContents (Maybe String) ElementID String
+      | SetModalContents (Maybe String) ElementId String
 
       --contact
       | ResumeChat (Tuple Int (Maybe Int))
@@ -276,8 +276,9 @@ data IMMessage
       | ToggleContactProfile
       | DropFile Event
       | ToggleMessageEnter
-      | FocusInput ElementID
+      | FocusInput ElementId
       | QuoteMessage String Event
+      | FocusCurrentSuggestion
       | EnterBeforeSendMessage Event
       | ForceBeforeSendMessage
       | ResizeChatInput Event
@@ -340,7 +341,7 @@ type OutgoingRecord =
             , turn ∷ Maybe Turn
             )
 
-data ElementID
+data ElementId
       = UserContextMenu
       | SuggestionContextMenu
       | CompactProfileContextMenu
@@ -548,7 +549,7 @@ instance EncodeJson ReportReason where
 instance EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
 
-instance Hashable ElementID where
+instance Hashable ElementId where
       hash = HS.hash <<< show
 
 instance Show MessageStatus where
@@ -589,7 +590,7 @@ instance Show WebSocketPayloadClient where
 instance Show WebSocketPayloadServer where
       show = DGRS.genericShow
 
-instance Show ElementID where
+instance Show ElementId where
       show = case _ of
             UserContextMenu → "user-context-menu"
             SuggestionContextMenu → "suggestion-context-menu"
@@ -643,7 +644,7 @@ instance WriteForeign DateWrapper where
 
 derive instance Newtype DateWrapper _
 
-derive instance Eq ElementID
+derive instance Eq ElementId
 derive instance Eq ShowContextMenu
 
 derive instance Eq ProfilePresentation

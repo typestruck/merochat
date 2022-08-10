@@ -7,7 +7,7 @@ import Shared.IM.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
-import Client.IM.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Scroll as CIS
 import Client.IM.WebSocket as CIW
@@ -53,6 +53,7 @@ import Web.Event.Event as WEE
 import Web.File.FileReader (FileReader)
 import Web.HTML.Event.DataTransfer as WHEDT
 import Web.HTML.Event.DragEvent as WHED
+import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLElement as WHHEL
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
@@ -409,6 +410,15 @@ quoteMessage contents event model@{ chatting } = model :>
       sanitized
             | DS.take 2 contents == "![" = "> *image file*"
             | otherwise = "> " <> contents
+
+focusCurrentSuggestion ∷ IMModel → NoMessages
+focusCurrentSuggestion model@{ chatting } = model :>
+      [ do
+              liftEffect do
+                    input ← chatInput chatting
+                    WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
+              pure Nothing
+      ]
 
 updateTyping ∷ Int → Boolean → IMModel → IMModel
 updateTyping userId status model@{ contacts } = model { contacts = upd <$> contacts }

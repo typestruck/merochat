@@ -224,6 +224,7 @@ body {
     min-height: 54px;
     align-self: center;
     display: flex;
+    cursor: pointer;
 }
 
 .avatar-contact-list,

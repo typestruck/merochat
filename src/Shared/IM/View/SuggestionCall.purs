@@ -2,6 +2,7 @@ module Shared.IM.View.SuggestionCall where
 
 import Prelude
 import Shared.ContentType
+import Shared.IM.Types
 
 import Data.Array ((!!))
 import Data.Array as DA
@@ -10,9 +11,8 @@ import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.IM.Svg as SIS
-import Shared.IM.Types
 import Shared.Avatar as SA
+import Shared.IM.Svg as SIS
 
 suggestionCall ∷ IMModel → Html IMMessage
 suggestionCall { contacts, suggesting, chatting, suggestions }
@@ -26,23 +26,23 @@ suggestionCall { contacts, suggesting, chatting, suggestions }
       | otherwise =
               case suggs of
                     Just { avatar, name } | not $ DA.null contacts → HE.div (HA.class' "side-suggestions-container")
-                          [ HE.div [ HA.class' "side-suggestion", HA.title "Your chat suggestions" ]
-                                  [ HE.div (HA.class' "avatar-contact-list-div faded")
+                          [ HE.div [ HA.class' "side-suggestion" ]
+                                  [ HE.div [ HA.class' "avatar-contact-list-div faded", HA.onClick $ SpecialRequest PreviousSuggestion, HA.title "Move to this chat suggestions" ]
                                           [ let
                                                   previousIndex = map (_ - 1) suggesting
                                             in
                                                   HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass previousIndex, HA.src $ SA.avatarForRecipient previousIndex $ getAvatar previousIndex ]
                                           ]
-                                  , HE.div (HA.class' "avatar-contact-list-div margin-less-z")
+                                  , HE.div [ HA.class' "avatar-contact-list-div margin-less-z", HA.onClick FocusCurrentSuggestion, HA.title "Move to this chat suggestions" ]
                                           [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass suggesting, HA.src $ SA.avatarForRecipient suggesting avatar ]
                                           ]
-                                  , HE.div (HA.class' "avatar-contact-list-div margin-less faded")
+                                  , HE.div [ HA.class' "avatar-contact-list-div margin-less faded", HA.onClick $ SpecialRequest NextSuggestion, HA.title "Move to this chat suggestions" ]
                                           [ let
                                                   nextIndex = map (_ + 1) suggesting
                                             in
                                                   HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass nextIndex, HA.src $ SA.avatarForRecipient nextIndex $ getAvatar nextIndex ]
                                           ]
-                                  , HE.div [ HA.class' "contact-profile" ]
+                                  , HE.div [ HA.class' "contact-profile", HA.title "Your chat suggestions" ]
                                           [ HE.span (HA.class' "contact-name") name
                                           ]
                                   ]

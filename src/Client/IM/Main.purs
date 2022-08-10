@@ -134,6 +134,7 @@ update { webSocketRef, fileReader } model =
             SetSmallScreen → setSmallScreen model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
+            FocusCurrentSuggestion -> CIC.focusCurrentSuggestion model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message event → CIC.quoteMessage message event model
             CheckTyping text → CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
@@ -295,23 +296,23 @@ toggleUserContextMenu event model@{ toggleContextMenu }
                                         WDE.fromEventTarget target
                             id ← WDE.id element
                             parent ← WDN.parentElement $ WDE.toNode element
-                            parentID ← case parent of
+                            parentId ← case parent of
                                   Just e → WDE.id e
                                   Nothing → pure ""
-                            pure <<< Just <<< SetContextMenuToggle $ toggle id parentID
+                            pure <<< Just <<< SetContextMenuToggle $ toggle id parentId
                     ]
               where
-              toggle elementID parentID
-                    | elementID == show UserContextMenu || parentID == show UserContextMenu = ShowUserContextMenu
-                    | elementID == show SuggestionContextMenu || parentID == show SuggestionContextMenu = ShowSuggestionContextMenu
-                    | elementID == show CompactProfileContextMenu || parentID == show CompactProfileContextMenu = ShowCompactProfileContextMenu
-                    | elementID == show FullProfileContextMenu || parentID == show FullProfileContextMenu = ShowFullProfileContextMenu
+              toggle elementId parentId
+                    | elementId == show UserContextMenu || parentId == show UserContextMenu = ShowUserContextMenu
+                    | elementId == show SuggestionContextMenu || parentId == show SuggestionContextMenu = ShowSuggestionContextMenu
+                    | elementId == show CompactProfileContextMenu || parentId == show CompactProfileContextMenu = ShowCompactProfileContextMenu
+                    | elementId == show FullProfileContextMenu || parentId == show FullProfileContextMenu = ShowFullProfileContextMenu
                     | otherwise = HideContextMenu
 
-focusInput ∷ ElementID → IMModel → NextMessage
-focusInput elementID model = model :>
+focusInput ∷ ElementId → IMModel → NextMessage
+focusInput elementId model = model :>
       [ liftEffect do
-              element ← CCD.getElementByID elementID
+              element ← CCD.getElementByID elementId
               WHHE.focus $ SU.fromJust do
                     e ← element
                     WHHE.fromElement e

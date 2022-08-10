@@ -120,5 +120,5 @@ historyMessage =
 webSocket ∷ WebSocket
 webSocket = UC.unsafeCoerce 2
 
-elements ∷ HashMap ElementID Element
+elements ∷ HashMap ElementId Element
 elements = HS.empty

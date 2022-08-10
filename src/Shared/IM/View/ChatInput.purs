@@ -73,9 +73,9 @@ imageModal { selectedImage, erroredFields } =
       where
       imageValidationFailed = DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) erroredFields
 
-chatBarInput ∷ ElementID → IMModel → Html IMMessage
+chatBarInput ∷ ElementId → IMModel → Html IMMessage
 chatBarInput
-      elementID
+      elementId
       model@
             { chatting
             , contacts
@@ -110,11 +110,11 @@ chatBarInput
               , HE.div [ HA.class' { "chat-input-area": true, side: not messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
-                              (if elementID == ChatInput then [HA.onKeydown (CheckTyping <<< DT.snd)] else [])
+                              (if elementId == ChatInput then [HA.onKeydown (CheckTyping <<< DT.snd)] else [])
                               <>
                               [ HA.rows 1
                               , HA.class' "chat-input"
-                              , HA.id $ show elementID
+                              , HA.id $ show elementId
                               , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection..."
                               , HA.disabled $ not isWebSocketConnected
                               , SK.keyDownOn "Enter" EnterBeforeSendMessage
