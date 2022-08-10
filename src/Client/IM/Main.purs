@@ -157,8 +157,8 @@ update { webSocketRef, fileReader } model =
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model
             ToggleContactProfile → CIS.toggleContactProfile model
-            SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
-            SpecialRequest NextSuggestion → CIS.nextSuggestion model
+            SpecialRequest PreviousSuggestion → CIS.previousSuggestion $ spy "previous" model
+            SpecialRequest NextSuggestion → CIS.nextSuggestion $ spy "next" model
             SpecialRequest (BlockUser id) → CIS.blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
             --user menu
@@ -586,9 +586,9 @@ findLastMessages contacts sessionUserID =
       byID { id } { id: anotherID } = compare id anotherID
 
 setName ∷ String → IMModel → NoMessages
-setName name model@{ user } =
+setName name model =
       F.noMessages $ model
-            { user = user
+            { user
                     { name = name
                     }
             }

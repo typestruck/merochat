@@ -208,8 +208,9 @@ type Turn =
 
 data ProfilePresentation
       = FullContactProfile
-      | CurrentSuggestion
-      | OtherSuggestions
+      | CenterCard
+      | PreviousCard
+      | NextCard
 
 data MessageContent
       = Image String String

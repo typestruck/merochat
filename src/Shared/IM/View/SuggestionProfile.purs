@@ -115,11 +115,11 @@ fullProfile ∷ ProfilePresentation → Maybe Int → IMModel → Maybe Int → 
 fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } impersonating user@{ id } =
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
-            CurrentSuggestion → HE.div [ HA.class' "suggestion-center" ] -- only center card suggestion can be chatted to
+            CenterCard → HE.div [ HA.class' "suggestion-center" ] -- only center card suggestion can be chatted to
                   [ HE.div [ HA.class' "suggestion new" ] $ loading : currentSuggestionMenu : profile
                   , HE.div [ HA.class' "suggestion-input" ] $ SIVC.chatBarInput ChatInputSuggestion model
                   ]
-            OtherSuggestions → HE.div [ HA.class' "suggestion new" ] profile
+            card → HE.div [ HA.class' "suggestion new", HA.onClick <<< SpecialRequest $ if card == PreviousCard then PreviousSuggestion else NextSuggestion ] profile
       where
       fullProfileMenu = HE.div (HA.class' "profile-top-menu")
             [ SIA.arrow [ HA.class' "svg-back-profile", HA.onClick ToggleContactProfile ]
@@ -221,23 +221,24 @@ suggestionCards model@{ user, suggestions, experimenting } index =
       where
       cardTrio =
             let
-                  dummyCard = card (-1) dummySuggestion
+                  dummyCard i = card i dummySuggestion
                   available = DA.catMaybes <<< map (\i → map (card i) $ suggestions !! i) $ (index - 1) .. (index + 1)
             in
                   case DA.length available of
-                        1 → dummyCard : DA.snoc available dummyCard
-                        2 | index == 0 → dummyCard : available
-                        2 | index > 0 → DA.snoc available dummyCard
+                        1 → dummyCard (index - 1) : DA.snoc available (dummyCard (index + 1))
+                        2 | index == 0 → dummyCard (index - 1) : available
+                        2 | index > 0 → DA.snoc available $ dummyCard (index + 1)
                         _ → available
 
       card suggesting profile =
             let
-                  isCenter = index == suggesting
+                  isCenter = suggesting == index
+                  isPrevious = suggesting < index
                   attrs
                         | isCenter = [ HA.class' "card card-center" ]
                         | otherwise = [ HA.class' "card card-sides faded" ]
             in
-                  HE.div attrs $ fullProfile (if isCenter then CurrentSuggestion else OtherSuggestions) (Just suggesting) model Nothing profile
+                  HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) (Just suggesting) model Nothing profile
 
       welcomeImpersonation name =
             let

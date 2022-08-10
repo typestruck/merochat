@@ -35,9 +35,9 @@ import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
 resumeChat ∷ Int → Maybe Int → IMModel → MoreMessages
-resumeChat searchID impersonating model@{ contacts, chatting, smallScreen } =
+resumeChat searchId impersonating model@{ contacts, chatting, smallScreen } =
       let
-            index = DA.findIndex (\cnt → cnt.user.id == searchID && cnt.impersonating == impersonating) contacts
+            index = DA.findIndex (\cnt → cnt.user.id == searchId && cnt.impersonating == impersonating) contacts
             cnt@{ shouldFetchChatHistory, user: { id } } = SIC.chattingContact contacts index
       in
             if index == chatting then
