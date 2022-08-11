@@ -8,25 +8,28 @@ import Shared.IM.Types
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.IM.Flame (MoreMessages)
+import Client.IM.Flame (MoreMessages, NoMessages)
 import Client.IM.Flame as CIF
 import Client.IM.Notification as CIU
 import Client.IM.Notification as CIUN
 import Client.IM.Scroll as CIS
+import Client.IM.WebSocket (WebSocket)
 import Client.IM.WebSocket as CIW
-import Data.Array ((!!), (..))
+import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
+import Data.Traversable as DTV
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
+import Flame.Html.Attribute (d)
 import Shared.IM.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -70,61 +73,93 @@ markRead webSocket =
                   { newStatus: Read
                   , index
                   , webSocket
-                  , sessionUserID: userId
+                  , sessionUserId: userId
                   , contacts
                   }
             model → F.noMessages model
 
 updateStatus ∷
       IMModel →
-      { sessionUserID ∷ Int
+      { sessionUserId ∷ Int
       , webSocket ∷ WebSocket
       , contacts ∷ Array Contact
       , index ∷ Int
       , newStatus ∷ MessageStatus
       } →
       MoreMessages
-updateStatus model@{ experimenting } { webSocket, index, sessionUserID, contacts, newStatus } =
+updateStatus model@{ experimenting } { webSocket, index, sessionUserId, contacts, newStatus } =
       let
-            contactRead@{ history, user: { id: contactUserID } } = contacts !@ index
-            messagesRead = DA.mapMaybe toChange history
+            contactRead@{ history, user: { id: contactUserId } } = contacts !@ index
+            messagesToUpdate = DA.mapMaybe toChange history
       in
-            if DA.null messagesRead then
+            if DA.null messagesToUpdate then
                   F.noMessages model
             else
                   let
                         updatedModel@{ contacts } = updateContacts contactRead
                   in
                         CIF.nothingNext updatedModel $ liftEffect do
-                              changeStatus contactUserID messagesRead
+                              sendStatusChange contactUserId messagesToUpdate
                               alertUnread contacts
 
       where
       toChange { recipient, id, status }
-            | status >= Sent && status < newStatus && recipient == sessionUserID = Just id
+            | status >= Sent && status < newStatus && recipient == sessionUserId = Just id
             | otherwise = Nothing
 
-      read historyEntry@({ recipient, id, status })
-            | status >= Sent && status < newStatus && recipient == sessionUserID = historyEntry { status = newStatus }
+      changeStatus historyEntry@{ recipient, status }
+            | status >= Sent && status < newStatus && recipient == sessionUserId = historyEntry { status = newStatus }
             | otherwise = historyEntry
 
       updateContacts contactRead@{ history } = model
-            { contacts = SU.fromJust $ DA.updateAt index (contactRead { history = map read history, typing = false }) contacts
+            { contacts = SU.fromJust $ DA.updateAt index (contactRead { history = map changeStatus history, typing = false }) contacts
             }
 
-      changeStatus contactUserID messages = CIW.sendPayload webSocket $ ChangeStatus
-            { userId: contactUserID
-            , status: newStatus
-            , ids: messages
+      sendStatusChange contactUserId messages = CIW.sendPayload webSocket $ ChangeStatus
+            { status: newStatus
+            , ids: [ Tuple contactUserId messages ]
             , persisting: case experimenting of
                     Just (Impersonation (Just _)) → false
                     _ → true
             }
 
-      alertUnread contacts = CIUN.updateTabCount sessionUserID contacts
+      alertUnread = CIUN.updateTabCount sessionUserId
+
+--we need to update message status from sent to unread in the cases of
+-- opening ws connection (messages might have been sent while offline)
+-- chats from new users
+-- recovering from disconnect
+markDelivered ∷ WebSocket → IMModel → NoMessages
+markDelivered webSocket model@{ experimenting, contacts, user: { id: sessionUserId } } =
+      if DA.null ids then
+            F.noMessages model
+      else CIF.nothingNext updatedModel <<< liftEffect <<< CIW.sendPayload webSocket $ ChangeStatus
+            { status: Delivered
+            , ids
+            , persisting: case experimenting of
+                    Just (Impersonation (Just _)) → false
+                    _ → true
+            }
+      where
+      ids = DA.foldl sent [] contacts
+
+      updatedModel = model { contacts = map updateDelivered contacts }
+
+      updateDelivered contact@{ history } =
+            let
+                  update h@{ status, recipient }
+                        | recipient == sessionUserId && status == Received = h { status = Delivered }
+                        | otherwise = h
+            in
+                  contact { history = map update history }
+
+      sent running { history, user: { id: userId } } =
+            case DA.filter (\h → h.recipient == sessionUserId && h.status == Received) history of
+                  [] → running
+                  hs → Tuple userId (map _.id hs) : running
 
 checkFetchContacts ∷ IMModel → MoreMessages
-checkFetchContacts model@{ contacts, freeToFetchContactList }
+checkFetchContacts model@{ freeToFetchContactList }
       | freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
               where
@@ -155,7 +190,7 @@ displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\
 
 --new chats from impersonation experiment
 displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → IMModel → MoreMessages
-displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] })  newContacts)
+displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
 
 resumeMissedEvents ∷ MissedEvents → IMModel → MoreMessages
 resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =
@@ -213,8 +248,9 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
                     }
             )
             userIds
-      where existingContactIds = DS.fromFoldable (_.id <<< _.user <$> contacts)
-            onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
+      where
+      existingContactIds = DS.fromFoldable (_.id <<< _.user <$> contacts)
+      onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 deleteChat ∷ Tuple Int (Maybe Int) → IMModel → MoreMessages
 deleteChat tii@(Tuple id impersonating) model@{ contacts } =

@@ -27,16 +27,16 @@ suggestionCall { contacts, suggesting, chatting, suggestions }
               case suggs of
                     Just { avatar, name } | not $ DA.null contacts → HE.div (HA.class' "side-suggestions-container")
                           [ HE.div [ HA.class' "side-suggestion" ]
-                                  [ HE.div [ HA.class' "avatar-contact-list-div faded", HA.onClick $ SpecialRequest PreviousSuggestion, HA.title "Move to this chat suggestions" ]
+                                  [ HE.div [ HA.class' "avatar-contact-list-div faded", HA.onClick $ SpecialRequest PreviousSuggestion, HA.title "Move to this chat suggestion" ]
                                           [ let
                                                   previousIndex = map (_ - 1) suggesting
                                             in
                                                   HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass previousIndex, HA.src $ SA.avatarForRecipient previousIndex $ getAvatar previousIndex ]
                                           ]
-                                  , HE.div [ HA.class' "avatar-contact-list-div margin-less-z", HA.onClick FocusCurrentSuggestion, HA.title "Move to this chat suggestions" ]
+                                  , HE.div [ HA.class' "avatar-contact-list-div margin-less-z", HA.onClick FocusCurrentSuggestion, HA.title "Move to this chat suggestion" ]
                                           [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass suggesting, HA.src $ SA.avatarForRecipient suggesting avatar ]
                                           ]
-                                  , HE.div [ HA.class' "avatar-contact-list-div margin-less faded", HA.onClick $ SpecialRequest NextSuggestion, HA.title "Move to this chat suggestions" ]
+                                  , HE.div [ HA.class' "avatar-contact-list-div margin-less faded", HA.onClick $ SpecialRequest NextSuggestion, HA.title "Move to this chat suggestion" ]
                                           [ let
                                                   nextIndex = map (_ + 1) suggesting
                                             in

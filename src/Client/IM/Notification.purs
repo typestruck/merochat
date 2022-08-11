@@ -2,10 +2,10 @@ module Client.IM.Notification where
 
 import Prelude
 import Shared.ContentType
+import Shared.IM.Types
 
 import Client.Common.DOM as CCD
 import Client.IM.Flame (NextMessage)
-import Client.IM.Flame as CIF
 import Data.Array as DA
 import Data.Foldable as DF
 import Data.HashMap as HS
@@ -14,9 +14,9 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Shared.IM.Types
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
+import Flame ((:>))
 import Flame.Subscription as FS
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.IM.Unread as SIU
@@ -39,11 +39,14 @@ createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
 notifyUnreadChats ∷ IMModel → Array (Tuple Int (Maybe Int)) → NextMessage
-notifyUnreadChats model userIDs = CIF.nothingNext model <<< liftEffect $ notify model userIDs
+notifyUnreadChats model userIds = model :> [ do
+      liftEffect $ notify model userIds
+      pure $ Just UpdateDelivered
+]
 
 notify ∷ IMModel → Array (Tuple Int (Maybe Int)) → Effect Unit
-notify model@{ user: { id }, contacts, smallScreen } userIDs = do
-      updateTabCount id contacts
+notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
+      updateTabCount sessionUserId contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
       where
       contactUsers = DA.filter byKeys contacts
@@ -59,11 +62,11 @@ notify model@{ user: { id }, contacts, smallScreen } userIDs = do
               handler: FS.send imId <<< ResumeChat $ Tuple user.id impersonating
             }
 
-      byKeys cnt = DA.any (\(Tuple id impersonating) → cnt.user.id == id && cnt.impersonating == impersonating) userIDs
+      byKeys cnt = DA.any (\(Tuple id impersonating) → cnt.user.id == id && cnt.impersonating == impersonating) userIds
 
 notify' ∷ IMModel → Array (Tuple Int (Maybe Int)) → Aff (Maybe IMMessage)
-notify' model userIDs = do
-      liftEffect $ notify model userIDs
+notify' model userIds = do
+      liftEffect $ notify model userIds
       pure Nothing
 
 updateTabCount ∷ Int → Array Contact → Effect Unit

@@ -142,6 +142,7 @@ update { webSocketRef, fileReader } model =
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
             --contacts
             ResumeChat (Tuple id impersonating) → CICN.resumeChat id impersonating model
+            UpdateDelivered -> CICN.markDelivered webSocket model
             UpdateReadCount → CICN.markRead webSocket model
             CheckFetchContacts → CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
@@ -158,8 +159,8 @@ update { webSocketRef, fileReader } model =
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model
             ToggleContactProfile → CIS.toggleContactProfile model
-            SpecialRequest PreviousSuggestion → CIS.previousSuggestion $ spy "previous" model
-            SpecialRequest NextSuggestion → CIS.nextSuggestion $ spy "next" model
+            SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
+            SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → CIS.blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
             --user menu
@@ -369,7 +370,7 @@ receiveMessage
             ]
       ServerReceivedMessage { previousId, id, userId } →
             F.noMessages $ model
-                  { contacts = updateTemporaryID currentContacts userId previousId id
+                  { contacts = updateTemporaryId currentContacts userId previousId id
                   }
       ServerChangedStatus { ids, status, userId } →
             F.noMessages $ model
@@ -394,7 +395,6 @@ receiveMessage
                         model' = unsuggest userId model
                   in
                         case processIncomingMessage payload model' of
-                              --this should also set status
                               Left userId →
                                     let
                                           message = case experimenting of
@@ -419,7 +419,7 @@ receiveMessage
                                           } | isFocused && isChatting userId updatedModel →
                                     let
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
-                                                { sessionUserID: recipientId
+                                                { sessionUserId: recipientId
                                                 , contacts
                                                 , newStatus: Read
                                                 , webSocket
@@ -433,11 +433,11 @@ receiveMessage
                                           } →
                                     let
                                           impersonationId = case experimenting of
-                                                Just (ImpersonationPayload { id: impersonationId }) → Just impersonationId
+                                                Just (ImpersonationPayload { id }) → Just id
                                                 _ → Nothing
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
                                                 { index: SU.fromJust $ DA.findIndex (findContact userId impersonationId model.experimenting) contacts
-                                                , sessionUserID: recipientId
+                                                , sessionUserId: recipientId
                                                 , newStatus: Delivered
                                                 , contacts
                                                 , webSocket
@@ -516,8 +516,8 @@ processIncomingMessage
 findContact ∷ Int → Maybe Int → Maybe ExperimentData → Contact → Boolean
 findContact userId impersonationId experimenting { user: { id }, impersonating } = userId == id && (DM.isJust experimenting || impersonating == impersonationId)
 
-updateTemporaryID ∷ Array Contact → Int → Int → Int → Array Contact
-updateTemporaryID contacts userId previousMessageID messageId = updateContactHistory contacts userId updateTemporary
+updateTemporaryId ∷ Array Contact → Int → Int → Int → Array Contact
+updateTemporaryId contacts userId previousMessageID messageId = updateContactHistory contacts userId updateTemporary
       where
       updateTemporary history@({ id })
             | id == previousMessageID = history { id = messageId, status = Received }

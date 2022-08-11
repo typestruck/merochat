@@ -261,6 +261,7 @@ data IMMessage
       | ResumeChat (Tuple Int (Maybe Int))
       | UpdateReadCount
       | CheckFetchContacts
+      | UpdateDelivered
       | DisplayContacts (Array Contact)
       | DisplayNewContacts (Array Contact)
       | DisplayImpersonatedContact Int HistoryMessage (Array Contact)
@@ -323,12 +324,9 @@ data WebSocketPayloadServer
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord
       | ChangeStatus
-              { userId ∷ Int
-              , status ∷ MessageStatus
+              { status ∷ MessageStatus
               , persisting ∷ Boolean
-              , -- in some cases status changes should be not persisted to the database
-                --alternatively, update by user?
-                ids ∷ Array Int
+              , ids ∷ Array (Tuple Int (Array Int))
               }
       | UnavailableFor
               { id ∷ Int

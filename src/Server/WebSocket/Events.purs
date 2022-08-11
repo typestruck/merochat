@@ -23,6 +23,7 @@ import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
+import Data.Tuple as DT
 import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
@@ -205,16 +206,18 @@ sendPing { userAvailability, sessionUserId } { isActive, statusFor } connection 
                   id
                   hashMap
 
-sendStatusChange ∷ Ref (HashMap Int UserAvailability) → { ids ∷ Array Int, persisting ∷ Boolean, status ∷ MessageStatus, userId ∷ Int } → Int → WebSocketEffect
-sendStatusChange userAvailability { userId, status, ids, persisting } sessionUserId = do
-      when persisting $ SID.changeStatus sessionUserId status ids
-      possibleSenderConnection ← R.liftEffect (DH.lookup userId <$> ER.read userAvailability)
-      whenJust possibleSenderConnection $ \connection →
-            sendWebSocketMessage connection <<< Content $ ServerChangedStatus
-                  { ids
-                  , status
-                  , userId: sessionUserId
-                  }
+sendStatusChange ∷ Ref (HashMap Int UserAvailability) → { ids ∷ Array (Tuple Int (Array Int)), persisting ∷ Boolean, status ∷ MessageStatus } → Int → WebSocketEffect
+sendStatusChange userAvailability { status, ids, persisting } sessionUserId = do
+      when persisting <<< SID.changeStatus sessionUserId status $ DA.concatMap DT.snd ids
+      DF.traverse_ send ids
+      where send (Tuple userId messageIds) = do
+                  possibleSenderConnection ← R.liftEffect (DH.lookup userId <$> ER.read userAvailability)
+                  whenJust possibleSenderConnection $ \connection →
+                        sendWebSocketMessage connection <<< Content $ ServerChangedStatus
+                              { ids: messageIds
+                              , status
+                              , userId: sessionUserId
+                              }
 
 sendUnavailability ∷ Ref (HashMap Int UserAvailability) → Int → Int → WebSocketEffect
 sendUnavailability userAvailability sessionUserId userId = do
