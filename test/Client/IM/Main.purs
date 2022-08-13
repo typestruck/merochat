@@ -221,11 +221,3 @@ tests = do
       { id: recipientId } = imUser
       messageId = 1
       newMessageID = 101
-      { suggestions: modelSuggestions } = model
-
-      recipientMessage = historyMessage
-            { sender = anotherImUserId
-            , recipient = imUserId
-            }
-      image = "base64"
-      caption = "caption"

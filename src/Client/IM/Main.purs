@@ -600,7 +600,7 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
             { hasTriedToConnectYet = true
             , isWebSocketConnected = isConnected
             , errorMessage = if not isConnected then lostConnectionMessage else if errorMessage == lostConnectionMessage then "" else errorMessage
-            } :> if hasTriedToConnectYet && isConnected then [ pure <<< Just $ SpecialRequest CheckMissedEvents ] else []
+            } :> if hasTriedToConnectYet && isConnected then [ pure <<< Just $ SpecialRequest CheckMissedEvents ] else [pure $ Just UpdateDelivered]
       where
       lostConnectionMessage = "Connection to the server lost. Attempting to automatically reconnect..."
 

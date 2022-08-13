@@ -7,6 +7,7 @@ import Shared.IM.Types
 import Shared.User
 
 import Client.IM.Contacts as CICN
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
@@ -41,13 +42,35 @@ tests = do
                               }
                   TUA.equal (Just 1) chatting
 
-            TU.test "updateStatus sets received messages as read" do
+            TU.test "markRead sets received messages as read" do
                   let
                         { contacts } = DT.fst <<< CICN.markRead webSocket $ model
                               { chatting = Just 1
                               , contacts = [ contact, anotherContact ]
                               }
                   TUA.equal [ Tuple 1 Read, Tuple 2 Received, Tuple 3 Read ] <<< map (\({ id, status }) → Tuple id status) $ (contacts !@ 1).history
+
+            TU.test "markDelivered sets received messages as unread" do
+                  let
+                        { contacts } = DT.fst <<< CICN.markDelivered webSocket $ model
+                              { user { id = 4 }
+                              , chatting = Just 1
+                              , contacts =
+                                      [ contact
+                                              { history =
+                                                      [ historyMessage { status = Received, recipient = 4  }
+                                                      , historyMessage { status = Received, recipient = 4 }
+                                                      ]
+                                              }
+                                      , anotherContact
+                                              { history =
+                                                      [ historyMessage { status = Received }
+                                                      , historyMessage { status = Read }
+                                                      ]
+                                              }
+                                      ]
+                              }
+                  TUA.equal [ Delivered, Delivered, Received, Read ] $ DA.concatMap (map _.status <<< _.history) contacts
 
             TU.test "displayContacts shows next page" do
                   let
@@ -135,7 +158,8 @@ tests = do
                   TUA.equal updated contacts
 
             TU.test "deleteChat removes deleted contact" do
-                  let { contacts } = DT.fst <<< CICN.deleteChat (Tuple anotherContactId Nothing) $ model
+                  let
+                        { contacts } = DT.fst <<< CICN.deleteChat (Tuple anotherContactId Nothing) $ model
                               { contacts = [ contact, anotherContact ]
                               }
                   TUA.equal [ contact ] contacts
