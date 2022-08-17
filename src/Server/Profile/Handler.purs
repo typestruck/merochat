@@ -30,3 +30,8 @@ profileUpdate { guards: { loggedUserId }, body } = do
 
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What, value ∷ Maybe String } } → ServerEffect String
 generated { guards: { loggedUserId }, body: { field, value } } = SPA.saveGeneratedField loggedUserId field value
+
+avatar ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { base64 ∷ Maybe String } } → ServerEffect Ok
+avatar { guards: { loggedUserId }, body: { base64 } } = do
+      SPA.saveAvatar loggedUserId base64
+      pure ok

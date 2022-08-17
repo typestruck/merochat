@@ -7,8 +7,8 @@ import Shared.Profile.Types (ProfileMessage)
 
 data MountPoint = IM | Profile
 
-profileID ∷ AppId MountPoint ProfileMessage
-profileID = AppId Profile
+profileId ∷ AppId MountPoint ProfileMessage
+profileId = AppId Profile
 
 imId ∷ AppId MountPoint IMMessage
 imId = AppId IM

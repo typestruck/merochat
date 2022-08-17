@@ -1,7 +1,6 @@
 module Client.Profile.Update where
 
 import Prelude
-import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.IM.Types
 import Shared.Profile.Types
@@ -9,13 +8,9 @@ import Shared.Profile.Types
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
-import Client.Common.Network as CNN
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype as DN
-import Data.String as DS
-import Data.Symbol (class IsSymbol)
 import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff, Milliseconds(..))
@@ -25,15 +20,9 @@ import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
-import Prim.Row (class Cons)
-import Prim.Symbol (class Append)
-import Record as R
-import Shared.Json as SJ
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId)
-import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
 import Shared.Setter as SS
-import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 
@@ -45,7 +34,6 @@ update rc@{ message } =
       case message of
             SelectAvatar → selectAvatar
             SetPField setter → pure setter
-            SetAvatar base64 → pure <<< SS.setUserField (Proxy ∷ Proxy "avatar") $ Just base64
             Save field → saveField rc field
             SetProfileChatExperiment experiment → setChatExperiment experiment
 
@@ -53,13 +41,13 @@ saveField rc@{ display } field = do
       display $ _ { loading = true }
       case field of
             Generated what → saveGeneratedField rc what
-            _ → pure unit
+            Avatar base64 → saveAvatar rc base64
       EA.delay $ Milliseconds 3000.0
       pure
-            (  _
-                      { updateRequestStatus = Nothing
-                      , loading = false
-                      }
+            ( _
+                    { updateRequestStatus = Nothing
+                    , loading = false
+                    }
 
             )
 
@@ -94,6 +82,10 @@ saveGeneratedField rc@{ display, model } what =
                         )
       where
       req value = request.profile.field.generated { body: { field: what, value: if value == Just "" then Nothing else value } }
+
+saveAvatar rc@{ display } base64 = do
+      void <<< save display $ request.profile.field.avatar { body: { base64 } }
+      display $ _ { user { avatar = base64 } }
 
 save display request = do
       result ← request

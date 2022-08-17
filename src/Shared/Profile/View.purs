@@ -406,11 +406,7 @@ nothingOnEmpty s =
             v → Just v
 
 resetAvatar ∷ ProfileMessage
-resetAvatar = SetPField $ \model → model
-      { user = model.user
-              { avatar = Nothing
-              }
-      }
+resetAvatar = Save $ Avatar Nothing
 
 removeContents ∷ ∀ message. Array (Html message)
 removeContents =

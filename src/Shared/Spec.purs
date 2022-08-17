@@ -111,12 +111,19 @@ spec ∷
                                           GET "/"
                                                 { response ∷ String
                                                 }
-                                  , field ∷ Routes "/field" {
-                                          generated:: POST "/generated"
-                                                { body ∷  GeneratedInput
-                                                , response ∷ String
+                                  , field ∷
+                                          Routes "/field"
+                                                { generated ∷
+                                                        POST "/generated"
+                                                              { body ∷ GeneratedInput
+                                                              , response ∷ String
+                                                              }
+                                                , avatar ∷
+                                                        POST "/avatar"
+                                                              { body ∷ { base64 ∷ Maybe String }
+                                                              , response ∷ Ok
+                                                              }
                                                 }
-                                  }
                                   }
                     , settings ∷
                             Routes "/settings"

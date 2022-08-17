@@ -10,14 +10,14 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
-import Shared.Options.MountPoint (imId, profileID)
-import Shared.Profile.Types (ProfileMessage(..))
+import Shared.Options.MountPoint (imId, profileId)
+import Shared.Profile.Types
 import Shared.Profile.View as SPV
 import Web.DOM.ParentNode (QuerySelector(..))
 
 main ∷ Effect Unit
 main = do
-      FAE.resumeMount (QuerySelector ("#" <> show ProfileEditionForm)) profileID
+      FAE.resumeMount (QuerySelector ("#" <> show ProfileEditionForm)) profileId
             { view: SPV.view
             , subscribe: [ FS.onCustomEvent setChatExperiment SetProfileChatExperiment ]
             , init: Nothing
@@ -27,4 +27,4 @@ main = do
       FS.send imId AskChatExperiment
       --avatar changes
       input ← CPU.getFileInput
-      CCF.setUpFileChange SetAvatar input profileID
+      CCF.setUpFileChange (Save <<< Avatar <<< Just) input profileId

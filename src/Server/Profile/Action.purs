@@ -28,9 +28,6 @@ import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Type.Proxy (Proxy)
 
-missingRequiredFieldsMessage ∷ String
-missingRequiredFieldsMessage = "Name, headline and description are mandatory"
-
 tooManyTagsMessage ∷ String
 tooManyTagsMessage = "Number of tags larger than " <> show maxTags <> " limit"
 
@@ -63,9 +60,21 @@ saveGeneratedField loggedUserId field value = do
       SPD.saveField loggedUserId (show field) finalValue
       pure finalValue
 
+saveAvatar ∷ Int → Maybe String → ServerEffect Unit
+saveAvatar loggedUserId base64 = do
+      avatar ← case base64 of
+            Nothing → pure Nothing
+            Just path → do
+                  let fileName = DS.replace (Pattern $ imageBasePath <> "upload/") (Replacement "") path
+                  --likely a base64 image
+                  if fileName == path then
+                        Just <$> SF.saveBase64File path
+                  else
+                        pure $ Just fileName
+      SPD.saveField loggedUserId "avatar" avatar
+
 saveProfile ∷ Int → ProfileUser → ServerEffect Unit
 saveProfile loggedUserId profileUser@{ name, age, headline, description, avatar, languages, tags } = do
-      when (isNull name || isNull headline || isNull description) $ SR.throwBadRequest missingRequiredFieldsMessage
       when anyFieldIsTooBig $ SR.throwBadRequest fieldTooBigMessage
       when (DA.length tags > maxTags) $ SR.throwBadRequest tooManyTagsMessage
       when (DA.length languages > maxLanguages) $ SR.throwBadRequest tooManyLanguagesMessage

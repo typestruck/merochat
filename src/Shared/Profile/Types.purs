@@ -33,12 +33,13 @@ type ProfileModel = Record PM
 data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SelectAvatar
-      | SetAvatar String
       | Save Field
       | SetProfileChatExperiment (Maybe ExperimentData)
 
 --this sucks
-data Field = Generated What
+data Field
+      = Generated What
+      | Avatar (Maybe String)
 
 data What
       = Name
@@ -131,7 +132,7 @@ instance Enum What where
       succ = case _ of
             Name → Just Headline
             Headline → Just Description
-            Description  → Nothing
+            Description → Nothing
       pred = case _ of
             Name → Nothing
             Headline → Just Name

@@ -59,7 +59,7 @@ import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.IM.View as SIV
 import Shared.Json as SJ
-import Shared.Options.MountPoint (imId, profileID)
+import Shared.Options.MountPoint (imId, profileId)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)

@@ -58,7 +58,10 @@ handlers reading =
       , profile:
               { get: runJson reading SPH.profile
               , post: runJson reading SPH.profileUpdate
-              , field : { generated : runJson reading SPH.generated }
+              , field:
+                      { generated: runJson reading SPH.generated
+                      , avatar: runJson reading SPH.avatar
+                      }
               }
       , login:
               { get: runHtml reading SLGH.login
