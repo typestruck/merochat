@@ -16,6 +16,24 @@
     outline: none
 }
 
+.request-result-message {
+    margin-bottom: 10px;
+}
+
+.loading-over {
+    position: absolute;
+    padding-top: 40%;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.profile-edition {
+    position: relative;
+}
+
 .profile-edition-description {
     margin-top: 20px;
     resize: none;
@@ -47,12 +65,15 @@
     margin: 0 15px 0 5px;
 }
 
-.plus, .save {
+.plus,
+.save {
     fill: hsl(145, 80%, 28%);
     stroke: hsl(145, 80%, 28%);
 }
 
-.plus, .save, .profile-edition .cancel {
+.plus,
+.save,
+.profile-edition .cancel {
     vertical-align: middle;
 }
 
@@ -60,7 +81,8 @@
     margin-left: 20px;
 }
 
-.description-edition, .edition {
+.description-edition,
+.edition {
     margin: 30px 0;
     text-align: center;
 }
@@ -103,7 +125,11 @@
     text-align: center;
 }
 
-.profile-edition-add, .profile-description, .about, .profile-edition-name, .profile-edition-headline {
+.profile-edition-add,
+.profile-description,
+.about,
+.profile-edition-name,
+.profile-edition-headline {
     cursor: pointer;
 }
 
@@ -126,7 +152,7 @@ select+.save {
 }
 
 .modal-input,
-.modal-input-checkbox  {
+.modal-input-checkbox {
     padding-right: 30px;
     margin-top: 20px;
 }
@@ -173,7 +199,8 @@ select+.save {
     margin-left: -30px;
 }
 
-.plus, .save {
+.plus,
+.save {
     width: 20px;
     height: 20px
 }
@@ -212,7 +239,9 @@ select+.plus {
 }
 
 @media (max-width:1279px) {
-    .profile-edition-add-list, .suggestion.contact select {
+
+    .profile-edition-add-list,
+    .suggestion.contact select {
         width: auto;
     }
 }

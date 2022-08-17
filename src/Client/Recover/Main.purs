@@ -6,7 +6,7 @@ import Client.Common.Account as CCA
 import Client.Common.Captcha as CCC
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Client.Common.Types (RequestStatus(..))
+import Shared.Network
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
@@ -25,7 +25,7 @@ recover captchaResponse = do
                         CCC.grecaptchaExecute
                   else EA.launchAff_ do
                         status ← CCA.formRequest $ request.recover.post { body: { email, captchaResponse } }
-                        liftEffect $ when (status == Fail) CCC.grecaptchaReset
+                        liftEffect $ when (status == Failure) CCC.grecaptchaReset
 
 -- | Callback for grecaptcha
 completeRecover ∷ String → Effect Unit
@@ -51,4 +51,3 @@ main = do
                   CCA.registerEvents (recover Nothing)
             Just token → do
                   CCA.registerEvents (reset token)
-

@@ -7,7 +7,7 @@ import Client.Common.DOM as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
-import Client.Common.Types (RequestStatus(..))
+import Shared.Network
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)

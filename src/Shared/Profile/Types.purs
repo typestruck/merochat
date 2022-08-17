@@ -6,6 +6,8 @@ import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Either (Either(..))
+import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
+import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -13,13 +15,17 @@ import Data.Show.Generic as DGRS
 import Data.String as DS
 import Data.String.Read (class Read)
 import Data.String.Read as DSR
+import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.Experiments.Types (ExperimentData)
 import Shared.IM.Types (DateWrapper)
+import Shared.Network (RequestStatus)
+import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
+import Simple.JSON (class ReadForeign, class WriteForeign)
 
 --used to generically set records
 type ProfileModel = Record PM
@@ -28,11 +34,13 @@ data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SelectAvatar
       | SetAvatar String
-      | SetGenerate Generate
+      | Save Field
       | SetProfileChatExperiment (Maybe ExperimentData)
-      | SaveProfile
 
-data Generate
+--this sucks
+data Field = Generated What
+
+data What
       = Name
       | Headline
       | Description
@@ -48,6 +56,8 @@ type PU =
 
 type ProfileUser = Record PU
 
+type GeneratedInput = { field ∷ What, value ∷ Maybe String }
+
 type Choice = Maybe
 
 type PM =
@@ -62,49 +72,67 @@ type PM =
       , tagsInputed ∷ Maybe String
       , tagsInputedList ∷ Maybe (Array String)
       , descriptionInputed ∷ Maybe String
-      , generating ∷ Maybe Generate
+      , loading ∷ Boolean
       , countries ∷ Array { id ∷ Int, name ∷ String }
       , languages ∷ Array { id ∷ Int, name ∷ String }
-      , hideSuccessMessage ∷ Boolean
+      , updateRequestStatus ∷ Maybe RequestStatus
       , experimenting ∷ Maybe ExperimentData
       )
 
-derive instance genericGenerate ∷ Generic Generate _
+derive instance Generic Field _
+derive instance Generic What _
 
-derive instance eqGenerate ∷ Eq Generate
+derive instance Eq Field
+derive instance Eq What
 
-instance showGenerate ∷ Show Generate where
+derive instance Ord What
+
+instance Show Field where
       show = DGRS.genericShow
 
-instance EncodeQueryParam Generate where
-      encodeQueryParam = Just <<< show
+instance Show What where
+      show = DGRS.genericShow
 
-instance decodeQueryGenerate ∷ DecodeQueryParam Generate where
-      decodeQueryParam query key =
-            case FO.lookup key query of
-                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [ value ] → DM.maybe (errorDecoding query key) Right $ DSR.read value
-                  _ → errorDecoding query key
-
-instance encodeJsonGenerate ∷ EncodeJson Generate where
+instance EncodeJson Field where
       encodeJson = DAEGR.genericEncodeJson
 
-instance decodeJsonGenerate ∷ DecodeJson Generate where
+instance EncodeJson What where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance DecodeJson Field where
       decodeJson = DADGR.genericDecodeJson
 
---refactor: get rid of read instances
-instance readGenerate ∷ Read Generate where
-      read input =
-            case DS.toLower $ DS.trim input of
-                  "name" → Just Name
-                  "headline" → Just Headline
-                  "description" → Just Description
-                  _ → Nothing
+instance DecodeJson What where
+      decodeJson = DADGR.genericDecodeJson
 
-errorDecoding ∷ ∀ a. Object (Array String) → String → Either DecodeError a
-errorDecoding queryObj key = Left $ QueryDecodeError
-      { values: []
-      , message: "Could not decode parameter " <> key
-      , key
-      , queryObj
-      }
+instance ReadForeign What where
+      readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
+
+instance WriteForeign What where
+      writeImpl = F.unsafeToForeign <<< DE.fromEnum
+
+instance Bounded What where
+      bottom = Name
+      top = Description
+
+instance BoundedEnum What where
+      cardinality = Cardinality 1
+      fromEnum = case _ of
+            Name → 0
+            Headline → 1
+            Description → 2
+      toEnum = case _ of
+            0 → Just Name
+            1 → Just Headline
+            2 → Just Description
+            _ → Nothing
+
+instance Enum What where
+      succ = case _ of
+            Name → Just Headline
+            Headline → Just Description
+            Description  → Nothing
+      pred = case _ of
+            Name → Nothing
+            Headline → Just Name
+            Description → Just Headline

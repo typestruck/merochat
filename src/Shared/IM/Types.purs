@@ -348,6 +348,7 @@ data ElementId
       | ChatInputSuggestion
       | ChatInput
       | ContactList
+      | ProfileEditionForm
       | ImageFormCaption
       | PasswordDiv
       | ConfirmPasswordInput
@@ -597,6 +598,7 @@ instance Show ElementId where
             ImageFileInput → "image-file-input"
             ContactList → "contact-list"
             LinkFormUrl → "link-form-url"
+            ProfileEditionForm -> "profile-edition-form"
             ChatInput → "chat-input"
             ChatInputSuggestion → "chat-input-suggestion"
             ImageFormCaption → "image-form-caption"

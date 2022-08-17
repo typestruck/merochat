@@ -22,6 +22,7 @@ import Payload.Client (ClientError(..), ClientResponse, defaultOpts)
 import Payload.Client as PC
 import Payload.ResponseTypes (Response(..))
 import Shared.Spec (spec)
+import Shared.Network
 import Web.DOM.Element as WDE
 
 request ∷ _
@@ -42,7 +43,7 @@ formRequest formSelector aff = do
                   pure Success
             Left err → do
                   setLoading previousLabel $ errorMessage err
-                  pure Fail
+                  pure Failure
       where
       formSelectorID = if DS.take 1 formSelector == "." then formSelector else "#" <> formSelector
       buttonSelector = formSelectorID <> " input[type=button], " <> formSelectorID <> " button"

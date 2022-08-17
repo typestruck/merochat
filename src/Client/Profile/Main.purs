@@ -2,7 +2,6 @@ module Client.Profile.Main where
 
 import Prelude
 import Shared.IM.Types
-import Shared.ContentType
 
 import Client.Common.DOM (setChatExperiment)
 import Client.Common.File as CCF
@@ -18,7 +17,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 main ∷ Effect Unit
 main = do
-      FAE.resumeMount (QuerySelector "#profile-edition-form") profileID
+      FAE.resumeMount (QuerySelector ("#" <> show ProfileEditionForm)) profileID
             { view: SPV.view
             , subscribe: [ FS.onCustomEvent setChatExperiment SetProfileChatExperiment ]
             , init: Nothing

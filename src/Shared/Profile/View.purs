@@ -1,9 +1,11 @@
 module Shared.Profile.View where
 
 import Prelude
+import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.ContentType
+import Shared.Network
+import Shared.Profile.Types
 
 import Data.Array ((:))
 import Data.Array as DA
@@ -17,7 +19,7 @@ import Data.String as DS
 import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol)
 import Data.Tuple (Tuple(..))
-import Data.Tuple as DT
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -31,17 +33,11 @@ import Shared.IM.Svg as SIS
 import Shared.IM.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
-import Shared.Path as SP
-import Shared.Profile.Types (Generate(..), PM, PU, ProfileMessage(..), ProfileModel, Choice)
 import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
-import Test.Spec.Runner.Event (Name)
 import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
-
-profileEditionId ∷ String
-profileEditionId = "profile-edition-form"
 
 --REFACTOR: some bits can still be abstracted
 view ∷ ProfileModel → Html ProfileMessage
@@ -50,14 +46,21 @@ view
             { user
             , countries
             , languages
-            , generating
-            , hideSuccessMessage
+            , loading
+            , updateRequestStatus
             , descriptionInputed
             , experimenting
-            } = HE.div profileEditionId
+            } = HE.div (show ProfileEditionForm)
       [ impersonationProfile experimenting
       , HE.div [ HA.class' { "profile-edition suggestion contact": true, hidden: DM.isJust experimenting } ]
-              [ HE.div (HA.class' "avatar-edition")
+              [ HE.div (HA.class' { "loading-over": true, hidden: not loading })
+                      [ HE.div' (HA.class' "loading")
+                      ]
+              , HE.div (HA.class' "request-result-message success")
+                      [ HE.span (HA.class' { "request-error-message": true, hidden: updateRequestStatus /= Just Failure }) "Could not update field. Please try again later"
+                      , HE.span [ HA.class' { "input success-message": true, hidden: updateRequestStatus /= Just Success } ] "Profile has been updated"
+                      ]
+              , HE.div (HA.class' "avatar-edition")
                       [ HE.div (HA.onClick SelectAvatar)
                               [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar ]
                               , pen
@@ -82,11 +85,6 @@ view
                       ]
               , displayEditTags
               , displayEditDescription
-              , HE.div (HA.class' "button-save-bottom")
-                      [ HE.input [ HA.type' "button", HA.onClick SaveProfile, HA.value "Update profile", HA.class' "green-button center-flex" ]
-                      , HE.span' (HA.class' "request-error-message")
-                      , HE.span [ HA.class' { "success-message": true, hidden: hideSuccessMessage } ] "Profiled updated!"
-                      ]
               ]
       ]
       where
@@ -142,9 +140,7 @@ view
                   control = HE.input
                         [ HA.type' "text"
                         , HA.class' "modal-input"
-                        ,
-                          -- SF.focus,
-                          HA.maxlength tagMaxCharacters
+                        , HA.maxlength tagMaxCharacters
                         , HA.value $ DM.fromMaybe "" model.tagsInputed
                         , HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed)
                         , HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
@@ -153,10 +149,7 @@ view
                   HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ Proxy "tags") identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
 
       displayEditDescription = HE.fragment
-            [ HE.div (HA.class' { hidden: generating /= Just Description })
-                    [ HE.div' (HA.class' "loading")
-                    ]
-            , HE.div (HA.class' { invisible: generating == Just Description })
+            [ HE.div_
                     [ HE.div [ title "description", HA.class' { hidden: DM.isJust descriptionInputed }, HA.onClick (editField (Proxy ∷ Proxy "description") (Proxy ∷ Proxy "descriptionInputed")) ]
                             [ HE.div (HA.class' "about")
                                     [ HE.span (HA.class' "duller") "About"
@@ -179,7 +172,7 @@ view
                                       HA.onInput (setFieldInputed (Proxy ∷ Proxy "descriptionInputed"))
                                     ] $ DM.fromMaybe "" descriptionInputed
                             , HE.div (HA.class' "save-cancel")
-                                    [ check (SetGenerate Description)
+                                    [ check (Save $ Generated Description)
                                     , cancel (Proxy ∷ Proxy "descriptionInputed")
                                     ]
                             ]
@@ -264,7 +257,7 @@ view
                                 ]
                         ]
 
-      displayEditGenerated ∷ ∀ r s field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe String) r PM ⇒ Cons field String s PU ⇒ Generate → Proxy field → String → Int → Html ProfileMessage
+      displayEditGenerated ∷ ∀ r s field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe String) r PM ⇒ Cons field String s PU ⇒ What → Proxy field → String → Int → Html ProfileMessage
       displayEditGenerated what field explanation maxLength =
             let
                   stringField = TDS.reflectSymbol field
@@ -272,36 +265,31 @@ view
                   currentInputed = R.get fieldInputed model
                   isEditing = DM.isJust currentInputed
             in
-                  if generating == Just what then
-                        HE.div' (HA.class' "loading")
-                  else
-                        HE.div_
-                              [ HE.div [ title stringField, HA.class' { "hidden": isEditing, "value-edition": true }, HA.onClick (editField field fieldInputed) ]
-                                      [ HE.span [ HA.class' $ "profile-edition-" <> stringField ] [ HE.text $ R.get field model.user ]
-                                      , pen
-                                      ]
-                              , HE.div (HA.class' { edition: true, hidden: not isEditing })
-                                      [ HE.div (HA.class' "bold") $ "Your " <> stringField
-                                      , HE.div (HA.class' "duller")
-                                              [ HE.text explanation
-                                              , HE.br
-                                              , HE.text $ "Leave it blank to generate a new random " <> stringField
-                                              ]
-                                      , HE.div_
-                                              [ HE.input
-                                                      [
-                                                        -- SF.focus,
-                                                        HA.class' "modal-input"
-                                                      , HA.maxlength maxLength
-                                                      , HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed)
-                                                      , HA.onInput (setFieldInputed fieldInputed)
-                                                      , HA.value $ DM.fromMaybe "" currentInputed
-                                                      ]
-                                              , check (SetGenerate what)
-                                              , cancel fieldInputed
-                                              ]
-                                      ]
-                              ]
+                  HE.div_
+                        [ HE.div [ title stringField, HA.class' { "hidden": isEditing, "value-edition": true }, HA.onClick (editField field fieldInputed) ]
+                                [ HE.span [ HA.class' $ "profile-edition-" <> stringField ] [ HE.text $ R.get field model.user ]
+                                , pen
+                                ]
+                        , HE.div (HA.class' { edition: true, hidden: not isEditing })
+                                [ HE.div (HA.class' "bold") $ "Your " <> stringField
+                                , HE.div (HA.class' "duller")
+                                        [ HE.text explanation
+                                        , HE.br
+                                        , HE.text $ "Leave it blank to generate a new random " <> stringField
+                                        ]
+                                , HE.div_
+                                        [ HE.input
+                                                [ HA.class' "modal-input"
+                                                , HA.maxlength maxLength
+                                                , HA.onKeydown (exitEditGenerated (Save $ Generated what) fieldInputed)
+                                                , HA.onInput (setFieldInputed fieldInputed)
+                                                , HA.value $ DM.fromMaybe "" currentInputed
+                                                ]
+                                        , check (Save $ Generated what)
+                                        , cancel fieldInputed
+                                        ]
+                                ]
+                        ]
 
       languageHM = DH.fromArray $ map (\{ id, name } → Tuple id name) languages
       getLanguage = SU.fromJust <<< flip DH.lookup languageHM
@@ -344,7 +332,6 @@ editField field fieldInputed =
                     , tagsInputed = Nothing
                     , tagsInputedList = Nothing
                     , descriptionInputed = Nothing
-                    , generating = Nothing
                     }
             )
 

@@ -1,21 +1,22 @@
 module Client.Profile.Update where
 
 import Prelude
+import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.ContentType
+import Shared.Profile.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CNN
-import Client.Common.Types (RequestStatus(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String as DS
 import Data.Symbol (class IsSymbol)
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
@@ -23,14 +24,14 @@ import Effect.Class (liftEffect)
 import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
+import Payload.ResponseTypes (Response(..))
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Json as SJ
+import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters)
-import Shared.Profile.Types (Generate(..), PU, ProfileMessage(..), ProfileModel, PM)
-import Shared.Profile.View (profileEditionId)
 import Shared.Setter as SS
 import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
@@ -40,59 +41,78 @@ getFileInput ∷ Effect Element
 getFileInput = CCD.unsafeGetElementById AvatarFileInput
 
 update ∷ AffUpdate ProfileModel ProfileMessage
-update rc@{ model, message, display } =
+update rc@{ message } =
       case message of
             SelectAvatar → selectAvatar
             SetPField setter → pure setter
             SetAvatar base64 → pure <<< SS.setUserField (Proxy ∷ Proxy "avatar") $ Just base64
-            SetGenerate what →
-                  case what of
-                        Name → setGenerated rc Name (Proxy ∷ Proxy "name") nameMaxCharacters
-                        Headline → setGenerated rc Headline (Proxy ∷ Proxy "headline") headlineMaxCharacters
-                        Description → setGenerated rc Description (Proxy ∷ Proxy "description") descriptionMaxCharacters
+            Save field → saveField rc field
             SetProfileChatExperiment experiment → setChatExperiment experiment
-            SaveProfile → saveProfile rc
 
-setGenerated ∷ ∀ field fieldInputed r u. IsSymbol field ⇒ Cons field String r PU ⇒ IsSymbol fieldInputed ⇒ Append field "Inputed" fieldInputed ⇒ Cons fieldInputed (Maybe String) u PM ⇒ Environment ProfileModel ProfileMessage → Generate → Proxy field → Int → Aff (ProfileModel → ProfileModel)
-setGenerated { model, display } what field characters = do
-      display $ _ { generating = Just what }
-      let
-            fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
-            trimmed = DS.trim <<< DM.fromMaybe "" $ R.get fieldInputed model
-
-      toSet ←
-            if DS.null trimmed then do
-                  result ← request.profile.generate { query: { what } }
-                  case result of
-                        Right r → pure <<< _.body $ DN.unwrap r
-                        _ → pure $ R.get field model.user --if the request fails, just pretend it generated the same field
-            else
-                  pure trimmed
+saveField rc@{ display } field = do
+      display $ _ { loading = true }
+      case field of
+            Generated what → saveGeneratedField rc what
+            _ → pure unit
+      EA.delay $ Milliseconds 3000.0
       pure
-            ( \model → R.set fieldInputed Nothing <<< SS.setUserField field (DS.take characters toSet) $ model
-                    { generating = Nothing
-                    }
+            (  _
+                      { updateRequestStatus = Nothing
+                      , loading = false
+                      }
+
             )
+
+saveGeneratedField ∷ Environment ProfileModel ProfileMessage → What → Aff Unit
+saveGeneratedField rc@{ display, model } what =
+      case what of
+            Name → do
+                  value ← save display $ req rc.model.nameInputed
+                  let name = DM.fromMaybe model.user.name value
+                  liftEffect <<< FS.send imId $ SetNameFromProfile name
+                  display
+                        ( _
+                                { nameInputed = Nothing
+                                , user { name = name }
+                                }
+                        )
+            Headline → do
+                  value ← save display $ req rc.model.headlineInputed
+                  display
+                        ( _
+                                { headlineInputed = Nothing
+                                , user { headline = DM.fromMaybe model.user.headline value }
+                                }
+                        )
+            Description → do
+                  value ← save display $ req rc.model.descriptionInputed
+                  display
+                        ( _
+                                { descriptionInputed = Nothing
+                                , user { description = DM.fromMaybe model.user.description value }
+                                }
+                        )
+      where
+      req value = request.profile.field.generated { body: { field: what, value: if value == Just "" then Nothing else value } }
+
+save display request = do
+      result ← request
+      _ ← display $ _ { loading = false }
+      case result of
+            Right (Response { body }) → do
+                  --compiler bug? we need _ <- here even tho display is Unit
+                  _ ← display $ _ { updateRequestStatus = Just Success }
+                  pure $ Just body
+            _ → do
+                  _ ← display $ _ { updateRequestStatus = Just Failure }
+                  pure Nothing
 
 selectAvatar ∷ Aff (ProfileModel → ProfileModel)
 selectAvatar = do
       liftEffect do
-            input ← getFileInput
-            CCF.triggerFileSelect input
+            field ← getFileInput
+            CCF.triggerFileSelect field
       FAE.noChanges
 
 setChatExperiment ∷ Maybe ExperimentData → Aff (ProfileModel → ProfileModel)
 setChatExperiment experimenting = FAE.diff { experimenting }
-
-saveProfile ∷ AffUpdate ProfileModel ProfileMessage
-saveProfile { display, model: { user: user@{ name } } } = do
-      status ← CNN.formRequest profileEditionId $ request.profile.post { body: user }
-      case status of
-            Success → do
-                  display $ FAE.diff' { hideSuccessMessage: false }
-                  liftEffect <<<
-                        --let im know that the name has changed
-                        FS.send imId $ SetNameFromProfile name
-                  EA.delay $ Milliseconds 3000.0
-                  FAE.diff { hideSuccessMessage: true }
-            _ → FAE.noChanges

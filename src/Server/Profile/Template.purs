@@ -1,15 +1,18 @@
 module Server.Profile.Template where
 
+import Prelude
+
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Server.Profile.Types (Payload)
+import Shared.IM.Types (ElementId(..))
 import Shared.Profile.View as SPV
 
 template ∷ Payload → Effect String
 template { user: user, countries, languages } = do
-      F.preMount (QuerySelector "#profile-edition-form")
+      F.preMount (QuerySelector ("#" <> show ProfileEditionForm))
             { view: SPV.view
             , init:
                     { nameInputed: Nothing
@@ -22,9 +25,9 @@ template { user: user, countries, languages } = do
                     , tagsInputed: Nothing
                     , tagsInputedList: Nothing
                     , descriptionInputed: Nothing
-                    , generating: Nothing
+                    , loading: false
                     , experimenting: Nothing
-                    , hideSuccessMessage: false
+                    , updateRequestStatus: Nothing
                     , user
                     , countries
                     , languages

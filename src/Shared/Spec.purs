@@ -10,7 +10,7 @@ import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword)
-import Shared.Profile.Types (Generate, ProfileUser)
+import Shared.Profile.Types
 import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileVisibility)
 
@@ -111,16 +111,12 @@ spec ∷
                                           GET "/"
                                                 { response ∷ String
                                                 }
-                                  , post ∷
-                                          POST "/"
-                                                { body ∷ ProfileUser
-                                                , response ∷ Ok
-                                                }
-                                  , generate ∷
-                                          GET "/generate?what=<what>"
-                                                { query ∷ { what ∷ Generate }
+                                  , field ∷ Routes "/field" {
+                                          generated:: POST "/generated"
+                                                { body ∷  GeneratedInput
                                                 , response ∷ String
                                                 }
+                                  }
                                   }
                     , settings ∷
                             Routes "/settings"
