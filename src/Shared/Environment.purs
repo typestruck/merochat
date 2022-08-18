@@ -34,7 +34,7 @@ imCSSHash :: String
 imCSSHash = "1310c9a2fcac119e5049"
 
 imJSHash :: String
-imJSHash = "c2419ec991df7cae4549"
+imJSHash = "d61d3cacec881fe8fa7b"
 
 internalHelpJSHash :: String
 internalHelpJSHash = "a0d4450f78b48653e83d"
