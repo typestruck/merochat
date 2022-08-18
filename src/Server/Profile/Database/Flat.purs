@@ -5,12 +5,10 @@ import Prelude
 import Data.Date (Date)
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
-import Data.String (Pattern(..))
-import Data.String as DS
-import Shared.IM.Types (DateWrapper(..))
+import Shared.DateTime (DateWrapper(..))
 import Shared.Profile.Types (ProfileUser)
 import Shared.Avatar as SA
-import Shared.User
+import Shared.User (Availability(..), Gender)
 import Server.Database.Flat as SDF
 
 type FlatProfileUser =

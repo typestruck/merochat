@@ -1,19 +1,13 @@
 module Shared.IM.Types where
 
 import Prelude
-import Shared.User
+import Shared.User (Availability, IU)
 
-import Data.Argonaut.Core as DAC
-import Data.Argonaut.Core as DAP
 import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Array as DA
-import Data.DateTime (Date)
-import Data.DateTime as DTT
-import Data.DateTime.Instant as DDI
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
@@ -22,13 +16,10 @@ import Data.Hashable (class Hashable)
 import Data.Hashable as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.Newtype (class Newtype)
 import Data.Show.Generic as DGRS
 import Data.String.Regex as DSRG
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
-import Data.Time.Duration as DTD
 import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
@@ -38,8 +29,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Shared.DateTime (DateTimeWrapper(..))
-import Shared.DateTime as SDT
+import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
@@ -241,7 +231,6 @@ data RetryableRequest
       | ReportUser Int
       | DeleteChat (Tuple Int (Maybe Int))
 
-newtype DateWrapper = DateWrapper Date
 
 data ReportReason = DatingContent | Harassment | HateSpeech | Spam | OtherReason
 
@@ -485,8 +474,6 @@ instance Enum MessageStatus where
 instance DecodeJson TimeoutIdWrapper where
       decodeJson = Right <<< UC.unsafeCoerce
 
-instance DecodeJson DateWrapper where
-      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 
 instance DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
@@ -517,9 +504,6 @@ instance DecodeJson MessageStatus where
 
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
-
-instance EncodeJson DateWrapper where
-      encodeJson = DAC.fromNumber <<< SDT.dateToNumber
 
 instance EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
@@ -577,9 +561,6 @@ instance Show ShowUserMenuModal where
             ShowBacker → "Backing"
             _ → ""
 
-instance showMDate ∷ Show DateWrapper where
-      show = DGRS.genericShow
-
 instance Show MessageContent where
       show = DGRS.genericShow
 
@@ -628,9 +609,6 @@ instance Show ElementId where
 instance EncodeQueryParam ArrayPrimaryKey where
       encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
 
-instance ReadForeign DateWrapper where
-      readImpl foreignDate = DateWrapper <<< DTT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
-
 instance DecodeQueryParam ArrayPrimaryKey where
       decodeQueryParam query key =
             case FO.lookup key query of
@@ -639,25 +617,18 @@ instance DecodeQueryParam ArrayPrimaryKey where
                   Just [ value ] → Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
                   _ → errorDecoding query key
 
-instance WriteForeign DateWrapper where
-      writeImpl = F.unsafeToForeign <<< SDT.dateToNumber
-
-derive instance Newtype DateWrapper _
-
 derive instance Eq ElementId
 derive instance Eq ShowContextMenu
 
 derive instance Eq ProfilePresentation
 derive instance Eq RetryableRequest
 derive instance Eq ShowChatModal
-derive instance Eq DateWrapper
 derive instance Eq ShowUserMenuModal
 derive instance Eq ReportReason
 derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
 derive instance Generic ReportReason _
-derive instance Generic DateWrapper _
 derive instance Generic MessageContent _
 derive instance Generic WebSocketPayloadClient _
 derive instance Generic FullWebSocketPayloadClient _
@@ -678,9 +649,6 @@ instance FromValue ReportReason where
 
 instance FromValue MessageStatus where
       fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v ∷ Either String Int)
-
-instance FromValue DateWrapper where
-      fromValue v = map DateWrapper (DL.fromValue v ∷ Either String Date)
 
 errorDecoding ∷ ∀ a. Object (Array String) → String → Either DecodeError a
 errorDecoding queryObj key = Left $ QueryDecodeError

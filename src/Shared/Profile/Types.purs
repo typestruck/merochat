@@ -5,23 +5,14 @@ import Prelude
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
-import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Show.Generic as DGRS
-import Data.String as DS
-import Data.String.Read (class Read)
-import Data.String.Read as DSR
 import Foreign as F
-import Foreign.Object (Object)
-import Foreign.Object as FO
-import Payload.Client.QueryParams (class EncodeQueryParam)
-import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.Experiments.Types (ExperimentData)
-import Shared.IM.Types (DateWrapper)
+import Shared.DateTime (DateWrapper)
 import Shared.Network (RequestStatus)
 import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
@@ -40,6 +31,9 @@ data ProfileMessage
 data Field
       = Generated What
       | Avatar (Maybe String)
+      | Age
+      | Gender
+      | Country
 
 data What
       = Name

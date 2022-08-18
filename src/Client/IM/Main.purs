@@ -569,7 +569,7 @@ checkMissedEvents model@{ experimenting, contacts, user: { id } } =
                           if DM.isNothing lastSentMessageID && DM.isNothing lastReceivedMessageID then
                                 pure Nothing
                           else
-                                CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderID: lastSentMessageID, lastRecipientId: lastReceivedMessageID } })
+                                CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderId: lastSentMessageID, lastRecipientId: lastReceivedMessageID } })
                   ]
 
 findLastMessages ∷ Array Contact → Int → { lastSentMessageID ∷ Maybe Int, lastReceivedMessageID ∷ Maybe Int }

@@ -28,6 +28,7 @@ import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
+import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.IM.Svg as SIS
 import Shared.IM.View.SuggestionProfile as SIVP
@@ -96,17 +97,17 @@ view
                   field = Proxy ∷ Proxy "age"
                   fieldInputed = Proxy ∷ Proxy "ageInputed"
                   currentFieldValue = map show <<< SDT.ageFrom $ map DN.unwrap user.age
-                  parser = map DateWrapper <<< SDT.unformatISODate
+                  parser = map DateWrapper <<< SDT.unformatIsoDate
                   control = HE.input
                         [ HA.type' "date"
                         , HA.class' "modal-input"
                         , HA.placeholder "yyyy-mm-dd"
                         , HA.onInput (setFieldInputed fieldInputed <<< parser)
-                        , HA.value <<< DM.fromMaybe "" $ map SDT.formatISODate user.age
+                        , HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate user.age
                         ]
             in
-                  displayEditOptionalField field (map HE.span_ currentFieldValue) control
-      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ Proxy "gender") (HE.span_ <<< show <$> user.gender)
+                  displayEditOptionalField field Age (map HE.span_ currentFieldValue) control
+      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ Proxy "gender") Gender (HE.span_ <<< show <$> user.gender)
       displayEditCountry =
             let
                   display country = HE.div (HA.class' "blocky")
@@ -114,7 +115,7 @@ view
                         , HE.text country
                         ]
             in
-                  displayEditOptional DI.fromString countries (Proxy ∷ Proxy "country") do
+                  displayEditOptional DI.fromString countries (Proxy ∷ Proxy "country") Country do
                         country ← user.country
                         display <<< _.name <$> DF.find ((country == _) <<< _.id) countries
 
@@ -222,15 +223,15 @@ view
                                 ]
                         ]
 
-      displayEditOptional ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Show t ⇒ Eq t ⇒ (String → Maybe t) → Array { id ∷ t, name ∷ String } → Proxy field → Maybe (Html ProfileMessage) → Html ProfileMessage
-      displayEditOptional parser options field currentFieldValue =
+      displayEditOptional ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Show t ⇒ Eq t ⇒ (String → Maybe t) → Array { id ∷ t, name ∷ String } → Proxy field → Field -> Maybe (Html ProfileMessage) → Html ProfileMessage
+      displayEditOptional parser options field what currentFieldValue =
             let
                   fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
             in
-                  displayEditOptionalField field currentFieldValue $ HE.select [ HA.onInput (setFieldInputed fieldInputed <<< parser) ] $ displayOptions (R.get field model.user) options
+                  displayEditOptionalField field what currentFieldValue $ HE.select [ HA.onInput (setFieldInputed fieldInputed <<< parser) ] $ displayOptions (R.get field model.user) options
 
-      displayEditOptionalField ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Proxy field → Maybe (Html ProfileMessage) → Html ProfileMessage → Html ProfileMessage
-      displayEditOptionalField field currentFieldValue control =
+      displayEditOptionalField ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Proxy field → Field -> Maybe (Html ProfileMessage) → Html ProfileMessage → Html ProfileMessage
+      displayEditOptionalField field what currentFieldValue control =
             let
                   stringField = TDS.reflectSymbol field
                   fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
@@ -251,7 +252,7 @@ view
                                 [ HE.div (HA.class' "bold") $ "Your " <> stringField
                                 , HE.div_
                                         [ control
-                                        , check (copyFromChoice field fieldInputed)
+                                        , check (Save what)
                                         , cancel fieldInputed
                                         ]
                                 ]
@@ -338,8 +339,6 @@ editField field fieldInputed =
 copyToField ∷ ∀ s t r field fieldInputed. IsSymbol field ⇒ Cons field (Array t) s PU ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe (Array t)) r PM ⇒ Proxy field → Proxy fieldInputed → ProfileMessage
 copyToField field fieldInputed = SetPField (\model → R.set fieldInputed Nothing $ SS.setUserField field (DM.fromMaybe [] $ R.get fieldInputed model) model)
 
-copyFromChoice ∷ ∀ s t r field fieldInputed. IsSymbol field ⇒ Cons field (Maybe t) s PU ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Proxy field → Proxy fieldInputed → ProfileMessage
-copyFromChoice field fieldInputed = SetPField (\model → R.set fieldInputed Nothing $ SS.setUserField field (DM.fromMaybe Nothing $ R.get fieldInputed model) model)
 
 resetFieldInputed ∷ ∀ fieldInputed r t. IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe t) r PM ⇒ Proxy fieldInputed → ProfileMessage
 resetFieldInputed fieldInputed = SetPField (R.set fieldInputed Nothing)

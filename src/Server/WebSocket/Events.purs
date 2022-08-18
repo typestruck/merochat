@@ -78,7 +78,7 @@ newtype DT = DT DateTime
 instance Newtype DT DateTime
 
 instance WriteForeign DT where
-      writeImpl (DT (DateTime dt (Time h m s ms))) = F.unsafeToForeign (SDT.formatISODate' dt <> "t" <> time <> "+0000")
+      writeImpl (DT (DateTime dt (Time h m s ms))) = F.unsafeToForeign (SDT.formatIsoDate' dt <> "t" <> time <> "+0000")
             where
             time = show (DEN.fromEnum h) <> ":" <> show (DEN.fromEnum m) <> ":" <> show (DEN.fromEnum s) <> "." <> show (DEN.fromEnum ms)
 

@@ -22,8 +22,6 @@ import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId)
-import Shared.Setter as SS
-import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 
 getFileInput ∷ Effect Element
@@ -37,11 +35,16 @@ update rc@{ message } =
             Save field → saveField rc field
             SetProfileChatExperiment experiment → setChatExperiment experiment
 
+saveField ∷ Environment ProfileModel ProfileMessage → Field → Aff (ProfileModel → ProfileModel)
 saveField rc@{ display } field = do
       display $ _ { loading = true }
       case field of
             Generated what → saveGeneratedField rc what
             Avatar base64 → saveAvatar rc base64
+            Age → saveAge rc
+            Gender → saveGender rc
+            Country → saveCountry rc
+      -- _ -> pure unit
       EA.delay $ Milliseconds 3000.0
       pure
             ( _
@@ -86,6 +89,36 @@ saveGeneratedField rc@{ display, model } what =
 saveAvatar rc@{ display } base64 = do
       void <<< save display $ request.profile.field.avatar { body: { base64 } }
       display $ _ { user { avatar = base64 } }
+
+saveAge rc@{ display, model: { ageInputed } } = do
+      let birthday = DM.fromMaybe Nothing ageInputed
+      void <<< save display $ request.profile.field.age { body: { birthday } }
+      display
+            ( _
+                    { ageInputed = Nothing
+                    , user { age = birthday }
+                    }
+            )
+
+saveGender rc@{ display, model: { genderInputed } } = do
+      let gender = DM.fromMaybe Nothing genderInputed
+      void <<< save display $ request.profile.field.gender { body: { gender } }
+      display
+            ( _
+                    { genderInputed = Nothing
+                    , user { gender = gender }
+                    }
+            )
+
+saveCountry rc@{ display, model: { countryInputed } } = do
+      let country = DM.fromMaybe Nothing countryInputed
+      void <<< save display $ request.profile.field.country { body: { country } }
+      display
+            ( _
+                    { countryInputed = Nothing
+                    , user { country = country }
+                    }
+            )
 
 save display request = do
       result ← request

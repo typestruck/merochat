@@ -61,6 +61,9 @@ handlers reading =
               , field:
                       { generated: runJson reading SPH.generated
                       , avatar: runJson reading SPH.avatar
+                      , age: runJson reading SPH.age
+                      , gender: runJson reading SPH.gender
+                      , country: runJson reading SPH.country
                       }
               }
       , login:

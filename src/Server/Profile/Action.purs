@@ -1,32 +1,27 @@
 module Server.Profile.Action where
 
 import Prelude
-import Server.Types
-import Shared.Profile.Types
+import Server.Types (ServerEffect)
+import Shared.Profile.Types (ProfileUser, What(..))
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
-import Data.Reflectable (class Reflectable)
-import Data.Reflectable as DR
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
-import Data.Symbol (class IsSymbol)
-import Data.Symbol as TDS
-import Prim.Row (class Cons)
 import Run as R
 import Server.File as SF
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
+import Shared.User (Gender)
 import Server.Profile.Types (Payload)
 import Server.Response as SR
-import Server.ThreeK as SB
 import Server.ThreeK as ST
 import Shared.DateTime as SDT
+import Shared.DateTime (DateWrapper)
 import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
-import Type.Proxy (Proxy)
 
 tooManyTagsMessage ∷ String
 tooManyTagsMessage = "Number of tags larger than " <> show maxTags <> " limit"
@@ -73,6 +68,18 @@ saveAvatar loggedUserId base64 = do
                         pure $ Just fileName
       SPD.saveField loggedUserId "avatar" avatar
 
+saveAge ∷ Int → Maybe DateWrapper → ServerEffect Unit
+saveAge loggedUserId birthday = do
+      thirteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
+      when (map DN.unwrap birthday > thirteen) $ SR.throwBadRequest tooYoungMessage
+      SPD.saveField loggedUserId "birthday" birthday
+
+saveGender ∷ Int → Maybe Gender → ServerEffect Unit
+saveGender loggedUserId gender = SPD.saveField loggedUserId "gender" gender
+
+saveCountry ∷ Int → Maybe Int → ServerEffect Unit
+saveCountry loggedUserId country = SPD.saveField loggedUserId "country" country
+
 saveProfile ∷ Int → ProfileUser → ServerEffect Unit
 saveProfile loggedUserId profileUser@{ name, age, headline, description, avatar, languages, tags } = do
       when anyFieldIsTooBig $ SR.throwBadRequest fieldTooBigMessage
@@ -99,5 +106,4 @@ saveProfile loggedUserId profileUser@{ name, age, headline, description, avatar,
             , tags
             }
       where
-      isNull = DS.null <<< DS.trim
       anyFieldIsTooBig = DS.length name > nameMaxCharacters || DS.length headline > headlineMaxCharacters || DS.length description > descriptionMaxCharacters || DA.any ((_ > tagMaxCharacters) <<< DS.length) tags
