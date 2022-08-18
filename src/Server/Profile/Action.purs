@@ -1,8 +1,6 @@
 module Server.Profile.Action where
 
 import Prelude
-import Server.Types (ServerEffect)
-import Shared.Profile.Types (ProfileUser, What(..))
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -14,20 +12,19 @@ import Run as R
 import Server.File as SF
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
-import Shared.User (Gender)
 import Server.Profile.Types (Payload)
 import Server.Response as SR
 import Server.ThreeK as ST
-import Shared.DateTime as SDT
+import Server.Types (ServerEffect)
 import Shared.DateTime (DateWrapper)
+import Shared.DateTime as SDT
 import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
+import Shared.Profile.Types (ProfileUser, What(..))
+import Shared.User (Gender)
 
 tooManyTagsMessage ∷ String
 tooManyTagsMessage = "Number of tags larger than " <> show maxTags <> " limit"
-
-tooManyLanguagesMessage ∷ String
-tooManyLanguagesMessage = "Number of languages larger than " <> show maxLanguages <> " limit"
 
 tooYoungMessage ∷ String
 tooYoungMessage = "You must be over 13 years old in order to use MelanChat"
@@ -80,11 +77,13 @@ saveGender loggedUserId gender = SPD.saveField loggedUserId "gender" gender
 saveCountry ∷ Int → Maybe Int → ServerEffect Unit
 saveCountry loggedUserId country = SPD.saveField loggedUserId "country" country
 
+saveLanguages ∷ Int → Maybe (Array Int) → ServerEffect Unit
+saveLanguages loggedUserId languages = SPD.saveLanguages loggedUserId <<< DA.take maxLanguages $ DM.fromMaybe [] languages
+
 saveProfile ∷ Int → ProfileUser → ServerEffect Unit
 saveProfile loggedUserId profileUser@{ name, age, headline, description, avatar, languages, tags } = do
       when anyFieldIsTooBig $ SR.throwBadRequest fieldTooBigMessage
       when (DA.length tags > maxTags) $ SR.throwBadRequest tooManyTagsMessage
-      when (DA.length languages > maxLanguages) $ SR.throwBadRequest tooManyLanguagesMessage
       thirteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map DN.unwrap age > thirteen) $ SR.throwBadRequest tooYoungMessage
 

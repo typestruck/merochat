@@ -64,6 +64,7 @@ handlers reading =
                       , age: runJson reading SPH.age
                       , gender: runJson reading SPH.gender
                       , country: runJson reading SPH.country
+                      , language: runJson reading SPH.language
                       }
               }
       , login:

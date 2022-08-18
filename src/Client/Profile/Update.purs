@@ -44,6 +44,7 @@ saveField rc@{ display } field = do
             Age → saveAge rc
             Gender → saveGender rc
             Country → saveCountry rc
+            Languages → saveLanguages rc
       -- _ -> pure unit
       EA.delay $ Milliseconds 3000.0
       pure
@@ -117,6 +118,16 @@ saveCountry rc@{ display, model: { countryInputed } } = do
             ( _
                     { countryInputed = Nothing
                     , user { country = country }
+                    }
+            )
+
+saveLanguages rc@{ display, model: { languagesInputedList } } = do
+      void <<< save display $ request.profile.field.language { body: { ids: languagesInputedList } }
+      display
+            ( _
+                    { languagesInputed = Nothing
+                    , languagesInputedList = Nothing
+                    , user { languages = DM.fromMaybe [] languagesInputedList }
                     }
             )
 

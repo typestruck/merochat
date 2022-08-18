@@ -34,6 +34,7 @@ data Field
       | Age
       | Gender
       | Country
+      | Languages
 
 data What
       = Name

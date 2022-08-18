@@ -134,13 +134,17 @@ spec ∷
                                                               { body ∷ { gender ∷ Maybe Gender }
                                                               , response ∷ Ok
                                                               }
-                                                            , country ∷
+                                                , country ∷
                                                         POST "/country"
                                                               { body ∷ { country ∷ Maybe Int }
                                                               , response ∷ Ok
                                                               }
+                                                , language ∷
+                                                        POST "/language"
+                                                              { body ∷ { ids ∷ Maybe (Array Int) }
+                                                              , response ∷ Ok
+                                                              }
                                                 }
-
                                   }
                     , settings ∷
                             Routes "/settings"

@@ -216,7 +216,7 @@ view
                                 , HE.div (HA.class' "profile-edition-add-list")
                                         [ HE.div (HA.class' "grow") <<< map displayRemoveItem $ DM.fromMaybe [] currentFieldInputedList
                                         , HE.div_
-                                                [ check (copyToField field fieldInputedList)
+                                                [ check (Save Languages)
                                                 , cancel fieldInputedList
                                                 ]
                                         ]
@@ -335,10 +335,6 @@ editField field fieldInputed =
                     , descriptionInputed = Nothing
                     }
             )
-
-copyToField ∷ ∀ s t r field fieldInputed. IsSymbol field ⇒ Cons field (Array t) s PU ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe (Array t)) r PM ⇒ Proxy field → Proxy fieldInputed → ProfileMessage
-copyToField field fieldInputed = SetPField (\model → R.set fieldInputed Nothing $ SS.setUserField field (DM.fromMaybe [] $ R.get fieldInputed model) model)
-
 
 resetFieldInputed ∷ ∀ fieldInputed r t. IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe t) r PM ⇒ Proxy fieldInputed → ProfileMessage
 resetFieldInputed fieldInputed = SetPField (R.set fieldInputed Nothing)

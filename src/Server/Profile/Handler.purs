@@ -52,3 +52,8 @@ country ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { country ∷ Maybe 
 country { guards: { loggedUserId }, body: { country: id } } = do
       SPA.saveCountry loggedUserId id
       pure ok
+
+language ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { ids ∷ Maybe (Array Int) } } → ServerEffect Ok
+language { guards: { loggedUserId }, body: { ids } } = do
+      SPA.saveLanguages loggedUserId ids
+      pure ok

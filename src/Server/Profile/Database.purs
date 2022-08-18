@@ -15,12 +15,14 @@ import Server.Profile.Database.Flat
 import Server.Types
 import Shared.ContentType
 
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.Reflectable (class Reflectable)
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
+import Prelude as P
 import Prim.Row (class Cons)
 import Server.Database as SD
 import Shared.Profile.Types (ProfileUser)
@@ -53,6 +55,11 @@ presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _
 
 saveField ∷ forall t. ToValue t => Int -> String → t → ServerEffect Unit
 saveField loggedUserId field value = SD.unsafeExecute ("UPDATE users SET " <> field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
+
+saveLanguages ∷ Int → Array Int → ServerEffect Unit
+saveLanguages loggedUserId languages = SD.withTransaction $ \connection → void do
+      SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. loggedUserId)
+      when (P.not $ DA.null languages) $ SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (map (loggedUserId /\ _) languages)
 
 --refactor: add to droplet: with, on conflict
 saveProfile ∷ { user ∷ ProfileUser, avatar ∷ Maybe String, languages ∷ Array Int, tags ∷ Array String } → ServerEffect Unit
