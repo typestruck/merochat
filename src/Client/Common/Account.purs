@@ -6,7 +6,7 @@ import Shared.IM.Types
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN
 import Client.Common.Network as CNN
-import Client.Common.Types (RequestStatus(..))
+import Shared.Network (RequestStatus(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))

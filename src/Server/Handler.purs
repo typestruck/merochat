@@ -57,8 +57,15 @@ handlers reading =
               }
       , profile:
               { get: runJson reading SPH.profile
-              , post: runJson reading SPH.profileUpdate
-              , generate: runJson reading SPH.generate
+              , field:
+                      { generated: runJson reading SPH.generated
+                      , avatar: runJson reading SPH.avatar
+                      , age: runJson reading SPH.age
+                      , gender: runJson reading SPH.gender
+                      , country: runJson reading SPH.country
+                      , language: runJson reading SPH.language
+                      , tag: runJson reading SPH.tag
+                      }
               }
       , login:
               { get: runHtml reading SLGH.login

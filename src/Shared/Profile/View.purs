@@ -1,9 +1,11 @@
 module Shared.Profile.View where
 
 import Prelude
+import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.IM.Types
-import Shared.ContentType
+import Shared.Network
+import Shared.Profile.Types
 
 import Data.Array ((:))
 import Data.Array as DA
@@ -17,7 +19,7 @@ import Data.String as DS
 import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol)
 import Data.Tuple (Tuple(..))
-import Data.Tuple as DT
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -26,22 +28,17 @@ import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
+import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.IM.Svg as SIS
 import Shared.IM.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
-import Shared.Path as SP
-import Shared.Profile.Types (Generate(..), PM, PU, ProfileMessage(..), ProfileModel, Choice)
 import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
-import Test.Spec.Runner.Event (Name)
 import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
-
-profileEditionId ∷ String
-profileEditionId = "profile-edition-form"
 
 --REFACTOR: some bits can still be abstracted
 view ∷ ProfileModel → Html ProfileMessage
@@ -50,14 +47,21 @@ view
             { user
             , countries
             , languages
-            , generating
-            , hideSuccessMessage
+            , loading
+            , updateRequestStatus
             , descriptionInputed
             , experimenting
-            } = HE.div profileEditionId
+            } = HE.div (show ProfileEditionForm)
       [ impersonationProfile experimenting
       , HE.div [ HA.class' { "profile-edition suggestion contact": true, hidden: DM.isJust experimenting } ]
-              [ HE.div (HA.class' "avatar-edition")
+              [ HE.div (HA.class' { "loading-over": true, hidden: not loading })
+                      [ HE.div' (HA.class' "loading")
+                      ]
+              , HE.div (HA.class' "request-result-message success")
+                      [ HE.span (HA.class' { "request-error-message": true, hidden: updateRequestStatus /= Just Failure }) "Could not update field. Please try again later"
+                      , HE.span [ HA.class' { "input success-message": true, hidden: updateRequestStatus /= Just Success } ] "Profile has been updated"
+                      ]
+              , HE.div (HA.class' "avatar-edition")
                       [ HE.div (HA.onClick SelectAvatar)
                               [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar ]
                               , pen
@@ -82,11 +86,6 @@ view
                       ]
               , displayEditTags
               , displayEditDescription
-              , HE.div (HA.class' "button-save-bottom")
-                      [ HE.input [ HA.type' "button", HA.onClick SaveProfile, HA.value "Update profile", HA.class' "green-button center-flex" ]
-                      , HE.span' (HA.class' "request-error-message")
-                      , HE.span [ HA.class' { "success-message": true, hidden: hideSuccessMessage } ] "Profiled updated!"
-                      ]
               ]
       ]
       where
@@ -98,17 +97,17 @@ view
                   field = Proxy ∷ Proxy "age"
                   fieldInputed = Proxy ∷ Proxy "ageInputed"
                   currentFieldValue = map show <<< SDT.ageFrom $ map DN.unwrap user.age
-                  parser = map DateWrapper <<< SDT.unformatISODate
+                  parser = map DateWrapper <<< SDT.unformatIsoDate
                   control = HE.input
                         [ HA.type' "date"
                         , HA.class' "modal-input"
                         , HA.placeholder "yyyy-mm-dd"
                         , HA.onInput (setFieldInputed fieldInputed <<< parser)
-                        , HA.value <<< DM.fromMaybe "" $ map SDT.formatISODate user.age
+                        , HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate user.age
                         ]
             in
-                  displayEditOptionalField field (map HE.span_ currentFieldValue) control
-      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ Proxy "gender") (HE.span_ <<< show <$> user.gender)
+                  displayEditOptionalField field Age (map HE.span_ currentFieldValue) control
+      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ Proxy "gender") Gender (HE.span_ <<< show <$> user.gender)
       displayEditCountry =
             let
                   display country = HE.div (HA.class' "blocky")
@@ -116,7 +115,7 @@ view
                         , HE.text country
                         ]
             in
-                  displayEditOptional DI.fromString countries (Proxy ∷ Proxy "country") do
+                  displayEditOptional DI.fromString countries (Proxy ∷ Proxy "country") Country do
                         country ← user.country
                         display <<< _.name <$> DF.find ((country == _) <<< _.id) countries
 
@@ -131,7 +130,7 @@ view
                               ]
                   control = HE.select [ HA.onInput (setFieldInputedMaybe fieldInputed <<< DI.fromString) ] $ displayOptionsWith "Select" model.languagesInputed languages
             in
-                  displayEditList (Proxy ∷ Proxy "languages") getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
+                  displayEditList (Proxy ∷ Proxy "languages") Languages getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
       displayEditTags =
             let
                   fieldInputed = Proxy ∷ Proxy "tagsInputed"
@@ -142,21 +141,16 @@ view
                   control = HE.input
                         [ HA.type' "text"
                         , HA.class' "modal-input"
-                        ,
-                          -- SF.focus,
-                          HA.maxlength tagMaxCharacters
+                        , HA.maxlength tagMaxCharacters
                         , HA.value $ DM.fromMaybe "" model.tagsInputed
                         , HA.onKeydown (exitEditGenerated (appendInputedMaybe fieldInputedList fieldInputed) fieldInputed)
                         , HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
                         ]
             in
-                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ Proxy "tags") identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
+                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ Proxy "tags") Tags identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
 
       displayEditDescription = HE.fragment
-            [ HE.div (HA.class' { hidden: generating /= Just Description })
-                    [ HE.div' (HA.class' "loading")
-                    ]
-            , HE.div (HA.class' { invisible: generating == Just Description })
+            [ HE.div_
                     [ HE.div [ title "description", HA.class' { hidden: DM.isJust descriptionInputed }, HA.onClick (editField (Proxy ∷ Proxy "description") (Proxy ∷ Proxy "descriptionInputed")) ]
                             [ HE.div (HA.class' "about")
                                     [ HE.span (HA.class' "duller") "About"
@@ -179,15 +173,15 @@ view
                                       HA.onInput (setFieldInputed (Proxy ∷ Proxy "descriptionInputed"))
                                     ] $ DM.fromMaybe "" descriptionInputed
                             , HE.div (HA.class' "save-cancel")
-                                    [ check (SetGenerate Description)
+                                    [ check (Save $ Generated Description)
                                     , cancel (Proxy ∷ Proxy "descriptionInputed")
                                     ]
                             ]
                     ]
             ]
 
-      displayEditList ∷ ∀ r s t u field fieldInputed fieldInputedList. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Append field "InputedList" fieldInputedList ⇒ IsSymbol fieldInputedList ⇒ Cons fieldInputed (Maybe t) u PM ⇒ Cons fieldInputedList (Maybe (Array t)) r PM ⇒ Cons field (Array t) s PU ⇒ Ord t ⇒ Eq t ⇒ Proxy field → (t → String) → Maybe (Html ProfileMessage) → Html ProfileMessage → String → Int → Html ProfileMessage
-      displayEditList field formatter currentFieldValue control explanation maxElements =
+      displayEditList ∷ ∀ r s t u field fieldInputed fieldInputedList. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Append field "InputedList" fieldInputedList ⇒ IsSymbol fieldInputedList ⇒ Cons fieldInputed (Maybe t) u PM ⇒ Cons fieldInputedList (Maybe (Array t)) r PM ⇒ Cons field (Array t) s PU ⇒ Ord t ⇒ Eq t ⇒ Proxy field → Field -> (t → String) → Maybe (Html ProfileMessage) → Html ProfileMessage → String → Int → Html ProfileMessage
+      displayEditList field what formatter currentFieldValue control explanation maxElements =
             let
                   stringField = TDS.reflectSymbol field
                   fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
@@ -222,22 +216,22 @@ view
                                 , HE.div (HA.class' "profile-edition-add-list")
                                         [ HE.div (HA.class' "grow") <<< map displayRemoveItem $ DM.fromMaybe [] currentFieldInputedList
                                         , HE.div_
-                                                [ check (copyToField field fieldInputedList)
+                                                [ check (Save what)
                                                 , cancel fieldInputedList
                                                 ]
                                         ]
                                 ]
                         ]
 
-      displayEditOptional ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Show t ⇒ Eq t ⇒ (String → Maybe t) → Array { id ∷ t, name ∷ String } → Proxy field → Maybe (Html ProfileMessage) → Html ProfileMessage
-      displayEditOptional parser options field currentFieldValue =
+      displayEditOptional ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Show t ⇒ Eq t ⇒ (String → Maybe t) → Array { id ∷ t, name ∷ String } → Proxy field → Field -> Maybe (Html ProfileMessage) → Html ProfileMessage
+      displayEditOptional parser options field what currentFieldValue =
             let
                   fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
             in
-                  displayEditOptionalField field currentFieldValue $ HE.select [ HA.onInput (setFieldInputed fieldInputed <<< parser) ] $ displayOptions (R.get field model.user) options
+                  displayEditOptionalField field what currentFieldValue $ HE.select [ HA.onInput (setFieldInputed fieldInputed <<< parser) ] $ displayOptions (R.get field model.user) options
 
-      displayEditOptionalField ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Proxy field → Maybe (Html ProfileMessage) → Html ProfileMessage → Html ProfileMessage
-      displayEditOptionalField field currentFieldValue control =
+      displayEditOptionalField ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Proxy field → Field -> Maybe (Html ProfileMessage) → Html ProfileMessage → Html ProfileMessage
+      displayEditOptionalField field what currentFieldValue control =
             let
                   stringField = TDS.reflectSymbol field
                   fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
@@ -258,13 +252,13 @@ view
                                 [ HE.div (HA.class' "bold") $ "Your " <> stringField
                                 , HE.div_
                                         [ control
-                                        , check (copyFromChoice field fieldInputed)
+                                        , check (Save what)
                                         , cancel fieldInputed
                                         ]
                                 ]
                         ]
 
-      displayEditGenerated ∷ ∀ r s field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe String) r PM ⇒ Cons field String s PU ⇒ Generate → Proxy field → String → Int → Html ProfileMessage
+      displayEditGenerated ∷ ∀ r s field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe String) r PM ⇒ Cons field String s PU ⇒ What → Proxy field → String → Int → Html ProfileMessage
       displayEditGenerated what field explanation maxLength =
             let
                   stringField = TDS.reflectSymbol field
@@ -272,36 +266,31 @@ view
                   currentInputed = R.get fieldInputed model
                   isEditing = DM.isJust currentInputed
             in
-                  if generating == Just what then
-                        HE.div' (HA.class' "loading")
-                  else
-                        HE.div_
-                              [ HE.div [ title stringField, HA.class' { "hidden": isEditing, "value-edition": true }, HA.onClick (editField field fieldInputed) ]
-                                      [ HE.span [ HA.class' $ "profile-edition-" <> stringField ] [ HE.text $ R.get field model.user ]
-                                      , pen
-                                      ]
-                              , HE.div (HA.class' { edition: true, hidden: not isEditing })
-                                      [ HE.div (HA.class' "bold") $ "Your " <> stringField
-                                      , HE.div (HA.class' "duller")
-                                              [ HE.text explanation
-                                              , HE.br
-                                              , HE.text $ "Leave it blank to generate a new random " <> stringField
-                                              ]
-                                      , HE.div_
-                                              [ HE.input
-                                                      [
-                                                        -- SF.focus,
-                                                        HA.class' "modal-input"
-                                                      , HA.maxlength maxLength
-                                                      , HA.onKeydown (exitEditGenerated (SetGenerate what) fieldInputed)
-                                                      , HA.onInput (setFieldInputed fieldInputed)
-                                                      , HA.value $ DM.fromMaybe "" currentInputed
-                                                      ]
-                                              , check (SetGenerate what)
-                                              , cancel fieldInputed
-                                              ]
-                                      ]
-                              ]
+                  HE.div_
+                        [ HE.div [ title stringField, HA.class' { "hidden": isEditing, "value-edition": true }, HA.onClick (editField field fieldInputed) ]
+                                [ HE.span [ HA.class' $ "profile-edition-" <> stringField ] [ HE.text $ R.get field model.user ]
+                                , pen
+                                ]
+                        , HE.div (HA.class' { edition: true, hidden: not isEditing })
+                                [ HE.div (HA.class' "bold") $ "Your " <> stringField
+                                , HE.div (HA.class' "duller")
+                                        [ HE.text explanation
+                                        , HE.br
+                                        , HE.text $ "Leave it blank to generate a new random " <> stringField
+                                        ]
+                                , HE.div_
+                                        [ HE.input
+                                                [ HA.class' "modal-input"
+                                                , HA.maxlength maxLength
+                                                , HA.onKeydown (exitEditGenerated (Save $ Generated what) fieldInputed)
+                                                , HA.onInput (setFieldInputed fieldInputed)
+                                                , HA.value $ DM.fromMaybe "" currentInputed
+                                                ]
+                                        , check (Save $ Generated what)
+                                        , cancel fieldInputed
+                                        ]
+                                ]
+                        ]
 
       languageHM = DH.fromArray $ map (\{ id, name } → Tuple id name) languages
       getLanguage = SU.fromJust <<< flip DH.lookup languageHM
@@ -344,15 +333,8 @@ editField field fieldInputed =
                     , tagsInputed = Nothing
                     , tagsInputedList = Nothing
                     , descriptionInputed = Nothing
-                    , generating = Nothing
                     }
             )
-
-copyToField ∷ ∀ s t r field fieldInputed. IsSymbol field ⇒ Cons field (Array t) s PU ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe (Array t)) r PM ⇒ Proxy field → Proxy fieldInputed → ProfileMessage
-copyToField field fieldInputed = SetPField (\model → R.set fieldInputed Nothing $ SS.setUserField field (DM.fromMaybe [] $ R.get fieldInputed model) model)
-
-copyFromChoice ∷ ∀ s t r field fieldInputed. IsSymbol field ⇒ Cons field (Maybe t) s PU ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Proxy field → Proxy fieldInputed → ProfileMessage
-copyFromChoice field fieldInputed = SetPField (\model → R.set fieldInputed Nothing $ SS.setUserField field (DM.fromMaybe Nothing $ R.get fieldInputed model) model)
 
 resetFieldInputed ∷ ∀ fieldInputed r t. IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe t) r PM ⇒ Proxy fieldInputed → ProfileMessage
 resetFieldInputed fieldInputed = SetPField (R.set fieldInputed Nothing)
@@ -419,11 +401,7 @@ nothingOnEmpty s =
             v → Just v
 
 resetAvatar ∷ ProfileMessage
-resetAvatar = SetPField $ \model → model
-      { user = model.user
-              { avatar = Nothing
-              }
-      }
+resetAvatar = Save $ Avatar Nothing
 
 removeContents ∷ ∀ message. Array (Html message)
 removeContents =

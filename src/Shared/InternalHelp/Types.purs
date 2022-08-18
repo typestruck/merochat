@@ -8,7 +8,6 @@ import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Shared.Experiments.Types (ExperimentData)
-import Shared.Profile.Types (Generate)
 
 type InternalHelpModel =
       { toggleHelp ∷ DisplayHelpSection

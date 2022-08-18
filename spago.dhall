@@ -59,7 +59,6 @@ You can edit this file as you like.
   , "safe-coerce"
   , "simple-json"
   , "simple-jwt"
-  , "spec"
   , "strings"
   , "test-unit"
   , "transformers"

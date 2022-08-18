@@ -2,58 +2,52 @@ module Shared.DateTime where
 
 import Prelude
 
-
-import Data.Show.Generic as DGRS
+import Data.Argonaut.Core as DAC
+import Data.Argonaut.Core as DAP
+import Data.Argonaut.Decode (class DecodeJson)
+import Data.Argonaut.Decode as DAD
+import Data.Argonaut.Encode (class EncodeJson)
 import Data.Array ((!!))
-import Data.Date (Date)
 import Data.Date as DD
-import Data.DateTime (Date(..), DateTime(..), Time(..))
+import Data.DateTime (Date, DateTime(..), Time(..))
 import Data.DateTime as DDT
+import Data.DateTime as DTT
 import Data.DateTime.Instant as DDI
+import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum)
 import Data.Enum as DE
-import Data.Function.Uncurried as DFU
-import Data.Int as DI
-import Simple.JSON (class ReadForeign, class WriteForeign)
-import Data.Int as DIN
-import Data.Interval (DurationComponent(..))
-import Payload.Client.QueryParams (class EncodeQueryParam)
-import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Data.List as DA
-import Data.List as DL
-import Data.Maybe (Maybe(..))
 import Data.Generic.Rep (class Generic)
-import Foreign.Object (Object)
-import Foreign.Object as FO
-import Droplet.Language (class FromValue, class ToValue)
-import Data.Argonaut.Core as DAC
-import Data.Number as DNM
-import Data.Argonaut.Core as DAP
+import Data.Int as DI
+import Data.List as DA
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Droplet.Language as DL
 import Data.Newtype as DN
+import Data.Number as DNM
+import Data.Show.Generic as DGRS
 import Data.String (Pattern(..))
-import Data.Either (Either(..))
 import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Time.Duration as DTD
+import Droplet.Language (class FromValue, class ToValue)
+import Droplet.Language (fromValue) as DL
 import Effect (Effect)
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Foreign (Foreign, ForeignError(..), F)
 import Foreign as F
+import Foreign.Object (Object)
+import Foreign.Object as FO
+import Payload.Client.QueryParams (class EncodeQueryParam)
+import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.Unsafe as SU
-import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode as DAD
-import Data.Argonaut.Decode.Generic as DADGR
-import Data.Argonaut.Encode (class EncodeJson)
-import Data.Argonaut.Encode.Generic as DAEGR
+import Simple.JSON (class ReadForeign, class WriteForeign)
 
 foreign import time ∷ Number → String
 foreign import dayOfTheWeek ∷ Number → String
 foreign import fullDate ∷ Number → String
+
+newtype DateWrapper = DateWrapper Date
 
 newtype DateTimeWrapper = DateTimeWrapper DateTime
 
@@ -95,24 +89,24 @@ readDate foreignDateTime = do
             Nothing → F.fail $ ForeignError "could not parse datetime"
             Just instant → pure $ DDI.toDateTime instant
 
-dateToNumber ∷ ∀ n. Newtype n Date ⇒ n → Number
+dateToNumber ∷  DateWrapper → Number
 dateToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDate <<< DN.unwrap
 
-dateTimeToNumber ∷ ∀ n. Newtype n DateTime ⇒ n → Number
+dateTimeToNumber ∷ DateTimeWrapper → Number
 dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwrap
 
-formatISODate ∷ ∀ n. Newtype n Date ⇒ n → String
-formatISODate dateWrapper = formatISODate' $ DN.unwrap dateWrapper
+formatIsoDate ∷ DateWrapper → String
+formatIsoDate dateWrapper = formatIsoDate' $ DN.unwrap dateWrapper
 
-formatISODate' ∷ Date  → String
-formatISODate' date = DA.intercalate "-" $ map (pad <<< show) [ DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date ]
+formatIsoDate' ∷ Date → String
+formatIsoDate' date = DA.intercalate "-" $ map (pad <<< show) [ DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date ]
       where
       pad value = case DS.length value of
             1 → "0" <> value
             _ → value
 
-unformatISODate ∷ String → Maybe Date
-unformatISODate value = do
+unformatIsoDate ∷ String → Maybe Date
+unformatIsoDate value = do
       year ← parseUnit 0
       month ← parseUnit 1
       day ← parseUnit 2
@@ -166,19 +160,30 @@ dayDiff dateTime = days now - days dateTime
       now = unsafeNow
       days dt = DI.floor $ DN.unwrap (DDT.diff dt firstDay ∷ Days)
 
-localDateTimeWith ∷ _ → DateTime → String
+localDateTimeWith ∷ (Number -> String) → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
 
+instance DecodeJson DateWrapper where
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 
 instance DecodeJson DateTimeWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber Nothing (DDI.instant <<< DTD.Milliseconds)
+
+instance EncodeJson DateWrapper where
+      encodeJson = DAC.fromNumber <<< dateToNumber
 
 instance EncodeJson DateTimeWrapper where
       encodeJson = DAC.fromNumber <<< dateTimeToNumber
 
 derive instance Ord DateTimeWrapper
 
+derive instance Eq DateWrapper
+
 derive instance Newtype DateTimeWrapper _
+
+derive instance Generic DateWrapper _
+
+derive instance Newtype DateWrapper _
 
 derive instance Generic DateTimeWrapper _
 
@@ -187,14 +192,29 @@ instance FromValue DateTimeWrapper where
 
 derive instance Eq DateTimeWrapper
 
+instance WriteForeign DateWrapper where
+      writeImpl = F.unsafeToForeign <<< dateToNumber
+
 instance WriteForeign DateTimeWrapper where
       writeImpl = F.unsafeToForeign <<< dateTimeToNumber
+
+instance Show DateWrapper where
+      show = DGRS.genericShow
 
 instance Show DateTimeWrapper where
       show = DGRS.genericShow
 
+instance FromValue DateWrapper where
+      fromValue v = map DateWrapper (DL.fromValue v ∷ Either String Date)
+
+instance ToValue DateWrapper where
+      toValue = F.unsafeToForeign <<< formatIsoDate
+
 instance EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< show <<< dateTimeToNumber
+
+instance ReadForeign DateWrapper where
+      readImpl foreignDate = DateWrapper <<< DTT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
 
 instance ReadForeign DateTimeWrapper where
       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime

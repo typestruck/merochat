@@ -104,7 +104,7 @@ scrollDown element = do
 scrollIntoView ∷ Element → Effect Unit
 scrollIntoView element = EU.runEffectFn1 scrollIntoView_ element
 
--- | Input value property or button inner text
+-- | Field value property or button inner text
 value ∷ Element → Effect String
 value element = EU.runEffectFn1 value_ element
 

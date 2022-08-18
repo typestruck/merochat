@@ -6,7 +6,7 @@ import Client.Common.Account as CCA
 import Client.Common.Captcha as CCC
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Client.Common.Types (RequestStatus(..))
+import Shared.Network
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
@@ -26,7 +26,7 @@ register captchaResponse = do
                         status ← CCA.formRequest $ request.register $ { body: rl { captchaResponse = captchaResponse } }
                         liftEffect $ case status of
                               Success → CCL.setLocation $ routes.im.get {}
-                              Fail → CCC.grecaptchaReset
+                              Failure → CCC.grecaptchaReset
 
 -- | Callback for grecaptcha
 completeRegistration ∷ String → Effect Unit
@@ -34,4 +34,3 @@ completeRegistration captchaResponse = register $ Just captchaResponse
 
 main ∷ Effect Unit
 main = CCA.registerEvents (register Nothing)
-

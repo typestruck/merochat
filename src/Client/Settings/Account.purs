@@ -6,7 +6,7 @@ import Shared.ContentType
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CNN
-import Client.Common.Types (RequestStatus(..))
+import Shared.Network (RequestStatus(..))
 import Data.Symbol (class IsSymbol)
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA

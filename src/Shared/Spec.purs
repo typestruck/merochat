@@ -4,13 +4,14 @@ import Prelude
 import Server.Ok
 import Shared.ContentType
 import Shared.IM.Types
-
+import Shared.Profile.Types
+import Shared.User
 import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword)
-import Shared.Profile.Types (Generate, ProfileUser)
+import Shared.DateTime (DateWrapper(..))
 import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileVisibility)
 
@@ -87,9 +88,9 @@ spec ∷
                                                 , response ∷ Ok
                                                 }
                                   , missedEvents ∷
-                                          GET "/missed?lastSenderID=<lastSenderID>&lastRecipientId=<lastRecipientId>"
+                                          GET "/missed?lastSenderId=<lastSenderId>&lastRecipientId=<lastRecipientId>"
                                                 { query ∷
-                                                        { lastSenderID ∷ Maybe Int
+                                                        { lastSenderId ∷ Maybe Int
                                                         , lastRecipientId ∷ Maybe Int
                                                         }
                                                 , response ∷ MissedEvents
@@ -111,15 +112,43 @@ spec ∷
                                           GET "/"
                                                 { response ∷ String
                                                 }
-                                  , post ∷
-                                          POST "/"
-                                                { body ∷ ProfileUser
-                                                , response ∷ Ok
-                                                }
-                                  , generate ∷
-                                          GET "/generate?what=<what>"
-                                                { query ∷ { what ∷ Generate }
-                                                , response ∷ String
+                                  , field ∷
+                                          Routes "/field"
+                                                { generated ∷
+                                                        POST "/generated"
+                                                              { body ∷ GeneratedInput
+                                                              , response ∷ String
+                                                              }
+                                                , avatar ∷
+                                                        POST "/avatar"
+                                                              { body ∷ { base64 ∷ Maybe String }
+                                                              , response ∷ Ok
+                                                              }
+                                                , age ∷
+                                                        POST "/age"
+                                                              { body ∷ { birthday ∷ Maybe DateWrapper }
+                                                              , response ∷ Ok
+                                                              }
+                                                , gender ∷
+                                                        POST "/gender"
+                                                              { body ∷ { gender ∷ Maybe Gender }
+                                                              , response ∷ Ok
+                                                              }
+                                                , country ∷
+                                                        POST "/country"
+                                                              { body ∷ { country ∷ Maybe Int }
+                                                              , response ∷ Ok
+                                                              }
+                                                , language ∷
+                                                        POST "/language"
+                                                              { body ∷ { ids ∷ Maybe (Array Int) }
+                                                              , response ∷ Ok
+                                                              }
+                                                , tag ∷
+                                                        POST "/tag"
+                                                              { body ∷ { tags ∷ Maybe (Array String) }
+                                                              , response ∷ Ok
+                                                              }
                                                 }
                                   }
                     , settings ∷

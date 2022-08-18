@@ -45,8 +45,8 @@ deleteChat { guards: { loggedUserId }, body } = do
       SIA.deleteChat loggedUserId body
       pure ok
 
-missedEvents ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { lastSenderID ∷ Maybe Int, lastRecipientId ∷ Maybe Int } } → ServerEffect MissedEvents
-missedEvents { guards: { loggedUserId }, query: { lastSenderID, lastRecipientId } } = SIA.listMissedEvents loggedUserId lastSenderID lastRecipientId
+missedEvents ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { lastSenderId ∷ Maybe Int, lastRecipientId ∷ Maybe Int } } → ServerEffect MissedEvents
+missedEvents { guards: { loggedUserId }, query: { lastSenderId, lastRecipientId } } = SIA.listMissedEvents loggedUserId lastSenderId lastRecipientId
 
 report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ Report } → ServerEffect Ok
 report { guards: { loggedUserId }, body } = do
