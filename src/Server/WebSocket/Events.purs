@@ -53,7 +53,8 @@ import Shared.Json as SJ
 import Shared.Path (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
-import Simple.JSON (class WriteForeign, writeJSON)
+import Simple.JSON (class WriteForeign )
+import Simple.JSON  as SJ
 
 type UserAvailability =
       { connection ∷ Maybe WebSocketConnection
@@ -301,7 +302,7 @@ persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen reading@{ userAvailability } = do
       availabilities ← ER.read userAvailability
       when (not $ DH.isEmpty availabilities) do
-            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader reading <<< SID.upsertLastSeen <<< writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens availabilities
+            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader reading <<< SID.upsertLastSeen <<< SJ.writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens availabilities
             EA.launchAff_ $ EA.catchError run logError
       where
       lastSeens id = case _ of

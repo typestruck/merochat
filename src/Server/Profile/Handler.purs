@@ -25,11 +25,6 @@ profile { guards: { loggedUserId } } = do
             , languages
             }
 
-profileUpdate ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ ProfileUser } → ServerEffect Ok
-profileUpdate { guards: { loggedUserId }, body } = do
-      SPA.saveProfile loggedUserId body
-      pure ok
-
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What, value ∷ Maybe String } } → ServerEffect String
 generated { guards: { loggedUserId }, body: { field, value } } = SPA.saveGeneratedField loggedUserId field value
 
@@ -56,4 +51,9 @@ country { guards: { loggedUserId }, body: { country: id } } = do
 language ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { ids ∷ Maybe (Array Int) } } → ServerEffect Ok
 language { guards: { loggedUserId }, body: { ids } } = do
       SPA.saveLanguages loggedUserId ids
+      pure ok
+
+tag ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { tags ∷ Maybe (Array String) } } → ServerEffect Ok
+tag { guards: { loggedUserId }, body: { tags } } = do
+      SPA.saveTags loggedUserId tags
       pure ok

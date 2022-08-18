@@ -130,7 +130,7 @@ view
                               ]
                   control = HE.select [ HA.onInput (setFieldInputedMaybe fieldInputed <<< DI.fromString) ] $ displayOptionsWith "Select" model.languagesInputed languages
             in
-                  displayEditList (Proxy ∷ Proxy "languages") getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
+                  displayEditList (Proxy ∷ Proxy "languages") Languages getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
       displayEditTags =
             let
                   fieldInputed = Proxy ∷ Proxy "tagsInputed"
@@ -147,7 +147,7 @@ view
                         , HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
                         ]
             in
-                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ Proxy "tags") identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
+                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ Proxy "tags") Tags identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
 
       displayEditDescription = HE.fragment
             [ HE.div_
@@ -180,8 +180,8 @@ view
                     ]
             ]
 
-      displayEditList ∷ ∀ r s t u field fieldInputed fieldInputedList. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Append field "InputedList" fieldInputedList ⇒ IsSymbol fieldInputedList ⇒ Cons fieldInputed (Maybe t) u PM ⇒ Cons fieldInputedList (Maybe (Array t)) r PM ⇒ Cons field (Array t) s PU ⇒ Ord t ⇒ Eq t ⇒ Proxy field → (t → String) → Maybe (Html ProfileMessage) → Html ProfileMessage → String → Int → Html ProfileMessage
-      displayEditList field formatter currentFieldValue control explanation maxElements =
+      displayEditList ∷ ∀ r s t u field fieldInputed fieldInputedList. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Append field "InputedList" fieldInputedList ⇒ IsSymbol fieldInputedList ⇒ Cons fieldInputed (Maybe t) u PM ⇒ Cons fieldInputedList (Maybe (Array t)) r PM ⇒ Cons field (Array t) s PU ⇒ Ord t ⇒ Eq t ⇒ Proxy field → Field -> (t → String) → Maybe (Html ProfileMessage) → Html ProfileMessage → String → Int → Html ProfileMessage
+      displayEditList field what formatter currentFieldValue control explanation maxElements =
             let
                   stringField = TDS.reflectSymbol field
                   fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
@@ -216,7 +216,7 @@ view
                                 , HE.div (HA.class' "profile-edition-add-list")
                                         [ HE.div (HA.class' "grow") <<< map displayRemoveItem $ DM.fromMaybe [] currentFieldInputedList
                                         , HE.div_
-                                                [ check (Save Languages)
+                                                [ check (Save what)
                                                 , cancel fieldInputedList
                                                 ]
                                         ]

@@ -80,29 +80,5 @@ saveCountry loggedUserId country = SPD.saveField loggedUserId "country" country
 saveLanguages ∷ Int → Maybe (Array Int) → ServerEffect Unit
 saveLanguages loggedUserId languages = SPD.saveLanguages loggedUserId <<< DA.take maxLanguages $ DM.fromMaybe [] languages
 
-saveProfile ∷ Int → ProfileUser → ServerEffect Unit
-saveProfile loggedUserId profileUser@{ name, age, headline, description, avatar, languages, tags } = do
-      when anyFieldIsTooBig $ SR.throwBadRequest fieldTooBigMessage
-      when (DA.length tags > maxTags) $ SR.throwBadRequest tooManyTagsMessage
-      thirteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
-      when (map DN.unwrap age > thirteen) $ SR.throwBadRequest tooYoungMessage
-
-      updatedAvatar ← case avatar of
-            Nothing → pure Nothing
-            Just path →
-                  let
-                        fileName = DS.replace (Pattern $ imageBasePath <> "upload/") (Replacement "") path
-                  in
-                        --likely a base64 image
-                        if fileName == path then
-                              Just <$> SF.saveBase64File path
-                        else
-                              pure $ Just fileName
-      SPD.saveProfile
-            { user: profileUser { id = loggedUserId }
-            , avatar: updatedAvatar
-            , languages
-            , tags
-            }
-      where
-      anyFieldIsTooBig = DS.length name > nameMaxCharacters || DS.length headline > headlineMaxCharacters || DS.length description > descriptionMaxCharacters || DA.any ((_ > tagMaxCharacters) <<< DS.length) tags
+saveTags ∷ Int → Maybe (Array String) → ServerEffect Unit
+saveTags loggedUserId tags = SPD.saveTags loggedUserId <<< DA.take maxTags <<< map (DS.take tagMaxCharacters) $ DM.fromMaybe [] tags

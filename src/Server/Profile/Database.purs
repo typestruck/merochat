@@ -22,11 +22,13 @@ import Data.Reflectable (class Reflectable)
 import Data.Traversable as DT
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Prelude as P
 import Prim.Row (class Cons)
 import Server.Database as SD
 import Shared.Profile.Types (ProfileUser)
 import Shared.Unsafe as SU
+import Simple.JSON as SJ
 import Type.Proxy (Proxy(..))
 
 presentProfile ∷ Int → ServerEffect FlatProfileUser
@@ -53,7 +55,7 @@ presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _
 presentLanguages ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
 
-saveField ∷ forall t. ToValue t => Int -> String → t → ServerEffect Unit
+saveField ∷ ∀ t. ToValue t ⇒ Int → String → t → ServerEffect Unit
 saveField loggedUserId field value = SD.unsafeExecute ("UPDATE users SET " <> field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
 
 saveLanguages ∷ Int → Array Int → ServerEffect Unit
@@ -61,36 +63,10 @@ saveLanguages loggedUserId languages = SD.withTransaction $ \connection → void
       SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. loggedUserId)
       when (P.not $ DA.null languages) $ SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (map (loggedUserId /\ _) languages)
 
---refactor: add to droplet: with, on conflict
-saveProfile ∷ { user ∷ ProfileUser, avatar ∷ Maybe String, languages ∷ Array Int, tags ∷ Array String } → ServerEffect Unit
-saveProfile
-      { user: { id, name, headline, description, country, gender, age }
-      , avatar
-      , languages
-      , tags
-      } = SD.withTransaction $ \connection → void do
-      SD.executeWith connection $
-            update users
-                  # set
-                          ( (_avatar .=. avatar)
-                                  /\ (_name .=. name)
-                                  /\ (_headline .=. headline)
-                                  /\ (_description .=. description)
-                                  /\ (_country .=. country)
-                                  /\ (_gender .=. gender)
-                                  /\
-                                        (_birthday .=. map DN.unwrap age)
-                          )
-                  # wher (_id .=. id)
-      SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. id)
-      void $ DT.traverse (\lang → SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (id /\ lang)) languages
-      SD.executeWith connection $ delete # from tags_users # wher (_creator .=. id)
-      tagIDs ∷ Array (Maybe { id ∷ Int }) ← DT.traverse
-            ( \name → SD.unsafeSingleWith connection
-                    ( """with ins as (insert into tags (name) values (@name) on conflict on constraint unique_tag do nothing returning id)
-            select coalesce ((select id from ins), (select id from tags where name = @name)) as id"""
-                    )
-                    { name }
-            )
-            tags
-      DT.traverse (\tid → SD.executeWith connection (insert # into tags_users (_creator /\ _tag) # values (id /\ (SU.fromJust tid).id))) tagIDs
+saveTags ∷ Int → Array String → ServerEffect Unit
+saveTags loggedUserId tags = SD.withTransaction $ \connection → void do
+      SD.executeWith connection $ delete # from tags_users # wher (_creator .=. loggedUserId)
+      when (P.not $ DA.null tags) do
+            -- update anyway so we can have a returning for all rows
+            tagIds ∷ Array { id ∷ Int } ← SD.unsafeQueryWith connection "INSERT INTO tags (name) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (tag text)) ON CONFLICT ON CONSTRAINT unique_tag DO UPDATE SET name = excluded.name RETURNING id" { jsonInput: SJ.writeJSON $ map { tag: _ } tags }
+            SD.executeWith connection $ insert # into tags_users (_creator /\ _tag) # values (map ((loggedUserId /\ _) <<< _.id) tagIds)

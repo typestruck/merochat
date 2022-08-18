@@ -57,7 +57,6 @@ handlers reading =
               }
       , profile:
               { get: runJson reading SPH.profile
-              , post: runJson reading SPH.profileUpdate
               , field:
                       { generated: runJson reading SPH.generated
                       , avatar: runJson reading SPH.avatar
@@ -65,6 +64,7 @@ handlers reading =
                       , gender: runJson reading SPH.gender
                       , country: runJson reading SPH.country
                       , language: runJson reading SPH.language
+                      , tag: runJson reading SPH.tag
                       }
               }
       , login:

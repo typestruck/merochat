@@ -144,6 +144,11 @@ spec ∷
                                                               { body ∷ { ids ∷ Maybe (Array Int) }
                                                               , response ∷ Ok
                                                               }
+                                                , tag ∷
+                                                        POST "/tag"
+                                                              { body ∷ { tags ∷ Maybe (Array String) }
+                                                              , response ∷ Ok
+                                                              }
                                                 }
                                   }
                     , settings ∷

@@ -35,6 +35,7 @@ data Field
       | Gender
       | Country
       | Languages
+      | Tags
 
 data What
       = Name
