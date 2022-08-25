@@ -12,6 +12,7 @@ import Server.Database.KarmaHistories
 import Server.Database.KarmaLeaderboard
 import Server.Database.Languages
 import Server.Database.LanguagesUsers
+import Server.Database.LastSeen
 import Server.Database.Messages
 import Server.Database.Reports
 import Server.Database.Suggestions
@@ -24,6 +25,8 @@ import Shared.IM.Types
 
 import Control.Monad.List.Trans (filter)
 import Data.Array as DA
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty as DAN
 import Data.BigInt as DB
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
@@ -31,7 +34,6 @@ import Data.Maybe as DM
 import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
-import Server.Database.LastSeen
 import Debug (spy)
 import Droplet.Driver (Pool)
 import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
@@ -60,9 +62,9 @@ userPresentationFields =
             /\ (_messageTimestamps # as messageTimestamps)
             /\ _headline
             /\ _description
-            /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy :: _ 1) # as _country)
-            /\ (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy :: _ 1))
-            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy :: _ 1))
+            /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
+            /\ (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
+            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
@@ -86,7 +88,7 @@ suggest loggedUserId skip = case _ of
             SD.query $ suggestBaseQuery skip baseFilter
       Just (ArrayPrimaryKey keys) → -- users to avoid when impersonating
 
-            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (in_ (u ... _id) keys))
+            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (in_ (u ... _id) (SU.fromJust $ DAN.fromArray keys)))
       _ → -- default case
 
             SD.query $ suggestBaseQuery skip baseFilter
@@ -97,14 +99,14 @@ suggest loggedUserId skip = case _ of
 suggestBaseQuery skip filter =
       select star
             # from
-                  ( select userPresentationFields
-                          # from (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested))
-                          # wher filter
-                          # orderBy (s ... _id)
-                          # limit (Proxy :: Proxy 10)
-                          # offset skip
-                          # as t
-                  )
+                    ( select userPresentationFields
+                            # from (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested))
+                            # wher filter
+                            # orderBy (s ... _id)
+                            # limit (Proxy ∷ Proxy 10)
+                            # offset skip
+                            # as t
+                    )
             # orderBy random
 
 presentUserContactFields ∷ String
@@ -260,7 +262,9 @@ insertKarma loggedUserId otherID (Tuple senderKarma recipientKarma) =
             ]
 
 changeStatus ∷ ∀ r. Int → MessageStatus → Array Int → BaseEffect { pool ∷ Pool | r } Unit
-changeStatus loggedUserId status ids = SD.execute $ update messages # set (_status .=. status) # wher (_recipient .=. loggedUserId .&&. (_id `in_` ids))
+changeStatus loggedUserId status  = case _ of
+      [] -> pure unit
+      ids -> SD.execute $ update messages # set (_status .=. status) # wher (_recipient .=. loggedUserId .&&. (_id `in_` (SU.fromJust $ DAN.fromArray ids)))
 
 insertBlock ∷ Int → Int → ServerEffect Unit
 insertBlock loggedUserId blocked = SD.execute $ blockQuery loggedUserId blocked
@@ -281,10 +285,10 @@ insertReport loggedUserId { userId, comment, reason } = SD.withTransaction $ \co
 chatHistoryEntry ∷ Int → Int → _
 chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipient) # from histories # senderRecipientFilter loggedUserId otherId
 
-upsertLastSeen :: forall r. String -> BaseEffect { pool ∷ Pool | r } Unit
+upsertLastSeen ∷ ∀ r. String → BaseEffect { pool ∷ Pool | r } Unit
 upsertLastSeen jsonInput = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (who integer, date timestamptz)) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { jsonInput }
 
-queryLastSeen :: Array Int -> _
+queryLastSeen ∷ NonEmptyArray Int → _
 queryLastSeen ids = SD.query $ select (_who /\ _date) # from last_seen # wher (_who `in_` ids)
 
 _chatStarter ∷ Proxy "chatStarter"

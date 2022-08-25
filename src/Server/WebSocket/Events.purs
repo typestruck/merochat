@@ -9,6 +9,7 @@ import Shared.User
 
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
+import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime(..), Time(..))
 import Data.DateTime as DDT
 import Data.Either (Either(..))
@@ -53,8 +54,8 @@ import Shared.Json as SJ
 import Shared.Path (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
-import Simple.JSON (class WriteForeign )
-import Simple.JSON  as SJ
+import Simple.JSON (class WriteForeign)
+import Simple.JSON as SJ
 
 type UserAvailability =
       { connection ∷ Maybe WebSocketConnection
@@ -185,7 +186,7 @@ sendPing { userAvailability, sessionUserId } { isActive, statusFor } connection 
             if DA.null nones then
                   pure $ Tuple statuses []
             else do
-                  lastSeens ← DH.fromArrayBy _.who _.date <$> SID.queryLastSeen nones
+                  lastSeens ← DH.fromArrayBy _.who _.date <$> SID.queryLastSeen (SU.fromJust $ DAN.fromArray nones)
                   let
                         records = map
                               ( \{ id, status } →
