@@ -3,7 +3,7 @@ module Server.IM.Handler where
 import Prelude
 import Server.Types
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Data.Maybe (Maybe)
 import Data.Tuple (Tuple(..))

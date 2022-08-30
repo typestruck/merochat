@@ -1,9 +1,9 @@
-module Shared.IM.View.SuggestionProfile (suggestionProfile, displayProfile) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, displayProfile) where
 
 import Debug
 import Prelude
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.User
 
 import Data.Array ((!!), (..), (:))
@@ -19,10 +19,10 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
-import Shared.IM.Svg (backArrow, nextArrow)
-import Shared.IM.Svg as SIA
-import Shared.IM.View.ChatInput as SIVC
-import Shared.IM.View.Retry as SIVR
+import Shared.Im.Svg (backArrow, nextArrow)
+import Shared.Im.Svg as SIA
+import Shared.Im.View.ChatInput as SIVC
+import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU

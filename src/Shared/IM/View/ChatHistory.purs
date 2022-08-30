@@ -1,8 +1,8 @@
-module Shared.IM.View.ChatHistory where
+module Shared.Im.View.ChatHistory where
 
 import Prelude
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.User
 
 import Data.Array ((!!), (:))
@@ -14,7 +14,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.DateTime as SD
-import Shared.IM.View.Retry as SIVR
+import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 
 -- | Messages in a chat history

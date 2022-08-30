@@ -3,7 +3,7 @@ module Client.IM.Contacts where
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)
@@ -30,7 +30,7 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Flame.Html.Attribute (d)
-import Shared.IM.Contact as SIC
+import Shared.Im.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE

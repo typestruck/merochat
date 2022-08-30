@@ -3,7 +3,7 @@ module Test.Client.IM.Contacts where
 import Prelude
 import Shared.ContentType
 import Shared.DateTime
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.User
 
 import Client.IM.Contacts as CICN

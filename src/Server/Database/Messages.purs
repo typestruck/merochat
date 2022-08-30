@@ -3,7 +3,7 @@ module Server.Database.Messages where
 import Droplet.Language
 import Shared.ContentType
 import Shared.DateTime
-import Shared.IM.Types
+import Shared.Im.Types
 import Prim hiding (Constraint)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe(..))

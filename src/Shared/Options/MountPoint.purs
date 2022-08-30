@@ -1,7 +1,7 @@
 module Shared.Options.MountPoint where
 
 import Prelude
-import Shared.IM.Types (ImMessage)
+import Shared.Im.Types (ImMessage)
 import Flame (AppId(..))
 import Shared.Profile.Types (ProfileMessage)
 

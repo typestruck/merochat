@@ -10,7 +10,7 @@ import Environment (development)
 import Shared.Json as SJ
 import Shared.Options.WebSocket (port)
 import Web.Socket.Event.EventTypes as WSEE
-import Shared.IM.Types
+import Shared.Im.Types
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSWS

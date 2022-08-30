@@ -13,7 +13,7 @@ import Web.HTML as WH
 import Web.HTML.Event.EventTypes (click)
 import Web.HTML.Event.HashChangeEvent.EventTypes (hashchange)
 import Web.HTML.Window as WHW
-import Shared.IM.Types
+import Shared.Im.Types
 
 -- :(
 main ∷ Effect Unit

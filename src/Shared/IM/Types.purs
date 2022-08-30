@@ -1,4 +1,4 @@
-module Shared.IM.Types where
+module Shared.Im.Types where
 
 import Prelude
 import Shared.User (Availability, IU)

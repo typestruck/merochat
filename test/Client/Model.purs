@@ -1,7 +1,7 @@
 module Test.Client.Model where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.ContentType
 
 import Data.HashMap (HashMap)
@@ -12,7 +12,7 @@ import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.DateTime
-import Shared.IM.Contact as SIC
+import Shared.Im.Contact as SIC
 import Shared.User
 import Unsafe.Coerce as UC
 import Web.DOM (Element)

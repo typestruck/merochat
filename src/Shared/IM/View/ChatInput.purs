@@ -1,8 +1,8 @@
-module Shared.IM.View.ChatInput where
+module Shared.Im.View.ChatInput where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
@@ -21,8 +21,8 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Prim.Row (class Cons)
 import Shared.Experiments.Impersonation (impersonations)
-import Shared.IM.Emoji as SIE
-import Shared.IM.Svg as SIS
+import Shared.Im.Emoji as SIE
+import Shared.Im.Svg as SIS
 import Shared.Keydown as SK
 import Shared.Options.File (maxImageSizeKB)
 import Shared.Setter as SS

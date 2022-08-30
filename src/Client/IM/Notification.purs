@@ -2,7 +2,7 @@ module Client.IM.Notification where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.DOM as CCD
 import Client.IM.Flame (NextMessage)
@@ -19,7 +19,7 @@ import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame.Subscription as FS
 import Shared.Experiments.Impersonation (impersonations)
-import Shared.IM.Unread as SIU
+import Shared.Im.Unread as SIU
 import Shared.Options.MountPoint (imId)
 import Shared.Path as SP
 import Shared.Unsafe as SU

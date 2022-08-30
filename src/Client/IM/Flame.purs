@@ -2,7 +2,7 @@ module Client.IM.Flame where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)
 import Effect.Aff (Aff)

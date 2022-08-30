@@ -21,7 +21,7 @@ import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Types
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Control.Monad.List.Trans (filter)
 import Data.Array as DA

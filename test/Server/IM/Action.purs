@@ -7,7 +7,7 @@ import Server.Database.Blocks
 import Server.Database.Fields
 import Server.Database.Histories
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Data.Array as DA
 import Data.BigInt as BI

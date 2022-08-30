@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Flame (Key)
 import Flame.Html.Event as HA
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame.Types (NodeData)
 
 import Shared.Unsafe as SU

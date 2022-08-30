@@ -1,8 +1,8 @@
-module Shared.IM.Contact where
+module Shared.Im.Contact where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Data.Array ((!!))
 import Data.Maybe (Maybe(..))

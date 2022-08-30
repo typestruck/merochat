@@ -1,4 +1,4 @@
-module Shared.IM.View.UserMenu where
+module Shared.Im.View.UserMenu where
 
 import Prelude
 import Shared.ContentType
@@ -6,13 +6,13 @@ import Shared.ContentType
 import Shared.Experiments.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame (Html)
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.IM.Svg as SIS
+import Shared.Im.Svg as SIS
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model@{ toggleContextMenu, smallScreen, experimenting } =

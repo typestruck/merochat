@@ -7,7 +7,7 @@ import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Server.Profile.Types (Payload)
-import Shared.IM.Types (ElementId(..))
+import Shared.Im.Types (ElementId(..))
 import Shared.Profile.View as SPV
 
 template ∷ Payload → Effect String

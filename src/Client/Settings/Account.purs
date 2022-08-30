@@ -15,7 +15,7 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
-import Shared.IM.Types (ImMessage(..))
+import Shared.Im.Types (ImMessage(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettingsId(..), SettingsMessage(..), SettingsModel)

@@ -1,4 +1,4 @@
-module Shared.IM.View where
+module Shared.Im.View where
 
 import Prelude
 
@@ -6,18 +6,18 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.IM.View.ChatInput as SIVC
-import Shared.IM.View.ContactList as SIVCN
-import Shared.IM.View.ChatHistory as SIVH
-import Shared.IM.View.LogoMenu as SIVL
-import Shared.IM.View.Modals as SIVM
-import Shared.IM.View.Notification as SIVN
-import Shared.IM.View.SuggestionProfile as SIVP
-import Shared.IM.View.SuggestionCall as SIVS
-import Shared.IM.View.UserMenu as SIVU
-import Shared.IM.View.NotificationMobile as SIVNM
+import Shared.Im.View.ChatInput as SIVC
+import Shared.Im.View.ContactList as SIVCN
+import Shared.Im.View.ChatHistory as SIVH
+import Shared.Im.View.LogoMenu as SIVL
+import Shared.Im.View.Modals as SIVM
+import Shared.Im.View.Notification as SIVN
+import Shared.Im.View.SuggestionProfile as SIVP
+import Shared.Im.View.SuggestionCall as SIVS
+import Shared.Im.View.UserMenu as SIVU
+import Shared.Im.View.NotificationMobile as SIVNM
 import Shared.Unsafe ((!@))
-import Shared.IM.Types
+import Shared.Im.Types
 
 view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, chatting, contacts, imUpdated, smallScreen } = HE.div [ HA.class' "im" ]

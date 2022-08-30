@@ -6,7 +6,7 @@ import Debug
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.User
 
 import Client.Common.DOM (setChatExperiment)
@@ -57,7 +57,7 @@ import Foreign as FO
 import Record as R
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
-import Shared.IM.View as SIV
+import Shared.Im.View as SIV
 import Shared.Json as SJ
 import Shared.Options.MountPoint (imId, profileId)
 import Shared.ResponseError (DatabaseError(..))

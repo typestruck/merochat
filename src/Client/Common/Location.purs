@@ -7,7 +7,7 @@ import Data.Function.Uncurried as DF
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Effect (Effect)
-import Shared.IM.Types (ElementId)
+import Shared.Im.Types (ElementId)
 import Web.HTML as WH
 import Web.HTML.Location as WHL
 import Web.HTML.Window as WHW

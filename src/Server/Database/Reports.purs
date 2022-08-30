@@ -4,7 +4,7 @@ import Droplet.Language
 
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
-import Shared.IM.Types (ReportReason)
+import Shared.Im.Types (ReportReason)
 import Server.Database.Users (UsersTable)
 import Data.Tuple.Nested (type (/\))
 import Type.Proxy (Proxy(..))

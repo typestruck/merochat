@@ -3,7 +3,7 @@ module Client.IM.Chat where
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.File as CCF
@@ -40,7 +40,7 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.IM.Contact as SIC
+import Shared.Im.Contact as SIC
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))

@@ -1,8 +1,8 @@
-module Shared.IM.Svg where
+module Shared.Im.Svg where
 
 import Data.Array ((:))
 import Flame (Html)
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)

@@ -421,6 +421,10 @@ blockquote {
     fill: #b9c658;
 }
 
+.notification-header {
+    margin:0 5px;
+}
+
 #full-profile-context-menu,
 .svg-back-profile {
     padding: 10px;

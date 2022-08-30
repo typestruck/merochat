@@ -1,13 +1,13 @@
-module Shared.IM.View.Notification where
+module Shared.Im.View.Notification where
 
 import Prelude
 import Shared.ContentType
 
 import Flame (Html)
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.IM.View.Retry as SIR
+import Shared.Im.View.Retry as SIR
 
 reloadPage ∷ Boolean → Html ImMessage
 reloadPage shouldReload = HE.div [ HA.class' { "notification": true, hidden: not shouldReload }, HA.onClick ReloadPage ]

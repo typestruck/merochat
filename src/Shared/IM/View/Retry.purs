@@ -1,11 +1,11 @@
-module Shared.IM.View.Retry where
+module Shared.Im.View.Retry where
 
 import Prelude
 import Shared.ContentType
 
 import Data.Foldable as DA
 import Flame (Html)
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 

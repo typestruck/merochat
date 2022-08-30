@@ -18,7 +18,7 @@ import Server.IM.Database.Flat (FlatContactHistoryMessage, fromFlatContact, from
 import Server.IM.Database.Flat as SIF
 import Server.Types (BaseEffect, ServerEffect, Configuration)
 import Server.Wheel as SW
-import Shared.IM.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
+import Shared.Im.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
 import Shared.Options.File (imageBasePath)
 import Shared.ResponseError (ResponseError(..))
 import Server.IM.Types (Payload)
