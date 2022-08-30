@@ -23,7 +23,7 @@ run model f = do
       f' ← f
       pure $ f' model
 
-model ∷ IMModel
+model ∷ ImModel
 model =
       { modalsLoaded: []
       , freeToFetchSuggestions: true

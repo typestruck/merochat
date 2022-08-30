@@ -61,7 +61,7 @@ import Web.Socket.WebSocket (WebSocket)
 foreign import resizeTextarea_ ∷ EffectFn1 Element Unit
 
 -- this event is filtered to run only on Enter keydown
-enterBeforeSendMessage ∷ Event → IMModel → NoMessages
+enterBeforeSendMessage ∷ Event → ImModel → NoMessages
 enterBeforeSendMessage event model@{ messageEnter } =
       model :> if messageEnter then [ prevent, getMessage model ] else []
       where
@@ -69,7 +69,7 @@ enterBeforeSendMessage event model@{ messageEnter } =
             WEE.preventDefault event
             pure Nothing
 
-getMessage ∷ IMModel → Aff (Maybe IMMessage)
+getMessage ∷ ImModel → Aff (Maybe ImMessage)
 getMessage model@{ selectedImage, imageCaption, chatting } = do
       input ← liftEffect $ chatInput chatting
       value ← liftEffect $ CCD.value input
@@ -78,20 +78,20 @@ getMessage model@{ selectedImage, imageCaption, chatting } = do
       toImage base64File = Image (DM.fromMaybe "" imageCaption) base64File
 
 --send message/image button
-forceBeforeSendMessage ∷ IMModel → MoreMessages
+forceBeforeSendMessage ∷ ImModel → MoreMessages
 forceBeforeSendMessage model =
       model :>
             [ getMessage model
             , resizeInputEffect model
             ]
 
-resizeInputEffect ∷ IMModel → Aff (Maybe IMMessage)
+resizeInputEffect ∷ ImModel → Aff (Maybe ImMessage)
 resizeInputEffect model@{ chatting } = liftEffect $ do
       input ← chatInput chatting
       resizeTextarea input
       pure Nothing
 
-beforeSendMessage ∷ MessageContent → IMModel → MoreMessages
+beforeSendMessage ∷ MessageContent → ImModel → MoreMessages
 beforeSendMessage
       content
       model@
@@ -130,7 +130,7 @@ beforeSendMessage
             date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
             CIF.next $ SendMessage input date
 
-sendMessage ∷ WebSocket → MessageContent → DateTimeWrapper → IMModel → NoMessages
+sendMessage ∷ WebSocket → MessageContent → DateTimeWrapper → ImModel → NoMessages
 sendMessage
       webSocket
       content
@@ -229,7 +229,7 @@ makeTurn { chatStarter, chatAge, history } sender =
       countCharacters total { content } = total + DSC.length content
       getDate = DN.unwrap <<< _.date
 
-applyMarkup ∷ Markup → IMModel → MoreMessages
+applyMarkup ∷ Markup → ImModel → MoreMessages
 applyMarkup markup model@{ chatting } =
       model :>
             [ liftEffect (Just <$> apply)
@@ -267,7 +267,7 @@ chatInput chatting
       | DM.isNothing chatting = CCD.unsafeGetElementById ChatInputSuggestion -- suggestion card input cannot be cached
       | otherwise = CCD.unsafeGetElementById ChatInput
 
-setMessage ∷ Maybe Int → String → IMModel → NextMessage
+setMessage ∷ Maybe Int → String → ImModel → NextMessage
 setMessage cursor markdown model@{ chatting } =
       CIF.nothingNext model <<< liftEffect $
             case cursor of
@@ -280,12 +280,12 @@ setMessage cursor markdown model@{ chatting } =
                         resizeTextarea input
                   Nothing → pure unit
 
-catchFile ∷ FileReader → Event → IMModel → NoMessages
+catchFile ∷ FileReader → Event → ImModel → NoMessages
 catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
       CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
       CCD.preventStop event
 
-setSelectedImage ∷ Maybe String → IMModel → NextMessage
+setSelectedImage ∷ Maybe String → ImModel → NextMessage
 setSelectedImage maybeBase64 model@{ smallScreen } =
       model
             { toggleChatModal = ShowSelectedImage
@@ -299,7 +299,7 @@ setSelectedImage maybeBase64 model@{ smallScreen } =
       where
       isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
-toggleModal ∷ ShowChatModal → IMModel → MoreMessages
+toggleModal ∷ ShowChatModal → ImModel → MoreMessages
 toggleModal toggle model@{ chatting } =
       model
             { toggleChatModal = toggle
@@ -324,7 +324,7 @@ toggleModal toggle model@{ chatting } =
             CCD.setInnerHTML preview $ SM.parse message
             pure Nothing
 
-setEmoji ∷ Event → IMModel → NextMessage
+setEmoji ∷ Event → ImModel → NextMessage
 setEmoji event model@{ chatting } =
       model :>
             if CCD.tagNameFromTarget event == "SPAN" then
@@ -337,7 +337,7 @@ setEmoji event model@{ chatting } =
             else
                   []
 
-insertLink ∷ IMModel → MoreMessages
+insertLink ∷ ImModel → MoreMessages
 insertLink model@{ linkText, link, chatting } =
       case link of
             Nothing → F.noMessages $ model
@@ -359,7 +359,7 @@ insertLink model@{ linkText, link, chatting } =
             input ← chatInput chatting
             setAtCursor input $ markdown text
 
-setAtCursor ∷ Element → String → Effect (Maybe IMMessage)
+setAtCursor ∷ Element → String → Effect (Maybe ImMessage)
 setAtCursor input text = do
       let textarea = SU.fromJust $ WHHTA.fromElement input
       end ← WHHTA.selectionEnd textarea
@@ -370,19 +370,19 @@ setAtCursor input text = do
 resizeTextarea ∷ Element → Effect Unit
 resizeTextarea = EU.runEffectFn1 resizeTextarea_
 
-resizeChatInput ∷ Event → IMModel → NextMessage
+resizeChatInput ∷ Event → ImModel → NextMessage
 resizeChatInput event model = CIF.nothingNext model resize
       where
       resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
             target ← WEE.target event
             WDE.fromEventTarget target
 
-toggleMessageEnter ∷ IMModel → NoMessages
+toggleMessageEnter ∷ ImModel → NoMessages
 toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
       { messageEnter = not messageEnter
       }
 
-checkTyping ∷ String → DateTime → WebSocket → IMModel → MoreMessages
+checkTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
 checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
       if DS.length text > minimumLength && milliseconds >= 150.0 && milliseconds <= 1000.0 then
             CIF.nothingNext (model { lastTyping = DateTimeWrapper now }) <<< liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }
@@ -392,7 +392,7 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       minimumLength = 7
       (Milliseconds milliseconds) = DT.diff now lt
 
-quoteMessage ∷ String → Event → IMModel → NextMessage
+quoteMessage ∷ String → Event → ImModel → NextMessage
 quoteMessage contents event model@{ chatting } = model :>
       [ liftEffect do
               classes ← WDE.className <<< SU.fromJust $ do
@@ -411,7 +411,7 @@ quoteMessage contents event model@{ chatting } = model :>
             | DS.take 2 contents == "![" = "> *image file*"
             | otherwise = "> " <> contents
 
-focusCurrentSuggestion ∷ IMModel → NoMessages
+focusCurrentSuggestion ∷ ImModel → NoMessages
 focusCurrentSuggestion model@{ chatting } = model :>
       [ do
               liftEffect do
@@ -420,7 +420,7 @@ focusCurrentSuggestion model@{ chatting } = model :>
               pure Nothing
       ]
 
-updateTyping ∷ Int → Boolean → IMModel → IMModel
+updateTyping ∷ Int → Boolean → ImModel → ImModel
 updateTyping userId status model@{ contacts } = model { contacts = upd <$> contacts }
       where
       upd contact@{ user: { id } }

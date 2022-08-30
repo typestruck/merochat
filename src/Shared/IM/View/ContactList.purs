@@ -29,7 +29,7 @@ import Shared.Unsafe as SU
 import Shared.User (Availability(..), ProfileVisibility(..))
 
 -- | Users that have exchanged messages with the current logged in user
-contactList ∷ Boolean → IMModel → Html IMMessage
+contactList ∷ Boolean → ImModel → Html ImMessage
 contactList isClientRender { failedRequests, chatting, toggleContextMenu, experimenting, contacts, user: { id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps,onlineStatus } } =
       case profileVisibility of
             Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]

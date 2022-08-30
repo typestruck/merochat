@@ -19,7 +19,7 @@ import Environment (helpCSSHash, profileCSSHash, settingsCSSHash, backerCSSHash,
 
 lazyLoad name = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.pathery CSS name, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
 
-modals ∷ IMModel → Html IMMessage
+modals ∷ ImModel → Html ImMessage
 modals { toggleModal: toggle, failedRequests, erroredFields } =
       HE.div (HA.class' { "modal-placeholder-overlay": true, "hidden": toggle == HideUserMenuModal })
             [ lazyLoad $ "help." <> helpCSSHash

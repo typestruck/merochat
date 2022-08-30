@@ -15,10 +15,11 @@ import Shared.IM.View.Notification as SIVN
 import Shared.IM.View.SuggestionProfile as SIVP
 import Shared.IM.View.SuggestionCall as SIVS
 import Shared.IM.View.UserMenu as SIVU
+import Shared.IM.View.NotificationMobile as SIVNM
 import Shared.Unsafe ((!@))
 import Shared.IM.Types
 
-view ∷ Boolean → IMModel → Html IMMessage
+view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, chatting, contacts, imUpdated, smallScreen } = HE.div [ HA.class' "im" ]
       [ HE.div (HA.class' { "contact-box": true, "current-mobile-screen": initialScreen })
               [ SIVU.userMenu model
@@ -31,6 +32,7 @@ view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, i
               ]
       , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]
               [ HE.div (HA.class' { "suggestion-box-error": true, flexed: not $ DS.null errorMessage }) errorMessage
+              , SIVNM.unreadNotification model
               , SIVP.suggestionProfile model
               , SIVH.chatHistory model $ map (contacts !@ _) chatting
               , SIVC.chat model

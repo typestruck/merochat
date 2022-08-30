@@ -18,7 +18,7 @@ import Shared.IM.View.Retry as SIVR
 import Shared.Markdown as SM
 
 -- | Messages in a chat history
-chatHistory ∷ IMModel → Maybe Contact → Html IMMessage
+chatHistory ∷ ImModel → Maybe Contact → Html ImMessage
 chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, experimenting, failedRequests, freeToFetchChatHistory } contact =
       HE.div
             [ HA.id $ show MessageHistory

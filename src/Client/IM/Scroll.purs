@@ -15,7 +15,7 @@ scrollLastMessage = do
       node ← CCD.unsafeGetElementById MessageHistory
       CCD.scrollDown node
 
-scrollLastMessage' ∷ Aff (Maybe IMMessage)
+scrollLastMessage' ∷ Aff (Maybe ImMessage)
 scrollLastMessage' = do
       liftEffect scrollLastMessage
       pure Nothing

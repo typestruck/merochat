@@ -150,7 +150,7 @@ type IM =
       , toggleChatModal ∷ ShowChatModal
       )
 
-type IMModel = Record IM
+type ImModel = Record IM
 
 newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
@@ -234,7 +234,7 @@ data RetryableRequest
 
 data ReportReason = DatingContent | Harassment | HateSpeech | Spam | OtherReason
 
-data IMMessage
+data ImMessage
       =
         --history
         CheckFetchHistory
@@ -297,7 +297,7 @@ data IMMessage
       | ToggleAskNotification
       | SetNameFromProfile String
       | ToggleConnected Boolean
-      | SetField (IMModel → IMModel)
+      | SetField (ImModel → ImModel)
       | ToggleFortune Boolean
       | DisplayFortune String
       | RequestFailed RequestFailure

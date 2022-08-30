@@ -12,7 +12,7 @@ import Flame.Html.Element as HE
 import Shared.IM.Types
 import Shared.Path as SP
 
-logoMenu ∷ Maybe String → Html IMMessage
+logoMenu ∷ Maybe String → Html ImMessage
 logoMenu fortune = HE.div (HA.class' "relative")
       [ HE.div (HA.class' "tabs")
               [ HE.div (HA.class' "tab-item duller")

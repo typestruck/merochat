@@ -14,7 +14,7 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.IM.Svg as SIS
 
-suggestionCall ∷ IMModel → Html IMMessage
+suggestionCall ∷ ImModel → Html ImMessage
 suggestionCall { contacts, suggesting, chatting, suggestions }
       | DM.isJust chatting =
               HE.div (HA.class' "side-suggestions-container")

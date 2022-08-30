@@ -82,7 +82,7 @@ formRequest formSelector aff = do
             WDE.setClassName (existingClasses <> " input success") formDiv
 
 -- | Performs a request that has can be retried through the UI in case of errors
-retryableResponse ∷ ∀ response. RetryableRequest → (response → IMMessage) → Aff (ClientResponse response) → Aff (Maybe IMMessage)
+retryableResponse ∷ ∀ response. RetryableRequest → (response → ImMessage) → Aff (ClientResponse response) → Aff (Maybe ImMessage)
 retryableResponse requestMessage message aff = do
       result ← aff
       case result of
