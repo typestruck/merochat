@@ -2,7 +2,7 @@ module Server.IM.Template where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Data.Array as DA
 import Data.HashSet as DHS
@@ -18,8 +18,8 @@ import Server.IM.Types (Payload)
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.IM.Unread as SIU
-import Shared.IM.View as SIV
+import Shared.Im.Unread as SIU
+import Shared.Im.View as SIV
 import Shared.Path (updateHash)
 import Shared.Path as SP
 

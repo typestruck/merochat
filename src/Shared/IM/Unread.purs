@@ -1,8 +1,8 @@
-module Shared.IM.Unread where
+module Shared.Im.Unread where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 import Data.Foldable as DF
 import Shared.Options.File (imageBasePath)
 

@@ -2,7 +2,7 @@ module Client.Profile.Update where
 
 import Prelude
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.Profile.Types
 
 import Client.Common.DOM as CCD

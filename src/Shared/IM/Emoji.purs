@@ -1,4 +1,4 @@
-module Shared.IM.Emoji where
+module Shared.Im.Emoji where
 
 import Data.Tuple (Tuple(..))
 

@@ -1,7 +1,7 @@
 module Client.Profile.Main where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.DOM (setChatExperiment)
 import Client.Common.File as CCF

@@ -16,7 +16,7 @@ import Data.String as DS
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Shared.IM.Types
+import Shared.Im.Types
 import Effect.Exception as EE
 import Payload.Client (ClientError(..), ClientResponse, defaultOpts)
 import Payload.Client as PC
@@ -82,7 +82,7 @@ formRequest formSelector aff = do
             WDE.setClassName (existingClasses <> " input success") formDiv
 
 -- | Performs a request that has can be retried through the UI in case of errors
-retryableResponse ∷ ∀ response. RetryableRequest → (response → IMMessage) → Aff (ClientResponse response) → Aff (Maybe IMMessage)
+retryableResponse ∷ ∀ response. RetryableRequest → (response → ImMessage) → Aff (ClientResponse response) → Aff (Maybe ImMessage)
 retryableResponse requestMessage message aff = do
       result ← aff
       case result of

@@ -5,14 +5,14 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Flame (Key)
 import Flame.Html.Event as HA
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame.Types (NodeData)
 
 import Shared.Unsafe as SU
 import Web.Event.Event (Event)
 import Web.UIEvent.KeyboardEvent as WUK
 
-keyDownOn ∷ Key → (Event → IMMessage) → NodeData IMMessage
+keyDownOn ∷ Key → (Event → ImMessage) → NodeData ImMessage
 keyDownOn keyName message = HA.createRawEvent "keydown" handler
       where
       handler event = do

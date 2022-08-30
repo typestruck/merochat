@@ -1,7 +1,7 @@
 module Client.Common.Account where
 
 import Prelude
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Network as CCN

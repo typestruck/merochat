@@ -6,7 +6,7 @@ import Debug
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.User
 
 import Client.Common.DOM (setChatExperiment)
@@ -57,7 +57,7 @@ import Foreign as FO
 import Record as R
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
-import Shared.IM.View as SIV
+import Shared.Im.View as SIV
 import Shared.Json as SJ
 import Shared.Options.MountPoint (imId, profileId)
 import Shared.ResponseError (DatabaseError(..))
@@ -116,7 +116,7 @@ main = do
       --notification permission (desktop)
       unless smallScreen checkNotifications
 
-update ∷ _ → ListUpdate IMModel IMMessage
+update ∷ _ → ListUpdate ImModel ImMessage
 update { webSocketRef, fileReader } model =
       case _ of
             --chat
@@ -192,7 +192,7 @@ update { webSocketRef, fileReader } model =
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
 
-displayAvailability ∷ AvailabilityStatus → IMModel → NoMessages
+displayAvailability ∷ AvailabilityStatus → ImModel → NoMessages
 displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
       { contacts = map updateContact contacts
       , suggestions = map updateUser suggestions
@@ -206,14 +206,14 @@ displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
             Just status → user { availability = status }
             Nothing → user
 
-sendPing ∷ WebSocket → Boolean → IMModel → NoMessages
+sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
 sendPing webSocket isActive model@{ contacts, suggestions } =
       CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ Ping
             { isActive
             , statusFor: map _.id suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) contacts)
             }
 
-setPrivacySettings ∷ PrivacySettings → IMModel → NoMessages
+setPrivacySettings ∷ PrivacySettings → ImModel → NoMessages
 setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model =
       F.noMessages model
             { user
@@ -225,7 +225,7 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
                     }
             }
 
-report ∷ Int → WebSocket → IMModel → MoreMessages
+report ∷ Int → WebSocket → ImModel → MoreMessages
 report userId webSocket model@{ reportReason, reportComment } = case reportReason of
       Just rs →
             CIS.updateAfterBlock userId
@@ -246,7 +246,7 @@ report userId webSocket model@{ reportReason, reportComment } = case reportReaso
             { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "reportReason") ]
             }
 
-askExperiment ∷ IMModel → MoreMessages
+askExperiment ∷ ImModel → MoreMessages
 askExperiment model@{ experimenting } = model :>
       if DM.isNothing experimenting then []
       else
@@ -255,7 +255,7 @@ askExperiment model@{ experimenting } = model :>
                     pure Nothing
             ]
 
-setExperiment ∷ Maybe ExperimentData → IMModel → MoreMessages
+setExperiment ∷ Maybe ExperimentData → ImModel → MoreMessages
 setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestionsPage } =
       model
             { chatting = Nothing
@@ -270,19 +270,19 @@ setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestio
             imp@(Just (Impersonation (Just _))) → imp /= experimenting --avoid running more than once
             _ → false
 
-reloadPage ∷ IMModel → NextMessage
+reloadPage ∷ ImModel → NextMessage
 reloadPage model = CIF.nothingNext model $ liftEffect CCL.reload
 
-askNotification ∷ IMModel → MoreMessages
+askNotification ∷ ImModel → MoreMessages
 askNotification model = CIF.nothingNext (model { enableNotificationsVisible = false }) $ liftEffect CCD.requestNotificationPermission
 
 --refactor: all messages like this can be dryed into a single function
-toggleAskNotification ∷ IMModel → NoMessages
+toggleAskNotification ∷ ImModel → NoMessages
 toggleAskNotification model@{ enableNotificationsVisible } = F.noMessages $ model
       { enableNotificationsVisible = not enableNotificationsVisible
       }
 
-toggleUserContextMenu ∷ Event → IMModel → MoreMessages
+toggleUserContextMenu ∷ Event → ImModel → MoreMessages
 toggleUserContextMenu event model@{ toggleContextMenu }
       | toggleContextMenu /= HideContextMenu =
               F.noMessages $ model { toggleContextMenu = HideContextMenu }
@@ -310,7 +310,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
                     | elementId == show FullProfileContextMenu || parentId == show FullProfileContextMenu = ShowFullProfileContextMenu
                     | otherwise = HideContextMenu
 
-focusInput ∷ ElementId → IMModel → NextMessage
+focusInput ∷ ElementId → ImModel → NextMessage
 focusInput elementId model = model :>
       [ liftEffect do
               element ← CCD.getElementByID elementId
@@ -320,7 +320,7 @@ focusInput elementId model = model :>
               pure Nothing
       ]
 
-addFailure ∷ RequestFailure → IMModel → NoMessages
+addFailure ∷ RequestFailure → ImModel → NoMessages
 addFailure failure@{ request } model@{ failedRequests, errorMessage } = F.noMessages $ model
       { failedRequests = failure : failedRequests
       , errorMessage = case request of
@@ -333,20 +333,20 @@ addFailure failure@{ request } model@{ failedRequests, errorMessage } = F.noMess
       where
       suggestionsError = "Could not fetch suggestions. Please try again"
 
-toggleFortune ∷ Boolean → IMModel → MoreMessages
+toggleFortune ∷ Boolean → ImModel → MoreMessages
 toggleFortune isVisible model
       | isVisible = model :> [ Just <<< DisplayFortune <$> CCNT.silentResponse (request.im.fortune {}) ]
       | otherwise = F.noMessages $ model
               { fortune = Nothing
               }
 
-displayFortune ∷ String → IMModel → NoMessages
+displayFortune ∷ String → ImModel → NoMessages
 displayFortune sequence model = F.noMessages $ model
       { fortune = Just sequence
       }
 
 --refactor: this needs some serious cleanup
-receiveMessage ∷ WebSocket → Boolean → WebSocketPayloadClient → IMModel → MoreMessages
+receiveMessage ∷ WebSocket → Boolean → WebSocketPayloadClient → ImModel → MoreMessages
 receiveMessage
       webSocket
       isFocused
@@ -468,13 +468,13 @@ receiveMessage
             Nothing, Just (ImpersonationPayload { sender }) → sender
             _, _ → true
 
-unsuggest ∷ Int → IMModel → IMModel
+unsuggest ∷ Int → ImModel → ImModel
 unsuggest userId model@{ suggestions, suggesting } = model
       { suggestions = DA.filter ((userId /= _) <<< _.id) suggestions
       , suggesting = (\i → if i == 0 then 0 else i - 1) <$> suggesting
       }
 
-processIncomingMessage ∷ ClientMessagePayload → IMModel → Either Int IMModel
+processIncomingMessage ∷ ClientMessagePayload → ImModel → Either Int ImModel
 processIncomingMessage
       { id, userId, date, content, experimenting }
       model@
@@ -558,7 +558,7 @@ markContactUnavailable contacts userId = updateContact <$> contacts
                     }
             | otherwise = contact
 
-checkMissedEvents ∷ IMModel → MoreMessages
+checkMissedEvents ∷ ImModel → MoreMessages
 checkMissedEvents model@{ experimenting, contacts, user: { id } } =
       model :>
             if DM.isJust experimenting then []
@@ -586,7 +586,7 @@ findLastMessages contacts sessionUserID =
       allHistories = DA.sortBy byID <<< DA.concatMap _.history $ DA.filter (DM.isNothing <<< _.impersonating) contacts
       byID { id } { id: anotherID } = compare id anotherID
 
-setName ∷ String → IMModel → NoMessages
+setName ∷ String → ImModel → NoMessages
 setName name model =
       F.noMessages $ model
             { user
@@ -594,7 +594,7 @@ setName name model =
                     }
             }
 
-toggleConnectedWebSocket ∷ Boolean → IMModel → MoreMessages
+toggleConnectedWebSocket ∷ Boolean → ImModel → MoreMessages
 toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage } =
       model
             { hasTriedToConnectYet = true
@@ -604,7 +604,7 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
       where
       lostConnectionMessage = "Connection to the server lost. Attempting to automatically reconnect..."
 
-preventStop ∷ Event → IMModel → NextMessage
+preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
 checkNotifications ∷ Effect Unit
@@ -696,7 +696,7 @@ setUpWebSocket webSocketRef = do
                         setUpWebSocket webSocketRef
                   ER.modify_ (_ { reconnectId = Just id }) timerIds
 
-setSmallScreen ∷ IMModel → NoMessages
+setSmallScreen ∷ ImModel → NoMessages
 setSmallScreen model =
       F.noMessages $ model
             { messageEnter = false

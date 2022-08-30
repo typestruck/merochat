@@ -1,9 +1,9 @@
-module Shared.IM.View.SuggestionProfile (suggestionProfile, displayProfile) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, displayProfile) where
 
 import Debug
 import Prelude
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.User
 
 import Data.Array ((!!), (..), (:))
@@ -19,16 +19,16 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
-import Shared.IM.Svg (backArrow, nextArrow)
-import Shared.IM.Svg as SIA
-import Shared.IM.View.ChatInput as SIVC
-import Shared.IM.View.Retry as SIVR
+import Shared.Im.Svg (backArrow, nextArrow)
+import Shared.Im.Svg as SIA
+import Shared.Im.View.ChatInput as SIVC
+import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 
--- | Displays either the current chat partner or a list of chat suggestions
-suggestionProfile ∷ IMModel → Html IMMessage
+-- | Displays either the current chat or a list of chat suggestions
+suggestionProfile ∷ ImModel → Html ImMessage
 suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, user } =
       if user.profileVisibility /= Everyone && notChatting then
             suggestionWarning
@@ -55,8 +55,8 @@ suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullConta
 
       suggestionWarning = HE.div (HA.class' { "suggestion": true, hidden: DM.isJust chatting }) $ welcome user
 
--- | Contact was deleted, made private or blocked the logged user
-unavailable ∷ String → Html IMMessage
+-- | Contact was deleted, made private or they blocked the logged user
+unavailable ∷ String → Html ImMessage
 unavailable name =
       HE.div [ HA.class' "profile-contact" ]
             [ HE.div (HA.class' "profile-contact-top")
@@ -69,7 +69,7 @@ unavailable name =
             ]
 
 -- | Compact profile view shown by default
-compactProfile ∷ IMModel → Contact → Html IMMessage
+compactProfile ∷ ImModel → Contact → Html ImMessage
 compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } contact@{ impersonating, user: { id, availability, typingStatus } } =
       HE.div (HA.class' "profile-contact")
             [ HE.div (HA.class' "profile-contact-top")
@@ -111,7 +111,7 @@ compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } conta
             ]
 
 -- | Suggestion cards/full screen profile view
-fullProfile ∷ ProfilePresentation → Maybe Int → IMModel → Maybe Int → ImUser → Html IMMessage
+fullProfile ∷ ProfilePresentation → Maybe Int → ImModel → Maybe Int → ImUser → Html ImMessage
 fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } impersonating user@{ id } =
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
@@ -203,14 +203,14 @@ displayProfile index { karmaPosition, name, availability, avatar, age, karma, he
 
       duller hidden t = HE.span (HA.class' { "duller": true, "hidden": hidden }) t
 
-blockReport ∷ Tuple Int (Maybe Int) → Array (Html IMMessage)
+blockReport ∷ Tuple Int (Maybe Int) → Array (Html ImMessage)
 blockReport tupleId =
       [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser tupleId ] "Block"
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< ShowReport $ DT.fst tupleId ] "Report"
       ]
 
 -- | Suggestions are shown as a (three) card list
-suggestionCards ∷ IMModel → Int → Html IMMessage
+suggestionCards ∷ ImModel → Int → Html ImMessage
 suggestionCards model@{ user, suggestions, experimenting } index =
       HE.div (HA.class' "suggestion-cards")
             [ case experimenting of
@@ -249,7 +249,7 @@ suggestionCards model@{ user, suggestions, experimenting } index =
                         , HE.div (HA.class' "welcome-new") $ first <> second
                         ]
 
-welcome ∷ ImUser → Html IMMessage
+welcome ∷ ImUser → Html ImMessage
 welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")
       [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
       , HE.div (HA.class' "welcome-new") $ case profileVisibility of

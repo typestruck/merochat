@@ -18,26 +18,26 @@ import Data.Maybe as DM
 import Effect.Class (liftEffect)
 import Environment (experimentsJSHash, internalHelpJSHash, leaderboardCSSHash, leaderboardJSHash, profileJSHash, settingsJSHash)
 import Flame ((:>))
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame as F
 import Shared.Json as SJ
 import Shared.Routes (routes)
 
-toggleInitialScreen ∷ Boolean → IMModel → NoMessages
+toggleInitialScreen ∷ Boolean → ImModel → NoMessages
 toggleInitialScreen toggle model@{ initialScreen } = F.noMessages $ model
       { initialScreen = toggle
       , chatting = Nothing
       , toggleModal = HideUserMenuModal
       }
 
-logout ∷ IMModel → MoreMessages
+logout ∷ ImModel → MoreMessages
 logout model = CIF.nothingNext model out
       where
       out = do
             void $ request.logout { body: {} }
             liftEffect $ CCL.setLocation $ routes.login.get {}
 
-toggleModal ∷ ShowUserMenuModal → IMModel → NextMessage
+toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
 toggleModal mToggle model@{ modalsLoaded } =
       case mToggle of
             ShowProfile → showTab request.profile.get ShowProfile (Just $ "profile." <> profileJSHash) ProfileEditionRoot
@@ -64,7 +64,7 @@ toggleModal mToggle model@{ modalsLoaded } =
                         [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents file root) (f {})
                         ]
 
-setModalContents ∷ Maybe String → ElementId → String → IMModel → NextMessage
+setModalContents ∷ Maybe String → ElementId → String → ImModel → NextMessage
 setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
       where
       loadModal root html file = liftEffect do
@@ -75,5 +75,5 @@ setModalContents file root html model = CIF.nothingNext model $ loadModal root h
                   Just name → CCD.loadScript name
                   Nothing → pure unit
 
-toggleUserContextMenu ∷ ShowContextMenu → IMModel → NoMessages
+toggleUserContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleUserContextMenu toggle model = F.noMessages $ model { toggleContextMenu = toggle }

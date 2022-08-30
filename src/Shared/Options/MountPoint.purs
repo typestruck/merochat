@@ -1,7 +1,7 @@
 module Shared.Options.MountPoint where
 
 import Prelude
-import Shared.IM.Types (IMMessage)
+import Shared.Im.Types (ImMessage)
 import Flame (AppId(..))
 import Shared.Profile.Types (ProfileMessage)
 
@@ -10,7 +10,7 @@ data MountPoint = IM | Profile
 profileId ∷ AppId MountPoint ProfileMessage
 profileId = AppId Profile
 
-imId ∷ AppId MountPoint IMMessage
+imId ∷ AppId MountPoint ImMessage
 imId = AppId IM
 
 instance Show MountPoint where

@@ -147,6 +147,22 @@ body {
     border-top: 1px solid #4E4E4E;
 }
 
+.mobile-notification {
+    display: flex;
+    justify-content: center;
+    padding: 5px 0;
+    cursor: pointer;
+    background-color: #1b3a28;
+    font-style: italic;
+}
+
+.avatar-notification-mobile {
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    margin: 0 2px;
+}
+
 .typing {
     font-style: italic;
 }
@@ -403,6 +419,10 @@ blockquote {
     width: 20px;
     height: 20px;
     fill: #b9c658;
+}
+
+.notification-header {
+    margin:0 5px;
 }
 
 #full-profile-context-menu,

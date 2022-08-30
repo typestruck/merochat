@@ -3,7 +3,7 @@ module Shared.Profile.View where
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.Network
 import Shared.Profile.Types
 
@@ -30,8 +30,8 @@ import Record as R
 import Shared.Avatar as SA
 import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
-import Shared.IM.Svg as SIS
-import Shared.IM.View.SuggestionProfile as SIVP
+import Shared.Im.Svg as SIS
+import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Setter as SS

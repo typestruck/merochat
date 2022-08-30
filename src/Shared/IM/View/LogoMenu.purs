@@ -1,4 +1,4 @@
-module Shared.IM.View.LogoMenu where
+module Shared.Im.View.LogoMenu where
 
 import Prelude
 import Shared.ContentType
@@ -9,10 +9,10 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.Path as SP
 
-logoMenu ∷ Maybe String → Html IMMessage
+logoMenu ∷ Maybe String → Html ImMessage
 logoMenu fortune = HE.div (HA.class' "relative")
       [ HE.div (HA.class' "tabs")
               [ HE.div (HA.class' "tab-item duller")

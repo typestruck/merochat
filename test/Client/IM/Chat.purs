@@ -2,7 +2,7 @@ module Test.Client.IM.Chat where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.IM.Chat as CIC
 import Data.Array ((!!), (:))
@@ -13,7 +13,7 @@ import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.IM.Contact as SIC
+import Shared.Im.Contact as SIC
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN

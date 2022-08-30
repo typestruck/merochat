@@ -20,7 +20,7 @@ External pages might use browsers API for DOM manipulation instead of a framewor
 
 Internal pages require login to be accessed. Non logged users are redirected to /login upon trying to access them. However, there is only a single entry point exposed to the user, /im. The IM page lazy loads other entry points (like user settings, karma leaderboard or user profile edition) and renders them without URL changes.
 
-IM uses purescript-flame as web framework. `Client.IM.Main` kickstarts the application, wires document/window events, handles websocket events and call the appropriated methods for each `IMMessage`. Most logical page divisions have its own file to process given `IMMessage`s, e.g., there is a contact list, history, chat etc module.
+IM uses purescript-flame as web framework. `Client.IM.Main` kickstarts the application, wires document/window events, handles websocket events and call the appropriated methods for each `ImMessage`. Most logical page divisions have its own file to process given `ImMessage`s, e.g., there is a contact list, history, chat etc module.
 
 Lazy loaded pages also have their own `Main` module (e.g. `Client.Profile.Main`) that will handle events and message updates.
 

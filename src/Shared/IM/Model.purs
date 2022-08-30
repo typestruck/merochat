@@ -1,4 +1,4 @@
-module Shared.IM.Model where
+module Shared.Im.Model where
 
 import Shared.ContentType
 

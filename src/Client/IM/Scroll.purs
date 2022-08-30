@@ -4,7 +4,7 @@ import Prelude
 import Shared.ContentType
 
 import Client.Common.DOM as CCD
-import Shared.IM.Types
+import Shared.Im.Types
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -15,7 +15,7 @@ scrollLastMessage = do
       node ← CCD.unsafeGetElementById MessageHistory
       CCD.scrollDown node
 
-scrollLastMessage' ∷ Aff (Maybe IMMessage)
+scrollLastMessage' ∷ Aff (Maybe ImMessage)
 scrollLastMessage' = do
       liftEffect scrollLastMessage
       pure Nothing

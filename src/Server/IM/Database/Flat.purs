@@ -12,7 +12,7 @@ import Server.Database.Flat as SDF
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.IM.Types (Contact, HM, ImUser, HistoryMessage)
+import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
 import Shared.Unsafe as SU
 
 type FlatFields rest =

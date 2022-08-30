@@ -37,7 +37,7 @@ export default {
                   dependOn: 'im'
             },
             recover: './loader/development/recover.bundle.js',
-            emoji: './output/Shared.IM.Emoji/index.js'
+            emoji: './output/Shared.Im.Emoji/index.js'
       },
 
       output: {

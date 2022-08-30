@@ -3,7 +3,7 @@ module Client.IM.Contacts where
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)
@@ -30,14 +30,14 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Flame.Html.Attribute (d)
-import Shared.IM.Contact as SIC
+import Shared.Im.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
-resumeChat ∷ Int → Maybe Int → IMModel → MoreMessages
+resumeChat ∷ Int → Maybe Int → ImModel → MoreMessages
 resumeChat searchId impersonating model@{ contacts, chatting, smallScreen } =
       let
             index = DA.findIndex (\cnt → cnt.user.id == searchId && cnt.impersonating == impersonating) contacts
@@ -62,7 +62,7 @@ resumeChat searchId impersonating model@{ contacts, chatting, smallScreen } =
       where
       smallScreenEffect = if smallScreen then [] else [ CIF.next $ FocusInput ChatInput ]
 
-markRead ∷ WebSocket → IMModel → MoreMessages
+markRead ∷ WebSocket → ImModel → MoreMessages
 markRead webSocket =
       case _ of
             model@
@@ -79,7 +79,7 @@ markRead webSocket =
             model → F.noMessages model
 
 updateStatus ∷
-      IMModel →
+      ImModel →
       { sessionUserId ∷ Int
       , webSocket ∷ WebSocket
       , contacts ∷ Array Contact
@@ -129,7 +129,7 @@ updateStatus model@{ experimenting } { webSocket, index, sessionUserId, contacts
 -- opening ws connection (messages might have been sent while offline)
 -- chats from new users
 -- recovering from disconnect
-markDelivered ∷ WebSocket → IMModel → NoMessages
+markDelivered ∷ WebSocket → ImModel → NoMessages
 markDelivered webSocket model@{ experimenting, contacts, user: { id: sessionUserId } } =
       if DA.null ids then
             F.noMessages model
@@ -158,7 +158,7 @@ markDelivered webSocket model@{ experimenting, contacts, user: { id: sessionUser
                   [] → running
                   hs → Tuple userId (map _.id hs) : running
 
-checkFetchContacts ∷ IMModel → MoreMessages
+checkFetchContacts ∷ ImModel → MoreMessages
 checkFetchContacts model@{ freeToFetchContactList }
       | freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
@@ -172,7 +172,7 @@ checkFetchContacts model@{ freeToFetchContactList }
 
       | otherwise = F.noMessages model
 
-fetchContacts ∷ Boolean → IMModel → MoreMessages
+fetchContacts ∷ Boolean → ImModel → MoreMessages
 fetchContacts shouldFetch model@{ contacts, experimenting }
       | shouldFetch =
               model
@@ -181,18 +181,18 @@ fetchContacts shouldFetch model@{ contacts, experimenting }
       | otherwise = F.noMessages model
 
 --paginated contacts
-displayContacts ∷ Array Contact → IMModel → MoreMessages
+displayContacts ∷ Array Contact → ImModel → MoreMessages
 displayContacts newContacts model = updateDisplayContacts newContacts [] model
 
 --new chats
-displayNewContacts ∷ Array Contact → IMModel → MoreMessages
+displayNewContacts ∷ Array Contact → ImModel → MoreMessages
 displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → Tuple cnt.user.id cnt.impersonating) newContacts) model
 
 --new chats from impersonation experiment
-displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → IMModel → MoreMessages
+displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → ImModel → MoreMessages
 displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
 
-resumeMissedEvents ∷ MissedEvents → IMModel → MoreMessages
+resumeMissedEvents ∷ MissedEvents → ImModel → MoreMessages
 resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =
       let
             missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
@@ -239,7 +239,7 @@ resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, us
       findContact { user: { id } } = DA.findIndex (sameContact id) contacts
       sameContact userId { user: { id } } = userId == id
 
-updateDisplayContacts ∷ Array Contact → Array (Tuple Int (Maybe Int)) → IMModel → MoreMessages
+updateDisplayContacts ∷ Array Contact → Array (Tuple Int (Maybe Int)) → ImModel → MoreMessages
 updateDisplayContacts newContacts userIds model@{ contacts } =
       CIU.notifyUnreadChats
             ( model
@@ -252,7 +252,7 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
       existingContactIds = DS.fromFoldable (_.id <<< _.user <$> contacts)
       onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
-deleteChat ∷ Tuple Int (Maybe Int) → IMModel → MoreMessages
+deleteChat ∷ Tuple Int (Maybe Int) → ImModel → MoreMessages
 deleteChat tii@(Tuple id impersonating) model@{ contacts } =
       updatedModel :>
             if DM.isNothing impersonating then

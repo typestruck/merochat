@@ -3,7 +3,7 @@ module Server.Wheel where
 
 import Shared.ContentType
 import Prelude
-import Shared.IM.Types
+import Shared.Im.Types
 import Data.Int as DI
 import Data.Tuple (Tuple(..))
 

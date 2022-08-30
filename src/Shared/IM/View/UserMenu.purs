@@ -1,4 +1,4 @@
-module Shared.IM.View.UserMenu where
+module Shared.Im.View.UserMenu where
 
 import Prelude
 import Shared.ContentType
@@ -6,15 +6,15 @@ import Shared.ContentType
 import Shared.Experiments.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame (Html)
-import Shared.IM.Types
+import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.IM.Svg as SIS
+import Shared.Im.Svg as SIS
 
-userMenu ∷ IMModel → Html IMMessage
+userMenu ∷ ImModel → Html ImMessage
 userMenu model@{ toggleContextMenu, smallScreen, experimenting } =
       HE.div (HA.class' "settings")
             [ header model
@@ -73,7 +73,7 @@ userMenu model@{ toggleContextMenu, smallScreen, experimenting } =
                           ]
             ]
 
-header ∷ IMModel → Html IMMessage
+header ∷ ImModel → Html ImMessage
 header model@{ user: { karma, karmaPosition }, experimenting } = HE.fragment
       [ HE.img [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar ]
       , HE.div [ HA.class' "settings-name" ]

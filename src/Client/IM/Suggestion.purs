@@ -3,7 +3,7 @@ module Client.IM.Suggestion where
 import Prelude
 import Shared.ContentType
 import Shared.Experiments.Types
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
@@ -23,7 +23,7 @@ import Flame as F
 import Shared.Options.Page (suggestionsPerPage)
 import Web.Socket.WebSocket (WebSocket)
 
-nextSuggestion ∷ IMModel → MoreMessages
+nextSuggestion ∷ ImModel → MoreMessages
 nextSuggestion model@{ suggestions, suggesting } =
       let
             next = DM.maybe 0 (_ + 1) suggesting
@@ -37,7 +37,7 @@ nextSuggestion model@{ suggestions, suggesting } =
                         , chatting = Nothing
                         }
 
-previousSuggestion ∷ IMModel → MoreMessages
+previousSuggestion ∷ ImModel → MoreMessages
 previousSuggestion model@{ suggesting } =
       let
             previous = DM.maybe 0 (_ - 1) suggesting
@@ -51,7 +51,7 @@ previousSuggestion model@{ suggesting } =
                         , chatting = Nothing
                         }
 
-fetchMoreSuggestions ∷ IMModel → NextMessage
+fetchMoreSuggestions ∷ ImModel → NextMessage
 fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } =
       model
             { freeToFetchSuggestions = false
@@ -67,7 +67,7 @@ fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } =
                     }
             ]
 
-displayMoreSuggestions ∷ Array Suggestion → IMModel → MoreMessages
+displayMoreSuggestions ∷ Array Suggestion → ImModel → MoreMessages
 displayMoreSuggestions suggestions model@{ suggestionsPage } =
       --if we looped through all the suggestions, retry
       if suggestionsSize == 0 && suggestionsPage > 0 then
@@ -87,7 +87,7 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
 
-blockUser ∷ WebSocket → Tuple Int (Maybe Int) → IMModel → NextMessage
+blockUser ∷ WebSocket → Tuple Int (Maybe Int) → ImModel → NextMessage
 blockUser webSocket tupleId model =
       updateAfterBlock blocked model :>
             [ do
@@ -100,7 +100,7 @@ blockUser webSocket tupleId model =
             ]
       where blocked = DT.fst tupleId
 
-updateAfterBlock ∷ Int → IMModel → IMModel
+updateAfterBlock ∷ Int → ImModel → ImModel
 updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       model
             { contacts = DA.filter ((blocked /= _) <<< fromContact) contacts
@@ -116,12 +116,12 @@ updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       fromContact { user } = fromUser user
       fromUser { id } = id
 
-toggleContactProfile ∷ IMModel → NoMessages
+toggleContactProfile ∷ ImModel → NoMessages
 toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model
       { fullContactProfileVisible = not fullContactProfileVisible
       }
 
-resumeSuggesting ∷ IMModel → NoMessages
+resumeSuggesting ∷ ImModel → NoMessages
 resumeSuggesting model@{ suggestions, suggesting } = F.noMessages $ model
       { chatting = Nothing
       , suggesting = if DA.length suggestions <= 1 then Just 0 else suggesting

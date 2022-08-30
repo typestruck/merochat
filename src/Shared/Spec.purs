@@ -3,7 +3,7 @@ module Shared.Spec where
 import Prelude
 import Server.Ok
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 import Shared.Profile.Types
 import Shared.User
 import Data.List (List)

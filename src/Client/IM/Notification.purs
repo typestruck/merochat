@@ -2,7 +2,7 @@ module Client.IM.Notification where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Client.Common.DOM as CCD
 import Client.IM.Flame (NextMessage)
@@ -19,7 +19,7 @@ import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame.Subscription as FS
 import Shared.Experiments.Impersonation (impersonations)
-import Shared.IM.Unread as SIU
+import Shared.Im.Unread as SIU
 import Shared.Options.MountPoint (imId)
 import Shared.Path as SP
 import Shared.Unsafe as SU
@@ -28,9 +28,7 @@ import Web.HTML.HTMLLinkElement as WHL
 type Notification =
       { body ∷ String
       , icon ∷ String
-      ,
-        -- uses a custom event to let Main know of this
-        handler ∷ Effect Unit
+      , handler ∷ Effect Unit -- uses a custom event to let Main know of this
       }
 
 foreign import createNotification_ ∷ EffectFn1 Notification Unit
@@ -38,13 +36,13 @@ foreign import createNotification_ ∷ EffectFn1 Notification Unit
 createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
-notifyUnreadChats ∷ IMModel → Array (Tuple Int (Maybe Int)) → NextMessage
+notifyUnreadChats ∷ ImModel → Array (Tuple Int (Maybe Int)) → NextMessage
 notifyUnreadChats model userIds = model :> [ do
       liftEffect $ notify model userIds
       pure $ Just UpdateDelivered
 ]
 
-notify ∷ IMModel → Array (Tuple Int (Maybe Int)) → Effect Unit
+notify ∷ ImModel → Array (Tuple Int (Maybe Int)) → Effect Unit
 notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
       updateTabCount sessionUserId contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
@@ -64,7 +62,7 @@ notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
 
       byKeys cnt = DA.any (\(Tuple id impersonating) → cnt.user.id == id && cnt.impersonating == impersonating) userIds
 
-notify' ∷ IMModel → Array (Tuple Int (Maybe Int)) → Aff (Maybe IMMessage)
+notify' ∷ ImModel → Array (Tuple Int (Maybe Int)) → Aff (Maybe ImMessage)
 notify' model userIds = do
       liftEffect $ notify model userIds
       pure Nothing

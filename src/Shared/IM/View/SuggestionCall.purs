@@ -1,8 +1,8 @@
-module Shared.IM.View.SuggestionCall where
+module Shared.Im.View.SuggestionCall where
 
 import Prelude
 import Shared.ContentType
-import Shared.IM.Types
+import Shared.Im.Types
 
 import Data.Array ((!!))
 import Data.Array as DA
@@ -12,9 +12,9 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.IM.Svg as SIS
+import Shared.Im.Svg as SIS
 
-suggestionCall ∷ IMModel → Html IMMessage
+suggestionCall ∷ ImModel → Html ImMessage
 suggestionCall { contacts, suggesting, chatting, suggestions }
       | DM.isJust chatting =
               HE.div (HA.class' "side-suggestions-container")
