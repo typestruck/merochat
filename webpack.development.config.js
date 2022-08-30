@@ -10,33 +10,33 @@ export default {
 
       entry: {
             im: {
-                  import: ['./loader/im.bundle.js'],
+                  import: ['./loader/development/im.bundle.js'],
                   dependOn: 'emoji'
             },
-            landing: ['./loader/landing.bundle.js'],
-            login: './loader/login.bundle.js',
+            landing: ['./loader/development/landing.bundle.js'],
+            login: './loader/development/login.bundle.js',
             profile: {
-                  import: ['./loader/profile.bundle.js'],
+                  import: ['./loader/development/profile.bundle.js'],
                   dependOn: 'im'
             },
             leaderboard: {
-                  import: ['./loader/leaderboard.bundle.js'],
+                  import: ['./loader/development/leaderboard.bundle.js'],
                   dependOn: 'im'
             },
-            help: ['./loader/help.bundle.js'],
+            help: ['./loader/development/help.bundle.js'],
             internalHelp: {
-                  import: ['./loader/internalHelp.bundle.js'],
+                  import: ['./loader/development/internalHelp.bundle.js'],
                   dependOn: 'im'
             },
             settings: {
-                  import: ['./loader/settings.bundle.js'],
+                  import: ['./loader/development/settings.bundle.js'],
                   dependOn: 'im'
             },
             experiments: {
-                  import: ['./loader/experiments.bundle.js'],
+                  import: ['./loader/development/experiments.bundle.js'],
                   dependOn: 'im'
             },
-            recover: './loader/recover.bundle.js',
+            recover: './loader/development/recover.bundle.js',
             emoji: './output/Shared.IM.Emoji/index.js'
       },
 

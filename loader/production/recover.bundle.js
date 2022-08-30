@@ -1,4 +1,4 @@
-import * as Recover from '../output/Client.Recover.Main/index.js'
+import * as Recover from '../../output-es/Client.Recover.Main/index.js'
 
 window.Recover = Recover;
 //needed for recaptcha

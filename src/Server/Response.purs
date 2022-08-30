@@ -13,8 +13,7 @@ import Shared.ResponseError (ResponseError(..))
 serveTemplate ∷ Effect String → ServerEffect Html
 serveTemplate template = do
       contents ← R.liftEffect template
-      pure <<< Html $ docType <> contents
-      where docType = "<!DOCTYPE html>" --work around flame lacking tag
+      pure $ Html contents
 
 throwInternalError ∷ ∀ r whatever. String → BaseEffect r whatever
 throwInternalError reason = RE.throw $ InternalError { reason, context: Nothing }

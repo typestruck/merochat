@@ -10,7 +10,7 @@ import TerserPlugin from "terser-webpack-plugin";
 export default {
     mode: 'production',
     entry: {
-        landing: './loader/landing.bundle.js',
+        landing: './loader/production/landing.bundle.js',
         style: ['./src/Client/css/base.css', './src/Client/css/external.css', './src/Client/css/landing.css']
     },
     output: {

@@ -1,4 +1,4 @@
-import * as Landing from '../output/Client.Landing.Main/index.js'
+import * as Landing from '../../output/Client.Landing.Main/index.js'
 
 window.Landing = Landing;
 //needed for recaptcha
