@@ -12,6 +12,7 @@ handler="landing = function (v) {
     return Control_Applicative.pure(Run.applicativeRun)(M.Html('$payload'));
 };"
 
+sed -i -e 's/const landing/let landing/g' $file
 sed -i '1s/^/import \* as M from "..\/Shared.ContentType\/index.js";\n/' $file
 
 echo $handler >> $file
