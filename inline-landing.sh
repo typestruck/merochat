@@ -12,6 +12,7 @@ handler="function templateHack(v) {
     return M.Html('$payload');
 };"
 
+sed -i '1s/^/import \* as M from "..\/Shared.ContentType\/index.js";\n/' $file
 sed -i -e 's/const landing = v => Server$dResponse.serveTemplate(Server$dLanding$dTemplate.template);/const landing = v => Server$dResponse.serveTemplate(templateHack);/' $file
 
 echo $handler >> $file
