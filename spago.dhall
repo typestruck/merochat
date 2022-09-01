@@ -65,7 +65,6 @@ You can edit this file as you like.
   , "tuples"
   , "type-equality"
   , "typelevel-prelude"
-  , "unfoldable"
   , "unordered-collections"
   , "unsafe-coerce"
   , "uuid"
