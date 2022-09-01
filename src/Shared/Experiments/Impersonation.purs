@@ -68,6 +68,7 @@ batman =
       , messageTimestamps: true
       , typingStatus: true
       , onlineStatus: true
+      , completedTutorial: true
       , avatar: Just $ imageBasePath <> "batman_noun_project_Anusha_Narvekar.png"
       , headline: "*raspy voice* I am Batman"
       , description: "I am not afraid of bats. Don't tell Robin I am here."
@@ -90,6 +91,7 @@ socrates =
       , profileVisibility: Everyone
       , availability: None
       , readReceipts: true
+      , completedTutorial: true
       , messageTimestamps: true
       , typingStatus: true
       , onlineStatus: true
@@ -117,6 +119,7 @@ nicolasCage =
       , profileVisibility: Everyone
       , readReceipts: true
       , messageTimestamps: true
+      , completedTutorial: true
       , typingStatus: true
       , onlineStatus: true
       , availability: None

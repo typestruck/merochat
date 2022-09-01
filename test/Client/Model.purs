@@ -82,6 +82,7 @@ imUser =
       , country: Nothing
       , availability: None
       , languages: []
+      , completedTutorial: true
       , tags: []
       , headline: ""
       , description: ""

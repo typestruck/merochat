@@ -53,6 +53,7 @@ type IU =
               , profileVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
               , messageTimestamps ∷ Boolean
+              , completedTutorial ∷ Boolean
               )
       )
 

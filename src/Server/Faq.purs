@@ -40,7 +40,7 @@ faq =
             , HE.p_ "Think of it as a score of how much other users trust you. You gain Karma points by starting good conversations."
             , HE.p_ "As a moderation tool, some features (like sending pictures) might be locked until you have enough Karma."
             , HE.h2 [ HA.id "gibberishprofile" ] "What is that gibberish on my profile?"
-            , HE.p_ "The app automatically fills in some fields (like name, headline or bio) for a new profile. Sometimes it is funny, sometimes just totally incoherent. You may leave as it is (or also generate some new gibberish!) or edit it to your liking."
+            , HE.p_ "The app automatically fills in some fields (like name, headline or bio) for a new profile. Sometimes it is amusing, sometimes just corny. You may leave as it is (or also generate some new gibberish!) or edit it to your liking."
             , HE.h2 [ HA.id "profileprivate" ] "Is my profile private?"
             , HE.p_ "Your profile can only be viewed by other users inside of the app. As for your personal data, you decide how much (or little) you want to share."
             , HE.h2 [ HA.id "groupchats" ] "Are group chats available?"

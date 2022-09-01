@@ -1,6 +1,5 @@
 module Shared.Im.View.ContactList where
 
-import Debug
 import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
@@ -18,7 +17,6 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
@@ -30,14 +28,14 @@ import Shared.User (Availability(..), ProfileVisibility(..))
 
 -- | Users that have exchanged messages with the current logged in user
 contactList ∷ Boolean → ImModel → Html ImMessage
-contactList isClientRender { failedRequests, chatting, toggleContextMenu, experimenting, contacts, user: { id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps,onlineStatus } } =
+contactList isClientRender { failedRequests, chatting, toggleContextMenu, experimenting, contacts, toggleModal, user: { id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus } } =
       case profileVisibility of
             Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]
             _ →
                   HE.div
                         [ HA.id $ show ContactList
                         , HA.onScroll CheckFetchContacts
-                        , HA.class' "contact-list"
+                        , HA.class' { "contact-list": true, highlighted: toggleModal == Tutorial ChatList }
                         ]
                         $ retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts
       where
@@ -65,9 +63,9 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
                         [ HA.class' { contact: true, "chatting-contact": chattingId == Just user.id && impersonatingId == impersonating }
                         , HA.onClick $ ResumeChat tupleId
                         ]
-                        [ HE.div [HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
+                        [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
                                 [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass justIndex, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
-                                , HE.div' [ HA.class' {"online-indicator": true, hidden: contact.availability /= Online } ]
+                                , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.availability /= Online } ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
                                 [ HE.span (HA.class' "contact-name") contact.name

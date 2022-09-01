@@ -70,8 +70,8 @@ unavailable name =
 
 -- | Compact profile view shown by default
 compactProfile ∷ ImModel → Contact → Html ImMessage
-compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } contact@{ impersonating, user: { id, availability, typingStatus } } =
-      HE.div (HA.class' "profile-contact")
+compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: loggedUser } contact@{ impersonating, user: { id, availability, typingStatus } } =
+      HE.div (HA.class' { "profile-contact": true, highlighted: toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
                     , HE.img $ [ HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfileAction
@@ -112,7 +112,7 @@ compactProfile { chatting, toggleContextMenu, contacts, user: loggedUser } conta
 
 -- | Suggestion cards/full screen profile view
 fullProfile ∷ ProfilePresentation → Maybe Int → ImModel → Maybe Int → ImUser → Html ImMessage
-fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions } impersonating user@{ id } =
+fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions, toggleModal } impersonating user@{ id } =
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
             CenterCard → HE.div [ HA.class' "suggestion-center" ] -- only center card suggestion can be chatted to
@@ -122,7 +122,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             card → HE.div [ HA.class' "suggestion new", HA.onClick <<< SpecialRequest $ if card == PreviousCard then PreviousSuggestion else NextSuggestion ] profile
       where
       fullProfileMenu = HE.div (HA.class' "profile-top-menu")
-            [ SIA.arrow [ HA.class' "svg-back-profile", HA.onClick ToggleContactProfile ]
+            [ SIA.arrow [ HA.class' {"svg-back-profile": true, highlighted: toggleModal == Tutorial Chatting}, HA.onClick ToggleContactProfile ]
             , HE.div [ HA.class' "outer-user-menu" ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
@@ -141,7 +141,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                   , arrow $ SpecialRequest NextSuggestion
                   ]
 
-      arrow message = HE.div (HA.class' ("suggestion-arrow" <> e) : clickMessage)
+      arrow message = HE.div (HA.class' "suggestion-arrow" : clickMessage)
             [ case message of
                     SpecialRequest PreviousSuggestion → backArrow
                     _ → nextArrow
@@ -150,9 +150,6 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             clickMessage
                   | freeToFetchSuggestions = [ HA.onClick message ]
                   | otherwise = []
-            e = case message of
-                  SpecialRequest PreviousSuggestion → " ppe"
-                  _ → ""
 
       currentSuggestionMenu = HE.div [ HA.class' "profile-context outer-user-menu" ]
             [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
@@ -211,7 +208,7 @@ blockReport tupleId =
 
 -- | Suggestions are shown as a (three) card list
 suggestionCards ∷ ImModel → Int → Html ImMessage
-suggestionCards model@{ user, suggestions, experimenting } index =
+suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
       HE.div (HA.class' "suggestion-cards")
             [ case experimenting of
                     Just (Impersonation (Just { name })) → welcomeImpersonation name
@@ -235,7 +232,7 @@ suggestionCards model@{ user, suggestions, experimenting } index =
                   isCenter = suggesting == index
                   isPrevious = suggesting < index
                   attrs
-                        | isCenter = [ HA.class' "card card-center" ]
+                        | isCenter = [ HA.class' { "card card-center": true, highlighted: toggleModal == Tutorial ChatSuggestions } ]
                         | otherwise = [ HA.class' "card card-sides faded" ]
             in
                   HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) (Just suggesting) model Nothing profile
@@ -280,6 +277,7 @@ dummySuggestion =
       , messageTimestamps: true
       , typingStatus: true
       , onlineStatus: true
+      , completedTutorial: true
       , karma: 321
       , karmaPosition: 90
       , gender: Just $ show Female

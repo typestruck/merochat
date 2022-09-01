@@ -54,6 +54,7 @@ handlers reading =
               , missedEvents: runJson reading SIH.missedEvents
               , fortune: runJson reading SFTH.fortune
               , report: runJson reading SIH.report
+              , tutorial: runJson reading SIH.tutorial
               }
       , profile:
               { get: runJson reading SPH.profile

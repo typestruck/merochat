@@ -146,7 +146,7 @@ type IM =
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
       , toggleContextMenu ∷ ShowContextMenu
-      , toggleModal ∷ ShowUserMenuModal
+      , toggleModal ∷ ShowUserMenuModal --refactor: toggleModal and toggleChatModal should be merged
       , toggleChatModal ∷ ShowChatModal
       )
 
@@ -182,6 +182,9 @@ data ShowUserMenuModal
       | ShowHelp
       | ShowBacker
       | ShowReport Int
+      | Tutorial Step
+
+data Step = Welcome | ChatSuggestions | Chatting | BackSuggestions | ChatList | OptionsMenu
 
 type Stats =
       { characters ∷ Number
@@ -191,9 +194,8 @@ type Stats =
 type Turn =
       { senderStats ∷ Stats
       , recipientStats ∷ Stats
-      , chatAge ∷ Number
-      , -- Days,
-        replyDelay ∷ Number --Seconds
+      , chatAge ∷ Number -- Days
+      , replyDelay ∷ Number --Seconds
       }
 
 data ProfilePresentation
@@ -289,6 +291,7 @@ data ImMessage
       | AskChatExperiment
       | SetChatExperiment (Maybe ExperimentData)
       | ReloadPage
+      | FinishTutorial
       | ToggleUserContextMenu Event
       | SpecialRequest RetryableRequest
       | ReceiveMessage WebSocketPayloadClient Boolean
@@ -484,6 +487,9 @@ instance DecodeJson MessageContent where
 instance DecodeJson ShowUserMenuModal where
       decodeJson = DADGR.genericDecodeJson
 
+instance DecodeJson Step where
+      decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson WebSocketPayloadClient where
       decodeJson = DADGR.genericDecodeJson
 
@@ -509,6 +515,9 @@ instance EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson MessageContent where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson Step where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson ShowUserMenuModal where
@@ -623,11 +632,13 @@ derive instance Eq ShowContextMenu
 derive instance Eq ProfilePresentation
 derive instance Eq RetryableRequest
 derive instance Eq ShowChatModal
+derive instance Eq Step
 derive instance Eq ShowUserMenuModal
 derive instance Eq ReportReason
 derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
+derive instance Generic Step _
 derive instance Generic ReportReason _
 derive instance Generic MessageContent _
 derive instance Generic WebSocketPayloadClient _

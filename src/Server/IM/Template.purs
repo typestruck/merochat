@@ -61,7 +61,7 @@ template { contacts, suggestions, user } = do
                     , erroredFields: []
                     , fortune: Nothing
                     , toggleContextMenu: HideContextMenu
-                    , toggleModal: HideUserMenuModal
+                    , toggleModal: if user.completedTutorial || not (DA.null contacts) then HideUserMenuModal else Tutorial Welcome
                     , toggleChatModal: HideChatModal
                     , experimenting: Nothing
                     , blockedUsers: []

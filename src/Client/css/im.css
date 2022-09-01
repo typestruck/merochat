@@ -136,6 +136,17 @@ body {
     background: #2d2d2d;
 }
 
+.profile-contact.highlighted,
+.side-suggestions-container.highlighted,
+.settings.highlighted {
+    border: 2px solid #469bc5;
+}
+
+.side-suggestions-container.highlighted, .settings.highlighted {
+    z-index: 8;
+    position: relative;
+}
+
 .side-suggestion {
     display: flex;
     justify-content: center;
@@ -197,6 +208,12 @@ body {
     font-family: Verdana, "sans serif";
     font-size: 1.1em;
     margin: 0;
+}
+
+.step-button {
+    background: rgb(238, 238, 238);
+    color: #469bc5;
+    font-weight: bold;
 }
 
 .profile-asl div {
@@ -422,7 +439,7 @@ blockquote {
 }
 
 .notification-header {
-    margin:0 5px;
+    margin: 0 5px;
 }
 
 #full-profile-context-menu,
@@ -602,6 +619,11 @@ blockquote {
     z-index: 6;
 }
 
+.modal-placeholder-overlay.contacts-only {
+    width: 25%;
+    right: unset;
+}
+
 .modal-menu-mobile {
     display: none;
 }
@@ -683,6 +705,11 @@ img.emoji {
     flex-grow: 1;
     padding-top: 5px;
     scrollbar-width: thin;
+}
+
+.contact-list.highlighted {
+    z-index: 8;
+    position: relative;
 }
 
 .logo-contact-list {
@@ -1053,7 +1080,6 @@ input:not(type=button):focus {
 .ss {
     display: flex;
     justify-content: space-around;
-    /* display: none; */
 }
 
 .duller {
@@ -1153,6 +1179,16 @@ input:not(type=button):focus {
     background: #1b3a28;
 }
 
+.step-button {
+    background: rgb(238, 238, 238);
+    color: #4783ff;
+    font-weight: bold;
+}
+
+.step-button:disabled {
+    cursor: default;
+}
+
 select {
     padding: 5px 10px;
     background: #262626;
@@ -1230,6 +1266,25 @@ select {
 }
 
 .confirmation.report {
+    height: auto;
+}
+
+.tutorial {
+    background: #469bc5;
+    border-top-left-radius: 13px;
+    border-bottom-right-radius: 13px;
+}
+
+.chat-step,
+.chatting-step {
+    left: 0;
+    margin-left: 10px;
+    padding: 20px;
+    height: auto;
+}
+
+.options-menu-step {
+    padding: 20px;
     height: auto;
 }
 
@@ -1537,6 +1592,10 @@ select {
     border: none;
     z-index: 2;
     background: #262626;
+}
+
+.card-center.highlighted .suggestion-arrow svg, .svg-back-profile.highlighted {
+    border: 4px solid #469bc5;
 }
 
 .card-sides .suggestion {

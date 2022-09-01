@@ -32,6 +32,7 @@ create table users
     typing_status boolean not null default true,
     online_status boolean not null default true,
     message_timestamps boolean not null default true,
+    completed_tutorial boolean not null default false,
 
     constraint country_user foreign key (country) references countries(id)
 );

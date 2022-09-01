@@ -38,7 +38,7 @@ logout model = CIF.nothingNext model out
             liftEffect $ CCL.setLocation $ routes.login.get {}
 
 toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
-toggleModal mToggle model@{ modalsLoaded } =
+toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
       case mToggle of
             ShowProfile → showTab request.profile.get ShowProfile (Just $ "profile." <> profileJSHash) ProfileEditionRoot
             ShowSettings → showTab request.settings.get ShowSettings (Just $ "settings." <> settingsJSHash) SettingsEditionRoot
@@ -62,12 +62,14 @@ toggleModal mToggle model@{ modalsLoaded } =
                   if DA.elem toggle modalsLoaded then []
                   else
                         [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents file root) (f {})
+                          -- during the tutorial the user may click on the user menu instead of "finish tutorial"
+                        , if completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]
 
 setModalContents ∷ Maybe String → ElementId → String → ImModel → NextMessage
-setModalContents file root html model = CIF.nothingNext model $ loadModal root html file
+setModalContents file root html model = CIF.nothingNext model loadModal
       where
-      loadModal root html file = liftEffect do
+      loadModal = liftEffect do
             element ← CCD.unsafeGetElementById root
             CCD.setInnerHTML element html
             --scripts don't load when inserted via innerHTML

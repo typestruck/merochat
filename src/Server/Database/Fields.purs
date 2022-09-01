@@ -56,3 +56,6 @@ onlineStatus = Proxy
 
 messageTimestamps :: Proxy  "messageTimestamps"
 messageTimestamps = Proxy
+
+completedTutorial :: Proxy "completedTutorial"
+completedTutorial = Proxy

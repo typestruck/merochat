@@ -15,9 +15,9 @@ import Shared.Avatar as SA
 import Shared.Im.Svg as SIS
 
 suggestionCall ∷ ImModel → Html ImMessage
-suggestionCall { contacts, suggesting, chatting, suggestions }
+suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
       | DM.isJust chatting =
-              HE.div (HA.class' "side-suggestions-container")
+              HE.div (HA.class' {"side-suggestions-container": true, highlighted: toggleModal == Tutorial BackSuggestions } )
                     [ HE.div [ HA.class' "side-suggestion back-side-suggestion", HA.onClick ResumeSuggesting, HA.title "Browse chat suggestions again" ]
                             [ SIS.arrow [ HA.class' "svg-back-suggestions" ]
                             , HE.span (HA.class' "back-suggestions") "Back to chat suggestions"

@@ -15,8 +15,8 @@ import Shared.Avatar as SA
 import Shared.Im.Svg as SIS
 
 userMenu ∷ ImModel → Html ImMessage
-userMenu model@{ toggleContextMenu, smallScreen, experimenting } =
-      HE.div (HA.class' "settings")
+userMenu model@{ toggleContextMenu, smallScreen, experimenting, toggleModal } =
+      HE.div (HA.class' {settings: true, highlighted: toggleModal == Tutorial OptionsMenu})
             [ header model
             , HE.svg [ HA.class' { "svg-experiment": true, "svg-imp": DM.isJust experimenting }, HA.viewBox "0 0 1479 1536", HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments ]
                     [ HE.title "Chat experiments"
