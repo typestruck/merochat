@@ -111,9 +111,9 @@ tutorial  { chatting }= case _ of
             ]
       ChatSuggestions → HE.div (HA.class' "confirmation tutorial chat-step")
             [ HE.span (HA.class' "bold") "Chat suggestions"
-            , HE.span_ "Use the arrows to move back and forth your suggestions"
+            , HE.span_ "Use the arrows to move back and forth suggestions"
             , HE.span_ "When you see someone you'd like to chat with,"
-            , HE.span_ "send them a message to continue"
+            , HE.span_ "send them a message to enable the next step"
             , HE.div (HA.class' "buttons")
                     [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial Chatting, HA.disabled $ DM.isNothing chatting, HA.title $ if DM.isNothing chatting then "Send a message to enable the next step" else "" ] "Done!"
                     ]

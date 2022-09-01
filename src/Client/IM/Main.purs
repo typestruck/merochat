@@ -103,8 +103,10 @@ main = do
       setUpWebSocket webSocketRef
       width ← CCD.screenWidth
       let smallScreen = width < mobileBreakpoint
-      --keep track of mobile (-like) screens for things that cant be done with media queries
-      when smallScreen $ FS.send imId SetSmallScreen
+      if smallScreen then
+            FS.send imId SetSmallScreen --keep track of mobile (-like) screens for things that cant be done with media queries
+      else
+            checkNotifications --notification permission (desktop)
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen
@@ -113,8 +115,6 @@ main = do
       --image upload
       input ← CCD.unsafeGetElementById ImageFileInput
       CCF.setUpFileChange (SetSelectedImage <<< Just) input imId
-      --notification permission (desktop)
-      unless smallScreen checkNotifications
 
 update ∷ _ → ListUpdate ImModel ImMessage
 update { webSocketRef, fileReader } model =
@@ -232,6 +232,7 @@ finishTutorial model@{ toggleModal } = model { user { completedTutorial = true }
       finish = do
             void <<< CCNT.silentResponse $ request.im.tutorial {}
             if toggleModal == Tutorial OptionsMenu then --user might have navigated to other modals
+
                   pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
             else pure Nothing
 
@@ -707,8 +708,11 @@ setUpWebSocket webSocketRef = do
                   ER.modify_ (_ { reconnectId = Just id }) timerIds
 
 setSmallScreen ∷ ImModel → NoMessages
-setSmallScreen model =
+setSmallScreen model@{ toggleModal } =
       F.noMessages $ model
             { messageEnter = false
             , smallScreen = true
+            , toggleModal = case toggleModal of --tutorial is preload server side
+                    Tutorial _ → HideUserMenuModal
+                    tm → tm
             }

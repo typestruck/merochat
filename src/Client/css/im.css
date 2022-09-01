@@ -142,7 +142,8 @@ body {
     border: 2px solid #469bc5;
 }
 
-.side-suggestions-container.highlighted, .settings.highlighted {
+.side-suggestions-container.highlighted,
+.settings.highlighted {
     z-index: 8;
     position: relative;
 }
@@ -1594,7 +1595,8 @@ select {
     background: #262626;
 }
 
-.card-center.highlighted .suggestion-arrow svg, .svg-back-profile.highlighted {
+.card-center.highlighted .suggestion-arrow svg,
+.svg-back-profile.highlighted {
     border: 4px solid #469bc5;
 }
 
@@ -1965,6 +1967,10 @@ select {
     .fortune,
     .avatar-settings,
     .settings-name {
+        display: none;
+    }
+
+    .tutorial {
         display: none;
     }
 
@@ -2348,6 +2354,10 @@ select {
 @media (min-width:1280px) and (max-width:1919px) {
     .back-side-suggestion {
         padding: 14px 6px;
+    }
+
+    .tutorial {
+        width: 400px;
     }
 
     .online-indicator {
