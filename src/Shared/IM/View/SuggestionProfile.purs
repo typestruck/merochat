@@ -277,6 +277,7 @@ dummySuggestion =
       , messageTimestamps: true
       , typingStatus: true
       , onlineStatus: true
+      , completedTutorial: true
       , karma: 321
       , karmaPosition: 90
       , gender: Just $ show Female

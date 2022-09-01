@@ -148,7 +148,7 @@ tutorial  { chatting }= case _ of
             , HE.span_ "Tweak your preferences with the menu on the top left"
             , HE.span_ "You can edit your profile, modify your settings, get help and more"
             , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] "Finish tutorial"
+                    [ HE.button [ HA.class' "green-button step-button", HA.onClick FinishTutorial ] "Finish tutorial"
                     ]
             ]
 

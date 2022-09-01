@@ -25,6 +25,7 @@ type Users =
       , joined ∷ Column DateTime Default
       , email ∷ String
       , birthday ∷ Maybe Date
+      , completed_tutorial :: Column Checked Default
       , description ∷ String
       , avatar ∷ Maybe String
       , gender ∷ Maybe Gender
@@ -53,6 +54,9 @@ _joined = Proxy
 
 _email ∷ Proxy "email"
 _email = Proxy
+
+_completedTutorial :: Proxy "completed_tutorial"
+_completedTutorial = Proxy
 
 _birthday ∷ Proxy "birthday"
 _birthday = Proxy

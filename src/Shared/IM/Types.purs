@@ -291,6 +291,7 @@ data ImMessage
       | AskChatExperiment
       | SetChatExperiment (Maybe ExperimentData)
       | ReloadPage
+      | FinishTutorial
       | ToggleUserContextMenu Event
       | SpecialRequest RetryableRequest
       | ReceiveMessage WebSocketPayloadClient Boolean

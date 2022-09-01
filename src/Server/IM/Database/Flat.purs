@@ -13,7 +13,6 @@ import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
-import Shared.Unsafe as SU
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -25,6 +24,7 @@ type FlatFields rest =
       , id ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int
+      , completedTutorial :: Checked
       , languages ∷ Maybe String
       , profileVisibility ∷ ProfileVisibility
       , readReceipts ∷ Checked
@@ -72,6 +72,7 @@ fromFlatUser fc =
       , typingStatus: SC.coerce fc.typingStatus
       , onlineStatus: SC.coerce fc.onlineStatus
       , availability: None
+      , completedTutorial: SC.coerce fc.completedTutorial
       , description: fc.description
       , avatar: SA.parseAvatar fc.avatar
       , tags: SDF.splitAgg "\\n" fc.tags

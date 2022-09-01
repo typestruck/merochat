@@ -16,12 +16,12 @@ import Server.File as SF
 import Server.IM.Database as SID
 import Server.IM.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.IM.Database.Flat as SIF
-import Server.Types (BaseEffect, ServerEffect, Configuration)
+import Server.IM.Types (Payload)
+import Server.Types (BaseEffect, Configuration, ServerEffect)
 import Server.Wheel as SW
 import Shared.Im.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
 import Shared.Options.File (imageBasePath)
 import Shared.ResponseError (ResponseError(..))
-import Server.IM.Types (Payload)
 
 foreign import sanitize ∷ String → String
 
@@ -101,3 +101,6 @@ reportUser ∷ Int → Report → ServerEffect Unit
 reportUser loggedUserId report@{ reason, userId } = do
       SID.insertReport loggedUserId report
       SE.sendEmail "contact@melan.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userId <> ";"
+
+finishTutorial :: Int -> ServerEffect Unit
+finishTutorial loggedUserId = SID.updateTutorialCompleted loggedUserId

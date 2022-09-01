@@ -42,6 +42,7 @@ import Droplet.Language.Internal.Function (PgFunction)
 import Effect.Class (liftEffect)
 import Effect.Console (log)
 import Server.Database as SD
+import Server.Database.Types (Checked(..))
 import Server.IM.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
 import Shared.Unsafe as SU
@@ -59,6 +60,7 @@ userPresentationFields =
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
             /\ (_onlineStatus # as onlineStatus)
+            /\ (_completedTutorial # as completedTutorial)
             /\ (_messageTimestamps # as messageTimestamps)
             /\ _headline
             /\ _description
@@ -83,15 +85,12 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from user
 
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array FlatUser)
 suggest loggedUserId skip = case _ of
-      Just (ArrayPrimaryKey []) → -- no users to avoid when impersonating
-
-            SD.query $ suggestBaseQuery skip baseFilter
-      Just (ArrayPrimaryKey keys) → -- users to avoid when impersonating
-
-            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (in_ (u ... _id) (SU.fromJust $ DAN.fromArray keys)))
-      _ → -- default case
-
-            SD.query $ suggestBaseQuery skip baseFilter
+      Just (ArrayPrimaryKey []) →
+            SD.query $ suggestBaseQuery skip baseFilter -- no users to avoid when impersonating
+      Just (ArrayPrimaryKey keys) →
+            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (in_ (u ... _id) (SU.fromJust $ DAN.fromArray keys))) -- users to avoid when impersonating
+      _ →
+            SD.query $ suggestBaseQuery skip baseFilter -- default case
       where
       baseFilter = (u ... _id .<>. loggedUserId .&&. _visibility .=. Everyone .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId)))
 
@@ -120,6 +119,7 @@ presentUserContactFields =
       , u.id
       , avatar
       , gender
+      , completed_tutorial "completedTutorial"
       , date_part_age ('year', birthday) age
       , name
       , visibility "profileVisibility"
@@ -281,6 +281,9 @@ insertReport ∷ Int → Report → ServerEffect Unit
 insertReport loggedUserId { userId, comment, reason } = SD.withTransaction $ \connection → do
       SD.executeWith connection $ blockQuery loggedUserId userId
       SD.executeWith connection $ insert # into reports (_reporter /\ _reported /\ _reason /\ _comment) # values (loggedUserId /\ userId /\ reason /\ comment)
+
+updateTutorialCompleted :: Int -> ServerEffect Unit
+updateTutorialCompleted loggedUserId = SD.execute $ update users # set (_completedTutorial .=. Checked true) # wher (_id .=. loggedUserId)
 
 chatHistoryEntry ∷ Int → Int → _
 chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipient) # from histories # senderRecipientFilter loggedUserId otherId

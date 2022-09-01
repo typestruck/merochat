@@ -52,3 +52,8 @@ report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ Report } → ServerEf
 report { guards: { loggedUserId }, body } = do
       SIA.reportUser loggedUserId body
       pure ok
+
+tutorial ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+tutorial { guards: { loggedUserId } } = do
+      SIA.finishTutorial loggedUserId
+      pure ok

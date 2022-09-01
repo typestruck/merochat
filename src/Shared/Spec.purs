@@ -104,6 +104,10 @@ spec ∷
                                                 { body ∷ Report
                                                 , response ∷ Ok
                                                 }
+                                  , tutorial ∷
+                                          POST "/tutorial"
+                                                { response ∷ Ok
+                                                }
                                   }
                     , profile ∷
                             Routes "/profile"

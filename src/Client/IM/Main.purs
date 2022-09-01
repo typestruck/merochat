@@ -19,7 +19,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Types (CurrentWebSocket)
 import Client.IM.Chat as CIC
 import Client.IM.Contacts as CICN
-import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.IM.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.IM.Flame as CIF
 import Client.IM.History as CIH
 import Client.IM.Notification as CIUC
@@ -134,7 +134,7 @@ update { webSocketRef, fileReader } model =
             SetSmallScreen → setSmallScreen model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
-            FocusCurrentSuggestion -> CIC.focusCurrentSuggestion model
+            FocusCurrentSuggestion → CIC.focusCurrentSuggestion model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message event → CIC.quoteMessage message event model
             CheckTyping text → CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
@@ -142,7 +142,7 @@ update { webSocketRef, fileReader } model =
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
             --contacts
             ResumeChat (Tuple id impersonating) → CICN.resumeChat id impersonating model
-            UpdateDelivered -> CICN.markDelivered webSocket model
+            UpdateDelivered → CICN.markDelivered webSocket model
             UpdateReadCount → CICN.markRead webSocket model
             CheckFetchContacts → CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
@@ -179,6 +179,7 @@ update { webSocketRef, fileReader } model =
             AskNotification → askNotification model
             ToggleAskNotification → toggleAskNotification model
             PreventStop event → preventStop event model
+            FinishTutorial → finishTutorial model
             ToggleConnected isConnected → toggleConnectedWebSocket isConnected model
             SpecialRequest CheckMissedEvents → checkMissedEvents model
             SetField setter → F.noMessages $ setter model
@@ -224,6 +225,15 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
                     , messageTimestamps = messageTimestamps
                     }
             }
+
+finishTutorial ∷ ImModel → NextMessage
+finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } :> [ finish ]
+      where
+      finish = do
+            void <<< CCNT.silentResponse $ request.im.tutorial {}
+            if toggleModal == Tutorial OptionsMenu then --user might have navigated to other modals
+                  pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
+            else pure Nothing
 
 report ∷ Int → WebSocket → ImModel → MoreMessages
 report userId webSocket model@{ reportReason, reportComment } = case reportReason of
@@ -600,7 +610,7 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
             { hasTriedToConnectYet = true
             , isWebSocketConnected = isConnected
             , errorMessage = if not isConnected then lostConnectionMessage else if errorMessage == lostConnectionMessage then "" else errorMessage
-            } :> if hasTriedToConnectYet && isConnected then [ pure <<< Just $ SpecialRequest CheckMissedEvents ] else [pure $ Just UpdateDelivered]
+            } :> if hasTriedToConnectYet && isConnected then [ pure <<< Just $ SpecialRequest CheckMissedEvents ] else [ pure $ Just UpdateDelivered ]
       where
       lostConnectionMessage = "Connection to the server lost. Attempting to automatically reconnect..."
 
