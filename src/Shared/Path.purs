@@ -5,7 +5,7 @@ import Prelude
 import Data.Array as DA
 import Data.String (Pattern(..))
 import Data.String as DS
-import Environment (commonJSHash, development, emojiJSHash, imCSSHash, imJSHash)
+import Environment (commonJSHash, production, emojiJSHash, imCSSHash, imJSHash)
 import Shared.Options.File (imageBasePath, productionBasePath)
 import Shared.ContentType (ContentType(..))
 import Shared.Unsafe as SU
@@ -18,15 +18,15 @@ pathery contentType file = case contentType of
       _ → file
 
 jsBasePath ∷ String
-jsBasePath = if development then "/client/javascript/" else productionBasePath
+jsBasePath = if production then productionBasePath else  "/client/javascript/"
 
 cssBasePath ∷ String
-cssBasePath = if development then "/client/css/" else productionBasePath
+cssBasePath = if production then productionBasePath else  "/client/css/"
 
 fileName ∷ String → String
 fileName file
-      | development = SU.fromJust <<< DA.head $ DS.split (Pattern ".") file
-      | otherwise = file
+      | production = file
+      | otherwise = SU.fromJust <<< DA.head $ DS.split (Pattern ".") file
 
 updateHash ∷ String
 updateHash = commonJSHash <> imJSHash <> emojiJSHash <> imCSSHash

@@ -10,7 +10,7 @@ import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Server.Types (ServerEffect)
 import Shared.Options.Domain (domain)
-import Environment (development)
+import Environment (production)
 
 cookieHeader ∷ String
 cookieHeader = "Set-Cookie"
@@ -60,9 +60,9 @@ makeCookie value =
                     , year: 2300.0
                     }
                     , httpOnly: true
-                    , samesite: if development then Nothing else Just Strict
-                    , domain: if development then Nothing else Just domain
+                    , samesite: if production then Just Strict else Nothing
+                    , domain: if production then Just domain else Nothing
                     , path: Just "/"
-                    , secure: not development
+                    , secure: production
                     }
             }

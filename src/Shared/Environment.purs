@@ -1,7 +1,6 @@
 module Environment where
 
-development :: Boolean
-development = false
+foreign import production :: Boolean
 
 backerCSSHash :: String
 backerCSSHash = "3e58580beabc10819188"

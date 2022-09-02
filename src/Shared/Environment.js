@@ -1,0 +1,1 @@
+export let production = typeof process !== 'undefined' && process.env.PRODUCTION !== undefined && process.env.PRODUCTION;

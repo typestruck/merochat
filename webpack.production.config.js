@@ -48,7 +48,9 @@ export default {
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css',
         }),
-        // new BundleAnalyzerPlugin()
+        new webpack.DefinePlugin({
+            'process.env.PRODUCTION': true
+        })
     ],
     module: {
         rules: [

@@ -23,8 +23,7 @@ find $dist_folder -size 0 -delete
 
 echo $'module Environment where
 
-development :: Boolean
-development = false' > $environment_file
+foreign import production :: Boolean' > $environment_file
 
 for entry in `ls $dist_folder`
 do

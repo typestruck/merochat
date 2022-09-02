@@ -4,7 +4,7 @@ import Prelude
 
 import Data.String as DS
 import Effect (Effect)
-import Environment (development, landingJSHash)
+import Environment (production, landingJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
@@ -21,16 +21,16 @@ template = do
             { content = content
             , javascript = javascript
             , css = css
-            , bundled = not development
+            , bundled = production
             }
       FRS.render contents
       where
       css
-            | development = [
+            | production = []
+            | otherwise = [
                     HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "external" ]
                     , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "landing"  ]
                 ]
-            | otherwise = []
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.pathery JS $ "landing." <> landingJSHash ]
             , HE.script' [HA.createAttribute "async" "true", HA.src "https://www.google.com/recaptcha/api.js"]

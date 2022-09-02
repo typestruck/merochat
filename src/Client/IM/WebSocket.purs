@@ -1,16 +1,14 @@
 module Client.IM.WebSocket (sendPayload, module WSW, module WSEM, module WSEE, createWebSocket) where
 
 import Prelude
-import Shared.ContentType
+import Shared.Im.Types
 
 import Client.Common.Location as CCD
-import Data.Boolean (otherwise)
 import Effect (Effect)
-import Environment (development)
+import Environment (production)
 import Shared.Json as SJ
 import Shared.Options.WebSocket (port)
 import Web.Socket.Event.EventTypes as WSEE
-import Shared.Im.Types
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSWS
@@ -22,11 +20,11 @@ createWebSocket = do
       WSWS.create (protocol <> hostName <> endpoint) []
       where
       protocol
-            | development = "ws://"
-            | otherwise = "wss://"
+            | production = "wss://"
+            | otherwise = "ws://"
       endpoint
-            | development = ":" <> show port
-            | otherwise = "/ws"
+            | production = "/ws"
+            | otherwise = ":" <> show port
 
 sendPayload ∷ WebSocket → WebSocketPayloadServer → Effect Unit
 sendPayload ws = WSWS.sendString ws <<< SJ.toJson

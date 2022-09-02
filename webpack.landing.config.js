@@ -20,6 +20,9 @@ export default {
     plugins: [
         new MiniCssExtractPlugin({
             filename: '[name].css',
+        }),
+        new webpack.DefinePlugin({
+            'process.env.PRODUCTION': true
         })
     ],
     module: {

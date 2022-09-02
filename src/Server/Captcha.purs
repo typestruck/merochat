@@ -15,7 +15,7 @@ import Data.FormURLEncoded as DF
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
-import Environment (development)
+import Environment (production)
 import Run as R
 import Run.Reader as RR
 import Server.Response as SR
@@ -27,7 +27,7 @@ newtype CaptchaResponse = CaptchaResponse
 validateCaptcha ∷ Maybe String → ServerEffect Unit
 validateCaptcha captchaResponse = do
       { configuration: { captchaSecret } } ← RR.ask
-      unless development do
+      when production do
             response ← R.liftAff <<< A.request $ A.defaultRequest
                   { url = "https://www.google.com/recaptcha/api/siteverify"
                   , method = Left POST
