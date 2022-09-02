@@ -1,9 +1,8 @@
-'use strict';
-
 import path from 'path';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import TerserPlugin from "terser-webpack-plugin";
+import webpack from 'webpack';
 
 export default {
     mode: 'production',

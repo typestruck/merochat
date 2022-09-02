@@ -52,5 +52,3 @@ git commit -m 'Update hashs [skip ci]'
 git push
 
 rm -rf $copy_folder
-
-sed -i -e 's/development = false/development = true/g' $environment_file
