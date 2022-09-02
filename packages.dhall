@@ -127,6 +127,9 @@ let overrides =
           , flame =
              upstream.flame
           //  { version = "aedde42fda8b25116bf42763714003fd15f59ade" }
+          , unordered-collections =
+             upstream.unordered-collections
+          //  { version = "0192d2c9d0759895b7492cc00651631eb9abc5b5" }
       }
 
 let additions =
