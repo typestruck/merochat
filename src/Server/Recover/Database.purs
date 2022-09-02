@@ -2,7 +2,6 @@ module Server.Recover.Database where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 import Droplet.Language
 import Server.Database.Users
 import Server.Database.Recoveries

@@ -8,7 +8,6 @@ import Run as R
 import Server.Database as SD
 import Server.Landing.Database as SLD
 import Server.Profile.Action as SPA
-import Shared.Options.File (imageBasePath)
 import Test.Server as TS
 import Test.Server.Model (baseUser)
 import Test.Unit (TestSuite)

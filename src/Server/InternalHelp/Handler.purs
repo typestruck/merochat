@@ -1,6 +1,5 @@
 module Server.InternalHelp.Handler where
 
-import Shared.ContentType
 import Server.Types
 import Server.InternalHelp.Template as SIHT
 import Run as R

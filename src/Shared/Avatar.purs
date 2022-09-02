@@ -4,39 +4,42 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
-import Shared.Path as SP
-import Shared.ContentType (ContentType(..))
+import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Unsafe as SU
-import Shared.Options.File (imageBasePath)
-
-defaultAvatarName ∷ String
-defaultAvatarName = baseFileName <> show "1"
 
 defaultAvatar ∷ String
-defaultAvatar = fileName 1
+defaultAvatar = avatarPath 1
 
 differentAvatarImages ∷ Int
 differentAvatarImages = 8
 
-baseFileName ∷ String
-baseFileName = "avatar-"
-
-fileName ∷ Int → String
-fileName index = SP.pathery PNG $ baseFileName <> show index
+avatarPath ∷ Int → String
+avatarPath index = SP.resourcePath name Png
+      where name = case index of
+                  1 -> Avatar1
+                  2 -> Avatar2
+                  3 -> Avatar3
+                  4 -> Avatar4
+                  5 -> Avatar5
+                  6 -> Avatar6
+                  7 -> Avatar7
+                  _ -> Avatar8
 
 avatarForSender ∷ Maybe String → String
 avatarForSender = DM.fromMaybe defaultAvatar
 
 avatarForRecipient ∷ Maybe Int → Maybe String → String
-avatarForRecipient index = DM.fromMaybe (fileName <<< avatarIndex $ SU.fromJust index)
+avatarForRecipient index = DM.fromMaybe (avatarPath <<< avatarIndex $ SU.fromJust index)
 
 avatarIndex ∷ Int → Int
 avatarIndex index = mod index differentAvatarImages + 1
 
 avatarColorClass ∷ Maybe Int → String
-avatarColorClass index = " avatar-color-" <> show (mod (SU.fromJust index) totalColorClasses + 1)
+avatarColorClass index = className <> show (mod (SU.fromJust index) totalColorClasses + 1)
       where
+      className = " avatar-color-"
       totalColorClasses = 4
 
-parseAvatar ∷  Maybe String → Maybe String
-parseAvatar avatar = (imageBasePath <> _) <<< ("upload/" <> _ ) <$> avatar
+parseAvatar ∷ Maybe String → Maybe String
+parseAvatar avatar = (\a -> SP.resourcePath (Upload a) Included) <$> avatar

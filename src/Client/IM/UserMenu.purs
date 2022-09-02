@@ -1,7 +1,7 @@
 module Client.IM.UserMenu where
 
 import Prelude
-import Shared.ContentType
+import Shared.Im.Types
 
 import Client.Common.DOM (setChatExperiment)
 import Client.Common.DOM as CCD
@@ -16,11 +16,10 @@ import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect.Class (liftEffect)
-import Environment (experimentsJSHash, internalHelpJSHash, leaderboardCSSHash, leaderboardJSHash, profileJSHash, settingsJSHash)
 import Flame ((:>))
-import Shared.Im.Types
 import Flame as F
 import Shared.Json as SJ
+import Shared.Resource (Resource(..))
 import Shared.Routes (routes)
 
 toggleInitialScreen ∷ Boolean → ImModel → NoMessages
@@ -40,11 +39,11 @@ logout model = CIF.nothingNext model out
 toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
 toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
       case mToggle of
-            ShowProfile → showTab request.profile.get ShowProfile (Just $ "profile." <> profileJSHash) ProfileEditionRoot
-            ShowSettings → showTab request.settings.get ShowSettings (Just $ "settings." <> settingsJSHash) SettingsEditionRoot
-            ShowLeaderboard → showTab request.leaderboard ShowLeaderboard (Just $ "leaderboard." <> leaderboardJSHash) KarmaLeaderboard
-            ShowHelp → showTab request.internalHelp ShowHelp (Just $ "internalHelp." <> internalHelpJSHash) HelpRoot
-            ShowExperiments → showTab request.experiments ShowExperiments (Just $ "experiments." <> experimentsJSHash) ExperimentsRoot
+            ShowProfile → showTab request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
+            ShowSettings → showTab request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
+            ShowLeaderboard → showTab request.leaderboard ShowLeaderboard (Just Leaderboard) KarmaLeaderboard
+            ShowHelp → showTab request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
+            ShowExperiments → showTab request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
             ShowBacker → showTab request.internalBacker ShowBacker Nothing BackerRoot
             modal → F.noMessages $ model
                   { toggleModal = modal
@@ -52,7 +51,7 @@ toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
                   , toggleContextMenu = HideContextMenu
                   }
       where
-      showTab f toggle file root =
+      showTab req toggle resource root =
             model
                   { toggleModal = toggle
                   , toggleContextMenu = HideContextMenu
@@ -61,19 +60,19 @@ toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
                   } :>
                   if DA.elem toggle modalsLoaded then []
                   else
-                        [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents file root) (f {})
+                        [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents resource root) (req {})
                           -- during the tutorial the user may click on the user menu instead of "finish tutorial"
                         , if completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]
 
-setModalContents ∷ Maybe String → ElementId → String → ImModel → NextMessage
-setModalContents file root html model = CIF.nothingNext model loadModal
+setModalContents ∷ Maybe Resource → ElementId → String → ImModel → NextMessage
+setModalContents resource root html model = CIF.nothingNext model loadModal
       where
       loadModal = liftEffect do
             element ← CCD.unsafeGetElementById root
             CCD.setInnerHTML element html
             --scripts don't load when inserted via innerHTML
-            case file of
+            case resource of
                   Just name → CCD.loadScript name
                   Nothing → pure unit
 

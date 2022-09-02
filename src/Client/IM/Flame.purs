@@ -1,7 +1,6 @@
 module Client.IM.Flame where
 
 import Prelude
-import Shared.ContentType
 import Shared.Im.Types
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple)

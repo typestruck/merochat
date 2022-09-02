@@ -1,7 +1,6 @@
 module Shared.Im.View.Modals where
 
 import Prelude
-import Shared.ContentType
 import Shared.Im.Types
 import Shared.Im.Types
 
@@ -10,28 +9,28 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Tuple (Tuple)
-import Environment (helpCSSHash, profileCSSHash, settingsCSSHash, backerCSSHash, experimentsCSSHash, leaderboardCSSHash)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Im.Svg as SIA
 import Shared.Im.View.Retry as SIVR
-import Shared.Path as SP
+import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource as SP
 import Type.Proxy (Proxy(..))
 
-lazyLoad ∷  String → Html ImMessage
-lazyLoad name = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.pathery CSS name, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
+lazyLoad ∷ Resource → Html ImMessage
+lazyLoad resource = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.resourcePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
 
 modals ∷ ImModel → Html ImMessage
 modals model@{ erroredFields, toggleModal, chatting } =
       HE.div (HA.class' { "modal-placeholder-overlay": true, "hidden": toggleModal == HideUserMenuModal, "contacts-only": tutorialSteps })
-            [ lazyLoad $ "help." <> helpCSSHash
-            , lazyLoad $ "profile." <> profileCSSHash
-            , lazyLoad $ "settings." <> settingsCSSHash
-            , lazyLoad $ "profile." <> profileCSSHash
-            , lazyLoad $ "backer." <> backerCSSHash
-            , lazyLoad $ "experiments." <> experimentsCSSHash
-            , lazyLoad $ "leaderboard." <> leaderboardCSSHash
+            [ lazyLoad Help
+            , lazyLoad Profile
+            , lazyLoad Settings
+            , lazyLoad Profile
+            , lazyLoad Backer
+            , lazyLoad Experiments
+            , lazyLoad Leaderboard
             , case toggleModal of
                     ShowReport id → report id erroredFields
                     ConfirmLogout → confirmLogout

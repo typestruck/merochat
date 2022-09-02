@@ -11,7 +11,7 @@ import Server.Privacy as SP
 
 import Server.Terms as ST
 import Shared.InternalHelp.Types (DisplayHelpSection(..), InternalHelpMessage(..), InternalHelpModel)
-import Shared.Path as SPT
+import Shared.Resource as SPT
 
 view ∷ InternalHelpModel → Html InternalHelpMessage
 view { toggleHelp } =

@@ -5,14 +5,12 @@ import Prelude
 
 import Data.String as DS
 import Effect (Effect)
-import Environment (baseCSSHash, commonJSHash, externalCSSHash)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Options.File (imageBasePath)
-import Shared.Path as SP
+import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Routes (routes)
-import Shared.ContentType (ContentType(..))
 
 type Parameters a =
       { title ∷ String
@@ -27,7 +25,7 @@ type Parameters a =
 defaultParameters ∷ ∀ a. Parameters a
 defaultParameters =
       { title: "MelanChat - Friendly Random Chat"
-      , favicon: imageBasePath <> "favicon.ico"
+      , favicon: SP.resourcePath Favicon Ico
       , javascript: []
       , css: []
       , --REFACTOR: should just be a list of file names
@@ -39,15 +37,15 @@ defaultParameters =
 externalDefaultParameters ∷ ∀ a. Parameters a
 externalDefaultParameters = defaultParameters
       { css =
-              [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "external." <> externalCSSHash ]
+              [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.resourcePath External Css]
               ]
       , content =
               [ HE.div (HA.class' "header")
                       [ HE.a [ HA.href $ routes.landing {}, HA.class' "logo" ] $
                               HE.img
-                                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.pathery PNG "logo-3-small", "180w,", SP.pathery PNG "logo", "250w,", SP.pathery PNG "logo-small", "210w" ]
+                                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath Logo3Small Png, "180w,", SP.resourcePath Logo Png, "250w,", SP.resourcePath LogoSmall Png, "210w" ]
                                     , HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px"
-                                    , HA.src $ SP.pathery PNG "logo"
+                                    , HA.src $ SP.resourcePath Logo Png
                                     ]
                       ]
               ]
@@ -71,16 +69,16 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
             ]
       where
       styleSheets =
-            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "base." <> baseCSSHash ]
+            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.resourcePath Base Css ]
             ]
       javascript =
-            (if bundled then [] else [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "common." <> commonJSHash ]
+            (if bundled then [] else [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.resourcePath Common Js ]
             ]) <> parameters.javascript
 
 externalFooter ∷ ∀ a. Html a
 externalFooter =
       HE.div (HA.class' "footer")
-            [ HE.a (HA.href $ routes.landing {}) <<< HE.img <<< HA.src $ SP.pathery PNG "logo-small"
+            [ HE.a (HA.href $ routes.landing {}) <<< HE.img <<< HA.src $ SP.resourcePath LogoSmall Png
             , HE.ul (HA.class' "footer-menu")
                     [ HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#faq") "FAQ"

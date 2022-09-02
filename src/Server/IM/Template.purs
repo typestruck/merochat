@@ -9,7 +9,6 @@ import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
-import Environment (emojiJSHash, imCSSHash, imJSHash)
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.Html.Attribute as HA
@@ -20,8 +19,8 @@ import Server.Template as ST
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Unread as SIU
 import Shared.Im.View as SIV
-import Shared.Path (updateHash)
-import Shared.Path as SP
+import Shared.Resource (Resource(..), ResourceType(..), updateHash)
+import Shared.Resource as SP
 
 template ∷ Payload → Effect String
 template { contacts, suggestions, user } = do
@@ -79,11 +78,11 @@ template { contacts, suggestions, user } = do
             }
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "emoji." <> emojiJSHash ]
-            , HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "im." <> imJSHash ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.resourcePath Emoji Js ]
+            , HE.script' [ HA.type' "text/javascript", HA.src $ SP.resourcePath  Im Js ]
             ]
       css =
-            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href <<< SP.pathery CSS $ "im." <> imCSSHash ]
+            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.resourcePath Im Css ]
             , HE.style (HA.type' "text/css")
                     """.suggestion.new {
                         background: url(https://static.melan.chat/file/ourmelon/suggestions.png);

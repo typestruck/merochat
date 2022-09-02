@@ -2,7 +2,6 @@ module Client.Common.Network where
 
 import Client.Common.Types
 import Prelude
-import Shared.ContentType
 
 import Client.Common.DOM as CCD
 import Control.Monad.Error.Class as CMEC
@@ -107,6 +106,6 @@ logError err = liftEffect <<< EC.log $ "Response error: " <> show err
 
 errorMessage ∷ ClientError → String
 errorMessage = case _ of
-      DecodeError { response: Response { body } } → "Server sent an unexpected response"
+      DecodeError _ → "Server sent an unexpected response"
       StatusError { response: Response { body } } → body
       RequestError { message } → message

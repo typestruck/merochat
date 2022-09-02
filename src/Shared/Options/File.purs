@@ -5,7 +5,6 @@ import Prelude
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Tuple (Tuple(..))
-import Environment (production)
 
 allowedMediaTypes ∷ HashMap String String
 allowedMediaTypes = DH.fromFoldable [ Tuple "data:image/png;base64" ".png", Tuple "data:image/jpeg;base64" ".jpg", Tuple "data:image/tiff;base64" ".tiff", Tuple "data:image/bmp;base64" ".bmp" ]
@@ -19,11 +18,14 @@ maxImageSize = base * 1024
 maxImageSizeKB ∷ String
 maxImageSizeKB = show base <> " KB"
 
-imageBasePath ∷ String
-imageBasePath = if production then productionBasePath else developmentBasePath
-
 productionBasePath ∷ String
 productionBasePath = "https://static.melan.chat/file/ourmelon/"
 
-developmentBasePath ∷ String
-developmentBasePath = "/client/media/"
+developmentImageBasePath ∷ String
+developmentImageBasePath = "/client/media/"
+
+developmentJsBasePath ∷ String
+developmentJsBasePath ="/client/javascript/"
+
+developmentCssBasePath ∷ String
+developmentCssBasePath = "/client/css/"

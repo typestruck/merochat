@@ -1,7 +1,6 @@
 module Shared.Im.Contact where
 
 import Prelude
-import Shared.ContentType
 import Shared.Im.Types
 
 import Data.Array ((!!))

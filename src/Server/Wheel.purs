@@ -1,7 +1,6 @@
 -- | Karma score calculation
 module Server.Wheel where
 
-import Shared.ContentType
 import Prelude
 import Shared.Im.Types
 import Data.Int as DI

@@ -5,7 +5,6 @@ import Server.Types
 
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Traversable as DT
 import Effect (Effect)
 import Effect.Exception as EE
@@ -55,10 +54,8 @@ readConfiguration =
             value ← NP.lookupEnv name
             case value of
                   Nothing → EE.throw $ "missing configuration: " <> name
-                  Just value → pure value
+                  Just v → pure v
+
       parsePort value = SU.fromJust do
             v ← value
             DI.fromString v
-
-falseUnless ∷ Maybe String → Boolean
-falseUnless = DM.maybe false (_ == "true")

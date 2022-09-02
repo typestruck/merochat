@@ -1,6 +1,7 @@
 module Client.Common.DOM where
 
 import Prelude
+import Shared.Im.Types
 
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Function.Uncurried as DFU
@@ -10,9 +11,8 @@ import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
-import Shared.Path as SP
-import Shared.ContentType (ContentType(..))
-import Shared.Im.Types
+import Shared.Resource (Resource, ResourceType(..))
+import Shared.Resource as SP
 import Shared.Unsafe as SU
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
@@ -23,7 +23,6 @@ import Web.DOM.NonElementParentNode as WDNE
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.ParentNode as WDP
 import Web.Event.CustomEvent (CustomEvent)
-import Web.Event.CustomEvent as WEC
 import Web.Event.Event (EventType(..))
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
@@ -127,12 +126,12 @@ tagNameFromTarget event = WDE.tagName $ SU.fromJust do
       target ← WEE.target event
       WDE.fromEventTarget target
 
-loadScript ∷ String → Effect Unit
-loadScript name = do
+loadScript ∷ Resource → Effect Unit
+loadScript resource = do
       window ← WH.window
       document ← WHW.document window
       script ← WDD.createElement "script" $ WHHD.toDocument document
-      WHS.setSrc (SP.pathery JS name) <<< SU.fromJust $ WHS.fromElement script
+      WHS.setSrc (SP.resourcePath resource Js) <<< SU.fromJust $ WHS.fromElement script
       body ← SU.fromJust <$> WHHD.body document
       void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body
 

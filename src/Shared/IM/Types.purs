@@ -1,7 +1,6 @@
 module Shared.Im.Types where
 
 import Prelude
-import Shared.User (Availability, IU)
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
@@ -31,9 +30,11 @@ import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
+import Shared.Resource (Resource)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
+import Shared.User (Availability, IU)
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
@@ -246,7 +247,7 @@ data ImMessage
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
       | Logout
       | SetContextMenuToggle ShowContextMenu
-      | SetModalContents (Maybe String) ElementId String
+      | SetModalContents (Maybe Resource) ElementId String
 
       --contact
       | ResumeChat (Tuple Int (Maybe Int))

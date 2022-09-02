@@ -3,7 +3,6 @@ module Server.Help.Template where
 import Prelude
 
 import Effect (Effect)
-import Environment (helpJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
@@ -12,14 +11,14 @@ import Server.Privacy as SP
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Server.Terms as STM
-import Shared.Path as SPT
-import Shared.ContentType (ContentType(..))
+import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource as SPT
 
 template ∷ Effect String
 template = do
       contents ← ST.template externalDefaultParameters
-            { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.pathery CSS "help.5c2d5d65952114e0b0e3" ] ]
-            , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src <<< SPT.pathery JS $ "help." <> helpJSHash ] ]
+            { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.resourcePath Help Css ] ]
+            , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src $ SPT.resourcePath Help Js ] ]
             , content = externalDefaultParameters.content <> content
             }
       FRS.render contents

@@ -1,7 +1,6 @@
 module Shared.Im.View.SuggestionCall where
 
 import Prelude
-import Shared.ContentType
 import Shared.Im.Types
 
 import Data.Array ((!!))

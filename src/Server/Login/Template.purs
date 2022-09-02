@@ -4,16 +4,15 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Environment (loginJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
-import Shared.Path as SP
+import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Routes (routes)
-import Shared.ContentType (ContentType(..))
 
 template ∷ Effect String
 template = do
@@ -24,7 +23,7 @@ template = do
       FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "login." <> loginJSHash ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.resourcePath Login Js ]
             ]
       content =
             [ HE.div (HA.class' "green-area green-box")
