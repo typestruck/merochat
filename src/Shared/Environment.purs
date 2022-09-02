@@ -9,7 +9,7 @@ baseCSSHash :: String
 baseCSSHash = "be06c5112acf188d4cd8"
 
 commonJSHash :: String
-commonJSHash = "31152dd6f130c857d8cc"
+commonJSHash = "40775fecf6dec47f4c92"
 
 emojiJSHash :: String
 emojiJSHash = "6d8cba9d21bf8311ebc2"
@@ -29,11 +29,11 @@ helpCSSHash = "0c86b8fed90c6933a556"
 helpJSHash :: String
 helpJSHash = "cd37c98100077b84853b"
 
-imJSHash :: String
-imJSHash = "0ee9b9fdbc27c484da26"
-
 imCSSHash :: String
 imCSSHash = "39efe17c47670f4c5e0e"
+
+imJSHash :: String
+imJSHash = "c1b8a097ba31f0099e47"
 
 internalHelpJSHash :: String
 internalHelpJSHash = "e7e21d3c3bc3d172da51"
