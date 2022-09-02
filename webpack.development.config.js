@@ -73,11 +73,13 @@ export default {
             },
             minimize: false
       },
-
-
       plugins: [
             new webpack.LoaderOptionsPlugin({
                   debug: true
+            })
+            ,
+            new webpack.DefinePlugin({
+                  'process.env.PRODUCTION': false
             })
       ]
 };

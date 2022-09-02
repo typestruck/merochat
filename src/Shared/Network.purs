@@ -13,8 +13,8 @@ derive instance Eq RequestStatus
 
 derive instance Generic RequestStatus _
 
-instance EncodeJson RequestStatus where
-      encodeJson = DAEGR.genericEncodeJson
-
 instance DecodeJson RequestStatus where
       decodeJson = DADGR.genericDecodeJson
+
+instance EncodeJson RequestStatus where
+      encodeJson = DAEGR.genericEncodeJson
