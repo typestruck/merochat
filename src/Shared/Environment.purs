@@ -10,7 +10,7 @@ baseCSSHash :: String
 baseCSSHash = "be06c5112acf188d4cd8"
 
 commonJSHash :: String
-commonJSHash = "40c717753c6c4ee1ca51"
+commonJSHash = "9697eb4f52a778772900"
 
 emojiJSHash :: String
 emojiJSHash = "6d8cba9d21bf8311ebc2"
@@ -40,7 +40,7 @@ internalHelpJSHash :: String
 internalHelpJSHash = "e7e21d3c3bc3d172da51"
 
 landingJSHash :: String
-landingJSHash = "b061f60cacc9cb5e3433"
+landingJSHash = "2779f4e3dbe2e6099030"
 
 leaderboardCSSHash :: String
 leaderboardCSSHash = "77e6e27fc9961a9dba4d"
