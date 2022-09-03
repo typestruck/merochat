@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, readdirSync, writeFileSync } from 'fs';
 
 function ReplaceHashPlugin(options = {}) {
     this.options = options;
@@ -15,8 +15,7 @@ ReplaceHashPlugin.prototype.apply = function (compiler) {
 };
 
 function replace(options, assets) {
-    let hash = new Map(),
-        target;
+    let hash = new Map()
 
     for (let key in assets) {
         let splitted = key.split('.'),
@@ -25,19 +24,25 @@ function replace(options, assets) {
         if (extension != 'js' && extension != 'css')
             continue;
 
-        if (key.startsWith(options.filePrefix))
-            target = key;
-
         hash.set(`[${splitted[0]}-${extension}-contenthash]`, splitted[1]);
     }
 
-    replaceInFile(`${options.dir}/${target}`, hash);
-    replaceInFile(`${options.file}`, hash);
+    for (let entry of options.files) {
+        let fileName;
+
+        if (typeof entry === 'string')
+            fileName = entry;
+        else {
+            fileName = `${entry.dir}/${readdirSync(resolve(entry.dir)).find(f => f.startsWith(entry.prefix))}`;
+        }
+
+        replaceInFile(fileName, hash);
+    }
 }
 
 function replaceInFile(fileName, hash) {
-      let path = resolve(fileName),
-          contents = readFileSync(path, 'utf8');
+    let path = resolve(fileName),
+        contents = readFileSync(path, 'utf8');
 
     for (let [key, value] of hash) {
         contents = contents.replace(key, value);

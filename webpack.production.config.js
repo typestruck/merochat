@@ -12,6 +12,7 @@ export default {
             import: ['./loader/production/im.bundle.js', './src/Client/css/im.css'],
             dependOn: 'emoji'
         },
+        landing: './loader/production/landing.bundle.js',
         login: './loader/production/login.bundle.js',
         profile: {
             import: ['./loader/production/profile.bundle.js', './src/Client/css/profile.css'],
@@ -51,7 +52,7 @@ export default {
         new webpack.DefinePlugin({
             'process.env.PRODUCTION': true
         }),
-        new ReplaceHashPlugin({ dir: 'dist/production', filePrefix: 'common', file: 'output-es/Shared.Resource/index.js' }),
+        new ReplaceHashPlugin({ files: [{ dir: 'dist/production', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
     ],
     module: {
         rules: [
@@ -76,9 +77,8 @@ export default {
             name: 'common'
         },
         minimizer: [
-           new TerserPlugin(),
-           new CssMinimizerPlugin(),
+            //new TerserPlugin(),
+         //   new CssMinimizerPlugin(),
         ]
     },
-
 };

@@ -1,9 +1,12 @@
+// this config exists because i couldn't find how to bundle landing into a single file (without depending on chunks) while using chunk splitting in webpack.production.config.js
+
 import path from 'path';
 import webpack from 'webpack';
 
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import TerserPlugin from "terser-webpack-plugin";
+import ReplaceHashPlugin from './ReplaceHashPlugin.js';
 
 export default {
     mode: 'production',
@@ -21,7 +24,8 @@ export default {
         }),
         new webpack.DefinePlugin({
             'process.env.PRODUCTION': true
-        })
+        }),
+        new ReplaceHashPlugin({ files: [{ dir: 'dist/production', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] })
     ],
     module: {
         rules: [
