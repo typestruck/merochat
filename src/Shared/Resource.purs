@@ -103,16 +103,18 @@ resourcePath res tp = path <> named <> replaced <> resourceType tp
 
       path
             | production =
-                  if tp == Js || tp == Css then
-                        productionBasePath <> bundleFolder
-                  else
-                        case res of
-                              Left (Upload _) -> productionBasePath <> uploadFolder
-                              _ -> productionBasePath
+                    if tp == Js || tp == Css then
+                          productionBasePath <> bundleFolder
+                    else
+                          case res of
+                                Left (Upload _) → productionBasePath <> uploadFolder
+                                _ → productionBasePath
             | otherwise = case tp of
                     Js → developmentJsBasePath
                     Css → developmentCssBasePath
-                    _ → developmentImageBasePath
+                    _ → case res of
+                          Left (Upload _) → developmentImageBasePath <> uploadFolder
+                          _ → developmentImageBasePath
 
 uploadedImagePath ∷ String
 uploadedImagePath = (if production then productionBasePath else developmentImageBasePath) <> uploadFolder
@@ -170,25 +172,27 @@ resourceType = case _ of
       Ico → ".ico"
       Included → ""
 
-replacement ∷ Bundle → ResourceType -> String
+replacement ∷ Bundle → ResourceType → String
 replacement bundle tp
-      | production = case bundle of -- for production we replace this with the actual file content hash, so it has to be hardcoded and must match the resource name
-            Common → reps ".[common-js-contenthash]" ".[common-css-contenthash]"
-            Emoji → reps ".[emoji-js-contenthash]" ".[emoji-css-contenthash]"
-            Experiments → reps ".[experiments-js-contenthash]" ".[experiments-css-contenthash]"
-            Backer → reps ".[backer-js-contenthash]" ".[backer-css-contenthash]"
-            Base → reps ".[base-js-contenthash]" ".[base-css-contenthash]"
-            External → reps ".[external-js-contenthash]" ".[external-css-contenthash]"
-            Help → reps ".[help-js-contenthash]" ".[help-css-contenthash]"
-            Im → reps ".[im-js-contenthash]" ".[im-css-contenthash]"
-            InternalHelp → reps ".[internalHelp-js-contenthash]" ".[internalHelp-css-contenthash]"
-            Landing → reps ".[landing-js-contenthash]" ".[landing-css-contenthash]"
-            Leaderboard → reps ".[leaderboard-js-contenthash]" ".[leaderboard-css-contenthash]"
-            Login → reps ".[login-js-contenthash]" ".[login-css-contenthash]"
-            Profile → reps ".[profile-js-contenthash]" ".[profile-css-contenthash]"
-            Recover → reps ".[recover-js-contenthash]" ".[recover-css-contenthash]"
-            Settings → reps ".[settings-js-contenthash]" ".[settings-css-contenthash]"
-      where reps js css = if tp == Js then js else css
+      | production =
+              case bundle of -- for production we replace this with the actual file content hash, so it has to be hardcoded and must match the resource name
+                    Common → reps ".[common-js-contenthash]" ".[common-css-contenthash]"
+                    Emoji → reps ".[emoji-js-contenthash]" ".[emoji-css-contenthash]"
+                    Experiments → reps ".[experiments-js-contenthash]" ".[experiments-css-contenthash]"
+                    Backer → reps ".[backer-js-contenthash]" ".[backer-css-contenthash]"
+                    Base → reps ".[base-js-contenthash]" ".[base-css-contenthash]"
+                    External → reps ".[external-js-contenthash]" ".[external-css-contenthash]"
+                    Help → reps ".[help-js-contenthash]" ".[help-css-contenthash]"
+                    Im → reps ".[im-js-contenthash]" ".[im-css-contenthash]"
+                    InternalHelp → reps ".[internalHelp-js-contenthash]" ".[internalHelp-css-contenthash]"
+                    Landing → reps ".[landing-js-contenthash]" ".[landing-css-contenthash]"
+                    Leaderboard → reps ".[leaderboard-js-contenthash]" ".[leaderboard-css-contenthash]"
+                    Login → reps ".[login-js-contenthash]" ".[login-css-contenthash]"
+                    Profile → reps ".[profile-js-contenthash]" ".[profile-css-contenthash]"
+                    Recover → reps ".[recover-js-contenthash]" ".[recover-css-contenthash]"
+                    Settings → reps ".[settings-js-contenthash]" ".[settings-css-contenthash]"
+              where
+              reps js css = if tp == Js then js else css
       | otherwise = ""
 
 updateHash ∷ String
