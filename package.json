@@ -8,8 +8,8 @@
   "description": "Friendly random chat",
   "scripts": {
     "watch": "nodemon loader/development/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
-    "build-production-client": "rm -rf dist && rm -rf output-es && spago -x production.dhall build && webpack --progress --config webpack.production.config.js && webpack --progress --config webpack.landing.config.js",
-    "production-server": "git checkout src/Shared/Environment.purs && git pull --no-edit && rm -rf output-es && npm install && spago -x production.dhall build && webpack --progress --config webpack.landing.config.js && chmod +x ./inline-landing.sh && ./inline-landing.sh && pm2 restart server --update-env"
+    "build-production-client": "rm -rf dist/production && spago -x production.dhall build && webpack --progress --config webpack.production.config.js",
+    "production-server": "git pull --no-edit && npm install && spago -x production.dhall build && webpack --progress --config webpack.landing.config.js && chmod +x ./inline-landing.sh && ./inline-landing.sh && pm2 restart server --update-env"
   },
   "type": "module",
   "author": "Eduardo Asafe<e@asafe.dev>",

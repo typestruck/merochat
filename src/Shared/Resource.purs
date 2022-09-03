@@ -33,6 +33,12 @@ developmentJsBasePath = "/client/javascript/"
 developmentCssBasePath ∷ String
 developmentCssBasePath = "/client/css/"
 
+uploadFolder ∷ String
+uploadFolder = "upload/"
+
+bundleFolder ∷ String
+bundleFolder = "bundle/"
+
 data ResourceType = Css | Js | Png | Ico | Included
 
 derive instance Eq ResourceType
@@ -96,17 +102,14 @@ resourcePath res tp = path <> named <> replaced <> resourceType tp
       replaced = DE.either (const "") (flip replacement tp) res
 
       path
-            | production = productionBasePath
+            | production = if tp == Js || tp == Css then productionBasePath <> bundleFolder else productionBasePath
             | otherwise = case tp of
                     Js → developmentJsBasePath
                     Css → developmentCssBasePath
                     _ → developmentImageBasePath
 
-uploadPath ∷ String
-uploadPath = "upload/"
-
 uploadedImagePath ∷ String
-uploadedImagePath = (if production then productionBasePath else developmentImageBasePath) <> uploadPath
+uploadedImagePath = (if production then productionBasePath else developmentImageBasePath) <> uploadFolder
 
 resourceName ∷ Either Media Bundle → String
 resourceName = case _ of
