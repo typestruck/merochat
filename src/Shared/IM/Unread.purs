@@ -24,7 +24,7 @@ favicon =
             n | n <= 10 → DS.replace (Pattern ".") (Replacement ("-" <> show n <> ".")) file
             _ → DS.replace (Pattern ".") (Replacement ("-10-plus.")) file
       where
-      file = SP.mediaPath Favicon Png
+      file = SP.mediaPath Favicon Ico
 
 countUnreadChats ∷ Int → Array Contact → Int
 countUnreadChats id = DF.foldl count 0
