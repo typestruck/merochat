@@ -19,7 +19,7 @@ import Server.Template as ST
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Unread as SIU
 import Shared.Im.View as SIV
-import Shared.Resource (Resource(..), ResourceType(..), updateHash)
+import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 
 template ∷ Payload → Effect String
@@ -78,11 +78,11 @@ template { contacts, suggestions, user } = do
             }
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.resourcePath Emoji Js ]
-            , HE.script' [ HA.type' "text/javascript", HA.src $ SP.resourcePath  Im Js ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
+            , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath  Im Js ]
             ]
       css =
-            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.resourcePath Im Css ]
+            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Im Css ]
             , HE.style (HA.type' "text/css")
                     """.suggestion.new {
                         background: url(https://static.melan.chat/file/ourmelon/suggestions.png);

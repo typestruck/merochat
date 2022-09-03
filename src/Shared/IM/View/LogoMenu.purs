@@ -9,7 +9,7 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
 
 logoMenu ∷ Maybe String → Html ImMessage
@@ -48,8 +48,8 @@ logoMenu fortune = HE.div (HA.class' "relative")
               ]
       , HE.div [ HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true ] $
               HE.img
-                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath Logo3Small Png, "180w,", SP.resourcePath LogoSmall Png, "210w" ]
+                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.mediaPath Logo3Small Png, "180w,", SP.mediaPath LogoSmall Png, "210w" ]
                     , HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px"
-                    , HA.src $ SP.resourcePath Logo Png
+                    , HA.src $ SP.mediaPath Logo Png
                     ]
       ]

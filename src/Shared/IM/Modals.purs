@@ -14,12 +14,12 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Im.Svg as SIA
 import Shared.Im.View.Retry as SIVR
-import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Type.Proxy (Proxy(..))
 
-lazyLoad ∷ Resource → Html ImMessage
-lazyLoad resource = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.resourcePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
+lazyLoad ∷ Bundle → Html ImMessage
+lazyLoad resource = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.bundlePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
 
 modals ∷ ImModel → Html ImMessage
 modals model@{ erroredFields, toggleModal, chatting } =

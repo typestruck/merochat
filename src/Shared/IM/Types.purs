@@ -30,7 +30,7 @@ import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
-import Shared.Resource (Resource)
+import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
@@ -247,7 +247,7 @@ data ImMessage
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
       | Logout
       | SetContextMenuToggle ShowContextMenu
-      | SetModalContents (Maybe Resource) ElementId String
+      | SetModalContents (Maybe Bundle) ElementId String
 
       --contact
       | ResumeChat (Tuple Int (Maybe Int))

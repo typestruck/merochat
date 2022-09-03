@@ -20,8 +20,8 @@ import Server.IM.Types (Payload)
 import Server.Types (BaseEffect, Configuration, ServerEffect)
 import Server.Wheel as SW
 import Shared.Im.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
+import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
-import Shared.Resource (Resource(..), ResourceType(..))
 import Shared.ResponseError (ResponseError(..))
 
 foreign import sanitize ∷ String → String
@@ -82,7 +82,7 @@ processMessageContent content = do
             Text m → pure m
             Image caption base64 → do
                   name ← SF.saveBase64File $ base64
-                  pure $ "![" <> caption <> "](" <> SP.resourcePath (Upload name) Included <> ")"
+                  pure $ "![" <> caption <> "](" <> SP.mediaPath (Upload name) Included <> ")"
       pure <<< DS.trim $ sanitize message
 
 processKarma ∷ ∀ r. Int → Int → Turn → BaseEffect { pool ∷ Pool | r } Unit

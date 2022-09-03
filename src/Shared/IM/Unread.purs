@@ -6,7 +6,7 @@ import Shared.Im.Types hiding (ElementId)
 import Data.Foldable as DF
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
-import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
 
 title ∷ Int → String
@@ -22,9 +22,9 @@ favicon =
       case _ of
             0 → file
             n | n <= 10 → DS.replace (Pattern ".") (Replacement ("-" <> show n <> ".")) file
-            n → DS.replace (Pattern ".") (Replacement ("-10-plus.")) file
+            _ → DS.replace (Pattern ".") (Replacement ("-10-plus.")) file
       where
-      file = SP.resourcePath Favicon Png
+      file = SP.mediaPath Favicon Png
 
 countUnreadChats ∷ Int → Array Contact → Int
 countUnreadChats id = DF.foldl count 0

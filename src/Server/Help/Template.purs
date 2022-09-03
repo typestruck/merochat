@@ -11,14 +11,14 @@ import Server.Privacy as SP
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Server.Terms as STM
-import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SPT
 
 template ∷ Effect String
 template = do
       contents ← ST.template externalDefaultParameters
-            { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.resourcePath Help Css ] ]
-            , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src $ SPT.resourcePath Help Js ] ]
+            { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.bundlePath Help Css ] ]
+            , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src $ SPT.bundlePath Help Js ] ]
             , content = externalDefaultParameters.content <> content
             }
       FRS.render contents

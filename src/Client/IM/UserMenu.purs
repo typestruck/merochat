@@ -19,7 +19,7 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Shared.Json as SJ
-import Shared.Resource (Resource(..))
+import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
 
 toggleInitialScreen ∷ Boolean → ImModel → NoMessages
@@ -65,7 +65,7 @@ toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
                         , if completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]
 
-setModalContents ∷ Maybe Resource → ElementId → String → ImModel → NextMessage
+setModalContents ∷ Maybe Bundle → ElementId → String → ImModel → NextMessage
 setModalContents resource root html model = CIF.nothingNext model loadModal
       where
       loadModal = liftEffect do

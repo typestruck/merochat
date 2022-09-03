@@ -10,7 +10,7 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
-import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routes)
 
@@ -23,7 +23,7 @@ template token = do
       FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.resourcePath Recover Js ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Recover Js ]
             , HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
       content =

@@ -15,7 +15,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.Resource (Resource(..), ResourceType(..))
+import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
 
@@ -70,7 +70,7 @@ batman =
       , typingStatus: true
       , onlineStatus: true
       , completedTutorial: true
-      , avatar: Just $ SP.resourcePath BatmanNounProjectAnushaNarvekar Png
+      , avatar: Just $ SP.mediaPath BatmanNounProjectAnushaNarvekar Png
       , headline: "*raspy voice* I am Batman"
       , description: "I am not afraid of bats. Don't tell Robin I am here."
       , tags: [ "Martial arts", "Detective work", "Costumes", "Bats" ]
@@ -87,7 +87,7 @@ socrates ∷ ImpersonationProfile
 socrates =
       { id: 2
       , name: "Socrates"
-      , avatar: Just $ SP.resourcePath SocratesStingWikimedia Png
+      , avatar: Just $ SP.mediaPath SocratesStingWikimedia Png
       , headline: "I know that I know nothing"
       , profileVisibility: Everyone
       , availability: None
@@ -115,7 +115,7 @@ nicolasCage ∷ ImpersonationProfile
 nicolasCage =
       { id: 3
       , name: "Nicolas Cage"
-      , avatar: Just $ SP.resourcePath NicolasCageHiclipart Png
+      , avatar: Just $ SP.mediaPath NicolasCageHiclipart Png
       , headline: "I think I jump around more when I'm alone"
       , profileVisibility: Everyone
       , readReceipts: true
