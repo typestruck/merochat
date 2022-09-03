@@ -102,7 +102,13 @@ resourcePath res tp = path <> named <> replaced <> resourceType tp
       replaced = DE.either (const "") (flip replacement tp) res
 
       path
-            | production = if tp == Js || tp == Css then productionBasePath <> bundleFolder else productionBasePath
+            | production =
+                  if tp == Js || tp == Css then
+                        productionBasePath <> bundleFolder
+                  else
+                        case res of
+                              Left (Upload _) -> productionBasePath <> uploadFolder
+                              _ -> productionBasePath
             | otherwise = case tp of
                     Js → developmentJsBasePath
                     Css → developmentCssBasePath
