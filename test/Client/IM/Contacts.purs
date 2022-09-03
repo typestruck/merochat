@@ -1,7 +1,6 @@
 module Test.Client.IM.Contacts where
 
 import Prelude
-import Shared.ContentType
 import Shared.DateTime
 import Shared.Im.Types
 import Shared.User

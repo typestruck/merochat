@@ -1,8 +1,9 @@
 module Shared.Experiments.Impersonation where
 
 import Prelude
-import Shared.Experiments.Types
 import Shared.ContentType
+import Shared.Experiments.Types
+import Shared.User
 
 import Data.Array as DA
 import Data.HashMap (HashMap)
@@ -14,9 +15,9 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.Options.File (imageBasePath)
+import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Unsafe as SU
-import Shared.User
 
 joined ∷ ImpersonationProfile → Html ChatExperimentMessage
 joined profile = HE.div (HA.class' "exit-impersonation")
@@ -69,7 +70,7 @@ batman =
       , typingStatus: true
       , onlineStatus: true
       , completedTutorial: true
-      , avatar: Just $ imageBasePath <> "batman_noun_project_Anusha_Narvekar.png"
+      , avatar: Just $ SP.mediaPath BatmanNounProjectAnushaNarvekar Png
       , headline: "*raspy voice* I am Batman"
       , description: "I am not afraid of bats. Don't tell Robin I am here."
       , tags: [ "Martial arts", "Detective work", "Costumes", "Bats" ]
@@ -86,7 +87,7 @@ socrates ∷ ImpersonationProfile
 socrates =
       { id: 2
       , name: "Socrates"
-      , avatar: Just $ imageBasePath <> "socrates_Sting_wikimedia.png"
+      , avatar: Just $ SP.mediaPath SocratesStingWikimedia Png
       , headline: "I know that I know nothing"
       , profileVisibility: Everyone
       , availability: None
@@ -114,7 +115,7 @@ nicolasCage ∷ ImpersonationProfile
 nicolasCage =
       { id: 3
       , name: "Nicolas Cage"
-      , avatar: Just $ imageBasePath <> "nicolas_cage_hiclipart.png"
+      , avatar: Just $ SP.mediaPath NicolasCageHiclipart Png
       , headline: "I think I jump around more when I'm alone"
       , profileVisibility: Everyone
       , readReceipts: true

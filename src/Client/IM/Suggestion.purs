@@ -1,7 +1,6 @@
 module Client.IM.Suggestion where
 
 import Prelude
-import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.Im.Types
 

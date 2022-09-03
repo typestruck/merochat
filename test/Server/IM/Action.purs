@@ -6,7 +6,6 @@ import Prelude
 import Server.Database.Blocks
 import Server.Database.Fields
 import Server.Database.Histories
-import Shared.ContentType
 import Shared.Im.Types
 
 import Data.Array as DA

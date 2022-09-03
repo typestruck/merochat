@@ -1,6 +1,5 @@
 module Server.InternalBacker.Handler where
 
-import Shared.ContentType
 import Server.Types
 import Server.InternalBacker.Template as SIBT
 import Run as R

@@ -2,7 +2,6 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
@@ -51,7 +50,7 @@ import Server.WebSocket as SW
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Json as SJ
-import Shared.Path (updateHash)
+import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
 import Simple.JSON (class WriteForeign)

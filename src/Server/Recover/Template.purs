@@ -4,16 +4,15 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Environment (recoverJSHash)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
-import Shared.Path as SP
+import Shared.Resource (Bundle(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Routes (routes)
-import Shared.ContentType (ContentType(..))
 
 template ∷ Maybe String → Effect String
 template token = do
@@ -24,7 +23,7 @@ template token = do
       FRS.render contents
       where
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src <<< SP.pathery JS $ "recover." <> recoverJSHash ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Recover Js ]
             , HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
       content =

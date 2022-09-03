@@ -1,8 +1,7 @@
 module Client.IM.Notification where
 
 import Prelude
-import Shared.ContentType
-import Shared.Im.Types
+import Shared.Im.Types hiding (ElementId)
 
 import Client.Common.DOM as CCD
 import Client.IM.Flame (NextMessage)
@@ -19,9 +18,11 @@ import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame.Subscription as FS
 import Shared.Experiments.Impersonation (impersonations)
+import Shared.Im.Types as SIT
 import Shared.Im.Unread as SIU
 import Shared.Options.MountPoint (imId)
-import Shared.Path as SP
+import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
 
@@ -54,10 +55,8 @@ notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
                             Nothing → user
                             Just id → SU.fromJust $ HS.lookup id impersonations
                     ).name
-            , icon: SP.pathery PNG "loading"
-            ,
-              --move to given chat when clicking on system notification
-              handler: FS.send imId <<< ResumeChat $ Tuple user.id impersonating
+            , icon: SP.mediaPath Loading Png
+            , handler: FS.send imId <<< ResumeChat $ Tuple user.id impersonating --move to given chat when clicking on system notification
             }
 
       byKeys cnt = DA.any (\(Tuple id impersonating) → cnt.user.id == id && cnt.impersonating == impersonating) userIds
@@ -70,7 +69,7 @@ notify' model userIds = do
 updateTabCount ∷ Int → Array Contact → Effect Unit
 updateTabCount id contacts = do
       CCD.setTitle $ SIU.title unreadChats
-      faviconElement ← CCD.unsafeGetElementById Favicon
+      faviconElement ← CCD.unsafeGetElementById SIT.Favicon
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
       where
       unreadChats = SIU.countUnreadChats id contacts

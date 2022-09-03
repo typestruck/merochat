@@ -4,13 +4,12 @@ import Prelude
 import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
-import Environment (experimentsCSSHash)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Experiments.Types
 import Shared.Experiments.Impersonation as SEI
-import Shared.Path as SP
+import Shared.Resource as SP
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
 view model@{ experiments, section, current } = case current of

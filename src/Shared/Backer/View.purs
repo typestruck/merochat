@@ -5,8 +5,7 @@ import Prelude
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Path as SPT
-import Shared.ContentType (ContentType(..))
+import Shared.Resource as SPT
 
 view ∷ Html Unit
 view = HE.div (HA.class' "backer")

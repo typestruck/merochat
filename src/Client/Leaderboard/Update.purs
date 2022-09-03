@@ -1,7 +1,6 @@
 module Client.Leaderboard.Update where
 
 import Prelude
-import Shared.ContentType
 import Shared.Leaderboard.Types
 import Flame as F
 import Flame (ListUpdate)

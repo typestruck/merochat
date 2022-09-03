@@ -20,9 +20,8 @@ import Flame.Html.Element as HE
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
-import Shared.ContentType (ContentType(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
-import Shared.Path as SP
+import Shared.Resource as SP
 import Shared.Settings.Types (PrivacySettingsId(..), SM, SettingsMessage(..), SettingsModel)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))

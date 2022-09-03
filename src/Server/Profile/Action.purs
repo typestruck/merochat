@@ -18,9 +18,9 @@ import Server.ThreeK as ST
 import Server.Types (ServerEffect)
 import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
-import Shared.Options.File (imageBasePath)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
 import Shared.Profile.Types (ProfileUser, What(..))
+import Shared.Resource (uploadedImagePath)
 import Shared.User (Gender)
 
 tooManyTagsMessage ∷ String
@@ -57,7 +57,7 @@ saveAvatar loggedUserId base64 = do
       avatar ← case base64 of
             Nothing → pure Nothing
             Just path → do
-                  let fileName = DS.replace (Pattern $ imageBasePath <> "upload/") (Replacement "") path
+                  let fileName = DS.replace (Pattern uploadedImagePath) (Replacement "") path
                   --likely a base64 image
                   if fileName == path then
                         Just <$> SF.saveBase64File path

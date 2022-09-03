@@ -2,7 +2,6 @@ module Server.IM.Handler where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 import Shared.Im.Types
 
 import Data.Maybe (Maybe)
@@ -15,6 +14,7 @@ import Server.IM.Action as SIA
 import Server.IM.Template as SIT
 import Server.Ok (Ok, ok)
 import Server.Response as SR
+import Shared.ContentType (Html(..))
 
 im ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Response String)
 im { guards: { loggedUserId } } = do

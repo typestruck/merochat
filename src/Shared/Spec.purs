@@ -2,15 +2,16 @@ module Shared.Spec where
 
 import Prelude
 import Server.Ok
-import Shared.ContentType
 import Shared.Im.Types
 import Shared.Profile.Types
 import Shared.User
+
 import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword)
+import Shared.ContentType (Html(..))
 import Shared.DateTime (DateWrapper(..))
 import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileVisibility)

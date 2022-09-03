@@ -1,10 +1,13 @@
 module Shared.Im.Unread where
 
 import Prelude
-import Shared.ContentType
-import Shared.Im.Types
+import Shared.Im.Types hiding (ElementId)
+
 import Data.Foldable as DF
-import Shared.Options.File (imageBasePath)
+import Data.String (Pattern(..), Replacement(..))
+import Data.String as DS
+import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Shared.Resource as SP
 
 title ∷ Int → String
 title =
@@ -17,12 +20,11 @@ title =
 favicon ∷ Int → String
 favicon =
       case _ of
-            0 → name <> extension
-            n | n <= 10 → name <> "-" <> show n <> extension
-            n → name <> "-10-plus" <> extension
+            0 → file
+            n | n <= 10 → DS.replace (Pattern ".") (Replacement ("-" <> show n <> ".")) file
+            _ → DS.replace (Pattern ".") (Replacement ("-10-plus.")) file
       where
-      name = imageBasePath <> "favicon"
-      extension = ".ico"
+      file = SP.mediaPath Favicon Ico
 
 countUnreadChats ∷ Int → Array Contact → Int
 countUnreadChats id = DF.foldl count 0
