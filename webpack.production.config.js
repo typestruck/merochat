@@ -12,7 +12,6 @@ export default {
             import: ['./loader/production/im.bundle.js', './src/Client/css/im.css'],
             dependOn: 'emoji'
         },
-        landing: './loader/production/landing.bundle.js',
         login: './loader/production/login.bundle.js',
         profile: {
             import: ['./loader/production/profile.bundle.js', './src/Client/css/profile.css'],
@@ -77,8 +76,8 @@ export default {
             name: 'common'
         },
         minimizer: [
-            //new TerserPlugin(),
-         //   new CssMinimizerPlugin(),
+            new TerserPlugin(),
+           new CssMinimizerPlugin(),
         ]
     },
 };
