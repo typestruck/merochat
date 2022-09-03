@@ -4,7 +4,6 @@ dist_folder="dist/production"
 bundle_folder="bundle"
 bucket="ourmelon"
 
-git pull --no-edit &&
 npm install &&
 rm -rf dist/production &&
 rm -rf output-es &&
