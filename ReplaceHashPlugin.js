@@ -31,14 +31,19 @@ function replace(options, assets) {
         hash.set(`[${splitted[0]}-${extension}-contenthash]`, splitted[1]);
     }
 
-    let targetName = resolve(`${options.dir}/${target}`),
-        contents = readFileSync(targetName, 'utf8');
+    replaceInFile(`${options.dir}/${target}`, hash);
+    replaceInFile(`${options.file}`, hash);
+}
+
+function replaceInFile(fileName, hash) {
+      let path = resolve(fileName),
+          contents = readFileSync(path, 'utf8');
 
     for (let [key, value] of hash) {
         contents = contents.replace(key, value);
     }
 
-    writeFileSync(targetName, contents);
+    writeFileSync(path, contents);
 }
 
 export default ReplaceHashPlugin;

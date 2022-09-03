@@ -51,7 +51,7 @@ export default {
         new webpack.DefinePlugin({
             'process.env.PRODUCTION': true
         }),
-        new ReplaceHashPlugin({dir: 'dist/production', filePrefix: 'common' })
+        new ReplaceHashPlugin({ dir: 'dist/production', filePrefix: 'common', file: 'output-es/Shared.Resource/index.js' }),
     ],
     module: {
         rules: [
