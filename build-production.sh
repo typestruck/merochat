@@ -7,6 +7,8 @@ bucket="ourmelon"
 git pull --no-edit &&
 npm install &&
 rm -rf dist/production &&
+rm -rf output &&
+rm -rf output-es &&
 spago -x production.dhall build &&
 npx webpack --progress --config webpack.production.config.js &&
 webpack --progress --config webpack.landing.config.js &&
