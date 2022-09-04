@@ -2,7 +2,6 @@ module Server.Landing.Action where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Data.String as DS
 import Server.AccountValidation as SA

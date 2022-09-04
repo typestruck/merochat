@@ -1,7 +1,6 @@
 module Shared.Experiments.View where
 
 import Prelude
-import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Flame (Html)

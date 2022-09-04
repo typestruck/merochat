@@ -1,7 +1,6 @@
 module Shared.Im.View.Retry where
 
 import Prelude
-import Shared.ContentType
 
 import Data.Foldable as DA
 import Flame (Html)

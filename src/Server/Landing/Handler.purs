@@ -12,7 +12,7 @@ import Server.Landing.Template as SLT
 import Server.Response as SR
 import Server.Types (ServerEffect)
 import Shared.Account (RegisterLogin)
-import Shared.ContentType (Html(..))
+import Shared.Html (Html)
 
 landing ∷ ∀ r. { | r } → ServerEffect Html
 landing _ = SR.serveTemplate SLT.template

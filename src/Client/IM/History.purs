@@ -2,7 +2,6 @@ module Client.IM.History where
 
 import Client.IM.Flame
 import Prelude
-import Shared.ContentType
 
 import Client.Common.DOM as CCD
 import Client.Common.Network (request)

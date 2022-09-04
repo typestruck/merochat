@@ -1,7 +1,6 @@
 module Test.Client.IM.History where
 
 import Prelude
-import Shared.ContentType
 
 import Client.IM.History as CIH
 import Data.Maybe (Maybe(..))

@@ -2,7 +2,6 @@ module Server.Experiments.Handler where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Run as R
 import Server.Experiments.Template as SET

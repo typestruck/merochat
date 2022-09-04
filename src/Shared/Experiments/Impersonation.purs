@@ -1,7 +1,6 @@
 module Shared.Experiments.Impersonation where
 
 import Prelude
-import Shared.ContentType
 import Shared.Experiments.Types
 import Shared.User
 

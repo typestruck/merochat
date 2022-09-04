@@ -13,7 +13,6 @@ import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Profile.Database.Flat
 import Server.Types
-import Shared.ContentType
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))

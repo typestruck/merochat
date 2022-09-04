@@ -1,7 +1,6 @@
 module Client.Settings.Account where
 
 import Prelude
-import Shared.ContentType
 
 import Client.Common.Location as CCL
 import Client.Common.Network (request)

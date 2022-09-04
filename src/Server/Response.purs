@@ -7,7 +7,7 @@ import Effect (Effect)
 import Run as R
 import Run.Except as RE
 import Server.Types (BaseEffect, ServerEffect)
-import Shared.ContentType (Html(..))
+import Shared.Html (Html(..))
 import Shared.ResponseError (ResponseError(..))
 
 serveTemplate ∷ Effect String → ServerEffect Html

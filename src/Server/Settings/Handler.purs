@@ -2,7 +2,6 @@ module Server.Settings.Handler where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Payload.ResponseTypes (Response)
 import Run as R

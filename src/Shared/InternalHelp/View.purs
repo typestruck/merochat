@@ -1,7 +1,6 @@
 module Shared.InternalHelp.View where
 
 import Prelude
-import Shared.ContentType
 
 import Flame (Html)
 import Flame.Html.Attribute as HA

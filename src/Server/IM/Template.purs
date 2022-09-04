@@ -1,7 +1,6 @@
 module Server.IM.Template where
 
 import Prelude
-import Shared.ContentType
 import Shared.Im.Types
 
 import Data.Array as DA

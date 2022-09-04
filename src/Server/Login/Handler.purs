@@ -2,7 +2,6 @@ module Server.Login.Handler where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Data.Either as DE
 import Data.Maybe (Maybe)
@@ -18,6 +17,7 @@ import Server.Login.Template as SLT
 import Server.Ok (Ok, ok)
 import Server.Response as SR
 import Shared.Account (RegisterLogin)
+import Shared.Html (Html(..))
 
 login ∷ ∀ r. { | r } → ServerEffect Html
 login _ = SR.serveTemplate SLT.template

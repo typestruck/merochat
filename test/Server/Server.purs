@@ -3,7 +3,6 @@ module Test.Server where
 import Prelude
 import Server.Types
 import Shared.Im.Types
-import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Droplet.Driver (Pool)

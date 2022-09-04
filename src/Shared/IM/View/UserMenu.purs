@@ -1,7 +1,6 @@
 module Shared.Im.View.UserMenu where
 
 import Prelude
-import Shared.ContentType
 
 import Shared.Experiments.Types
 import Data.Maybe (Maybe(..))

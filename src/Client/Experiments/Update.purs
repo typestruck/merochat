@@ -1,7 +1,6 @@
 module Client.Experiments.Update where
 
 import Prelude
-import Shared.ContentType
 
 import Client.Common.DOM (setChatExperiment)
 import Client.Common.Location as CCL

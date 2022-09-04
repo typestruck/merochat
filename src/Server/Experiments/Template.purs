@@ -1,6 +1,5 @@
 module Server.Experiments.Template where
 
-import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)

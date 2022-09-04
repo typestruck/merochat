@@ -1,5 +1,4 @@
-// this config exists because i couldn't find how to bundle landing into a single file (without depending on chunks) while using chunk splitting in webpack.production.config.js
-
+//this extra config file exists because i couldn't find how to bundle landing into a single file (without depending on chunks) while using chunk splitting in webpack.production.config.js
 import path from 'path';
 import webpack from 'webpack';
 

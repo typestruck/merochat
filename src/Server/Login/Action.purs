@@ -2,7 +2,6 @@ module Server.Login.Action where
 
 import Prelude
 import Server.Types
-import Shared.ContentType
 
 import Data.Maybe (Maybe(..))
 import Data.String as DS

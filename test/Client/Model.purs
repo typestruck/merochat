@@ -2,7 +2,6 @@ module Test.Client.Model where
 
 import Prelude
 import Shared.Im.Types
-import Shared.ContentType
 
 import Data.HashMap (HashMap)
 import Data.HashMap as HS
