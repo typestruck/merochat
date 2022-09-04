@@ -70,6 +70,7 @@ export default {
         ]
     },
     optimization: {
+        removeEmptyChunks: true,
         moduleIds: 'deterministic',
         splitChunks: {
             chunks: 'all',
@@ -77,7 +78,7 @@ export default {
         },
         minimizer: [
             new TerserPlugin(),
-           new CssMinimizerPlugin(),
+            new CssMinimizerPlugin(),
         ]
     },
 };

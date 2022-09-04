@@ -26,7 +26,7 @@ template = do
       FRS.render contents
       where
       css
-            | production = []
+            | production = [HE.style [HA.type' "text/css"] "<% style.css %>"] --used to inline stylesheets for production
             | otherwise =
                     [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath External Css ]
                     , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Landing Css ]

@@ -63,14 +63,14 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
                       , HE.meta [ HA.name "viewport", HA.content "width=device-width, initial-scale=1.0" ]
                       , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href favicon ]
                       , HE.title title
-                      ] <> styleSheets <> css
+                      ] <> styleSheets
                     )
             , HE.body_ $ content <> footer <> javascript
             ]
       where
       styleSheets =
-            [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Base Css ]
-            ]
+           (if bundled then [] else [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Base Css ]
+            ] ) <> css
       javascript =
             (if bundled then [] else [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js]
             ]) <> parameters.javascript
