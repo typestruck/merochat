@@ -300,6 +300,7 @@ data ImMessage
       | AskNotification
       | ToggleAskNotification
       | SetNameFromProfile String
+      | SetAvatarFromProfile (Maybe String)
       | ToggleConnected Boolean
       | SetField (ImModel → ImModel)
       | ToggleFortune Boolean

@@ -175,6 +175,7 @@ update { webSocketRef, fileReader } model =
             ReloadPage → reloadPage model
             ReceiveMessage payload isFocused → receiveMessage webSocket isFocused payload model
             SetNameFromProfile name → setName name model
+            SetAvatarFromProfile base64 → setAvatar base64 model
             AskNotification → askNotification model
             ToggleAskNotification → toggleAskNotification model
             PreventStop event → preventStop event model
@@ -603,6 +604,13 @@ setName name model =
                     { name = name
                     }
             }
+
+setAvatar ∷ Maybe String → ImModel → NoMessages
+setAvatar base64 model = F.noMessages $ model
+      { user
+              { avatar = base64
+              }
+      }
 
 toggleConnectedWebSocket ∷ Boolean → ImModel → MoreMessages
 toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage } =

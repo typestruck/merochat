@@ -4,7 +4,7 @@ MelanChat is a friendly random chat!
 
 ### Random
 
-* User profiles start off as auto generated, i.e., name, bio, avatar, etc are picked by [3000](https://github.com/melanchat/3000)
+* User profiles start off as auto generated, i.e., name, bio, avatar, etc are picked by the app
 
 * Users to chat with are suggested by the app - besides skipping suggestions, it is not possible to search or filter potential new chats
 

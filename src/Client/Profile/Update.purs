@@ -11,7 +11,6 @@ import Client.Common.Network (request)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
@@ -46,7 +45,6 @@ saveField rc@{ display } field = do
             Country → saveCountry rc
             Languages → saveLanguages rc
             Tags → saveTags rc
-      -- _ -> pure unit
       EA.delay $ Milliseconds 3000.0
       pure
             ( _
@@ -88,11 +86,14 @@ saveGeneratedField rc@{ display, model } what =
       where
       req value = request.profile.field.generated { body: { field: what, value: if value == Just "" then Nothing else value } }
 
-saveAvatar rc@{ display } base64 = do
+saveAvatar ∷ Environment ProfileModel ProfileMessage → Maybe String → Aff Unit
+saveAvatar { display } base64 = do
       void <<< save display $ request.profile.field.avatar { body: { base64 } }
+      liftEffect <<< FS.send imId $ SetAvatarFromProfile base64
       display $ _ { user { avatar = base64 } }
 
-saveAge rc@{ display, model: { ageInputed } } = do
+saveAge ∷ Environment ProfileModel ProfileMessage → Aff Unit
+saveAge { display, model: { ageInputed } } = do
       let birthday = DM.fromMaybe Nothing ageInputed
       void <<< save display $ request.profile.field.age { body: { birthday } }
       display
@@ -102,7 +103,8 @@ saveAge rc@{ display, model: { ageInputed } } = do
                     }
             )
 
-saveGender rc@{ display, model: { genderInputed } } = do
+saveGender ∷ Environment ProfileModel ProfileMessage → Aff Unit
+saveGender { display, model: { genderInputed } } = do
       let gender = DM.fromMaybe Nothing genderInputed
       void <<< save display $ request.profile.field.gender { body: { gender } }
       display
@@ -112,7 +114,8 @@ saveGender rc@{ display, model: { genderInputed } } = do
                     }
             )
 
-saveCountry rc@{ display, model: { countryInputed } } = do
+saveCountry ∷ Environment ProfileModel ProfileMessage → Aff Unit
+saveCountry { display, model: { countryInputed } } = do
       let country = DM.fromMaybe Nothing countryInputed
       void <<< save display $ request.profile.field.country { body: { country } }
       display
@@ -122,7 +125,8 @@ saveCountry rc@{ display, model: { countryInputed } } = do
                     }
             )
 
-saveLanguages rc@{ display, model: { languagesInputedList } } = do
+saveLanguages ∷ Environment ProfileModel ProfileMessage → Aff Unit
+saveLanguages { display, model: { languagesInputedList } } = do
       void <<< save display $ request.profile.field.language { body: { ids: languagesInputedList } }
       display
             ( _
@@ -132,7 +136,8 @@ saveLanguages rc@{ display, model: { languagesInputedList } } = do
                     }
             )
 
-saveTags rc@{ display, model: { tagsInputedList } } = do
+saveTags ∷ Environment ProfileModel ProfileMessage → Aff Unit
+saveTags { display, model: { tagsInputedList } } = do
       void <<< save display $ request.profile.field.tag { body: { tags: tagsInputedList } }
       display
             ( _
