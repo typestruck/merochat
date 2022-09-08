@@ -23,9 +23,6 @@ import Test.Unit as TU
 import Test.Unit.Assert (equal) as TUA
 import Type.Row (type (+))
 
-session ∷ Session
-session = { userId: Nothing }
-
 newTestPool ∷ Configuration → Effect Pool
 newTestPool { databaseHost } =
       DD.newPool $ (DD.defaultConfiguration "melanchat_test")
@@ -42,7 +39,6 @@ serverAction action = do
       R.runBaseAff' <<< RE.catch (\ex → R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex)) <<< RR.runReader
             { configuration
             , pool
-            , session
             } $ do
             truncateTables
             void action
@@ -54,7 +50,6 @@ serverActionCatch catch action = do
       R.runBaseAff' <<< RE.catch catch <<< RR.runReader
             { configuration
             , pool
-            , session
             } $ do
             truncateTables
             void action

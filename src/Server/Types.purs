@@ -23,10 +23,6 @@ type Configuration =
       , emailPassword ∷ String
       }
 
-type Session =
-      { userId ∷ Maybe Int
-      }
-
 type BaseReader extension =
       { pool ∷ Pool
       | extension
@@ -34,7 +30,6 @@ type BaseReader extension =
 
 type ServerReader = BaseReader
       ( configuration ∷ Configuration
-      , session ∷ Session
       )
 
 type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) a
