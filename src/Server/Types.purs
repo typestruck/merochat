@@ -42,7 +42,3 @@ type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) 
 type DatabaseEffect a = Run (EXCEPT PgError + AFF + ()) a
 
 type ServerEffect a = BaseEffect ServerReader a
-
-data By
-      = ID Int
-      | Email String

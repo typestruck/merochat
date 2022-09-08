@@ -15,6 +15,7 @@ import Data.String as DS
 import Run as R
 import Server.AccountValidation (emailAlreadyRegisteredMessage, invalidEmailMessage, invalidPasswordMessage)
 import Server.Database as SD
+import Server.Database.Users (By(..))
 import Server.Database.Users as SDU
 import Server.Landing.Action as SLA
 import Server.Landing.Database as SLD
@@ -76,7 +77,7 @@ tests = do
                                 , password
                                 , captchaResponse: Nothing
                                 }
-                          maybeUser ← SDU.userBy (Email email)
+                          maybeUser ← SDU.userBy $ Email email
                           case maybeUser of
                                 Nothing → R.liftAff $ TU.failure "user not created!"
                                 Just user → do

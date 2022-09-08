@@ -90,9 +90,13 @@ _onlineStatus = Proxy
 _messageTimestamps ∷ Proxy "message_timestamps"
 _messageTimestamps = Proxy
 
+data By
+      = Id Int
+      | Email String
+
 userBy ∷ By → ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
       Email value → SD.single $ baseQuery (\ft → ft .&&. _email .=. value)
-      ID value → SD.single $ baseQuery (\ft → ft .&&. _id .=. value)
+      Id value → SD.single $ baseQuery (\ft → ft .&&. _id .=. value)
 
 baseQuery ft = select (_id /\ _email /\ _password) # from users # wher (ft (_visibility .<>. TemporarilyBanned))

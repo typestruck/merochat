@@ -41,7 +41,6 @@ unsafeExecute q parameters = withConnection $ \connection → unsafeExecuteWith 
 
 unsafeExecuteWith connection q parameters = hoistMaybe $ DDU.unsafeExecute connection Nothing q parameters
 
---hoist :: Aff (Either PgError result) -> DatabaseEffect result
 hoist action = do
       result ← R.liftAff action
       case result of
