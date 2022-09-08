@@ -34,6 +34,4 @@ type ServerReader = BaseReader
 
 type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) a
 
-type DatabaseEffect a = Run (EXCEPT PgError + AFF + ()) a
-
 type ServerEffect a = BaseEffect ServerReader a
