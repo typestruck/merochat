@@ -14,6 +14,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.DateTime as SD
+import Shared.Element (ElementId(..))
 import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 

@@ -2,12 +2,12 @@ module Client.IM.History where
 
 import Client.IM.Flame
 import Prelude
+import Shared.Im.Types
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.IM.Flame as CIF
-import Shared.Im.Types
 import Client.IM.Scroll as CIS
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -15,6 +15,7 @@ import Data.Maybe as DM
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
+import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE

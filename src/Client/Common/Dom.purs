@@ -1,4 +1,4 @@
-module Client.Common.DOM where
+module Client.Common.Dom where
 
 import Prelude
 import Shared.Im.Types
@@ -11,6 +11,7 @@ import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
 import Effect.Uncurried as EU
+import Shared.Element (ElementId)
 import Shared.Resource (Bundle, ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
@@ -65,20 +66,20 @@ confirm message = do
       window ← WH.window
       HWH.confirm message window
 
--- | Adds an event to the given element.
+-- | Adds an event to the given element
 addEventListener ∷ ∀ a. Element → EventType → (Event → Effect a) → Effect Unit
 addEventListener element eventType handler = do
       listener ← WET.eventListener handler
       WET.addEventListener eventType listener false $ WDE.toEventTarget element
 
--- | Selects a single element.
+-- | Selects a single element
 unsafeGetElementById ∷ ElementId → Effect Element
 unsafeGetElementById elementId = do
-      maybeElement ← getElementByID elementId
+      maybeElement ← getElementById elementId
       DM.maybe (EE.throwException $ EE.error $ "No element with id:" <> show elementId) pure maybeElement
 
-getElementByID ∷ ElementId → Effect (Maybe Element)
-getElementByID elementId = do
+getElementById ∷ ElementId → Effect (Maybe Element)
+getElementById elementId = do
       window ← WH.window
       document ← WHHD.toDocument <$> WHW.document window
       WDNE.getElementById (show elementId) $ WDD.toNonElementParentNode document

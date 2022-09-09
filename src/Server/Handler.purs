@@ -42,6 +42,7 @@ handlers ∷ ServerReader → _
 handlers reading =
       { landing: runHtml reading SLH.landing
       , register: runJson reading SLH.register
+      , temporary: runJson reading SLH.temporary
       , im:
               { get: runHtml reading SIH.im
               , contacts: runJson reading SIH.contacts

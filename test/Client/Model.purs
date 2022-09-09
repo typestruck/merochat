@@ -1,7 +1,9 @@
 module Test.Client.Model where
 
 import Prelude
+import Shared.DateTime
 import Shared.Im.Types
+import Shared.User
 
 import Data.HashMap (HashMap)
 import Data.HashMap as HS
@@ -10,9 +12,8 @@ import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Shared.DateTime
+import Shared.Element (ElementId)
 import Shared.Im.Contact as SIC
-import Shared.User
 import Unsafe.Coerce as UC
 import Web.DOM (Element)
 import Web.Socket.WebSocket (WebSocket)

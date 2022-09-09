@@ -4,7 +4,7 @@ import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.Common.File as CCF
 import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
@@ -39,6 +39,7 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSize)

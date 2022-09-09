@@ -31,6 +31,7 @@ import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.Resource (Bundle)
+import Shared.Element
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
@@ -333,40 +334,6 @@ type OutgoingRecord =
             , turn ∷ Maybe Turn
             )
 
-data ElementId
-      = UserContextMenu
-      | SuggestionContextMenu
-      | CompactProfileContextMenu
-      | FullProfileContextMenu
-      | ImageFileInput
-      | ChatInputSuggestion
-      | ChatInput
-      | ContactList
-      | ProfileEditionForm
-      | ImageFormCaption
-      | PasswordDiv
-      | ConfirmPasswordInput
-      | LinkFormUrl
-      | MessageHistory
-      | Favicon
-      | ProfileEditionRoot
-      | ChatInputPreview
-      | SettingsEditionRoot
-      | KarmaLeaderboard
-      | ExperimentsRoot
-      | HelpRoot
-      | TermsLink
-      | PrivacyLink
-      | Faq
-      | TermsSection
-      | PasswordInput
-      | EmailDiv
-      | PrivacySection
-      | EmailInput
-      | BackerRoot
-      | ConfirmPassword
-      | FaqLink
-      | AvatarFileInput
 
 type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
 
@@ -543,9 +510,6 @@ instance EncodeJson ReportReason where
 instance EncodeJson MessageStatus where
       encodeJson = DAEGR.genericEncodeJson
 
-instance Hashable ElementId where
-      hash = HS.hash <<< show
-
 instance Show MessageStatus where
       show = case _ of
             Errored → "Failed to send"
@@ -581,42 +545,6 @@ instance Show WebSocketPayloadClient where
 instance Show WebSocketPayloadServer where
       show = DGRS.genericShow
 
-instance Show ElementId where
-      show = case _ of
-            UserContextMenu → "user-context-menu"
-            SuggestionContextMenu → "suggestion-context-menu"
-            CompactProfileContextMenu → "compact-profile-context-menu"
-            FullProfileContextMenu → "full-profile-context-menu"
-            ImageFileInput → "image-file-input"
-            ContactList → "contact-list"
-            LinkFormUrl → "link-form-url"
-            ProfileEditionForm -> "profile-edition-form"
-            ChatInput → "chat-input"
-            ChatInputSuggestion → "chat-input-suggestion"
-            ImageFormCaption → "image-form-caption"
-            MessageHistory → "message-history"
-            Favicon → "favicon"
-            ConfirmPasswordInput → "confirm-password-input"
-            PasswordDiv → "password"
-            TermsLink → "terms-link"
-            PrivacyLink → "privacy-link"
-            Faq → "faq"
-            TermsSection → "terms"
-            EmailDiv → "email"
-            EmailInput → "email-input"
-            PrivacySection → "privacy"
-            ConfirmPassword → "confirm-password"
-            FaqLink → "faq-link"
-            BackerRoot → "backer-root"
-            ChatInputPreview → "chat-input-preview"
-            ProfileEditionRoot → "profile-edition-root"
-            SettingsEditionRoot → "settings-edition-root"
-            KarmaLeaderboard → "karma-leaderboard-root"
-            HelpRoot → "help-root"
-            ExperimentsRoot → "experiments-root"
-            PasswordInput → "password-input"
-            AvatarFileInput → "avatar-file-input"
-
 instance EncodeQueryParam ArrayPrimaryKey where
       encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
 
@@ -628,7 +556,6 @@ instance DecodeQueryParam ArrayPrimaryKey where
                   Just [ value ] → Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
                   _ → errorDecoding query key
 
-derive instance Eq ElementId
 derive instance Eq ShowContextMenu
 
 derive instance Eq ProfilePresentation

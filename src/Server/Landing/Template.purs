@@ -10,6 +10,8 @@ import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
+import Shared.Element (ElementId(..))
+import Shared.Im.Svg as SIA
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
@@ -26,14 +28,14 @@ template = do
       FRS.render contents
       where
       css
-            | production = [HE.style [HA.type' "text/css"] "<% style.css %>"] --used to inline stylesheets for production
+            | production = [ HE.style [ HA.type' "text/css" ] "<% style.css %>" ] --used to inline stylesheets for production
             | otherwise =
                     [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath External Css ]
                     , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Landing Css ]
                     ]
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Landing Js ]
-            , HE.script' [ HA.createAttribute "async" "true", HA.src "https://www.google.com/recaptcha/api.js" ]
+            , HE.script' [ HA.createAttribute "defer" "true", HA.createAttribute "async" "true", HA.src "https://www.google.com/recaptcha/api.js?onload=initCaptchas&render=explicit" ]
             ]
       content =
             [ HE.div (HA.class' "landing")
@@ -64,9 +66,19 @@ template = do
                                             , HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                             ]
                                     , HE.div [ HA.class' "input" ]
-                                            [ HE.div' [ HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRegistration", HA.createAttribute "data-size" "invisible" ]
+                                            [ HE.div' [ HA.id $ show CaptchaRegularUser, HA.class' "hidden" ]
                                             , HE.input [ HA.type' "button", HA.value "Create account" ]
                                             , HE.span' [ HA.class' "request-error-message error-message" ]
+                                            ]
+                                    , HE.div [ HA.id $ show TemporaryUserSignUp ]
+                                            [ HE.div' [ HA.id $ show CaptchaTemporaryUser, HA.class' "hidden" ]
+                                            , HE.text "I want to chat without an account"
+                                            , HE.svg [ HA.class' "svg-arrow", HA.viewBox "0 0 16 16" ]
+                                                    [ HE.g [ HA.transform "rotate(180,7.6,8)" ]
+                                                            [ HE.line' [ HA.strokeWidth "3px", HA.x1 "15.98", HA.y1 "8", HA.x2 "1.61", HA.y2 "8" ]
+                                                            , HE.polygon' [ HA.strokeWidth "1px", HA.points "6.43 2.05 7.42 3.12 2.17 8 7.42 12.88 6.43 13.95 0.03 8 6.43 2.05" ]
+                                                            ]
+                                                    ]
                                             ]
                                     ]
                             ]

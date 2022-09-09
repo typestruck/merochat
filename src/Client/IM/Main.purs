@@ -8,8 +8,8 @@ import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
 
-import Client.Common.DOM (setChatExperiment)
-import Client.Common.DOM as CCD
+import Client.Common.Dom (setChatExperiment)
+import Client.Common.Dom as CCD
 import Client.Common.File as CCF
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
@@ -56,6 +56,7 @@ import Foreign as FO
 import Record as R
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
+import Shared.Element (ElementId(..))
 import Shared.Im.View as SIV
 import Shared.Json as SJ
 import Shared.Options.MountPoint (imId, profileId)
@@ -324,7 +325,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
 focusInput ∷ ElementId → ImModel → NextMessage
 focusInput elementId model = model :>
       [ liftEffect do
-              element ← CCD.getElementByID elementId
+              element ← CCD.getElementById elementId
               WHHE.focus $ SU.fromJust do
                     e ← element
                     WHHE.fromElement e

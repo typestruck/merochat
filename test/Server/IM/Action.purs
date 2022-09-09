@@ -29,7 +29,7 @@ import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Test.Server as TS
-import Test.Server.Model (baseUser)
+import Test.Server.User (baseUser)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -84,7 +84,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
+                          yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
                           void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "ola"
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "hey"
@@ -167,7 +167,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
+                          yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
                           void <<< SIA.processMessage anotherUserId userId 1 $ Text "1"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "2"
                           void <<< SIA.processMessage anotherUserId userId 2 $ Text "3"
@@ -185,7 +185,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
+                          yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
                           void <<< SIA.processMessage anotherUserId userId 1 $ Text "1"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "2"
                           void <<< SIA.processMessage anotherUserId userId 2 $ Text "3"
@@ -203,8 +203,8 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser baseUser { email = "d@d.com" }
-                          lastUserId ← SLD.createUser baseUser { email = "e@e.com" }
+                          yetAnotherUserId ← SLD.createUser baseUser { email = Just "d@d.com" }
+                          lastUserId ← SLD.createUser baseUser { email = Just "e@e.com" }
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "aaaaa"
                           void <<< SIA.processMessage userId yetAnotherUserId 1 $ Text "I"
                           void <<< SIA.processMessage userId lastUserId 1 $ Text "1"
@@ -217,8 +217,8 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser baseUser { email = "d@d.com" }
-                          lastUserId ← SLD.createUser baseUser { email = "e@e.com" }
+                          yetAnotherUserId ← SLD.createUser baseUser { email = Just "d@d.com" }
+                          lastUserId ← SLD.createUser baseUser { email = Just "e@e.com" }
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "aaaaa"
                           void <<< SIA.processMessage yetAnotherUserId userId 1 $ Text "I"
                           void <<< SIA.processMessage userId lastUserId 1 $ Text "1"
@@ -264,7 +264,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
+                          yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
                           void <<< SIA.processMessage anotherUserId userId 1 $ Text "oi"
                           void <<< SIA.processMessage yetAnotherUserId userId 2 $ Text "ola"
                           void <<< SIA.processMessage yetAnotherUserId userId 3 $ Text "hey"
@@ -279,7 +279,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
+                          yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
                           Tuple id _ ← map SU.fromJust <<< SIA.processMessage anotherUserId userId 1 $ Text "oi"
                           Tuple anotherId _ ← map SU.fromJust <<< SIA.processMessage yetAnotherUserId userId 2 $ Text "ola"
                           void <<< SIA.processMessage yetAnotherUserId userId 3 $ Text "hey"
@@ -293,7 +293,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          yetAnotherUserId ← SLD.createUser $ baseUser { email = "d@d.com" }
+                          yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId yetAnotherUserId 2 $ Text "ola"
                           void <<< SIA.processMessage userId yetAnotherUserId 3 $ Text "hey"
@@ -356,7 +356,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           Tuple id _ ← map SU.fromJust <<< SIA.processMessage userId anotherUserId 2 $ Text "oi"
                           R.liftAff $ TUA.equal userId id
-                          chatStarter ← SD.single $ select _sender # from histories # orderBy _id # limit (Proxy :: _ 1)
+                          chatStarter ← SD.single $ select _sender # from histories # orderBy _id # limit (Proxy ∷ _ 1)
                           R.liftAff $ TUA.equal (Just { sender: userId }) chatStarter
 
             TU.test "processMessage accepts files"
@@ -413,6 +413,6 @@ tests = do
                           R.liftAff <<< TUA.assert "is just" $ DM.isJust processed
       where
       setUpUsers = do
-            userId ← SLD.createUser $ baseUser { email = "b@b.com" }
-            anotherUserId ← SLD.createUser $ baseUser { email = "c@c.com" }
+            userId ← SLD.createUser $ baseUser { email = Just "b@b.com" }
+            anotherUserId ← SLD.createUser $ baseUser { email = Just "c@c.com" }
             pure $ Tuple userId anotherUserId

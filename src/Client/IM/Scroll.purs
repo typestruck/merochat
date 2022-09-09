@@ -1,13 +1,14 @@
 module Client.IM.Scroll where
 
 import Prelude
-
-import Client.Common.DOM as CCD
 import Shared.Im.Types
+
+import Client.Common.Dom as CCD
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Shared.Element (ElementId(..))
 
 scrollLastMessage ∷ Effect Unit
 scrollLastMessage = do

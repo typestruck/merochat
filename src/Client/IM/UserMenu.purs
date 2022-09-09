@@ -3,8 +3,7 @@ module Client.IM.UserMenu where
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.DOM (setChatExperiment)
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
@@ -12,18 +11,16 @@ import Client.IM.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.IM.Flame as CIF
 import Data.Array ((:))
 import Data.Array as DA
-import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
-import Shared.Json as SJ
+import Shared.Element (ElementId(..))
 import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
 
 toggleInitialScreen ∷ Boolean → ImModel → NoMessages
-toggleInitialScreen toggle model@{ initialScreen } = F.noMessages $ model
+toggleInitialScreen toggle model = F.noMessages $ model
       { initialScreen = toggle
       , chatting = Nothing
       , toggleModal = HideUserMenuModal

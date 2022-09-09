@@ -5,6 +5,7 @@ import Prelude
 import Server.Database.Fields
 import Server.Database.Users
 
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Effect.Now as EN
@@ -18,10 +19,10 @@ import Shared.User (ProfileVisibility)
 import Type.Proxy (Proxy(..))
 
 changeEmail ∷ Int → String → ServerEffect Unit
-changeEmail loggedUserId email = SD.execute $ update users # set (_email .=. email) # wher (_id .=. loggedUserId)
+changeEmail loggedUserId email = SD.execute $ update users # set (_email .=. Just email) # wher (_id .=. loggedUserId)
 
 changePassword ∷ Int → String → ServerEffect Unit
-changePassword loggedUserId password = SD.execute $ update users # set (_password .=. password) # wher (_id .=. loggedUserId)
+changePassword loggedUserId password = SD.execute $ update users # set (_password .=. Just password) # wher (_id .=. loggedUserId)
 
 terminateAccount ∷ Int → ServerEffect Unit
 terminateAccount loggedUserId = SD.execute $ delete # from users # wher (_id .=. loggedUserId) --cascades

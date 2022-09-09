@@ -1,14 +1,16 @@
 module Test.Server.User where
 
-import Prelude
 import Droplet.Language
-import Server.Database as SD
-import Server.Database.Users
-import Data.Maybe (Maybe(..))
-import Shared.Unsafe as SU
-import Server.Types
-import Data.BigInt as DB
+import Prelude
 import Server.Database.Fields
+import Server.Database.Users
+import Server.Types
+
+import Data.BigInt as DB
+import Data.Maybe (Maybe(..))
+import Server.Database as SD
+import Server.Landing.Database (UserSignUp)
+import Shared.Unsafe as SU
 
 userCount ∷ ServerEffect Int
 userCount = do
@@ -16,6 +18,16 @@ userCount = do
       pure $ case count of
             Just { c } → SU.fromJust $ DB.toInt c
             Nothing → 0
+
+baseUser ∷ UserSignUp
+baseUser =
+      { email: Just email
+      , name: "Name"
+      , password: Just password
+      , headline: "headline"
+      , description: "description"
+      , temporary: false
+      }
 
 email ∷ String
 email = "e@a.com"

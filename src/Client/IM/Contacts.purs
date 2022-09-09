@@ -4,7 +4,7 @@ import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.IM.Flame (MoreMessages, NoMessages)
@@ -29,6 +29,7 @@ import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
 import Flame.Html.Attribute (d)
+import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU

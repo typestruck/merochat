@@ -4,7 +4,6 @@ import Droplet.Language
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Effect.Class (liftEffect)
 import Server.AccountValidation (invalidEmailMessage, invalidPasswordMessage)
 import Server.Database as SD
 import Server.Database.Users (_email, _visibility, users)
@@ -14,18 +13,18 @@ import Server.Login.Action as SLIA
 import Server.Token as ST
 import Shared.User (ProfileVisibility(..))
 import Test.Server as TS
-import Test.Server.User (email, password)
+import Test.Server.User (baseUser, email, password)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 
 tests ∷ TestSuite
 tests = do
       TU.suite "login actions" do
-            let expectExpection rl = void $ SLIA.login rl
+            let expectException rl = void $ SLIA.login rl
 
             TU.test "does not accept empty login and password"
                   $ TS.serverActionCatch (TS.catch invalidEmailMessage)
-                  $ expectExpection
+                  $ expectException
                         { email: ""
                         , password: ""
                         , captchaResponse: Nothing
@@ -33,7 +32,7 @@ tests = do
 
             TU.test "does not accept empty password"
                   $ TS.serverActionCatch (TS.catch invalidPasswordMessage)
-                  $ expectExpection
+                  $ expectException
                         { email
                         , password: ""
                         , captchaResponse: Nothing
@@ -41,7 +40,7 @@ tests = do
 
             TU.test "does not accept inexistent login"
                   $ TS.serverActionCatch (TS.catch invalidLogin)
-                  $ expectExpection
+                  $ expectException
                         { email
                         , password
                         , captchaResponse: Nothing
@@ -49,13 +48,7 @@ tests = do
 
             TU.test "does not accept wrong password" $
                   TS.serverActionCatch (TS.catch invalidLogin) do
-                        void $ SLD.createUser
-                              { email
-                              , password: "sf"
-                              , name: "sdsd"
-                              , headline: "sd"
-                              , description: "ss"
-                              }
+                        void $ SLD.createUser baseUser
                         SLIA.login
                               { email
                               , password: "sssss"
@@ -66,12 +59,9 @@ tests = do
                   TS.serverAction do
                         let email2 = "email@email.com.jp"
                         hashed ← ST.hashPassword password
-                        void $ SLD.createUser
-                              { email: email2
-                              , password: hashed
-                              , name: "sdsd"
-                              , headline: "sd"
-                              , description: "ss"
+                        void $ SLD.createUser baseUser
+                              { email = Just email2
+                              , password = Just hashed
                               }
                         SLIA.login
                               { email: email2
@@ -82,15 +72,10 @@ tests = do
             TU.test "does not accept banned users" $
                   TS.serverActionCatch (TS.catch invalidLogin) do
                         void $ SLD.createUser
-                              { email
-                              , password: "sfccccccccc"
-                              , name: "sdsd"
-                              , headline: "sd"
-                              , description: "ss"
-                              }
+                              baseUser
                         SD.execute $ update users # set (_visibility .=. TemporarilyBanned) # wher (_email .=. email)
                         SLIA.login
                               { email
-                              , password: "sfccccccccc"
+                              , password
                               , captchaResponse: Nothing
                               }

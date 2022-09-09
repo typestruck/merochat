@@ -2,6 +2,7 @@ module Shared.Im.View.ChatInput where
 
 import Prelude
 import Shared.Im.Types
+import Shared.User
 
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
@@ -15,10 +16,10 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug (spy)
 import Flame (Html)
-import Shared.User
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Prim.Row (class Cons)
+import Shared.Element (ElementId(..))
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Im.Emoji as SIE
 import Shared.Im.Svg as SIS

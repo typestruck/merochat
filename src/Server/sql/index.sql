@@ -17,9 +17,9 @@ create table users
 (
     id integer generated always as identity primary key,
     name text not null,
-    password text not null,
+    password text,
     joined timestamptz default (utc_now()),
-    email text not null,
+    email text,
     birthday date,
     gender smallint,
     headline text not null,
@@ -33,6 +33,7 @@ create table users
     online_status boolean not null default true,
     message_timestamps boolean not null default true,
     completed_tutorial boolean not null default false,
+    temporary boolean not null default false,
 
     constraint country_user foreign key (country) references countries(id)
 );

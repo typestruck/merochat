@@ -3,7 +3,7 @@ module Client.Common.Network where
 import Client.Common.Types
 import Prelude
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Either (Either(..))

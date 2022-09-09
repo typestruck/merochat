@@ -1,9 +1,8 @@
 module Client.IM.Notification where
 
 import Prelude
-import Shared.Im.Types hiding (ElementId)
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.IM.Flame (NextMessage)
 import Data.Array as DA
 import Data.Foldable as DF
@@ -18,11 +17,12 @@ import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame.Subscription as FS
 import Shared.Experiments.Impersonation (impersonations)
-import Shared.Im.Types as SIT
+import Shared.Im.Types
 import Shared.Im.Unread as SIU
 import Shared.Options.MountPoint (imId)
-import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
+import Shared.Element as SE
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
 
@@ -69,7 +69,7 @@ notify' model userIds = do
 updateTabCount ∷ Int → Array Contact → Effect Unit
 updateTabCount id contacts = do
       CCD.setTitle $ SIU.title unreadChats
-      faviconElement ← CCD.unsafeGetElementById SIT.Favicon
+      faviconElement ← CCD.unsafeGetElementById SE.Favicon
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
       where
       unreadChats = SIU.countUnreadChats id contacts

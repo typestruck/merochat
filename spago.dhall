@@ -4,7 +4,7 @@ You can edit this file as you like.
 -}
 { name = "melanchat"
 , license = "AGPL-3.0-or-later"
-, repository = "https://github.com/melanchat/melanchat"
+, repository = "https://github.com/typestruck/melanchat"
 , dependencies =
   [ "aff"
   , "affjax"

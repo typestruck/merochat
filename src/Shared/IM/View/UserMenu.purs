@@ -1,16 +1,17 @@
 module Shared.Im.View.UserMenu where
 
 import Prelude
-
 import Shared.Experiments.Types
+import Shared.Im.Types
+import Shared.Im.Types
+
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Shared.Im.Types
 import Flame (Html)
-import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
+import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIS
 
 userMenu ∷ ImModel → Html ImMessage

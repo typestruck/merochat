@@ -1,12 +1,12 @@
 module Shared.Im.Unread where
 
 import Prelude
-import Shared.Im.Types hiding (ElementId)
 
 import Data.Foldable as DF
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
-import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Shared.Im.Types (Contact, MessageStatus(..))
+import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 
 title ∷ Int → String
