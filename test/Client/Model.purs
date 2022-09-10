@@ -76,6 +76,8 @@ imUser =
       , profileVisibility: Everyone
       , readReceipts: true
       , messageTimestamps: true
+      , joined : DateTimeWrapper epoch
+      , temporary: false
       , typingStatus: true
       , onlineStatus: true
       , avatar: Nothing

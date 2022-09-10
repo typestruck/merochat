@@ -11,6 +11,7 @@ import Data.Foldable as DF
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Shared.Im.View.SuggestionProfile as SIVP
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Flame (Html)
@@ -29,7 +30,7 @@ import Shared.User (Availability(..), ProfileVisibility(..))
 
 -- | Users that have exchanged messages with the current logged in user
 contactList ∷ Boolean → ImModel → Html ImMessage
-contactList isClientRender { failedRequests, chatting, toggleContextMenu, experimenting, contacts, toggleModal, user: { id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus } } =
+contactList isClientRender { failedRequests, chatting, toggleContextMenu, experimenting, contacts, toggleModal, user: { joined, id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus } } =
       case profileVisibility of
             Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]
             _ →
@@ -44,7 +45,8 @@ contactList isClientRender { failedRequests, chatting, toggleContextMenu, experi
       displayContactList
             | DA.null contacts = [ suggestionsCall ]
             | otherwise =
-                    DA.mapWithIndex displayContactListEntry
+                    (SIVP.signUpCall joined : _)
+                          <<< DA.mapWithIndex displayContactListEntry
                           <<< DA.sortBy compareLastDate
                           $ DA.filter (not <<< DA.null <<< _.history) contacts --refactor: might want to look into this: before sending a message, we need to run an effect; in this meanwhile history is empty
 

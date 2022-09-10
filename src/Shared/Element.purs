@@ -42,6 +42,7 @@ data ElementId
       | CaptchaRegularUser
       | TemporaryUserSignUp
       | AvatarFileInput
+      | KarmaLeaderboardRoot
 
 instance Hashable ElementId where
       hash = HS.hash <<< show
@@ -83,6 +84,7 @@ instance Show ElementId where
             HelpRoot → "help-root"
             ExperimentsRoot → "experiments-root"
             PasswordInput → "password-input"
+            KarmaLeaderboardRoot -> "karma-leaderboard-root"
             AvatarFileInput → "avatar-file-input"
 
 derive instance Eq ElementId

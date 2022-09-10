@@ -12,6 +12,7 @@ import Data.Tuple (Tuple)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
 import Shared.Im.View.Retry as SIVR
 import Shared.Resource (Bundle(..), ResourceType(..))
@@ -172,12 +173,12 @@ modalMenu { toggleModal, failedRequests } =
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggleModal == ShowLeaderboard } ] $ show ShowLeaderboard
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggleModal == ShowHelp } ] $ show ShowHelp
                     ]
-            , HE.div [ HA.id "profile-edition-root", HA.class' { hidden: toggleModal /= ShowProfile } ] $ retry ShowProfile
-            , HE.div [ HA.id "settings-edition-root", HA.class' { hidden: toggleModal /= ShowSettings } ] $ retry ShowSettings
-            , HE.div [ HA.id "backer-root", HA.class' { hidden: toggleModal /= ShowBacker } ] $ retry ShowBacker
-            , HE.div [ HA.id "experiments-root", HA.class' { hidden: toggleModal /= ShowExperiments } ] $ retry ShowExperiments
-            , HE.div [ HA.id "karma-leaderboard-root", HA.class' { hidden: toggleModal /= ShowLeaderboard } ] $ retry ShowLeaderboard
-            , HE.div [ HA.id "help-root", HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
+            , HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: toggleModal /= ShowProfile } ] $ retry ShowProfile
+            , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: toggleModal /= ShowSettings } ] $ retry ShowSettings
+            , HE.div [ HA.id $show BackerRoot, HA.class' { hidden: toggleModal /= ShowBacker } ] $ retry ShowBacker
+            , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: toggleModal /= ShowExperiments } ] $ retry ShowExperiments
+            , HE.div [ HA.id $ show KarmaLeaderboardRoot, HA.class' { hidden: toggleModal /= ShowLeaderboard } ] $ retry ShowLeaderboard
+            , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
             ]
       where
       retry tm = HE.div (HA.class' "retry-modal")

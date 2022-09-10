@@ -1,11 +1,13 @@
 module Shared.User where
 
 import Prelude
+import Shared.DateTime
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
+import Data.DateTime as DDT
 import Data.Either (Either)
 import Data.Either as DET
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
@@ -15,19 +17,20 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic as DSG
 import Data.String as DS
-import Unsafe.Coerce as UC
 import Data.String.Read (class Read)
-import Shared.DateTime
 import Data.String.Read as DSR
+import Data.Time.Duration (Days(..))
+import Data.Time.Duration as DTD
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
 import Payload.Client.EncodeBody (class EncodeBody)
 import Payload.ContentType (class HasContentType, json)
 import Payload.Server.DecodeBody (class DecodeBody)
-import Shared.Unsafe as SU
 import Shared.DateTime as SDT
+import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
+import Unsafe.Coerce as UC
 
 type BasicUser fields =
       ( id ∷ Int
@@ -52,7 +55,9 @@ type IU =
               , typingStatus ∷ Boolean
               , profileVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
+              , temporary :: Boolean
               , messageTimestamps ∷ Boolean
+             , joined :: DateTimeWrapper
               , completedTutorial ∷ Boolean
               )
       )
@@ -269,3 +274,9 @@ instance EncodeBody ProfileVisibility where
 
 instance DecodeBody ProfileVisibility where
       decodeBody s = DET.note ("Could not decode body " <> s) (DE.toEnum =<< DI.fromString s)
+
+temporaryAccountDuration :: Days
+temporaryAccountDuration = Days 3.0
+
+temporaryUserExpiration :: DateTimeWrapper -> Days
+temporaryUserExpiration (DateTimeWrapper dt) = DDT.diff dt (SU.fromJust $ DDT.adjust (DTD.negateDuration temporaryAccountDuration) SDT.unsafeNow)

@@ -443,6 +443,15 @@ blockquote {
     margin: 0 5px;
 }
 
+.contact-list .sign-up-call {
+    display: none
+}
+
+.warning-temporary {
+    color: #db5a5d;
+    font-weight: bold;
+}
+
 #full-profile-context-menu,
 .svg-back-profile {
     padding: 10px;
@@ -2018,6 +2027,13 @@ select {
 
     .settings .user-menu .user-menu-item {
         padding: 10px
+    }
+
+    .contact-list .sign-up-call {
+        display: flex;
+        padding:8px;
+        flex-direction: column;
+        align-items: center;
     }
 
     .svg-experiment {

@@ -24,12 +24,14 @@ type FlatFields rest =
       , id ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int
-      , completedTutorial :: Checked
+      , completedTutorial ∷ Checked
       , languages ∷ Maybe String
       , profileVisibility ∷ ProfileVisibility
+      , joined ∷ DateTime
       , readReceipts ∷ Checked
       , messageTimestamps ∷ Checked
       , typingStatus ∷ Checked
+      , temporary ∷ Checked
       , onlineStatus ∷ Checked
       , name ∷ String
       , tags ∷ Maybe String
@@ -49,12 +51,12 @@ type FlatContact = FlatC ()
 
 type FlatContactHistoryMessage = FlatC (HM (messageId ∷ Int))
 
-fromFlatContact ∷ forall r . FlatC r → Contact
+fromFlatContact ∷ ∀ r. FlatC r → Contact
 fromFlatContact fc =
       { shouldFetchChatHistory: true
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
       , chatStarter: fc.chatStarter
-      , lastMessageDate : DateTimeWrapper fc.lastMessageDate
+      , lastMessageDate: DateTimeWrapper fc.lastMessageDate
       , impersonating: Nothing
       , history: []
       , user: fromFlatUser fc
@@ -74,6 +76,8 @@ fromFlatUser fc =
       , availability: None
       , completedTutorial: SC.coerce fc.completedTutorial
       , description: fc.description
+      , temporary: SC.coerce fc.temporary
+      , joined: DateTimeWrapper fc.joined
       , avatar: SA.parseAvatar fc.avatar
       , tags: SDF.splitAgg "\\n" fc.tags
       , karma: fc.karma

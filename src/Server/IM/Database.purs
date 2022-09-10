@@ -58,9 +58,11 @@ userPresentationFields =
             /\ (_visibility # as profileVisibility)
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
+            /\ _temporary
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
             /\ (_messageTimestamps # as messageTimestamps)
+            /\ _joined
             /\ _headline
             /\ _description
             /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
@@ -118,6 +120,8 @@ presentUserContactFields =
       , u.id
       , avatar
       , gender
+      , temporary
+      , joined
       , completed_tutorial "completedTutorial"
       , date_part_age ('year', birthday) age
       , name

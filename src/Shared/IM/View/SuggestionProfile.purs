@@ -1,4 +1,4 @@
-module Shared.Im.View.SuggestionProfile (suggestionProfile, displayProfile) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, displayProfile) where
 
 import Debug
 import Prelude
@@ -9,14 +9,18 @@ import Shared.User
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.HashMap as HS
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Safe.Coerce as SC
 import Shared.Avatar as SA
+import Shared.DateTime (DateTimeWrapper(..), epoch)
 import Shared.Element (ElementId(..))
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
@@ -27,6 +31,7 @@ import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Shared.User as SUR
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
@@ -123,7 +128,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             card → HE.div [ HA.class' "suggestion new", HA.onClick <<< SpecialRequest $ if card == PreviousCard then PreviousSuggestion else NextSuggestion ] profile
       where
       fullProfileMenu = HE.div (HA.class' "profile-top-menu")
-            [ SIA.arrow [ HA.class' {"svg-back-profile": true, highlighted: toggleModal == Tutorial Chatting}, HA.onClick ToggleContactProfile ]
+            [ SIA.arrow [ HA.class' { "svg-back-profile": true, highlighted: toggleModal == Tutorial Chatting }, HA.onClick ToggleContactProfile ]
             , HE.div [ HA.class' "outer-user-menu" ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
@@ -213,7 +218,7 @@ suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
       HE.div (HA.class' "suggestion-cards")
             [ case experimenting of
                     Just (Impersonation (Just { name })) → welcomeImpersonation name
-                    _ → welcome user
+                    _ → if user.temporary then welcomeTemporary user else welcome user
             , HE.div (HA.class' "cards") cardTrio
             ]
       where
@@ -238,14 +243,33 @@ suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
             in
                   HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) (Just suggesting) model Nothing profile
 
-      welcomeImpersonation name =
-            let
-                  { welcome, first, second } = SEI.welcomeMessage name
-            in
-                  HE.div (HA.class' "card-top-header imp")
-                        [ HE.div (HA.class' "welcome") $ welcome
-                        , HE.div (HA.class' "welcome-new") $ first <> second
-                        ]
+welcomeImpersonation ∷ String → Html ImMessage
+welcomeImpersonation name =
+      let
+            { welcome, first, second } = SEI.welcomeMessage name
+      in
+            HE.div (HA.class' "card-top-header imp")
+                  [ HE.div (HA.class' "welcome") $ welcome
+                  , HE.div (HA.class' "welcome-new") $ first <> second
+                  ]
+
+welcomeTemporary ∷ ImUser → Html ImMessage
+welcomeTemporary { name, joined } =
+      HE.div (HA.class' "card-top-header")
+            [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
+            , signUpCall joined
+            ]
+
+signUpCall ∷ DateTimeWrapper → Html ImMessage
+signUpCall joined = HE.div (HA.class' "sign-up-call")
+      [ HE.text "Enjoying MelanChat?"
+      , HE.a [ HA.class' "warning-temporary", HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings ] $ " Create an account  " <> remaining
+      , HE.text " to keep your chats"
+      ]
+      where
+      remaining = case DI.round <<< SC.coerce $ SUR.temporaryUserExpiration joined of
+            1 → " until tomorrow"
+            n → " in " <> show n <> " days"
 
 welcome ∷ ImUser → Html ImMessage
 welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")
@@ -258,7 +282,7 @@ welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")
       where
       warn level =
             [ HE.text $ "Your profile is set to " <> level <> ". Change your "
-            , HE.a (HA.onClick (SpecialRequest $ ToggleModal ShowSettings)) " settings "
+            , HE.a (HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings) " settings "
             , HE.text "to see new chat suggestions"
             ]
 
@@ -274,6 +298,8 @@ dummySuggestion =
       , tags: []
       , availability: Online
       , profileVisibility: Everyone
+      , temporary: false
+      , joined: DateTimeWrapper epoch
       , readReceipts: true
       , messageTimestamps: true
       , typingStatus: true
