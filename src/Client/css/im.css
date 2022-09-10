@@ -443,10 +443,6 @@ blockquote {
     margin: 0 5px;
 }
 
-.contact-list .sign-up-call {
-    display: none
-}
-
 .warning-temporary {
     color: #db5a5d;
     font-weight: bold;
@@ -1817,6 +1813,13 @@ select {
     margin-top: 0 !important;
 }
 
+.message-history .sign-up-call {
+    order: -1;
+    text-align: center;
+    width: fit-content;
+    align-self: center;
+}
+
 .impersonation-warning-history {
     z-index: 4;
     margin-bottom: auto;
@@ -1828,7 +1831,9 @@ select {
     text-align: center;
 }
 
-.impersonation-warning-history div {
+.impersonation-warning-history div,
+.contact-list .sign-up-call,
+.message-history .sign-up-call {
     border: 1px solid #db5a5d;
     padding: 10px 20px;
     background-color: #262626;
@@ -1899,12 +1904,21 @@ select {
     margin-bottom: 20px;
 }
 
+
+
 /* dry this shite  */
 
 @media (max-width:1279px) {
     .im {
         display: flex;
         overflow-x: hidden
+    }
+
+    .sign-up-call {
+        display: flex;
+        padding: 8px;
+        flex-direction: column;
+        align-items: center;
     }
 
     .contact-box.current-mobile-screen {
@@ -2027,13 +2041,6 @@ select {
 
     .settings .user-menu .user-menu-item {
         padding: 10px
-    }
-
-    .contact-list .sign-up-call {
-        display: flex;
-        padding:8px;
-        flex-direction: column;
-        align-items: center;
     }
 
     .svg-experiment {
@@ -2372,6 +2379,10 @@ select {
         padding: 14px 6px;
     }
 
+    .contact-list .sign-up-call {
+        display: none;
+    }
+
     .tutorial {
         width: 400px;
     }
@@ -2448,6 +2459,10 @@ select {
     body {
         font-size: 18px;
         line-height: 1.51857143;
+    }
+
+    .contact-list .sign-up-call {
+        display: none;
     }
 
     .profile-contact .avatar-profile,

@@ -16,11 +16,12 @@ import Flame.Html.Element as HE
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.View.Retry as SIVR
+import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 
 -- | Messages in a chat history
 chatHistory ∷ ImModel → Maybe Contact → Html ImMessage
-chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, experimenting, failedRequests, freeToFetchChatHistory } contact =
+chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, experimenting, failedRequests, freeToFetchChatHistory } contact =
       HE.div
             [ HA.id $ show MessageHistory
             , HA.class' { "message-history": true, hidden: DM.isNothing contact }
@@ -35,7 +36,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, exper
                         if availability == Unavailable then []
                         else
                               let
-                                    entries = retryOrWarning : displayChatHistory profile
+                                    entries = retryOrWarning : temporaryChatWarning <> displayChatHistory profile
                               in
                                     if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries
                                     else entries
@@ -50,6 +51,8 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, readReceipts }, exper
                                 ]
                         ]
             _ → SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
+
+      temporaryChatWarning  = if temporary then [SIVP.signUpCall joined] else []
 
       displayChatHistory { history, user } = DA.mapWithIndex (\i → chatHistoryEntry user $ map _.sender (history !! (i - 1))) history
 
