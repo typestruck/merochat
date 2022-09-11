@@ -263,7 +263,7 @@ welcomeTemporary { name, joined } =
 signUpCall ∷ DateTimeWrapper → Html ImMessage
 signUpCall joined = HE.div (HA.class' "sign-up-call")
       [ HE.text "Enjoying MelanChat?"
-      , HE.a [ HA.class' "warning-temporary", HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings ] $ " Create an account  " <> remaining
+      , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile ] $ " Create an account  " <> remaining
       , HE.text " to keep your chats"
       ]
       where

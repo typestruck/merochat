@@ -443,9 +443,21 @@ blockquote {
     margin: 0 5px;
 }
 
+.form-up .warning-temporary {
+    margin: 5px 0;
+}
+
+.form-up .last {
+    margin-top:5px;
+    margin-bottom: 20px;
+}
+
+.card-top-header .sign-up-call {
+    font-weight: bold;
+}
+
 .warning-temporary {
     color: #db5a5d;
-    font-weight: bold;
 }
 
 #full-profile-context-menu,
@@ -878,6 +890,7 @@ svg.toolbar-action {
     margin: 0 20px;
 }
 
+.form-up,
 #experiments-root,
 #profile-edition-root,
 #settings-edition-root,
@@ -2202,6 +2215,7 @@ select {
         display: none;
     }
 
+    .form-up,
     #help-root,
     #karma-leaderboard-root,
     #settings-edition-root,
@@ -2472,7 +2486,9 @@ select {
         width: 64px;
         height: 64px;
     }
-
+.form-up div {
+    width: 500px;
+}
     .avatar-contact-list-div {
         min-width: 64px;
         min-height: 64px;

@@ -5,6 +5,7 @@ import Shared.Im.Types
 import Shared.Im.Types
 
 import Data.Array as DA
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
@@ -12,11 +13,15 @@ import Data.Tuple (Tuple)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
+import Data.Time.Duration (Days(..))
 import Shared.Im.View.Retry as SIVR
+import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
+import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 
 lazyLoad ∷ Bundle → Html ImMessage
@@ -39,9 +44,9 @@ modals model@{ erroredFields, toggleModal, chatting } =
                     ConfirmBlockUser tupleId → confirmBlockUser tupleId
                     Tutorial step → tutorial model step
                     _ → modalMenu model
-
             ]
-      where tutorialSteps = toggleModal == Tutorial ChatSuggestions && DM.isNothing chatting || toggleModal == Tutorial Chatting
+      where
+      tutorialSteps = toggleModal == Tutorial ChatSuggestions && DM.isNothing chatting || toggleModal == Tutorial Chatting
 
 report ∷ Int → Array String → Html ImMessage
 report id erroredFields =
@@ -100,8 +105,8 @@ confirmBlockUser tupleId =
                     ]
             ]
 
-tutorial ∷ ImModel -> Step → Html ImMessage
-tutorial  { chatting }= case _ of
+tutorial ∷ ImModel → Step → Html ImMessage
+tutorial { chatting } = case _ of
       Welcome → HE.div (HA.class' "confirmation tutorial")
             [ HE.span (HA.class' "bold") "Welcome!"
             , HE.span_ "Let's take you through a brief tutorial"
@@ -127,7 +132,7 @@ tutorial  { chatting }= case _ of
                     [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial BackSuggestions ] "Got it!"
                     ]
             ]
-      BackSuggestions -> HE.div (HA.class' "confirmation tutorial back-suggestions-step")
+      BackSuggestions → HE.div (HA.class' "confirmation tutorial back-suggestions-step")
             [ HE.span (HA.class' "bold") "Moving between chats and suggestions"
             , HE.span_ "Whenever you are chatting, you can click"
             , HE.span_ "on the green box see your suggestions again"
@@ -143,7 +148,7 @@ tutorial  { chatting }= case _ of
                     [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial OptionsMenu ] "Got it!"
                     ]
             ]
-      OptionsMenu -> HE.div (HA.class' "confirmation tutorial options-menu-step")
+      OptionsMenu → HE.div (HA.class' "confirmation tutorial options-menu-step")
             [ HE.span (HA.class' "bold") "Options menu"
             , HE.span_ "Tweak your preferences with the menu on the top left"
             , HE.span_ "You can edit your profile, modify your settings, get help and more"
@@ -153,8 +158,8 @@ tutorial  { chatting }= case _ of
             ]
 
 modalMenu ∷ ImModel → Html ImMessage
-modalMenu { toggleModal, failedRequests } =
-      HE.div (HA.class' "modal-placeholder")
+modalMenu { toggleModal, failedRequests, user: { temporary, joined } } =
+      HE.div (HA.class' "modal-placeholder") $
             [ HE.div (HA.class' "modal-menu-mobile")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ]
                     , HE.strong_ $ show toggleModal
@@ -173,13 +178,42 @@ modalMenu { toggleModal, failedRequests } =
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggleModal == ShowLeaderboard } ] $ show ShowLeaderboard
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggleModal == ShowHelp } ] $ show ShowHelp
                     ]
-            , HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: toggleModal /= ShowProfile } ] $ retry ShowProfile
-            , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: toggleModal /= ShowSettings } ] $ retry ShowSettings
-            , HE.div [ HA.id $show BackerRoot, HA.class' { hidden: toggleModal /= ShowBacker } ] $ retry ShowBacker
-            , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: toggleModal /= ShowExperiments } ] $ retry ShowExperiments
-            , HE.div [ HA.id $ show KarmaLeaderboardRoot, HA.class' { hidden: toggleModal /= ShowLeaderboard } ] $ retry ShowLeaderboard
-            , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
             ]
+                  <>
+                        if temporary then
+                              let
+                                    remaining = case DI.round <<< SC.coerce $ SUR.temporaryUserExpiration joined of
+                                          1 → " until tomorrow"
+                                          n → show n <> " more days"
+                              in
+                                    [ HE.div (HA.class' "form-up")
+                                            [ HE.div (HA.class' "warning-temporary") $ "You have " <> remaining <> " to create an account"
+                                            , HE.div (HA.class' "warning-temporary") "After that, all your data will be deleted and you won't be able to access the site unless you sign up again"
+                                            , HE.div (HA.class' "duller last") "Create your account now, it is free!"
+                                            , HE.div [ HA.id "email-input", HA.class' "input top" ]
+                                                    [ HE.label_ "Email"
+                                                    , HE.input [ HA.class' "modal-input", HA.type' "text", HA.id "email", HA.maxlength emailMaxCharacters ]
+                                                    , HE.span (HA.class' "error-message") "Please enter a valid email"
+                                                    ]
+                                            , HE.div [ HA.id "password-input", HA.class' "input" ]
+                                                    [ HE.label_ "Password"
+                                                    , HE.input [ HA.class' "modal-input", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.id "password" ]
+                                                    , HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
+                                                    ]
+                                            , HE.div [ HA.class' "input" ]
+                                                    [ HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Create account" ]
+                                                    , HE.span' [ HA.class' "request-error-message error-message" ]
+                                                    ]
+                                            ]
+                                    ]
+                        else
+                              [ HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: toggleModal /= ShowProfile } ] $ retry ShowProfile
+                              , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: toggleModal /= ShowSettings } ] $ retry ShowSettings
+                              , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: toggleModal /= ShowBacker } ] $ retry ShowBacker
+                              , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: toggleModal /= ShowExperiments } ] $ retry ShowExperiments
+                              , HE.div [ HA.id $ show KarmaLeaderboardRoot, HA.class' { hidden: toggleModal /= ShowLeaderboard } ] $ retry ShowLeaderboard
+                              , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
+                              ]
       where
       retry tm = HE.div (HA.class' "retry-modal")
             [ SIVR.retry "Failed to load contents" (ToggleModal tm) failedRequests
