@@ -43,6 +43,7 @@ modals model@{ erroredFields, toggleModal, chatting } =
                     ConfirmDeleteChat tupleId → confirmDeleteChat tupleId
                     ConfirmBlockUser tupleId → confirmBlockUser tupleId
                     Tutorial step → tutorial model step
+                    ConfirmTerminationTemporaryUser → confirmTermination
                     _ → modalMenu model
             ]
       where
@@ -183,7 +184,7 @@ modalMenu { toggleModal, failedRequests, user: { temporary, joined } } =
                         if temporary then
                               let
                                     remaining = case DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined of
-                                          0 -> " only a few hours left"
+                                          0 → " only a few hours left"
                                           1 → " until tomorrow"
                                           n → show n <> " more days"
                               in
@@ -220,3 +221,22 @@ modalMenu { toggleModal, failedRequests, user: { temporary, joined } } =
             [ SIVR.retry "Failed to load contents" (ToggleModal tm) failedRequests
             , HE.div' (HA.class' "loading")
             ]
+
+--only for temporary users, since logging out = deleting account
+confirmTermination ∷ Html ImMessage
+confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
+      [ HE.div [ HA.id $ show ConfirmAccountTerminationForm, HA.class' "confirmation" ]
+              [ HE.span (HA.class' "bold") "All your chats will be permanently lost, and you will be logged out"
+              , HE.div (HA.class' "buttons")
+                      [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] "Cancel"
+                      , HE.button [ HA.class' "green-button danger", HA.onClick TerminateTemporaryUser ] "Yes, delete my data"
+                      , HE.span' (HA.class' "request-error-message")
+                      , HE.span (HA.class' "success-message")
+                              [ HE.br
+                              , HE.text "Your data has been deleted"
+                              , HE.br
+                              , HE.text "You will be logged out..."
+                              ]
+                      ]
+              ]
+      ]

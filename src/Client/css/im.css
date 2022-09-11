@@ -1192,7 +1192,6 @@ input:not(type=button):focus {
 }
 
 .green-button {
-    margin-top: 20px;
     display: block;
     border-radius: 5px;
     color: inherit;

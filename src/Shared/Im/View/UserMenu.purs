@@ -58,7 +58,10 @@ userMenu model@{ toggleContextMenu, experimenting, toggleModal, user: { temporar
                                     [ HE.div (HA.class' "menu-item-heading") "Help"
                                     , HE.span (HA.class' "duller") "Learn more about MelanChat"
                                     ]
-                            , HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ if temporary then ConfirmTermination else ConfirmLogout ] "Logout"
+                            , if temporary then
+                                    HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmTerminationTemporaryUser ] "Delete my data"
+                              else
+                                    HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmLogout ] "Logout"
                             ]
                     ]
             , HE.span [ HA.class' "suggestions-button", HA.onClick $ ToggleInitialScreen false ] $

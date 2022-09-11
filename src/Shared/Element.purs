@@ -41,6 +41,7 @@ data ElementId
       | FaqLink
       | CaptchaRegularUser
       | TemporaryUserSignUp
+      | ConfirmAccountTerminationForm
       | AvatarFileInput
       | KarmaLeaderboardRoot
 
@@ -54,6 +55,7 @@ instance Show ElementId where
             CompactProfileContextMenu → "compact-profile-context-menu"
             FullProfileContextMenu → "full-profile-context-menu"
             ImageFileInput → "image-file-input"
+            ConfirmAccountTerminationForm -> "confirm-account-termination-form"
             ContactList → "contact-list"
             LinkFormUrl → "link-form-url"
             ProfileEditionForm → "profile-edition-form"

@@ -174,7 +174,7 @@ data ShowContextMenu
 data ShowUserMenuModal
       = HideUserMenuModal
       | ConfirmLogout
-      | ConfirmTermination
+      | ConfirmTerminationTemporaryUser
       | ConfirmDeleteChat (Tuple Int (Maybe Int))
       | ConfirmBlockUser (Tuple Int (Maybe Int))
       | ShowExperiments
@@ -310,6 +310,7 @@ data ImMessage
       | CheckUserExpiration
       | ToggleConnected Boolean
       | SetField (ImModel → ImModel)
+      | TerminateTemporaryUser
       | ToggleFortune Boolean
       | DisplayFortune String
       | RequestFailed RequestFailure

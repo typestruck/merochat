@@ -15,6 +15,7 @@ import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Common.Network as CCNT
+import Client.Common.Network as CNN
 import Client.Common.Types (CurrentWebSocket)
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
@@ -35,10 +36,11 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
-import Data.Time.Duration (Days(..))
+import Data.Time.Duration (Days(..), Milliseconds(..))
 import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Effect.Random as ERD
@@ -60,6 +62,7 @@ import Shared.Breakpoint (mobileBreakpoint)
 import Shared.Element (ElementId(..))
 import Shared.Im.View as SIV
 import Shared.Json as SJ
+import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId, profileId)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
@@ -187,6 +190,7 @@ update { webSocketRef, fileReader } model =
             CheckUserExpiration -> checkUserExpiration model
             FinishTutorial → finishTutorial model
             ToggleConnected isConnected → toggleConnectedWebSocket isConnected model
+            TerminateTemporaryUser -> terminateAccount model
             SpecialRequest CheckMissedEvents → checkMissedEvents model
             SetField setter → F.noMessages $ setter model
             ToggleFortune isVisible → toggleFortune isVisible model
@@ -212,6 +216,14 @@ displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
       updateUser user@{ id } = case DH.lookup id availability of
             Just status → user { availability = status }
             Nothing → user
+
+terminateAccount :: ImModel -> NextMessage
+terminateAccount model  =  model :> [do
+      status <- CNN.formRequest (show ConfirmAccountTerminationForm) $ request.settings.account.terminate { body: {} }
+      when (status == Success) $ do
+            EA.delay $ Milliseconds 3000.0
+            liftEffect <<< CCL.setLocation $ routes.login.get {}
+      pure Nothing]
 
 checkUserExpiration :: ImModel -> MoreMessages
 checkUserExpiration model@{ user: { temporary, joined }}
