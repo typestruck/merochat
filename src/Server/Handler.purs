@@ -22,7 +22,7 @@ import Server.Backer.Handler as SBH
 import Server.Experiments.Handler as SEH
 import Server.Fortune.Handler as SFTH
 import Server.Help.Handler as SHH
-import Server.IM.Handler as SIH
+import Server.Im.Handler as SIH
 import Server.InternalBacker.Handler as SIBH
 import Server.InternalError.Handler as SIEH
 import Server.InternalHelp.Handler as SIHH

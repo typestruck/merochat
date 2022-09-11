@@ -42,8 +42,8 @@ import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Server.Cookies (cookieName)
-import Server.IM.Action as SIA
-import Server.IM.Database as SID
+import Server.Im.Action as SIA
+import Server.Im.Database as SID
 import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW

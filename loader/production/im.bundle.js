@@ -1,3 +1,3 @@
-import { main } from '../../output-es/Client.IM.Main/index.js'
+import { main } from '../../output-es/Client.Im.Main/index.js'
 
 main();

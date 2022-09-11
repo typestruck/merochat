@@ -87,6 +87,10 @@ body {
     flex-direction: column;
 }
 
+.form-up div {
+    width: 500px;
+}
+
 .suggestion-box {
     overflow: hidden;
     height: 100%;
@@ -448,7 +452,7 @@ blockquote {
 }
 
 .form-up .last {
-    margin-top:5px;
+    margin-top: 5px;
     margin-bottom: 20px;
 }
 
@@ -1961,6 +1965,20 @@ select {
         margin-top: unset !important;
     }
 
+    .form-up {
+        padding: 15px;
+        align-items: flex-start;
+    }
+
+    .wall-text {
+        max-width: 90%;
+
+    }
+
+    .form-up div {
+        width: auto;
+    }
+
     .message-history .retry.invisible {
         visibility: unset;
         display: none;
@@ -2486,9 +2504,7 @@ select {
         width: 64px;
         height: 64px;
     }
-.form-up div {
-    width: 500px;
-}
+
     .avatar-contact-list-div {
         min-width: 64px;
         min-height: 64px;

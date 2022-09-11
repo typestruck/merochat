@@ -9,12 +9,12 @@ import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Data.Maybe (Maybe(..))
+import Data.Nullable (Nullable)
 import Data.Nullable as DN
 import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Effect.Ref (Ref)
-import Effect.Ref as ER
 import Shared.Element (ElementId(..))
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
@@ -30,6 +30,7 @@ registerRegularUser captchaResponse = do
 registerTemporaryUser ∷ Maybe String → Effect Unit
 registerTemporaryUser captchaResponse = runCaptcha (DN.notNull "1") captchaResponse $ request.temporary { body: { captchaResponse } }
 
+runCaptcha ∷ Nullable String → Maybe String → Aff _ → Effect Unit
 runCaptcha widgetId captchaResponse request = case captchaResponse of
       Nothing → CCC.execute widgetId
       _ → EA.launchAff_ do
@@ -43,9 +44,12 @@ registerTemporaryUserEvents = do
       temporaryUserElement ← CCD.getElementById TemporaryUserSignUp
       CCD.addEventListener (SU.fromJust temporaryUserElement) click (const (registerTemporaryUser Nothing))
 
-main ∷ Effect Unit
-main = do
+initCaptchas ∷ Effect Unit
+initCaptchas = do
       CCC.render (show CaptchaRegularUser) (CCC.defaultParameters (registerRegularUser <<< Just)) false
       CCC.render (show CaptchaTemporaryUser) (CCC.defaultParameters (registerTemporaryUser <<< Just)) false
+
+main ∷ Effect Unit
+main = do
       CCA.registerEvents (registerRegularUser Nothing)
       registerTemporaryUserEvents
