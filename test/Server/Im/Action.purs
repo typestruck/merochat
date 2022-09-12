@@ -85,6 +85,14 @@ tests = do
                           suggestions ← SIA.suggest anotherUserId 0 Nothing
                           R.liftAff $ TUA.equal [] suggestions
 
+            TU.test "suggest shows temporary users to temporary users"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          SD.execute $ update users # set (_temporary .=. Checked true)
+                          suggestions ← SIA.suggest userId 0 Nothing
+                          R.liftAff <<< TUA.equal [anotherUserId] $ map _.id suggestions
+
             TU.test "suggest includes all users if impersonating"
                   $ TS.serverAction
                   $ do

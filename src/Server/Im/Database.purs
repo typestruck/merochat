@@ -93,7 +93,14 @@ suggest loggedUserId skip = case _ of
       _ →
             SD.query $ suggestBaseQuery skip baseFilter -- default case
       where
-      baseFilter = (u ... _id .<>. loggedUserId .&&. (_visibility .=. Everyone .&&. _temporary .=. Checked false .||. (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true) .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone))) .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId)))
+      baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
+
+      visibilityFilter =
+            _visibility .=. Everyone .&&. _temporary .=. Checked false .||.
+            (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true) .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone)) .||.
+            _temporary .=. Checked true .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
+
+      blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))
 
 -- top level to avoid monomorphic filter
 suggestBaseQuery skip filter =

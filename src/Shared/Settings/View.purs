@@ -69,7 +69,7 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
 
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] "All users can see your profile and send you messages"
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= NoTemporaryUsers } ]
-                    [ HE.text "All users (excluding temporary users) can see your"
+                    [ HE.text "All users (excluding quick sign up users) can see your"
                     , HE.br
                     , HE.text "profile and send you messages"
                     ]

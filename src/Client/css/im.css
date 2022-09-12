@@ -1825,6 +1825,16 @@ select {
     fill: #db5a5d !important
 }
 
+.quick-sign-up {
+    color: rgb(238, 238, 238, 0.8 ) !important;
+    align-self: center;
+}
+
+.svg-explain-temporary-user {
+    width: 35px;
+    height: 35px;
+}
+
 .impersonation-warning {
     margin-bottom: 20px;
 }
