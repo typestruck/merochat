@@ -230,13 +230,12 @@ confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
               , HE.div (HA.class' "buttons")
                       [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] "Cancel"
                       , HE.button [ HA.class' "green-button danger", HA.onClick TerminateTemporaryUser ] "Yes, delete my data"
-                      , HE.span' (HA.class' "request-error-message")
-                      , HE.span (HA.class' "success-message")
-                              [ HE.br
-                              , HE.text "Your data has been deleted"
-                              , HE.br
-                              , HE.text "You will be logged out..."
-                              ]
+                      ]
+              , HE.span' (HA.class' "request-error-message")
+              , HE.span (HA.class' "success-message right-align")
+                      [ HE.text "Your data has been deleted"
+                      , HE.br
+                      , HE.text "You will be logged out..."
                       ]
               ]
       ]

@@ -35,7 +35,7 @@ template = do
                     ]
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Landing Js ]
-            , HE.script' [ HA.createAttribute "defer" "true", HA.createAttribute "async" "true", HA.src "https://www.google.com/recaptcha/api.js?onload=initCaptchas&render=explicit" ]
+            , HE.script' [ HA.createAttribute "async" "true", HA.src "https://www.google.com/recaptcha/api.js?onload=initCaptchas&render=explicit" ]
             ]
       content =
             [ HE.div (HA.class' "landing")

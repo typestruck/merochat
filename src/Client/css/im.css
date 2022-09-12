@@ -1201,6 +1201,10 @@ input:not(type=button):focus {
     background: #1b3a28;
 }
 
+.right-align {
+    text-align: right;
+}
+
 .step-button {
     background: rgb(238, 238, 238);
     color: #4783ff;
@@ -2242,6 +2246,10 @@ select {
         margin: 0;
         width: 100%;
         overflow-x: hidden;
+    }
+
+    .form-up {
+        max-width: 100%;
     }
 
     .profile-contact-header {

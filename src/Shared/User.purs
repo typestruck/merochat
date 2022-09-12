@@ -55,9 +55,9 @@ type IU =
               , typingStatus ∷ Boolean
               , profileVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
-              , temporary :: Boolean
+              , temporary ∷ Boolean
               , messageTimestamps ∷ Boolean
-             , joined :: DateTimeWrapper
+              , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
               )
       )
@@ -76,6 +76,7 @@ data Gender
 
 data ProfileVisibility
       = Everyone
+      | NoTemporaryUsers
       | Contacts
       | Nobody
       | TemporarilyBanned -- user is deleted when banned for good
@@ -200,27 +201,31 @@ instance BoundedEnum ProfileVisibility where
 
       fromEnum = case _ of
             Everyone → 0
-            Contacts → 1
-            Nobody → 2
-            TemporarilyBanned → 3
+            NoTemporaryUsers → 1
+            Contacts → 2
+            Nobody → 3
+            TemporarilyBanned → 4
 
       toEnum = case _ of
             0 → Just Everyone
-            1 → Just Contacts
-            2 → Just Nobody
-            3 → Just TemporarilyBanned
+            1 → Just NoTemporaryUsers
+            2 → Just Contacts
+            3 → Just Nobody
+            4 → Just TemporarilyBanned
             _ → Nothing
 
 instance Enum ProfileVisibility where
       succ = case _ of
-            Everyone → Just Contacts
+            Everyone → Just NoTemporaryUsers
+            NoTemporaryUsers → Just Contacts
             Contacts → Just Nobody
             Nobody → Just TemporarilyBanned
             TemporarilyBanned → Nothing
 
       pred = case _ of
             Everyone → Nothing
-            Contacts → Just Everyone
+            NoTemporaryUsers → Just Everyone
+            Contacts → Just NoTemporaryUsers
             Nobody → Just Contacts
             TemporarilyBanned → Just Nobody
 
@@ -275,8 +280,8 @@ instance EncodeBody ProfileVisibility where
 instance DecodeBody ProfileVisibility where
       decodeBody s = DET.note ("Could not decode body " <> s) (DE.toEnum =<< DI.fromString s)
 
-temporaryAccountDuration :: Days
-temporaryAccountDuration = Days 3.0
+temporaryAccountDuration ∷ Days
+temporaryAccountDuration = Days 3.5
 
-temporaryUserExpiration :: DateTimeWrapper -> Days
+temporaryUserExpiration ∷ DateTimeWrapper → Days
 temporaryUserExpiration (DateTimeWrapper dt) = DDT.diff dt (SU.fromJust $ DDT.adjust (DTD.negateDuration temporaryAccountDuration) SDT.unsafeNow)

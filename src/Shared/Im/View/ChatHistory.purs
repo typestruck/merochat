@@ -21,7 +21,7 @@ import Shared.Markdown as SM
 
 -- | Messages in a chat history
 chatHistory ∷ ImModel → Maybe Contact → Html ImMessage
-chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, experimenting, failedRequests, freeToFetchChatHistory } contact =
+chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, toggleModal, experimenting, failedRequests, freeToFetchChatHistory } contact =
       HE.div
             [ HA.id $ show MessageHistory
             , HA.class' { "message-history": true, hidden: DM.isNothing contact }
@@ -52,7 +52,11 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                         ]
             _ → SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
 
-      temporaryChatWarning  = if temporary then [SIVP.signUpCall joined] else []
+      temporaryChatWarning = if temporary && isNotTutorial then [ SIVP.signUpCall joined ] else []
+
+      isNotTutorial = case toggleModal of
+            Tutorial _ → false
+            _ → true
 
       displayChatHistory { history, user } = DA.mapWithIndex (\i → chatHistoryEntry user $ map _.sender (history !! (i - 1))) history
 
@@ -68,8 +72,8 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                 , "outgoing-message": sender == loggedUserId
                                 , "incoming-message": incomingMessage
                                 , "same-bubble-message": previousSender == Just sender -- only the first message in a row has a bubble handle
-                                },
-                        HA.onDblclick' (QuoteMessage content)
+                                }
+                        , HA.onDblclick' (QuoteMessage content)
                         ]
                         [ HE.div
                                 [ HA.class' "message-content", HA.id $ "m" <> show id ] -- id is used to scroll into view
@@ -79,7 +83,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                                 { duller: status /= Errored
                                                 , "error-message": status == Errored
                                                 , "message-status": true
-                                          }
+                                                }
                                         )
                                         [ HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
                                         , HE.span (HA.class' { hidden: incomingMessage || noTimestamps || noReadReceipts }) " - "

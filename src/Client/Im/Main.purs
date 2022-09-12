@@ -50,20 +50,18 @@ import Effect.Timer as ET
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..), (:>))
 import Flame as F
-import Flame.Subscription as FE
 import Flame.Subscription as FS
 import Flame.Subscription.Document as FSD
 import Flame.Subscription.Unsafe.CustomEvent as FSUC
 import Flame.Subscription.Window as FSW
 import Foreign as FO
-import Record as R
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.Element (ElementId(..))
 import Shared.Im.View as SIV
 import Shared.Json as SJ
 import Shared.Network (RequestStatus(..))
-import Shared.Options.MountPoint (imId, profileId)
+import Shared.Options.MountPoint (imId)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
@@ -237,9 +235,9 @@ sendPing webSocket isActive model@{ contacts, suggestions } =
             , statusFor: map _.id suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) contacts)
             }
 
-setPrivacySettings ∷ PrivacySettings → ImModel → NoMessages
+setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
 setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model =
-      F.noMessages model
+       model
             { user
                     { profileVisibility = profileVisibility
                     , readReceipts = readReceipts
@@ -247,7 +245,7 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
                     , onlineStatus = onlineStatus
                     , messageTimestamps = messageTimestamps
                     }
-            }
+            } :> [pure $ Just FetchMoreSuggestions]
 
 finishTutorial ∷ ImModel → NextMessage
 finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } :> [ finish ]

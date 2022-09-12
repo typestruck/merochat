@@ -93,7 +93,7 @@ suggest loggedUserId skip = case _ of
       _ →
             SD.query $ suggestBaseQuery skip baseFilter -- default case
       where
-      baseFilter = (u ... _id .<>. loggedUserId .&&. _visibility .=. Everyone .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId)))
+      baseFilter = (u ... _id .<>. loggedUserId .&&. (_visibility .=. Everyone .&&. _temporary .=. Checked false .||. (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true) .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone))) .&&. not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId)))
 
 -- top level to avoid monomorphic filter
 suggestBaseQuery skip filter =
@@ -265,9 +265,9 @@ insertKarma loggedUserId otherID (Tuple senderKarma recipientKarma) =
             ]
 
 changeStatus ∷ ∀ r. Int → MessageStatus → Array Int → BaseEffect { pool ∷ Pool | r } Unit
-changeStatus loggedUserId status  = case _ of
-      [] -> pure unit
-      ids -> SD.execute $ update messages # set (_status .=. status) # wher (_recipient .=. loggedUserId .&&. (_id `in_` (SU.fromJust $ DAN.fromArray ids)))
+changeStatus loggedUserId status = case _ of
+      [] → pure unit
+      ids → SD.execute $ update messages # set (_status .=. status) # wher (_recipient .=. loggedUserId .&&. (_id `in_` (SU.fromJust $ DAN.fromArray ids)))
 
 insertBlock ∷ Int → Int → ServerEffect Unit
 insertBlock loggedUserId blocked = SD.execute $ blockQuery loggedUserId blocked
@@ -285,7 +285,7 @@ insertReport loggedUserId { userId, comment, reason } = SD.withTransaction $ \co
       SD.executeWith connection $ blockQuery loggedUserId userId
       SD.executeWith connection $ insert # into reports (_reporter /\ _reported /\ _reason /\ _comment) # values (loggedUserId /\ userId /\ reason /\ comment)
 
-updateTutorialCompleted :: Int -> ServerEffect Unit
+updateTutorialCompleted ∷ Int → ServerEffect Unit
 updateTutorialCompleted loggedUserId = SD.execute $ update users # set (_completedTutorial .=. Checked true) # wher (_id .=. loggedUserId)
 
 chatHistoryEntry ∷ Int → Int → _

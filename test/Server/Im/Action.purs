@@ -19,6 +19,8 @@ import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
 import Run as R
 import Server.Database as SD
+import Server.Database.Types (Checked(..))
+import Server.Database.Users (_temporary, users)
 import Server.File (imageTooBigMessage, invalidImageMessage)
 import Server.Im.Action as SIA
 import Server.Im.Database as SID
@@ -49,7 +51,7 @@ tests = do
                           suggestions' ← SIA.suggest userId 0 Nothing
                           R.liftAff <<< TUA.equal 0 $ DA.length suggestions'
 
-            TU.test "suggest respects visibility hidden visibility"
+            TU.test "suggest respects hidden visibility"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
@@ -57,12 +59,30 @@ tests = do
                           suggestions ← SIA.suggest userId 0 Nothing
                           R.liftAff $ TUA.equal [] suggestions
 
-            TU.test "suggest respects visibility contacts only visibility"
+            TU.test "suggest respects contacts only visibility"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SSA.changePrivacySettings anotherUserId { profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           suggestions ← SIA.suggest userId 0 Nothing
+                          R.liftAff $ TUA.equal [] suggestions
+
+            TU.test "suggest respects no temporary users only visibility"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. anotherUserId)
+                          SSA.changePrivacySettings userId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          suggestions ← SIA.suggest userId 0 Nothing
+                          R.liftAff $ TUA.equal [] suggestions
+
+            TU.test "suggest respects no temporary users only visibility when suggesting to temporary user"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. anotherUserId)
+                          SSA.changePrivacySettings userId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          suggestions ← SIA.suggest anotherUserId 0 Nothing
                           R.liftAff $ TUA.equal [] suggestions
 
             TU.test "suggest includes all users if impersonating"

@@ -62,11 +62,17 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
             [ HE.label_ "Profile visibility"
             , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
                     [ HE.option [ HA.selected $ profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] "Show profile (default)"
+                    , HE.option [ HA.selected $ profileVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] "Show profile only to registered users"
                     , HE.option [ HA.selected $ profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] "Show profile only to contacts"
                     , HE.option [ HA.selected $ profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] "Do not show profile"
                     ]
 
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] "All users can see your profile and send you messages"
+            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= NoTemporaryUsers } ]
+                    [ HE.text "All users (excluding temporary users) can see your"
+                    , HE.br
+                    , HE.text "profile and send you messages"
+                    ]
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Contacts } ]
                     [ HE.text "Only users you have previously messaged can see your"
                     , HE.br

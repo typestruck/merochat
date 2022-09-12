@@ -36,7 +36,7 @@ import Shared.User as SUR
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
 suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, user } =
-      if user.profileVisibility /= Everyone && notChatting then
+      if user.profileVisibility > NoTemporaryUsers && notChatting then
             suggestionWarning
       else if DA.null suggestions && notChatting then
             emptySuggestions
@@ -218,7 +218,7 @@ suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
       HE.div (HA.class' "suggestion-cards")
             [ case experimenting of
                     Just (Impersonation (Just { name })) → welcomeImpersonation name
-                    _ → if user.temporary then welcomeTemporary user else welcome user
+                    _ → if user.temporary && isNotTutorial then welcomeTemporary user else welcome user
             , HE.div (HA.class' "cards") cardTrio
             ]
       where
@@ -242,6 +242,10 @@ suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
                         | otherwise = [ HA.class' "card card-sides faded" ]
             in
                   HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) (Just suggesting) model Nothing profile
+
+      isNotTutorial = case toggleModal of
+            Tutorial _ -> false
+            _ -> true
 
 welcomeImpersonation ∷ String → Html ImMessage
 welcomeImpersonation name =
@@ -267,7 +271,8 @@ signUpCall joined = HE.div (HA.class' "sign-up-call")
       , HE.text " to keep your chats"
       ]
       where
-      remaining = case DI.round <<< SC.coerce $ SUR.temporaryUserExpiration joined of
+      remaining = case DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined of
+            0 -> " today"
             1 → " until tomorrow"
             n → " in " <> show n <> " days"
 

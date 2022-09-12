@@ -4,11 +4,11 @@ Glad you want to help! Mutual aid is ~~a factor of evolution~~ punk rock as it g
 
 You may want to look at
 
-* [Milestones](https://github.com/typestruck/melanchat/milestones)
+* The [spec](docs/README.md)
 
 * [Open issues](https://github.com/typestruck/melanchat/issues)
 
-* The [spec](docs/README.md)
+* [Milestones](https://github.com/typestruck/melanchat/milestones)
 
 Don't hesitate to [contact](https://github.com/easafe) if you need help, or want to discuss something before.
 
