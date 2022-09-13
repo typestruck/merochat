@@ -181,7 +181,7 @@ modalMenu { toggleModal, failedRequests, user: { temporary, joined } } =
                     ]
             ]
                   <>
-                        if temporary then
+                        if temporary && toggleModal /= ShowHelp then
                               let
                                     remaining = case DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined of
                                           0 → " only a few hours left"

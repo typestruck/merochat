@@ -40,7 +40,7 @@ privacy =
                     [ HE.h2_ "Contact"
                     , HE.p_
                             [ HE.text "You may contact MelanChat about these policies or any other issues at contact@melan.chat. Alternatively, MelanChat entire source code can be viewed at "
-                            , HE.a (HA.href "https://github.com/melanchat/melanchat") "https://github.com/melanchat/melanchat"
+                            , HE.a [HA.href "https://github.com/typestruck/melanchat", HA.target "_blank"] "https://github.com/typestruck/melanchat"
                             ]
                     ]
             ]

@@ -142,7 +142,8 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                                 SU.fromJust $ HS.lookup impersonationId impersonations
                           _ →
                                 user
-                  ) <>
+                  )
+                  (Just <<< SpecialRequest $ ToggleModal ShowSettings) <>
                   [ arrow $ SpecialRequest PreviousSuggestion
                   , arrow $ SpecialRequest NextSuggestion
                   ]
@@ -165,28 +166,37 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
-displayProfile ∷ ∀ message. Maybe Int → ImUser → Array (Html message)
-displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } =
+displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Array (Html message)
+displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } message =
       [ HE.img [ HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar ]
       , HE.h1 (HA.class' "profile-name") name
       , HE.div (HA.class' "headline") headline
       , HE.div [ HA.class' { "online-status": true, duller: availability /= Online } ] $ show availability
       , HE.div (HA.class' "profile-karma")
               $
-                    if temporary then
-                          [ HE.span [ HA.class' "quick-sign-up" ] "Quick-sign up user"
-                          -- from https://thenounproject.com/icon/question-646495/
-                          , HE.svg [ HA.class' "svg-explain-temporary-user", HA.viewBox "0 0 752 752" ]
-                                  [ HE.path' [ HA.d "m376 162.89c-117.53 0-213.11 95.582-213.11 213.11 0 117.53 95.582 213.11 213.11 213.11 117.53 0 213.11-95.582 213.11-213.11 0-117.53-95.582-213.11-213.11-213.11zm0 28.414c102.18 0 184.7 82.523 184.7 184.7 0 102.18-82.523 184.7-184.7 184.7-102.17 0-184.7-82.523-184.7-184.7 0-102.17 82.523-184.7 184.7-184.7zm0 66.301c-39.062 0-71.035 31.973-71.035 71.039-0.054688 3.8008 1.418 7.4688 4.0898 10.176 2.668 2.707 6.3125 4.2344 10.117 4.2344s7.4492-1.5273 10.117-4.2344c2.6719-2.707 4.1445-6.375 4.0898-10.176 0-23.711 18.914-42.625 42.621-42.625 23.711 0 42.625 18.914 42.625 42.625 0 14.742-5.9453 24.809-15.688 35.074-9.7461 10.266-23.262 19.555-35.816 29.598-3.3711 2.6992-5.3281 6.7812-5.3281 11.102v18.941c-0.054688 3.8047 1.4219 7.4688 4.0898 10.176 2.6719 2.7109 6.3164 4.2344 10.117 4.2344 3.8047 0 7.4492-1.5234 10.121-4.2344 2.668-2.707 4.1406-6.3711 4.0859-10.176v-11.988c10.352-7.9023 22.508-16.594 33.449-28.117 12.75-13.438 23.383-31.559 23.383-54.609 0-39.066-31.973-71.039-71.039-71.039zm0 198.91c-10.461 0-18.941 8.4805-18.941 18.941s8.4805 18.945 18.941 18.945c10.465 0 18.945-8.4844 18.945-18.945s-8.4805-18.941-18.945-18.941z" ]
-                                  ]
-                          ]
-                    else
-                          [ HE.div_
-                                  [ HE.span [ HA.class' "span-info" ] $ show karma
-                                  , HE.span [ HA.class' "duller" ] " karma"
-                                  , HE.span_ $ " (#" <> show karmaPosition <> ")"
-                                  ]
-                          ]
+                    case message of
+                          Just msg | temporary →
+                                [ HE.span [ HA.class' "quick-sign-up" ] "Quick-sign up user"
+                                -- from https://thenounproject.com/icon/question-646495/
+                                , HE.svg [ HA.class' "svg-explain-temporary-user", HA.viewBox "0 0 752 752" ]
+                                        [ HE.path' [ HA.d "m376 162.89c-117.53 0-213.11 95.582-213.11 213.11 0 117.53 95.582 213.11 213.11 213.11 117.53 0 213.11-95.582 213.11-213.11 0-117.53-95.582-213.11-213.11-213.11zm0 28.414c102.18 0 184.7 82.523 184.7 184.7 0 102.18-82.523 184.7-184.7 184.7-102.17 0-184.7-82.523-184.7-184.7 0-102.17 82.523-184.7 184.7-184.7zm0 66.301c-39.062 0-71.035 31.973-71.035 71.039-0.054688 3.8008 1.418 7.4688 4.0898 10.176 2.668 2.707 6.3125 4.2344 10.117 4.2344s7.4492-1.5273 10.117-4.2344c2.6719-2.707 4.1445-6.375 4.0898-10.176 0-23.711 18.914-42.625 42.621-42.625 23.711 0 42.625 18.914 42.625 42.625 0 14.742-5.9453 24.809-15.688 35.074-9.7461 10.266-23.262 19.555-35.816 29.598-3.3711 2.6992-5.3281 6.7812-5.3281 11.102v18.941c-0.054688 3.8047 1.4219 7.4688 4.0898 10.176 2.6719 2.7109 6.3164 4.2344 10.117 4.2344 3.8047 0 7.4492-1.5234 10.121-4.2344 2.668-2.707 4.1406-6.3711 4.0859-10.176v-11.988c10.352-7.9023 22.508-16.594 33.449-28.117 12.75-13.438 23.383-31.559 23.383-54.609 0-39.066-31.973-71.039-71.039-71.039zm0 198.91c-10.461 0-18.941 8.4805-18.941 18.941s8.4805 18.945 18.941 18.945c10.465 0 18.945-8.4844 18.945-18.945s-8.4805-18.941-18.945-18.941z" ]
+                                        ]
+                                , HE.div (HA.class' "explain-temporary-user duller")
+                                        [ HE.p_ "Quick-sign up means users that just got started on MelanChat and have yet to finish creating their account"
+                                        , HE.p_
+                                                [ HE.text "You can opt to not see (or be messaged by) quick-sign up users on the "
+                                                , HE.a (HA.onClick msg) " settings"
+                                                , HE.text " page"
+                                                ]
+                                        ]
+                                ]
+                          _ →
+                                [ HE.div_
+                                        [ HE.span [ HA.class' "span-info" ] $ show karma
+                                        , HE.span [ HA.class' "duller" ] " karma"
+                                        , HE.span_ $ " (#" <> show karmaPosition <> ")"
+                                        ]
+                                ]
       , HE.div (HA.class' "profile-asl")
               [ HE.div_
                       [ toSpan $ map show age

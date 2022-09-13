@@ -119,7 +119,7 @@ create or replace function crunch_karma_history(hours_time integer)
     returns void as
 $$
 begin
-    create temporary table temp_karmas (id integer, target integer, amount integer ) on commit drop;
+    create temporary table temp_karmas (id integer, target integer, amount integer) on commit drop;
     insert into temp_karmas
     select id,
             target,
@@ -173,6 +173,17 @@ $$
 language plpgsql;
 
 -- select cron.schedule('0 */4 * * *', $$select crunch_karma_history()$$);
+
+-- select cron.schedule('45 2 * * *', $$select purge_temporary_users()$$);
+create or replace function purge_temporary_users()
+    returns void as
+$$
+begin
+    delete from users u where exists(select 3 from users where u.id = id and temporary and extract(epoch from (utc_now()) - joined ) / 3600 > 84.0);
+end;
+$$
+language plpgsql;
+
 
 create table histories
 (

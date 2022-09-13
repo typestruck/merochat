@@ -1729,10 +1729,6 @@ select {
     align-self: flex-end;
 }
 
-.profile-context .user-menu {
-    background: #2d2d2d;
-}
-
 .suggestion.new {
     padding-top: 11px;
 }
@@ -1799,8 +1795,10 @@ select {
     margin-bottom: 7px;
 }
 
+
 .profile-karma {
     margin-bottom: 7px;
+    position: relative;
 }
 
 .profile-asl {
@@ -1826,13 +1824,32 @@ select {
 }
 
 .quick-sign-up {
-    color: rgb(238, 238, 238, 0.8 ) !important;
+    color: rgb(238, 238, 238, 0.8) !important;
     align-self: center;
 }
 
 .svg-explain-temporary-user {
     width: 35px;
     height: 35px;
+}
+
+.explain-temporary-user {
+    display: none;
+    position: absolute;
+    z-index: 9;
+    top: 30px;
+    padding: 20px;
+    padding-bottom: 0;
+    width: 35em;
+    background: #262626
+}
+
+.svg-explain-temporary-user:hover~.explain-temporary-user {
+    display: block;
+}
+
+.explain-temporary-user:hover {
+    display: block;
 }
 
 .impersonation-warning {
@@ -2025,6 +2042,10 @@ select {
 
     .notification {
         padding-left: 10px;
+    }
+
+    .explain-temporary-user {
+        width: 20em;
     }
 
     .card-sides,

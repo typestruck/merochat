@@ -26,7 +26,7 @@ terms =
             , HE.h2_ "Intellectual property rights"
             , HE.p_
                     [ HE.text "MelanChat is free (as in freedom) software. You can view the source code license at "
-                    , HE.a (HA.href "https://github.com/melanchat/melanchat/blob/master/LICENSE") "https://github.com/melanchat/melanchat/LICENSE."
+                    , HE.a [ HA.href "https://github.com/typestruck/melanchat/blob/master/LICENSE", HA.target "_blank" ] "https://github.com/typestruck/melanchat/LICENSE."
                     ]
             , HE.p_ """The branding including, but not limited to, the logo, name ("MelanChat") and description ("Friendly Random Chat") may not be copied or otherwise reproduced without our written permission."""
             , HE.p_ "You may not post copyrighted material on the Site."

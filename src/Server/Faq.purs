@@ -5,7 +5,6 @@ import Prelude
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Routes (routes)
 
 faq ∷ ∀ m. Html m
 faq =
@@ -32,9 +31,7 @@ faq =
             , HE.p_ "No. MelanChat is for friendly conversations only, there is already plenty of other places for try getting laid."
             , HE.h2 [ HA.id "isitfree" ] "Is MelanChat free?"
             , HE.p_
-                    [ HE.text "Yes! The app is totally free and there is no ads. MelanChat "
-                    , HE.a (HA.href $ routes.backer {}) "runs on donations"
-                    , HE.text " from people who like it enough (or might just be after the rewards, who can tell)."
+                    [ HE.text "Yes! The app is totally free and there is no ads. MelanChat runs on donations from people who like it enough (or might just be after the rewards, who can tell)."
                     ]
             , HE.h2 [ HA.id "whatskarma" ] "What is Karma?"
             , HE.p_ "Think of it as a score of how much other users trust you. You gain Karma points by starting good conversations."
@@ -53,15 +50,13 @@ faq =
             , HE.h2_ "Recommend me some music"
             , HE.p_
                     [ HE.text "Listen to "
-                    , HE.a (HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q") "Metá Metá"
+                    , HE.a [HA.href "https://open.spotify.com/track/4klGcqccAwciiLlPL136Kl?si=kYRoPuV6S2utxNCT4j2h_Q", HA.target "_blank"] "Metá Metá"
                     , HE.text "."
                     ]
             , HE.h2 [ HA.id "canihelp" ] "Wow, I love it. How can I help?"
             , HE.p_
-                    [ HE.text "Right?! If you can spare some, consider "
-                    , HE.a (HA.href $ routes.backer {}) "backing MelanChat"
-                    , HE.text ". The entire "
-                    , HE.a (HA.href "https://github.com/melanchat/melanchat") "source code"
+                    [ HE.text "Right?! If you can spare some, consider backing MelanChat. The entire "
+                    , HE.a [HA.href "https://github.com/typestruck/melanchat", HA.target "_blank"] "source code"
                     , HE.text " is also open source, in case this is your thing."
                     ]
             , HE.p_ "That being said, just letting others know about MelanChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated."
