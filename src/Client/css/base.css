@@ -6,7 +6,7 @@ html {
 body {
     margin: 0;
     min-height: 100%;
-    font-family: "Verdana", "sans serif";
+    font-family: Verdana, sans-serif;
     font-size: 18px;
     background: #262626;
     line-height: 1.51857143;
@@ -173,4 +173,3 @@ select option {
         display: inline-block;
     }
 }
-
