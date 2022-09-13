@@ -87,7 +87,7 @@ body {
     flex-direction: column;
 }
 
-.form-up div {
+#temporary-user-sign-up-form div {
     width: 500px;
 }
 
@@ -114,6 +114,8 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+
 
 #user-context-menu rect {
     display: none;
@@ -447,13 +449,17 @@ blockquote {
     margin: 0 5px;
 }
 
-.form-up .warning-temporary {
+#temporary-user-sign-up-form .warning-temporary {
     margin: 5px 0;
 }
 
-.form-up .last {
+#temporary-user-sign-up-form .last {
     margin-top: 5px;
     margin-bottom: 20px;
+}
+
+#temporary-user-sign-up-form .error-message {
+    visibility: visible;
 }
 
 .card-top-header .sign-up-call {
@@ -894,7 +900,7 @@ svg.toolbar-action {
     margin: 0 20px;
 }
 
-.form-up,
+#temporary-user-sign-up-form,
 #experiments-root,
 #profile-edition-root,
 #settings-edition-root,
@@ -1995,7 +2001,7 @@ select {
         margin-top: unset !important;
     }
 
-    .form-up {
+    #temporary-user-sign-up-form {
         padding: 15px;
         align-items: flex-start;
     }
@@ -2005,7 +2011,7 @@ select {
 
     }
 
-    .form-up div {
+    #temporary-user-sign-up-form div {
         width: auto;
     }
 
@@ -2267,7 +2273,7 @@ select {
         display: none;
     }
 
-    .form-up,
+    #temporary-user-sign-up-form,
     #help-root,
     #karma-leaderboard-root,
     #settings-edition-root,
@@ -2279,7 +2285,7 @@ select {
         overflow-x: hidden;
     }
 
-    .form-up {
+    #temporary-user-sign-up-form {
         max-width: 100%;
     }
 

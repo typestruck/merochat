@@ -11,6 +11,7 @@ import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Droplet.Driver (Pool)
 import Run.Except as RE
+import Server.AccountValidation as SA
 import Server.Email as SE
 import Server.File as SF
 import Server.Im.Database as SID
@@ -20,7 +21,7 @@ import Server.Im.Types (Payload)
 import Server.Types (BaseEffect, Configuration, ServerEffect)
 import Server.Wheel as SW
 import Shared.Im.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
-import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
 
@@ -105,3 +106,10 @@ reportUser loggedUserId report@{ reason, userId } = do
 
 finishTutorial :: Int -> ServerEffect Unit
 finishTutorial loggedUserId = SID.updateTutorialCompleted loggedUserId
+
+registerUser :: Int -> String -> String -> ServerEffect Unit
+registerUser loggedUserId rawEmail password = do
+      email ← SA.validateEmail rawEmail
+      hash ← SA.validatePassword password
+      SA.validateExistingEmail email
+      SID.registerUser loggedUserId email hash

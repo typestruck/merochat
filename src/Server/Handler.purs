@@ -53,6 +53,7 @@ handlers reading =
               , delete: runJson reading SIH.deleteChat
               , missedEvents: runJson reading SIH.missedEvents
               , fortune: runJson reading SFTH.fortune
+              , register: runJson reading SIH.register
               , report: runJson reading SIH.report
               , tutorial: runJson reading SIH.tutorial
               }

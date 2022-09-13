@@ -26,6 +26,7 @@ data ProfileMessage
       | SelectAvatar
       | Save Field
       | SetProfileChatExperiment (Maybe ExperimentData)
+      | AfterRegistration
 
 --this sucks
 data Field
@@ -68,6 +69,7 @@ type PM =
       , languagesInputedList ∷ Maybe (Array Int)
       , tagsInputed ∷ Maybe String
       , tagsInputedList ∷ Maybe (Array String)
+      , registrationMessage :: Boolean
       , descriptionInputed ∷ Maybe String
       , loading ∷ Boolean
       , countries ∷ Array { id ∷ Int, name ∷ String }

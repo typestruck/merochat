@@ -8,9 +8,8 @@ import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.HashMap as HS
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Maybe as DM
-import Data.Symbol (class IsSymbol)
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
@@ -18,7 +17,6 @@ import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Prim.Row (class Cons)
 import Shared.Element (ElementId(..))
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Im.Emoji as SIE
@@ -41,10 +39,10 @@ linkModal ∷ ImModel → Html ImMessage
 linkModal { toggleChatModal, linkText, link, erroredFields } =
       HE.div [ HA.class' { "link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm } ]
             [ HE.label_ "Text"
-            , HE.input [ HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (setJust (Proxy ∷ _ "linkText")) ]
+            , HE.input [ HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (SS.setJust (Proxy ∷ _ "linkText")) ]
             , HE.label_ "Link"
-            , HE.input [ HA.type' "text", HA.id $ show LinkFormUrl, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (setJust (Proxy ∷ Proxy "link")) ]
-            , HE.span [ HA.class' { "error-message": true, "invisible": not $ DA.elem (TDS.reflectSymbol (Proxy ∷ _ "link")) erroredFields } ] "Please enter a link"
+            , HE.input [ HA.type' "text", HA.id $ show LinkFormUrl, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (SS.setJust (Proxy ∷ Proxy "link")) ]
+            , HE.span [ HA.class' { "error-message": true, invisible: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ _ "link")) erroredFields } ] "Please enter a link"
             , HE.div (HA.class' "buttons")
                     [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
                     , HE.button [ HA.class' "green-button", HA.onClick InsertLink ] "Insert"
@@ -63,7 +61,7 @@ imageModal { selectedImage, erroredFields } =
                     ]
             , HE.div (HA.class' "image-form-controls")
                     [ HE.label_ "Caption"
-                    , HE.input [ HA.placeholder "optional title", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (setJust (Proxy ∷ Proxy "imageCaption")) ]
+                    , HE.input [ HA.placeholder "optional title", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
                     , HE.div (HA.class' "image-buttons")
                             [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
                             , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
@@ -147,9 +145,6 @@ chatBarInput
             i ← index
             entry ← list !! i
             pure $ accessor entry
-
-setJust ∷ ∀ t7 t8 t9. IsSymbol t8 ⇒ Cons t8 (Maybe t9) t7 IM ⇒ Proxy t8 → t9 → ImMessage
-setJust field = SS.setIMField field <<< Just
 
 bold ∷ Html ImMessage
 bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]

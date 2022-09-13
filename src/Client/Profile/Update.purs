@@ -34,6 +34,7 @@ update rc@{ message } =
             SetPField setter → pure setter
             Save field → saveField rc field
             SetProfileChatExperiment experiment → setChatExperiment experiment
+            AfterRegistration -> setRegistrationMessage
 
 saveField ∷ Environment ProfileModel ProfileMessage → Field → Aff (ProfileModel → ProfileModel)
 saveField rc@{ display } field = do
@@ -169,3 +170,5 @@ selectAvatar = do
 
 setChatExperiment ∷ Maybe ExperimentData → Aff (ProfileModel → ProfileModel)
 setChatExperiment experimenting = FAE.diff { experimenting }
+
+setRegistrationMessage = pure $  _ { registrationMessage = true }

@@ -29,16 +29,16 @@
     margin-top: 20px
 }
 
-.error-message {
+.settings-section .error-message {
     visibility: hidden;
     margin-bottom: 10px;
 }
 
-.errored .error-message {
+.settings-section .errored .error-message {
     visibility: visible;
 }
 
-.errored input {
+.settings-section .errored input {
     color: red;
 }
 

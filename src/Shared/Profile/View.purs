@@ -50,6 +50,7 @@ view
             , loading
             , updateRequestStatus
             , descriptionInputed
+            , registrationMessage
             , experimenting
             } = HE.div (show ProfileEditionForm)
       [ impersonationProfile experimenting
@@ -61,6 +62,7 @@ view
                       [ HE.span (HA.class' { "request-error-message": true, hidden: updateRequestStatus /= Just Failure }) "Could not update field. Please try again later"
                       , HE.span [ HA.class' { "input success-message": true, hidden: updateRequestStatus /= Just Success } ] "Profile has been updated"
                       ]
+              , HE.h3 (HA.class' { "registration-message": true, hidden: not registrationMessage }) "Your account has been created!"
               , HE.div (HA.class' "avatar-edition")
                       [ HE.div (HA.onClick SelectAvatar)
                               [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar ]
@@ -180,7 +182,7 @@ view
                     ]
             ]
 
-      displayEditList ∷ ∀ r s t u field fieldInputed fieldInputedList. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Append field "InputedList" fieldInputedList ⇒ IsSymbol fieldInputedList ⇒ Cons fieldInputed (Maybe t) u PM ⇒ Cons fieldInputedList (Maybe (Array t)) r PM ⇒ Cons field (Array t) s PU ⇒ Ord t ⇒ Eq t ⇒ Proxy field → Field -> (t → String) → Maybe (Html ProfileMessage) → Html ProfileMessage → String → Int → Html ProfileMessage
+      displayEditList ∷ ∀ r s t u field fieldInputed fieldInputedList. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Append field "InputedList" fieldInputedList ⇒ IsSymbol fieldInputedList ⇒ Cons fieldInputed (Maybe t) u PM ⇒ Cons fieldInputedList (Maybe (Array t)) r PM ⇒ Cons field (Array t) s PU ⇒ Ord t ⇒ Eq t ⇒ Proxy field → Field → (t → String) → Maybe (Html ProfileMessage) → Html ProfileMessage → String → Int → Html ProfileMessage
       displayEditList field what formatter currentFieldValue control explanation maxElements =
             let
                   stringField = TDS.reflectSymbol field
@@ -223,14 +225,14 @@ view
                                 ]
                         ]
 
-      displayEditOptional ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Show t ⇒ Eq t ⇒ (String → Maybe t) → Array { id ∷ t, name ∷ String } → Proxy field → Field -> Maybe (Html ProfileMessage) → Html ProfileMessage
+      displayEditOptional ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Show t ⇒ Eq t ⇒ (String → Maybe t) → Array { id ∷ t, name ∷ String } → Proxy field → Field → Maybe (Html ProfileMessage) → Html ProfileMessage
       displayEditOptional parser options field what currentFieldValue =
             let
                   fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
             in
                   displayEditOptionalField field what currentFieldValue $ HE.select [ HA.onInput (setFieldInputed fieldInputed <<< parser) ] $ displayOptions (R.get field model.user) options
 
-      displayEditOptionalField ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Proxy field → Field -> Maybe (Html ProfileMessage) → Html ProfileMessage → Html ProfileMessage
+      displayEditOptionalField ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Proxy field → Field → Maybe (Html ProfileMessage) → Html ProfileMessage → Html ProfileMessage
       displayEditOptionalField field what currentFieldValue control =
             let
                   stringField = TDS.reflectSymbol field

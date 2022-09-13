@@ -43,6 +43,7 @@ data ElementId
       | TemporaryUserSignUp
       | ConfirmAccountTerminationForm
       | AvatarFileInput
+      | TemporaryUserSignUpForm
       | KarmaLeaderboardRoot
 
 instance Hashable ElementId where
@@ -79,6 +80,7 @@ instance Show ElementId where
             FaqLink → "faq-link"
             BackerRoot → "backer-root"
             TemporaryUserSignUp → "temporary-user-sign-up"
+            TemporaryUserSignUpForm → "temporary-user-sign-up-form"
             ChatInputPreview → "chat-input-preview"
             ProfileEditionRoot → "profile-edition-root"
             SettingsEditionRoot → "settings-edition-root"

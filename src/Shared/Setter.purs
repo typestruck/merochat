@@ -1,11 +1,13 @@
 module Shared.Setter where
 
-import Data.Symbol (class IsSymbol)
-import Prim.Row (class Nub, class Lacks, class Cons, class Union)
-import Record as R
-import Shared.Im.Types
-import Type.Proxy (Proxy(..))
 import Prelude
+import Shared.Im.Types
+
+import Data.Maybe (Maybe(..))
+import Data.Symbol (class IsSymbol)
+import Prim.Row (class Cons, class Lacks, class Nub, class Union)
+import Record as R
+import Type.Proxy (Proxy(..))
 
 setUserField field value model = model
       { user = R.set field value model.user
@@ -13,3 +15,7 @@ setUserField field value model = model
 
 setIMField ∷ ∀ field r v. IsSymbol field ⇒ Cons field v r IM ⇒ Proxy field → v → ImMessage
 setIMField field = SetField <<< R.set field
+
+
+setJust ∷ ∀ t7 t8 t9. IsSymbol t8 ⇒ Cons t8 (Maybe t9) t7 IM ⇒ Proxy t8 → t9 → ImMessage
+setJust field = setIMField field <<< Just

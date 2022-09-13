@@ -29,7 +29,7 @@ guards configuration =
 checkLoggedUser ∷ Configuration → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { tokenSecret } request = do
       cookies ← PSG.cookies request
-      maybeUserID ← liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      maybeUserID ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserID of
             Just userId → pure $ Right userId
             _ →
@@ -44,7 +44,7 @@ checkLoggedUser { tokenSecret } request = do
 checkAnonymous ∷ Configuration → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { tokenSecret } request = do
       cookies ← PSG.cookies request
-      maybeUserID ← liftEffect $ ST.userIDFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      maybeUserID ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserID of
             Just userId →
                   if isPost then

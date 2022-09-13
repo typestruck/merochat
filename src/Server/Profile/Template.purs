@@ -26,6 +26,7 @@ template { user: user, countries, languages } = do
                     , tagsInputedList: Nothing
                     , descriptionInputed: Nothing
                     , loading: false
+                    , registrationMessage: false
                     , experimenting: Nothing
                     , updateRequestStatus: Nothing
                     , user

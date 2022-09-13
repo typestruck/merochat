@@ -29,6 +29,8 @@ model =
       , freeToFetchSuggestions: true
       , typingIds: []
       , initialScreen: true
+      , temporaryEmail : Nothing
+      , temporaryPassword : Nothing
       , suggestionsPage: 0
       , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , hash: ""

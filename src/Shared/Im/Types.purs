@@ -114,6 +114,8 @@ type IM =
       , blockedUsers ∷ Array Int
       , temporaryId ∷ Int
       , freeToFetchChatHistory ∷ Boolean
+      , temporaryEmail ∷ Maybe String
+      , temporaryPassword ∷ Maybe String
       , freeToFetchContactList ∷ Boolean
       , freeToFetchSuggestions ∷ Boolean
       , selectedImage ∷ Maybe String
@@ -315,6 +317,8 @@ data ImMessage
       | DisplayFortune String
       | RequestFailed RequestFailure
       | SetPrivacySettings PrivacySettings
+      | CreateUserFromTemporary
+      | SetRegistered
       | ToggleChatModal ShowChatModal
 
 data WebSocketPayloadServer

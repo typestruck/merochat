@@ -30,8 +30,8 @@ spec ∷
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
                                   , response ∷ Html
                                   }
-                    , temporary ::
-                                POST "/temporary"
+                    , temporary ∷
+                            POST "/temporary"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
                                   , body ∷ RegisterTemporary
                                   , response ∷ Ok
@@ -63,6 +63,11 @@ spec ∷
                                   , get ∷
                                           GET "/"
                                                 { response ∷ String
+                                                }
+                                  , register ∷
+                                          POST "/register"
+                                                { body ∷ { email ∷ String, password ∷ String }
+                                                , response ∷ Ok
                                                 }
                                   , contacts ∷
                                           GET "/contacts?skip=<skip>"

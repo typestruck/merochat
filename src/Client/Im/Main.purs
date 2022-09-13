@@ -19,7 +19,7 @@ import Client.Common.Network as CNN
 import Client.Common.Types (CurrentWebSocket)
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Flame as CIF
 import Client.Im.History as CIH
 import Client.Im.Notification as CIUC
@@ -35,6 +35,9 @@ import Data.Either (Either(..))
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String (Pattern(..))
+import Data.String as DS
+import Data.Symbol as DST
 import Data.Symbol as TDS
 import Data.Time.Duration (Days(..), Milliseconds(..))
 import Data.Traversable as DT
@@ -61,7 +64,9 @@ import Shared.Element (ElementId(..))
 import Shared.Im.View as SIV
 import Shared.Json as SJ
 import Shared.Network (RequestStatus(..))
-import Shared.Options.MountPoint (imId)
+import Shared.Options.MountPoint (imId, profileId)
+import Shared.Options.Profile (passwordMinCharacters)
+import Shared.Profile.Types (ProfileMessage(..))
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
@@ -184,11 +189,12 @@ update { webSocketRef, fileReader } model =
             SetAvatarFromProfile base64 → setAvatar base64 model
             AskNotification → askNotification model
             ToggleAskNotification → toggleAskNotification model
+            CreateUserFromTemporary → registerUser model
             PreventStop event → preventStop event model
-            CheckUserExpiration -> checkUserExpiration model
+            CheckUserExpiration → checkUserExpiration model
             FinishTutorial → finishTutorial model
             ToggleConnected isConnected → toggleConnectedWebSocket isConnected model
-            TerminateTemporaryUser -> terminateAccount model
+            TerminateTemporaryUser → terminateAccount model
             SpecialRequest CheckMissedEvents → checkMissedEvents model
             SetField setter → F.noMessages $ setter model
             ToggleFortune isVisible → toggleFortune isVisible model
@@ -196,6 +202,7 @@ update { webSocketRef, fileReader } model =
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
             SendPing isActive → sendPing webSocket isActive model
+            SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
             DisplayAvailability availability → displayAvailability availability model
       where
@@ -215,17 +222,44 @@ displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
             Just status → user { availability = status }
             Nothing → user
 
-terminateAccount :: ImModel -> NextMessage
-terminateAccount model  =  model :> [do
-      status <- CNN.formRequest (show ConfirmAccountTerminationForm) $ request.settings.account.terminate { body: {} }
-      when (status == Success) $ do
-            EA.delay $ Milliseconds 3000.0
-            liftEffect <<< CCL.setLocation $ routes.login.get {}
-      pure Nothing]
+setRegistered ∷ ImModel → NoMessages
+setRegistered model = model { user { temporary = false } } :>
+      [ do
+              liftEffect $ FS.send profileId AfterRegistration
+              pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
+      ]
 
-checkUserExpiration :: ImModel -> MoreMessages
-checkUserExpiration model@{ user: { temporary, joined }}
-      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model :> [pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile ]
+registerUser ∷ ImModel → MoreMessages
+registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
+      if invalidEmail then
+            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryEmail")  }
+      else if invalidPassword then
+            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol  (Proxy ∷ _ "temporaryPassword")  }
+      else
+            model { erroredFields = [] } :>
+                  [ do
+                          status ← CCN.formRequest (show TemporaryUserSignUpForm) $ request.im.register { body: { email: SU.fromJust temporaryEmail, password: SU.fromJust temporaryPassword } }
+                          case status of
+                                Failure → pure Nothing
+                                Success → pure $ Just SetRegistered
+                  ]
+      where
+      invalidEmail = DM.maybe true (\email → DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email)) temporaryEmail
+      invalidPassword = DM.maybe true (\password → DS.length password < passwordMinCharacters) temporaryPassword
+
+terminateAccount ∷ ImModel → NextMessage
+terminateAccount model = model :>
+      [ do
+              status ← CNN.formRequest (show ConfirmAccountTerminationForm) $ request.settings.account.terminate { body: {} }
+              when (status == Success) $ do
+                    EA.delay $ Milliseconds 3000.0
+                    liftEffect <<< CCL.setLocation $ routes.login.get {}
+              pure Nothing
+      ]
+
+checkUserExpiration ∷ ImModel → MoreMessages
+checkUserExpiration model@{ user: { temporary, joined } }
+      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model :> [ pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile ]
       | otherwise = F.noMessages model
 
 sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
@@ -237,7 +271,7 @@ sendPing webSocket isActive model@{ contacts, suggestions } =
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
 setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model =
-       model
+      model
             { user
                     { profileVisibility = profileVisibility
                     , readReceipts = readReceipts
@@ -245,7 +279,7 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
                     , onlineStatus = onlineStatus
                     , messageTimestamps = messageTimestamps
                     }
-            } :> [pure $ Just FetchMoreSuggestions]
+            } :> [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
 finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } :> [ finish ]
