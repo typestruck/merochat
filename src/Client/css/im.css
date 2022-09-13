@@ -2308,6 +2308,7 @@ select {
 
     .modal-input {
         width: auto;
+        margin-bottom: 20px;
     }
 
     .modal-menu-mobile {
