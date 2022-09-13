@@ -85,6 +85,6 @@ externalFooter =
                     , HE.li_ $ HE.a (HA.href $ routes.backer {}) "Become a backer"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#terms") "Terms and conditions"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy police"
-                    , HE.li_ $ HE.a (HA.href "https://github.com/melanchat/melanchat") "Source code"
+                    , HE.li_ $ HE.a [HA.href "https://github.com/typestruck/melanchat", HA.target "_blank"] "Source code"
                     ]
             ]

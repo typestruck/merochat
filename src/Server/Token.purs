@@ -33,5 +33,5 @@ createToken id = do
       { configuration: { tokenSecret } } ← RR.ask
       NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show id)
 
-userIDFromToken ∷ String → String → Effect (Maybe Int)
-userIDFromToken secret = map (DE.either (const Nothing) DI.fromString) <<< NSJ.decode secret <<< NSJ.fromString
+userIdFromToken ∷ String → String → Effect (Maybe Int)
+userIdFromToken secret = map (DE.either (const Nothing) DI.fromString) <<< NSJ.decode secret <<< NSJ.fromString

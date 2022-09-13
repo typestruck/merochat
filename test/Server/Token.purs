@@ -20,5 +20,5 @@ tests = do
                         let id = 23
                         { configuration: configuration } ← RR.ask
                         token ← ST.createToken id
-                        userId ← SU.fromJust <$> R.liftEffect (ST.userIDFromToken configuration.tokenSecret token)
+                        userId ← SU.fromJust <$> R.liftEffect (ST.userIdFromToken configuration.tokenSecret token)
                         R.liftAff $ TUA.equal id userId

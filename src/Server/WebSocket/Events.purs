@@ -42,8 +42,8 @@ import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Server.Cookies (cookieName)
-import Server.IM.Action as SIA
-import Server.IM.Database as SID
+import Server.Im.Action as SIA
+import Server.Im.Database as SID
 import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
@@ -91,7 +91,7 @@ aliveDelayMinutes = 5
 
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration@{ tokenSecret } pool userAvailability connection request = do
-      maybeUserID ← ST.userIDFromToken tokenSecret <<< DM.fromMaybe "" $ do
+      maybeUserID ← ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
       case maybeUserID of

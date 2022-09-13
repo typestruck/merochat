@@ -3,7 +3,7 @@ module Client.Login.Main where
 import Prelude
 
 import Client.Common.Account as CCA
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT

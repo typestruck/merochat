@@ -151,8 +151,12 @@ select+.save {
     margin-left: 10px
 }
 
-.modal-input,
-.modal-input-checkbox {
+.registration-message {
+margin-top: 0;
+}
+
+.profile-edition .modal-input,
+.profile-edition .modal-input-checkbox {
     padding-right: 30px;
     margin-top: 20px;
 }

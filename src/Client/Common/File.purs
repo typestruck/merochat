@@ -2,7 +2,7 @@ module Client.Common.File where
 
 import Prelude
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame (AppId)

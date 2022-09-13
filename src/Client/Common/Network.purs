@@ -3,7 +3,7 @@ module Client.Common.Network where
 import Client.Common.Types
 import Prelude
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -44,9 +44,9 @@ formRequest formSelector aff = do
                   setLoading previousLabel $ errorMessage err
                   pure Failure
       where
-      formSelectorID = if DS.take 1 formSelector == "." then formSelector else "#" <> formSelector
-      buttonSelector = formSelectorID <> " input[type=button], " <> formSelectorID <> " button"
-      errorMessageSelector = formSelectorID <> " .request-error-message"
+      formSelectorId = if DS.take 1 formSelector == "." then formSelector else "#" <> formSelector
+      buttonSelector = formSelectorId <> " input[type=button], " <> formSelectorId <> " button"
+      errorMessageSelector = formSelectorId <> " .request-error-message"
 
       loadingMessage baseText =
             let
@@ -76,7 +76,7 @@ formRequest formSelector aff = do
             CCD.setInnerHTML errorElement errorText
 
       notifySuccess = liftEffect do
-            formDiv ← CCD.unsafeQuerySelector formSelectorID
+            formDiv ← CCD.unsafeQuerySelector formSelectorId
             existingClasses ← WDE.className formDiv
             WDE.setClassName (existingClasses <> " input success") formDiv
 

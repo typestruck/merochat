@@ -14,6 +14,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
+import Shared.DateTime (DateTimeWrapper(..), epoch)
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
@@ -64,6 +65,7 @@ batman =
       { id: 1
       , name: "Batman"
       , availability: None
+      , joined : DateTimeWrapper epoch
       , readReceipts: true
       , messageTimestamps: true
       , typingStatus: true
@@ -76,6 +78,7 @@ batman =
       , karma: 877
       , karmaPosition: 342
       , gender: Just $ show Male
+      , temporary: false
       , country: Just "Gotham"
       , languages: []
       , profileVisibility: Everyone
@@ -91,10 +94,12 @@ socrates =
       , profileVisibility: Everyone
       , availability: None
       , readReceipts: true
+      , temporary: false
       , completedTutorial: true
       , messageTimestamps: true
       , typingStatus: true
       , onlineStatus: true
+      , joined : DateTimeWrapper epoch
       , description:
               """Crito, we owe a rooster to Asclepius. Please, don't forget to pay the debt.
 
@@ -121,6 +126,8 @@ nicolasCage =
       , messageTimestamps: true
       , completedTutorial: true
       , typingStatus: true
+      , temporary: false
+      , joined : DateTimeWrapper epoch
       , onlineStatus: true
       , availability: None
       , description:

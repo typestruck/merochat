@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css?family=Signika");
+
 .landing {
       position: relative;
       display: grid;
@@ -28,6 +29,21 @@
 .login {
       font-weight: 500;
       color: #db5a5d;
+}
+
+#temporary-user-sign-up {
+      text-align: right;
+      cursor: pointer;
+      color:#db5a5d;
+}
+
+.svg-arrow {
+      width: 20px;
+      height: 20px;
+      fill:#db5a5d;
+      stroke: #db5a5d;
+      vertical-align: text-top;
+      padding-left: 10px;
 }
 
 h2 {
@@ -109,7 +125,8 @@ h2 {
       font-size: 3em;
 }
 
-.subheadline, .form-up label {
+.subheadline,
+.form-up label {
       font-size: 1em;
 }
 
@@ -118,40 +135,51 @@ h2 {
 
             font-size: 17px
       }
+
       .header {
             left: 0%;
             right: 0%;
             margin: 20px 0px;
             border-width: 1px;
       }
+
       .login {
             font-size: 0.9em;
       }
+
       .green-area {
             padding: 120px 0px 50px;
             text-align: center;
             align-items: center;
             margin-bottom: 50px;
       }
-      .first-points, .third-points {
+
+      .first-points,
+      .third-points {
             flex-direction: column;
       }
+
       h2 {
             margin-bottom: 50px;
       }
+
       .point {
             font-size: 1em;
             margin-bottom: 50px;
       }
+
       .point-2 {
             font-size: 1em;
       }
+
       .form-up-call {
             font-size: 1.1em;
       }
+
       .footer-menu li {
             margin: 0 5px
       }
+
       #headline {
             line-height: 1.1;
             margin-bottom: 10px;
@@ -163,25 +191,31 @@ h2 {
 
             font-size: 16px;
       }
+
       .header {
             left: 1.0%;
             right: 1.0%;
       }
+
       .green-area {
             padding: 130px 45px 50px;
             margin-bottom: 10px;
       }
+
       h2 {
             margin-bottom: 90px;
             font-size: 1.4em;
       }
+
       .point {
             font-size: 1em;
             margin-bottom: 90px;
       }
+
       .point-2 {
             font-size: 1.2em;
       }
+
       .form-up-call {
             font-size: 1.8em;
       }
@@ -191,30 +225,40 @@ h2 {
       body {
             font-size: 18px;
       }
+
       .landing {
             grid-template-columns: 90%;
       }
+
       #headline {
             font-size: 3.7em;
       }
-      .subheadline, .form-up label {
+
+      .subheadline,
+      .form-up label {
             font-size: 1.2em;
       }
+
       .form-up input {
             width: 570px;
       }
+
       h2 {
             font-size: 1.8em;
       }
+
       .point {
             font-size: 1.2em;
       }
+
       .point-2 {
             font-size: 1.4em;
       }
+
       .form-up-call {
             font-size: 2.3em;
       }
+
       .green-area {
             padding: 170px 50px 70px;
             margin-bottom: 50px;

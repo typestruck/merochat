@@ -7,7 +7,7 @@ import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Server.Profile.Types (Payload)
-import Shared.Im.Types (ElementId(..))
+import Shared.Element (ElementId(..))
 import Shared.Profile.View as SPV
 
 template ∷ Payload → Effect String
@@ -26,6 +26,7 @@ template { user: user, countries, languages } = do
                     , tagsInputedList: Nothing
                     , descriptionInputed: Nothing
                     , loading: false
+                    , registrationMessage: false
                     , experimenting: Nothing
                     , updateRequestStatus: Nothing
                     , user

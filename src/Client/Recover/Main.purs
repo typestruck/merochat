@@ -1,14 +1,15 @@
 module Client.Recover.Main where
 
 import Prelude
+import Shared.Network
 
 import Client.Common.Account as CCA
 import Client.Common.Captcha as CCC
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
-import Shared.Network
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Nullable (null)
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as EA
@@ -22,10 +23,10 @@ recover captchaResponse = do
             Nothing → pure unit
             Just email →
                   if DM.isNothing captchaResponse then
-                        CCC.grecaptchaExecute
+                        CCC.execute null
                   else EA.launchAff_ do
                         status ← CCA.formRequest $ request.recover.post { body: { email, captchaResponse } }
-                        liftEffect $ when (status == Failure) CCC.grecaptchaReset
+                        liftEffect <<< when (status == Failure) $ CCC.reset null
 
 -- | Callback for grecaptcha
 completeRecover ∷ String → Effect Unit

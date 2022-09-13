@@ -1,19 +1,19 @@
 module Client.Help.Main where
 
 import Prelude
+import Shared.Im.Types
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Data.Traversable as DT
 import Effect (Effect)
-
+import Shared.Element (ElementId(..))
 import Web.DOM.Element as WDE
 import Web.Event.EventTarget as WET
 import Web.HTML as WH
 import Web.HTML.Event.EventTypes (click)
 import Web.HTML.Event.HashChangeEvent.EventTypes (hashchange)
 import Web.HTML.Window as WHW
-import Shared.Im.Types
 
 -- :(
 main ∷ Effect Unit

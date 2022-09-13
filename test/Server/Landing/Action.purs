@@ -6,7 +6,6 @@ import Server.Database.Fields
 import Server.Database.KarmaHistories
 import Server.Database.KarmaLeaderboard
 import Server.Database.Suggestions
-import Server.Types
 
 import Data.BigInt as BG
 import Data.Maybe (Maybe(..))
@@ -33,7 +32,7 @@ tests = do
       TU.suite "landing actions" do
             let
                   registerExceptionTest rl = do
-                        void $ SLA.register rl
+                        void $ SLA.registerRegularUser rl
                         users ← STU.userCount
                         R.liftAff $ TUA.equal 0 users
 
@@ -57,11 +56,12 @@ tests = do
                   $ TS.serverActionCatch (TS.catch emailAlreadyRegisteredMessage)
                   $ do
                           void $ SLD.createUser
-                                { email
+                                { email: Just email
                                 , name: "sdsd"
-                                , password
+                                , password: Just password
                                 , headline: "sd"
                                 , description: "ss"
+                                , temporary: false
                                 }
                           registerExceptionTest $
                                 { email
@@ -72,7 +72,7 @@ tests = do
             TU.test "register creates user"
                   $ TS.serverAction
                   $ do
-                          void <<< SLA.register $
+                          void $ SLA.registerRegularUser
                                 { email
                                 , password
                                 , captchaResponse: Nothing
@@ -82,13 +82,20 @@ tests = do
                                 Nothing → R.liftAff $ TU.failure "user not created!"
                                 Just user → do
                                       hashed ← ST.hashPassword password
-                                      R.liftAff $ TUA.equal hashed user.password
+                                      R.liftAff $ TUA.equal (Just hashed) user.password
+
+            TU.test "register creates temporary user"
+                  $ TS.serverAction
+                  $ do
+                          void $ SLA.registerTemporaryUser Nothing
+                          count ← STU.userCount
+                          when (count == 0) $ R.liftAff $ TU.failure "user not created!"
 
             TU.test "register lowercases emails"
                   $ TS.serverAction
                   $ do
                           let upcaseEmail = "EMAIL@EMAIL.CO.NZ"
-                          void <<< SLA.register $
+                          void $ SLA.registerRegularUser
                                 { email: upcaseEmail
                                 , password
                                 , captchaResponse: Nothing
@@ -99,7 +106,7 @@ tests = do
             TU.test "register creates karma"
                   $ TS.serverAction
                   $ do
-                          void $ SLA.register
+                          void $ SLA.registerRegularUser
                                 { email
                                 , password
                                 , captchaResponse: Nothing
@@ -113,7 +120,7 @@ tests = do
             TU.test "register creates suggestion"
                   $ TS.serverAction
                   $ do
-                          void $ SLA.register
+                          void $ SLA.registerRegularUser
                                 { email
                                 , password
                                 , captchaResponse: Nothing

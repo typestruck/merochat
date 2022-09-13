@@ -87,6 +87,10 @@ body {
     flex-direction: column;
 }
 
+#temporary-user-sign-up-form div {
+    width: 500px;
+}
+
 .suggestion-box {
     overflow: hidden;
     height: 100%;
@@ -110,6 +114,8 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+
 
 #user-context-menu rect {
     display: none;
@@ -441,6 +447,27 @@ blockquote {
 
 .notification-header {
     margin: 0 5px;
+}
+
+#temporary-user-sign-up-form .warning-temporary {
+    margin: 5px 0;
+}
+
+#temporary-user-sign-up-form .last {
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+
+#temporary-user-sign-up-form .error-message {
+    visibility: visible;
+}
+
+.card-top-header .sign-up-call {
+    font-weight: bold;
+}
+
+.warning-temporary {
+    color: #db5a5d;
 }
 
 #full-profile-context-menu,
@@ -873,6 +900,7 @@ svg.toolbar-action {
     margin: 0 20px;
 }
 
+#temporary-user-sign-up-form,
 #experiments-root,
 #profile-edition-root,
 #settings-edition-root,
@@ -1170,7 +1198,6 @@ input:not(type=button):focus {
 }
 
 .green-button {
-    margin-top: 20px;
     display: block;
     border-radius: 5px;
     color: inherit;
@@ -1178,6 +1205,10 @@ input:not(type=button):focus {
     cursor: pointer;
     padding: 17px;
     background: #1b3a28;
+}
+
+.right-align {
+    text-align: right;
 }
 
 .step-button {
@@ -1704,10 +1735,6 @@ select {
     align-self: flex-end;
 }
 
-.profile-context .user-menu {
-    background: #2d2d2d;
-}
-
 .suggestion.new {
     padding-top: 11px;
 }
@@ -1774,8 +1801,10 @@ select {
     margin-bottom: 7px;
 }
 
+
 .profile-karma {
     margin-bottom: 7px;
+    position: relative;
 }
 
 .profile-asl {
@@ -1800,12 +1829,48 @@ select {
     fill: #db5a5d !important
 }
 
+.quick-sign-up {
+    color: rgb(238, 238, 238, 0.8) !important;
+    align-self: center;
+}
+
+.svg-explain-temporary-user {
+    width: 35px;
+    height: 35px;
+}
+
+.explain-temporary-user {
+    display: none;
+    position: absolute;
+    z-index: 9;
+    top: 30px;
+    padding: 20px;
+    padding-bottom: 0;
+    width: 35em;
+    background: #262626
+}
+
+.svg-explain-temporary-user:hover~.explain-temporary-user {
+    display: block;
+}
+
+.explain-temporary-user:hover {
+    display: block;
+}
+
 .impersonation-warning {
     margin-bottom: 20px;
 }
 
 .message-history> :first-child.impersonation-warning-history {
     margin-top: 0 !important;
+}
+
+.message-history .sign-up-call {
+    order: -1;
+    text-align: center;
+    width: fit-content;
+    align-self: center;
 }
 
 .impersonation-warning-history {
@@ -1819,7 +1884,9 @@ select {
     text-align: center;
 }
 
-.impersonation-warning-history div {
+.impersonation-warning-history div,
+.contact-list .sign-up-call,
+.message-history .sign-up-call {
     border: 1px solid #db5a5d;
     padding: 10px 20px;
     background-color: #262626;
@@ -1890,12 +1957,21 @@ select {
     margin-bottom: 20px;
 }
 
+
+
 /* dry this shite  */
 
 @media (max-width:1279px) {
     .im {
         display: flex;
         overflow-x: hidden
+    }
+
+    .sign-up-call {
+        display: flex;
+        padding: 8px;
+        flex-direction: column;
+        align-items: center;
     }
 
     .contact-box.current-mobile-screen {
@@ -1923,6 +1999,20 @@ select {
 
     .message-history> :first-child {
         margin-top: unset !important;
+    }
+
+    #temporary-user-sign-up-form {
+        padding: 15px;
+        align-items: flex-start;
+    }
+
+    .wall-text {
+        max-width: 90%;
+
+    }
+
+    #temporary-user-sign-up-form div {
+        width: auto;
     }
 
     .message-history .retry.invisible {
@@ -1958,6 +2048,10 @@ select {
 
     .notification {
         padding-left: 10px;
+    }
+
+    .explain-temporary-user {
+        width: 20em;
     }
 
     .card-sides,
@@ -2179,6 +2273,7 @@ select {
         display: none;
     }
 
+    #temporary-user-sign-up-form,
     #help-root,
     #karma-leaderboard-root,
     #settings-edition-root,
@@ -2188,6 +2283,10 @@ select {
         margin: 0;
         width: 100%;
         overflow-x: hidden;
+    }
+
+    #temporary-user-sign-up-form {
+        max-width: 100%;
     }
 
     .profile-contact-header {
@@ -2356,6 +2455,10 @@ select {
         padding: 14px 6px;
     }
 
+    .contact-list .sign-up-call {
+        display: none;
+    }
+
     .tutorial {
         width: 400px;
     }
@@ -2432,6 +2535,10 @@ select {
     body {
         font-size: 18px;
         line-height: 1.51857143;
+    }
+
+    .contact-list .sign-up-call {
+        display: none;
     }
 
     .profile-contact .avatar-profile,

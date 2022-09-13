@@ -17,9 +17,9 @@ create table users
 (
     id integer generated always as identity primary key,
     name text not null,
-    password text not null,
+    password text,
     joined timestamptz default (utc_now()),
-    email text not null,
+    email text,
     birthday date,
     gender smallint,
     headline text not null,
@@ -33,6 +33,7 @@ create table users
     online_status boolean not null default true,
     message_timestamps boolean not null default true,
     completed_tutorial boolean not null default false,
+    temporary boolean not null default false,
 
     constraint country_user foreign key (country) references countries(id)
 );
@@ -118,7 +119,7 @@ create or replace function crunch_karma_history(hours_time integer)
     returns void as
 $$
 begin
-    create temporary table temp_karmas (id integer, target integer, amount integer ) on commit drop;
+    create temporary table temp_karmas (id integer, target integer, amount integer) on commit drop;
     insert into temp_karmas
     select id,
             target,
@@ -172,6 +173,17 @@ $$
 language plpgsql;
 
 -- select cron.schedule('0 */4 * * *', $$select crunch_karma_history()$$);
+
+-- select cron.schedule('45 2 * * *', $$select purge_temporary_users()$$);
+create or replace function purge_temporary_users()
+    returns void as
+$$
+begin
+    delete from users u where exists(select 3 from users where u.id = id and temporary and extract(epoch from (utc_now()) - joined ) / 3600 > 84.0);
+end;
+$$
+language plpgsql;
+
 
 create table histories
 (

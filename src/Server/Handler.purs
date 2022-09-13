@@ -22,7 +22,7 @@ import Server.Backer.Handler as SBH
 import Server.Experiments.Handler as SEH
 import Server.Fortune.Handler as SFTH
 import Server.Help.Handler as SHH
-import Server.IM.Handler as SIH
+import Server.Im.Handler as SIH
 import Server.InternalBacker.Handler as SIBH
 import Server.InternalError.Handler as SIEH
 import Server.InternalHelp.Handler as SIHH
@@ -42,6 +42,7 @@ handlers ∷ ServerReader → _
 handlers reading =
       { landing: runHtml reading SLH.landing
       , register: runJson reading SLH.register
+      , temporary: runJson reading SLH.temporary
       , im:
               { get: runHtml reading SIH.im
               , contacts: runJson reading SIH.contacts
@@ -52,6 +53,7 @@ handlers reading =
               , delete: runJson reading SIH.deleteChat
               , missedEvents: runJson reading SIH.missedEvents
               , fortune: runJson reading SFTH.fortune
+              , register: runJson reading SIH.register
               , report: runJson reading SIH.report
               , tutorial: runJson reading SIH.tutorial
               }

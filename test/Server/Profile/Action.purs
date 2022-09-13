@@ -9,7 +9,7 @@ import Server.Database as SD
 import Server.Landing.Database as SLD
 import Server.Profile.Action as SPA
 import Test.Server as TS
-import Test.Server.Model (baseUser)
+import Test.Server.User (baseUser)
 import Test.Unit (TestSuite)
 import Droplet.Language
 import Prelude

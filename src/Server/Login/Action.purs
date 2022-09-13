@@ -23,5 +23,5 @@ login { email: rawEmail, password } = do
       case maybeUser of
             Nothing → SR.throwBadRequest invalidLogin
             Just user → do
-                  when (hash /= user.password) $ SR.throwBadRequest invalidLogin
+                  when (Just hash /= user.password) $ SR.throwBadRequest invalidLogin
                   ST.createToken user.id

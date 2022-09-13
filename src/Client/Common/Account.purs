@@ -1,22 +1,18 @@
 module Client.Common.Account where
 
 import Prelude
-import Shared.Im.Types
 
-import Client.Common.DOM as CCD
-import Client.Common.Network as CCN
+import Client.Common.Dom as CCD
 import Client.Common.Network as CNN
-import Shared.Network (RequestStatus(..))
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
 import Payload.Client (ClientResponse)
 import Shared.Account (RegisterLogin)
+import Shared.Element (ElementId(..))
+import Shared.Network (RequestStatus)
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Unsafe as SU
 import Web.DOM.Element (Element)
@@ -47,7 +43,7 @@ validateEmailPassword = do
 
 validateEmail ∷ Effect (Maybe String)
 validateEmail = do
-      maybeEmailDiv ← CCD.getElementByID EmailInput
+      maybeEmailDiv ← CCD.getElementById EmailInput
       case maybeEmailDiv of
             Nothing → pure Nothing
             Just emailDiv → do
@@ -63,7 +59,7 @@ validateEmail = do
 
 validatePassword ∷ Effect (Maybe String)
 validatePassword = do
-      maybePasswordDiv ← CCD.getElementByID PasswordInput
+      maybePasswordDiv ← CCD.getElementById PasswordInput
       case maybePasswordDiv of
             Nothing → pure Nothing
             Just passwordDiv → do
@@ -79,7 +75,7 @@ validatePassword = do
 
 validateConfirmPassword ∷ Effect Unit
 validateConfirmPassword = do
-      maybeConfirmPasswordDiv ← CCD.getElementByID ConfirmPasswordInput
+      maybeConfirmPasswordDiv ← CCD.getElementById ConfirmPasswordInput
       case maybeConfirmPasswordDiv of
             Nothing → pure unit
             Just confirmPasswordDiv → do
@@ -96,9 +92,9 @@ registerEvents ∷ Effect Unit → Effect Unit
 registerEvents callback = do
       formDiv ← CCD.unsafeQuerySelector formSelector
       button ← CCD.unsafeQuerySelector buttonSelector
-      emailElement ← CCD.getElementByID EmailDiv
-      passwordElement ← CCD.getElementByID PasswordDiv
-      confirmPasswordElement ← CCD.getElementByID ConfirmPassword
+      emailElement ← CCD.getElementById EmailDiv
+      passwordElement ← CCD.getElementById PasswordDiv
+      confirmPasswordElement ← CCD.getElementById ConfirmPassword
       listenIfExists emailElement validateEmail
       listenIfExists passwordElement validatePassword
       listenIfExists confirmPasswordElement validateConfirmPassword

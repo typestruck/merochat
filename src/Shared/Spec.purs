@@ -10,7 +10,7 @@ import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
-import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword)
+import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword, RegisterTemporary)
 import Shared.DateTime (DateWrapper(..))
 import Shared.Html (Html(..))
 import Shared.Settings.Types (PrivacySettings)
@@ -29,6 +29,12 @@ spec ∷
                             GET "/"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
                                   , response ∷ Html
+                                  }
+                    , temporary ∷
+                            POST "/temporary"
+                                  { guards ∷ Guards ("checkAnonymous" : Nil)
+                                  , body ∷ RegisterTemporary
+                                  , response ∷ Ok
                                   }
                     , register ∷
                             POST "/register"
@@ -57,6 +63,11 @@ spec ∷
                                   , get ∷
                                           GET "/"
                                                 { response ∷ String
+                                                }
+                                  , register ∷
+                                          POST "/register"
+                                                { body ∷ { email ∷ String, password ∷ String }
+                                                , response ∷ Ok
                                                 }
                                   , contacts ∷
                                           GET "/contacts?skip=<skip>"

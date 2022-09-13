@@ -5,7 +5,7 @@ import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.Profile.Types
 
-import Client.Common.DOM as CCD
+import Client.Common.Dom as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Data.Either (Either(..))
@@ -19,6 +19,7 @@ import Flame.Application.Effectful (AffUpdate, Environment)
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
+import Shared.Element (ElementId(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId)
 import Web.DOM (Element)
@@ -33,6 +34,7 @@ update rc@{ message } =
             SetPField setter → pure setter
             Save field → saveField rc field
             SetProfileChatExperiment experiment → setChatExperiment experiment
+            AfterRegistration -> setRegistrationMessage
 
 saveField ∷ Environment ProfileModel ProfileMessage → Field → Aff (ProfileModel → ProfileModel)
 saveField rc@{ display } field = do
@@ -168,3 +170,5 @@ selectAvatar = do
 
 setChatExperiment ∷ Maybe ExperimentData → Aff (ProfileModel → ProfileModel)
 setChatExperiment experimenting = FAE.diff { experimenting }
+
+setRegistrationMessage = pure $  _ { registrationMessage = true }

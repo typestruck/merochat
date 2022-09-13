@@ -18,19 +18,20 @@ import Type.Proxy (Proxy(..))
 
 type Users =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
-      , password ∷ String
+      , password ∷ Maybe String
       , name ∷ String
       , headline ∷ String
       , joined ∷ Column DateTime Default
-      , email ∷ String
+      , email ∷ Maybe String
       , birthday ∷ Maybe Date
-      , completed_tutorial :: Column Checked Default
+      , completed_tutorial ∷ Column Checked Default
       , description ∷ String
       , avatar ∷ Maybe String
       , gender ∷ Maybe Gender
       , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
       , read_receipts ∷ Column Checked Default
       , typing_status ∷ Column Checked Default
+      , temporary ∷ Column Checked Default
       , online_status ∷ Column Checked Default
       , message_timestamps ∷ Column Checked Default
       , visibility ∷ Column ProfileVisibility Default
@@ -45,6 +46,9 @@ users = Table
 _password ∷ Proxy "password"
 _password = Proxy
 
+_temporary ∷ Proxy "temporary"
+_temporary = Proxy
+
 _headline ∷ Proxy "headline"
 _headline = Proxy
 
@@ -54,7 +58,7 @@ _joined = Proxy
 _email ∷ Proxy "email"
 _email = Proxy
 
-_completedTutorial :: Proxy "completed_tutorial"
+_completedTutorial ∷ Proxy "completed_tutorial"
 _completedTutorial = Proxy
 
 _birthday ∷ Proxy "birthday"
