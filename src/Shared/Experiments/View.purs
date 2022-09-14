@@ -8,10 +8,9 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Experiments.Types
 import Shared.Experiments.Impersonation as SEI
-import Shared.Resource as SP
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
-view model@{ experiments, section, current } = case current of
+view model@{ experiments, current } = case current of
       Just (Impersonation (Just profile)) →
             --likely to be the same for all experiments
             HE.div (HA.class' "chat-experiments") $ SEI.joined profile
@@ -22,7 +21,7 @@ view model@{ experiments, section, current } = case current of
                   ]
       where
       toDiv { name, description, code } = HE.div (HA.class' "experiment")
-            [ HE.a (HA.class' "experiment-name") name
+            [ HE.span (HA.class' "experiment-name") name
             , HE.span_ description
             , HE.fragment $ extra model code
             ]

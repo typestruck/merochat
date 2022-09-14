@@ -13,10 +13,18 @@
     margin: 5px 0px;
 }
 
-.backer strong {
-    color: #db5a5d;
-    font-size: 1.2em;
-    margin: 15px 0 5px 0;
+.backer h3 {
+    color:rgb(238, 238, 238);
+    margin-top:40px;
+}
+
+h3.initial {
+    margin-top:initial;
+
+}
+
+h3.bottom {
+    margin-bottom: 10px;
 }
 
 .svg-patreon {

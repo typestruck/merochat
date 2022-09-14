@@ -960,20 +960,10 @@ svg.toolbar-action {
     display: list-item;
 }
 
-#backer-root p {
-    max-width: 50em;
-    margin: 5px 0;
-}
-
-#backer-root strong {
-    display: block;
-    margin: 15px 0 5px 0;
-}
-
 .message-content p {
     display: block;
     word-wrap: break-word;
-    max-width: 45em;
+    max-width: 50em;
     margin: 5px 0px;
 }
 
@@ -1956,8 +1946,6 @@ select {
     display: flex;
     margin-bottom: 20px;
 }
-
-
 
 /* dry this shite  */
 
