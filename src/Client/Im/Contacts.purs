@@ -249,8 +249,8 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
             )
             userIds
       where
-      existingContactIds = DS.fromFoldable (_.id <<< _.user <$> contacts)
-      onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
+      existingContactIds = DS.fromFoldable $ map (\cnt → Tuple cnt.user.id cnt.impersonating) contacts
+      onlyNew = DA.filter (\cnt → not $ DS.member (Tuple cnt.user.id cnt.impersonating) existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 deleteChat ∷ Tuple Int (Maybe Int) → ImModel → MoreMessages
 deleteChat tii@(Tuple id impersonating) model@{ contacts } =

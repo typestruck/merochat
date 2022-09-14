@@ -454,7 +454,7 @@ receiveMessage
                   }
       NewIncomingMessage payload@{ id: messageId, userId, content: messageContent, date: messageDate, experimenting } →
             --(for now) if the experiments don't match, discard the message
-            if DA.elem userId blockedUsers || not (match userId experimenting) then
+            if DA.elem userId blockedUsers || not (match experimenting) then
                   F.noMessages model
             else
                   let
@@ -524,13 +524,13 @@ receiveMessage
       where
       isChatting senderID { contacts, chatting } =
             let
-                  { user: { id: recipientId }, impersonating } = contacts !@ SU.fromJust chatting
+                  { user: { id: recipientId } } = contacts !@ SU.fromJust chatting
             in
                   recipientId == senderID
 
-      match userId experimenting = case model.experimenting, experimenting of
+      match experimenting = case model.experimenting, experimenting of
             Just (Impersonation (Just _)), Nothing → false
-            Just (Impersonation (Just { id })), Just (ImpersonationPayload { id: otherID, sender }) → id == otherID && not sender
+            Just (Impersonation (Just { id })), Just (ImpersonationPayload { id: otherId, sender }) → id == otherId && not sender
             Nothing, Just (ImpersonationPayload { sender }) → sender
             _, _ → true
 
