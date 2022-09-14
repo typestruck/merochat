@@ -44,8 +44,10 @@ suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUser
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
 
-listSingleContact ∷ Int → Int → ServerEffect (Array Contact)
-listSingleContact loggedUserId userId = presentContacts <$> SID.presentSingleContact loggedUserId userId 0
+listSingleContact ∷ Int → Int → Boolean -> ServerEffect (Array Contact)
+listSingleContact loggedUserId userId impersonation
+      | impersonation = map fromFlatContact <$> SID.presentContactOnly loggedUserId userId
+      | otherwise = presentContacts <$> SID.presentSingleContact loggedUserId userId 0
 
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SID.presentSingleContact loggedUserId userId skip

@@ -46,7 +46,7 @@ handlers reading =
       , im:
               { get: runHtml reading SIH.im
               , contacts: runJson reading SIH.contacts
-              , singleContact: runJson reading SIH.singleContact
+              , contact: runJson reading SIH.contact
               , history: runJson reading SIH.history
               , suggestions: runJson reading SIH.suggestions
               , block: runJson reading SIH.block

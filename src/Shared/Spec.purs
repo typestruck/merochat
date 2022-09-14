@@ -74,9 +74,9 @@ spec ∷
                                                 { query ∷ { skip ∷ Int }
                                                 , response ∷ Array Contact
                                                 }
-                                  , singleContact ∷
-                                          GET "/contact?id=<id>"
-                                                { query ∷ { id ∷ Int }
+                                  , contact ∷
+                                          GET "/contact?id=<id>&impersonation=<impersonation>"
+                                                { query ∷ { id ∷ Int, impersonation ∷ Boolean }
                                                 , response ∷ Array Contact
                                                 }
                                   , history ∷

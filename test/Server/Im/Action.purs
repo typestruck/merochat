@@ -261,7 +261,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
-                          contacts ← SIA.listSingleContact userId anotherUserId
+                          contacts ← SIA.listSingleContact userId anotherUserId false
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           R.liftAff $ TUA.equal anotherUserId (contacts !@ 0).user.id
                           R.liftAff <<< TUA.equal [ "oi", "ola" ] $ map _.content (contacts !@ 0).history
@@ -273,7 +273,7 @@ tests = do
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
                           void $ SIA.deleteChat userId { userId: anotherUserId, messageId: 1 }
-                          contacts ← SIA.listSingleContact userId anotherUserId
+                          contacts ← SIA.listSingleContact userId anotherUserId false
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           R.liftAff <<< TUA.equal [ "ola" ] $ map _.content (contacts !@ 0).history
 
@@ -284,7 +284,7 @@ tests = do
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
                           void $ SIA.deleteChat anotherUserId { userId, messageId: 2 }
-                          contacts ← SIA.listSingleContact userId anotherUserId
+                          contacts ← SIA.listSingleContact userId anotherUserId false
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           R.liftAff <<< TUA.equal [ "oi", "ola" ] $ map _.content (contacts !@ 0).history
 

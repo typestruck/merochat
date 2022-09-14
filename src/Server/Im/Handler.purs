@@ -26,8 +26,8 @@ contacts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int } }
 contacts { guards: { loggedUserId }, query: { skip } } = SIA.listContacts loggedUserId skip
 
 --not sure if a bug, but payload has no DecodeResponse instance for Maybe, and sending one results in a runtime exception
-singleContact ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { id ∷ Int } } → ServerEffect (Array Contact)
-singleContact { guards: { loggedUserId }, query: { id } } = SIA.listSingleContact loggedUserId id
+contact ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { id ∷ Int, impersonation ∷ Boolean } } → ServerEffect (Array Contact)
+contact { guards: { loggedUserId }, query: { id, impersonation } } = SIA.listSingleContact loggedUserId id impersonation
 
 history ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int, with ∷ Int } } → ServerEffect (Array HistoryMessage)
 history { guards: { loggedUserId }, query: { with, skip } } = SIA.resumeChatHistory loggedUserId with skip
@@ -58,7 +58,7 @@ tutorial { guards: { loggedUserId } } = do
       SIA.finishTutorial loggedUserId
       pure ok
 
-register ∷ { guards ∷ { loggedUserId ∷ Int }, body :: { email:: String, password :: String} } → ServerEffect Ok
-register { guards: { loggedUserId }, body: { email, password}  } = do
+register ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { email ∷ String, password ∷ String } } → ServerEffect Ok
+register { guards: { loggedUserId }, body: { email, password } } = do
       SIA.registerUser loggedUserId email password
       pure ok

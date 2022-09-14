@@ -22,7 +22,6 @@ import Server.Database.Users
 import Server.Types
 import Shared.Im.Types
 
-import Control.Monad.List.Trans (filter)
 import Data.Array as DA
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as DAN
@@ -167,8 +166,7 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       { loggedUserId
       , status: Read
       , initialMessages: initialMessagesPerPage
-      , contact: Contacts
-      , everyone: Everyone
+      , contacts: Contacts
       , limit: n
       , offset: skip
       }
@@ -181,7 +179,7 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
-      WHERE (visibility = @contact OR visibility = @everyone)
+      WHERE visibility <= @contacts
             AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
             AND (h.sender = @loggedUserId AND (h.sender_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.sender_deleted_to AND (sender = @loggedUserId AND recipient = h.recipient OR sender = h.recipient AND recipient = @loggedUserId))) OR h.recipient = @loggedUserId AND (h.recipient_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.recipient_deleted_to AND (recipient = @loggedUserId AND sender = h.sender OR recipient = h.sender AND recipient = @loggedUserId))))
       ORDER BY last_message_date DESC LIMIT @limit OFFSET @offset) uh
@@ -199,13 +197,28 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
                  WHERE status < @status OR n <= @initialMessages
                  ORDER BY date) s"""
 
+--only for impersonations, we will fix this someday
+presentContactOnly :: Int -> Int -> ServerEffect (Array FlatContact)
+presentContactOnly loggedUserId userId = SD.unsafeQuery query
+      { loggedUserId
+      , userId
+      , contacts: Contacts
+      }
+      where query = "SELECT" <> presentUserContactFields <>
+                  """FROM users u
+            JOIN karma_leaderboard k ON u.id = k.ranker
+            JOIN (select @userId::integer sender, @loggedUserId::integer recipient, null sender_deleted_to, null recipient_deleted_to, utc_now() last_message_date, utc_now() first_message_date) h ON true
+      WHERE visibility <= @contacts
+            AND u.id = @userId
+            AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+      """
+
 --refactor: this can use droplet
 presentSingleContact ∷ Int → Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
       { loggedUserId
       , userId
-      , contact: Contacts
-      , everyone: Everyone
+      , contacts: Contacts
       , messagesPerPage
       , offset
       }
@@ -215,7 +228,7 @@ presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
       JOIN messages s ON s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender
-WHERE (visibility = @contact OR visibility = @everyone)
+WHERE visibility <= @contacts
       AND u.id = @userId
       AND NOT (h.sender = @loggedUserId AND h.sender_deleted_to IS NOT NULL AND s.id <= h.sender_deleted_to OR
                h.recipient = @loggedUserId AND h.recipient_deleted_to IS NOT NULL AND s.id <= h.recipient_deleted_to)
@@ -229,8 +242,7 @@ presentMissedContacts ∷ Int → Int → ServerEffect (Array FlatContactHistory
 presentMissedContacts loggedUserId lastId = SD.unsafeQuery query
       { loggedUserId
       , status: Delivered
-      , contact: Contacts
-      , everyone: Everyone
+      , contacts: Contacts
       , lastId
       }
       where
@@ -239,7 +251,7 @@ presentMissedContacts loggedUserId lastId = SD.unsafeQuery query
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
       JOIN messages s ON s.sender = h.sender OR s.sender = h.recipient
-WHERE (visibility = @contact OR visibility = @everyone)
+WHERE visibility <= @contacts
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
       AND s.status < @status
       AND s.recipient = @loggedUserId
