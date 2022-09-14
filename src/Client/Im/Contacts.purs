@@ -190,7 +190,7 @@ displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\
 
 --new chats from impersonation experiment
 displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → ImModel → MoreMessages
-displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) $ spy "contacts" newContacts)
+displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
 
 resumeMissedEvents ∷ MissedEvents → ImModel → MoreMessages
 resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =

@@ -455,7 +455,7 @@ receiveMessage
       NewIncomingMessage payload@{ id: messageId, userId, content: messageContent, date: messageDate, experimenting } →
             --(for now) if the experiments don't match, discard the message
             if DA.elem userId blockedUsers || not (match userId experimenting) then
-                  F.noMessages $ spy "aaa" model
+                  F.noMessages model
             else
                   let
                         model' = unsuggest userId model
@@ -463,7 +463,7 @@ receiveMessage
                         case processIncomingMessage payload model' of
                               Left userId →
                                     let
-                                          message = case (spy "exp" experimenting) of
+                                          message = case experimenting of
                                                 Just (ImpersonationPayload { id: impersonationId }) →
                                                       DisplayImpersonatedContact impersonationId
                                                             { status: Received
@@ -475,7 +475,7 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                        spy "bbb"  model' :> [ CCNT.retryableResponse CheckMissedEvents message $ request.im.contact { query: { id: userId, impersonation: DM.isJust experimenting } } ]
+                                        model' :> [ CCNT.retryableResponse CheckMissedEvents message $ request.im.contact { query: { id: userId, impersonation: DM.isJust experimenting } } ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right
@@ -492,7 +492,7 @@ receiveMessage
                                                 , index
                                                 }
                                     in
-                                          spy "ccc" furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
+                                          furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
                               Right
                                     updatedModel@
                                           { contacts
@@ -509,7 +509,7 @@ receiveMessage
                                                 , webSocket
                                                 }
                                     in
-                                        spy "ddd"  furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationId ] : messages)
+                                        furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationId ] : messages)
 
       PayloadError payload → case payload.origin of
             OutgoingMessage { id, userId } → F.noMessages $ model

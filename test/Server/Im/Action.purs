@@ -431,6 +431,23 @@ tests = do
                           processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
                           R.liftAff $ TUA.equal Nothing processed
 
+            TU.test "processMessage fails if recipient visibility is no temporary users and sender is a temporary user"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. userId)
+                          SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
+                          R.liftAff $ TUA.equal Nothing processed
+
+            TU.test "processMessage does not fail if recipient visibility is no temporary users and sender is not a temporary user"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
+                          R.liftAff <<< TUA.assert "is just" $ DM.isJust processed
+
             TU.test "processMessage does not fail if recipient visibility is contacts and sender is in contacts"
                   $ TS.serverAction
                   $ do
