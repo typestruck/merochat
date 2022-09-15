@@ -18,7 +18,7 @@ MeroChat is written in PureScript, both server-side and client-side. PostgreSQL 
 
 1. Run `npm install && spago build`
 
-2. Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql). The user `merochat`, databases `merochat` and `melanchat_test` are expected (ident or trust authentication)
+2. Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql). The user `merochat`, databases `merochat` and `merochat_test` are expected (ident or trust authentication)
 
 3. Run `npm run watch` to start a server at http://localhost:8000
 

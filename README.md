@@ -20,7 +20,7 @@ MeroChat is a friendly random chat!
 
 * Zero tolerance for bots, spammers or perverts
 
-A note on naming: mero is short for _melancia_, the Portuguese word for watermelon. Hence the fruit theming.
+A note on naming: mero is the Guarani word for melon. Hence the fruit theming.
 
 ### Contributing
 
