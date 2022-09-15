@@ -40,7 +40,7 @@ recover { email: rawEmail, captchaResponse } = do
                   token ← R.liftEffect (DU.toString <$> DU.genUUID)
                   SRD.insertRecover id token
                   contents ← R.liftEffect <<< FRS.render $ HE.html_
-                        [ HE.head_ $ HE.title "MelanChat password recovery"
+                        [ HE.head_ $ HE.title "MeroChat password recovery"
                         , HE.body_
                                 [ HE.text "Hello!"
                                 , HE.br

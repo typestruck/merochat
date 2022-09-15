@@ -1,9 +1,9 @@
 {
-  "name": "melanchat",
+  "name": "merochat",
   "version": "0.5.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/typestruck/melanchat.git"
+    "url": "https://github.com/typestruck/merochat.git"
   },
   "description": "Friendly random chat",
   "scripts": {

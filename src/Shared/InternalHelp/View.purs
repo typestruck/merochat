@@ -16,9 +16,9 @@ view ∷ InternalHelpModel → Html InternalHelpMessage
 view { toggleHelp } =
       HE.div (HA.class' "internal-help")
             [ HE.div (HA.class' "duller center")
-                    [ HE.text "Learn more about MelanChat"
+                    [ HE.text "Learn more about MeroChat"
                     , HE.br
-                    , HE.text "You may also write us anytime at contact@melan.chat"
+                    , HE.text "You may also write us anytime at contact@mero.chat"
                     ]
             , HE.div (HA.class' "help") $ HE.div_
                     [ HE.div (HA.class' "center")

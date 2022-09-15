@@ -142,8 +142,8 @@ hoistTransaction action = do
 
 newPool ∷ Configuration → Effect Pool
 newPool { databaseHost } =
-      DD.newPool $ (DD.defaultConfiguration "melanchat")
-            { user = Just "melanchat"
+      DD.newPool $ (DD.defaultConfiguration "merochat")
+            { user = Just "merochat"
             , host = databaseHost
             , idleTimeoutMillis = Just 1000
             }

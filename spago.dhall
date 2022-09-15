@@ -2,9 +2,9 @@
 Welcome to a Spago project!
 You can edit this file as you like.
 -}
-{ name = "melanchat"
+{ name = "merochat"
 , license = "AGPL-3.0-or-later"
-, repository = "https://github.com/typestruck/melanchat"
+, repository = "https://github.com/typestruck/merochat"
 , dependencies =
   [ "aff"
   , "affjax"

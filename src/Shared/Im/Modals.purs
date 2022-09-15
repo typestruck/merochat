@@ -7,17 +7,13 @@ import Data.Array as DA
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Symbol (class IsSymbol)
 import Data.Symbol as TDS
 import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Prim.Row (class Cons)
-import Prim.RowList (Cons)
 import Safe.Coerce as SC
-import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
 import Shared.Im.View.Retry as SIVR

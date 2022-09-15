@@ -6,19 +6,19 @@ You may want to look at
 
 * The [spec](docs/README.md)
 
-* [Open issues](https://github.com/typestruck/melanchat/issues)
+* [Open issues](https://github.com/typestruck/merochat/issues)
 
-* [Milestones](https://github.com/typestruck/melanchat/milestones)
+* [Milestones](https://github.com/typestruck/merochat/milestones)
 
 Don't hesitate to [contact](https://github.com/easafe) if you need help, or want to discuss something before.
 
 ## Setup
 
-MelanChat is written in PureScript, both server-side and client-side. PostgreSQL is used for persistance. To get it running locally:
+MeroChat is written in PureScript, both server-side and client-side. PostgreSQL is used for persistance. To get it running locally:
 
 1. Run `npm install && spago build`
 
-2. Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql). The user `melanchat`, databases `melanchat` and `melanchat_test` are expected (ident or trust authentication)
+2. Configure PostgreSQL and run [index.sql](src/Server/sql/index.sql). The user `merochat`, databases `merochat` and `melanchat_test` are expected (ident or trust authentication)
 
 3. Run `npm run watch` to start a server at http://localhost:8000
 

@@ -27,7 +27,7 @@ tooManyTagsMessage ∷ String
 tooManyTagsMessage = "Number of tags larger than " <> show maxTags <> " limit"
 
 tooYoungMessage ∷ String
-tooYoungMessage = "You must be over 13 years old in order to use MelanChat"
+tooYoungMessage = "You must be over 13 years old in order to use MeroChat"
 
 fieldTooBigMessage ∷ String
 fieldTooBigMessage = "Field exceeded max value"

@@ -1,6 +1,6 @@
 # Architecture
 
-This is a high level overview of MelanChat sources.
+This is a high level overview of MeroChat sources.
 
 ## Project structure
 

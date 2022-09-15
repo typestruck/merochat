@@ -11,10 +11,9 @@ export async function sendEmail_({ host, user, password }, to, subject, content)
       });
 
       await transporter.sendMail({
-            from: `"MelanChat" <noreply@melan.chat>`,
+            from: `"MeroChat" <noreply@mero.chat>`,
             subject,
             html: content,
             to
       });
 }
-

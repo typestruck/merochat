@@ -1225,7 +1225,7 @@ select {
 }
 
 .loading {
-    background: url('https://static.melan.chat/file/ourmelon/loading.png');
+    background: url('https://static.mero.chat/file/ourmelon/loading.png');
     animation: rotating 2s linear infinite;
     width: 46px;
     height: 44px;

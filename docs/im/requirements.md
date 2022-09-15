@@ -24,7 +24,7 @@ Mockup of IM screen colorized by individual components:
 
 Component for the logged in User profile and settings.
 
-Mockup of user menu component ([#6](https://github.com/typestruck/melanchat/issues/6)) :
+Mockup of user menu component ([#6](https://github.com/typestruck/merochat/issues/6)) :
 
 ![user menu](images/user_menu.png)
 
@@ -98,9 +98,9 @@ This component shows all Users previously chatted with.
 
 * Chat notifications are not displayed for muted contacts, nor they are [suggested](#suggestions) for chatting
 
-* Infinite scrolling for pagination ([#63](https://github.com/typestruck/melanchat/issues/63))
+* Infinite scrolling for pagination ([#63](https://github.com/typestruck/merochat/issues/63))
 
-Mockup of contact list component ([#9](https://github.com/typestruck/melanchat/issues/9)):
+Mockup of contact list component ([#9](https://github.com/typestruck/merochat/issues/9)):
 
 ![contact list](images/contact_list.png)
 
@@ -108,7 +108,7 @@ Mockup of contact list component ([#9](https://github.com/typestruck/melanchat/i
 
 2. Contact name
 
-3. Contact headline or last message message sent ([#44](https://github.com/typestruck/melanchat/issues/44)) (see [Settings](../user/requirements.md#update-settings))
+3. Contact headline or last message message sent ([#44](https://github.com/typestruck/merochat/issues/44)) (see [Settings](../user/requirements.md#update-settings))
 
 4. Number of unread messages (if contact is not muted)
 
@@ -128,7 +128,7 @@ Mockup of contact list component ([#9](https://github.com/typestruck/melanchat/i
 
     c) Mark this chat as read or unread
 
-    d) Block this contact ([#61](https://github.com/typestruck/melanchat/issues/61))
+    d) Block this contact ([#61](https://github.com/typestruck/merochat/issues/61))
 
 8. Online status (see [User](../user/requirements.md#user-information))
 
@@ -162,7 +162,7 @@ a) Ignore this suggestion and jump to next suggestion
 
 b) Chat with this contact
 
-Suggestion component mockup ([#10](https://github.com/typestruck/melanchat/issues/10)):
+Suggestion component mockup ([#10](https://github.com/typestruck/merochat/issues/10)):
 
 ![suggestions](images/suggestions.png)
 
@@ -222,7 +222,7 @@ Chat history is the collections of messages between Users on a given chat. A mes
 
 * Reactions (se [Reactions](../gamification/requirements.md#reactions))
 
-Mockup of chat history component ([#11](https://github.com/typestruck/melanchat/issues/11)):
+Mockup of chat history component ([#11](https://github.com/typestruck/merochat/issues/11)):
 
 ![chat history](images/chat_history.png)
 
@@ -278,7 +278,7 @@ Mockup of chat input component:
 
 2. Text input
 
-    * Markdown able ([#12](https://github.com/typestruck/melanchat/issues/12))
+    * Markdown able ([#12](https://github.com/typestruck/merochat/issues/12))
 
     * Image/video able (both inline markdown and drag drop)
 
@@ -288,7 +288,7 @@ Mockup of chat input component:
 
     ![chat input options](images/chat_input_options_drop_down_menu.png)
 
-    a) Whether to send messages with enter or pressing a button ([#12](https://github.com/typestruck/melanchat/issues/12))
+    a) Whether to send messages with enter or pressing a button ([#12](https://github.com/typestruck/merochat/issues/12))
 
     b) Image/video upload
 

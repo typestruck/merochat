@@ -56,7 +56,7 @@ userMenu model@{ toggleContextMenu, experimenting, toggleModal, user: { temporar
                                     ]
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp ]
                                     [ HE.div (HA.class' "menu-item-heading") "Help"
-                                    , HE.span (HA.class' "duller") "Learn more about MelanChat"
+                                    , HE.span (HA.class' "duller") "Learn more about MeroChat"
                                     ]
                             , if temporary then
                                     HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmTerminationTemporaryUser ] "Delete my data"

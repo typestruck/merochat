@@ -14,7 +14,7 @@ reloadPage shouldReload = HE.div [ HA.class' { "notification": true, hidden: not
       , HE.div (HA.class' "notification-message")
               [ HE.strong_ "Update available"
               , HE.br
-              , HE.span_ "Click to update MelanChat"
+              , HE.span_ "Click to update MeroChat"
               ]
       ]
 

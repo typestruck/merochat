@@ -1,4 +1,4 @@
 module Shared.Options.Domain where
 
 domain ∷ String
-domain = "melan.chat"
+domain = "mero.chat"

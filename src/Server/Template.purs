@@ -24,7 +24,7 @@ type Parameters a =
 
 defaultParameters ∷ ∀ a. Parameters a
 defaultParameters =
-      { title: "MelanChat - Friendly Random Chat"
+      { title: "MeroChat - Friendly Random Chat"
       , favicon: SP.mediaPath Favicon Ico
       , javascript: []
       , css: []
@@ -85,6 +85,6 @@ externalFooter =
                     , HE.li_ $ HE.a (HA.href $ routes.backer {}) "Become a backer"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#terms") "Terms and conditions"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy police"
-                    , HE.li_ $ HE.a [HA.href "https://github.com/typestruck/melanchat", HA.target "_blank"] "Source code"
+                    , HE.li_ $ HE.a [HA.href "https://github.com/typestruck/merochat", HA.target "_blank"] "Source code"
                     ]
             ]

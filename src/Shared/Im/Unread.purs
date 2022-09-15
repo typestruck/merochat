@@ -15,7 +15,7 @@ title =
             0 → defaultTitle
             n → "(" <> show n <> ") " <> defaultTitle
       where
-      defaultTitle = "MelanChat - Friendly Random Chat"
+      defaultTitle = "MeroChat - Friendly Random Chat"
 
 favicon ∷ Int → String
 favicon =

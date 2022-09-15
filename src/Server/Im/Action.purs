@@ -104,7 +104,7 @@ deleteChat loggedUserId ids@{ userId } = do
 reportUser ∷ Int → Report → ServerEffect Unit
 reportUser loggedUserId report@{ reason, userId } = do
       SID.insertReport loggedUserId report
-      SE.sendEmail "contact@melan.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userId <> ";"
+      SE.sendEmail "contact@mero.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userId <> ";"
 
 finishTutorial :: Int -> ServerEffect Unit
 finishTutorial loggedUserId = SID.updateTutorialCompleted loggedUserId

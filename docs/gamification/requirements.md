@@ -16,13 +16,13 @@ Game like features of the application.
 
 ## Karma
 
-Karma is ~fake internet points~ a score of how much MelanChat trust an User. Higher numbers are better. Karma is primary gained by chatting, and also by collecting [trophies](#trophies) or [reactions](#reactions).
+Karma is ~fake internet points~ a score of how much MeroChat trust an User. Higher numbers are better. Karma is primary gained by chatting, and also by collecting [trophies](#trophies) or [reactions](#reactions).
 
 A new User starts off with the Karma earned by new User [trophies](#trophies).
 
 **CONSTANT** _in this document is equal to 10_
 
-* Karma algorithm ([wheel](https://github.com/melanchat/melanchat/blob/master/src/Server/Wheel.purs))
+* Karma algorithm ([wheel](https://github.com/merochat/merochat/blob/master/src/Server/Wheel.purs))
 
     todo: copy linked file here
 

@@ -8,9 +8,9 @@ privacy ∷ ∀ m. Html m
 privacy =
       HE.div (HA.class' "terms")
             [ HE.h2 (HA.class' "no-padding") "Introduction"
-            , HE.p_ """This is how MelanChat ("the Site", "we", "us", "our") handles all user ("you", "your") data."""
+            , HE.p_ """This is how MeroChat ("the Site", "we", "us", "our") handles all user ("you", "your") data."""
             , HE.h2_ "Data Collected"
-            , HE.p_ "MelanChat collects the following data:"
+            , HE.p_ "MeroChat collects the following data:"
             , HE.ul (HA.class' "bulleted")
                     [ HE.li_ "Email and password when you register"
                     , HE.li_ "Profile information provided by you (such as display name, your bio, or country/language)"
@@ -35,12 +35,12 @@ privacy =
             , HE.h2_ "Data storage"
             , HE.p_ "Your data may be stored in databases, caches or your browser. If you decide to terminate your account, all of your data saved in our databases or caches will be deleted. Otherwise your data is kept indefinitely."
             , HE.h2_ "Cookies"
-            , HE.p_ "MelanChat only uses session cookies. These have the function of keeping you logged in after you register or log in on the Site."
+            , HE.p_ "MeroChat only uses session cookies. These have the function of keeping you logged in after you register or log in on the Site."
             , HE.div (HA.class' "hide-internal")
                     [ HE.h2_ "Contact"
                     , HE.p_
-                            [ HE.text "You may contact MelanChat about these policies or any other issues at contact@melan.chat. Alternatively, MelanChat entire source code can be viewed at "
-                            , HE.a [HA.href "https://github.com/typestruck/melanchat", HA.target "_blank"] "https://github.com/typestruck/melanchat"
+                            [ HE.text "You may contact MeroChat about these policies or any other issues at contact@mero.chat. Alternatively, MeroChat entire source code can be viewed at "
+                            , HE.a [HA.href "https://github.com/typestruck/merochat", HA.target "_blank"] "https://github.com/typestruck/merochat"
                             ]
                     ]
             ]

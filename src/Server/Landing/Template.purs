@@ -83,7 +83,7 @@ template = do
                                     ]
                             ]
                     , HE.h2_
-                            [ HE.text "MelanChat is made with human connection and"
+                            [ HE.text "MeroChat is made with human connection and"
                             , HE.br
                             , HE.text "conversation in mind"
                             ]
@@ -199,12 +199,12 @@ template = do
                             ]
                     , HE.div (HA.class' "second-green-box")
                             [ HE.div (HA.class' "point-2")
-                                    [ HE.text "MelanChat helps you talk, interact with people and form real friendships -- "
+                                    [ HE.text "MeroChat helps you talk, interact with people and form real friendships -- "
                                     , HE.br
                                     , HE.text "without fear of the dreaded ASL questions or getting stalked"
                                     ]
                             , HE.div (HA.class' "point-2")
-                                    [ HE.text "MelanChat is not affiliated with any Big Tech companies; nor does it track or spy on you."
+                                    [ HE.text "MeroChat is not affiliated with any Big Tech companies; nor does it track or spy on you."
                                     , HE.br
                                     , HE.text "Neither it is a dating website. Why upload duck-face pictures when you can talk about"
                                     , HE.br
@@ -215,7 +215,7 @@ template = do
                                     , HE.br
                                     , HE.text "It can't get better (or healthier) than this"
                                     ]
-                            , HE.a [ HA.class' "form-up-call", HA.href "#headline" ] $ "... and it is free! Click here to create an account and chat right away #melanchat"
+                            , HE.a [ HA.class' "form-up-call", HA.href "#headline" ] $ "... and it is free! Click here to create an account and chat right away #merochat"
                             ]
                     , externalFooter
                     ]

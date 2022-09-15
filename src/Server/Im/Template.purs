@@ -86,6 +86,6 @@ template { contacts, suggestions, user } = do
             [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Im Css ]
             , HE.style (HA.type' "text/css")
                     """.suggestion.new {
-                        background: url(https://static.melan.chat/file/ourmelon/suggestions.png);
+                        background: url(https://static.mero.chat/file/ourmelon/suggestions.png);
                   }"""
             ]

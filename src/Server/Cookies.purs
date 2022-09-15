@@ -42,7 +42,7 @@ makeExpiredCookieHeader = Tuple cookieHeader $ BC.encode expiredCookie
             }
 
 cookieName ∷ String
-cookieName = "melanchat"
+cookieName = "merochat"
 
 makeCookie ∷ String → SetCookie
 makeCookie value =

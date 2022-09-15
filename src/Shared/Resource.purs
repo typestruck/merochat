@@ -22,7 +22,7 @@ maxImageSizeKB ∷ String
 maxImageSizeKB = show base <> " KB"
 
 productionBasePath ∷ String
-productionBasePath = "https://static.melan.chat/file/ourmelon/"
+productionBasePath = "https://static.mero.chat/file/ourmelon/"
 
 developmentImageBasePath ∷ String
 developmentImageBasePath = "/client/media/"

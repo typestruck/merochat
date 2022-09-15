@@ -1,3 +1,3 @@
-melanchat for dating - date app thingy with no pictures?
+merochat for dating - date app thingy with no pictures?
 
 https://wakie.com/

@@ -1,6 +1,6 @@
-![logo](src/Client/media/logo-small.png)  ![build status](https://github.com/melanchat/melanchat/actions/workflows/CI.yml/badge.svg)
+![logo](src/Client/media/logo-small.png)  ![build status](https://github.com/merochat/merochat/actions/workflows/CI.yml/badge.svg)
 
-MelanChat is a friendly random chat!
+MeroChat is a friendly random chat!
 
 ### Random
 
@@ -20,7 +20,7 @@ MelanChat is a friendly random chat!
 
 * Zero tolerance for bots, spammers or perverts
 
-A note on naming: melan is short for _melancia_, the Portuguese word for watermelon. Hence the fruit theming.
+A note on naming: mero is short for _melancia_, the Portuguese word for watermelon. Hence the fruit theming.
 
 ### Contributing
 
