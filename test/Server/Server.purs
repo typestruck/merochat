@@ -25,9 +25,9 @@ import Type.Row (type (+))
 
 newTestPool ∷ Configuration → Effect Pool
 newTestPool { databaseHost } =
-      DD.newPool $ (DD.defaultConfiguration "melanchat_test")
-            { user = Just "melanchat_test"
-            , password = Just "melanchat_test"
+      DD.newPool $ (DD.defaultConfiguration "merochat_test")
+            { user = Just "merochat_test"
+            , password = Just "merochat_test"
             , host = databaseHost
             , idleTimeoutMillis = Just 1000
             }
