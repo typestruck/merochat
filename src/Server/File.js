@@ -2,7 +2,7 @@ import b2 from 'b2-js';
 let b, bucket;
 
 export async function init_(applicationKeyId, applicationKey) {
-    b = await b2.authorize({ applicationKeyId, applicationKey });
+    b = await b2.default.authorize({ applicationKeyId, applicationKey });
     bucket = await b.bucket("ourmelon");
 }
 
