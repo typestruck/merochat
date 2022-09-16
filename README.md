@@ -1,4 +1,4 @@
-![logo](src/Client/media/logo-small.png)  ![build status](https://github.com/merochat/merochat/actions/workflows/CI.yml/badge.svg)
+![logo](src/Client/media/logo-small.png)  ![build status](https://github.com/typestruck/merochat/actions/workflows/CI.yml/badge.svg)
 
 MeroChat is a friendly random chat!
 
