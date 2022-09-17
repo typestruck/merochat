@@ -91,13 +91,13 @@ view
               ]
       ]
       where
-      displayEditName = displayEditGenerated Name (Proxy ∷ Proxy "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
-      displayEditHeadline = displayEditGenerated Headline (Proxy ∷ Proxy "headline") "A tagline to draw attention to your profile" headlineMaxCharacters
+      displayEditName = displayEditGenerated Name (Proxy ∷ _ "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
+      displayEditHeadline = displayEditGenerated Headline (Proxy ∷ _ "headline") "A tagline to draw attention to your profile" headlineMaxCharacters
 
       displayEditAge =
             let
-                  field = Proxy ∷ Proxy "age"
-                  fieldInputed = Proxy ∷ Proxy "ageInputed"
+                  field = Proxy ∷ _ "age"
+                  fieldInputed = Proxy ∷ _ "ageInputed"
                   currentFieldValue = map show <<< SDT.ageFrom $ map DN.unwrap user.age
                   parser = map DateWrapper <<< SDT.unformatIsoDate
                   control = HE.input
@@ -109,7 +109,7 @@ view
                         ]
             in
                   displayEditOptionalField field Age (map HE.span_ currentFieldValue) control
-      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ Proxy "gender") Gender (HE.span_ <<< show <$> user.gender)
+      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ _ "gender") Gender (HE.span_ <<< show <$> user.gender)
       displayEditCountry =
             let
                   display country = HE.div (HA.class' "blocky")
@@ -117,13 +117,13 @@ view
                         , HE.text country
                         ]
             in
-                  displayEditOptional DI.fromString countries (Proxy ∷ Proxy "country") Country do
+                  displayEditOptional DI.fromString countries (Proxy ∷ _ "country") Country do
                         country ← user.country
                         display <<< _.name <$> DF.find ((country == _) <<< _.id) countries
 
       displayEditLanguages =
             let
-                  fieldInputed = Proxy ∷ Proxy "languagesInputed"
+                  fieldInputed = Proxy ∷ _ "languagesInputed"
                   currentFieldValue = case map getLanguage model.user.languages of
                         [] → Nothing
                         languages → Just $ HE.div (HA.class' "blocky")
@@ -132,11 +132,11 @@ view
                               ]
                   control = HE.select [ HA.onInput (setFieldInputedMaybe fieldInputed <<< DI.fromString) ] $ displayOptionsWith "Select" model.languagesInputed languages
             in
-                  displayEditList (Proxy ∷ Proxy "languages") Languages getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
+                  displayEditList (Proxy ∷ _ "languages") Languages getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
       displayEditTags =
             let
-                  fieldInputed = Proxy ∷ Proxy "tagsInputed"
-                  fieldInputedList = Proxy ∷ Proxy "tagsInputedList"
+                  fieldInputed = Proxy ∷ _ "tagsInputed"
+                  fieldInputedList = Proxy ∷ _ "tagsInputedList"
                   currentFieldValue = case model.user.tags of
                         [] → Nothing
                         tags → Just $ HE.div (HA.class' "blocky") $ map (HE.span (HA.class' "tag")) tags
@@ -149,11 +149,11 @@ view
                         , HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
                         ]
             in
-                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ Proxy "tags") Tags identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
+                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ _ "tags") Tags identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
 
       displayEditDescription = HE.fragment
             [ HE.div_
-                    [ HE.div [ title "description", HA.class' { hidden: DM.isJust descriptionInputed }, HA.onClick (editField (Proxy ∷ Proxy "description") (Proxy ∷ Proxy "descriptionInputed")) ]
+                    [ HE.div [ title "description", HA.class' { hidden: DM.isJust descriptionInputed }, HA.onClick (editField (Proxy ∷ _ "description") (Proxy ∷ _ "descriptionInputed")) ]
                             [ HE.div (HA.class' "about")
                                     [ HE.span (HA.class' "duller") "About"
                                     , pen
@@ -167,16 +167,15 @@ view
                                     , HE.br
                                     , HE.text "Leave it blank to generate a new random description"
                                     ]
-                            , HE.textarea
+                            , HE.textarea'
                                     [ HA.class' "profile-edition-description"
                                     , HA.maxlength descriptionMaxCharacters
-                                    ,
-                                      -- SF.focus,
-                                      HA.onInput (setFieldInputed (Proxy ∷ Proxy "descriptionInputed"))
-                                    ] $ DM.fromMaybe "" descriptionInputed
+                                    , HA.onInput (setFieldInputed (Proxy ∷ _ "descriptionInputed"))
+                                    , HA.value $ DM.fromMaybe "" descriptionInputed
+                                    ]
                             , HE.div (HA.class' "save-cancel")
                                     [ check (Save $ Generated Description)
-                                    , cancel (Proxy ∷ Proxy "descriptionInputed")
+                                    , cancel (Proxy ∷ _ "descriptionInputed")
                                     ]
                             ]
                     ]
@@ -186,8 +185,8 @@ view
       displayEditList field what formatter currentFieldValue control explanation maxElements =
             let
                   stringField = TDS.reflectSymbol field
-                  fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
-                  fieldInputedList = TDS.append field (Proxy ∷ Proxy "InputedList")
+                  fieldInputed = TDS.append field (Proxy ∷ _ "Inputed")
+                  fieldInputedList = TDS.append field (Proxy ∷ _ "InputedList")
                   currentFieldInputedList = R.get fieldInputedList model
                   isEditing = DM.isJust $ currentFieldInputedList
                   displayRemoveItem item =
@@ -228,7 +227,7 @@ view
       displayEditOptional ∷ ∀ r s t field fieldInputed. IsSymbol field ⇒ Append field "Inputed" fieldInputed ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Choice (Maybe t)) r PM ⇒ Cons field (Maybe t) s PU ⇒ Show t ⇒ Eq t ⇒ (String → Maybe t) → Array { id ∷ t, name ∷ String } → Proxy field → Field → Maybe (Html ProfileMessage) → Html ProfileMessage
       displayEditOptional parser options field what currentFieldValue =
             let
-                  fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
+                  fieldInputed = TDS.append field (Proxy ∷ _ "Inputed")
             in
                   displayEditOptionalField field what currentFieldValue $ HE.select [ HA.onInput (setFieldInputed fieldInputed <<< parser) ] $ displayOptions (R.get field model.user) options
 
@@ -236,7 +235,7 @@ view
       displayEditOptionalField field what currentFieldValue control =
             let
                   stringField = TDS.reflectSymbol field
-                  fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
+                  fieldInputed = TDS.append field (Proxy ∷ _ "Inputed")
                   isEditing = DM.isJust $ R.get fieldInputed model
             in
                   HE.div (HA.class' { centered: isEditing })
@@ -264,7 +263,7 @@ view
       displayEditGenerated what field explanation maxLength =
             let
                   stringField = TDS.reflectSymbol field
-                  fieldInputed = TDS.append field (Proxy ∷ Proxy "Inputed")
+                  fieldInputed = TDS.append field (Proxy ∷ _ "Inputed")
                   currentInputed = R.get fieldInputed model
                   isEditing = DM.isJust currentInputed
             in
