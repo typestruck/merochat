@@ -21,7 +21,7 @@ faq =
                     , HE.li_ $ HE.a (HA.href "#chatexperiments") "What are chat experiments?"
                     , HE.li_ $ HE.a (HA.href "#mero") "What does Mero in MeroChat stand for?"
                     , HE.li_ $ HE.a (HA.href "#canihelp") "Wow, I love it. How can I help?"
-                    , HE.li (HA.class' "hide-internal") $ HE.a (HA.href "#other") "I have another question/doubt/something else to say"
+                    , HE.li (HA.class' "hide-internal") $ HE.a (HA.href "#other") "I still have questions/doubts/something else to say"
                     ]
             , HE.h2 [ HA.id "whatsmerochat" ] "What is MeroChat?"
             , HE.p_ "MeroChat is a random chat. That means the app suggests you new people to talk to. You may choose to fill in your profile and voila! Friends."
@@ -46,7 +46,7 @@ faq =
             , HE.p_ "These are gimmicks/games/events for novel chatting. For example: chat in character as a historical figure, find someone to debate your latest hot take, find patient zero from a network of chats, etc."
             , HE.p_ "Chat experiments are optional to join and users are randomly invited for them."
             , HE.h2 [ HA.id "mero" ] "What does Mero in MeroChat stand for?"
-            , HE.p_ "Until someone finds a backronym, it is short for the Guarani word for melons. Not surprisingly, the app is full of them."
+            , HE.p_ "Until someone finds a backronym, it is the Guarani word for melons. Not surprisingly, the app is full of them."
             , HE.h2_ "Recommend me some music"
             , HE.p_
                     [ HE.text "Listen to "
