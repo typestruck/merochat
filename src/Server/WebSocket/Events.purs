@@ -91,10 +91,10 @@ aliveDelayMinutes = 5
 
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration@{ tokenSecret } pool userAvailability connection request = do
-      maybeUserID ← ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
+      maybeUserId ← ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
-      case maybeUserID of
+      case maybeUserId of
             Nothing → do
                   SW.terminate connection
                   EC.log "terminated due to auth error"

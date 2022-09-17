@@ -10,7 +10,7 @@ faq ∷ ∀ m. Html m
 faq =
       HE.div (HA.class' "terms")
             [ HE.ul (HA.class' "bulleted no-padding")
-                    [ HE.li (HA.class' "no-padding") $ HE.a (HA.href "#whatsmelanchat") "What is MeroChat?"
+                    [ HE.li (HA.class' "no-padding") $ HE.a (HA.href "#whatsmerochat") "What is MeroChat?"
                     , HE.li_ $ HE.a (HA.href "#canifilter") "Can I filter new people to talk to by gender/location/etc?"
                     , HE.li_ $ HE.a (HA.href "#dating") "Is MeroChat a dating/hookup app?"
                     , HE.li_ $ HE.a (HA.href "#isitfree") "Is MeroChat free?"
@@ -23,7 +23,7 @@ faq =
                     , HE.li_ $ HE.a (HA.href "#canihelp") "Wow, I love it. How can I help?"
                     , HE.li (HA.class' "hide-internal") $ HE.a (HA.href "#other") "I have another question/doubt/something else to say"
                     ]
-            , HE.h2 [ HA.id "whatsmelanchat" ] "What is MeroChat?"
+            , HE.h2 [ HA.id "whatsmerochat" ] "What is MeroChat?"
             , HE.p_ "MeroChat is a random chat. That means the app suggests you new people to talk to. You may choose to fill in your profile and voila! Friends."
             , HE.h2 [ HA.id "canifilter" ] "Can I filter new people to talk to by gender/location/etc?"
             , HE.p_ "You may skip suggestions, but it is not possible to filter them in any way. MeroChat tries its best to give you quality people to talk to, but the fun is in discovering."

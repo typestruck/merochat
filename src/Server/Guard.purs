@@ -29,8 +29,8 @@ guards configuration =
 checkLoggedUser ∷ Configuration → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { tokenSecret } request = do
       cookies ← PSG.cookies request
-      maybeUserID ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
-      case maybeUserID of
+      maybeUserId ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      case maybeUserId of
             Just userId → pure $ Right userId
             _ →
                   if isPost then
@@ -44,17 +44,17 @@ checkLoggedUser { tokenSecret } request = do
 checkAnonymous ∷ Configuration → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { tokenSecret } request = do
       cookies ← PSG.cookies request
-      maybeUserID ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
-      case maybeUserID of
-            Just userId →
+      maybeUserId ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      case maybeUserId of
+            Just _ →
                   if isPost then
                         pure <<< Left $ PSR.forbidden Empty
                   else
-                        redirectIM
+                        redirectIm
             _ → pure $ Right unit
       where
       isPost = NH.requestMethod request == "POST"
-      redirectIM = redirect $ routes.im.get {}
+      redirectIm = redirect $ routes.im.get {}
 
 badRequest ∷ ∀ r. Aff (Either (Response Empty) r)
 badRequest = pure <<< Left $ PSR.badRequest Empty
