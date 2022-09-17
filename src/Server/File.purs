@@ -27,16 +27,6 @@ foreign import init_ ∷ EffectFn2 String String Unit
 
 foreign import upload_ ∷ EffectFn2 String Buffer Unit
 
-type AuthorizeAccountResponse =
-      { authorizationToken ∷ String
-      , apiUrl ∷ String
-      }
-
-type GetUploadUrlResponse =
-      { authorizationToken ∷ String
-      , uploadUrl ∷ String
-      }
-
 upload ∷ String → Buffer → Effect Unit
 upload = EU.runEffectFn2 upload_
 
