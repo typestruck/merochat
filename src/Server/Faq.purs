@@ -39,7 +39,7 @@ faq =
             , HE.h2 [ HA.id "gibberishprofile" ] "What is that gibberish on my profile?"
             , HE.p_ "The app automatically fills in some fields (like name, headline or bio) for a new profile. Sometimes it is amusing, sometimes just corny. You may leave as it is (or also generate some new gibberish!) or edit it to your liking."
             , HE.h2 [ HA.id "profileprivate" ] "Is my profile private?"
-            , HE.p_ "Your profile can only be viewed by other users inside of the app. As for your personal data, you decide how much (or little) you want to share."
+            , HE.p_ "Your profile can only be viewed by other users inside of the app, limited by your privacy settings. As for your personal data, you decide how much (or little) you want to share. "
             , HE.h2 [ HA.id "groupchats" ] "Are group chats available?"
             , HE.p_ "No, MeroChat is for one on one, private conversations."
             , HE.h2 [ HA.id "chatexperiments" ] "What are chat experiments?"
@@ -57,7 +57,7 @@ faq =
             , HE.p_
                     [ HE.text "Right?! If you can spare some, consider backing MeroChat. The entire "
                     , HE.a [HA.href "https://github.com/typestruck/merochat", HA.target "_blank"] "source code"
-                    , HE.text " is also open source, in case this is your thing."
+                    , HE.text " is also open source in case this is your thing."
                     ]
             , HE.p_ "That being said, just letting others know about MeroChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated."
             , HE.div (HA.class' "hide-internal")

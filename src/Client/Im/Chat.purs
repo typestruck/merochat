@@ -109,23 +109,28 @@ beforeSendMessage
       where
       isEmpty = DS.null <<< DS.trim
 
-      updatedModel = case chatting, suggesting of
+      Tuple shouldFetchHistory updatedModel = case chatting, suggesting of
             Nothing, (Just index) →
                   --an existing contact might be in the suggestions
                   let
                         user = suggestions !@ index
                         maybeIndex = DA.findIndex (\cnt → cnt.user.id == user.id && cnt.impersonating == Nothing) contacts
+                        updatedContacts = if DM.isJust maybeIndex then contacts else DA.cons (SIC.defaultContact id user) contacts
+                        updatedChatting = maybeIndex <|> Just 0
+                        shouldFetchHistory = _.shouldFetchChatHistory $ SU.fromJust do
+                              index <- updatedChatting
+                              updatedContacts !! index
                   in
-                        model
-                              { chatting = maybeIndex <|> Just 0
-                              , contacts = if DM.isJust maybeIndex then contacts else DA.cons (SIC.defaultContact id user) contacts
+                        Tuple shouldFetchHistory model
+                              { chatting = updatedChatting
+                              , contacts = updatedContacts
                               , suggestions = SU.fromJust $ DA.deleteAt index suggestions
                               }
-            _, _ → model
+            _, _ → Tuple false model
 
       nextEffects c = [ fetchHistory, nextSendMessage c ]
 
-      fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory true
+      fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory shouldFetchHistory
       nextSendMessage input = do
             date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
             CIF.next $ SendMessage input date
