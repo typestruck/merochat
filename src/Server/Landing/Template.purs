@@ -11,7 +11,6 @@ import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
-import Shared.Im.Svg as SIA
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
@@ -92,11 +91,11 @@ template = do
                                     [ HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point1 Png ]
                                             , HE.br
-                                            , HE.text "No seedy people!"
+                                            , HE.text "No sleazy people!"
                                             , HE.br
                                             , HE.text "Talk to folks who want"
                                             , HE.br
-                                            , HE.text "to have real conversations"
+                                            , HE.text "to have actual conversations"
                                             ]
                                     , HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point4 Png ]

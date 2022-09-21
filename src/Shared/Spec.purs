@@ -16,8 +16,6 @@ import Shared.Html (Html(..))
 import Shared.Settings.Types (PrivacySettings)
 import Shared.User (ProfileVisibility)
 
-type NoBody = {}
-
 spec ∷
       Spec
             { guards ∷
@@ -188,8 +186,7 @@ spec ∷
                                                               }
                                                 , terminate ∷
                                                         POST "/account/terminate"
-                                                              { body ∷ NoBody
-                                                              , response ∷ Ok
+                                                              { response ∷ Ok
                                                               }
                                                 , privacy ∷
                                                         POST "/account/privacy"
@@ -220,7 +217,7 @@ spec ∷
                     , logout ∷
                             POST "/logout"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                  , body ∷ NoBody
+
                                   , response ∷ Ok
                                   }
                     , leaderboard ∷
@@ -231,6 +228,11 @@ spec ∷
                     , help ∷
                             GET "/help"
                                   { response ∷ Html
+                                  }
+                    , feedback ∷
+                            GET "/feedback"
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
+                                  , response ∷ String
                                   }
                     , internalHelp ∷
                             GET "/inhelp"

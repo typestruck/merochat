@@ -166,7 +166,7 @@ view
                                     , HE.text "Leave it blank to generate a new random description"
                                     ]
                             , HE.textarea'
-                                    [ HA.class' "profile-edition-description"
+                                    [ HA.class' "profile-edition-description modal-input"
                                     , HA.maxlength descriptionMaxCharacters
                                     , HA.onInput (setFieldInputed (Proxy ∷ _ "descriptionInputed"))
                                     , HA.value $ DM.fromMaybe "" descriptionInputed

@@ -20,6 +20,7 @@ import Run.Except as RE
 import Run.Reader as RR
 import Server.Backer.Handler as SBH
 import Server.Experiments.Handler as SEH
+import Server.Feedback.Handler as SFH
 import Server.Fortune.Handler as SFTH
 import Server.Help.Handler as SHH
 import Server.Im.Handler as SIH
@@ -92,6 +93,7 @@ handlers reading =
       , logout: runJson reading SLOH.logout
       , help: runHtml reading SHH.help
       , backer: runHtml reading SBH.backer
+      , feedback: runHtml reading SFH.feedback
       , internalBacker: runJson reading SIBH.internalBacker
       , experiments: runJson reading SEH.experiments
       , developmentFiles: developmentFiles

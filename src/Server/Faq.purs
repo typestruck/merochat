@@ -21,7 +21,6 @@ faq =
                     , HE.li_ $ HE.a (HA.href "#chatexperiments") "What are chat experiments?"
                     , HE.li_ $ HE.a (HA.href "#mero") "What does Mero in MeroChat stand for?"
                     , HE.li_ $ HE.a (HA.href "#canihelp") "Wow, I love it. How can I help?"
-                    , HE.li (HA.class' "hide-internal") $ HE.a (HA.href "#other") "I still have questions/doubts/something else to say"
                     ]
             , HE.h2 [ HA.id "whatsmerochat" ] "What is MeroChat?"
             , HE.p_ "MeroChat is a random chat. That means the app suggests you new people to talk to. You may choose to fill in your profile and voila! Friends."
@@ -60,8 +59,4 @@ faq =
                     , HE.text " is also open source in case this is your thing."
                     ]
             , HE.p_ "That being said, just letting others know about MeroChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated."
-            , HE.div (HA.class' "hide-internal")
-                    [ HE.h2 [ HA.id "other" ] "I still have questions/doubts/something else to say"
-                    , HE.p_ "That's easy, send an email to contact@mero.chat"
-                    ]
             ]

@@ -181,7 +181,7 @@ body {
     margin: 0 2px;
 }
 
-.typing {
+.typing, .reach-out {
     font-style: italic;
 }
 
@@ -904,6 +904,7 @@ svg.toolbar-action {
 #experiments-root,
 #profile-edition-root,
 #settings-edition-root,
+#feedback-root,
 #karma-leaderboard-root,
 #help-root,
 #backer-root {
@@ -1926,12 +1927,22 @@ select {
     padding-right: 8px;
 }
 
+.svg-feedback {
+    width: 35px;
+    height: 35px;
+
+    margin-left: auto;
+}
+
+.svg-experiment,
+.svg-feedback {
+    margin-bottom: 5px;
+    margin-right: 20px;
+}
+
 .svg-experiment {
     width: 15px;
     height: 15px;
-    margin-left: auto;
-    margin-right: 20px;
-    margin-bottom: 5px;
 }
 
 .suggestion.old~.message-history {
@@ -2102,10 +2113,15 @@ select {
         padding: 10px
     }
 
+    .svg-feedback,
     .svg-experiment {
         order: 2;
-        width: 18px;
         fill: rgb(195, 211, 101);
+
+    }
+
+    .svg-experiment {
+        width: 18px;
         height: 18px;
         margin-right: 25px;
     }
@@ -2262,6 +2278,7 @@ select {
     }
 
     #temporary-user-sign-up-form,
+    #feedback-root,
     #help-root,
     #karma-leaderboard-root,
     #settings-edition-root,

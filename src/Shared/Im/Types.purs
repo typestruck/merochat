@@ -185,6 +185,7 @@ data ShowUserMenuModal
       | ShowLeaderboard
       | ShowHelp
       | ShowBacker
+      | ShowFeedback
       | ShowReport Int
       | Tutorial Step
 
@@ -548,6 +549,7 @@ instance Show ShowUserMenuModal where
             ShowHelp → "Help"
             ShowExperiments → "Chat experiments"
             ShowBacker → "Backing"
+            ShowFeedback -> "Send feedback"
             _ → ""
 
 instance Show MessageContent where

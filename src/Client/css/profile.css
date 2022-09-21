@@ -40,7 +40,6 @@
     height: 300px;
     padding: 15px;
     padding-bottom: 35px;
-    border: 1px solid #b5b7b7;
 }
 
 .profile-edition-name {
@@ -167,6 +166,7 @@ select+.save {
 
 .suggestion.contact .modal-input:focus {
     border: none !important;
+    outline: none;
 }
 
 .profile-edition-add-list {

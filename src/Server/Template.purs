@@ -61,7 +61,7 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
             [ HE.head_
                     ( [ HE.meta $ HA.charset "UTF-8"
                       , HE.meta [ HA.name "viewport", HA.content "width=device-width, initial-scale=1.0" ]
-                      , HE.meta [ HA.name "description", HA.content "MeroChat is a friendly, 1-on-1, text based chat site for having actual conversations" ]
+                      , HE.meta [ HA.name "description", HA.content "Chat to new people who also just want to chat. MeroChat is a text based chat site for having actual conversations" ]
                       , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href favicon ]
                       , HE.title title
                       ] <> styleSheets

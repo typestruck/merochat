@@ -38,6 +38,7 @@ data ElementId
       | EmailInput
       | BackerRoot
       | ConfirmPassword
+      | FeedbackRoot
       | FaqLink
       | CaptchaRegularUser
       | TemporaryUserSignUp
@@ -65,6 +66,7 @@ instance Show ElementId where
             ImageFormCaption → "image-form-caption"
             MessageHistory → "message-history"
             Favicon → "favicon"
+            FeedbackRoot -> "feedback-root"
             ConfirmPasswordInput → "confirm-password-input"
             PasswordDiv → "password"
             CaptchaRegularUser → "captcha-regular-user"

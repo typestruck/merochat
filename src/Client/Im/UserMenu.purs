@@ -42,6 +42,7 @@ toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
             ShowHelp → showTab request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
             ShowExperiments → showTab request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
             ShowBacker → showTab request.internalBacker ShowBacker Nothing BackerRoot
+            ShowFeedback → showTab request.feedback ShowFeedback Nothing FeedbackRoot
             modal → F.noMessages $ model
                   { toggleModal = modal
                   , erroredFields = []

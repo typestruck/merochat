@@ -52,6 +52,6 @@ terms =
             , HE.p_ "We reserve the right to delete, suspend or limit your account at any time for any reason without prior notice."
             , HE.div (HA.class' "hide-internal")
                     [ HE.h2_ "Contact"
-                    , HE.p_ "You may contact MeroChat about these terms or any other issues at contact@mero.chat"
+                    , HE.p_ "You may contact MeroChat about these terms or any other issues by sending an email to contact"
                     ]
             ]
