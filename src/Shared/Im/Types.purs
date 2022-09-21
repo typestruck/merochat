@@ -243,7 +243,7 @@ data RetryableRequest
       | ReportUser Int
       | DeleteChat (Tuple Int (Maybe Int))
 
-data ReportReason = DatingContent | Harassment | HateSpeech | Spam | OtherReason
+data ReportReason = DatingContent | Harassment | HateSpeech | Spam | Minor | OtherReason
 
 data ImMessage
       =
@@ -416,12 +416,14 @@ instance BoundedEnum ReportReason where
             Harassment → 1
             HateSpeech → 2
             Spam → 3
+            Minor → 4
             OtherReason → 255
       toEnum = case _ of
             0 → Just DatingContent
             1 → Just Harassment
             2 → Just HateSpeech
             3 → Just Spam
+            4 → Just Minor
             255 → Just OtherReason
             _ → Nothing
 
@@ -430,14 +432,16 @@ instance Enum ReportReason where
             DatingContent → Just Harassment
             Harassment → Just HateSpeech
             HateSpeech → Just Spam
-            Spam → Just OtherReason
+            Spam → Just Minor
+            Minor → Just OtherReason
             OtherReason → Nothing
       pred = case _ of
             DatingContent → Nothing
             Harassment → Just DatingContent
             HateSpeech → Just Harassment
             Spam → Just HateSpeech
-            OtherReason → Just Spam
+            Minor → Just Spam
+            OtherReason → Just Minor
 
 instance Enum MessageStatus where
       succ = case _ of
@@ -532,6 +536,7 @@ instance Show ReportReason where
             DatingContent → "Dating content"
             Harassment → "Harassment/Bullying"
             HateSpeech → "Hate Speech/Call to violence"
+            Minor → "User is a minor"
             Spam → "Spam/Product placement"
             OtherReason → "Other"
 

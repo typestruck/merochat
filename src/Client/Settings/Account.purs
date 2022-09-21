@@ -5,7 +5,6 @@ import Prelude
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CNN
-import Shared.Network (RequestStatus(..))
 import Data.Symbol (class IsSymbol)
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
@@ -15,6 +14,7 @@ import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Shared.Im.Types (ImMessage(..))
+import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettingsId(..), SettingsMessage(..), SettingsModel)

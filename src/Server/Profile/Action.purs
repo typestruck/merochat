@@ -27,7 +27,7 @@ tooManyTagsMessage ∷ String
 tooManyTagsMessage = "Number of tags larger than " <> show maxTags <> " limit"
 
 tooYoungMessage ∷ String
-tooYoungMessage = "You must be over 13 years old in order to use MeroChat"
+tooYoungMessage = "You must be over 18 years old in order to use MeroChat"
 
 fieldTooBigMessage ∷ String
 fieldTooBigMessage = "Field exceeded max value"
@@ -67,8 +67,8 @@ saveAvatar loggedUserId base64 = do
 
 saveAge ∷ Int → Maybe DateWrapper → ServerEffect Unit
 saveAge loggedUserId birthday = do
-      thirteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
-      when (map DN.unwrap birthday > thirteen) $ SR.throwBadRequest tooYoungMessage
+      eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
+      when (map DN.unwrap birthday > eighteen) $ SR.throwBadRequest tooYoungMessage
       SPD.saveField loggedUserId "birthday" birthday
 
 saveGender ∷ Int → Maybe Gender → ServerEffect Unit

@@ -2,6 +2,7 @@ module Client.Common.Network where
 
 import Client.Common.Types
 import Prelude
+import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Control.Monad.Error.Class as CMEC
@@ -15,13 +16,13 @@ import Data.String as DS
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
-import Shared.Im.Types
 import Effect.Exception as EE
 import Payload.Client (ClientError(..), ClientResponse, defaultOpts)
 import Payload.Client as PC
 import Payload.ResponseTypes (Response(..))
+import Shared.Network (RequestStatus(..))
+import Shared.Network as SN
 import Shared.Spec (spec)
-import Shared.Network
 import Web.DOM.Element as WDE
 
 request ∷ _
@@ -41,8 +42,9 @@ formRequest formSelector aff = do
                   notifySuccess
                   pure Success
             Left err → do
-                  setLoading previousLabel $ errorMessage err
-                  pure Failure
+                  let errorMessage = SN.errorMessage err
+                  setLoading previousLabel errorMessage
+                  pure $ Failure errorMessage
       where
       formSelectorId = if DS.take 1 formSelector == "." then formSelector else "#" <> formSelector
       buttonSelector = formSelectorId <> " input[type=button], " <> formSelectorId <> " button"
@@ -88,7 +90,7 @@ retryableResponse requestMessage message aff = do
             Right r → pure <<< Just <<< message <<< _.body $ DN.unwrap r
             Left err → do
                   logError err
-                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage: Just $ errorMessage err }
+                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage: Just $ SN.errorMessage err }
 
 -- | Perform a request, throwing on errors
 silentResponse ∷ ∀ a. Aff (ClientResponse a) → Aff a
@@ -103,9 +105,3 @@ defaultResponse aff = map (_.body <<< DN.unwrap) <$> aff
 
 logError ∷ ∀ e. Show e ⇒ e → Aff Unit
 logError err = liftEffect <<< EC.log $ "Response error: " <> show err
-
-errorMessage ∷ ClientError → String
-errorMessage = case _ of
-      DecodeError _ → "Server sent an unexpected response"
-      StatusError { response: Response { body } } → body
-      RequestError { message } → message

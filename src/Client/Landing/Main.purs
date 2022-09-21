@@ -1,7 +1,6 @@
 module Client.Landing.Main where
 
 import Prelude
-import Shared.Network
 
 import Client.Common.Account as CCA
 import Client.Common.Captcha as CCC
@@ -16,6 +15,7 @@ import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Shared.Element (ElementId(..))
+import Shared.Network (RequestStatus(..))
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.HTML.Event.EventTypes (click)
@@ -37,7 +37,7 @@ runCaptcha widgetId captchaResponse request = case captchaResponse of
             status ← CCA.formRequest request
             liftEffect $ case status of
                   Success → CCL.setLocation $ routes.im.get {}
-                  Failure → CCC.reset widgetId
+                  Failure _ → CCC.reset widgetId
 
 registerTemporaryUserEvents ∷ Effect Unit
 registerTemporaryUserEvents = do

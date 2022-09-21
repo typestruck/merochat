@@ -31,7 +31,7 @@ terms =
             , HE.p_ """The branding including, but not limited to, the logo, name ("MeroChat") and description ("Friendly Random Chat") may not be copied or otherwise reproduced without our written permission."""
             , HE.p_ "You may not post copyrighted material on the Site."
             , HE.h2_ "Eligibility"
-            , HE.p_ "You must be 13 years of age or older to register on the Site."
+            , HE.p_ "You must be 18 years of age or older to register on the Site."
             , HE.h2_ "Restrictions"
             , HE.p_ "You may not use the Site to"
             , HE.ul (HA.class' "bulleted")

@@ -19,6 +19,7 @@ template = do
       contents ← ST.template externalDefaultParameters
             { content = externalDefaultParameters.content <> content
             , javascript = javascript
+            , title = "MeroChat - Login"
             }
       FRS.render contents
       where

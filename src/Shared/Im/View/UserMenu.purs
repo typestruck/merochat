@@ -42,10 +42,6 @@ userMenu model@{ toggleContextMenu, experimenting, toggleModal, user: { temporar
                                     [ HE.div (HA.class' "menu-item-heading") "Settings"
                                     , HE.span (HA.class' "duller") "Change email, password, etc"
                                     ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Backing"
-                                    , HE.span (HA.class' "duller") "Donate or become a patron"
-                                    ]
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard ]
                                     [ HE.div (HA.class' "menu-item-heading") "Karma leaderboard"
                                     , HE.span (HA.class' "duller") "See your karma rank and stats"
@@ -53,6 +49,10 @@ userMenu model@{ toggleContextMenu, experimenting, toggleModal, user: { temporar
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments ]
                                     [ HE.div (HA.class' "menu-item-heading") "Chat experiments"
                                     , HE.span (HA.class' "duller") "Talk in novel ways"
+                                    ]
+                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker ]
+                                    [ HE.div (HA.class' "menu-item-heading") "Backing"
+                                    , HE.span (HA.class' "duller") "Donate or become a patron"
                                     ]
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp ]
                                     [ HE.div (HA.class' "menu-item-heading") "Help"

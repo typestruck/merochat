@@ -20,6 +20,7 @@ template = do
             { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.bundlePath Help Css ] ]
             , javascript = [ HE.script' [ HA.type' "text/javascript", HA.src $ SPT.bundlePath Help Js ] ]
             , content = externalDefaultParameters.content <> content
+            , title = "MeroChat - Help"
             }
       FRS.render contents
       where

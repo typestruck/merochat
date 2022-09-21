@@ -7,12 +7,12 @@ import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCNT
-import Shared.Network
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
+import Shared.Network (RequestStatus(..))
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)

@@ -94,9 +94,9 @@ template = do
                                             , HE.br
                                             , HE.text "No seedy people!"
                                             , HE.br
-                                            , HE.text "Talk to folks who want to"
+                                            , HE.text "Talk to folks who want"
                                             , HE.br
-                                            , HE.text "have meaningful conversations"
+                                            , HE.text "to have real conversations"
                                             ]
                                     , HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point4 Png ]

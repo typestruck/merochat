@@ -11,8 +11,8 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic as DGRS
 import Foreign as F
-import Shared.Experiments.Types (ExperimentData)
 import Shared.DateTime (DateWrapper)
+import Shared.Experiments.Types (ExperimentData)
 import Shared.Network (RequestStatus)
 import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)

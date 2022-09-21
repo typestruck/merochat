@@ -174,17 +174,17 @@ modalMenu model@{ toggleModal, failedRequests, user: { temporary } } =
                             ]
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' { entry: true, selected: toggleModal == ShowProfile } ] $ show ShowProfile
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings, HA.class' { entry: true, selected: toggleModal == ShowSettings } ] $ show ShowSettings
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggleModal == ShowBacker } ] $ show ShowBacker
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments, HA.class' { entry: true, selected: toggleModal == ShowExperiments } ] $ show ShowExperiments
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggleModal == ShowLeaderboard } ] $ show ShowLeaderboard
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggleModal == ShowBacker } ] $ show ShowBacker
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggleModal == ShowHelp } ] $ show ShowHelp
                     ]
             , temporaryUserSignUp model
             , HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowProfile } ] $ retry ShowProfile
             , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowSettings } ] $ retry ShowSettings
-            , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: temporary || toggleModal /= ShowBacker } ] $ retry ShowBacker
             , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: temporary || toggleModal /= ShowExperiments } ] $ retry ShowExperiments
             , HE.div [ HA.id $ show KarmaLeaderboardRoot, HA.class' { hidden: temporary || toggleModal /= ShowLeaderboard } ] $ retry ShowLeaderboard
+            , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: temporary || toggleModal /= ShowBacker } ] $ retry ShowBacker
             , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
 
             ]

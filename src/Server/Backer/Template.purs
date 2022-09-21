@@ -19,5 +19,6 @@ template = do
             , css = externalDefaultParameters.css <>
                     [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Backer Css ]
                     ]
+            , title = "MeroChat - Become a backer"
             }
       FRS.render contents

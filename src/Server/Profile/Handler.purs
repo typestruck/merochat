@@ -12,7 +12,7 @@ import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Shared.User
 import Server.Profile.Template as SPT
-import Shared.DateTime (DateWrapper(..))
+import Shared.DateTime (DateWrapper)
 
 profile ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
 profile { guards: { loggedUserId } } = do

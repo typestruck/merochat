@@ -61,11 +61,11 @@ ageFrom' now birthday = calculate <$> birthday
       where
       calculate b = DE.fromEnum (DD.year now) - DE.fromEnum (DD.year b) - if dayDiff (DateTime now zeroTime) < dayDiff (DateTime b zeroTime) then 1 else 0
 
---minimum age to sign up is 13
+--minimum age to sign up is 18
 latestEligibleBirthday ∷ Effect Date
 latestEligibleBirthday = do
       now ← EN.nowDate
-      pure <<< SU.fromJust $ DD.adjust (Days $ negate (365.0 * 13.0)) now
+      pure <<< SU.fromJust $ DD.adjust (Days $ negate (365.0 * 18.0)) now
 
 getYear ∷ ∀ t10. Newtype t10 Date ⇒ t10 → Int
 getYear = DE.fromEnum <<< DD.year <<< DN.unwrap

@@ -240,7 +240,7 @@ registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
                   [ do
                           status ← CCN.formRequest (show TemporaryUserSignUpForm) $ request.im.register { body: { email: SU.fromJust temporaryEmail, password: SU.fromJust temporaryPassword } }
                           case status of
-                                Failure → pure Nothing
+                                Failure _ → pure Nothing
                                 Success → pure $ Just SetRegistered
                   ]
       where

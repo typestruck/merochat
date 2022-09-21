@@ -3,7 +3,6 @@ module Shared.Profile.View where
 import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
-import Shared.Network
 import Shared.Profile.Types
 
 import Data.Array ((:))
@@ -33,8 +32,8 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIS
 import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
+import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
-import Shared.Setter as SS
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
 import Type.Data.Symbol as TDS
@@ -59,8 +58,7 @@ view
                       [ HE.div' (HA.class' "loading")
                       ]
               , HE.div (HA.class' "request-result-message success")
-                      [ HE.span (HA.class' { "request-error-message": true, hidden: updateRequestStatus /= Just Failure }) "Could not update field. Please try again later"
-                      , HE.span [ HA.class' { "input success-message": true, hidden: updateRequestStatus /= Just Success } ] "Profile has been updated"
+                      [ HE.span (HA.class' { "request-error-message": true, hidden: failedRequest }) failedRequestMessage
                       ]
               , HE.h3 (HA.class' { "registration-message": true, hidden: not registrationMessage }) "Your account has been created!"
               , HE.div (HA.class' "avatar-edition")
@@ -295,6 +293,10 @@ view
 
       languageHM = DH.fromArray $ map (\{ id, name } → Tuple id name) languages
       getLanguage = SU.fromJust <<< flip DH.lookup languageHM
+
+      Tuple failedRequest failedRequestMessage = case updateRequestStatus of
+            Just (Failure message) → Tuple false message
+            _ → Tuple true ""
 
 --refactor: abstract with shared/profile
 impersonationProfile ∷ Maybe ExperimentData → Html ProfileMessage

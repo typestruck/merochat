@@ -19,7 +19,7 @@ type Parameters a =
       , css ∷ Array (Html a)
       , content ∷ Array (Html a)
       , footer ∷ Array (Html a)
-      , bundled :: Boolean
+      , bundled ∷ Boolean
       }
 
 defaultParameters ∷ ∀ a. Parameters a
@@ -37,7 +37,7 @@ defaultParameters =
 externalDefaultParameters ∷ ∀ a. Parameters a
 externalDefaultParameters = defaultParameters
       { css =
-              [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath External Css]
+              [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath External Css ]
               ]
       , content =
               [ HE.div (HA.class' "header")
@@ -61,6 +61,7 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
             [ HE.head_
                     ( [ HE.meta $ HA.charset "UTF-8"
                       , HE.meta [ HA.name "viewport", HA.content "width=device-width, initial-scale=1.0" ]
+                      , HE.meta [ HA.name "description", HA.content "MeroChat is a friendly, 1-on-1, text based chat site for having actual conversations" ]
                       , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href favicon ]
                       , HE.title title
                       ] <> styleSheets
@@ -69,11 +70,17 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
             ]
       where
       styleSheets =
-           (if bundled then [] else [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Base Css ]
-            ] ) <> css
+            ( if bundled then []
+              else
+                    [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Base Css ]
+                    ]
+            ) <> css
       javascript =
-            (if bundled then [] else [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js]
-            ]) <> parameters.javascript
+            ( if bundled then []
+              else
+                    [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js ]
+                    ]
+            ) <> parameters.javascript
 
 externalFooter ∷ ∀ a. Html a
 externalFooter =
@@ -85,6 +92,6 @@ externalFooter =
                     , HE.li_ $ HE.a (HA.href $ routes.backer {}) "Become a backer"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#terms") "Terms and conditions"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy police"
-                    , HE.li_ $ HE.a [HA.href "https://github.com/typestruck/merochat", HA.target "_blank"] "Source code"
+                    , HE.li_ $ HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] "Source code"
                     ]
             ]
