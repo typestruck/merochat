@@ -17,6 +17,7 @@ data ElementId
       | ProfileEditionForm
       | ImageFormCaption
       | PasswordDiv
+      | FeedbackForm
       | ConfirmPasswordInput
       | LinkFormUrl
       | MessageHistory
@@ -39,6 +40,7 @@ data ElementId
       | BackerRoot
       | ConfirmPassword
       | FeedbackRoot
+      | ScreenshotInput
       | FaqLink
       | CaptchaRegularUser
       | TemporaryUserSignUp
@@ -62,8 +64,10 @@ instance Show ElementId where
             LinkFormUrl → "link-form-url"
             ProfileEditionForm → "profile-edition-form"
             ChatInput → "chat-input"
+            ScreenshotInput -> "screenshot-input"
             ChatInputSuggestion → "chat-input-suggestion"
             ImageFormCaption → "image-form-caption"
+            FeedbackForm -> "feedback-form"
             MessageHistory → "message-history"
             Favicon → "favicon"
             FeedbackRoot -> "feedback-root"

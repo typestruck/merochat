@@ -11,10 +11,9 @@ import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword, RegisterTemporary)
-import Shared.DateTime (DateWrapper(..))
-import Shared.Html (Html(..))
+import Shared.DateTime (DateWrapper)
+import Shared.Html (Html)
 import Shared.Settings.Types (PrivacySettings)
-import Shared.User (ProfileVisibility)
 
 spec ∷
       Spec
@@ -230,10 +229,19 @@ spec ∷
                                   { response ∷ Html
                                   }
                     , feedback ∷
-                            GET "/feedback"
+                            Routes "/feedback"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                  , response ∷ String
+                                  , get ∷
+                                          GET "/"
+                                                { response ∷ String
+                                                }
+                                  , send ∷
+                                          POST "/send"
+                                                { body ∷ { comments ∷ String, screenshot ∷ Maybe String }
+                                                , response ∷ Ok
+                                                }
                                   }
+
                     , internalHelp ∷
                             GET "/inhelp"
                                   { guards ∷ Guards ("loggedUserId" : Nil)

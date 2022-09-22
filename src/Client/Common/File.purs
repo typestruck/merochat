@@ -4,6 +4,7 @@ import Prelude
 
 import Client.Common.Dom as CCD
 import Data.Maybe (Maybe(..))
+import Debug (spy)
 import Effect (Effect)
 import Flame (AppId)
 import Flame.Subscription as FS
@@ -25,9 +26,9 @@ triggerFileSelect ∷ Element → Effect Unit
 triggerFileSelect = WHH.click <<< SU.fromJust <<< WHH.fromElement
 
 setUpFileChange ∷ ∀ message. (String → message) → Element → AppId MountPoint message → Effect Unit
-setUpFileChange message input appID = do
+setUpFileChange message input appId = do
       fileReader ← WFR.fileReader
-      setUpBase64Reader fileReader message appID
+      setUpBase64Reader fileReader message appId
       CCD.addEventListener input change $ \_ → do
             let htmlInput = SU.fromJust $ WHI.fromElement input
             maybeFileList ← WHI.files htmlInput
@@ -35,10 +36,10 @@ setUpFileChange message input appID = do
             WHI.setValue "" htmlInput
 
 setUpBase64Reader ∷ ∀ message. FileReader → (String → message) → AppId MountPoint message → Effect Unit
-setUpBase64Reader fileReader message appID = do
+setUpBase64Reader fileReader message appId = do
       handler ← WET.eventListener $ \_ → do
             foreignBase64 ← WFR.result fileReader
-            FS.send appID $ message (F.unsafeFromForeign foreignBase64 ∷ String)
+            FS.send appId <<< message $ F.unsafeFromForeign foreignBase64
       WET.addEventListener load handler false $ WFR.toEventTarget fileReader
 
 readBase64 ∷ FileReader → Maybe FileList → Effect Unit

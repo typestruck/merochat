@@ -13,6 +13,23 @@
       height: 180px;
 }
 
-.comments, #feedback-root .modal-input  {
+.comments,
+#feedback-root .modal-input {
       width: 600px;
+}
+
+.extra-padding {
+      padding-top: 20px;
+}
+
+.buttons {
+      display: flex;
+      justify-content: flex-start;
+}
+
+.buttons .success-message,
+.buttons .error-message {
+      display: block;
+      padding: 10px;
+      font-weight: bold;
 }

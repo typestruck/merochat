@@ -93,7 +93,10 @@ handlers reading =
       , logout: runJson reading SLOH.logout
       , help: runHtml reading SHH.help
       , backer: runHtml reading SBH.backer
-      , feedback: runHtml reading SFH.feedback
+      , feedback:
+              { get: runHtml reading SFH.feedback
+              , send: runJson reading SFH.send
+              }
       , internalBacker: runJson reading SIBH.internalBacker
       , experiments: runJson reading SEH.experiments
       , developmentFiles: developmentFiles

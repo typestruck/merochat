@@ -94,6 +94,14 @@ create table languages_users
     constraint unique_user_language unique(speaker, language)
 );
 
+create table feedbacks (
+    id integer generated always as identity primary key,
+    comments text not null,
+    file_name text,
+    feedbacker integer not null,
+    constraint feedback_user foreign key (feedbacker) references users(id) on delete cascade
+);
+
 create table recoveries
 (
     id integer generated always as identity primary key,

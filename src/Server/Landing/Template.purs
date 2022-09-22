@@ -174,9 +174,9 @@ template = do
                             , HE.div (HA.class' "point")
                                     [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Works2 Png ]
                                     , HE.br
-                                    , HE.text "Whenever you feel like chatting, the system matches"
+                                    , HE.text "Whenever you feel like chatting, MeroChat suggests"
                                     , HE.br
-                                    , HE.text "you with a random user- and vice versa,"
+                                    , HE.text "you random users to talk to - and vice versa,"
                                     , HE.br
                                     , HE.text "ensuring no one gets ignored."
                                     , HE.br
@@ -198,7 +198,7 @@ template = do
                             ]
                     , HE.div (HA.class' "second-green-box")
                             [ HE.div (HA.class' "point-2")
-                                    [ HE.text "MeroChat helps you talk, interact with people and form real friendships -- "
+                                    [ HE.text "MeroChat helps you talk, interact with people and form real friendships - "
                                     , HE.br
                                     , HE.text "without fear of the dreaded ASL questions or getting stalked"
                                     ]
