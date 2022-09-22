@@ -11,12 +11,9 @@ import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword, RegisterTemporary)
-import Shared.DateTime (DateWrapper(..))
-import Shared.Html (Html(..))
+import Shared.DateTime (DateWrapper)
+import Shared.Html (Html)
 import Shared.Settings.Types (PrivacySettings)
-import Shared.User (ProfileVisibility)
-
-type NoBody = {}
 
 spec ∷
       Spec
@@ -188,8 +185,7 @@ spec ∷
                                                               }
                                                 , terminate ∷
                                                         POST "/account/terminate"
-                                                              { body ∷ NoBody
-                                                              , response ∷ Ok
+                                                              { response ∷ Ok
                                                               }
                                                 , privacy ∷
                                                         POST "/account/privacy"
@@ -220,7 +216,7 @@ spec ∷
                     , logout ∷
                             POST "/logout"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                  , body ∷ NoBody
+
                                   , response ∷ Ok
                                   }
                     , leaderboard ∷
@@ -232,6 +228,20 @@ spec ∷
                             GET "/help"
                                   { response ∷ Html
                                   }
+                    , feedback ∷
+                            Routes "/feedback"
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
+                                  , get ∷
+                                          GET "/"
+                                                { response ∷ String
+                                                }
+                                  , send ∷
+                                          POST "/send"
+                                                { body ∷ { comments ∷ String, screenshot ∷ Maybe String }
+                                                , response ∷ Ok
+                                                }
+                                  }
+
                     , internalHelp ∷
                             GET "/inhelp"
                                   { guards ∷ Guards ("loggedUserId" : Nil)

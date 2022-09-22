@@ -1,0 +1,58 @@
+#feedback-root div {
+      padding: 10px;
+      padding-bottom: 20px;
+}
+
+#feedback-root input[type=file].modal-input {
+      height: auto;
+}
+
+.comments {
+      padding: 15px;
+      resize: none;
+      outline: none;
+      height: 180px;
+}
+
+.comments,
+#feedback-root .modal-input {
+      width: 600px;
+}
+
+.extra-padding {
+      padding-top: 20px;
+}
+
+.buttons {
+      display: flex;
+      justify-content: flex-start;
+}
+
+.buttons .success-message,
+.buttons .error-message {
+      display: block;
+      padding: 10px;
+      font-weight: bold;
+}
+
+@media (max-width:1279px) {
+      #feedback-form {
+            width: 100%;
+            padding: 10px;
+      }
+
+      #feedback-root div {
+            padding: 0px 10px;
+      }
+
+      .extra-padding {
+            margin-top: 30px;
+      }
+
+      .buttons {margin-top: 0; margin-bottom: 20px;}
+
+      .comments,
+      #feedback-root .modal-input {
+            width: 90%;
+      }
+}

@@ -10,17 +10,11 @@ import Server.Privacy as SP
 
 import Server.Terms as ST
 import Shared.InternalHelp.Types (DisplayHelpSection(..), InternalHelpMessage(..), InternalHelpModel)
-import Shared.Resource as SPT
 
 view ∷ InternalHelpModel → Html InternalHelpMessage
 view { toggleHelp } =
       HE.div (HA.class' "internal-help")
-            [ HE.div (HA.class' "duller center")
-                    [ HE.text "Learn more about MeroChat"
-                    , HE.br
-                    , HE.text "You may also write us anytime at contact@mero.chat"
-                    ]
-            , HE.div (HA.class' "help") $ HE.div_
+            [ HE.div (HA.class' "help") $ HE.div_
                     [ HE.div (HA.class' "center")
                             [ HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == FAQ }, HA.onClick $ ToggleHelpSection FAQ ] "FAQ"
                             , HE.span (HA.class' "separator duller") "•"

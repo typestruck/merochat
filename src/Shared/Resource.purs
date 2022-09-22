@@ -54,6 +54,7 @@ data Bundle
       | Im
       | InternalHelp
       | Landing
+      | Feedback
       | Leaderboard
       | Login
       | Profile
@@ -130,6 +131,7 @@ resourceName = case _ of
       Right Help → "help"
       Right Im → "im"
       Right InternalHelp → "internalHelp"
+      Right Feedback -> "feedback"
       Right Landing → "landing"
       Right Leaderboard → "leaderboard"
       Right Login → "login"
@@ -184,6 +186,7 @@ replacement bundle tp
                     External → reps ".[external-js-contenthash]" ".[external-css-contenthash]"
                     Help → reps ".[help-js-contenthash]" ".[help-css-contenthash]"
                     Im → reps ".[im-js-contenthash]" ".[im-css-contenthash]"
+                    Feedback -> reps ".[feedback-js-contenthash]" ".[feedback-css-contenthash]"
                     InternalHelp → reps ".[internalHelp-js-contenthash]" ".[internalHelp-css-contenthash]"
                     Landing → reps ".[landing-js-contenthash]" ".[landing-css-contenthash]"
                     Leaderboard → reps ".[leaderboard-js-contenthash]" ".[leaderboard-css-contenthash]"

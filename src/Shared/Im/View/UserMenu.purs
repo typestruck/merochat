@@ -3,7 +3,6 @@ module Shared.Im.View.UserMenu where
 import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
-import Shared.Im.Types
 
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -18,6 +17,10 @@ userMenu ∷ ImModel → Html ImMessage
 userMenu model@{ toggleContextMenu, experimenting, toggleModal, user: { temporary } } =
       HE.div (HA.class' { settings: true, highlighted: toggleModal == Tutorial OptionsMenu })
             [ header model
+            , HE.svg [ HA.class' "svg-feedback", HA.viewBox "0 0 752 752", HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback ]
+                    [ HE.title "Send feedback, report a bug or ask anything about MeroChat"
+                    , HE.path' [ HA.d "m515 232.9h-278.07c-17.84 0-32.363 14.523-32.363 32.363v246.97c0 2.5273 1.3438 4.8945 3.5508 6 1.0273 0.55078 2.1328 0.78906 3.3164 0.78906 1.3438 0 2.6055-0.31641 3.7109-1.1055l58.805-38.281h240.97c17.918 0 32.441-14.602 32.441-32.441v-181.94c0.078125-17.836-14.523-32.359-32.363-32.359zm-152.49 102.53-51.383 51.383c-1.3438 1.3438-3.0781 1.9727-4.8164 1.9727-1.7383 0-3.4727-0.71094-4.8164-1.9727l-22.891-22.891c-2.6836-2.6836-2.6836-7.0234 0-9.707s7.0234-2.6836 9.707 0l18.074 18.074 46.57-46.57c2.6836-2.6836 7.0234-2.6836 9.707 0 2.5312 2.6875 2.5312 7.0273-0.15234 9.7109zm110.9 41.754c2.6836 2.6836 2.6836 7.0234 0 9.707-1.3438 1.3438-3.0781 1.9727-4.8164 1.9727-1.7383 0-3.4727-0.71094-4.8164-1.9727l-20.836-20.836-20.836 20.836c-1.3438 1.3438-3.0781 1.9727-4.8164 1.9727s-3.4727-0.71094-4.8164-1.9727c-2.6836-2.6836-2.6836-7.0234 0-9.707l20.836-20.836-20.836-20.836c-2.6836-2.6836-2.6836-7.0234 0-9.707 2.6836-2.6836 7.0234-2.6836 9.707 0l20.836 20.836 20.836-20.836c2.6836-2.6836 7.0234-2.6836 9.707 0 2.6836 2.6836 2.6836 7.0234 0 9.707l-20.988 20.758z" ]
+                    ]
             , HE.svg [ HA.class' { "svg-experiment": true, "svg-imp": DM.isJust experimenting }, HA.viewBox "0 0 1479 1536", HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments ]
                     [ HE.title "Chat experiments"
                     ,
@@ -57,6 +60,10 @@ userMenu model@{ toggleContextMenu, experimenting, toggleModal, user: { temporar
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp ]
                                     [ HE.div (HA.class' "menu-item-heading") "Help"
                                     , HE.span (HA.class' "duller") "Learn more about MeroChat"
+                                    ]
+                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback ]
+                                    [ HE.div (HA.class' "menu-item-heading") "Send feedback"
+                                    , HE.span (HA.class' "duller") "Report issues, or leave a question"
                                     ]
                             , if temporary then
                                     HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmTerminationTemporaryUser ] "Delete my data"

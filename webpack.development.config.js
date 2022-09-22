@@ -36,6 +36,10 @@ export default {
                   import: ['./loader/development/experiments.bundle.js'],
                   dependOn: 'im'
             },
+            feedback: {
+                  import: ['./loader/development/feedback.bundle.js'],
+                  dependOn: 'im'
+            },
             recover: './loader/development/recover.bundle.js',
             emoji: './output/Shared.Im.Emoji/index.js'
       },

@@ -107,7 +107,7 @@ type MissedEvents =
       }
 
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
-type IM =
+type Im =
       ( suggestions ∷ Array Suggestion
       , contacts ∷ Array Contact
       --in case a message from someone blocked was already midway
@@ -154,7 +154,7 @@ type IM =
       , toggleChatModal ∷ ShowChatModal
       )
 
-type ImModel = Record IM
+type ImModel = Record Im
 
 newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
@@ -185,6 +185,7 @@ data ShowUserMenuModal
       | ShowLeaderboard
       | ShowHelp
       | ShowBacker
+      | ShowFeedback
       | ShowReport Int
       | Tutorial Step
 
@@ -548,6 +549,7 @@ instance Show ShowUserMenuModal where
             ShowHelp → "Help"
             ShowExperiments → "Chat experiments"
             ShowBacker → "Backing"
+            ShowFeedback -> "Send feedback"
             _ → ""
 
 instance Show MessageContent where

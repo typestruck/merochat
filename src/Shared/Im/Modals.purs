@@ -37,6 +37,7 @@ modals model@{ erroredFields, toggleModal, chatting } =
             , lazyLoad Backer
             , lazyLoad Experiments
             , lazyLoad Leaderboard
+            , lazyLoad Feedback
             , case toggleModal of
                     ShowReport id → report id erroredFields
                     ConfirmLogout → confirmLogout
@@ -53,7 +54,7 @@ report ∷ Int → Array String → Html ImMessage
 report id erroredFields =
       HE.div (HA.class' "confirmation report")
             [ HE.span (HA.class' "report-title") "Report user"
-            , HE.div (HA.class' "report-reasons") $ DA.mapWithIndex toRadio [ DatingContent, Harassment, HateSpeech, Spam, OtherReason ]
+            , HE.div (HA.class' "report-reasons") $ DA.mapWithIndex toRadio [ DatingContent, Harassment, HateSpeech, Spam, Minor, OtherReason ]
             , HE.span [ HA.class' { "error-message": true, "invisible": not (DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "reportReason")) erroredFields) } ] "Please choose a reason"
             , HE.div (HA.class' "report-comment")
                     [ HE.label_ "Comment"
@@ -152,7 +153,7 @@ tutorial { chatting } = case _ of
       OptionsMenu → HE.div (HA.class' "confirmation tutorial options-menu-step")
             [ HE.span (HA.class' "bold") "Options menu"
             , HE.span_ "Tweak your preferences with the menu on the top left"
-            , HE.span_ "You can edit your profile, modify your settings, get help and more"
+            , HE.span_ "You can edit your profile, modify your settings, get help, send feedback and more"
             , HE.div (HA.class' "buttons")
                     [ HE.button [ HA.class' "green-button step-button", HA.onClick FinishTutorial ] "Finish tutorial"
                     ]
@@ -178,6 +179,7 @@ modalMenu model@{ toggleModal, failedRequests, user: { temporary } } =
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggleModal == ShowLeaderboard } ] $ show ShowLeaderboard
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggleModal == ShowBacker } ] $ show ShowBacker
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggleModal == ShowHelp } ] $ show ShowHelp
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback, HA.class' { entry: true, selected: toggleModal == ShowFeedback } ] $ show ShowFeedback
                     ]
             , temporaryUserSignUp model
             , HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowProfile } ] $ retry ShowProfile
@@ -186,7 +188,7 @@ modalMenu model@{ toggleModal, failedRequests, user: { temporary } } =
             , HE.div [ HA.id $ show KarmaLeaderboardRoot, HA.class' { hidden: temporary || toggleModal /= ShowLeaderboard } ] $ retry ShowLeaderboard
             , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: temporary || toggleModal /= ShowBacker } ] $ retry ShowBacker
             , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
-
+            , HE.div [ HA.id $ show FeedbackRoot, HA.class' { hidden: temporary || toggleModal /= ShowFeedback } ] $ retry ShowFeedback
             ]
       where
       retry tm = HE.div (HA.class' "retry-modal")

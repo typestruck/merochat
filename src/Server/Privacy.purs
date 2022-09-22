@@ -39,7 +39,7 @@ privacy =
             , HE.div (HA.class' "hide-internal")
                     [ HE.h2_ "Contact"
                     , HE.p_
-                            [ HE.text "You may contact MeroChat about these policies or any other issues at contact@mero.chat. Alternatively, MeroChat entire source code can be viewed at "
+                            [ HE.text "You may contact MeroChat about these policies or any other issues by sending an email to contact. Alternatively, MeroChat entire source code can be viewed at "
                             , HE.a [HA.href "https://github.com/typestruck/merochat", HA.target "_blank"] "https://github.com/typestruck/merochat"
                             ]
                     ]

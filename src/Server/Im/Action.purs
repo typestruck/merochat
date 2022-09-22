@@ -84,7 +84,7 @@ processMessageContent content = do
       message ← case content of
             Text m → pure m
             Image caption base64 → do
-                  name ← SF.saveBase64File $ base64
+                  name ← SF.saveBase64File base64
                   pure $ "![" <> caption <> "](" <> SP.mediaPath (Upload name) Included <> ")"
       pure <<< DS.trim $ sanitize message
 

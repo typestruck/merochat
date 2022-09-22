@@ -11,7 +11,6 @@ import Flame.Renderer.String as FRS
 import Server.Template (defaultParameters, externalFooter)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
-import Shared.Im.Svg as SIA
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
@@ -92,11 +91,11 @@ template = do
                                     [ HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point1 Png ]
                                             , HE.br
-                                            , HE.text "No seedy people!"
+                                            , HE.text "No sleazy people!"
                                             , HE.br
                                             , HE.text "Talk to folks who want"
                                             , HE.br
-                                            , HE.text "to have real conversations"
+                                            , HE.text "to have actual conversations"
                                             ]
                                     , HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point4 Png ]
@@ -175,9 +174,9 @@ template = do
                             , HE.div (HA.class' "point")
                                     [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Works2 Png ]
                                     , HE.br
-                                    , HE.text "Whenever you feel like chatting, the system matches"
+                                    , HE.text "Whenever you feel like chatting, MeroChat suggests"
                                     , HE.br
-                                    , HE.text "you with a random user- and vice versa,"
+                                    , HE.text "you random users to talk to - and vice versa,"
                                     , HE.br
                                     , HE.text "ensuring no one gets ignored."
                                     , HE.br
@@ -199,7 +198,7 @@ template = do
                             ]
                     , HE.div (HA.class' "second-green-box")
                             [ HE.div (HA.class' "point-2")
-                                    [ HE.text "MeroChat helps you talk, interact with people and form real friendships -- "
+                                    [ HE.text "MeroChat helps you talk, interact with people and form real friendships - "
                                     , HE.br
                                     , HE.text "without fear of the dreaded ASL questions or getting stalked"
                                     ]
