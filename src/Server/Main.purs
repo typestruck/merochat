@@ -3,7 +3,6 @@ module Server.Main where
 import Prelude
 
 import Data.HashMap as DH
-import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Console as EC
