@@ -33,7 +33,7 @@ view { feedbackStatus, loading, comments } =
                     , HE.div [ HA.class' { "error-message": true, hidden: not isFailure } ] "Could not send feedback. Please try again"
                     , HE.div [ HA.class' { "success-message": true, hidden: feedbackStatus /= Just (Request Success) } ] "Feedback sent!"
                     ]
-            , HE.div (HA.class' "duller center reach-ou")
+            , HE.div (HA.class' "duller center")
                     [ HE.br
                     , HE.span_ "You can also reach out at "
                     , HE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] "r/MeroChat"

@@ -460,6 +460,7 @@ blockquote {
 
 #feedback-form .error-message, #temporary-user-sign-up-form .error-message {
     visibility: visible;
+    display: block;
 }
 
 .card-top-header .sign-up-call {

@@ -1,4 +1,5 @@
 #feedback-root div {
+      padding: 10px;
       padding-bottom: 20px;
 }
 
@@ -32,4 +33,26 @@
       display: block;
       padding: 10px;
       font-weight: bold;
+}
+
+@media (max-width:1279px) {
+      #feedback-form {
+            width: 100%;
+            padding: 10px;
+      }
+
+      #feedback-root div {
+            padding: 0px 10px;
+      }
+
+      .extra-padding {
+            margin-top: 30px;
+      }
+
+      .buttons {margin-top: 0; margin-bottom: 20px;}
+
+      .comments,
+      #feedback-root .modal-input {
+            width: 90%;
+      }
 }
