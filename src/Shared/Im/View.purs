@@ -23,6 +23,7 @@ view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, chatting, contacts, imUpdated, smallScreen } = HE.div [ HA.class' "im" ]
       [ HE.div (HA.class' { "contact-box": true, "current-mobile-screen": initialScreen })
               [ SIVU.userMenu model
+              , HE.div (HA.class' { "suggestion-box-error": true, flexed: smallScreen && (not $ DS.null errorMessage) }) errorMessage
               , SIVN.reloadPage imUpdated
               , SIVN.prompt $ not smallScreen && enableNotificationsVisible
               , SIVS.suggestionCall model
