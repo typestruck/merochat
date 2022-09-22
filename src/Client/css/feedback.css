@@ -49,10 +49,17 @@
             margin-top: 30px;
       }
 
-      .buttons {margin-top: 0; margin-bottom: 20px;}
+      .buttons {
+            margin-top: 0;
+            margin-bottom: 20px;
+      }
 
       .comments,
       #feedback-root .modal-input {
             width: 90%;
       }
+}
+
+#feedback-form .loading {
+      padding: 0;
 }

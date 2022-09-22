@@ -18,4 +18,4 @@ sendFeedback loggedUserId rawComments screenshot = do
             Just base64 -> Just <$> SF.saveBase64File base64
             Nothing -> pure Nothing
       id <- SFD.insertFeedback loggedUserId rawComments fileName
-      SE.sendEmail "contact@mero.chat" ("[FEEDBACK] from" <> show loggedUserId) $ "select * from feedbacks where id = " <> show id <> ";"
+      SE.sendEmail "contact@mero.chat" ("[FEEDBACK] from " <> show loggedUserId) $ "select * from feedbacks where id = " <> show id <> ";"

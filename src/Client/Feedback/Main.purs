@@ -2,7 +2,6 @@ module Client.Feedback.Main where
 
 import Prelude
 
-import Client.Common.Dom as CCD
 import Client.Common.File as CCF
 import Client.Feedback.Update as CFU
 import Effect (Effect)
@@ -22,5 +21,5 @@ main = do
             , update: CFU.update
             }
       --file changes
-      input ← CCD.unsafeGetElementById ScreenshotInput
+      input ← CFU.getFileInput
       CCF.setUpFileChange SetScreenshot input feedbackId

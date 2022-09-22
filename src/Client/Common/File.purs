@@ -33,7 +33,6 @@ setUpFileChange message input appId = do
             let htmlInput = SU.fromJust $ WHI.fromElement input
             maybeFileList ← WHI.files htmlInput
             readBase64 fileReader maybeFileList
-            WHI.setValue "" htmlInput
 
 setUpBase64Reader ∷ ∀ message. FileReader → (String → message) → AppId MountPoint message → Effect Unit
 setUpBase64Reader fileReader message appId = do

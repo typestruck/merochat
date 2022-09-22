@@ -13,8 +13,7 @@ import Shared.Network (RequestStatus(..))
 view ∷ FeedbackModel → Html FeedbackMessage
 view { feedbackStatus, loading, comments } =
       HE.div (show FeedbackForm)
-            [ HE.div' (HA.class' { loading: true, hidden: not loading })
-            , HE.div (HA.class' "duller center")
+            [ HE.div (HA.class' "duller center")
                     [ HE.span_ "Use the form bellow to report any issues,"
                     , HE.br
                     , HE.span_ "send suggestions or shoot any questions you might have"
@@ -29,7 +28,10 @@ view { feedbackStatus, loading, comments } =
                     , HE.input [ HA.id $ show ScreenshotInput, HA.type' "file", HA.class' "modal-input", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                     ]
             , HE.div (HA.class' "buttons")
-                    [ HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Send", HA.onClick SendFeedback ]
+                    [ if loading then
+                            HE.div' (HA.class' "loading")
+                      else
+                            HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Send", HA.onClick SendFeedback ]
                     , HE.div [ HA.class' { "error-message": true, hidden: not isFailure } ] "Could not send feedback. Please try again"
                     , HE.div [ HA.class' { "success-message": true, hidden: feedbackStatus /= Just (Request Success) } ] "Feedback sent!"
                     ]
