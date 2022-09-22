@@ -16,9 +16,9 @@ main ∷ Effect Unit
 main = do
       F.resumeMount (QuerySelector $ "#" <> show FeedbackForm) feedbackId
             { view: SFV.view
+            , update: CFU.update
             , subscribe: []
             , init: []
-            , update: CFU.update
             }
       --file changes
       input ← CFU.getFileInput

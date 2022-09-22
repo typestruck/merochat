@@ -13,7 +13,7 @@ import Shared.Network (RequestStatus(..))
 view ∷ FeedbackModel → Html FeedbackMessage
 view { feedbackStatus, loading, comments } =
       HE.div (show FeedbackForm)
-            [ HE.div (HA.class' "duller center")
+            [ HE.div (HA.class' "center duller")
                     [ HE.span_ "Use the form bellow to report any issues,"
                     , HE.br
                     , HE.span_ "send suggestions or shoot any questions you might have"
