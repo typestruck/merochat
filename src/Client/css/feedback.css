@@ -23,13 +23,13 @@
       width: 600px;
 }
 
-.buttons {
+#feedback-form .buttons {
       display: flex;
       justify-content: flex-start;
 }
 
-.buttons .success-message,
-.buttons .error-message {
+#feedback-form .buttons .success-message,
+#feedback-form .buttons .error-message {
       display: block;
       padding: 10px;
       font-weight: bold;
@@ -49,7 +49,7 @@
             margin-top: 30px;
       }
 
-      .buttons {
+     #feedback-form .buttons {
             margin-top: 0;
             margin-bottom: 20px;
       }

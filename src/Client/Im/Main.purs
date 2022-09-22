@@ -81,7 +81,6 @@ import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.File.FileReader as WFR
 import Web.HTML as WH
-import Web.HTML.Event.EventTypes (focus)
 import Web.HTML.Event.PopStateEvent.EventTypes (popstate)
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.Window as WHW
@@ -232,9 +231,9 @@ setRegistered model = model { user { temporary = false } } :>
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
       if invalidEmail then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryEmail")  }
+            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryEmail") }
       else if invalidPassword then
-            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol  (Proxy ∷ _ "temporaryPassword")  }
+            F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryPassword") }
       else
             model { erroredFields = [] } :>
                   [ do
@@ -475,7 +474,7 @@ receiveMessage
                                                             }
                                                 _ → DisplayNewContacts
                                     in
-                                        model' :> [ CCNT.retryableResponse CheckMissedEvents message $ request.im.contact { query: { id: userId, impersonation: DM.isJust experimenting } } ]
+                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message $ request.im.contact { query: { id: userId, impersonation: DM.isJust experimenting } } ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right
@@ -509,7 +508,7 @@ receiveMessage
                                                 , webSocket
                                                 }
                                     in
-                                        furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationId ] : messages)
+                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationId ] : messages)
 
       PayloadError payload → case payload.origin of
             OutgoingMessage { id, userId } → F.noMessages $ model
@@ -599,7 +598,7 @@ updateStatus contacts userId ids status = updateContactHistory contacts userId u
 markErroredMessage ∷ Array Contact → Int → Int → Array Contact
 markErroredMessage contacts userId messageId = updateContactHistory contacts userId updateStatus
       where
-      updateStatus history@({ id })
+      updateStatus history@{ id }
             | messageId == id = history { status = Errored }
             | otherwise = history
 
@@ -673,7 +672,14 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
             { hasTriedToConnectYet = true
             , isWebSocketConnected = isConnected
             , errorMessage = if not isConnected then lostConnectionMessage else if errorMessage == lostConnectionMessage then "" else errorMessage
-            } :> if hasTriedToConnectYet && isConnected then [ pure <<< Just $ SpecialRequest CheckMissedEvents ] else [ pure $ Just UpdateDelivered ]
+            } :>
+            if hasTriedToConnectYet && isConnected then
+                  [ do
+                          liftEffect $ FS.send imId CheckUserExpiration
+                          pure <<< Just $ SpecialRequest CheckMissedEvents
+                  ]
+            else
+                  [ pure $ Just UpdateDelivered ]
       where
       lostConnectionMessage = "Connection to the server lost. Attempting to automatically reconnect..."
 

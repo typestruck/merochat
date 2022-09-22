@@ -160,14 +160,14 @@ tutorial { chatting } = case _ of
             ]
 
 modalMenu ∷ ImModel → Html ImMessage
-modalMenu model@{ toggleModal, failedRequests, user: { temporary } } =
+modalMenu model@{ toggleModal, failedRequests, user: { temporary, joined } } =
       HE.div (HA.class' "modal-placeholder") $
             [ HE.div (HA.class' "modal-menu-mobile")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ]
                     , HE.strong_ $ show toggleModal
                     ]
             , HE.div (HA.class' "modal-menu")
-                    [ HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal, HA.class' "back" ]
+                    [ HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal, HA.class' { back: true, hidden: expired } ]
                             [ HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 30 30" ]
                                     [ HE.path' [ HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z" ]
                                     ]
@@ -196,6 +196,8 @@ modalMenu model@{ toggleModal, failedRequests, user: { temporary } } =
             , HE.div' (HA.class' "loading")
             ]
 
+      expired = temporary && SUR.temporaryUserExpiration joined <= Days 0.0
+
 --only for temporary users, since logging out = deleting account
 confirmTermination ∷ Html ImMessage
 confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
@@ -217,8 +219,8 @@ confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
 temporaryUserSignUp ∷ ImModel → Html ImMessage
 temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { temporary, joined } } =
       HE.div [ HA.id $ show TemporaryUserSignUpForm, HA.class' { hidden: not temporary } ]
-            [ HE.div (HA.class' "warning-temporary") $ "You have " <> remaining <> " to create an account"
-            , HE.div (HA.class' "warning-temporary wall-text") "After that, all your data will be deleted and you won't be able to access the site unless you sign up again"
+            [ HE.div (HA.class' "warning-temporary") $ if expired then "Your access has expired" else "You have " <> remainingTime <> " to create an account"
+            , HE.div (HA.class' { "warning-temporary wall-text": true, hidden: expired }) "After that, all your data will be deleted and you won't be able to access the site unless you sign up again"
             , HE.div (HA.class' "duller last") "Create your account now, it is free!"
             , HE.div_
                     [ HE.label_ "Email"
@@ -236,7 +238,9 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
                     ]
             ]
       where
-      remaining = case DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined of
+      remaining = DI.floor <<< SC.coerce $ SUR.temporaryUserExpiration joined
+      expired = remaining < 0
+      remainingTime = case remaining of
             0 → " only a few hours left"
             1 → " until tomorrow"
             n → show n <> " more days"
