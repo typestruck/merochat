@@ -18,7 +18,7 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 main ∷ Effect Unit
 main = do
-      FAE.resumeMount (QuerySelector ("#" <> show ProfileEditionForm)) profileId
+      FAE.resumeMount (QuerySelector $ "#" <> show ProfileEditionForm) profileId
             { view: SPV.view
             , subscribe: [ FS.onCustomEvent setChatExperiment SetProfileChatExperiment ]
             , init: Nothing
