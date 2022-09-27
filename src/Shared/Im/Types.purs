@@ -200,13 +200,14 @@ data Step
 type Stats =
       { characters ∷ Number
       , interest ∷ Number
+      , replyDelay ∷ Maybe Number -- Minutes
+      , accountAge :: Number
       }
 
 type Turn =
       { senderStats ∷ Stats
       , recipientStats ∷ Stats
       , chatAge ∷ Number -- Days
-      , replyDelay ∷ Number --Seconds
       }
 
 data ProfilePresentation

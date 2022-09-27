@@ -122,7 +122,11 @@ create table karma_histories
     constraint target_karma_history foreign key (target) references users(id) on delete cascade
 );
 
---to be run with pg cron
+-- select cron.schedule('0 * * * *', $$select crunch_karma_history(1)$$);
+-- select cron.schedule('10 0 * * *', $$select crunch_karma_history(24)$$);
+-- select cron.schedule('30 0 * * 1', $$select crunch_karma_history(24 * 7)$$);
+-- select cron.schedule('30 4 1 * 4', $$select crunch_karma_history(24 * 7 * 4)$$);
+-- select cron.schedule('45 9 1 8 3', $$select crunch_karma_history(24 * 7 * 4 * 12)$$);
 create or replace function crunch_karma_history(hours_time integer)
     returns void as
 $$
@@ -145,10 +149,6 @@ end;
 $$
 language plpgsql;
 
--- select cron.schedule('0 * * * *', $$select crunch_karma_history(1)$$);
--- select cron.schedule('10 0 * * *', $$select crunch_karma_history(24)$$);
--- select cron.schedule('30 0 * * 1', $$select crunch_karma_history(24 * 7)$$);
-
 create table karma_leaderboard
 (
     id integer generated always as identity primary key,
@@ -161,7 +161,7 @@ create table karma_leaderboard
     constraint ranker_user foreign key (ranker) references users(id) on delete cascade
 );
 
---to be run with pg cron
+-- select cron.schedule('0 */4 * * *', $$select compute_leaderboard()$$);
 create or replace function compute_leaderboard()
     returns void as
 $$
@@ -180,7 +180,6 @@ end;
 $$
 language plpgsql;
 
--- select cron.schedule('0 */4 * * *', $$select crunch_karma_history()$$);
 
 -- select cron.schedule('45 2 * * *', $$select purge_temporary_users()$$);
 create or replace function purge_temporary_users()

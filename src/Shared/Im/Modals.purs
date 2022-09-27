@@ -219,8 +219,12 @@ confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
 temporaryUserSignUp ∷ ImModel → Html ImMessage
 temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, toggleModal, user: { temporary, joined } } =
       HE.div [ HA.id $ show TemporaryUserSignUpForm, HA.class' { hidden: not temporary || toggleModal == ShowHelp } ]
-            [ HE.div (HA.class' "warning-temporary") $ if expired then "Your access has expired" else "You have " <> remainingTime <> " to create an account"
-            , HE.div (HA.class' { "warning-temporary wall-text": true, hidden: expired }) "After that, all your data will be deleted and you won't be able to access the site unless you sign up again"
+            [ if expired then
+                    HE.div (HA.class' "warning-temporary") "Your access has expired"
+              else HE.fragment
+                    [ HE.div (HA.class' "warning-temporary") $ "You have " <> remainingTime <> " to create an account"
+                    , HE.div (HA.class' "warning-temporary wall-text") "After that, all your data will be deleted and you won't be able to access the site unless you sign up again"
+                    ]
             , HE.div (HA.class' "duller last") "Create your account now, it is free!"
             , HE.div_
                     [ HE.label_ "Email"

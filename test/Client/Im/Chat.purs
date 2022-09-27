@@ -37,10 +37,10 @@ tests = do
             TU.test "beforeSendMessage does not add new contact from suggestion if it already is on the list" do
                   let
                         model' = model
-                              { suggestions = [contact.user]
+                              { suggestions = [ contact.user ]
                               , chatting = Nothing
                               , suggesting = Just 0
-                              , contacts = [contact]
+                              , contacts = [ contact ]
                               }
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just contact.user
@@ -48,10 +48,10 @@ tests = do
             TU.test "beforeSendMessage sets chatting to existing contact index" do
                   let
                         model' = model
-                              { suggestions = [contact.user]
+                              { suggestions = [ contact.user ]
                               , chatting = Nothing
                               , suggesting = Just 0
-                              , contacts = [SIC.defaultContact 789 contact.user { id = 8}, contact]
+                              , contacts = [ SIC.defaultContact 789 contact.user { id = 8 }, contact ]
                               }
                         { chatting } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (Just 1) chatting
@@ -116,35 +116,49 @@ tests = do
                   TUA.equal Nothing selectedImage
                   TUA.equal Nothing imageCaption
 
-            TU.test "makeTurn calculate turn" do
+            TU.testOnly "makeTurn calculates recipient characters" do
                   let
                         contact' = contact
-                              { history = [ recipientMessage, senderMessage ]
+                              { history = [ senderMessage, recipientMessage, senderMessage ]
                               }
                         turn = Just
                               { chatAge: 0.0
                               , recipientStats:
                                       { characters: 4.0
                                       , interest: 1.0
+                                      , replyDelay: Just 0.0
+                                      , accountAge: 0.0
                                       }
-                              , replyDelay: 0.0
                               , senderStats:
                                       { characters: 4.0
                                       , interest: 1.0
+                                      , replyDelay: Just 0.0
+                                      , accountAge: 0.0
                                       }
                               }
-                  TUA.equal turn $ CIC.makeTurn contact' imUserId
+                  TUA.equal turn $ CIC.makeTurn imUser contact'
+            TU.testOnly "makeTurn calculates sender characters" do
+            TU.testOnly "makeTurn calculates recipient interest" do
+            TU.testOnly "makeTurn calculates sender interest" do
+            TU.testOnly "makeTurn calculates recipient reply delay" do
+            TU.testOnly "makeTurn calculates sender reply delay" do
+
 
             TU.test "makeTurn don't calculate turn for recipient" do
-                  TUA.equal Nothing $ CIC.makeTurn contact 90000
+                  let
+                        contact' = contact
+                              { chatStarter = contact.user.id
+                              , history = [ senderMessage, recipientMessage, senderMessage ]
+                              }
+                  TUA.equal Nothing $ CIC.makeTurn imUser contact'
 
-            TU.test "makeTurn don't calculate turn if last message isn't from the sender" do
+            TU.test "makeTurn don't calculate turn if last message isn't from chat starter" do
                   let
                         contact' = contact
                               { history = [ recipientMessage, recipientMessage ]
                               }
 
-                  TUA.equal Nothing $ CIC.makeTurn contact' contactId
+                  TUA.equal Nothing $ CIC.makeTurn contact.user contact'
 
             TU.test "setSelectedImage sets file" do
                   let
@@ -166,14 +180,8 @@ tests = do
       getHistory contacts = do
             { history } ← DA.head contacts
             DA.head history
-      getMessageID contacts = do
-            { id } ← getHistory contacts
-            pure id
 
       content = Text "test"
-      { id: recipientId } = imUser
-      messageId = 1
-      newMessageID = 101
       { suggestions: modelSuggestions } = model
 
       recipientMessage = historyMessage

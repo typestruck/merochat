@@ -54,7 +54,7 @@ import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
 import Simple.JSON (class WriteForeign)
-import Simple.JSON as SJ
+import Simple.JSON as SJS
 
 type UserAvailability =
       { connection ∷ Maybe WebSocketConnection
@@ -254,7 +254,7 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
                               , experimenting: experimenting
                               , date
                               }
-                  --pass along karma calculation to wheel
+                  --pass along karma calculation
                   DM.maybe (pure unit) (SIA.processKarma sessionUserId userId) turn
             --meaning recipient can't be messaged
             Nothing →
@@ -302,7 +302,7 @@ persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen reading@{ userAvailability } = do
       availabilities ← ER.read userAvailability
       when (not $ DH.isEmpty availabilities) do
-            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader reading <<< SID.upsertLastSeen <<< SJ.writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens availabilities
+            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader reading <<< SID.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens availabilities
             EA.launchAff_ $ EA.catchError run logError
       where
       lastSeens id = case _ of
