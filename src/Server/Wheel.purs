@@ -6,6 +6,7 @@ import Shared.Im.Types
 
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 
 -- | The karma from a chat is calculated from each "turn" in a conversation:
@@ -27,7 +28,7 @@ karmaFrom { senderStats, recipientStats, chatAge } =
       karma { interest, characters, replyDelay, accountAge } =
             let
                   constant' = constant / max (days - days * accountAge) 1.0
-                  interestBonus = min (interest * 0.10) 1.0
+                  interestBonus = min (DM.fromMaybe 0.0 interest * 0.10) 1.0
                   newChatBonus = (days - min days chatAge) / days
                   fastReplyBonus = case replyDelay of
                         Just rd → min (characters / (charactersMinute * rd)) 1.0

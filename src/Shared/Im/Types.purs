@@ -199,7 +199,7 @@ data Step
 
 type Stats =
       { characters ∷ Number
-      , interest ∷ Number
+      , interest ∷ Maybe Number
       , replyDelay ∷ Maybe Number -- Minutes
       , accountAge :: Number
       }

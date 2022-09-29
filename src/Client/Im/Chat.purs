@@ -201,13 +201,13 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
                         Just
                               { senderStats:
                                       { characters: senderCharacters
-                                      , interest: senderCharacters / recipientCharacters
+                                      , interest: Nothing
                                       , replyDelay: Nothing
                                       , accountAge: accountAge user
                                       }
                               , recipientStats:
                                       { characters: recipientCharacters
-                                      , interest: recipientCharacters / senderCharacters
+                                      , interest: Just $ recipientCharacters / senderCharacters
                                       , replyDelay: Nothing
                                       , accountAge: accountAge contact.user
                                       }
@@ -217,6 +217,7 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
                   let
                         senderCharacters = characters senderMessages
                         recipientCharacters = characters recipientMessages
+                        previousRecipientCharacters = characters previousRecipientMessages
 
                         senderReplyDelay =
                               DN.unwrap (DT.diff (getDate $ DAN.last previousRecipientMessages) (getDate $ DAN.head senderMessages) ∷ Minutes)
@@ -226,13 +227,13 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
                         Just
                               { senderStats:
                                       { characters: senderCharacters
-                                      , interest: senderCharacters / recipientCharacters
+                                      , interest: Just $ senderCharacters / previousRecipientCharacters
                                       , replyDelay: Just senderReplyDelay
                                       , accountAge: accountAge user
                                       }
                               , recipientStats:
                                       { characters: recipientCharacters
-                                      , interest: recipientCharacters / senderCharacters
+                                      , interest: Just $ recipientCharacters / senderCharacters
                                       , replyDelay: Just recipientReplyDelay
                                       , accountAge: accountAge contact.user
                                       }

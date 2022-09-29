@@ -1,7 +1,7 @@
 module Test.Client.Im.Chat where
 
 import Prelude
-import Shared.Im.Types
+import Shared.Im.Types (MessageContent(..), MessageStatus(..))
 
 import Client.Im.Chat as CIC
 import Data.Array ((!!), (:))
@@ -16,7 +16,7 @@ import Shared.Im.Contact as SIC
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
-import Test.Client.Model (anotherImUser, anotherImUserId, contact, contactId, historyMessage, imUser, imUserId, model, suggestion, webSocket)
+import Test.Client.Model (anotherImUserId, contact, historyMessage, imUser, imUserId, model, suggestion, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
@@ -116,33 +116,45 @@ tests = do
                   TUA.equal Nothing selectedImage
                   TUA.equal Nothing imageCaption
 
-            TU.testOnly "makeTurn calculates recipient characters" do
+            TU.test "makeTurn calculates recipient characters" do
                   let
                         contact' = contact
-                              { history = [ senderMessage, recipientMessage, senderMessage ]
+                              { history = [ senderMessage, recipientMessage { content = "hello"}, senderMessage ]
                               }
-                        turn = Just
-                              { chatAge: 0.0
-                              , recipientStats:
-                                      { characters: 4.0
-                                      , interest: 1.0
-                                      , replyDelay: Just 0.0
-                                      , accountAge: 0.0
-                                      }
-                              , senderStats:
-                                      { characters: 4.0
-                                      , interest: 1.0
-                                      , replyDelay: Just 0.0
-                                      , accountAge: 0.0
-                                      }
-                              }
-                  TUA.equal turn $ CIC.makeTurn imUser contact'
-            TU.testOnly "makeTurn calculates sender characters" do
-            TU.testOnly "makeTurn calculates recipient interest" do
-            TU.testOnly "makeTurn calculates sender interest" do
-            TU.testOnly "makeTurn calculates recipient reply delay" do
-            TU.testOnly "makeTurn calculates sender reply delay" do
+                  TUA.equal (Just 5.0) (_.characters <<< _.recipientStats <$> CIC.makeTurn imUser contact')
 
+            TU.test "makeTurn calculates sender characters" do
+                  let
+                        contact' = contact
+                              { history = [ senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "hello"}, senderMessage { content = "hello"}, senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "hello"} ]
+                              }
+                  TUA.equal (Just 15.0) (_.characters <<< _.senderStats <$> CIC.makeTurn imUser contact')
+
+            TU.test "makeTurn calculates recipient interest" do
+                  let
+                        contact' = contact
+                              { history = [ senderMessage { content = "hello"}, recipientMessage { content = "hello"}, senderMessage ]
+                              }
+
+                  TUA.equal (Just $ Just 1.0) (_.interest <<< _.recipientStats <$> CIC.makeTurn imUser contact')
+
+            TU.test "makeTurn calculates sender interest for first message" do
+                  let
+                        contact' = contact
+                              { history = [ senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "hello"}]
+                              }
+                  TUA.equal (Just Nothing) (_.interest <<< _.senderStats <$> CIC.makeTurn imUser contact')
+
+            TU.test "makeTurn calculates sender interest for later message" do
+                  let
+                        contact' = contact
+                              { history = [ recipientMessage { content = "hello"}, senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "oi"}]
+                              }
+                  TUA.equal (Just $ Just 1.0) (_.interest <<< _.senderStats <$> CIC.makeTurn imUser contact')
+
+            -- TU.testOnly "makeTurn calculates recipient reply delay" do
+
+            -- TU.testOnly "makeTurn calculates sender reply delay" do
 
             TU.test "makeTurn don't calculate turn for recipient" do
                   let
