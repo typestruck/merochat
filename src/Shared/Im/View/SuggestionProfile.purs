@@ -29,6 +29,8 @@ import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
+import Shared.Privilege (Privilege(..))
+import Shared.Privilege as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
@@ -36,7 +38,7 @@ import Shared.User as SUR
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
 suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, user } =
-      if user.profileVisibility > NoTemporaryUsers && notChatting then
+      if (user.profileVisibility > NoTemporaryUsers || not (SP.hasPrivilege StartChats user)) && notChatting then
             suggestionWarning
       else if DA.null suggestions && notChatting then
             emptySuggestions
@@ -296,12 +298,21 @@ signUpCall joined = HE.div (HA.class' "sign-up-call")
             n → " in " <> show n <> " days"
 
 welcome ∷ ImUser → Html ImMessage
-welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")
+welcome user@{ name, profileVisibility } = HE.div (HA.class' "card-top-header")
       [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
-      , HE.div (HA.class' "welcome-new") $ case profileVisibility of
-              Nobody → warn "hidden"
-              Contacts → warn "contacts only"
-              _ → [ HE.text "Here are your newest chat suggestions" ]
+      , HE.div (HA.class' "welcome-new") $
+              if not SP.hasPrivilege StartChats user then
+                    [ HE.span (HA.class' "no-self-start")
+                            [ HE.text "You do not have enough "
+                            , HE.a [ HA.class' "bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowLeaderboard ] " karma "
+                            , HE.text " to view new chat suggestions"
+                            ]
+                    ]
+              else
+                    case profileVisibility of
+                          Nobody → warn "hidden"
+                          Contacts → warn "contacts only"
+                          _ → [ HE.text "Here are your newest chat suggestions" ]
       ]
       where
       warn level =
@@ -310,8 +321,6 @@ welcome { name, profileVisibility } = HE.div (HA.class' "card-top-header")
             , HE.text "to see new chat suggestions"
             ]
 
---might be better to just make a grayed out card...
--- | Fake profile so there is always three suggestion cards on display
 dummySuggestion ∷ Suggestion
 dummySuggestion =
       { id: 0
@@ -320,6 +329,7 @@ dummySuggestion =
       , description: "Many years later, as he faced the firing squad, Colonel Aureliano Buendía was to remember that distant afternoon when his father took him to discover ice. At that time Macondo was a village of twenty adobe houses, built on the bank of a river of clear water that ran along a bed of polished stones, which were white and enormous, like prehistoric eggs. The world was so recent that many things lacked names, and in order to indicate them it was necessary to point. Every year during the month of March a family of ragged gypsies would set up their tents near the village, and with a great uproar of pipes and kettledrums they would display new inventions. First they brought the magnet."
       , avatar: Nothing
       , tags: []
+      , privileges: []
       , availability: Online
       , profileVisibility: Everyone
       , temporary: false

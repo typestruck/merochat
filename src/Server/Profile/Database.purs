@@ -1,31 +1,22 @@
 module Server.Profile.Database where
 
-import Droplet.Language
-import Prelude hiding (join)
-import Server.Database.Countries
-import Server.Database.Fields
-import Server.Database.Functions
-import Server.Database.KarmaLeaderboard
-import Server.Database.Languages
-import Server.Database.LanguagesUsers
-import Server.Database.Tags
-import Server.Database.TagsUsers
-import Server.Database.Users
-import Server.Profile.Database.Flat
-import Server.Types
+import Droplet.Language (class ToValue, array_agg, as, delete, from, insert, into, join, limit, on, orderBy, select, values, wher, (.&&.), (...), (.=.))
+import Prelude (Unit, bind, discard, map, void, when, (#), ($), (<<<), (<>))
+import Server.Database.Countries (countries)
+import Server.Database.Fields (_id, _name, k, l, lu, tu, u)
+import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
+import Server.Database.Languages (_languages, languages)
+import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
+import Server.Database.Tags (_tags, tags)
+import Server.Database.TagsUsers (_creator, _tag, tags_users)
+import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, users)
+import Server.Profile.Database.Flat (FlatProfileUser)
+import Server.Types (ServerEffect)
 
 import Data.Array as DA
-import Data.Maybe (Maybe(..))
-import Data.Newtype as DN
-import Data.Reflectable (class Reflectable)
-import Data.Traversable as DT
-import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Prelude as P
-import Prim.Row (class Cons)
 import Server.Database as SD
-import Shared.Profile.Types (ProfileUser)
 import Shared.Unsafe as SU
 import Simple.JSON as SJ
 import Type.Proxy (Proxy(..))
@@ -41,8 +32,8 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
             /\ _headline
             /\ _description
             /\ _country
-            /\ (select (int_array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
-            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
       source = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)

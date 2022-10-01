@@ -220,9 +220,9 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
                         previousRecipientCharacters = characters previousRecipientMessages
 
                         senderReplyDelay =
-                              DN.unwrap (DT.diff (getDate $ DAN.last previousRecipientMessages) (getDate $ DAN.head senderMessages) ∷ Minutes)
+                              DN.unwrap (DT.diff (getDate $ DAN.head senderMessages) (getDate $ DAN.last previousRecipientMessages) ∷ Minutes)
                         recipientReplyDelay =
-                              DN.unwrap (DT.diff (getDate $ DAN.last senderMessages) (getDate $ DAN.head recipientMessages) ∷ Minutes)
+                              DN.unwrap (DT.diff (getDate $ DAN.head recipientMessages) (getDate $ DAN.last senderMessages) ∷ Minutes)
                   in
                         Just
                               { senderStats:
@@ -256,7 +256,7 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
 
       getDate = DN.unwrap <<< _.date
 
-      accountAge { joined: DateTimeWrapper dt } = DN.unwrap (DT.diff dt SDT.unsafeNow ∷ Days)
+      accountAge { joined: DateTimeWrapper dt } = DN.unwrap (DT.diff SDT.unsafeNow dt ∷ Days)
 
 applyMarkup ∷ Markup → ImModel → MoreMessages
 applyMarkup markup model@{ chatting } =

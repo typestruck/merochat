@@ -19,7 +19,3 @@ insert_history = function "insert_history"
 
 utc_now ∷ FunctionSignature' DateTime
 utc_now = function' "utc_now"
-
---i cant be bothered to type array_agg into droplet
-int_array_agg :: FunctionSignature Int (Maybe (Array Int))
-int_array_agg = function "array_agg"

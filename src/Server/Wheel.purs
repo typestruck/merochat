@@ -1,4 +1,3 @@
--- | Karma score calculation
 module Server.Wheel where
 
 import Prelude

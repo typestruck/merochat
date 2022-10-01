@@ -259,22 +259,22 @@ create table last_seen (
 --     description text
 -- );
 
--- create table privileges
--- (
---     id integer generated always as identity primary key,
---     feature smallint not null,
---     description text,
---     quantity integer not null
--- );
+create table privileges
+(
+    id integer generated always as identity primary key,
+    feature smallint not null,
+    description text,
+    quantity integer not null
+);
 
--- create table privileges_users
--- (
---     id integer generated always as identity primary key,
---     privilege integer not null,
---     receiver integer not null,
---     constraint privilege_user_user foreign key (receiver) references users(id) on delete cascade,
---     constraint privilege_user_privilege foreign key (privilege) references privileges(id) on delete cascade
--- );
+create table privileges_users
+(
+    id integer generated always as identity primary key,
+    privilege integer not null,
+    receiver integer not null,
+    constraint privilege_user_user foreign key (receiver) references users(id) on delete cascade,
+    constraint privilege_user_privilege foreign key (privilege) references privileges(id) on delete cascade
+);
 
 -- create table badges_users
 -- (
@@ -666,7 +666,8 @@ values
     ('Zambia'),
     ('Zimbabwe');
 
-insert into experiments (code, name, description) values (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it');
+insert into experiments (code, name, description) values
+    (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it');
 
 insert into stock_text (contents, text_type) values
     ('I stayed up all night wondering where the sun went, then it dawned on me', 0),
@@ -819,3 +820,11 @@ insert into stock_text (contents, text_type) values
     ('What is something that''s really popular right now that will be ridiculous in five years?', 1),
     ('What''s your favorite movie that you could watch over and over again?', 1),
     ('What do you think the world will be like 50 years in the future?', 1);
+
+insert into privileges (feature, description, quantity) values
+    (0, 'Receive chats', 1),
+    (1, 'Start chats', 25),
+    (2, 'More tags', 500),
+    (3, 'Participate in chat experiments', 1000),
+    (4, 'Send links', 3000),
+    (5, 'Send images', 10000);

@@ -153,7 +153,6 @@ tests = do
                   TUA.equal (Just $ Just 1.0) (_.interest <<< _.senderStats <$> CIC.makeTurn imUser contact')
 
             -- TU.testOnly "makeTurn calculates recipient reply delay" do
-
             -- TU.testOnly "makeTurn calculates sender reply delay" do
 
             TU.test "makeTurn don't calculate turn for recipient" do

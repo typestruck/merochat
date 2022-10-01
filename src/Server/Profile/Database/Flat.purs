@@ -6,7 +6,6 @@ import Data.Date (Date)
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Debug (spy)
-import Server.Database.Flat as SDF
 import Shared.Avatar as SA
 import Shared.DateTime (DateWrapper(..))
 import Shared.Profile.Types (ProfileUser)
@@ -24,7 +23,7 @@ type FlatProfileUser =
       , karmaPosition ∷ Int
       , languages ∷ Maybe (Array Int)
       , name ∷ String
-      , tags ∷ Maybe String
+      , tags ∷ Maybe (Array String)
       }
 
 fromFlatProfileUser ∷ FlatProfileUser → ProfileUser
@@ -41,5 +40,5 @@ fromFlatProfileUser fu =
       , karmaPosition: fu.karmaPosition
       , languages: DM.fromMaybe [] fu.languages
       , name: fu.name
-      , tags: SDF.splitAgg "\n" fu.tags
+      , tags: DM.fromMaybe [] fu.tags
       }

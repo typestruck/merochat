@@ -8,11 +8,11 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Safe.Coerce as SC
-import Server.Database.Flat as SDF
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
+import Shared.Unsafe as SU
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -25,16 +25,17 @@ type FlatFields rest =
       , karma ∷ Int
       , karmaPosition ∷ Int
       , completedTutorial ∷ Checked
-      , languages ∷ Maybe String
+      , languages ∷ Maybe (Array String)
       , profileVisibility ∷ ProfileVisibility
       , joined ∷ DateTime
       , readReceipts ∷ Checked
       , messageTimestamps ∷ Checked
       , typingStatus ∷ Checked
       , temporary ∷ Checked
+      , privileges :: Maybe (Array Int)
       , onlineStatus ∷ Checked
       , name ∷ String
-      , tags ∷ Maybe String
+      , tags ∷ Maybe (Array String)
       | rest
       }
 
@@ -76,15 +77,16 @@ fromFlatUser fc =
       , availability: None
       , completedTutorial: SC.coerce fc.completedTutorial
       , description: fc.description
+      , privileges: DM.maybe [] (SU.toEnum <$> _) fc.privileges
       , temporary: SC.coerce fc.temporary
       , joined: DateTimeWrapper fc.joined
       , avatar: SA.parseAvatar fc.avatar
-      , tags: SDF.splitAgg "\\n" fc.tags
+      , tags: DM.fromMaybe [] fc.tags
       , karma: fc.karma
       , karmaPosition: fc.karmaPosition
       , gender: show <$> fc.gender
       , country: fc.country
-      , languages: SDF.splitAgg "," fc.languages
+      , languages: DM.fromMaybe [] fc.languages
       , age: DI.ceil <$> fc.age
       }
 

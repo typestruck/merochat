@@ -78,6 +78,7 @@ batman =
       , karma: 877
       , karmaPosition: 342
       , gender: Just $ show Male
+      , privileges: []
       , temporary: false
       , country: Just "Gotham"
       , languages: []
@@ -94,6 +95,7 @@ socrates =
       , profileVisibility: Everyone
       , availability: None
       , readReceipts: true
+      , privileges: []
       , temporary: false
       , completedTutorial: true
       , messageTimestamps: true
@@ -125,6 +127,7 @@ nicolasCage =
       , readReceipts: true
       , messageTimestamps: true
       , completedTutorial: true
+      , privileges: []
       , typingStatus: true
       , temporary: false
       , joined : DateTimeWrapper epoch
