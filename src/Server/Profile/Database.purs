@@ -1,7 +1,13 @@
 module Server.Profile.Database where
 
-import Droplet.Language (class ToValue, array_agg, as, delete, from, insert, into, join, limit, on, orderBy, select, values, wher, (.&&.), (...), (.=.))
+import Server.Database.Privileges
+
+import Data.Array as DA
+import Data.Tuple.Nested ((/\))
+import Droplet.Language
 import Prelude (Unit, bind, discard, map, void, when, (#), ($), (<<<), (<>))
+import Prelude as P
+import Server.Database as SD
 import Server.Database.Countries (countries)
 import Server.Database.Fields (_id, _name, k, l, lu, tu, u)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
@@ -12,11 +18,6 @@ import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, users)
 import Server.Profile.Database.Flat (FlatProfileUser)
 import Server.Types (ServerEffect)
-
-import Data.Array as DA
-import Data.Tuple.Nested ((/\))
-import Prelude as P
-import Server.Database as SD
 import Shared.Unsafe as SU
 import Simple.JSON as SJ
 import Type.Proxy (Proxy(..))
@@ -32,6 +33,7 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
             /\ _headline
             /\ _description
             /\ _country
+            /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)

@@ -267,15 +267,6 @@ create table privileges
     quantity integer not null
 );
 
-create table privileges_users
-(
-    id integer generated always as identity primary key,
-    privilege integer not null,
-    receiver integer not null,
-    constraint privilege_user_user foreign key (receiver) references users(id) on delete cascade,
-    constraint privilege_user_privilege foreign key (privilege) references privileges(id) on delete cascade
-);
-
 -- create table badges_users
 -- (
 --     id integer generated always as identity primary key,

@@ -2,6 +2,16 @@ module Server.Im.Database where
 
 import Droplet.Language
 import Prelude hiding (not, join)
+
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty as DAN
+import Data.BigInt as DB
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
+import Droplet.Driver (Pool)
+import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
 import Server.Database.Fields (_age, _date, _id, _name, _recipient, _sender, c, completedTutorial, k, l, lu, messageTimestamps, onlineStatus, profileVisibility, readReceipts, tu, typingStatus, u)
@@ -13,27 +23,16 @@ import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.LastSeen (_who, last_seen)
 import Server.Database.Messages (_content, _status, _temporary_id, messages)
+import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Suggestions (_suggested, suggestions)
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
+import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
-import Server.Im.Database.Privileges (_feature, _privileges, privileges)
+import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
 import Server.Types (BaseEffect, ServerEffect)
 import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId)
-
-import Data.Array.NonEmpty (NonEmptyArray)
-import Data.Array.NonEmpty as DAN
-import Data.BigInt as DB
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
-import Data.Tuple (Tuple(..))
-import Data.Tuple.Nested ((/\))
-import Droplet.Driver (Pool)
-import Server.Database as SD
-import Server.Database.Types (Checked(..))
-import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
-import Server.Im.Database.PrivilegesUsers (_privilege, _receiver, privileges_users)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -57,7 +56,7 @@ userPresentationFields =
             /\ _headline
             /\ _description
             /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
-            /\ (select (array_agg _feature # as _privileges) # from (((privileges # as l) `join` (privileges_users # as lu)) # on (l ... _id .=. lu ... _privilege .&&. lu ... _receiver .=. u ... _id)) # orderBy _privileges # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)

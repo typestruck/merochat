@@ -3,6 +3,7 @@ module Shared.Profile.View where
 import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
+import Shared.Options.Profile
 import Shared.Profile.Types
 
 import Data.Array ((:))
@@ -33,7 +34,8 @@ import Shared.Im.Svg as SIS
 import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Network (RequestStatus(..))
-import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
+import Shared.Privilege (Privilege(..))
+import Shared.Privilege as SP
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
 import Type.Data.Symbol as TDS
@@ -89,6 +91,10 @@ view
               ]
       ]
       where
+      numberTags
+            | SP.hasPrivilege MoreTags user = maxFinalTags
+            | otherwise = maxStartingTags
+
       displayEditName = displayEditGenerated Name (Proxy ∷ _ "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
       displayEditHeadline = displayEditGenerated Headline (Proxy ∷ _ "headline") "A tagline to draw attention to your profile" headlineMaxCharacters
 
@@ -147,7 +153,7 @@ view
                         , HA.onInput (setFieldInputedMaybe fieldInputed <<< nothingOnEmpty)
                         ]
             in
-                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ _ "tags") Tags identity currentFieldValue control ("You may add up to " <> show maxTags <> " tags to show your interests, hobbies, etc") maxTags
+                  HE.div (HA.class' "profile-tags") $ displayEditList (Proxy ∷ _ "tags") Tags identity currentFieldValue control ("You may add up to " <> show numberTags <> " tags to show your interests, hobbies, etc") numberTags
 
       displayEditDescription = HE.fragment
             [ HE.div_

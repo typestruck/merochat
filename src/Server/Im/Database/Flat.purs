@@ -12,6 +12,7 @@ import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
+import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 
 type FlatFields rest =
@@ -32,7 +33,7 @@ type FlatFields rest =
       , messageTimestamps ∷ Checked
       , typingStatus ∷ Checked
       , temporary ∷ Checked
-      , privileges :: Maybe (Array Int)
+      , privileges :: Maybe (Array Privilege)
       , onlineStatus ∷ Checked
       , name ∷ String
       , tags ∷ Maybe (Array String)
@@ -77,7 +78,7 @@ fromFlatUser fc =
       , availability: None
       , completedTutorial: SC.coerce fc.completedTutorial
       , description: fc.description
-      , privileges: DM.maybe [] (SU.toEnum <$> _) fc.privileges
+      , privileges: DM.fromMaybe [] fc.privileges
       , temporary: SC.coerce fc.temporary
       , joined: DateTimeWrapper fc.joined
       , avatar: SA.parseAvatar fc.avatar

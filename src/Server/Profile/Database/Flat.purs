@@ -8,6 +8,7 @@ import Data.Maybe as DM
 import Debug (spy)
 import Shared.Avatar as SA
 import Shared.DateTime (DateWrapper(..))
+import Shared.Privilege (Privilege)
 import Shared.Profile.Types (ProfileUser)
 import Shared.User (Availability(..), Gender)
 
@@ -18,6 +19,7 @@ type FlatProfileUser =
       , description ∷ String
       , gender ∷ Maybe Gender
       , headline ∷ String
+      , privileges :: Maybe (Array Privilege)
       , id ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int
@@ -38,6 +40,7 @@ fromFlatProfileUser fu =
       , id: fu.id
       , karma: fu.karma
       , karmaPosition: fu.karmaPosition
+      , privileges: DM.fromMaybe [] fu.privileges
       , languages: DM.fromMaybe [] fu.languages
       , name: fu.name
       , tags: DM.fromMaybe [] fu.tags

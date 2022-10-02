@@ -12,8 +12,11 @@ emailMaxCharacters = 254
 maxLanguages ∷ Int
 maxLanguages = 4
 
-maxTags ∷ Int
-maxTags = 10
+maxStartingTags ∷ Int
+maxStartingTags = 8
+
+maxFinalTags ∷ Int
+maxFinalTags = 14
 
 tagMaxCharacters ∷ Int
 tagMaxCharacters = 40

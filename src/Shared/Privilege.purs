@@ -6,17 +6,21 @@ import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Array as DA
+import Data.Either (Either)
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic as DSG
+import Droplet.Language (class FromValue, class ToValue)
+import Droplet.Language as DL
 import Foreign as F
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
 data Privilege
-      = StartChats
+      = ReceiveChats
+      | StartChats
       | MoreTags
       | StartChatExperiments
       | SendLinks
@@ -45,22 +49,25 @@ instance BoundedEnum Privilege where
       cardinality = Cardinality 1
 
       fromEnum = case _ of
-            StartChats → 0
-            MoreTags → 1
-            StartChatExperiments → 2
-            SendLinks → 3
-            SendImages → 4
+            ReceiveChats → 0
+            StartChats → 1
+            MoreTags → 2
+            StartChatExperiments → 3
+            SendLinks → 4
+            SendImages → 5
 
       toEnum = case _ of
-            0 → Just StartChats
-            1 → Just MoreTags
-            2 → Just StartChatExperiments
-            3 → Just SendLinks
-            4 → Just SendImages
+            0 → Just ReceiveChats
+            1 → Just StartChats
+            2 → Just MoreTags
+            3 → Just StartChatExperiments
+            4 → Just SendLinks
+            5 → Just SendImages
             _ → Nothing
 
 instance Enum Privilege where
       succ = case _ of
+            ReceiveChats → Just StartChats
             StartChats → Just MoreTags
             MoreTags → Just StartChatExperiments
             StartChatExperiments → Just SendLinks
@@ -68,7 +75,8 @@ instance Enum Privilege where
             SendImages → Nothing
 
       pred = case _ of
-            StartChats → Nothing
+            ReceiveChats → Nothing
+            StartChats → Just ReceiveChats
             MoreTags → Just StartChats
             StartChatExperiments → Just MoreTags
             SendLinks → Just StartChatExperiments
@@ -82,3 +90,9 @@ instance ReadForeign Privilege where
 
 instance WriteForeign Privilege where
       writeImpl = F.unsafeToForeign <<< DE.fromEnum
+
+instance ToValue Privilege where
+      toValue = F.unsafeToForeign <<< DE.fromEnum
+
+instance FromValue Privilege where
+      fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)

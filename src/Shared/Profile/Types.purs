@@ -14,6 +14,7 @@ import Foreign as F
 import Shared.DateTime (DateWrapper)
 import Shared.Experiments.Types (ExperimentData)
 import Shared.Network (RequestStatus)
+import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
 import Simple.JSON (class ReadForeign, class WriteForeign)
@@ -49,6 +50,7 @@ type PU =
               , country ∷ Maybe Int
               , languages ∷ Array Int
               , age ∷ Maybe DateWrapper
+              , privileges :: Array Privilege
               )
       )
 
