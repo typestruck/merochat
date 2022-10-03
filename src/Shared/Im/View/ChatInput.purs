@@ -4,6 +4,7 @@ import Prelude
 import Shared.Im.Types
 import Shared.User
 
+import Client.Common.Privilege as CCP
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
@@ -23,6 +24,8 @@ import Shared.Im.Emoji as SIE
 import Shared.Im.Svg as SIS
 import Shared.Keydown as SK
 import Shared.Options.File (maxImageSizeKB)
+import Shared.Privilege (Privilege(..))
+import Shared.Privilege as SP
 import Shared.Setter as SS
 import Type.Proxy (Proxy(..))
 
@@ -36,18 +39,23 @@ chat model@{ chatting } =
 
 --REFACTOR: replace proxy usage with just SetField (all the fields are known!)
 linkModal ∷ ImModel → Html ImMessage
-linkModal { toggleChatModal, linkText, link, erroredFields } =
+linkModal { toggleChatModal, linkText, link, user, erroredFields } =
       HE.div [ HA.class' { "link-form modal-form": true, hidden: toggleChatModal /= ShowLinkForm } ]
-            [ HE.label_ "Text"
-            , HE.input [ HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (SS.setJust (Proxy ∷ _ "linkText")) ]
-            , HE.label_ "Link"
-            , HE.input [ HA.type' "text", HA.id $ show LinkFormUrl, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (SS.setJust (Proxy ∷ Proxy "link")) ]
-            , HE.span [ HA.class' { "error-message": true, invisible: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ _ "link")) erroredFields } ] "Please enter a link"
-            , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
-                    , HE.button [ HA.class' "green-button", HA.onClick InsertLink ] "Insert"
-                    ]
-            ]
+            if SP.hasPrivilege SendLinks user then
+                  [ HE.label_ "Text"
+                  , HE.input [ HA.type' "text", HA.placeholder "optional title", HA.value $ DM.fromMaybe "" linkText, HA.onInput (SS.setJust (Proxy ∷ _ "linkText")) ]
+                  , HE.label_ "Link"
+                  , HE.input [ HA.type' "text", HA.id $ show LinkFormUrl, HA.placeholder "http://", HA.value $ DM.fromMaybe "" link, HA.onInput (SS.setJust (Proxy ∷ Proxy "link")) ]
+                  , HE.span [ HA.class' { "error-message": true, invisible: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ _ "link")) erroredFields } ] "Please enter a link"
+                  , HE.div (HA.class' "buttons")
+                          [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
+                          , HE.button [ HA.class' "green-button", HA.onClick InsertLink ] "Insert"
+                          ]
+                  ]
+            else
+                  [ CCP.notEnoughKarma (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
+                  , HE.div (HA.class' "buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
+                  ]
 
 imageModal ∷ ImModel → Html ImMessage
 imageModal { selectedImage, erroredFields } =
@@ -108,18 +116,18 @@ chatBarInput
               , HE.div [ HA.class' { "chat-input-area": true, side: not messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
-                              (if elementId == ChatInput then [HA.onKeydown (CheckTyping <<< DT.snd)] else [])
-                              <>
-                              [ HA.rows 1
-                              , HA.class' "chat-input"
-                              , HA.id $ show elementId
-                              , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection..."
-                              , HA.disabled $ not isWebSocketConnected
-                              , SK.keyDownOn "Enter" EnterBeforeSendMessage
-                              , HA.onInput' ResizeChatInput
-                              , HA.autocomplete "off"
-                              ]
-                              , HE.div (HA.class' "chat-right-buttons")
+                              (if elementId == ChatInput then [ HA.onKeydown (CheckTyping <<< DT.snd) ] else [])
+                                    <>
+                                          [ HA.rows 1
+                                          , HA.class' "chat-input"
+                                          , HA.id $ show elementId
+                                          , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection..."
+                                          , HA.disabled $ not isWebSocketConnected
+                                          , SK.keyDownOn "Enter" EnterBeforeSendMessage
+                                          , HA.onInput' ResizeChatInput
+                                          , HA.autocomplete "off"
+                                          ]
+                      , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
                               , sendButton messageEnter
                               ]
