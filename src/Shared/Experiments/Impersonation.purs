@@ -46,7 +46,7 @@ view { section, impersonation, user } = HE.div (HA.class' "impersonation")
                                     ]
                             ]
                       else
-                            [ CCP.notEnoughKarma RedirectKarma
+                            [ CCP.notEnoughKarma "start this chat experiment" RedirectKarma
                             , HE.div (HA.class' "buttons")
                                     $  HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
                             ]

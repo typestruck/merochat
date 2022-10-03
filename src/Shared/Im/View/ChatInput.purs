@@ -53,29 +53,35 @@ linkModal { toggleChatModal, linkText, link, user, erroredFields } =
                           ]
                   ]
             else
-                  [ CCP.notEnoughKarma (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
+                  [ CCP.notEnoughKarma "send links" (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
                   , HE.div (HA.class' "buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
                   ]
 
 imageModal ∷ ImModel → Html ImMessage
-imageModal { selectedImage, erroredFields } =
+imageModal { selectedImage, erroredFields, user } =
       HE.div [ HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage } ]
-            [ HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
-                    [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
-                    , HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
-                    ]
-            , HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed })
-                    [ HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
-                    ]
-            , HE.div (HA.class' "image-form-controls")
-                    [ HE.label_ "Caption"
-                    , HE.input [ HA.placeholder "optional title", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
-                    , HE.div (HA.class' "image-buttons")
-                            [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
-                            , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
-                            ]
-                    ]
-            ]
+            if SP.hasPrivilege SendImages user then
+                  [ HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
+                          [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
+                          , HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
+                          ]
+                  , HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed })
+                          [ HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
+                          ]
+                  , HE.div (HA.class' "image-form-controls")
+                          [ HE.label_ "Caption"
+                          , HE.input [ HA.placeholder "optional title", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
+                          , HE.div (HA.class' "image-buttons")
+                                  [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
+                                  , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
+                                  ]
+                          ]
+                  ]
+            else
+                  [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp", HA.class' "hidden" ]
+                  , CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
+                  , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
+                  ]
       where
       imageValidationFailed = DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) erroredFields
 
