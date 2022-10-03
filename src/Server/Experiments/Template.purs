@@ -8,13 +8,14 @@ import Shared.Experiments.Types
 import Flame as F
 import Shared.Experiments.View as SEV
 
-template ∷ Array ChatExperiment → Effect String
-template experiments = F.preMount (QuerySelector ".chat-experiments")
+template ∷ _ -> Effect String
+template {experiments, user} = F.preMount (QuerySelector ".chat-experiments")
       { view: SEV.view
       , init:
               { experiments
               , section: HideSections
               , impersonation: Nothing
               , current: Nothing
+              , user
               }
       }

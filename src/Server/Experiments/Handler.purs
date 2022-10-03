@@ -8,6 +8,6 @@ import Server.Experiments.Template as SET
 import Server.Experiments.Action as SEA
 
 experiments ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
-experiments _ = do
-      listing <- SEA.experiments
-      R.liftEffect $ SET.template listing
+experiments { guards: { loggedUserId } } = do
+      payload ← SEA.experiments loggedUserId
+      R.liftEffect $ SET.template payload

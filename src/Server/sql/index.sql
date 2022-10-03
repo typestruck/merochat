@@ -814,8 +814,9 @@ insert into stock_text (contents, text_type) values
 
 insert into privileges (feature, description, quantity) values
     (0, 'Receive chats', 1),
-    (1, 'Start chats', 25),
-    (2, 'More tags', 500),
-    (3, 'Participate in chat experiments', 1000),
-    (4, 'Send links', 3000),
-    (5, 'Send images', 10000);
+    (100, 'Start chats', 25),
+    (200, 'Participate in chat experiments', 50),
+    (201, 'Impersonation', 1000),
+    (300, 'More tags', 500),
+    (400, 'Send links', 3000),
+    (500, 'Send images', 10000);

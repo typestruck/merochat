@@ -6,6 +6,7 @@ import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
 
+import Client.Common.Privilege as CCP
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.HashMap as HS
@@ -302,11 +303,7 @@ welcome user@{ name, profileVisibility } = HE.div (HA.class' "card-top-header")
       [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
       , HE.div (HA.class' "welcome-new") $
               if not SP.hasPrivilege StartChats user then
-                    [ HE.span (HA.class' "no-self-start")
-                            [ HE.text "You do not have enough "
-                            , HE.a [ HA.class' "bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowLeaderboard ] " karma "
-                            , HE.text " to view new chat suggestions"
-                            ]
+                    [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
                     ]
               else
                     case profileVisibility of

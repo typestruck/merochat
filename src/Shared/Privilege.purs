@@ -21,8 +21,9 @@ import Simple.JSON (class ReadForeign, class WriteForeign)
 data Privilege
       = ReceiveChats
       | StartChats
-      | MoreTags
       | StartChatExperiments
+      | ImpersonationChatExperiment
+      | MoreTags
       | SendLinks
       | SendImages
 
@@ -50,36 +51,40 @@ instance BoundedEnum Privilege where
 
       fromEnum = case _ of
             ReceiveChats → 0
-            StartChats → 1
-            MoreTags → 2
-            StartChatExperiments → 3
-            SendLinks → 4
-            SendImages → 5
+            StartChats → 100
+            StartChatExperiments → 200
+            ImpersonationChatExperiment -> 201
+            MoreTags → 300
+            SendLinks → 400
+            SendImages → 500
 
       toEnum = case _ of
             0 → Just ReceiveChats
-            1 → Just StartChats
-            2 → Just MoreTags
-            3 → Just StartChatExperiments
-            4 → Just SendLinks
-            5 → Just SendImages
+            100 → Just StartChats
+            200 → Just StartChatExperiments
+            201 -> Just ImpersonationChatExperiment
+            300 → Just MoreTags
+            400 → Just SendLinks
+            500 → Just SendImages
             _ → Nothing
 
 instance Enum Privilege where
       succ = case _ of
             ReceiveChats → Just StartChats
-            StartChats → Just MoreTags
-            MoreTags → Just StartChatExperiments
-            StartChatExperiments → Just SendLinks
+            StartChats → Just StartChatExperiments
+            StartChatExperiments → Just MoreTags
+            ImpersonationChatExperiment -> Nothing
+            MoreTags → Just SendLinks
             SendLinks → Just SendImages
             SendImages → Nothing
 
       pred = case _ of
             ReceiveChats → Nothing
             StartChats → Just ReceiveChats
-            MoreTags → Just StartChats
-            StartChatExperiments → Just MoreTags
-            SendLinks → Just StartChatExperiments
+            StartChatExperiments → Just StartChats
+            ImpersonationChatExperiment -> Just StartChatExperiments
+            MoreTags → Just StartChatExperiments
+            SendLinks → Just MoreTags
             SendImages → Just SendLinks
 
 instance Show Privilege where

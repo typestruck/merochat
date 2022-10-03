@@ -7,6 +7,7 @@ import Data.DateTime (DateTime)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug (spy)
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA

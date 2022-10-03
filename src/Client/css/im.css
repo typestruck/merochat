@@ -467,7 +467,7 @@ blockquote {
     font-weight: bold;
 }
 
-.warning-temporary, .no-self-start {
+.warning-temporary, .no-self-start, .not-enough-karma {
     color: #db5a5d;
 }
 
