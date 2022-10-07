@@ -38,7 +38,7 @@ toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
       case mToggle of
             ShowProfile → showTab request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
             ShowSettings → showTab request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
-            ShowLeaderboard → showTab request.leaderboard ShowLeaderboard (Just Leaderboard) KarmaLeaderboard
+            ShowKarmaPrivileges → showTab request.leaderboard ShowKarmaPrivileges (Just Leaderboard) KarmaPrivilegesRoot
             ShowHelp → showTab request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
             ShowExperiments → showTab request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
             ShowBacker → showTab request.internalBacker ShowBacker Nothing BackerRoot

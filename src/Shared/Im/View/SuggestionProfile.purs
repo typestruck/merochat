@@ -303,7 +303,7 @@ welcome user@{ name, profileVisibility } = HE.div (HA.class' "card-top-header")
       [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
       , HE.div (HA.class' "welcome-new") $
               if not SP.hasPrivilege StartChats user then
-                    [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
+                    [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
                     ]
               else
                     case profileVisibility of

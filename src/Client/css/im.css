@@ -906,7 +906,7 @@ svg.toolbar-action {
 #profile-edition-root,
 #settings-edition-root,
 #feedback-root,
-#karma-leaderboard-root,
+#karma-privileges-root,
 #help-root,
 #backer-root {
     margin-top: 45px;
@@ -2281,7 +2281,7 @@ select {
     #temporary-user-sign-up-form,
     #feedback-root,
     #help-root,
-    #karma-leaderboard-root,
+    #karma-privileges-root,
     #settings-edition-root,
     #profile-edition-root,
     #backer-root,

@@ -8,7 +8,6 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.Resource as SP
 import Shared.Leaderboard.Types
 
 view ∷ LeaderboardModel → Html LeaderboardMessage
@@ -20,7 +19,7 @@ view { top10, inBetween10, userPosition, toggleBoard } =
                     , HE.text "The more karma you have, the more messages you get, as well more access to features"
                     ]
             , HE.div (HA.class' "leaderboard") $ HE.div_
-                    [ HE.div (HA.class' "center") "Ranking"
+                    [ HE.div (HA.class' "center bold") "Karma leaderboard"
                     , HE.div (HA.class' "center")
                             [ HE.span [ HA.class' { "place-link": true, "selected": toggleBoard == InBetween10 }, HA.onClick $ ToggleBoardDisplay InBetween10 ] "Your position"
                             , HE.span (HA.class' "separator duller") "•"

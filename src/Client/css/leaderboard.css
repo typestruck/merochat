@@ -41,7 +41,7 @@
 
 .name-karma {
     width: 45em;
-    padding: 10px 0;
+    padding-top: 2px;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     padding-left: 15px;
@@ -62,7 +62,7 @@
     width: 80px;
     height: 80px;
     border-radius: 100%;
-    border: 20px solid #2d2d2d;
+    border: 15px solid #2d2d2d;
 }
 
 .user .name-karma {

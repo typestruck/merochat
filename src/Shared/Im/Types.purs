@@ -182,7 +182,7 @@ data ShowUserMenuModal
       | ShowExperiments
       | ShowProfile
       | ShowSettings
-      | ShowLeaderboard
+      | ShowKarmaPrivileges
       | ShowHelp
       | ShowBacker
       | ShowFeedback
@@ -544,9 +544,9 @@ instance Show ReportReason where
 
 instance Show ShowUserMenuModal where
       show = case _ of
-            ShowProfile → "Your profile"
-            ShowSettings → "Your settings"
-            ShowLeaderboard → "Karma leaderboard"
+            ShowProfile → "Profile"
+            ShowSettings → "Settings"
+            ShowKarmaPrivileges → "Privileges"
             ShowHelp → "Help"
             ShowExperiments → "Chat experiments"
             ShowBacker → "Backing"

@@ -53,7 +53,7 @@ linkModal { toggleChatModal, linkText, link, user, erroredFields } =
                           ]
                   ]
             else
-                  [ CCP.notEnoughKarma "send links" (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
+                  [ CCP.notEnoughKarma "send links" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
                   , HE.div (HA.class' "buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
                   ]
 
@@ -79,7 +79,7 @@ imageModal { selectedImage, erroredFields, user } =
                   ]
             else
                   [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp", HA.class' "hidden" ]
-                  , CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ ShowLeaderboard)
+                  , CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
                   , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
                   ]
       where

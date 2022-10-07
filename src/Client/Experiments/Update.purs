@@ -30,7 +30,7 @@ update model =
             ToggleSection section → F.noMessages $ model { section = section }
             ConfirmImpersonation profile → F.noMessages model { impersonation = profile }
             RedirectKarma -> model :> [do
-                  liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowLeaderboard
+                  liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges
                   pure Nothing
             ]
       where
