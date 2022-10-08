@@ -471,6 +471,50 @@ blockquote {
     color: #db5a5d;
 }
 
+.modal-section {
+    display: flex;
+}
+
+.section-label {
+    margin-right: 40px;
+}
+
+.modal-section label {
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+
+.modal-section label:first-child {
+    margin-top: 0px;
+}
+
+.modal-section .error-message {
+    display: block;
+    visibility: hidden;
+}
+
+.modal-section .green-button {
+    margin: 0;
+    margin-bottom: 40px;
+}
+
+.modal-section .margined {
+    margin-top: 20px
+}
+
+.modal-section .error-message {
+    visibility: hidden;
+    margin-bottom: 10px;
+}
+
+.modal-section .errored .error-message {
+    visibility: visible;
+}
+
+.modal-section .errored input {
+    color: red;
+}
+
 #full-profile-context-menu,
 .svg-back-profile {
     padding: 10px;
@@ -1950,11 +1994,11 @@ select {
     display: none;
 }
 
-.settings-section {
+.modal-section {
     flex-direction: column;
 }
 
-.settings-part {
+.modal-part {
     display: flex;
     margin-bottom: 20px;
 }
@@ -2015,6 +2059,15 @@ select {
         width: auto;
     }
 
+          .section-label {
+              margin-right: 0;
+              margin-bottom: 10px
+          }
+
+          .modal-section {
+              padding: 15px
+          }
+
     .message-history .retry.invisible {
         visibility: unset;
         display: none;
@@ -2068,7 +2121,7 @@ select {
         display: none;
     }
 
-    .settings-part {
+    .modal-part {
         flex-direction: column;
     }
 

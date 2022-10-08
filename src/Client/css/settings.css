@@ -1,47 +1,3 @@
-.settings-section {
-    display: flex;
-}
-
-.section-label {
-    margin-right: 40px;
-}
-
-.settings-section label {
-    margin-top: 20px;
-    margin-bottom: 5px;
-}
-
-.settings-section label:first-child {
-    margin-top: 0px;
-}
-
-.settings-section .error-message {
-    display: block;
-    visibility: hidden;
-}
-
-.settings-section .green-button {
-    margin: 0;
-    margin-bottom: 40px;
-}
-
-.settings-section .margined {
-    margin-top: 20px
-}
-
-.settings-section .error-message {
-    visibility: hidden;
-    margin-bottom: 10px;
-}
-
-.settings-section .errored .error-message {
-    visibility: visible;
-}
-
-.settings-section .errored input {
-    color: red;
-}
-
 .section-buttons {
     display: flex;
     width: 500px;
@@ -58,12 +14,5 @@
 @media (max-width:1279px) {
     .settings-edition {
         width: 100%;
-    }
-    .section-label {
-        margin-right: 0;
-        margin-bottom: 10px
-    }
-    .settings-section {
-        padding: 15px
     }
 }

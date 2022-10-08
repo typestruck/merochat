@@ -10,17 +10,18 @@ import Shared.Experiments.Types
 import Shared.Experiments.Impersonation as SEI
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
-view model@{ experiments, current } = case current of
+view model@{ experiments, current } = HE.div (HA.class' "chat-experiments") $ case current of
       Just (Impersonation (Just profile)) →
             --likely to be the same for all experiments
-            HE.div (HA.class' "chat-experiments") $ SEI.joined profile
+            HE.div (HA.class' "modal-section") $ SEI.joined profile
       _ →
-            HE.div (HA.class' "chat-experiments") <<<
-                  HE.div (HA.class' "all-experiments") $ map toDiv experiments
+            HE.div (HA.class' "modal-section") $ map toDiv experiments
       where
-      toDiv { name, description, code } = HE.div (HA.class' "experiment")
-            [ HE.span (HA.class' "experiment-name") name
-            , HE.span (HA.class' "duller") description
+      toDiv { name, description, code } = HE.div (HA.class' "modal-part")
+            [ HE.div (HA.class' "section-label")
+                    [ HE.label (HA.class' "bold") name
+                    , HE.div (HA.class' "duller experiment-description") description
+                    ]
             , HE.fragment $ extra model code
             ]
 
