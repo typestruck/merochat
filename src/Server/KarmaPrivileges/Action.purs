@@ -1,9 +1,9 @@
-module Server.Leaderboard.Action where
+module Server.KarmaPrivileges.Action where
 
 import Prelude
 
-import Server.Leaderboard.Database as SLD
-import Server.Leaderboard.Types (Payload)
+import Server.KarmaPrivileges.Database as SLD
+import Server.KarmaPrivileges.Types (Payload)
 import Server.Types (ServerEffect)
 
 leaderboard :: Int -> ServerEffect Payload

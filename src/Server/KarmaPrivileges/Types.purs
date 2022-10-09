@@ -1,7 +1,7 @@
-module Server.Leaderboard.Types where
+module Server.KarmaPrivileges.Types where
 
 import Prelude
 
-import Shared.Leaderboard.Types (LeaderboardUser)
+import Shared.KarmaPrivileges.Types (LeaderboardUser)
 
 type Payload = { top10 ∷ Array LeaderboardUser, userPosition ∷ Int, inBetween10 ∷ Array LeaderboardUser }

@@ -33,7 +33,6 @@
     justify-content: space-between;
     margin-bottom: 15px;
     cursor: pointer;
-    /* font-weight: bold; */
     color: hsl(145, 80%, 28%);
 }
 
@@ -52,7 +51,8 @@
         width: 100%;
     }
 
-    .impersonation-header, .experiment-description {
+    .impersonation-header,
+    .experiment-description {
         width: auto;
         max-width: unset;
     }

@@ -1,4 +1,4 @@
-module Server.Leaderboard.Database where
+module Server.KarmaPrivileges.Database where
 
 import Droplet.Language
 import Prelude hiding (join)
@@ -7,7 +7,7 @@ import Shared.Avatar as SA
 import Server.Database.KarmaLeaderboard
 import Server.Database.Users
 import Server.Types
-import Shared.Leaderboard.Types
+import Shared.KarmaPrivileges.Types
 
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD

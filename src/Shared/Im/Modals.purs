@@ -36,7 +36,7 @@ modals model@{ erroredFields, toggleModal, chatting } =
             , lazyLoad Profile
             , lazyLoad Backer
             , lazyLoad Experiments
-            , lazyLoad Leaderboard
+            , lazyLoad KarmaPrivileges
             , lazyLoad Feedback
             , case toggleModal of
                     ShowReport id → report id erroredFields

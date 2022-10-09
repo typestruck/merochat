@@ -1,4 +1,4 @@
-module Shared.Leaderboard.Types where
+module Shared.KarmaPrivileges.Types where
 
 import Data.Maybe (Maybe(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
@@ -21,14 +21,14 @@ type LeaderboardUser =
       , name ∷ String
       }
 
-type LeaderboardModel =
+type KarmaPrivilegesModel =
       { top10 ∷ Array LeaderboardUser
       , inBetween10 ∷ Array LeaderboardUser
       , userPosition ∷ Int
       , toggleBoard ∷ ToggleBoard
       }
 
-data LeaderboardMessage =
+data KarmaPrivilegesMessage =
       ToggleBoardDisplay ToggleBoard
 
 data ToggleBoard

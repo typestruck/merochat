@@ -1,11 +1,11 @@
-module Client.Leaderboard.Update where
+module Client.KarmaPrivileges.Update where
 
 import Prelude
-import Shared.Leaderboard.Types
+import Shared.KarmaPrivileges.Types
 import Flame as F
 import Flame (ListUpdate)
 
-update ∷ ListUpdate LeaderboardModel LeaderboardMessage
+update ∷ ListUpdate KarmaPrivilegesModel KarmaPrivilegesMessage
 update model =
       case _ of
             ToggleBoardDisplay toggle → F.noMessages $ model

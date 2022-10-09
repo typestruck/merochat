@@ -1,6 +1,3 @@
-.leaderboard {
-    margin: 40px 0
-}
 
 .leaderboard h2 {
     margin: 0;
@@ -15,6 +12,10 @@
 
 .name-karma .name {
     font-size: 1.1em;
+}
+
+.margin-m {
+    margin-left: 20px;
 }
 
 .position-number {
@@ -40,7 +41,7 @@
 }
 
 .name-karma {
-    width: 45em;
+    width: 25em;
     padding-top: 2px;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
