@@ -13,8 +13,22 @@ import Shared.KarmaPrivileges.Types
 view ∷ KarmaPrivilegesModel → Html KarmaPrivilegesMessage
 view { top10, inBetween10, userPosition, toggleBoard } =
       HE.div (HA.class' "karma-leaderboard") $
-            HE.div (HA.class' "modal-section")
-                  [ HE.div (HA.class' "leaderboard modal-part")
+            HE.div (HA.class' "modal-section leaderboard ")
+                  [ HE.div (HA.class' "modal-part")
+                          [ HE.div (HA.class' "section-label")
+                                  [ HE.div (HA.class' "bold") "Privileges"
+                                  , HE.div (HA.class' "duller")
+                                          [ HE.div_ "Features you have"
+                                          , HE.div_ "unlocked on MeroChat"
+                                          ]
+                                  ]
+                          , HE.div (HA.class' "margin-m")
+                                  [ HE.div (HA.class' "center")
+                                          [ HE.text "list"
+                                          ]
+                                  ]
+                          ]
+                  , HE.div (HA.class' "modal-part")
                           [ HE.div (HA.class' "section-label")
                                   [ HE.div (HA.class' "bold") "Karma leaderboard"
                                   , HE.div (HA.class' "duller") $ HE.text "Your karma ranking"

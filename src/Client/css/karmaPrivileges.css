@@ -1,4 +1,3 @@
-
 .leaderboard h2 {
     margin: 0;
     margin-bottom: 15px;
@@ -92,13 +91,16 @@
         width: 64px;
         height: 64px;
     }
+
     .karma-leaderboard {
         padding: 10px
     }
+
     .name-karma {
         width: auto;
         flex-grow: 1;
     }
+
     .name {
         max-width: 180px;
         white-space: nowrap;

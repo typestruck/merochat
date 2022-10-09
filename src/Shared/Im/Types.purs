@@ -546,7 +546,7 @@ instance Show ShowUserMenuModal where
       show = case _ of
             ShowProfile → "Profile"
             ShowSettings → "Settings"
-            ShowKarmaPrivileges → "Privileges"
+            ShowKarmaPrivileges → "Karma"
             ShowHelp → "Help"
             ShowExperiments → "Chat experiments"
             ShowBacker → "Backing"
