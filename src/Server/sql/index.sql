@@ -263,6 +263,7 @@ create table privileges
 (
     id integer generated always as identity primary key,
     feature smallint not null,
+    name text,
     description text,
     quantity integer not null
 );
@@ -812,11 +813,11 @@ insert into stock_text (contents, text_type) values
     ('What''s your favorite movie that you could watch over and over again?', 1),
     ('What do you think the world will be like 50 years in the future?', 1);
 
-insert into privileges (feature, description, quantity) values
-    (0, 'Receive chats', 1),
-    (100, 'Start chats', 25),
-    (200, 'Participate in chat experiments', 50),
-    (201, 'Impersonation', 1000),
-    (300, 'More tags', 500),
-    (400, 'Send links', 3000),
-    (500, 'Send images', 10000);
+insert into privileges (feature, name, description, quantity) values
+    (0, 'Receive chats', 'Access basic chat features, edit your profile and settings', 1),
+    (100, 'Start chats', 'View new chat suggetions, and start new chats', 25),
+    (200, 'Participate in chat experiments', 'Take part in chat experiments. Some experiments may require more karma', 50),
+    (201, 'Impersonation', 'Start Impersonation chat experiment', 1000),
+    (300, 'More tags', 'Increased number of max profile tags', 500),
+    (400, 'Send links', 'Send and automatically highlight links in chats', 3000),
+    (500, 'Send images', 'Send pictures in chats', 10000);

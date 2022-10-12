@@ -1,14 +1,10 @@
 module Shared.KarmaPrivileges.Types where
 
-import Data.Maybe (Maybe(..))
-import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
-import Data.Enum as DE
+import Data.Maybe (Maybe)
 import Data.Generic.Rep (class Generic)
-import Data.Show.Generic as DGRS
 import Prelude
 
 import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode as DAD
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
@@ -26,6 +22,14 @@ type KarmaPrivilegesModel =
       , inBetween10 ∷ Array LeaderboardUser
       , userPosition ∷ Int
       , toggleBoard ∷ ToggleBoard
+      , privileges ∷ Array PrivilegeUser
+      }
+
+type PrivilegeUser =
+      { name ∷ String
+      , description ∷ String
+      , got ∷ Boolean
+      , quantity ∷ Int
       }
 
 data KarmaPrivilegesMessage =

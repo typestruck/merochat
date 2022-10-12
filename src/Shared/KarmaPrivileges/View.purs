@@ -11,7 +11,7 @@ import Shared.Avatar as SA
 import Shared.KarmaPrivileges.Types
 
 view ∷ KarmaPrivilegesModel → Html KarmaPrivilegesMessage
-view { top10, inBetween10, userPosition, toggleBoard } =
+view { top10, inBetween10, userPosition, toggleBoard, privileges } =
       HE.div (HA.class' "karma-leaderboard") $
             HE.div (HA.class' "modal-section leaderboard ")
                   [ HE.div (HA.class' "modal-part")
@@ -23,9 +23,7 @@ view { top10, inBetween10, userPosition, toggleBoard } =
                                           ]
                                   ]
                           , HE.div (HA.class' "margin-m")
-                                  [ HE.div (HA.class' "center")
-                                          [ HE.text "list"
-                                          ]
+                                  [ HE.div (HA.class' "privilege-list") $ map privilegeEntry privileges
                                   ]
                           ]
                   , HE.div (HA.class' "modal-part")
@@ -39,13 +37,20 @@ view { top10, inBetween10, userPosition, toggleBoard } =
                                           , HE.span (HA.class' "separator duller") "•"
                                           , HE.span [ HA.class' { "place-link": true, "selected": toggleBoard == Top10 }, HA.onClick $ ToggleBoardDisplay Top10 ] "Top 10"
                                           ]
-                                  , HE.div (HA.class' { "hidden": toggleBoard == InBetween10 }) $ DA.mapWithIndex createEntry top10
-                                  , HE.div (HA.class' { "hidden": toggleBoard == Top10 }) $ DA.mapWithIndex createEntry inBetween10
+                                  , HE.div (HA.class' { "hidden": toggleBoard == InBetween10 }) $ DA.mapWithIndex leaderboardEntry top10
+                                  , HE.div (HA.class' { "hidden": toggleBoard == Top10 }) $ DA.mapWithIndex leaderboardEntry inBetween10
                                   ]
                           ]
                   ]
       where
-      createEntry index { position, avatar, name, karma } =
+      privilegeEntry { name, description } = HE.div_
+            [ HE.div_
+                    [ HE.div_ name
+                    , HE.div_ description
+                    ]
+            ]
+
+      leaderboardEntry index { position, avatar, name, karma } =
             HE.div (HA.class' $ "board-position" <> if position == userPosition then " user" else "")
                   [ HE.div (HA.class' "avatar-leaderboard-div") $ HE.img [ HA.class' $ "avatar-leaderboard" <> SA.avatarColorClass (Just index), HA.src $ SA.avatarForRecipient (Just index) avatar ]
                   , HE.div (HA.class' "name-karma")

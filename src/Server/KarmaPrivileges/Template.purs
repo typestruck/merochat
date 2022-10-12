@@ -8,7 +8,7 @@ import Shared.KarmaPrivileges.View as SLV
 import Server.KarmaPrivileges.Types (Payload)
 
 template ∷ Payload → Effect String
-template { top10, inBetween10, userPosition } =
+template { top10, inBetween10, userPosition, privileges } =
       F.preMount (QuerySelector ".karma-leaderboard")
             { view: SLV.view
             , init:
@@ -16,5 +16,6 @@ template { top10, inBetween10, userPosition } =
                     , top10
                     , inBetween10
                     , userPosition
+                    , privileges
                     }
             }
