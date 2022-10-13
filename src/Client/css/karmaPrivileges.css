@@ -9,8 +9,16 @@
     align-items: center;
 }
 
-.name-karma .name {
-    font-size: 1.1em;
+
+.privilege-body {
+    padding-bottom: 20px;
+    display: flex;
+
+}
+
+.privilege-name-description {
+    display: flex;
+    flex-direction: column;
 }
 
 .margin-m {
@@ -20,17 +28,12 @@
 .position-number {
     color: rgb(238, 238, 238);
     padding: 6px;
-    border: 1px solid #b5b5b7;
+    border: 1px dashed rgb(238, 238, 238);
     border-radius: 100%;
     min-width: 33px;
     display: inline-block;
     text-align: center;
     min-height: 30px;
-}
-
-.name-karma .karma {
-    font-size: 1.3em;
-    font-weight: bold;
 }
 
 .board-position {
@@ -39,9 +42,28 @@
     align-items: center;
 }
 
+.privilege-description,
 .name-karma {
     width: 25em;
-    padding-top: 2px;
+}
+
+.privilege-quantity {
+    padding-right : 40px;
+    align-self: center;
+    width: 50px;
+    color: hsl(145, 80%, 28%)
+}
+
+.privilege-quantity svg {
+    width: 30px;
+    height: 30px;
+    stroke:hsl(145, 80%, 28%);
+    fill:hsl(145, 80%, 28%);
+    cursor: initial;
+}
+
+.name-karma {
+    padding: 5px 0;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     padding-left: 15px;
@@ -82,8 +104,6 @@
     text-align: right;
     align-self: center;
     padding-right: 15px;
-    font-weight: bold;
-    font-size: 1.2em;
 }
 
 @media (max-width:1279px) {
@@ -96,7 +116,8 @@
         padding: 10px
     }
 
-    .name-karma {
+    .name-karma,
+    .privilege-description {
         width: auto;
         flex-grow: 1;
     }

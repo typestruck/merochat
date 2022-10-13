@@ -18,8 +18,8 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges } =
                           [ HE.div (HA.class' "section-label")
                                   [ HE.div (HA.class' "bold") "Privileges"
                                   , HE.div (HA.class' "duller")
-                                          [ HE.div_ "Features you have"
-                                          , HE.div_ "unlocked on MeroChat"
+                                          [ HE.div_ "Features that are"
+                                          , HE.div_ "unlocked with karma"
                                           ]
                                   ]
                           , HE.div (HA.class' "margin-m")
@@ -43,10 +43,21 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges } =
                           ]
                   ]
       where
-      privilegeEntry { name, description } = HE.div_
-            [ HE.div_
-                    [ HE.div_ name
-                    , HE.div_ description
+      privilegeEntry { name, description, quantity, got } = HE.div_
+            [ HE.div (HA.class' "privilege-body")
+                    [ HE.div (HA.class' "privilege-quantity")
+                            [ if got then
+                                    HE.svg [ HA.viewBox "0 0 16 16" ]
+                                          [ HE.title "You have unlocked this feature"
+                                          , HE.path' [ HA.d "M10.67,5.11l-4.3,4.3L4.73,7.77a.62.62,0,0,0-.88.88l2.52,2.52L11.55,6a.62.62,0,0,0-.88-.88Z" ]
+                                          ]
+                              else
+                                    HE.div [HA.class' "", HA.title $ "You need " <> show quantity <> " karma to unlock this feature"] $ show quantity
+                            ]
+                    , HE.div ("privilege-name-description")
+                            [ HE.text name
+                            , HE.div (HA.class' "duller privilege-description") description
+                            ]
                     ]
             ]
 
@@ -56,7 +67,7 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges } =
                   , HE.div (HA.class' "name-karma")
                           [ HE.div_
                                   [ HE.div (HA.class' "name") name
-                                  , HE.span (HA.class' "karma") $ show karma
+                                  , HE.span (HA.class' "duller") $ show karma
                                   ]
                           , HE.div (HA.class' "position") <<< HE.span (HA.class' "position-number") $ show position
                           ]
