@@ -23,7 +23,15 @@ type KarmaPrivilegesModel =
       , userPosition ∷ Int
       , toggleBoard ∷ ToggleBoard
       , privileges ∷ Array PrivilegeUser
+      , stats :: KarmaStats
       }
+
+type KarmaStats = {
+      started :: Int,
+      total :: Int,
+      karma :: Int,
+      sent :: Int
+}
 
 type PrivilegeUser =
       { name ∷ String

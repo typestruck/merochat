@@ -5,10 +5,9 @@ import Flame (QuerySelector(..))
 import Flame as F
 import Shared.KarmaPrivileges.Types (ToggleBoard(..))
 import Shared.KarmaPrivileges.View as SLV
-import Server.KarmaPrivileges.Types (Payload)
 
-template ∷ Payload → Effect String
-template { top10, inBetween10, userPosition, privileges } =
+template ∷ _ → Effect String
+template { top10, inBetween10, userPosition, privileges, stats } =
       F.preMount (QuerySelector ".karma-leaderboard")
             { view: SLV.view
             , init:
@@ -17,5 +16,6 @@ template { top10, inBetween10, userPosition, privileges } =
                     , inBetween10
                     , userPosition
                     , privileges
+                    , stats
                     }
             }

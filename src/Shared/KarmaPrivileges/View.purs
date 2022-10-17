@@ -1,32 +1,21 @@
 module Shared.KarmaPrivileges.View where
 
 import Prelude
+import Shared.KarmaPrivileges.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.KarmaPrivileges.Types
 
 view ∷ KarmaPrivilegesModel → Html KarmaPrivilegesMessage
-view { top10, inBetween10, userPosition, toggleBoard, privileges } =
+view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent, started, karma, total } } =
       HE.div (HA.class' "karma-leaderboard") $
             HE.div (HA.class' "modal-section leaderboard ")
                   [ HE.div (HA.class' "modal-part")
-                          [ HE.div (HA.class' "section-label")
-                                  [ HE.div (HA.class' "bold") "Privileges"
-                                  , HE.div (HA.class' "duller")
-                                          [ HE.div_ "Features that are"
-                                          , HE.div_ "unlocked with karma"
-                                          ]
-                                  ]
-                          , HE.div (HA.class' "margin-m")
-                                  [ HE.div (HA.class' "privilege-list") $ map privilegeEntry privileges
-                                  ]
-                          ]
-                  , HE.div (HA.class' "modal-part")
                           [ HE.div (HA.class' "section-label")
                                   [ HE.div (HA.class' "bold") "Karma leaderboard"
                                   , HE.div (HA.class' "duller") $ HE.text "Your karma ranking"
@@ -41,8 +30,44 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges } =
                                   , HE.div (HA.class' { "hidden": toggleBoard == Top10 }) $ DA.mapWithIndex leaderboardEntry inBetween10
                                   ]
                           ]
+                  , HE.div (HA.class' "modal-part")
+                          [ HE.div (HA.class' "section-label")
+                                  [ HE.div (HA.class' "bold") "Stats"
+                                  , HE.div (HA.class' "duller")
+                                          [ HE.div_ "How you have "
+                                          , HE.div_ "used MeroChat so far"
+                                          ]
+                                  ]
+                          , HE.div (HA.class' "margin-m")
+                                  <<< HE.div (HA.class' "privilege-list") $ map statEntry
+                                  [ Tuple karma "Total karma"
+                                  , Tuple total "Total chats"
+                                  , Tuple total "Chats started"
+                                  , Tuple started "Chats started"
+                                  , Tuple sent "Messages sent"
+                                  ]
+                          ]
+                  , HE.div (HA.class' "modal-part")
+                          [ HE.div (HA.class' "section-label")
+                                  [ HE.div (HA.class' "bold") "Privileges"
+                                  , HE.div (HA.class' "duller")
+                                          [ HE.div_ "Features that are"
+                                          , HE.div_ "unlocked with karma"
+                                          ]
+                                  ]
+                          , HE.div (HA.class' "margin-m")
+                                  [ HE.div (HA.class' "privilege-list") $ map privilegeEntry privileges
+                                  ]
+                          ]
+
                   ]
       where
+      statEntry (Tuple n lbl) = HE.div_
+            [ HE.div (HA.class' "privilege-body")
+                    [ HE.div (HA.class' "privilege-quantity") $ show n
+                    , HE.div ("privilege-name-description") lbl
+                    ]
+            ]
       privilegeEntry { name, description, quantity, got } = HE.div_
             [ HE.div (HA.class' "privilege-body")
                     [ HE.div (HA.class' "privilege-quantity")
@@ -52,7 +77,7 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges } =
                                           , HE.path' [ HA.d "M10.67,5.11l-4.3,4.3L4.73,7.77a.62.62,0,0,0-.88.88l2.52,2.52L11.55,6a.62.62,0,0,0-.88-.88Z" ]
                                           ]
                               else
-                                    HE.div [HA.class' "", HA.title $ "You need " <> show quantity <> " karma to unlock this feature"] $ show quantity
+                                    HE.div [ HA.title $ "You need " <> show quantity <> " karma to unlock this feature" ] $ show quantity
                             ]
                     , HE.div ("privilege-name-description")
                             [ HE.text name
