@@ -65,7 +65,7 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
       statEntry (Tuple n lbl) = HE.div_
             [ HE.div (HA.class' "privilege-body")
                     [ HE.div (HA.class' "privilege-quantity") $ show n
-                    , HE.div ("privilege-name-description") lbl
+                    , HE.div (HA.class' "privilege-name-description") lbl
                     ]
             ]
       privilegeEntry { name, description, quantity, got } = HE.div_
@@ -79,7 +79,7 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
                               else
                                     HE.div [ HA.title $ "You need " <> show quantity <> " karma to unlock this feature" ] $ show quantity
                             ]
-                    , HE.div ("privilege-name-description")
+                    , HE.div (HA.class' "privilege-name-description")
                             [ HE.text name
                             , HE.div (HA.class' "duller privilege-description") description
                             ]

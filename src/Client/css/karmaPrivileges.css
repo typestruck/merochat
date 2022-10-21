@@ -48,17 +48,17 @@
 }
 
 .privilege-quantity {
-    padding-right : 40px;
+    padding-right: 40px;
     align-self: center;
-    width: 50px;
+    min-width: 50px;
     color: hsl(145, 80%, 28%)
 }
 
 .privilege-quantity svg {
     width: 30px;
     height: 30px;
-    stroke:hsl(145, 80%, 28%);
-    fill:hsl(145, 80%, 28%);
+    stroke: hsl(145, 80%, 28%);
+    fill: hsl(145, 80%, 28%);
     cursor: initial;
 }
 
@@ -116,6 +116,14 @@
         padding: 10px
     }
 
+    .margin-m {
+        margin-left: 0;
+    }
+
+        .margin-m .center {
+            text-align: left;
+        }
+
     .name-karma,
     .privilege-description {
         width: auto;
@@ -123,10 +131,16 @@
     }
 
     .name {
-        max-width: 180px;
+        max-width: 150px;
         white-space: nowrap;
         overflow: hidden;
         word-wrap: break-word;
         text-overflow: ellipsis;
     }
+
+    .position-number {
+        min-width: 23px;
+        min-height: 20px;
+    }
+
 }
