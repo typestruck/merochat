@@ -83,9 +83,12 @@ suggest loggedUserId skip = case _ of
       baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
 
       visibilityFilter =
-            _visibility .=. Everyone .&&. _temporary .=. Checked false .||.
-            (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true) .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone)) .||.
-            _temporary .=. Checked true .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
+            _visibility .=. Everyone .&&. _temporary .=. Checked false
+                  .||. (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true)
+                  .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone))
+                  .||. _temporary
+                  .=. Checked true
+                  .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
 
       blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))
 
@@ -187,14 +190,15 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
                  ORDER BY date) s"""
 
 --only for impersonations, we will fix this someday
-presentContactOnly :: Int -> Int -> ServerEffect (Array FlatContact)
+presentContactOnly ∷ Int → Int → ServerEffect (Array FlatContact)
 presentContactOnly loggedUserId userId = SD.unsafeQuery query
       { loggedUserId
       , userId
       , contacts: Contacts
       }
-      where query = "SELECT" <> presentUserContactFields <>
-                  """FROM users u
+      where
+      query = "SELECT" <> presentUserContactFields <>
+            """FROM users u
             JOIN karma_leaderboard k ON u.id = k.ranker
             JOIN (select @userId::integer sender, @loggedUserId::integer recipient, null sender_deleted_to, null recipient_deleted_to, utc_now() last_message_date, utc_now() first_message_date) h ON true
       WHERE visibility <= @contacts
@@ -250,9 +254,6 @@ ORDER BY "lastMessageDate" DESC, s.sender, s.date"""
 messageIdsFor ∷ Int → Int → ServerEffect (Array TemporaryMessageId)
 messageIdsFor loggedUserId messageId = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryId"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageId)
 
-countChats ∷ Int → ServerEffect Int
-countChats loggedUserId = map (DM.maybe 0 (SU.fromJust <<< DB.toInt <<< _.t)) $ SD.single $ select (count _id # as t) # from histories # wher (_sender .=. loggedUserId .||. _recipient .=. loggedUserId)
-
 isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
 isRecipientVisible loggedUserId userId =
       map DM.isJust <<< SD.single $
@@ -299,7 +300,7 @@ updateTutorialCompleted loggedUserId = SD.execute $ update users # set (_complet
 chatHistoryEntry ∷ Int → Int → _
 chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipient) # from histories # senderRecipientFilter loggedUserId otherId
 
-registerUser ∷ Int → String -> String -> ServerEffect Unit
+registerUser ∷ Int → String → String → ServerEffect Unit
 registerUser loggedUserId email password = SD.execute $ update users # set ((_email .=. Just email) /\ (_password .=. Just password) /\ (_temporary .=. Checked false)) # wher (_id .=. loggedUserId)
 
 upsertLastSeen ∷ ∀ r. String → BaseEffect { pool ∷ Pool | r } Unit

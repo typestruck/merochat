@@ -15,9 +15,12 @@ import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
+import Flame.Subscription as FS
 import Shared.Element (ElementId(..))
+import Shared.Options.MountPoint (karmaPrivilegesId)
 import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
+import Shared.KarmaPrivileges.Types as SKT
 
 toggleInitialScreen ∷ Boolean → ImModel → NoMessages
 toggleInitialScreen toggle model = F.noMessages $ model
@@ -34,7 +37,7 @@ logout model = CIF.nothingNext model out
             liftEffect $ CCL.setLocation $ routes.login.get {}
 
 toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
-toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
+toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
       case mToggle of
             ShowProfile → showTab request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
             ShowSettings → showTab request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
@@ -56,10 +59,10 @@ toggleModal mToggle model@{ modalsLoaded , user : { completedTutorial }} =
                   , failedRequests = []
                   , modalsLoaded = toggle : modalsLoaded
                   } :>
-                  if DA.elem toggle modalsLoaded then []
+                  if toggle /= ShowKarmaPrivileges && DA.elem toggle modalsLoaded then []
                   else
                         [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents resource root) (req {})
-                          -- during the tutorial the user may click on the user menu instead of "finish tutorial"
+                        -- during the tutorial the user may click on the user menu instead of "finish tutorial"
                         , if completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]
 

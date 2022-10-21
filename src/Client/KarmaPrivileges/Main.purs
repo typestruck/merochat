@@ -7,10 +7,11 @@ import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Shared.KarmaPrivileges.View as SLV
+import Shared.Options.MountPoint (karmaPrivilegesId)
 
 main ∷ Effect Unit
 main =
-      F.resumeMount_ (QuerySelector ".karma-leaderboard")
+      F.resumeMount (QuerySelector ".karma-leaderboard") karmaPrivilegesId
             { view: SLV.view
             , subscribe: []
             , init: []

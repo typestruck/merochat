@@ -1,14 +1,13 @@
 module Client.Profile.Update where
 
 import Prelude
-import Shared.Experiments.Types
-import Shared.Im.Types
+import Shared.Experiments.Types as SET
+import Shared.Im.Types as SIT
 import Shared.Profile.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
 import Client.Common.Network (request)
-import Client.Common.Network as CCN
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -37,6 +36,10 @@ update rc@{ message } =
             Save field → saveField rc field
             SetProfileChatExperiment experiment → setChatExperiment experiment
             AfterRegistration → setRegistrationMessage
+            UpdatePrivileges kp → updatePrivileges kp
+
+updatePrivileges ∷ _ → Aff (ProfileModel → ProfileModel)
+updatePrivileges { karma, privileges } = pure (_ { user { karma = karma, privileges = privileges } })
 
 saveField ∷ Environment ProfileModel ProfileMessage → Field → Aff (ProfileModel → ProfileModel)
 saveField rc@{ display } field = do
@@ -57,7 +60,7 @@ saveGeneratedField rc@{ display } what =
       case what of
             Name → do
                   saveWith display (req rc.model.nameInputed) $ \name → do
-                        liftEffect <<< FS.send imId $ SetNameFromProfile name
+                        liftEffect <<< FS.send imId $ SIT.SetNameFromProfile name
                         display
                               ( _
                                       { nameInputed = Nothing
@@ -86,7 +89,7 @@ saveGeneratedField rc@{ display } what =
 saveAvatar ∷ Environment ProfileModel ProfileMessage → Maybe String → Aff Unit
 saveAvatar { display } base64 = do
       saveWith display (request.profile.field.avatar { body: { base64 } }) <<< const $ do
-            liftEffect <<< FS.send imId $ SetAvatarFromProfile base64
+            liftEffect <<< FS.send imId $ SIT.SetAvatarFromProfile base64
             display $ _ { user { avatar = base64 } }
 
 saveAge ∷ Environment ProfileModel ProfileMessage → Aff Unit
@@ -163,7 +166,7 @@ save display request = do
                   _ ← display $ _ { updateRequestStatus = Just Success }
                   pure $ Just body
             Left err → do
-                  _ ← display $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err}
+                  _ ← display $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
                   pure Nothing
 
 selectAvatar ∷ Aff (ProfileModel → ProfileModel)
@@ -173,7 +176,7 @@ selectAvatar = do
             CCF.triggerFileSelect field
       FAE.noChanges
 
-setChatExperiment ∷ Maybe ExperimentData → Aff (ProfileModel → ProfileModel)
+setChatExperiment ∷ Maybe SET.ExperimentData → Aff (ProfileModel → ProfileModel)
 setChatExperiment experimenting = FAE.diff { experimenting }
 
 setRegistrationMessage ∷ Aff (ProfileModel → ProfileModel)

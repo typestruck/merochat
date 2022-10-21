@@ -519,7 +519,7 @@ receiveMessage
                                           } →
                                     let
                                           impersonationId = case experimenting of
-                                                Just (ImpersonationPayload { id }) → Just id
+                                                Just (SET.ImpersonationPayload { id }) → Just id
                                                 _ → Nothing
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
                                                 { index: SU.fromJust $ DA.findIndex (findContact userId impersonationId model.experimenting) contacts
@@ -549,9 +549,9 @@ receiveMessage
                   recipientId == senderID
 
       match experimenting = case model.experimenting, experimenting of
-            Just (Impersonation (Just _)), Nothing → false
-            Just (Impersonation (Just { id })), Just (ImpersonationPayload { id: otherId, sender }) → id == otherId && not sender
-            Nothing, Just (ImpersonationPayload { sender }) → sender
+            Just (SET.Impersonation (Just _)), Nothing → false
+            Just (SET.Impersonation (Just { id })), Just (SET.ImpersonationPayload { id: otherId, sender }) → id == otherId && not sender
+            Nothing, Just (SET.ImpersonationPayload { sender }) → sender
             _, _ → true
 
 unsuggest ∷ Int → ImModel → ImModel
@@ -587,7 +587,7 @@ processIncomingMessage
                           }
                   }
       impersonationId = case experimenting of
-            Just (ImpersonationPayload { id }) → Just id
+            Just (SET.ImpersonationPayload { id }) → Just id
             _ → Nothing
 
       findAndUpdateContactList = do
@@ -596,10 +596,10 @@ processIncomingMessage
             let updated = DA.modifyAt index (updateHistory { content, id, date }) contacts
             --if impersonating, only the user can start new chats
             case model.experimenting, experimenting, impersonating of
-                  Nothing, Just (ImpersonationPayload _), Nothing → Nothing
+                  Nothing, Just (SET.ImpersonationPayload _), Nothing → Nothing
                   _, _, _ → updated
 
-findContact ∷ Int → Maybe Int → Maybe ExperimentData → Contact → Boolean
+findContact ∷ Int → Maybe Int → Maybe SET.ExperimentData → Contact → Boolean
 findContact userId impersonationId experimenting { user: { id }, impersonating } = userId == id && (DM.isJust experimenting || impersonating == impersonationId)
 
 updateTemporaryId ∷ Array Contact → Int → Int → Int → Array Contact
@@ -728,7 +728,7 @@ setUpWebSocket webSocketRef = do
       { webSocket } ← ER.read webSocketRef
       let webSocketTarget = CIW.toEventTarget webSocket
       --a ref is used to track reconnections and ping intervals
-      timerIds ← ER.new { reconnectId: Nothing, pingId: Nothing }
+      timerIds ← ER.new { reconnectId: Nothing, pingId: Nothing, privilegesId: Nothing }
       openListener ← WET.eventListener (open timerIds)
       messageListener ← WET.eventListener runMessage
       closeListener ← WET.eventListener (close timerIds)
@@ -739,14 +739,11 @@ setUpWebSocket webSocketRef = do
       where
       open timerIds _ = do
             { reconnectId } ← ER.read timerIds
-            case reconnectId of
-                  Nothing → pure unit
-                  Just id → do
-                        ET.clearTimeout id
-                        ER.modify_ (_ { reconnectId = Nothing }) timerIds
+            DM.maybe (pure unit) (\id → ET.clearTimeout id *> ER.modify_ (_ { reconnectId = Nothing }) timerIds) reconnectId
             pong true
             newPingId ← ping
-            ER.modify_ (_ { pingId = Just newPingId }) timerIds
+            newPrivilegesId ← pollPrivileges
+            ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId }) timerIds
             FS.send imId $ ToggleConnected true
             askForUpdates
 
@@ -763,6 +760,14 @@ setUpWebSocket webSocketRef = do
             else
                   CIW.close webSocket
 
+      pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
+
+      pollPrivileges = do
+            pollPrivilegesAction
+            ET.setInterval (1000 * 60 * 60) pollPrivilegesAction
+
+      pollPrivilegesAction = FS.send imId PollPrivileges
+
       runMessage event = do
             let
                   payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
@@ -774,20 +779,15 @@ setUpWebSocket webSocketRef = do
                         pong true
                   Content cnt → FS.send imId $ ReceiveMessage cnt isFocused
 
-      pong whether = ER.modify_ (_ { ponged = whether }) webSocketRef
-
       askForUpdates = do
             { webSocket } ← ER.read webSocketRef
             CIW.sendPayload webSocket UpdateHash
 
       close timerIds _ = do
             FS.send imId $ ToggleConnected false
-            { reconnectId, pingId } ← ER.read timerIds
-            case pingId of
-                  Nothing → pure unit
-                  Just id → do
-                        ET.clearInterval id
-                        ER.modify_ (_ { pingId = Nothing }) timerIds
+            { reconnectId, pingId, privilegesId } ← ER.read timerIds
+            DM.maybe (pure unit) (\id → ET.clearInterval id *> ER.modify_ (_ { pingId = Nothing }) timerIds) pingId
+            DM.maybe (pure unit) (\id → ET.clearInterval id *> ER.modify_ (_ { privilegesId = Nothing }) timerIds) privilegesId
             when (DM.isNothing reconnectId) do
                   milliseconds ← ERD.randomInt 2000 10000
                   id ← ET.setTimeout milliseconds <<< void $ do

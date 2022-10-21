@@ -1,14 +1,15 @@
 module Shared.KarmaPrivileges.Types where
 
-import Data.Maybe (Maybe)
-import Data.Generic.Rep (class Generic)
 import Prelude
+import Shared.User
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
-import Shared.User
+import Data.Generic.Rep (class Generic)
+import Data.Maybe (Maybe)
+import Shared.Privilege (Privilege)
 
 type LeaderboardUser =
       { position ∷ Int
@@ -23,15 +24,15 @@ type KarmaPrivilegesModel =
       , userPosition ∷ Int
       , toggleBoard ∷ ToggleBoard
       , privileges ∷ Array PrivilegeUser
-      , stats :: KarmaStats
+      , stats ∷ KarmaStats
       }
 
-type KarmaStats = {
-      started :: Int,
-      total :: Int,
-      karma :: Int,
-      sent :: Int
-}
+type KarmaStats =
+      { started ∷ Int
+      , total ∷ Int
+      , karma ∷ Int
+      , sent ∷ Int
+      }
 
 type PrivilegeUser =
       { name ∷ String
@@ -40,8 +41,8 @@ type PrivilegeUser =
       , quantity ∷ Int
       }
 
-data KarmaPrivilegesMessage =
-      ToggleBoardDisplay ToggleBoard
+data KarmaPrivilegesMessage
+      = ToggleBoardDisplay ToggleBoard
 
 data ToggleBoard
       = InBetween10

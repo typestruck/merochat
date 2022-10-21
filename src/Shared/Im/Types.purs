@@ -1,6 +1,7 @@
 module Shared.Im.Types where
 
 import Prelude
+import Shared.Element
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
@@ -30,8 +31,8 @@ import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
+import Shared.Privilege (Privilege)
 import Shared.Resource (Bundle)
-import Shared.Element
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
@@ -201,7 +202,7 @@ type Stats =
       { characters ∷ Number
       , interest ∷ Maybe Number
       , replyDelay ∷ Maybe Number -- Minutes
-      , accountAge :: Number
+      , accountAge ∷ Number
       }
 
 type Turn =
@@ -311,6 +312,7 @@ data ImMessage
       | ToggleAskNotification
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)
+      | PollPrivileges
       | CheckUserExpiration
       | ToggleConnected Boolean
       | SetField (ImModel → ImModel)
@@ -325,6 +327,7 @@ data ImMessage
 
 data WebSocketPayloadServer
       = UpdateHash
+      | UpdatePrivileges
       | Ping
               { isActive ∷ Boolean
               , statusFor ∷ Array Int
@@ -355,6 +358,7 @@ data FullWebSocketPayloadClient
 
 data WebSocketPayloadClient
       = CurrentHash String
+      | CurrentPrivileges { karma ∷ Int, privileges ∷ Array Privilege }
       | NewIncomingMessage ClientMessagePayload
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
@@ -550,7 +554,7 @@ instance Show ShowUserMenuModal where
             ShowHelp → "Help"
             ShowExperiments → "Chat experiments"
             ShowBacker → "Backing"
-            ShowFeedback -> "Send feedback"
+            ShowFeedback → "Send feedback"
             _ → ""
 
 instance Show MessageContent where

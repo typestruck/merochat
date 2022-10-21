@@ -34,6 +34,7 @@ data ChatExperimentMessage
       | ToggleSection ChatExperimentSection
       | ConfirmImpersonation (Maybe ImpersonationProfile)
       | RedirectKarma
+      | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
 data ChatExperimentSection
       = HideSections
