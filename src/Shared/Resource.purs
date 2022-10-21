@@ -55,7 +55,7 @@ data Bundle
       | InternalHelp
       | Landing
       | Feedback
-      | Leaderboard
+      | KarmaPrivileges
       | Login
       | Profile
       | Recover
@@ -133,7 +133,7 @@ resourceName = case _ of
       Right InternalHelp → "internalHelp"
       Right Feedback -> "feedback"
       Right Landing → "landing"
-      Right Leaderboard → "leaderboard"
+      Right KarmaPrivileges → "karmaPrivileges"
       Right Login → "login"
       Right Profile → "profile"
       Right Recover → "recover"
@@ -189,7 +189,7 @@ replacement bundle tp
                     Feedback -> reps ".[feedback-js-contenthash]" ".[feedback-css-contenthash]"
                     InternalHelp → reps ".[internalHelp-js-contenthash]" ".[internalHelp-css-contenthash]"
                     Landing → reps ".[landing-js-contenthash]" ".[landing-css-contenthash]"
-                    Leaderboard → reps ".[leaderboard-js-contenthash]" ".[leaderboard-css-contenthash]"
+                    KarmaPrivileges → reps ".[karmaPrivileges-js-contenthash]" ".[karmaPrivileges-css-contenthash]"
                     Login → reps ".[login-js-contenthash]" ".[login-css-contenthash]"
                     Profile → reps ".[profile-js-contenthash]" ".[profile-css-contenthash]"
                     Recover → reps ".[recover-js-contenthash]" ".[recover-css-contenthash]"

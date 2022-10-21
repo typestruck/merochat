@@ -25,7 +25,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Symbol as TDS
-import Data.Time.Duration (Milliseconds(..), Seconds)
+import Data.Time.Duration (Days(..), Milliseconds(..), Minutes(..), Seconds)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
@@ -39,6 +39,7 @@ import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown as SM
@@ -118,7 +119,7 @@ beforeSendMessage
                         updatedContacts = if DM.isJust maybeIndex then contacts else DA.cons (SIC.defaultContact id user) contacts
                         updatedChatting = maybeIndex <|> Just 0
                         shouldFetchHistory = _.shouldFetchChatHistory $ SU.fromJust do
-                              index <- updatedChatting
+                              index ← updatedChatting
                               updatedContacts !! index
                   in
                         Tuple shouldFetchHistory model
@@ -141,11 +142,10 @@ sendMessage
       content
       date
       model@
-            { user: { id: senderID }
+            { user
             , chatting
             , temporaryId
             , contacts
-            , imageCaption
             , experimenting
             } = CIF.nothingNext updatedModel $ liftEffect do
       CIS.scrollLastMessage
@@ -153,7 +153,7 @@ sendMessage
       WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
       CCD.setValue input ""
       CIW.sendPayload webSocket $ OutgoingMessage
-            { id: newTemporaryID
+            { id: newTemporaryId
             , userId: recipientId
             , content
             , experimenting: case experimenting, recipient.impersonating of
@@ -165,74 +165,98 @@ sendMessage
       where
       index = SU.fromJust chatting
       recipient@{ user: { id: recipientId }, history } = contacts !@ index
-      newTemporaryID = temporaryId + 1
+      newTemporaryId = temporaryId + 1
 
       updatedContact = recipient
             { lastMessageDate = date
             , history = DA.snoc history $
-                    { id: newTemporaryID
+                    { id: newTemporaryId
                     , status: Sent
-                    , sender: senderID
+                    , sender: user.id
                     , recipient: recipientId
                     , date
                     , content: case content of
                             Text message → message
-                            Image caption base64File → asMarkdownImage imageCaption base64File
+                            Image caption base64File → asMarkdownImage caption base64File
                     }
             }
       updatedModel = model
-            { temporaryId = newTemporaryID
+            { temporaryId = newTemporaryId
             , imageCaption = Nothing
             , selectedImage = Nothing
             , contacts = SU.fromJust $ DA.updateAt index updatedContact contacts
             }
-      turn = makeTurn updatedContact senderID
+      turn = makeTurn user updatedContact
 
-      asMarkdownImage imageCaption base64 = "![" <> DM.fromMaybe "" imageCaption <> "](" <> base64 <> ")"
+      asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
 
-makeTurn ∷ Contact → Int → Maybe Turn
-makeTurn { chatStarter, chatAge, history } sender =
-      if chatStarter == sender && isNewTurn history sender then
-            let
-                  senderEntry = SU.fromJust $ DA.last history
-                  recipientEntry = SU.fromJust $ history !! (DA.length history - 2)
-                  Tuple senderMessages recipientMessages = SU.fromJust do
-                        let
-                              groups = DA.groupBy sameSender history
-                              size = DA.length groups
-                              beforeLastIndex = (max size 3) - 1 - 2
-                        senderMessages ← groups !! beforeLastIndex
-                        recipientMessages ← DA.last groups
-                        pure (DAN.toArray senderMessages /\ DAN.toArray recipientMessages)
-                  senderCharacters = DI.toNumber $ DA.foldl countCharacters 0 senderMessages
-                  recipientCharacters = DI.toNumber $ DA.foldl countCharacters 0 recipientMessages
-            in
-                  Just
-                        { senderStats:
-                                { characters: senderCharacters
-                                , interest: senderCharacters / recipientCharacters
-                                }
-                        , recipientStats:
-                                { characters: recipientCharacters
-                                , interest: recipientCharacters / senderCharacters
-                                }
-                        , replyDelay: DN.unwrap (DT.diff (getDate senderEntry) $ getDate recipientEntry ∷ Seconds)
-                        , chatAge
-                        }
-      else
-            Nothing
+makeTurn ∷ ImUser → Contact → Maybe Turn
+makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
+      case grouped of
+            [ senderMessages, recipientMessages, _ ] → --turn but we can't calculate reply bonus
+                  let
+                        senderCharacters = characters senderMessages
+                        recipientCharacters = characters recipientMessages
+                  in
+                        Just
+                              { senderStats:
+                                      { characters: senderCharacters
+                                      , interest: Nothing
+                                      , replyDelay: Nothing
+                                      , accountAge: accountAge user
+                                      }
+                              , recipientStats:
+                                      { characters: recipientCharacters
+                                      , interest: Just $ recipientCharacters / senderCharacters
+                                      , replyDelay: Nothing
+                                      , accountAge: accountAge contact.user
+                                      }
+                              , chatAge
+                              }
+            [ previousRecipientMessages, senderMessages, recipientMessages, _ ] →
+                  let
+                        senderCharacters = characters senderMessages
+                        recipientCharacters = characters recipientMessages
+                        previousRecipientCharacters = characters previousRecipientMessages
+
+                        senderReplyDelay =
+                              DN.unwrap (DT.diff (getDate $ DAN.head senderMessages) (getDate $ DAN.last previousRecipientMessages) ∷ Minutes)
+                        recipientReplyDelay =
+                              DN.unwrap (DT.diff (getDate $ DAN.head recipientMessages) (getDate $ DAN.last senderMessages) ∷ Minutes)
+                  in
+                        Just
+                              { senderStats:
+                                      { characters: senderCharacters
+                                      , interest: Just $ senderCharacters / previousRecipientCharacters
+                                      , replyDelay: Just senderReplyDelay
+                                      , accountAge: accountAge user
+                                      }
+                              , recipientStats:
+                                      { characters: recipientCharacters
+                                      , interest: Just $ recipientCharacters / senderCharacters
+                                      , replyDelay: Just recipientReplyDelay
+                                      , accountAge: accountAge contact.user
+                                      }
+
+                              , chatAge
+                              }
+            _ → Nothing --not a turn
       where
-      isNewTurn history userId = DM.fromMaybe false do
+      grouped
+            | chatStarter == id && isNewTurn = DA.takeEnd 4 $ DA.groupBy sameSender history
+            | otherwise = []
+      isNewTurn = DM.fromMaybe false do
             last ← DA.last history
             beforeLast ← history !! (DA.length history - 2)
-            let
-                  sender = last.sender
-                  recipient = beforeLast.recipient
-            pure $ sender == userId && recipient == userId
-
+            pure $ last.sender == id && beforeLast.recipient == id
       sameSender entry anotherEntry = entry.sender == anotherEntry.sender
+
+      characters = DI.toNumber <<< DA.foldl countCharacters 0 <<< DAN.toArray
       countCharacters total { content } = total + DSC.length content
+
       getDate = DN.unwrap <<< _.date
+
+      accountAge { joined: DateTimeWrapper dt } = DN.unwrap (DT.diff SDT.unsafeNow dt ∷ Days)
 
 applyMarkup ∷ Markup → ImModel → MoreMessages
 applyMarkup markup model@{ chatting } =

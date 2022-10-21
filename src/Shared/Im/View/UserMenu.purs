@@ -38,23 +38,23 @@ userMenu model@{ toggleContextMenu, experimenting, toggleModal, user: { temporar
                     , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowUserContextMenu } ]
                             [ HE.div (HA.class' "mobile-profile-header") $ header model
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Profile"
+                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowProfile
                                     , HE.span (HA.class' "duller") "Set your profile picture, name"
                                     ]
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Settings"
+                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowSettings
                                     , HE.span (HA.class' "duller") "Change email, password, etc"
                                     ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Karma leaderboard"
-                                    , HE.span (HA.class' "duller") "See your karma rank and stats"
+                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges ]
+                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowKarmaPrivileges
+                                    , HE.span (HA.class' "duller") "See your privileges, karma stats"
                                     ]
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Chat experiments"
+                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowExperiments
                                     , HE.span (HA.class' "duller") "Talk in novel ways"
                                     ]
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Backing"
+                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowBacker
                                     , HE.span (HA.class' "duller") "Donate or become a patron"
                                     ]
                             , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp ]
@@ -88,7 +88,7 @@ header model@{ user: { karma, karmaPosition }, experimenting } = HE.fragment
       [ HE.img [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar ]
       , HE.div [ HA.class' "settings-name" ]
               [ HE.strong_ name
-              , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.title "See karma leaderboard" ]
+              , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]
                       [ HE.span [ HA.class' "karma-number" ] $ show karma
                       , HE.span [ HA.class' "karma-text" ] " karma "
                       , HE.span_ $ "(#" <> show karmaPosition <> ")"

@@ -1,52 +1,42 @@
 module Server.Im.Database where
 
 import Droplet.Language
-import Prelude hiding (join, not)
-import Server.Database.Blocks
-import Server.Database.Countries
-import Server.Database.Fields
-import Server.Database.Functions
-import Server.Database.Histories
-import Server.Database.Histories
-import Server.Database.KarmaHistories
-import Server.Database.KarmaLeaderboard
-import Server.Database.Languages
-import Server.Database.LanguagesUsers
-import Server.Database.LastSeen
-import Server.Database.Messages
-import Server.Database.Reports
-import Server.Database.Suggestions
-import Server.Database.Tags
-import Server.Database.TagsUsers
-import Server.Database.Users
-import Server.Types
-import Shared.Im.Types
+import Prelude hiding (not, join)
 
-import Data.Array as DA
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as DAN
 import Data.BigInt as DB
-import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String.Common as DS
 import Data.Tuple (Tuple(..))
-import Data.Tuple.Nested (type (/\), (/\))
-import Debug (spy)
+import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
-import Droplet.Language.Internal.Condition (class ToCondition, Exists, Not)
-import Droplet.Language.Internal.Definition (Path)
-import Droplet.Language.Internal.Function (PgFunction)
-import Effect.Class (liftEffect)
-import Effect.Console (log)
 import Server.Database as SD
+import Server.Database.Blocks (_blocked, _blocker, blocks)
+import Server.Database.Countries (countries)
+import Server.Database.Fields (_age, _date, _id, _name, _recipient, _sender, c, completedTutorial, k, l, lu, messageTimestamps, onlineStatus, profileVisibility, readReceipts, tu, typingStatus, u)
+import Server.Database.Functions (date_part_age, datetime_part_age, insert_history, utc_now)
+import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
+import Server.Database.KarmaHistories (_amount, _target, karma_histories)
+import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
+import Server.Database.Languages (_languages, languages)
+import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
+import Server.Database.LastSeen (_who, last_seen)
+import Server.Database.Messages (_content, _status, _temporary_id, messages)
+import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
+import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
+import Server.Database.Suggestions (_suggested, suggestions)
+import Server.Database.Tags (_tags, tags)
+import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Types (Checked(..))
+import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
-import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage, suggestionsPerPage)
+import Server.Types (BaseEffect, ServerEffect)
+import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId)
+import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
-import Unsafe.Coerce (unsafeCoerce)
 
 userPresentationFields =
       (u ... _id # as _id)
@@ -61,21 +51,19 @@ userPresentationFields =
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
             /\ (_messageTimestamps # as messageTimestamps)
+            /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ _joined
             /\ _headline
             /\ _description
             /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
-            /\ (select (string_agg (l ... _name) (", " # orderBy _name) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
-            /\ (select (string_agg _name ("\n" # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
 contactPresentationFields uid = distinct $ (coalesce (_sender /\ uid) # as _chatStarter) /\ (h ... _date # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce (_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields
 
 senderRecipientFilter loggedUserId otherId = wher ((_sender .=. loggedUserId .&&. _recipient .=. otherId) .||. (_sender .=. otherId .&&. _recipient .=. loggedUserId))
-
-contactsSource ∷ Int → _
-contactsSource loggedUserId = join usersSource (histories # as h) # on (u ... _id .=. h ... _sender .&&. h ... _recipient .=. loggedUserId .||. u ... _id .=. h ... _recipient .&&. h ... _sender .=. loggedUserId)
 
 usersSource ∷ _
 usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
@@ -95,9 +83,12 @@ suggest loggedUserId skip = case _ of
       baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
 
       visibilityFilter =
-            _visibility .=. Everyone .&&. _temporary .=. Checked false .||.
-            (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true) .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone)) .||.
-            _temporary .=. Checked true .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
+            _visibility .=. Everyone .&&. _temporary .=. Checked false
+                  .||. (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true)
+                  .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone))
+                  .||. _temporary
+                  .=. Checked true
+                  .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
 
       blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))
 
@@ -134,13 +125,14 @@ presentUserContactFields =
       , visibility "profileVisibility"
       , read_receipts "readReceipts"
       , typing_status "typingStatus"
+      , array[]::integer[] as "privileges"
       , online_status "onlineStatus"
       , message_timestamps "messageTimestamps"
       , headline
       , description
       , (SELECT name FROM countries WHERE id = u.country) country
-      , (SELECT STRING_AGG(l.name, ', ' ORDER BY name) FROM languages l JOIN languages_users lu ON l.id = lu.language AND lu.speaker = u.id) languages
-      , (SELECT STRING_AGG(t.name, '\n' ORDER BY t.id) FROM tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
+      , (SELECT ARRAY_AGG(l.name ORDER BY name) FROM languages l JOIN languages_users lu ON l.id = lu.language AND lu.speaker = u.id) languages
+      , (SELECT ARRAY_AGG(t.name ORDER BY t.id) FROM tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
       , k.current_karma karma
       , position "karmaPosition"
 """
@@ -198,14 +190,15 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
                  ORDER BY date) s"""
 
 --only for impersonations, we will fix this someday
-presentContactOnly :: Int -> Int -> ServerEffect (Array FlatContact)
+presentContactOnly ∷ Int → Int → ServerEffect (Array FlatContact)
 presentContactOnly loggedUserId userId = SD.unsafeQuery query
       { loggedUserId
       , userId
       , contacts: Contacts
       }
-      where query = "SELECT" <> presentUserContactFields <>
-                  """FROM users u
+      where
+      query = "SELECT" <> presentUserContactFields <>
+            """FROM users u
             JOIN karma_leaderboard k ON u.id = k.ranker
             JOIN (select @userId::integer sender, @loggedUserId::integer recipient, null sender_deleted_to, null recipient_deleted_to, utc_now() last_message_date, utc_now() first_message_date) h ON true
       WHERE visibility <= @contacts
@@ -261,9 +254,6 @@ ORDER BY "lastMessageDate" DESC, s.sender, s.date"""
 messageIdsFor ∷ Int → Int → ServerEffect (Array TemporaryMessageId)
 messageIdsFor loggedUserId messageId = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryId"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageId)
 
-countChats ∷ Int → ServerEffect Int
-countChats loggedUserId = map (DM.maybe 0 (SU.fromJust <<< DB.toInt <<< _.t)) $ SD.single $ select (count _id # as t) # from histories # wher (_sender .=. loggedUserId .||. _recipient .=. loggedUserId)
-
 isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
 isRecipientVisible loggedUserId userId =
       map DM.isJust <<< SD.single $
@@ -310,7 +300,7 @@ updateTutorialCompleted loggedUserId = SD.execute $ update users # set (_complet
 chatHistoryEntry ∷ Int → Int → _
 chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipient) # from histories # senderRecipientFilter loggedUserId otherId
 
-registerUser ∷ Int → String -> String -> ServerEffect Unit
+registerUser ∷ Int → String → String → ServerEffect Unit
 registerUser loggedUserId email password = SD.execute $ update users # set ((_email .=. Just email) /\ (_password .=. Just password) /\ (_temporary .=. Checked false)) # wher (_id .=. loggedUserId)
 
 upsertLastSeen ∷ ∀ r. String → BaseEffect { pool ∷ Pool | r } Unit

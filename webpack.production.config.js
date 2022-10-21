@@ -17,8 +17,8 @@ export default {
             import: ['./loader/production/profile.bundle.js', './src/Client/css/profile.css'],
             dependOn: 'im'
         },
-        leaderboard: {
-            import: ['./loader/production/leaderboard.bundle.js', './src/Client/css/leaderboard.css'],
+        karmaPrivileges: {
+            import: ['./loader/production/karmaPrivileges.bundle.js', './src/Client/css/karmaPrivileges.css'],
             dependOn: 'im'
         },
         help: ['./loader/production/help.bundle.js', './src/Client/css/help.css'],

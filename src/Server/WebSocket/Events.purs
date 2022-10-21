@@ -2,7 +2,6 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Types
-import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
 
@@ -42,6 +41,8 @@ import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Server.Cookies (cookieName)
+import Server.Database.KarmaLeaderboard as SIKL
+import Server.Database.Privileges as SIP
 import Server.Im.Action as SIA
 import Server.Im.Database as SID
 import Server.Token as ST
@@ -49,12 +50,14 @@ import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketM
 import Server.WebSocket as SW
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
+import Shared.Experiments.Types as SET
 import Shared.Json as SJ
+import Shared.Privilege (Privilege(..))
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
 import Simple.JSON (class WriteForeign)
-import Simple.JSON as SJ
+import Simple.JSON as SJS
 
 type UserAvailability =
       { connection ∷ Maybe WebSocketConnection
@@ -65,7 +68,7 @@ type UserAvailability =
 type WebSocketEffect = BaseEffect WebSocketReader Unit
 
 type WebSocketReader = BaseReader
-      ( sessionUserId ∷ Int
+      ( loggedUserId ∷ Int
       , configuration ∷ Configuration
       , userAvailability ∷ Ref (HashMap Int UserAvailability)
       )
@@ -98,10 +101,10 @@ handleConnection configuration@{ tokenSecret } pool userAvailability connection 
             Nothing → do
                   SW.terminate connection
                   EC.log "terminated due to auth error"
-            Just sessionUserId → do
+            Just loggedUserId → do
                   now ← EN.nowDateTime
                   ER.modify_
-                        ( DH.insert sessionUserId
+                        ( DH.insert loggedUserId
                                 { lastSeen: now
                                 , connection: Just connection
                                 , availability: Online
@@ -109,13 +112,13 @@ handleConnection configuration@{ tokenSecret } pool userAvailability connection 
                         )
                         userAvailability
                   SW.onError connection handleError
-                  SW.onClose connection (handleClose userAvailability sessionUserId)
-                  SW.onMessage connection (runMessageHandler sessionUserId)
+                  SW.onClose connection (handleClose userAvailability loggedUserId)
+                  SW.onMessage connection (runMessageHandler loggedUserId)
       where
-      runMessageHandler sessionUserId (WebSocketMessage message) = do
+      runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJSON message of
                   Right payload → do
-                        let run = R.runBaseAff' <<< RE.catch (\e → reportError payload (checkInternalError e) e) <<< RR.runReader { userAvailability, configuration, pool, sessionUserId } $ handleMessage payload
+                        let run = R.runBaseAff' <<< RE.catch (\e → reportError payload (checkInternalError e) e) <<< RR.runReader { userAvailability, configuration, pool, loggedUserId } $ handleMessage payload
                         EA.launchAff_ <<< EA.catchError run $ reportError payload Nothing
                   Left error → do
                         SW.terminate connection
@@ -132,38 +135,45 @@ handleError ∷ Error → Effect Unit
 handleError = EC.log <<< show
 
 handleClose ∷ Ref (HashMap Int UserAvailability) → Int → CloseCode → CloseReason → Effect Unit
-handleClose userAvailability sessionUserId _ _ = do
+handleClose userAvailability loggedUserId _ _ = do
       now ← EN.nowDateTime
-      ER.modify_ (DH.insert sessionUserId (updateUserAvailability false now Nothing)) userAvailability
+      ER.modify_ (DH.insert loggedUserId (updateUserAvailability false now Nothing)) userAvailability
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do
-      reading@{ sessionUserId, userAvailability } ← RR.ask
-      userAvl ← liftEffect (SU.fromJust <<< DH.lookup sessionUserId <$> ER.read userAvailability)
+      reading@{ loggedUserId, userAvailability } ← RR.ask
+      userAvl ← liftEffect (SU.fromJust <<< DH.lookup loggedUserId <$> ER.read userAvailability)
       let connection = SU.fromJust userAvl.connection
       case payload of
+            UpdatePrivileges → sendUpdatedPrivileges connection loggedUserId
             UpdateHash → sendUpdatedHash connection
-            Typing { id } → sendTyping userAvailability sessionUserId id
+            Typing { id } → sendTyping userAvailability loggedUserId id
             Ping ping → sendPing reading ping connection
-            ChangeStatus change → sendStatusChange userAvailability change sessionUserId
-            UnavailableFor { id } → sendUnavailability userAvailability sessionUserId id
-            OutgoingMessage message → sendOutgoingMessage userAvailability message connection sessionUserId
+            ChangeStatus change → sendStatusChange userAvailability change loggedUserId
+            UnavailableFor { id } → sendUnavailability userAvailability loggedUserId id
+            OutgoingMessage message → sendOutgoingMessage userAvailability message connection loggedUserId
+
+sendUpdatedPrivileges ∷ WebSocketConnection → Int → WebSocketEffect
+sendUpdatedPrivileges connection loggedUserId = do
+      karma ← SIKL.fetchKarma loggedUserId
+      privileges ← SIP.fetchPrivileges karma
+      sendWebSocketMessage connection <<< Content $ CurrentPrivileges { karma, privileges }
 
 sendUpdatedHash ∷ WebSocketConnection → WebSocketEffect
 sendUpdatedHash connection = sendWebSocketMessage connection <<< Content $ CurrentHash updateHash
 
 sendTyping ∷ Ref (HashMap Int UserAvailability) → Int → Int → WebSocketEffect
-sendTyping userAvailability sessionUserId userId = do
+sendTyping userAvailability loggedUserId userId = do
       possibleConnection ← liftEffect (DH.lookup userId <$> ER.read userAvailability)
-      whenJust possibleConnection $ \connection → sendWebSocketMessage connection <<< Content $ ContactTyping { id: sessionUserId }
+      whenJust possibleConnection $ \connection → sendWebSocketMessage connection <<< Content $ ContactTyping { id: loggedUserId }
 
 --pings fulfill three purposes
 -- keep the connection alive
 -- maintain online status
 -- get contacts/suggestions online status
 sendPing ∷ WebSocketReader → { isActive ∷ Boolean, statusFor ∷ Array Int } → WebSocketConnection → WebSocketEffect
-sendPing { userAvailability, sessionUserId } { isActive, statusFor } connection = do
-      possibleConnection ← R.liftEffect (DH.lookup sessionUserId <$> ER.read userAvailability)
+sendPing { userAvailability, loggedUserId } { isActive, statusFor } connection = do
+      possibleConnection ← R.liftEffect (DH.lookup loggedUserId <$> ER.read userAvailability)
       if DM.isNothing possibleConnection then
             --shouldn't be possible 🤔
             liftEffect do
@@ -174,7 +184,7 @@ sendPing { userAvailability, sessionUserId } { isActive, statusFor } connection 
             Tuple status missing ← makeAvailability avl
             liftEffect do
                   now ← EN.nowDateTime
-                  ER.modify_ (DH.insert sessionUserId (updateUserAvailability isActive now (Just connection)) ) userAvailability
+                  ER.modify_ (DH.insert loggedUserId (updateUserAvailability isActive now (Just connection))) userAvailability
                   ER.modify_ (\avlb → DA.foldl updateMissingAvailability avlb missing) userAvailability
                   sendWebSocketMessage connection $ Pong { status }
       where
@@ -208,36 +218,37 @@ sendPing { userAvailability, sessionUserId } { isActive, statusFor } connection 
                   hashMap
 
 sendStatusChange ∷ Ref (HashMap Int UserAvailability) → { ids ∷ Array (Tuple Int (Array Int)), persisting ∷ Boolean, status ∷ MessageStatus } → Int → WebSocketEffect
-sendStatusChange userAvailability { status, ids, persisting } sessionUserId = do
-      when persisting <<< SID.changeStatus sessionUserId status $ DA.concatMap DT.snd ids
+sendStatusChange userAvailability { status, ids, persisting } loggedUserId = do
+      when persisting <<< SID.changeStatus loggedUserId status $ DA.concatMap DT.snd ids
       DF.traverse_ send ids
-      where send (Tuple userId messageIds) = do
-                  possibleSenderConnection ← R.liftEffect (DH.lookup userId <$> ER.read userAvailability)
-                  whenJust possibleSenderConnection $ \connection →
-                        sendWebSocketMessage connection <<< Content $ ServerChangedStatus
-                              { ids: messageIds
-                              , status
-                              , userId: sessionUserId
-                              }
+      where
+      send (Tuple userId messageIds) = do
+            possibleSenderConnection ← R.liftEffect (DH.lookup userId <$> ER.read userAvailability)
+            whenJust possibleSenderConnection $ \connection →
+                  sendWebSocketMessage connection <<< Content $ ServerChangedStatus
+                        { ids: messageIds
+                        , status
+                        , userId: loggedUserId
+                        }
 
 sendUnavailability ∷ Ref (HashMap Int UserAvailability) → Int → Int → WebSocketEffect
-sendUnavailability userAvailability sessionUserId userId = do
+sendUnavailability userAvailability loggedUserId userId = do
       possibleConnection ← R.liftEffect (DH.lookup userId <$> ER.read userAvailability)
       whenJust possibleConnection $ \connection → sendWebSocketMessage connection <<< Content $ ContactUnavailable
-            { userId: sessionUserId
+            { userId: loggedUserId
             , temporaryMessageId: Nothing
             }
 
 sendOutgoingMessage ∷ Ref (HashMap Int UserAvailability) → OutgoingRecord → WebSocketConnection → Int → WebSocketEffect
-sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, experimenting } connection sessionUserId = do
+sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, experimenting } connection loggedUserId = do
       date ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
       processed ← case experimenting of
             --impersonating experiment messages are not saved
-            Just (ImpersonationPayload _) → do
+            Just (SET.ImpersonationPayload _) → do
                   msg ← SIA.processMessageContent content
                   pure <<< Just $ Tuple temporaryId msg
             _ →
-                  SIA.processMessage sessionUserId userId temporaryId content
+                  SIA.processMessage loggedUserId userId temporaryId content
       case processed of
             Just (Tuple messageId finalContent) → do
                   sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
@@ -246,16 +257,16 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
                         , userId
                         }
                   possibleRecipientConnection ← R.liftEffect (DH.lookup userId <$> ER.read userAvailability)
-                  whenJust possibleRecipientConnection $ \ recipientConnection →
+                  whenJust possibleRecipientConnection $ \recipientConnection →
                         sendWebSocketMessage recipientConnection <<< Content $ NewIncomingMessage
                               { id: messageId
-                              , userId: sessionUserId
+                              , userId: loggedUserId
                               , content: finalContent
                               , experimenting: experimenting
                               , date
                               }
-                  --pass along karma calculation to wheel
-                  DM.maybe (pure unit) (SIA.processKarma sessionUserId userId) turn
+                  --pass along karma calculation
+                  DM.maybe (pure unit) (SIA.processKarma loggedUserId userId) turn
             --meaning recipient can't be messaged
             Nothing →
                   sendWebSocketMessage connection <<< Content $ ContactUnavailable { userId, temporaryMessageId: Just temporaryId }
@@ -302,11 +313,11 @@ persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen reading@{ userAvailability } = do
       availabilities ← ER.read userAvailability
       when (not $ DH.isEmpty availabilities) do
-            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader reading <<< SID.upsertLastSeen <<< SJ.writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens availabilities
+            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader reading <<< SID.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens availabilities
             EA.launchAff_ $ EA.catchError run logError
       where
       lastSeens id = case _ of
-            { availability: LastSeen (DateTimeWrapper date)} → Just { who: id, date: DT date }
+            { availability: LastSeen (DateTimeWrapper date) } → Just { who: id, date: DT date }
             _ → Nothing
 
       logError = liftEffect <<< EC.logShow

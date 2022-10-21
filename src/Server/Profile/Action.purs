@@ -1,6 +1,7 @@
 module Server.Profile.Action where
 
 import Prelude
+import Shared.Options.Profile
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -9,6 +10,7 @@ import Data.Newtype as DN
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Run as R
+import Server.Database.Privileges as SDP
 import Server.File as SF
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
@@ -18,13 +20,10 @@ import Server.ThreeK as ST
 import Server.Types (ServerEffect)
 import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
-import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, maxLanguages, maxTags, nameMaxCharacters, tagMaxCharacters)
+import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (ProfileUser, What(..))
 import Shared.Resource (uploadedImagePath)
 import Shared.User (Gender)
-
-tooManyTagsMessage ∷ String
-tooManyTagsMessage = "Number of tags larger than " <> show maxTags <> " limit"
 
 tooYoungMessage ∷ String
 tooYoungMessage = "You must be over 18 years old in order to use MeroChat"
@@ -81,4 +80,10 @@ saveLanguages ∷ Int → Maybe (Array Int) → ServerEffect Unit
 saveLanguages loggedUserId languages = SPD.saveLanguages loggedUserId <<< DA.take maxLanguages $ DM.fromMaybe [] languages
 
 saveTags ∷ Int → Maybe (Array String) → ServerEffect Unit
-saveTags loggedUserId tags = SPD.saveTags loggedUserId <<< DA.take maxTags <<< map (DS.take tagMaxCharacters) $ DM.fromMaybe [] tags
+saveTags loggedUserId tags = do
+      moreTags ← SDP.hasPrivilege loggedUserId MoreTags
+      let
+            numberTags
+                  | moreTags = maxFinalTags
+                  | otherwise = maxStartingTags
+      SPD.saveTags loggedUserId <<< DA.take numberTags <<< map (DS.take tagMaxCharacters) $ DM.fromMaybe [] tags

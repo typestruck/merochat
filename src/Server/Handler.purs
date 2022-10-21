@@ -28,7 +28,7 @@ import Server.InternalBacker.Handler as SIBH
 import Server.InternalError.Handler as SIEH
 import Server.InternalHelp.Handler as SIHH
 import Server.Landing.Handler as SLH
-import Server.Leaderboard.Handler as SLBH
+import Server.KarmaPrivileges.Handler as SLBH
 import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH

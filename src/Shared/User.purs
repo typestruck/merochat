@@ -28,6 +28,7 @@ import Payload.Client.EncodeBody (class EncodeBody)
 import Payload.ContentType (class HasContentType, json)
 import Payload.Server.DecodeBody (class DecodeBody)
 import Shared.DateTime as SDT
+import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
@@ -59,6 +60,7 @@ type IU =
               , messageTimestamps ∷ Boolean
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
+              , privileges :: Array Privilege
               )
       )
 

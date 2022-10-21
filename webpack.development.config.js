@@ -19,8 +19,8 @@ export default {
                   import: ['./loader/development/profile.bundle.js'],
                   dependOn: 'im'
             },
-            leaderboard: {
-                  import: ['./loader/development/leaderboard.bundle.js'],
+            karmaPrivileges: {
+                  import: ['./loader/development/karmaPrivileges.bundle.js'],
                   dependOn: 'im'
             },
             help: ['./loader/development/help.bundle.js'],

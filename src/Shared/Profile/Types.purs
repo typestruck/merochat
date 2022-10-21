@@ -14,6 +14,7 @@ import Foreign as F
 import Shared.DateTime (DateWrapper)
 import Shared.Experiments.Types (ExperimentData)
 import Shared.Network (RequestStatus)
+import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
 import Simple.JSON (class ReadForeign, class WriteForeign)
@@ -27,6 +28,7 @@ data ProfileMessage
       | Save Field
       | SetProfileChatExperiment (Maybe ExperimentData)
       | AfterRegistration
+      | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
 --this sucks
 data Field
@@ -49,6 +51,7 @@ type PU =
               , country ∷ Maybe Int
               , languages ∷ Array Int
               , age ∷ Maybe DateWrapper
+              , privileges ∷ Array Privilege
               )
       )
 
@@ -69,7 +72,7 @@ type PM =
       , languagesInputedList ∷ Maybe (Array Int)
       , tagsInputed ∷ Maybe String
       , tagsInputedList ∷ Maybe (Array String)
-      , registrationMessage :: Boolean
+      , registrationMessage ∷ Boolean
       , descriptionInputed ∷ Maybe String
       , loading ∷ Boolean
       , countries ∷ Array { id ∷ Int, name ∷ String }

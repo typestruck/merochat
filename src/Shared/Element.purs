@@ -25,7 +25,6 @@ data ElementId
       | ProfileEditionRoot
       | ChatInputPreview
       | SettingsEditionRoot
-      | KarmaLeaderboard
       | ExperimentsRoot
       | HelpRoot
       | CaptchaTemporaryUser
@@ -47,7 +46,7 @@ data ElementId
       | ConfirmAccountTerminationForm
       | AvatarFileInput
       | TemporaryUserSignUpForm
-      | KarmaLeaderboardRoot
+      | KarmaPrivilegesRoot
 
 instance Hashable ElementId where
       hash = HS.hash <<< show
@@ -90,11 +89,10 @@ instance Show ElementId where
             ChatInputPreview → "chat-input-preview"
             ProfileEditionRoot → "profile-edition-root"
             SettingsEditionRoot → "settings-edition-root"
-            KarmaLeaderboard → "karma-leaderboard-root"
             HelpRoot → "help-root"
             ExperimentsRoot → "experiments-root"
             PasswordInput → "password-input"
-            KarmaLeaderboardRoot -> "karma-leaderboard-root"
+            KarmaPrivilegesRoot -> "karma-privileges-root"
             AvatarFileInput → "avatar-file-input"
 
 derive instance Eq ElementId

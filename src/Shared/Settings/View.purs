@@ -39,12 +39,12 @@ formId field = TDS.reflectSymbol field <> "-form"
 
 account ∷ SettingsModel → Html SettingsMessage
 account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVisibility, readReceipts, onlineStatus, messageTimestamps, typingStatus } =
-      HE.div (HA.class' "settings-section")
-            [ HE.div (HA.class' "settings-part")
+      HE.div (HA.class' "modal-section")
+            [ HE.div (HA.class' "modal-part")
                     [ privacyHeader
                     , privacySection
                     ]
-            , HE.div (HA.class' "settings-part")
+            , HE.div (HA.class' "modal-part")
                     [ accountHeader
                     , accountSection
                     ]

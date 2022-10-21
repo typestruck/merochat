@@ -122,7 +122,11 @@ create table karma_histories
     constraint target_karma_history foreign key (target) references users(id) on delete cascade
 );
 
---to be run with pg cron
+-- select cron.schedule('0 * * * *', $$select crunch_karma_history(1)$$);
+-- select cron.schedule('10 0 * * *', $$select crunch_karma_history(24)$$);
+-- select cron.schedule('30 0 * * 1', $$select crunch_karma_history(24 * 7)$$);
+-- select cron.schedule('30 4 1 * 4', $$select crunch_karma_history(24 * 7 * 4)$$);
+-- select cron.schedule('45 9 1 8 3', $$select crunch_karma_history(24 * 7 * 4 * 12)$$);
 create or replace function crunch_karma_history(hours_time integer)
     returns void as
 $$
@@ -145,10 +149,6 @@ end;
 $$
 language plpgsql;
 
--- select cron.schedule('0 * * * *', $$select crunch_karma_history(1)$$);
--- select cron.schedule('10 0 * * *', $$select crunch_karma_history(24)$$);
--- select cron.schedule('30 0 * * 1', $$select crunch_karma_history(24 * 7)$$);
-
 create table karma_leaderboard
 (
     id integer generated always as identity primary key,
@@ -161,7 +161,7 @@ create table karma_leaderboard
     constraint ranker_user foreign key (ranker) references users(id) on delete cascade
 );
 
---to be run with pg cron
+-- select cron.schedule('0 */4 * * *', $$select compute_leaderboard()$$);
 create or replace function compute_leaderboard()
     returns void as
 $$
@@ -180,7 +180,6 @@ end;
 $$
 language plpgsql;
 
--- select cron.schedule('0 */4 * * *', $$select crunch_karma_history()$$);
 
 -- select cron.schedule('45 2 * * *', $$select purge_temporary_users()$$);
 create or replace function purge_temporary_users()
@@ -260,22 +259,14 @@ create table last_seen (
 --     description text
 -- );
 
--- create table privileges
--- (
---     id integer generated always as identity primary key,
---     feature smallint not null,
---     description text,
---     quantity integer not null
--- );
-
--- create table privileges_users
--- (
---     id integer generated always as identity primary key,
---     privilege integer not null,
---     receiver integer not null,
---     constraint privilege_user_user foreign key (receiver) references users(id) on delete cascade,
---     constraint privilege_user_privilege foreign key (privilege) references privileges(id) on delete cascade
--- );
+create table privileges
+(
+    id integer generated always as identity primary key,
+    feature smallint not null,
+    name text,
+    description text,
+    quantity integer not null
+);
 
 -- create table badges_users
 -- (
@@ -667,7 +658,8 @@ values
     ('Zambia'),
     ('Zimbabwe');
 
-insert into experiments (code, name, description) values (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it');
+insert into experiments (code, name, description) values
+    (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it');
 
 insert into stock_text (contents, text_type) values
     ('I stayed up all night wondering where the sun went, then it dawned on me', 0),
@@ -820,3 +812,12 @@ insert into stock_text (contents, text_type) values
     ('What is something that''s really popular right now that will be ridiculous in five years?', 1),
     ('What''s your favorite movie that you could watch over and over again?', 1),
     ('What do you think the world will be like 50 years in the future?', 1);
+
+insert into privileges (feature, name, description, quantity) values
+    (0, 'Receive chats', 'Access basic chat features, edit your profile and settings', 1),
+    (100, 'Start chats', 'View new chat suggetions, and start new chats', 25),
+    (200, 'Participate in chat experiments', 'Take part in chat experiments. Some experiments may require more karma', 50),
+    (201, 'Impersonation', 'Start Impersonation chat experiment', 1000),
+    (300, 'More tags', 'Increased number of max profile tags', 500),
+    (400, 'Send links', 'Send and automatically highlight links in chats', 3000),
+    (500, 'Send images', 'Send pictures in chats', 10000);

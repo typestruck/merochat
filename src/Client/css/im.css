@@ -467,8 +467,52 @@ blockquote {
     font-weight: bold;
 }
 
-.warning-temporary {
+.warning-temporary, .no-self-start, .not-enough-karma {
     color: #db5a5d;
+}
+
+.modal-section {
+    display: flex;
+}
+
+.section-label {
+    margin-right: 40px;
+}
+
+.modal-section label {
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+
+.modal-section label:first-child {
+    margin-top: 0px;
+}
+
+.modal-section .error-message {
+    display: block;
+    visibility: hidden;
+}
+
+.modal-section .green-button {
+    margin: 0;
+    margin-bottom: 40px;
+}
+
+.modal-section .margined {
+    margin-top: 20px
+}
+
+.modal-section .error-message {
+    visibility: hidden;
+    margin-bottom: 10px;
+}
+
+.modal-section .errored .error-message {
+    visibility: visible;
+}
+
+.modal-section .errored input {
+    color: red;
 }
 
 #full-profile-context-menu,
@@ -906,7 +950,7 @@ svg.toolbar-action {
 #profile-edition-root,
 #settings-edition-root,
 #feedback-root,
-#karma-leaderboard-root,
+#karma-privileges-root,
 #help-root,
 #backer-root {
     margin-top: 45px;
@@ -1950,11 +1994,11 @@ select {
     display: none;
 }
 
-.settings-section {
+.modal-section {
     flex-direction: column;
 }
 
-.settings-part {
+.modal-part {
     display: flex;
     margin-bottom: 20px;
 }
@@ -2015,6 +2059,15 @@ select {
         width: auto;
     }
 
+          .section-label {
+              margin-right: 0;
+              margin-bottom: 10px
+          }
+
+          .modal-section {
+              padding: 15px
+          }
+
     .message-history .retry.invisible {
         visibility: unset;
         display: none;
@@ -2068,7 +2121,7 @@ select {
         display: none;
     }
 
-    .settings-part {
+    .modal-part {
         flex-direction: column;
     }
 
@@ -2281,7 +2334,7 @@ select {
     #temporary-user-sign-up-form,
     #feedback-root,
     #help-root,
-    #karma-leaderboard-root,
+    #karma-privileges-root,
     #settings-edition-root,
     #profile-edition-root,
     #backer-root,

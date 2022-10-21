@@ -1,17 +1,18 @@
 module Shared.Experiments.Types where
 
-import Data.Maybe (Maybe(..))
-import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
-import Data.Generic.Rep (class Generic)
-import Data.Show.Generic as DGRS
 import Prelude
 
-import Data.Either (Either(..))
-import Droplet.Language (class FromValue)
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
+import Data.Either (Either(..))
+import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
+import Data.Generic.Rep (class Generic)
+import Data.Maybe (Maybe(..))
+import Data.Show.Generic as DGRS
+import Droplet.Language (class FromValue)
+import Shared.Privilege (Privilege)
 import Shared.User (IU)
 
 type ImpersonationProfile = Record IU
@@ -25,11 +26,15 @@ type BaseChatExperiment fields =
 
 type ChatExperiment = BaseChatExperiment (code ∷ ExperimentData)
 
+type ChatExperimentUser = { privileges ∷ Array Privilege }
+
 data ChatExperimentMessage
       = QuitExperiment
       | JoinExperiment ExperimentData
       | ToggleSection ChatExperimentSection
       | ConfirmImpersonation (Maybe ImpersonationProfile)
+      | RedirectKarma
+      | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
 data ChatExperimentSection
       = HideSections
@@ -42,7 +47,9 @@ type ChatExperimentModel =
       , section ∷ ChatExperimentSection
       , current ∷ Maybe ExperimentData
       , impersonation ∷ Maybe ImpersonationProfile
+      , user ∷ ChatExperimentUser
       }
+
 --refactor: this type is being used in a very bonkers way, pls fix his shit
 data ExperimentData = Impersonation (Maybe ImpersonationProfile)
 
@@ -60,15 +67,19 @@ derive instance Eq ExperimentData
 
 instance EncodeJson ExperimentPayload where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson ExperimentData where
       encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson ChatExperimentSection where
       encodeJson = DAEGR.genericEncodeJson
 
 instance DecodeJson ExperimentData where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson ExperimentPayload where
       decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson ChatExperimentSection where
       decodeJson = DADGR.genericDecodeJson
 

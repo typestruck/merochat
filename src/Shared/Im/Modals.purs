@@ -36,7 +36,7 @@ modals model@{ erroredFields, toggleModal, chatting } =
             , lazyLoad Profile
             , lazyLoad Backer
             , lazyLoad Experiments
-            , lazyLoad Leaderboard
+            , lazyLoad KarmaPrivileges
             , lazyLoad Feedback
             , case toggleModal of
                     ShowReport id → report id erroredFields
@@ -175,8 +175,8 @@ modalMenu model@{ toggleModal, failedRequests, user: { temporary, joined } } =
                             ]
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' { entry: true, selected: toggleModal == ShowProfile } ] $ show ShowProfile
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings, HA.class' { entry: true, selected: toggleModal == ShowSettings } ] $ show ShowSettings
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges, HA.class' { entry: true, selected: toggleModal == ShowKarmaPrivileges } ] $ show ShowKarmaPrivileges
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments, HA.class' { entry: true, selected: toggleModal == ShowExperiments } ] $ show ShowExperiments
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowLeaderboard, HA.class' { entry: true, selected: toggleModal == ShowLeaderboard } ] $ show ShowLeaderboard
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggleModal == ShowBacker } ] $ show ShowBacker
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggleModal == ShowHelp } ] $ show ShowHelp
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback, HA.class' { entry: true, selected: toggleModal == ShowFeedback } ] $ show ShowFeedback
@@ -184,8 +184,8 @@ modalMenu model@{ toggleModal, failedRequests, user: { temporary, joined } } =
             , temporaryUserSignUp model
             , HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowProfile } ] $ retry ShowProfile
             , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowSettings } ] $ retry ShowSettings
+            , HE.div [ HA.id $ show KarmaPrivilegesRoot, HA.class' { hidden: temporary || toggleModal /= ShowKarmaPrivileges } ] $ retry ShowKarmaPrivileges
             , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: temporary || toggleModal /= ShowExperiments } ] $ retry ShowExperiments
-            , HE.div [ HA.id $ show KarmaLeaderboardRoot, HA.class' { hidden: temporary || toggleModal /= ShowLeaderboard } ] $ retry ShowLeaderboard
             , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: temporary || toggleModal /= ShowBacker } ] $ retry ShowBacker
             , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
             , HE.div [ HA.id $ show FeedbackRoot, HA.class' { hidden: temporary || toggleModal /= ShowFeedback } ] $ retry ShowFeedback
@@ -219,8 +219,12 @@ confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
 temporaryUserSignUp ∷ ImModel → Html ImMessage
 temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, toggleModal, user: { temporary, joined } } =
       HE.div [ HA.id $ show TemporaryUserSignUpForm, HA.class' { hidden: not temporary || toggleModal == ShowHelp } ]
-            [ HE.div (HA.class' "warning-temporary") $ if expired then "Your access has expired" else "You have " <> remainingTime <> " to create an account"
-            , HE.div (HA.class' { "warning-temporary wall-text": true, hidden: expired }) "After that, all your data will be deleted and you won't be able to access the site unless you sign up again"
+            [ if expired then
+                    HE.div (HA.class' "warning-temporary") "Your access has expired"
+              else HE.fragment
+                    [ HE.div (HA.class' "warning-temporary") $ "You have " <> remainingTime <> " to create an account"
+                    , HE.div (HA.class' "warning-temporary wall-text") "After that, all your data will be deleted and you won't be able to access the site unless you sign up again"
+                    ]
             , HE.div (HA.class' "duller last") "Create your account now, it is free!"
             , HE.div_
                     [ HE.label_ "Email"

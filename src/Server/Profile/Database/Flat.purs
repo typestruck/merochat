@@ -6,9 +6,9 @@ import Data.Date (Date)
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Debug (spy)
-import Server.Database.Flat as SDF
 import Shared.Avatar as SA
 import Shared.DateTime (DateWrapper(..))
+import Shared.Privilege (Privilege)
 import Shared.Profile.Types (ProfileUser)
 import Shared.User (Availability(..), Gender)
 
@@ -19,12 +19,13 @@ type FlatProfileUser =
       , description ∷ String
       , gender ∷ Maybe Gender
       , headline ∷ String
+      , privileges :: Maybe (Array Privilege)
       , id ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int
       , languages ∷ Maybe (Array Int)
       , name ∷ String
-      , tags ∷ Maybe String
+      , tags ∷ Maybe (Array String)
       }
 
 fromFlatProfileUser ∷ FlatProfileUser → ProfileUser
@@ -39,7 +40,8 @@ fromFlatProfileUser fu =
       , id: fu.id
       , karma: fu.karma
       , karmaPosition: fu.karmaPosition
+      , privileges: DM.fromMaybe [] fu.privileges
       , languages: DM.fromMaybe [] fu.languages
       , name: fu.name
-      , tags: SDF.splitAgg "\n" fu.tags
+      , tags: DM.fromMaybe [] fu.tags
       }
