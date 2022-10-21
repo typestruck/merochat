@@ -7,10 +7,11 @@ import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
 import Shared.Experiments.View as SEV
+import Shared.Options.MountPoint (MountPoint(..), experimentsId)
 
 main ∷ Effect Unit
 main =
-      F.resumeMount_ (QuerySelector ".chat-experiments")
+      F.resumeMount (QuerySelector ".chat-experiments") experimentsId
             { view: SEV.view
             , subscribe: []
             , init: []

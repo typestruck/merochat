@@ -33,6 +33,7 @@ update model =
                   liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges
                   pure Nothing
             ]
+            UpdatePrivileges { privileges} -> F.noMessages model { user {privileges = privileges }  }
       where
       dispatchEvent payload =
             [ liftEffect do

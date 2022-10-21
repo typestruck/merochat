@@ -4,7 +4,6 @@ module Client.Im.Main where
 
 import Debug
 import Prelude
-import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
 
@@ -61,12 +60,13 @@ import Foreign as FO
 import Safe.Coerce as SC
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.Element (ElementId(..))
+import Shared.Experiments.Types as SET
 import Shared.Im.View as SIV
 import Shared.Json as SJ
 import Shared.Network (RequestStatus(..))
-import Shared.Options.MountPoint (imId, profileId)
+import Shared.Options.MountPoint (experimentsId, imId, profileId)
 import Shared.Options.Profile (passwordMinCharacters)
-import Shared.Profile.Types (ProfileMessage(..))
+import Shared.Profile.Types as SPT
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
@@ -88,7 +88,7 @@ import Web.HTML.Window as WHW
 main ∷ Effect Unit
 main = do
       webSocket ← CIW.createWebSocket
-      --web socket needs to be a ref as any time the connection can be closed and recreated by events
+      --web socket needs to be a ref as the connection can be closed and recreated by events any time
       webSocketRef ← ER.new { webSocket, ponged: true }
       fileReader ← WFR.fileReader
       F.resumeMount (QuerySelector ".im") imId
@@ -200,12 +200,20 @@ update { webSocketRef, fileReader } model =
             DisplayFortune sequence → displayFortune sequence model
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
+            PollPrivileges → pollPrivileges webSocket model
             SendPing isActive → sendPing webSocket isActive model
             SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
             DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+pollPrivileges ∷ WebSocket → ImModel → NoMessages
+pollPrivileges webSocket model = model :>
+      [ do
+              liftEffect $ CIW.sendPayload webSocket UpdatePrivileges
+              pure Nothing
+      ]
 
 displayAvailability ∷ AvailabilityStatus → ImModel → NoMessages
 displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
@@ -224,7 +232,7 @@ displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
 setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } :>
       [ do
-              liftEffect $ FS.send profileId AfterRegistration
+              liftEffect $ FS.send profileId SPT.AfterRegistration
               pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
       ]
 
@@ -320,7 +328,7 @@ askExperiment model@{ experimenting } = model :>
                     pure Nothing
             ]
 
-setExperiment ∷ Maybe ExperimentData → ImModel → MoreMessages
+setExperiment ∷ Maybe SET.ExperimentData → ImModel → MoreMessages
 setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestionsPage } =
       model
             { chatting = Nothing
@@ -332,7 +340,7 @@ setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestio
             } :> if impersonating then [ pure $ Just FetchMoreSuggestions ] else []
       where
       impersonating = case experiment of
-            imp@(Just (Impersonation (Just _))) → imp /= experimenting --avoid running more than once
+            imp@(Just (SET.Impersonation (Just _))) → imp /= experimenting --avoid running more than once
             _ → false
 
 reloadPage ∷ ImModel → NextMessage
@@ -423,8 +431,21 @@ receiveMessage
             , hash
             , blockedUsers
             } = case wsPayload of
+      CurrentPrivileges kp@{ karma, privileges } →
+            model
+                  { user
+                          { karma = karma
+                          , privileges = privileges
+                          }
+                  } :>
+                  [ do
+                          liftEffect do
+                                FS.send profileId $ SPT.UpdatePrivileges kp
+                                FS.send experimentsId $ SET.UpdatePrivileges kp
+                          pure Nothing
+                  ]
       CurrentHash newHash →
-            F.noMessages $ model
+            F.noMessages model
                   { imUpdated = newHash /= hash
                   }
       ContactTyping { id } → CIC.updateTyping id true model :>
@@ -463,7 +484,7 @@ receiveMessage
                               Left userId →
                                     let
                                           message = case experimenting of
-                                                Just (ImpersonationPayload { id: impersonationId }) →
+                                                Just (SET.ImpersonationPayload { id: impersonationId }) →
                                                       DisplayImpersonatedContact impersonationId
                                                             { status: Received
                                                             , sender: userId
