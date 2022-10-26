@@ -16,13 +16,13 @@ import Data.Tuple (Tuple(..))
 -- | * Interest bonus is the ratio of how many characters one user typed to the other
 -- | * New chat bonus is how fresh a chat is, more karma should be earned on the first day of a chat than that on the 30000th
 -- | * Fast reply tries to assert how "instantaneous" a given conversation is by making some assumptions about how many characters should have been typed in the time it took for a reply to be sent
--- | * Sender bonus is equal to half of karma earned
+-- | * Sender bonus is equal to a third of karma earned
 karmaFrom ∷ Turn → Tuple Int Int
 karmaFrom { senderStats, recipientStats, chatAge } =
       let
             grossSender = karma senderStats
       in
-            Tuple (DI.floor $ grossSender + grossSender * 0.5) (DI.floor $ karma recipientStats)
+            Tuple (DI.floor $ grossSender + grossSender * 0.3) (DI.floor $ karma recipientStats)
       where
       karma { interest, characters, replyDelay, accountAge } =
             let
@@ -35,6 +35,6 @@ karmaFrom { senderStats, recipientStats, chatAge } =
             in
                   constant' * interestBonus + constant' * newChatBonus + constant' * fastReplyBonus
 
-      constant = 50.0
+      constant = 35.0
       days = 7.0
       charactersMinute = 200.0

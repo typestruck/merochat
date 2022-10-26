@@ -42,7 +42,6 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
                                   <<< HE.div (HA.class' "privilege-list") $ map statEntry
                                   [ Tuple karma "Total karma"
                                   , Tuple total "Total chats"
-                                  , Tuple total "Chats started"
                                   , Tuple started "Chats started"
                                   , Tuple sent "Messages sent"
                                   ]
