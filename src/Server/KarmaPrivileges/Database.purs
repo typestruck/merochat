@@ -15,6 +15,7 @@ import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Shared.Avatar as SA
+import Shared.Privilege (Privilege(..))
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 
@@ -29,16 +30,27 @@ fetchInBetween10 ∷ Int → ServerEffect (Array LeaderboardUser)
 fetchInBetween10 position = avatarPath <$> SD.unsafeQuery "select u.name, u.avatar, position, current_karma karma from karma_leaderboard k join users u on k.ranker = u.id where position between greatest(1, @position - 5) and @position + 5 order by position" { position }
 
 fetchPrivileges ∷ Int → ServerEffect (Array PrivilegeUser)
-fetchPrivileges loggedUserId = SD.unsafeQuery "SELECT name, description, quantity, current_karma >= quantity AS got FROM privileges LEFT JOIN karma_leaderboard ON ranker = @loggedUserId ORDER BY quantity desc" { loggedUserId }
+fetchPrivileges loggedUserId = SD.unsafeQuery "SELECT name, description, quantity, current_karma >= quantity AS got FROM privileges LEFT JOIN karma_leaderboard ON ranker = @loggedUserId WHERE feature = ANY(@privileges) ORDER BY quantity desc"
+      { loggedUserId
+      , privileges:
+              [ ReceiveChats
+              , StartChats
+              , StartChatExperiments
+              , MoreTags
+              , SendLinks
+              , SendImages
+              ]
+      }
 
 fetchStats ∷ Int → ServerEffect _
 fetchStats loggedUserId = map (ks <<< SU.fromJust) <<< SD.single $
-      select (
-            (select (_current_karma # as _karma) # from karma_leaderboard # wher (_ranker .=. loggedUserId) # orderBy _id # limit (Proxy :: Proxy 1)) /\
-            (select (count _id # as _sent) # from messages # wher (_sender .=. loggedUserId) # orderBy _sent # limit (Proxy :: Proxy 1)) /\
-            (select (count _id # as _started) # from histories # wher (_sender .=. loggedUserId) # orderBy _started # limit (Proxy :: Proxy 1)) /\
-            (select (count _id # as _total) # from histories # wher (_sender .=. loggedUserId .||. _recipient .=. loggedUserId) # orderBy _total # limit (Proxy :: Proxy 1))
-      )
+      select
+            ( (select (_current_karma # as _karma) # from karma_leaderboard # wher (_ranker .=. loggedUserId) # orderBy _id # limit (Proxy ∷ Proxy 1))
+                    /\ (select (count _id # as _sent) # from messages # wher (_sender .=. loggedUserId) # orderBy _sent # limit (Proxy ∷ Proxy 1))
+                    /\ (select (count _id # as _started) # from histories # wher (_sender .=. loggedUserId) # orderBy _started # limit (Proxy ∷ Proxy 1))
+                    /\
+                          (select (count _id # as _total) # from histories # wher (_sender .=. loggedUserId .||. _recipient .=. loggedUserId) # orderBy _total # limit (Proxy ∷ Proxy 1))
+            )
       where
       _sent = Proxy ∷ Proxy "sent"
       _started = Proxy ∷ Proxy "started"
