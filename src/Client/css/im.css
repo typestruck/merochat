@@ -22,7 +22,7 @@ body {
 .online-indicator {
     border-radius: 100%;
     background-color: hsl(145, 80%, 28%);
-    width: 17px;
+    min-width: 17px;
     height: 17px;
     margin-left: -10px;
     margin-top: 13px;
@@ -2025,7 +2025,7 @@ select {
     }
 
     .online-indicator {
-        width: 13px;
+        min-width: 13px;
         height: 13px;
         margin-left: -8px;
         margin-top: 0px;
@@ -2525,7 +2525,7 @@ select {
     }
 
     .online-indicator {
-        width: 13px;
+        min-width: 13px;
         height: 13px;
         margin-left: -10px;
         margin-top: 3px;
