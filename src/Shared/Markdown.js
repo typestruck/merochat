@@ -1,5 +1,9 @@
 import {marked} from 'marked';
 
+export function lexer(value) {
+      return marked.lexer(value);
+}
+
 function defaultOptions() {
       marked.use({
             renderer: {

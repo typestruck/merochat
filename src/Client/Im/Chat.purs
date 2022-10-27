@@ -436,9 +436,11 @@ quoteMessage contents event model@{ chatting } = model :>
                     pure Nothing
       ]
       where
-      sanitized
-            | DS.take 2 contents == "![" = "> *image file*"
-            | otherwise = "> " <> contents
+      sanitized = case DA.find notSpaceQuote $ SM.lexer contents of
+            Nothing → "> *quote*"
+            Just token → "> " <> token.raw
+
+      notSpaceQuote token = token."type" /= "space" && token."type" /= "blockquote"
 
 focusCurrentSuggestion ∷ ImModel → NoMessages
 focusCurrentSuggestion model@{ chatting } = model :>
