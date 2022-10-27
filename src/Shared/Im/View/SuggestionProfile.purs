@@ -13,6 +13,7 @@ import Data.HashMap as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
@@ -32,6 +33,8 @@ import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
+import Shared.Resource (Media(..), ResourceType(..))
+import Shared.Resource as SPM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
@@ -246,7 +249,6 @@ suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
       where
       cardTrio =
             let
-                  dummyCard i = card i dummySuggestion
                   available = DA.catMaybes <<< map (\i → map (card i) $ suggestions !! i) $ (index - 1) .. (index + 1)
             in
                   case DA.length available of
@@ -268,6 +270,8 @@ suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
       isNotTutorial = case toggleModal of
             Tutorial _ → false
             _ → true
+
+      dummyCard suggesting = HE.div [ HA.class' "card card-sides faded", HA.onClick <<< SpecialRequest $ if suggesting < index then PreviousSuggestion else NextSuggestion ] $ HE.div' [ HA.class' "suggestion new invisible" ]
 
 welcomeImpersonation ∷ String → Html ImMessage
 welcomeImpersonation name =
@@ -317,29 +321,3 @@ welcome user@{ name, profileVisibility } = HE.div (HA.class' "card-top-header")
             , HE.a (HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings) " settings "
             , HE.text "to see new chat suggestions"
             ]
-
-dummySuggestion ∷ Suggestion
-dummySuggestion =
-      { id: 0
-      , name: "Maria Navarro"
-      , headline: "This is my headline, there are many like it, but this one is mine"
-      , description: "Many years later, as he faced the firing squad, Colonel Aureliano Buendía was to remember that distant afternoon when his father took him to discover ice. At that time Macondo was a village of twenty adobe houses, built on the bank of a river of clear water that ran along a bed of polished stones, which were white and enormous, like prehistoric eggs. The world was so recent that many things lacked names, and in order to indicate them it was necessary to point. Every year during the month of March a family of ragged gypsies would set up their tents near the village, and with a great uproar of pipes and kettledrums they would display new inventions. First they brought the magnet."
-      , avatar: Nothing
-      , tags: []
-      , privileges: []
-      , availability: Online
-      , profileVisibility: Everyone
-      , temporary: false
-      , joined: DateTimeWrapper epoch
-      , readReceipts: true
-      , messageTimestamps: true
-      , typingStatus: true
-      , onlineStatus: true
-      , completedTutorial: true
-      , karma: 321
-      , karmaPosition: 90
-      , gender: Just $ show Female
-      , country: Just "Cali"
-      , languages: [ "English", "Spanish" ]
-      , age: Just 18
-      }
