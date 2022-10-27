@@ -70,7 +70,7 @@ imageModal { selectedImage, erroredFields, user } =
                           ]
                   , HE.div (HA.class' "image-form-controls")
                           [ HE.label_ "Caption"
-                          , HE.input [ HA.placeholder "optional title", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
+                          , HE.input [ HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
                           , HE.div (HA.class' "image-buttons")
                                   [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
                                   , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"

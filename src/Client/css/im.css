@@ -1425,18 +1425,18 @@ select {
 }
 
 .image-form {
-    padding: 60px;
+    padding: 40px;
     max-height: 100vh;
+    align-items: center;
 }
 
 .image-form-image {
-    align-self: center;
     margin-bottom: 20px;
+    max-width: 90%;
 }
 
 .image-form-image img {
-    max-height: 700px;
-    max-width: 90%;
+    max-height: 500px;
 }
 
 .card .link-button,
@@ -1453,7 +1453,7 @@ select {
 }
 
 .modal-form input[type=text] {
-    height: 50px;
+    height: 40px;
     padding: 10px;
     background: #262626;
     border: none
@@ -1468,7 +1468,7 @@ select {
 }
 
 .image-buttons {
-    margin-top: 10px;
+    margin-top: 20px;
     display: flex;
     justify-content: flex-end;
 }
@@ -1964,6 +1964,7 @@ select {
 .image-form-controls {
     z-index: 2;
     display: flex;
+    min-width: 90%;
     background: #2d2d2d;
     flex-direction: column;
 }
