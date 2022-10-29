@@ -522,10 +522,8 @@ blockquote {
 
 .suggestion.old {
     background: #373737;
-    flex-grow: 1;
     padding: 5px 0px 43px 0px;
-    overflow: hidden;
-    overflow-y: auto;
+    min-height: 100%;
 }
 
 .suggestion.new .duller {
