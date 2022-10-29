@@ -30,7 +30,7 @@ p {
     margin-top: 0;
 }
 
-p a {
+.help p a, .internalHelp p a {
     font-weight: bold;
 }
 
@@ -52,12 +52,13 @@ ul li {
     padding: 7px 0;
 }
 
-p a:hover, ul li a {
+.help p a:hover, .help ul li a, .internalHelp p a:hover,
+.internalHelp ul li a {
     color: rgb(238, 238, 238);
     font-weight: bold;
 }
 
-ul li a:hover {
+.help ul li a:hover, .internalHelp ul li a:hover {
     color: hsl(145, 80%, 28%);
 }
 
