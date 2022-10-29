@@ -387,12 +387,7 @@ check message = HE.svg [ HA.class' "svg-20 save", HA.viewBox "0 0 16 16", HA.onC
 
 cancel ∷ ∀ r t fieldInputed. IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe t) r PM ⇒ Proxy fieldInputed → Html ProfileMessage
 cancel fieldInputed =
-      HE.svg
-            [ HA.class' "svg-16 cancel"
-            , HA.viewBox "0 0 16 16"
-            , HA.onClick (resetFieldInputed fieldInputed)
-            ] $
-            HE.title "Cancel edit" : SIS.closeElements
+      HE.svg [ HA.class' "svg-16 cancel", HA.viewBox "0 0 16 16", HA.onClick (resetFieldInputed fieldInputed) ] $ HE.title "Cancel edit" : SIS.closeElements
 
 displayOptions ∷ ∀ i. Show i ⇒ Eq i ⇒ Maybe i → Array { id ∷ i, name ∷ String } → Array (Html ProfileMessage)
 displayOptions = displayOptionsWith "Don't show"
