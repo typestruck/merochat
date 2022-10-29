@@ -28,13 +28,13 @@ karmaFrom { senderStats, recipientStats, chatAge } =
             let
                   constant'
                         | chatAge > days = 0.0
-                        | otherwise = spy "cons" ( constant / (spy "age" (min (accountAge / days) 1.0)) / (spy "chat" ((days - chatAge) / days)))
+                        | otherwise = constant * (min (accountAge / days) 1.0) * ((days - chatAge) / days)
                   interestBonus = min (DM.fromMaybe 0.0 interest * 0.10) 1.0
                   fastReplyBonus = case replyDelay of
                         Just rd → min (characters / (charactersMinute * rd)) 1.0
                         Nothing → 0.0
             in
-                  constant' * (spy "int" interestBonus) + constant' * (spy "ft" fastReplyBonus)
+                  constant' * interestBonus + constant' * fastReplyBonus
 
       constant = 50.0
       days = 7.0
