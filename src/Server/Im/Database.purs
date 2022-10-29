@@ -267,11 +267,11 @@ insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ 
       _.id <<< SU.fromJust <$> (SD.singleWith connection $ insert # into messages (_sender /\ _recipient /\ _temporary_id /\ _content) # values (loggedUserId /\ recipient /\ temporaryId /\ content) # returning _id)
 
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
-insertKarma loggedUserId otherID (Tuple senderKarma recipientKarma) =
-      void <<< SD.execute $ insert # into karma_histories (_amount /\ _target) # values
-            [ senderKarma /\ loggedUserId
-            , recipientKarma /\ otherID
-            ]
+insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
+      | senderKarma <= 0 && recipientKarma <= 0 = pure unit
+      | otherwise = SD.withTransaction $ \connection → do
+            when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
+            when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
 
 changeStatus ∷ ∀ r. Int → MessageStatus → Array Int → BaseEffect { pool ∷ Pool | r } Unit
 changeStatus loggedUserId status = case _ of
