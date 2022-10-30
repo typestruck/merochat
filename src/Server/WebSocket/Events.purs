@@ -46,12 +46,13 @@ import Server.Database.Privileges as SIP
 import Server.Im.Action as SIA
 import Server.Im.Database as SID
 import Server.Token as ST
-import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
+import Server.WebSocket (CloseCode(..), CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Experiments.Types as SET
 import Shared.Json as SJ
+import Shared.Options.WebSocket (loggedElsewhere)
 import Shared.Privilege (Privilege(..))
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
@@ -103,21 +104,21 @@ handleConnection configuration@{ tokenSecret } pool userAvailability connection 
                   EC.log "terminated due to auth error"
             Just loggedUserId → do
                   avl ← ER.read userAvailability
-                  case DH.lookup loggedUserId avl of
-                        Just { connection: existingConnection } | DM.isJust existingConnection → sendWebSocketMessage (SU.fromJust existingConnection) CloseConnection
-                        _ → do
-                              now ← EN.nowDateTime
-                              ER.modify_
-                                    ( DH.insert loggedUserId
-                                            { lastSeen: now
-                                            , connection: Just connection
-                                            , availability: Online
-                                            }
-                                    )
-                                    userAvailability
-                              SW.onError connection handleError
-                              SW.onClose connection (handleClose userAvailability loggedUserId)
-                              SW.onMessage connection (runMessageHandler loggedUserId)
+                  case DH.lookup loggedUserId avl >>= _.connection of
+                        Just existingConnection → sendWebSocketMessage existingConnection CloseConnection
+                        _ → pure unit
+                  now ← EN.nowDateTime
+                  ER.modify_
+                        ( DH.insert loggedUserId
+                                { lastSeen: now
+                                , connection: Just connection
+                                , availability: Online
+                                }
+                        )
+                        userAvailability
+                  SW.onError connection handleError
+                  SW.onClose connection (handleClose userAvailability loggedUserId)
+                  SW.onMessage connection (runMessageHandler loggedUserId)
       where
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJSON message of
@@ -139,10 +140,12 @@ handleError ∷ Error → Effect Unit
 handleError = EC.log <<< show
 
 handleClose ∷ Ref (HashMap Int UserAvailability) → Int → CloseCode → CloseReason → Effect Unit
-handleClose userAvailability loggedUserId _ _ = do
-      now ← EN.nowDateTime
-      { availability } ← liftEffect (SU.fromJust <<< DH.lookup loggedUserId <$> ER.read userAvailability)
-      ER.modify_ (DH.insert loggedUserId (updateUserAvailability false now availability Nothing)) userAvailability
+handleClose userAvailability loggedUserId (CloseCode code) _
+      | code == loggedElsewhere = pure unit
+      | otherwise =  do
+            now ← EN.nowDateTime
+            { availability } ← liftEffect (SU.fromJust <<< DH.lookup loggedUserId <$> ER.read userAvailability)
+            ER.modify_ (DH.insert loggedUserId (updateUserAvailability false now availability Nothing)) userAvailability
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do

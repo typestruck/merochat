@@ -66,6 +66,7 @@ import Shared.Json as SJ
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
 import Shared.Options.Profile (passwordMinCharacters)
+import Shared.Options.WebSocket (loggedElsewhere)
 import Shared.Profile.Types as SPT
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
@@ -89,7 +90,7 @@ main ∷ Effect Unit
 main = do
       webSocket ← CIW.createWebSocket
       --web socket needs to be a ref as the connection can be closed and recreated by events any time
-      webSocketRef ← ER.new { webSocket, ponged: true }
+      webSocketRef ← ER.new { webSocket, ponged: true, closed: false }
       fileReader ← WFR.fileReader
       F.resumeMount (QuerySelector ".im") imId
             { view: SIV.view true
@@ -778,24 +779,30 @@ setUpWebSocket webSocketRef = do
                         FS.send imId $ DisplayAvailability status
                         pong true
                   Content cnt → FS.send imId $ ReceiveMessage cnt isFocused
-                  CloseConnection → FS.send imId Logout
+                  CloseConnection → do
+                        ER.modify_ (_ { closed = true }) webSocketRef
+                        { webSocket } ← ER.read webSocketRef
+                        CIW.closeWith webSocket loggedElsewhere "logged elsewhere"
+                        FS.send imId Logout
 
       askForUpdates = do
             { webSocket } ← ER.read webSocketRef
             CIW.sendPayload webSocket UpdateHash
 
       close timerIds _ = do
-            FS.send imId $ ToggleConnected false
-            { reconnectId, pingId, privilegesId } ← ER.read timerIds
-            DM.maybe (pure unit) (\id → ET.clearInterval id *> ER.modify_ (_ { pingId = Nothing }) timerIds) pingId
-            DM.maybe (pure unit) (\id → ET.clearInterval id *> ER.modify_ (_ { privilegesId = Nothing }) timerIds) privilegesId
-            when (DM.isNothing reconnectId) do
-                  milliseconds ← ERD.randomInt 2000 10000
-                  id ← ET.setTimeout milliseconds <<< void $ do
-                        newWebSocket ← CIW.createWebSocket
-                        ER.modify_ (_ { webSocket = newWebSocket }) webSocketRef
-                        setUpWebSocket webSocketRef
-                  ER.modify_ (_ { reconnectId = Just id }) timerIds
+            shouldRemainClose ← _.closed <$> ER.read webSocketRef
+            unless shouldRemainClose do
+                  FS.send imId $ ToggleConnected false
+                  { reconnectId, pingId, privilegesId } ← ER.read timerIds
+                  DM.maybe (pure unit) (\id → ET.clearInterval id *> ER.modify_ (_ { pingId = Nothing }) timerIds) pingId
+                  DM.maybe (pure unit) (\id → ET.clearInterval id *> ER.modify_ (_ { privilegesId = Nothing }) timerIds) privilegesId
+                  when (DM.isNothing reconnectId) do
+                        milliseconds ← ERD.randomInt 2000 10000
+                        id ← ET.setTimeout milliseconds <<< void $ do
+                              newWebSocket ← CIW.createWebSocket
+                              ER.modify_ (_ { webSocket = newWebSocket }) webSocketRef
+                              setUpWebSocket webSocketRef
+                        ER.modify_ (_ { reconnectId = Just id }) timerIds
 
 setSmallScreen ∷ ImModel → NoMessages
 setSmallScreen model@{ toggleModal } =

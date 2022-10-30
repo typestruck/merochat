@@ -7,4 +7,5 @@ import Web.Socket.WebSocket (WebSocket)
 type CurrentWebSocket =
       { ponged ∷ Boolean
       , webSocket ∷ WebSocket
+      , closed ∷ Boolean
       }
