@@ -99,21 +99,25 @@ handleConnection configuration@{ tokenSecret } pool userAvailability connection 
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
       case maybeUserId of
             Nothing → do
-                  SW.terminate connection
+                  sendWebSocketMessage connection CloseConnection
                   EC.log "terminated due to auth error"
             Just loggedUserId → do
-                  now ← EN.nowDateTime
-                  ER.modify_
-                        ( DH.insert loggedUserId
-                                { lastSeen: now
-                                , connection: Just connection
-                                , availability: Online
-                                }
-                        )
-                        userAvailability
-                  SW.onError connection handleError
-                  SW.onClose connection (handleClose userAvailability loggedUserId)
-                  SW.onMessage connection (runMessageHandler loggedUserId)
+                  avl ← ER.read userAvailability
+                  case DH.lookup loggedUserId avl of
+                        Just { connection: existingConnection } | DM.isJust existingConnection → sendWebSocketMessage (SU.fromJust existingConnection) CloseConnection
+                        _ → do
+                              now ← EN.nowDateTime
+                              ER.modify_
+                                    ( DH.insert loggedUserId
+                                            { lastSeen: now
+                                            , connection: Just connection
+                                            , availability: Online
+                                            }
+                                    )
+                                    userAvailability
+                              SW.onError connection handleError
+                              SW.onClose connection (handleClose userAvailability loggedUserId)
+                              SW.onMessage connection (runMessageHandler loggedUserId)
       where
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJSON message of

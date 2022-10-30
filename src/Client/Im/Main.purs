@@ -778,6 +778,7 @@ setUpWebSocket webSocketRef = do
                         FS.send imId $ DisplayAvailability status
                         pong true
                   Content cnt → FS.send imId $ ReceiveMessage cnt isFocused
+                  CloseConnection → FS.send imId Logout
 
       askForUpdates = do
             { webSocket } ← ER.read webSocketRef

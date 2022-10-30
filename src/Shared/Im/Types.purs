@@ -355,6 +355,7 @@ type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
 data FullWebSocketPayloadClient
       = Pong { status ∷ AvailabilityStatus }
       | Content WebSocketPayloadClient
+      | CloseConnection
 
 data WebSocketPayloadClient
       = CurrentHash String
