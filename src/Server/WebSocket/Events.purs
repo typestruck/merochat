@@ -137,7 +137,8 @@ handleError = EC.log <<< show
 handleClose ∷ Ref (HashMap Int UserAvailability) → Int → CloseCode → CloseReason → Effect Unit
 handleClose userAvailability loggedUserId _ _ = do
       now ← EN.nowDateTime
-      ER.modify_ (DH.insert loggedUserId (updateUserAvailability false now Nothing)) userAvailability
+      { availability } ← liftEffect (SU.fromJust <<< DH.lookup loggedUserId <$> ER.read userAvailability)
+      ER.modify_ (DH.insert loggedUserId (updateUserAvailability false now availability Nothing)) userAvailability
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do
@@ -184,7 +185,8 @@ sendPing { userAvailability, loggedUserId } { isActive, statusFor } connection =
             Tuple status missing ← makeAvailability avl
             liftEffect do
                   now ← EN.nowDateTime
-                  ER.modify_ (DH.insert loggedUserId (updateUserAvailability isActive now (Just connection))) userAvailability
+                  { availability } ← liftEffect (SU.fromJust <<< DH.lookup loggedUserId <$> ER.read userAvailability)
+                  ER.modify_ (DH.insert loggedUserId (updateUserAvailability isActive now availability (Just connection))) userAvailability
                   ER.modify_ (\avlb → DA.foldl updateMissingAvailability avlb missing) userAvailability
                   sendWebSocketMessage connection $ Pong { status }
       where
@@ -281,11 +283,17 @@ whenJust value handler = do
             Nothing → pure unit
             Just c → handler c
 
-updateUserAvailability ∷ Boolean → DateTime → Maybe WebSocketConnection → UserAvailability
-updateUserAvailability isActive date connection =
+updateUserAvailability ∷ Boolean → DateTime → Availability → Maybe WebSocketConnection → UserAvailability
+updateUserAvailability isActive date status connection =
       { connection
       , lastSeen: date
-      , availability: if isActive then Online else LastSeen $ DateTimeWrapper date
+      , availability:
+              if isActive then
+                    Online
+              else if status == Online then
+                    LastSeen $ DateTimeWrapper date
+              else
+                    status
       }
 
 sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWebSocketPayloadClient → b Unit
@@ -298,9 +306,9 @@ checkLastSeen userAvailability = do
       availabilities ← ER.read userAvailability
       DF.traverse_ (check now) $ DH.toArrayBy Tuple availabilities
       where
-      check now (Tuple id { lastSeen, connection })
+      check now (Tuple id { availability, lastSeen, connection })
             | hasExpired lastSeen now = do
-                    ER.modify_ (DH.insert id (updateUserAvailability false lastSeen Nothing)) userAvailability
+                    ER.modify_ (DH.insert id (updateUserAvailability false lastSeen availability Nothing)) userAvailability
                     DM.maybe (pure unit) SW.terminate connection
             | otherwise = pure unit
 
