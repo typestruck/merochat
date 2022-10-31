@@ -124,8 +124,7 @@ chatBarInput
                       , HE.textarea' $
                               (if elementId == ChatInput then [ HA.onKeydown (CheckTyping <<< DT.snd) ] else [])
                                     <>
-                                          [ HA.rows 1
-                                          , HA.class' "chat-input"
+                                          [ HA.class' "chat-input"
                                           , HA.id $ show elementId
                                           , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection..."
                                           , HA.disabled $ not isWebSocketConnected

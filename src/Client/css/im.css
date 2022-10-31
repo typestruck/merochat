@@ -181,7 +181,8 @@ body {
     margin: 0 2px;
 }
 
-.typing, .reach-out {
+.typing,
+.reach-out {
     font-style: italic;
 }
 
@@ -458,7 +459,8 @@ blockquote {
     margin-bottom: 20px;
 }
 
-#feedback-form .error-message, #temporary-user-sign-up-form .error-message {
+#feedback-form .error-message,
+#temporary-user-sign-up-form .error-message {
     visibility: visible;
     display: block;
 }
@@ -467,7 +469,9 @@ blockquote {
     font-weight: bold;
 }
 
-.warning-temporary, .no-self-start, .not-enough-karma {
+.warning-temporary,
+.no-self-start,
+.not-enough-karma {
     color: #db5a5d;
 }
 
@@ -863,6 +867,7 @@ svg.toolbar-action {
     border-top-right-radius: 0;
     border-top-left-radius: 0;
     background: #2d2d2d;
+    height: 25px;
     padding: 10px 35px;
     border: 1px solid #b5b7b7;
     border-top: none;
@@ -2060,14 +2065,14 @@ select {
         width: auto;
     }
 
-          .section-label {
-              margin-right: 0;
-              margin-bottom: 10px
-          }
+    .section-label {
+        margin-right: 0;
+        margin-bottom: 10px
+    }
 
-          .modal-section {
-              padding: 15px
-          }
+    .modal-section {
+        padding: 15px
+    }
 
     .message-history .retry.invisible {
         visibility: unset;
@@ -2087,6 +2092,10 @@ select {
 
     .contact-options {
         font-weight: lighter;
+    }
+
+    .chat-input {
+        height: 16px;
     }
 
     .avatar-contact-list-div {
@@ -2581,6 +2590,10 @@ select {
 
     .side .chat-input {
         padding-right: 85px;
+    }
+
+    .chat-input {
+        height: 18px;
     }
 
     .chat-input-preview,
