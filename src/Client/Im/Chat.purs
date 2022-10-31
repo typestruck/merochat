@@ -298,6 +298,7 @@ setMessage cursor markdown model@{ chatting } =
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setValue markdown textarea
                         WHHTA.setSelectionEnd position textarea
+                        resizeTextarea input
                   Nothing → pure unit
 
 catchFile ∷ FileReader → Event → ImModel → NoMessages
