@@ -145,6 +145,7 @@ sendMessage
       input ← chatInput chatting
       WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
       CCD.setValue input ""
+      resizeTextarea input
       CIW.sendPayload webSocket $ OutgoingMessage
             { id: newTemporaryId
             , userId: recipientId
