@@ -83,14 +83,7 @@ forceBeforeSendMessage ∷ ImModel → MoreMessages
 forceBeforeSendMessage model =
       model :>
             [ getMessage model
-            , resizeInputEffect model
             ]
-
-resizeInputEffect ∷ ImModel → Aff (Maybe ImMessage)
-resizeInputEffect model@{ chatting } = liftEffect $ do
-      input ← chatInput chatting
-      resizeTextarea input
-      pure Nothing
 
 beforeSendMessage ∷ MessageContent → ImModel → MoreMessages
 beforeSendMessage
@@ -262,7 +255,6 @@ applyMarkup ∷ Markup → ImModel → MoreMessages
 applyMarkup markup model@{ chatting } =
       model :>
             [ liftEffect (Just <$> apply)
-            , resizeInputEffect model
             ]
       where
       apply = do
@@ -306,7 +298,6 @@ setMessage cursor markdown model@{ chatting } =
                         WHHEL.focus $ WHHTA.toHTMLElement textarea
                         WHHTA.setValue markdown textarea
                         WHHTA.setSelectionEnd position textarea
-                        resizeTextarea input
                   Nothing → pure unit
 
 catchFile ∷ FileReader → Event → ImModel → NoMessages
