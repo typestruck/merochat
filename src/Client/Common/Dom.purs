@@ -38,6 +38,8 @@ import Web.UIEvent.KeyboardEvent as WUK
 import Web.UIEvent.KeyboardEvent.EventTypes (keyup)
 
 foreign import innerHTML_ ∷ EffectFn2 Element String Unit
+foreign import removeFromClassList_ ∷ EffectFn2 Element String Unit
+foreign import addToClassList_ ∷ EffectFn2 Element String Unit
 foreign import innerText_ ∷ EffectFn1 Element String
 foreign import pushState_ ∷ EffectFn1 String Unit
 
@@ -163,3 +165,9 @@ setTitle title = do
 
 pushState ∷ String → Effect Unit
 pushState = EU.runEffectFn1 pushState_
+
+removeFromClassList :: Element -> String -> Effect Unit
+removeFromClassList = EU.runEffectFn2 removeFromClassList_
+
+addToClassList :: Element -> String -> Effect Unit
+addToClassList = EU.runEffectFn2 addToClassList_

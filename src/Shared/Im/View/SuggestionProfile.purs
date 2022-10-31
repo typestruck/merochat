@@ -13,7 +13,6 @@ import Data.HashMap as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
@@ -22,7 +21,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Avatar as SA
-import Shared.DateTime (DateTimeWrapper(..), epoch)
+import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
@@ -33,11 +32,10 @@ import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
-import Shared.Resource (Media(..), ResourceType(..))
-import Shared.Resource as SPM
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
+import Web.Event.Internal.Types (Event)
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
@@ -153,7 +151,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                           _ →
                                 user
                   )
-                  (Just <<< SpecialRequest $ ToggleModal ShowSettings) <>
+                  (Just <<< SpecialRequest $ ToggleModal ShowSettings) (Just ImageVisible) <>
                   [ arrow $ SpecialRequest PreviousSuggestion
                   , arrow $ SpecialRequest NextSuggestion
                   ]
@@ -176,15 +174,15 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
-displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Array (Html message)
-displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } message =
-      [ HE.img [ HA.class' $ "avatar-profile " <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar ]
+displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Maybe (Boolean -> Event → message) → Array (Html message)
+displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } temporaryUserMessage imageLoadMessage =
+      [ HE.img avatarAttrs
       , HE.h1 (HA.class' "profile-name") name
       , HE.div (HA.class' "headline") headline
       , HE.div [ HA.class' { "online-status": true, duller: availability /= Online } ] $ show availability
       , HE.div (HA.class' "profile-karma")
               $
-                    case message of
+                    case temporaryUserMessage of
                           Just msg | temporary →
                                 [ HE.span [ HA.class' "quick-sign-up" ] "Quick-sign up user"
                                 -- from https://thenounproject.com/icon/question-646495/
@@ -229,6 +227,16 @@ displayProfile index { karmaPosition, name, availability, temporary, avatar, age
               ]
       ]
       where
+      avatarClasses
+            | DM.isNothing avatar = "avatar-profile " <> SA.avatarColorClass index
+            | otherwise = "avatar-profile"
+
+      avatarAttrs =
+            ( case imageLoadMessage of
+                    Nothing → []
+                    Just msg → [HA.onLoad' (msg false), HA.onUnload' (msg true) ]
+            ) <> [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
+
       toSpan = DM.maybe (HE.createEmptyElement "span") spanWith
 
       spanWith = HE.span (HA.class' "span-info")

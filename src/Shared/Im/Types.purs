@@ -309,6 +309,7 @@ data ImMessage
       | ReceiveMessage WebSocketPayloadClient Boolean
       | PreventStop Event
       | AskNotification
+      | ImageVisible Boolean Event
       | ToggleAskNotification
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)

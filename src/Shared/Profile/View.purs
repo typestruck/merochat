@@ -308,7 +308,7 @@ view
 impersonationProfile ∷ Maybe ExperimentData → Html ProfileMessage
 impersonationProfile = case _ of
       Just (Impersonation (Just profile@{ name })) →
-            HE.div [ HA.class' "suggestion old imper" ] $ warning name : SIVP.displayProfile (Just 0) profile Nothing
+            HE.div [ HA.class' "suggestion old imper" ] $ warning name : SIVP.displayProfile (Just 0) profile Nothing Nothing
       _ → HE.createEmptyElement "div"
       where
       warning name = HE.div (HA.class' "imp impersonation-warning")

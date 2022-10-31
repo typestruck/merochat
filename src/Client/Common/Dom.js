@@ -56,3 +56,11 @@ export function pushState_(location) {
 export function scrollIntoView_(element) {
       element.scrollIntoView(true);
 }
+
+export function removeFromClassList_(element, c) {
+      element.classList.remove(c);
+}
+
+export function addToClassList_(element, c) {
+      element.classList.add(c);
+}
