@@ -86,8 +86,7 @@ suggest loggedUserId skip = case _ of
             _visibility .=. Everyone .&&. _temporary .=. Checked false
                   .||. (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true)
                   .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone))
-                  .||. _temporary
-                  .=. Checked true
+                  .||. _temporary .=. Checked true
                   .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
 
       blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))

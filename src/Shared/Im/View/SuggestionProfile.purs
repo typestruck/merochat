@@ -86,7 +86,7 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
       HE.div (HA.class' { "profile-contact": true, highlighted: toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ HA.class' $ "avatar-profile " <> SA.avatarColorClass chatting, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfileAction
+                    , HE.img $ [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
                             [ HE.h1 (HA.class' "contact-name") name
                             , typingNotice
@@ -107,6 +107,10 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
       { name, avatar } = case impersonating of
             Just impersonationId → SU.fromJust $ HS.lookup impersonationId impersonations
             _ → contact.user
+
+      avatarClasses
+            | DM.isNothing avatar = "avatar-profile " <> SA.avatarColorClass chatting
+            | otherwise = "avatar-profile"
 
       isTyping = (contacts !@ SU.fromJust chatting).typing
 
