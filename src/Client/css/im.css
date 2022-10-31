@@ -1905,6 +1905,8 @@ select {
     text-align: center;
     width: fit-content;
     align-self: center;
+    position: absolute;
+    z-index: 3;
 }
 
 .impersonation-warning-history {
