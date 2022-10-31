@@ -5,6 +5,7 @@ import Shared.KarmaPrivileges.Types
 
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -86,14 +87,19 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
             ]
 
       leaderboardEntry index { position, avatar, name, karma } =
-            HE.div (HA.class' $ "board-position" <> if position == userPosition then " user" else "")
-                  [ HE.div (HA.class' "avatar-leaderboard-div") $ HE.img [ HA.class' $ "avatar-leaderboard" <> SA.avatarColorClass (Just index), HA.src $ SA.avatarForRecipient (Just index) avatar ]
-                  , HE.div (HA.class' "name-karma")
-                          [ HE.div_
-                                  [ HE.div (HA.class' "name") name
-                                  , HE.span (HA.class' "duller") $ show karma
-                                  ]
-                          , HE.div (HA.class' "position") <<< HE.span (HA.class' "position-number") $ show position
-                          ]
+            let
+                  avatarClasses
+                        | DM.isNothing avatar = "avatar-leaderboard" <> SA.avatarColorClass (Just index)
+                        | otherwise = "avatar-leaderboard"
+            in
+                  HE.div (HA.class' $ "board-position" <> if position == userPosition then " user" else "")
+                        [ HE.div (HA.class' "avatar-leaderboard-div") $ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient (Just index) avatar ]
+                        , HE.div (HA.class' "name-karma")
+                                [ HE.div_
+                                        [ HE.div (HA.class' "name") name
+                                        , HE.span (HA.class' "duller") $ show karma
+                                        ]
+                                , HE.div (HA.class' "position") <<< HE.span (HA.class' "position-number") $ show position
+                                ]
 
-                  ]
+                        ]

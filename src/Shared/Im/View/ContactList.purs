@@ -73,13 +73,17 @@ contactList
                   lastHistoryEntry = SU.fromJust $ DA.last history
                   tupleId = Tuple user.id impersonating
                   isContextMenuVisible = toggleContextMenu == ShowContactContextMenu tupleId
+                  avatarClasses
+                        | DM.isNothing contact.avatar = "avatar-contact-list" <> SA.avatarColorClass justIndex
+                        | otherwise = "avatar-contact-list"
+
             in
                   HE.div
                         [ HA.class' { contact: true, "chatting-contact": chattingId == Just user.id && impersonatingId == impersonating }
                         , HA.onClick $ ResumeChat tupleId
                         ]
                         [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
-                                [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass justIndex, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
+                                [ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
                                 , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.availability /= Online } ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
