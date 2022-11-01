@@ -35,7 +35,6 @@ import Shared.Privilege as SP
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
-import Web.Event.Internal.Types (Event)
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
@@ -177,7 +176,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
 displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Array (Html message)
 displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } temporaryUserMessage =
-      [ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
+      [ HE.img [ HA.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
       , HE.h1 (HA.class' "profile-name") name
       , HE.div (HA.class' "headline") headline
       , HE.div [ HA.class' { "online-status": true, duller: availability /= Online } ] $ show availability
