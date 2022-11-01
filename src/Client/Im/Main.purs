@@ -578,7 +578,8 @@ processIncomingMessage
       where
       updateHistory { id, content, date } contact@{ history } =
             contact
-                  { history = DA.snoc history $
+                  { lastMessageDate = date
+                  , history = DA.snoc history $
                           { status: Received
                           , sender: userId
                           , recipient: recipientId
