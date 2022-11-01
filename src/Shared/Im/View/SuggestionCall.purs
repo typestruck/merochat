@@ -33,7 +33,7 @@ suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
                                                   HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass previousIndex, HA.src $ SA.avatarForRecipient previousIndex $ getAvatar previousIndex ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less-z", HA.onClick FocusCurrentSuggestion, HA.title "Move to this chat suggestion" ]
-                                          [ HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass suggesting, HA.src $ SA.avatarForRecipient suggesting avatar ]
+                                          [ HE.img [HA.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", HA.class' $ avatarClasses avatar, HA.src $ SA.avatarForRecipient suggesting avatar ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less faded", HA.onClick $ SpecialRequest NextSuggestion, HA.title "Move to this chat suggestion" ]
                                           [ let
@@ -57,3 +57,7 @@ suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
                     i ← index
                     user ← suggestions !! i
                     user.avatar
+
+              avatarClasses avatar
+                        | DM.isNothing avatar = "avatar-contact-list " <> SA.avatarColorClass suggesting
+                        | otherwise = "avatar-contact-list"

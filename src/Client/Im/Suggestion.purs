@@ -124,4 +124,5 @@ resumeSuggesting ∷ ImModel → NoMessages
 resumeSuggesting model@{ suggestions, suggesting } = F.noMessages $ model
       { chatting = Nothing
       , suggesting = if DA.length suggestions <= 1 then Just 0 else suggesting
+      , toggleChatModal = HideChatModal
       }

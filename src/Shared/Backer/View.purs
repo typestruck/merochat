@@ -13,7 +13,7 @@ view = HE.div (HA.class' "backer")
       , HE.p_ "Above all, MeroChat is a project to enable great conversations and human connection. For that reason, we don't show ads, charge for subscriptions, sell bs cosmetics or anything that would stand in the way of being the best place ever to chat."
       , HE.p_ "At the same time, running an app has costs. Paying for servers, domains, marketing campaigns, art, developer time, etc. quickly becomes expensive -- specially for a passion project like MeroChat that is not tied to any big corporation or VC money."
       , HE.h3_ "Make an one time donation via PayPal"
-      , HE.form [ HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_top" ]
+      , HE.form [ HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_blank" ]
               [ HE.input [ HA.type' "hidden", HA.name "business", HA.value "RAH62A4TZZD7L" ]
               , HE.input [ HA.type' "hidden", HA.name "currency_code", HA.value "USD" ]
               , HE.input [ HA.type' "image", HA.src "https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif", HA.name "submit", HA.title "PayPal - The safer, easier way to pay online!", HA.alt "Donate with PayPal button" ]

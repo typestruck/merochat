@@ -32,10 +32,13 @@ body {
 .profile-description ol,
 .profile-description ul,
 .description-message ul,
-.description-message ol,
-.message ol,
-.message ul {
+.description-message ol {
     padding-left: inherit;
+}
+
+.message-content ol,
+.message-content ul {
+    padding-left: 15px;
 }
 
 .profile-description ul li,
@@ -136,6 +139,10 @@ body {
 .contact-list-last-message a,
 .message-content a {
     text-decoration: underline;
+}
+
+.contact-list-last-message ul, .contact-list-last-message ol {
+    padding-left: 0;
 }
 
 .side-suggestions-container {
@@ -873,6 +880,10 @@ svg.toolbar-action {
     border-top: none;
 }
 
+.chat-input-preview p {
+    margin-top: 0;
+}
+
 .chat-input {
     width: 100%;
     resize: none;
@@ -1195,7 +1206,7 @@ input:not(type=button):focus {
     color: rgb(238, 238, 238);
 }
 
-.buttons button {
+.image-buttons button, .buttons button {
     font-size: 1em;
 }
 
@@ -2082,10 +2093,6 @@ select {
 
     .suggestion-box-error {
         text-align: center;
-    }
-
-    .online-status {
-        min-height: unset;
     }
 
     .profile-contact .avatar-profile,
