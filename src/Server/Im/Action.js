@@ -1,2 +1,5 @@
 import insane from 'insane';
-export {insane as sanitize};
+
+export function sanitize(raw) {
+      return insane(raw, { allowedTags: ["br"] });
+};

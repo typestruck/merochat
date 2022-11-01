@@ -74,8 +74,11 @@ processMessage loggedUserId userId temporaryId content = do
       isVisible ← SID.isRecipientVisible loggedUserId userId
       if isVisible then do
             sanitized ← processMessageContent content
-            id ← SID.insertMessage loggedUserId userId temporaryId sanitized
-            pure <<< Just $ Tuple id sanitized
+            if DS.null sanitized then
+                  pure <<< Just $ Tuple temporaryId ""
+            else do
+                  id ← SID.insertMessage loggedUserId userId temporaryId sanitized
+                  pure <<< Just $ Tuple id sanitized
       else pure Nothing
 
 -- | Sanitizes markdown and handle image uploads
