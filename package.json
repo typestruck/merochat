@@ -21,7 +21,6 @@
     "marked": "^4.0.10",
     "nodemailer": "^6.4.11",
     "pg": "^8.7.1",
-    "trie-search": "^1.2.11",
     "url": "^0.11.0",
     "uuid": "^8.3.0",
     "uuid-validate": "0.0.3",

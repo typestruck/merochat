@@ -151,7 +151,8 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                           _ →
                                 user
                   )
-                  (Just <<< SpecialRequest $ ToggleModal ShowSettings) (Just ImageVisible) <>
+                  (Just <<< SpecialRequest $ ToggleModal ShowSettings)
+                  (Just ImageVisible) <>
                   [ arrow $ SpecialRequest PreviousSuggestion
                   , arrow $ SpecialRequest NextSuggestion
                   ]
@@ -174,7 +175,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
-displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Maybe (Boolean -> Event → message) → Array (Html message)
+displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Maybe (Event → message) → Array (Html message)
 displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } temporaryUserMessage imageLoadMessage =
       [ HE.img avatarAttrs
       , HE.h1 (HA.class' "profile-name") name
@@ -228,13 +229,13 @@ displayProfile index { karmaPosition, name, availability, temporary, avatar, age
       ]
       where
       avatarClasses
-            | DM.isNothing avatar = "avatar-profile " <> SA.avatarColorClass index
-            | otherwise = "avatar-profile"
+            | DM.isNothing avatar = "invisible avatar-profile " <> SA.avatarColorClass index
+            | otherwise = "invisible avatar-profile"
 
       avatarAttrs =
             ( case imageLoadMessage of
                     Nothing → []
-                    Just msg → [HA.onLoad' (msg false), HA.onUnload' (msg true) ]
+                    Just msg → [ HA.onLoad' msg ]
             ) <> [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
 
       toSpan = DM.maybe (HE.createEmptyElement "span") spanWith
