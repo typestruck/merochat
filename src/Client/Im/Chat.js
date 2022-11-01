@@ -1,4 +1,12 @@
+let constant = 20,
+    initialHeight;
+
 export function resizeTextarea_(textarea) {
-    textarea.style.height = 0;
-    textarea.style.height =  (textarea.scrollHeight - 20) + "px";
+    if (initialHeight === undefined)
+        initialHeight = textarea.clientHeight - constant;
+
+    if (textarea.value === '')
+        textarea.style.height = initialHeight + "px";
+
+    textarea.style.height = (textarea.scrollHeight - constant) + "px";
 }
