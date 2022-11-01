@@ -1837,9 +1837,10 @@ select {
 }
 
 .online-status {
+    min-height: 27px;
     margin-bottom: 7px;
-}
 
+}
 
 .profile-karma {
     margin-bottom: 7px;
@@ -2081,6 +2082,10 @@ select {
 
     .suggestion-box-error {
         text-align: center;
+    }
+
+    .online-status {
+        min-height: unset;
     }
 
     .profile-contact .avatar-profile,
