@@ -153,7 +153,6 @@ update { webSocketRef, fileReader } model =
             --contacts
             ResumeChat (Tuple id impersonating) → CICN.resumeChat id impersonating model
             UpdateDelivered → CICN.markDelivered webSocket model
-            ImageVisible event → imageVisible event model
             UpdateReadCount → CICN.markRead webSocket model
             CheckFetchContacts → CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
@@ -209,13 +208,6 @@ update { webSocketRef, fileReader } model =
             DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
-
-imageVisible :: Event -> ImModel -> MoreMessages
-imageVisible event model = model :> [do
-      liftEffect $ CCD.removeFromClassList (SU.fromJust $ do
-            target ← WEE.target event
-            WDE.fromEventTarget target) "invisible"
-      pure Nothing]
 
 pollPrivileges ∷ WebSocket → ImModel → NoMessages
 pollPrivileges webSocket model = model :>

@@ -152,10 +152,10 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                                 user
                   )
                   (Just <<< SpecialRequest $ ToggleModal ShowSettings)
-                  (Just ImageVisible) <>
-                  [ arrow $ SpecialRequest PreviousSuggestion
-                  , arrow $ SpecialRequest NextSuggestion
-                  ]
+                  <>
+                        [ arrow $ SpecialRequest PreviousSuggestion
+                        , arrow $ SpecialRequest NextSuggestion
+                        ]
 
       arrow message = HE.div (HA.class' "suggestion-arrow" : clickMessage)
             [ case message of
@@ -175,9 +175,9 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
-displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Maybe (Event → message) → Array (Html message)
-displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } temporaryUserMessage imageLoadMessage =
-      [ HE.img avatarAttrs
+displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Array (Html message)
+displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } temporaryUserMessage =
+      [ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
       , HE.h1 (HA.class' "profile-name") name
       , HE.div (HA.class' "headline") headline
       , HE.div [ HA.class' { "online-status": true, duller: availability /= Online } ] $ show availability
@@ -229,14 +229,8 @@ displayProfile index { karmaPosition, name, availability, temporary, avatar, age
       ]
       where
       avatarClasses
-            | DM.isNothing avatar = "invisible avatar-profile " <> SA.avatarColorClass index
-            | otherwise = "invisible avatar-profile"
-
-      avatarAttrs =
-            ( case imageLoadMessage of
-                    Nothing → []
-                    Just msg → [ HA.onLoad' msg ]
-            ) <> [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
+            | DM.isNothing avatar = "avatar-profile " <> SA.avatarColorClass index
+            | otherwise = "avatar-profile"
 
       toSpan = DM.maybe (HE.createEmptyElement "span") spanWith
 
