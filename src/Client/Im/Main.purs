@@ -294,10 +294,9 @@ finishTutorial model@{ toggleModal } = model { user { completedTutorial = true }
       where
       finish = do
             void <<< CCNT.silentResponse $ request.im.tutorial {}
-            if toggleModal == Tutorial OptionsMenu then --user might have navigated to other modals
-
-                  pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
-            else pure Nothing
+            case toggleModal of
+                  Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
+                  _ → pure Nothing
 
 report ∷ Int → WebSocket → ImModel → MoreMessages
 report userId webSocket model@{ reportReason, reportComment } = case reportReason of

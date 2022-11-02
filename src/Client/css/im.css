@@ -21,6 +21,10 @@ body {
     list-style-type: disc;
 }
 
+.italic {
+    font-style: italic;
+}
+
 .online-indicator {
     border-radius: 100%;
     background-color: hsl(145, 80%, 28%);

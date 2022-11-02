@@ -113,16 +113,18 @@ tutorial { chatting } = case _ of
             [ HE.span (HA.class' "bold") "Welcome!"
             , HE.span_ "Let's take you through a brief tutorial"
             , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatSuggestions ] "Start!"
+                    [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial",
+                    HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatSuggestions ] "Start!"
                     ]
             ]
       ChatSuggestions → HE.div (HA.class' "confirmation tutorial chat-step")
             [ HE.span (HA.class' "bold") "Chat suggestions"
             , HE.span_ "Use the arrows to move back and forth suggestions"
             , HE.span_ "When you see someone you'd like to chat with,"
-            , HE.span_ "send them a message to enable the next step"
+            , HE.span (HA.class' "italic") "send them a message to enable the next step"
             , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial Chatting, HA.disabled $ DM.isNothing chatting, HA.title $ if DM.isNothing chatting then "Send a message to enable the next step" else "" ] "Done!"
+                    [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
+                    , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial Chatting, HA.disabled $ DM.isNothing chatting, HA.title $ if DM.isNothing chatting then "Send a message to enable the next step" else "" ] "Done!"
                     ]
             ]
       Chatting → HE.div (HA.class' "confirmation tutorial chatting-step")
@@ -131,7 +133,8 @@ tutorial { chatting } = case _ of
             , HE.span_ "You can click the menu on top to see the"
             , HE.span_ "full profile of the person you are chatting with"
             , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial BackSuggestions ] "Got it!"
+                    [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
+                    , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial BackSuggestions ] "Got it!"
                     ]
             ]
       BackSuggestions → HE.div (HA.class' "confirmation tutorial back-suggestions-step")
@@ -139,7 +142,8 @@ tutorial { chatting } = case _ of
             , HE.span_ "Whenever you are chatting, you can click"
             , HE.span_ "on the green box see your suggestions again"
             , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatList ] "Done!"
+                    [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
+                    , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatList ] "Done!"
                     ]
             ]
       ChatList → HE.div (HA.class' "confirmation tutorial chat-list-step")
@@ -147,7 +151,8 @@ tutorial { chatting } = case _ of
             , HE.span_ "Your recent chats appear on the left"
             , HE.span_ "At any time, you can click on a chat to resume it"
             , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial OptionsMenu ] "Got it!"
+                    [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
+                    , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial OptionsMenu ] "Got it!"
                     ]
             ]
       OptionsMenu → HE.div (HA.class' "confirmation tutorial options-menu-step")
