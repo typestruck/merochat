@@ -164,9 +164,8 @@ agoWithTime dateTime =
       timeString = localDateTimeWith time dateTime
 
 daysDiff ∷ DateTime → Int
-daysDiff dateTime = DI.floor $ DN.unwrap (DDT.diff dateTime now ∷ Days)
-      where
-      now = unsafeNow
+daysDiff dateTime = daysInYear now - daysInYear dateTime
+      where now = unsafeNow
 
 daysInYear ∷ DateTime → Int
 daysInYear dateTime = DI.floor $ DN.unwrap (DDT.diff dateTime firstDay ∷ Days)
