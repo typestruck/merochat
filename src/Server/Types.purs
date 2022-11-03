@@ -3,7 +3,7 @@ module Server.Types where
 
 
 import Data.Maybe (Maybe)
-import Droplet.Driver (Pool, PgError)
+import Droplet.Driver (Pool)
 import Run (AFF, Run, EFFECT)
 import Run.Except (EXCEPT)
 import Run.Reader (READER)
@@ -13,6 +13,7 @@ import Type.Row (type (+))
 type Configuration =
       { port ∷ Int
       , captchaSecret ∷ String
+      , adminSecret :: String
       , storageApplicationKey ∷ String
       , storageApplicationKeyId ∷ String
       , tokenSecret ∷ String

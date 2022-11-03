@@ -18,6 +18,7 @@ import Payload.Server.Response as PSR
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Server.Admin.Handler as SHA
 import Server.Backer.Handler as SBH
 import Server.Experiments.Handler as SEH
 import Server.Feedback.Handler as SFH
@@ -27,8 +28,10 @@ import Server.Im.Handler as SIH
 import Server.InternalBacker.Handler as SIBH
 import Server.InternalError.Handler as SIEH
 import Server.InternalHelp.Handler as SIHH
-import Server.Landing.Handler as SLH
+import Server.Elsewhere.Handler as SESH
+import Server.Banned.Handler as SBNH
 import Server.KarmaPrivileges.Handler as SLBH
+import Server.Landing.Handler as SLH
 import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH
@@ -93,6 +96,8 @@ handlers reading =
       , logout: runJson reading SLOH.logout
       , help: runHtml reading SHH.help
       , backer: runHtml reading SBH.backer
+      , elsewhere: runHtml reading SESH.elsewhere
+      , banned: runHtml reading SBNH.banned
       , feedback:
               { get: runHtml reading SFH.feedback
               , send: runJson reading SFH.send
@@ -100,6 +105,9 @@ handlers reading =
       , internalBacker: runJson reading SIBH.internalBacker
       , experiments: runJson reading SEH.experiments
       , developmentFiles: developmentFiles
+      , admin: {
+        ban: runJson reading SHA.ban
+      }
       , notFound: runHtml reading SNH.notFound
       }
 

@@ -18,9 +18,9 @@ readConfiguration ∷ Effect Configuration
 readConfiguration =
       if production then do
             port ← parsePort <$> NP.lookupEnv "PORT"
-            variables ← DT.traverse getVariable [ "CAPTCHA_SECRET", "TOKEN_SECRET", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD", "DATABASE_HOST", "STORAGE_APPLICATION_ID", "STORAGE_APPLICATION_KEY" ]
+            variables ← DT.traverse getVariable [ "CAPTCHA_SECRET", "TOKEN_SECRET", "SALT", "EMAIL_USER", "EMAIL_HOST", "EMAIL_PASSWORD", "DATABASE_HOST", "STORAGE_APPLICATION_ID", "STORAGE_APPLICATION_KEY", "ADMIN_SECRET" ]
             case variables of
-                  [ captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host, storageApplicationKeyId, storageApplicationKey ] →
+                  [ captchaSecret, tokenSecret, salt, emailUser, emailHost, emailPassword, host, storageApplicationKeyId, storageApplicationKey, adminSecret ] →
                         pure $
                               { port
                               , databaseHost: Just host
@@ -32,7 +32,7 @@ readConfiguration =
                               , emailPassword
                               , storageApplicationKeyId
                               , storageApplicationKey
-
+                              , adminSecret
                               }
                   _ → EE.throw "Wrong number of environment variables"
       else do
@@ -46,6 +46,7 @@ readConfiguration =
                   , emailUser: ""
                   , storageApplicationKey: ""
                   , storageApplicationKeyId: ""
+                  , adminSecret: ""
                   , emailHost: ""
                   , emailPassword: ""
                   }

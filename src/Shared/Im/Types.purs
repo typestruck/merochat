@@ -159,6 +159,11 @@ type ImModel = Record Im
 
 newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
+data AfterLogout
+      = LoginPage
+      | Elsewhere
+      | Banned
+
 data ShowChatModal
       = HideChatModal
       | ShowSelectedImage
@@ -256,7 +261,7 @@ data ImMessage
 
       --user menu
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
-      | Logout
+      | Logout AfterLogout
       | SetContextMenuToggle ShowContextMenu
       | SetModalContents (Maybe Bundle) ElementId String
 
@@ -342,6 +347,7 @@ data WebSocketPayloadServer
       | UnavailableFor
               { id ∷ Int
               }
+      | Ban { id ∷ Int, secret ∷ String }
 
 type OutgoingRecord =
       BasicMessage
@@ -355,7 +361,7 @@ type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
 data FullWebSocketPayloadClient
       = Pong { status ∷ AvailabilityStatus }
       | Content WebSocketPayloadClient
-      | CloseConnection
+      | CloseConnection AfterLogout
 
 data WebSocketPayloadClient
       = CurrentHash String
@@ -479,6 +485,9 @@ instance DecodeJson ShowUserMenuModal where
 instance DecodeJson Step where
       decodeJson = DADGR.genericDecodeJson
 
+instance DecodeJson AfterLogout where
+      decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson WebSocketPayloadClient where
       decodeJson = DADGR.genericDecodeJson
 
@@ -499,6 +508,9 @@ instance DecodeJson MessageStatus where
 
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
+
+instance EncodeJson AfterLogout where
+      encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
@@ -579,7 +591,7 @@ instance DecodeQueryParam ArrayPrimaryKey where
                   _ → errorDecoding query key
 
 derive instance Eq ShowContextMenu
-
+derive instance Eq AfterLogout
 derive instance Eq ProfilePresentation
 derive instance Eq RetryableRequest
 derive instance Eq ShowChatModal
@@ -590,6 +602,7 @@ derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
 derive instance Generic Step _
+derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
 derive instance Generic MessageContent _
 derive instance Generic WebSocketPayloadClient _

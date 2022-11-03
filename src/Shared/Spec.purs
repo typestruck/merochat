@@ -262,6 +262,25 @@ spec ∷
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , response ∷ String
                                   }
+                    , elsewhere ∷
+                            GET "/elsewhere"
+                                  { guards ∷ Guards ("checkAnonymous" : Nil)
+                                  , response ∷ Html
+                                  }
+                    , banned ∷
+                            GET "/banned"
+                                  { guards ∷ Guards ("checkAnonymous" : Nil)
+                                  , response ∷ Html
+                                  }
+                    , admin ∷
+                            Routes "/admin"
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
+                                  , ban ∷
+                                          POST "/ban?id=<id>&secret=<secret>"
+                                                { query ∷ { id ∷ Int, secret ∷ String }
+                                                , response ∷ Ok
+                                                }
+                                  }
                     , developmentFiles ∷
                             GET "/client/<..path>"
                                   { params ∷ { path ∷ List String }

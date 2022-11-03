@@ -8,13 +8,13 @@ import Prelude
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Type.Proxy (Proxy(..))
 import Effect (Effect)
 import Effect.Exception (Error)
 import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3)
 import Effect.Uncurried as EU
 import Node.HTTP (Request)
 import Record as R
+import Type.Proxy (Proxy(..))
 import Type.Row (class Lacks, class Cons, class Union)
 
 foreign import data WebSocketServer ∷ Type
@@ -32,7 +32,11 @@ foreign import sendMessage_ ∷ EffectFn2 WebSocketConnection WebSocketMessage U
 foreign import close_ ∷ EffectFn3 WebSocketConnection CloseCode CloseReason Unit
 foreign import terminate_ ∷ EffectFn1 WebSocketConnection Unit
 
+foreign import createWebSocket_ ∷ EffectFn2 String String WebSocketConnection
+foreign import onOpen_ ∷ EffectFn2 WebSocketConnection (EffectFn1 Unit Unit) Unit
+
 newtype WebSocketMessage = WebSocketMessage String
+
 derive newtype instance showWSM ∷ Show WebSocketMessage
 derive instance newtypeWSM ∷ Newtype WebSocketMessage _
 
@@ -97,3 +101,10 @@ terminate ws = EU.runEffectFn1 terminate_ ws
 -- | Initiate a closing handshake with given code and reason
 close' ∷ WebSocketConnection → CloseCode → CloseReason → Effect Unit
 close' ws code reason = EU.runEffectFn3 close_ ws code reason
+
+-- | Client
+createWebSocket ∷ String → String → Effect WebSocketConnection
+createWebSocket = EU.runEffectFn2 createWebSocket_
+
+onOpen ∷ WebSocketConnection → (Unit → Effect Unit) → Effect Unit
+onOpen ws callback = EU.runEffectFn2 onOpen_ ws (EU.mkEffectFn1 callback)

@@ -83,7 +83,7 @@ confirmLogout =
             [ HE.span (HA.class' "bold") "Do you really want to log out?"
             , HE.div (HA.class' "buttons")
                     [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] "Cancel"
-                    , HE.button [ HA.class' "green-button danger", HA.onClick Logout ] "Logout"
+                    , HE.button [ HA.class' "green-button danger", HA.onClick $ Logout LoginPage ] "Logout"
                     ]
             ]
 

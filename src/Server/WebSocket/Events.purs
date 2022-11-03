@@ -45,6 +45,7 @@ import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.Privileges as SIP
 import Server.Im.Action as SIA
 import Server.Im.Database as SID
+import Server.Settings.Action as SSA
 import Server.Token as ST
 import Server.WebSocket (CloseCode(..), CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
@@ -100,12 +101,12 @@ handleConnection configuration@{ tokenSecret } pool userAvailability connection 
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
       case maybeUserId of
             Nothing → do
-                  sendWebSocketMessage connection CloseConnection
+                  sendWebSocketMessage connection $ CloseConnection LoginPage
                   EC.log "terminated due to auth error"
             Just loggedUserId → do
                   avl ← ER.read userAvailability
                   case DH.lookup loggedUserId avl >>= _.connection of
-                        Just existingConnection → sendWebSocketMessage existingConnection CloseConnection
+                        Just existingConnection → sendWebSocketMessage existingConnection $ CloseConnection Elsewhere
                         _ → pure unit
                   now ← EN.nowDateTime
                   ER.modify_
@@ -142,10 +143,10 @@ handleError = EC.log <<< show
 handleClose ∷ Ref (HashMap Int UserAvailability) → Int → CloseCode → CloseReason → Effect Unit
 handleClose userAvailability loggedUserId (CloseCode code) _
       | code == loggedElsewhere = pure unit
-      | otherwise =  do
-            now ← EN.nowDateTime
-            { availability } ← liftEffect (SU.fromJust <<< DH.lookup loggedUserId <$> ER.read userAvailability)
-            ER.modify_ (DH.insert loggedUserId (updateUserAvailability false now availability Nothing)) userAvailability
+      | otherwise = do
+              now ← EN.nowDateTime
+              { availability } ← liftEffect (SU.fromJust <<< DH.lookup loggedUserId <$> ER.read userAvailability)
+              ER.modify_ (DH.insert loggedUserId (updateUserAvailability false now availability Nothing)) userAvailability
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do
@@ -160,6 +161,19 @@ handleMessage payload = do
             ChangeStatus change → sendStatusChange userAvailability change loggedUserId
             UnavailableFor { id } → sendUnavailability userAvailability loggedUserId id
             OutgoingMessage message → sendOutgoingMessage userAvailability message connection loggedUserId
+            Ban { id } → sendBan userAvailability id
+
+sendBan ∷ Ref (HashMap Int UserAvailability) → Int → WebSocketEffect
+sendBan userAvailability userId = do
+      possibleConnection ← liftEffect (DH.lookup userId <$> ER.read userAvailability)
+      SSA.changePrivacySettings userId
+            { messageTimestamps: true
+            , onlineStatus: true
+            , readReceipts: true
+            , typingStatus: true
+            , profileVisibility: TemporarilyBanned
+            }
+      whenJust possibleConnection $ \connection → sendWebSocketMessage connection $ CloseConnection Banned
 
 sendUpdatedPrivileges ∷ WebSocketConnection → Int → WebSocketEffect
 sendUpdatedPrivileges connection loggedUserId = do

@@ -29,12 +29,15 @@ toggleInitialScreen toggle model = F.noMessages $ model
       , toggleModal = HideUserMenuModal
       }
 
-logout ∷ ImModel → MoreMessages
-logout model = CIF.nothingNext model out
+logout ∷ AfterLogout -> ImModel → MoreMessages
+logout after model = CIF.nothingNext model out
       where
       out = do
             void $ request.logout { body: {} }
-            liftEffect $ CCL.setLocation $ routes.login.get {}
+            liftEffect <<< CCL.setLocation $ case after of
+                  LoginPage -> routes.login.get {}
+                  Elsewhere -> routes.elsewhere {}
+                  Banned -> routes.banned {}
 
 toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
 toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =

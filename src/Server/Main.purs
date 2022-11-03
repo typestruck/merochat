@@ -29,7 +29,7 @@ main = do
       configuration@{storageApplicationKeyId, storageApplicationKey} ← CF.readConfiguration
       when production $ SF.init storageApplicationKeyId storageApplicationKey
       startWebSocketServer configuration
-      startHTTPServer configuration
+      startHttpServer configuration
 
 startWebSocketServer ∷ Configuration → Effect Unit
 startWebSocketServer configuration = do
@@ -41,8 +41,8 @@ startWebSocketServer configuration = do
       intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen userAvailability *> SWE.persistLastSeen { pool, userAvailability})
       SW.onServerClose webSocketServer (const (ET.clearInterval intervalId))
 
-startHTTPServer ∷ Configuration → Effect Unit
-startHTTPServer configuration@{ port } = do
+startHttpServer ∷ Configuration → Effect Unit
+startHttpServer configuration@{ port } = do
       pool ← SD.newPool configuration
       EA.launchAff_ $ void do
             PS.startGuarded (defaultOpts { port = port }) spec

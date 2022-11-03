@@ -49,3 +49,11 @@ export function close_(ws, code, reason) {
 export function terminate_(ws) {
       ws.terminate();
 }
+
+export function createWebSocket_(url, cookie) {
+      return new WebSocket(url, { headers: { 'Cookie': `merochat=${cookie}`}});
+}
+
+export function onOpen_(ws, handleOpen) {
+      ws.on('open', handleOpen);
+}

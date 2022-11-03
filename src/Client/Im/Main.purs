@@ -175,7 +175,7 @@ update { webSocketRef, fileReader } model =
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
             --user menu
             ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
-            Logout → CIU.logout model
+            Logout after → CIU.logout after model
             ToggleUserContextMenu event → toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) → CIU.toggleModal toggle model
             SetModalContents file root html → CIU.setModalContents file root html model
@@ -779,11 +779,11 @@ setUpWebSocket webSocketRef = do
                         FS.send imId $ DisplayAvailability status
                         pong true
                   Content cnt → FS.send imId $ ReceiveMessage cnt isFocused
-                  CloseConnection → do
+                  CloseConnection after → do
                         ER.modify_ (_ { closed = true }) webSocketRef
                         { webSocket } ← ER.read webSocketRef
-                        CIW.closeWith webSocket loggedElsewhere "logged elsewhere"
-                        FS.send imId Logout
+                        when (after == Elsewhere) $ CIW.closeWith webSocket loggedElsewhere "logged elsewhere"
+                        FS.send imId $ Logout after
 
       askForUpdates = do
             { webSocket } ← ER.read webSocketRef

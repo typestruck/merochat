@@ -7,12 +7,13 @@ import Server.Database.Users
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
+import Droplet.Driver (Configuration, Pool)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Types (Checked(..))
 import Server.Settings.Database.Flat as SSDF
-import Server.Types (ServerEffect)
+import Server.Types (ServerEffect, BaseEffect)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility)
@@ -39,7 +40,7 @@ privacySettings loggedUserId = SSDF.toPrivacySettings <<< SU.fromJust <$>
                     ) # from users # wher (_id .=. loggedUserId)
       )
 
-changePrivacySettings ∷ Int → PrivacySettings → ServerEffect Unit
+changePrivacySettings ∷ ∀ r. Int → PrivacySettings → BaseEffect { pool ∷ Pool | r } Unit
 changePrivacySettings loggedUserId { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } = do
       now ← liftEffect EN.nowDateTime
       SD.execute $ update users
