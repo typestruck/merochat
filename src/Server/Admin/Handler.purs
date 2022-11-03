@@ -2,7 +2,6 @@ module Server.Admin.Handler where
 
 import Prelude
 
-import Debug (spy)
 import Server.Admin.Action as SAA
 import Server.Ok (Ok, ok)
 import Server.Types (ServerEffect)
