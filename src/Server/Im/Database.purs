@@ -86,7 +86,8 @@ suggest loggedUserId skip = case _ of
             _visibility .=. Everyone .&&. _temporary .=. Checked false
                   .||. (_visibility .=. NoTemporaryUsers .||. _temporary .=. Checked true)
                   .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false .&&. _visibility .=. Everyone))
-                  .||. _temporary .=. Checked true
+                  .||. _temporary
+                  .=. Checked true
                   .&&. (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
 
       blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))
@@ -258,7 +259,9 @@ isRecipientVisible loggedUserId userId =
       map DM.isJust <<< SD.single $
             select (1 # as c)
                   # from (leftJoin (users # as u) (histories # as h) # on (_sender .=. loggedUserId .&&. _recipient .=. userId .||. _sender .=. userId .&&. _recipient .=. loggedUserId))
-                  # wher (u ... _id .=. userId .&&. not (exists $ select (1 # as c) # from blocks # wher (_blocked .=. loggedUserId .&&. _blocker .=. userId)) .&&. (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date)))
+                  # wher (u ... _id .=. userId .&&.
+                         not (exists $ select (1 # as c) # from blocks # wher (_blocked .=. loggedUserId .&&. _blocker .=. userId)) .&&.
+                         (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date)))
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ \connection → do
@@ -269,8 +272,8 @@ insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ P
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
       | senderKarma <= 0 && recipientKarma <= 0 = pure unit
       | otherwise = SD.withTransaction $ \connection → do
-            when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
-            when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
+              when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
+              when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
 
 changeStatus ∷ ∀ r. Int → MessageStatus → Array Int → BaseEffect { pool ∷ Pool | r } Unit
 changeStatus loggedUserId status = case _ of

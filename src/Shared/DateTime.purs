@@ -29,6 +29,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Time.Duration (Days(..))
 import Data.Time.Duration as DTD
+import Debug (spy)
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language (fromValue) as DL
 import Effect (Effect)
@@ -59,7 +60,15 @@ ageFrom = ageFrom' now
 ageFrom' ∷ Date → Maybe Date → Maybe Int
 ageFrom' now birthday = calculate <$> birthday
       where
-      calculate b = DE.fromEnum (DD.year now) - DE.fromEnum (DD.year b) - if dayDiff (DateTime now zeroTime) < dayDiff (DateTime b zeroTime) then 1 else 0
+      calculate b =
+            let
+                  currentYear = DD.year now
+                  birthdayYear = DD.year b
+                  birthdayMonth = DD.month b
+                  birthdayDay = DD.day b
+                  birthdayThisYear = DateTime (DD.canonicalDate currentYear birthdayMonth birthdayDay) zeroTime
+            in
+                  DE.fromEnum currentYear - DE.fromEnum birthdayYear - if daysInYear (DateTime now zeroTime) < daysInYear birthdayThisYear then 1 else 0
 
 --minimum age to sign up is 18
 latestEligibleBirthday ∷ Effect Date
@@ -89,7 +98,7 @@ readDate foreignDateTime = do
             Nothing → F.fail $ ForeignError "could not parse datetime"
             Just instant → pure $ DDI.toDateTime instant
 
-dateToNumber ∷  DateWrapper → Number
+dateToNumber ∷ DateWrapper → Number
 dateToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDate <<< DN.unwrap
 
 dateTimeToNumber ∷ DateTimeWrapper → Number
@@ -113,6 +122,7 @@ unformatIsoDate value = do
       pure $ DD.canonicalDate year month day
       where
       split = DS.split (Pattern "-") value
+
       parseUnit ∷ ∀ v. BoundedEnum v ⇒ Int → Maybe v
       parseUnit n = do
             raw ← split !! n
@@ -141,7 +151,7 @@ ago dateTime =
       else
             localDateTimeWith fullDate dateTime
       where
-      days = dayDiff dateTime
+      days = daysDiff dateTime
 
 agoWithTime ∷ DateTime → String
 agoWithTime dateTime =
@@ -150,17 +160,21 @@ agoWithTime dateTime =
       else
             ago dateTime <> " " <> timeString
       where
-      days = dayDiff dateTime
+      days = daysDiff dateTime
       timeString = localDateTimeWith time dateTime
 
-dayDiff ∷ DateTime → Int
-dayDiff dateTime = days now - days dateTime
+daysDiff ∷ DateTime → Int
+daysDiff dateTime = DI.floor $ DN.unwrap (DDT.diff dateTime now ∷ Days)
+      where
+      now = unsafeNow
+
+daysInYear ∷ DateTime → Int
+daysInYear dateTime = DI.floor $ DN.unwrap (DDT.diff dateTime firstDay ∷ Days)
       where
       firstDay = DateTime (DD.canonicalDate (DD.year $ DDT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
       now = unsafeNow
-      days dt = DI.floor $ DN.unwrap (DDT.diff dt firstDay ∷ Days)
 
-localDateTimeWith ∷ (Number -> String) → DateTime → String
+localDateTimeWith ∷ (Number → String) → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
 
 instance DecodeJson DateWrapper where
