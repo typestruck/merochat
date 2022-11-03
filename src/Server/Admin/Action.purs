@@ -21,11 +21,7 @@ ban loggedUserId query = do
       if query.secret == adminSecret then do
             cookie ← ST.createToken loggedUserId
             liftEffect do
-                  connection ← SW.createWebSocket (protocol <> "localhost:" <> show port) cookie
+                  connection ← SW.createWebSocket ("ws://localhost:" <> show port) cookie
                   SW.onOpen connection $ \_ → SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson $ Ban query
       else
             SR.throwBadRequest "nope"
-      where
-      protocol
-            | production = "wss://"
-            | otherwise = "ws://"
