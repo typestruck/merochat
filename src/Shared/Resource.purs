@@ -66,6 +66,17 @@ data Media
       | LogoSmall
       | Logo
       | Favicon
+      | Favicon1
+      | Favicon2
+      | Favicon3
+      | Favicon4
+      | Favicon5
+      | Favicon6
+      | Favicon7
+      | Favicon8
+      | Favicon9
+      | Favicon10
+      | Favicon10Plus
       | Loading
       | Point1
       | Point2
@@ -142,6 +153,17 @@ resourceName = case _ of
       Left LogoSmall → "logo-small"
       Left Logo → "logo"
       Left Favicon → "favicon"
+      Left Favicon1 → "favicon-1"
+      Left Favicon2 → "favicon-2"
+      Left Favicon3 → "favicon-3"
+      Left Favicon4 → "favicon-4"
+      Left Favicon5 → "favicon-5"
+      Left Favicon6 → "favicon-6"
+      Left Favicon7 → "favicon-7"
+      Left Favicon8 → "favicon-8"
+      Left Favicon9 → "favicon-9"
+      Left Favicon10 → "favicon-10"
+      Left Favicon10Plus → "favicon-10-plus"
       Left Loading → "loading"
       Left Point1 → "point1"
       Left Point2 → "point2"
