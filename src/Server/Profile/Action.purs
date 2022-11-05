@@ -21,7 +21,8 @@ import Server.Types (ServerEffect)
 import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
 import Shared.Privilege (Privilege(..))
-import Shared.Profile.Types (ProfileUser, What(..))
+import Shared.Profile.Types (What(..))
+import Server.Sanitize as SS
 import Shared.Resource (uploadedImagePath)
 import Shared.User (Gender)
 
@@ -47,7 +48,7 @@ saveGeneratedField loggedUserId field value = do
       finalValue ← case field of
             Name → DS.take nameMaxCharacters <$> DM.maybe ST.generateName pure value
             Headline → DS.take headlineMaxCharacters <$> DM.maybe ST.generateHeadline pure value
-            Description → DS.take descriptionMaxCharacters <$> DM.maybe ST.generateDescription pure value
+            Description → SS.sanitize <<< DS.take descriptionMaxCharacters <$> DM.maybe ST.generateDescription pure value
       SPD.saveField loggedUserId (show field) finalValue
       pure finalValue
 

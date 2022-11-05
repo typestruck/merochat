@@ -17,6 +17,7 @@ import Server.File as SF
 import Server.Im.Database as SID
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
+import Server.Sanitize as SS
 import Server.Im.Types (Payload)
 import Server.Types (BaseEffect, Configuration, ServerEffect)
 import Server.Wheel as SW
@@ -24,8 +25,6 @@ import Shared.Im.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
-
-foreign import sanitize ∷ String → String
 
 im ∷ Int → ServerEffect Payload
 im loggedUserId = do
@@ -89,7 +88,7 @@ processMessageContent content = do
             Image caption base64 → do
                   name ← SF.saveBase64File base64
                   pure $ "![" <> caption <> "](" <> SP.mediaPath (Upload name) Included <> ")"
-      pure <<< DS.trim $ sanitize message
+      pure <<< DS.trim $ SS.sanitize message
 
 processKarma ∷ ∀ r. Int → Int → Turn → BaseEffect { pool ∷ Pool | r } Unit
 processKarma loggedUserId userId turn = SID.insertKarma loggedUserId userId $ SW.karmaFrom turn
