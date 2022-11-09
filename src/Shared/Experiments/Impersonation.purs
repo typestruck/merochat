@@ -9,6 +9,7 @@ import Data.Array as DA
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
+import Shared.Availability
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Flame (Html)

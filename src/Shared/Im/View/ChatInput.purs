@@ -14,6 +14,7 @@ import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Shared.Availability
 import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA

@@ -10,6 +10,7 @@ import Shared.User
 import Client.Common.Dom (setChatExperiment)
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
+import Shared.Availability
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN

@@ -1,4 +1,4 @@
-var localDateFormat = new Intl.DateTimeFormat([], { dateStyle: 'short', hourCycle: "h23" }),
+let localDateFormat = new Intl.DateTimeFormat([], { dateStyle: 'short', hourCycle: "h23" }),
     localWeekDayFormat = new Intl.DateTimeFormat([], { weekday: 'short', hourCycle: "h23" }),
     localTimeFormat = new Intl.DateTimeFormat([], { timeStyle: 'short', hourCycle: "h23" });
 
@@ -11,7 +11,5 @@ export function dayOfTheWeek(ms) {
 }
 
 export function fullDate(ms) {
-    var dateTime = new Date(ms);
-
-    return localDateFormat.format(dateTime);
+    return localDateFormat.format(new Date(ms));
 }

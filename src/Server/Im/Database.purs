@@ -50,6 +50,7 @@ userPresentationFields =
             /\ _temporary
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
+            /\ (select (_date # as _lastSeen) # from last_seen # wher (_who .=. u ... _id) # orderBy _who # limit (Proxy :: _ 1))
             /\ (_messageTimestamps # as messageTimestamps)
             /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ _joined
@@ -122,6 +123,7 @@ presentUserContactFields =
       , completed_tutorial "completedTutorial"
       , date_part_age ('year', birthday) age
       , name
+      , ls.date as "lastSeen"
       , visibility "profileVisibility"
       , read_receipts "readReceipts"
       , typing_status "typingStatus"
@@ -171,6 +173,7 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
+      LEFT JOIN last_seen ls ON u.id = ls.who
       WHERE visibility <= @contacts
             AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
             AND (h.sender = @loggedUserId AND (h.sender_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.sender_deleted_to AND (sender = @loggedUserId AND recipient = h.recipient OR sender = h.recipient AND recipient = @loggedUserId))) OR h.recipient = @loggedUserId AND (h.recipient_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.recipient_deleted_to AND (recipient = @loggedUserId AND sender = h.sender OR recipient = h.sender AND recipient = @loggedUserId))))
@@ -201,6 +204,7 @@ presentContactOnly loggedUserId userId = SD.unsafeQuery query
             """FROM users u
             JOIN karma_leaderboard k ON u.id = k.ranker
             JOIN (select @userId::integer sender, @loggedUserId::integer recipient, null sender_deleted_to, null recipient_deleted_to, utc_now() last_message_date, utc_now() first_message_date) h ON true
+            LEFT JOIN last_seen ls ON u.id = ls.who
       WHERE visibility <= @contacts
             AND u.id = @userId
             AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
@@ -221,6 +225,7 @@ presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
       JOIN messages s ON s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender
+      LEFT JOIN last_seen ls ON u.id = ls.who
 WHERE visibility <= @contacts
       AND u.id = @userId
       AND NOT (h.sender = @loggedUserId AND h.sender_deleted_to IS NOT NULL AND s.id <= h.sender_deleted_to OR
@@ -244,6 +249,7 @@ presentMissedContacts loggedUserId lastId = SD.unsafeQuery query
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
       JOIN messages s ON s.sender = h.sender OR s.sender = h.recipient
+      LEFT JOIN last_seen ls ON u.id = ls.who
 WHERE visibility <= @contacts
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
       AND s.status < @status
@@ -316,6 +322,9 @@ _chatStarter = Proxy
 
 _chatAge ∷ Proxy "chatAge"
 _chatAge = Proxy
+
+_lastSeen ∷ Proxy "lastSeen"
+_lastSeen = Proxy
 
 h ∷ Proxy "h"
 h = Proxy

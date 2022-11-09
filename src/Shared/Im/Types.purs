@@ -13,6 +13,7 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Hashable (class Hashable)
+import Shared.Availability
 import Data.Hashable as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
@@ -36,7 +37,7 @@ import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
-import Shared.User (Availability, IU)
+import Shared.User ( IU)
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)

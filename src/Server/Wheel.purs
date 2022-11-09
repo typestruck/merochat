@@ -37,5 +37,5 @@ karmaFrom { senderStats, recipientStats, chatAge } =
                   constant' * interestBonus + constant' * fastReplyBonus
 
       constant = 50.0
-      days = 7.0
+      days = 5.0
       charactersMinute = 200.0

@@ -17,6 +17,7 @@ import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Flame (Html)
+import Shared.Availability
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC

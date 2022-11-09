@@ -10,7 +10,8 @@ import Shared.Avatar as SA
 import Shared.DateTime (DateWrapper(..))
 import Shared.Privilege (Privilege)
 import Shared.Profile.Types (ProfileUser)
-import Shared.User (Availability(..), Gender)
+import Shared.User ( Gender)
+import Shared.Availability
 
 type FlatProfileUser =
       { avatar ∷ Maybe String

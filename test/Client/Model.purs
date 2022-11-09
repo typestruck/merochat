@@ -8,6 +8,7 @@ import Shared.User
 import Data.HashMap (HashMap)
 import Data.HashMap as HS
 import Data.HashSet as DHS
+import Shared.Availability
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Now as EN

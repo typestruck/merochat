@@ -17,6 +17,7 @@ import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Availability
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
@@ -26,7 +27,7 @@ import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
-import Shared.User (Availability(..), ProfileVisibility(..))
+import Shared.User (ProfileVisibility(..))
 
 -- | Users that have exchanged messages with the current logged in user
 contactList ∷ Boolean → ImModel → Html ImMessage

@@ -14,6 +14,7 @@ import Shared.Avatar as SA
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
 import Shared.Privilege (Privilege)
+import Shared.Availability
 import Shared.Unsafe as SU
 
 type FlatFields rest =
@@ -34,10 +35,11 @@ type FlatFields rest =
       , messageTimestamps ∷ Checked
       , typingStatus ∷ Checked
       , temporary ∷ Checked
-      , privileges :: Maybe (Array Privilege)
+      , privileges ∷ Maybe (Array Privilege)
       , onlineStatus ∷ Checked
       , name ∷ String
       , tags ∷ Maybe (Array String)
+      , lastSeen ∷ Maybe DateTime
       | rest
       }
 
@@ -76,7 +78,6 @@ fromFlatUser fc =
       , messageTimestamps: SC.coerce fc.messageTimestamps
       , typingStatus: SC.coerce fc.typingStatus
       , onlineStatus: SC.coerce fc.onlineStatus
-      , availability: None
       , completedTutorial: SC.coerce fc.completedTutorial
       , description: fc.description
       , privileges: DM.fromMaybe [] fc.privileges
@@ -85,6 +86,7 @@ fromFlatUser fc =
       , avatar: SA.parseAvatar fc.avatar
       , tags: DM.fromMaybe [] fc.tags
       , karma: fc.karma
+      , availability: DM.maybe None (LastSeen <<< DateTimeWrapper) fc.lastSeen
       , karmaPosition: fc.karmaPosition
       , gender: show <$> fc.gender
       , country: fc.country

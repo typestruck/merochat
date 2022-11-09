@@ -12,6 +12,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Flame (Html)
 import Flame.Html.Attribute as HA
+import Shared.Availability
 import Flame.Html.Element as HE
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))

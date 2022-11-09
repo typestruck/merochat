@@ -19,6 +19,7 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
+import Shared.Availability
 import Data.Newtype as DN
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
@@ -54,7 +55,6 @@ import Shared.DateTime as SDT
 import Shared.Experiments.Types as SET
 import Shared.Json as SJ
 import Shared.Options.WebSocket (loggedElsewhere)
-import Shared.Privilege (Privilege(..))
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU

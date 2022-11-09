@@ -31,7 +31,7 @@ import Shared.DateTime as SDT
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
-import Unsafe.Coerce as UC
+import Shared.Availability
 
 type BasicUser fields =
       ( id ∷ Int
@@ -64,12 +64,6 @@ type IU =
               )
       )
 
-data Availability
-      = Online
-      | LastSeen DateTimeWrapper
-      | Unavailable -- blocked/deleted/private profile
-      | None -- no data or private online status
-
 data Gender
       = Female
       | Male
@@ -85,10 +79,6 @@ data ProfileVisibility
 
 derive instance Eq ProfileVisibility
 derive instance Eq Gender
-derive instance Eq Availability
-
-instance DecodeJson Availability where
-      decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
@@ -102,9 +92,6 @@ instance EncodeJson Gender where
 instance EncodeJson ProfileVisibility where
       encodeJson = DAEGR.genericEncodeJson
 
-instance EncodeJson Availability where
-      encodeJson = DAEGR.genericEncodeJson
-
 instance Show Gender where
       show = case _ of
             Female → "Female"
@@ -115,24 +102,13 @@ instance Show Gender where
 instance Show ProfileVisibility where
       show = DSG.genericShow
 
-instance Show Availability where
-      show = case _ of
-            Online → "Online"
-            LastSeen (DateTimeWrapper dt) → "Last seen " <> SDT.ago dt
-            Unavailable → "Unavailable"
-            None → ""
-
 instance ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
 
 instance ReadForeign ProfileVisibility where
       readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
 
-instance ReadForeign Availability where
-      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
-
 derive instance Generic Gender _
-derive instance Generic Availability _
 derive instance Generic ProfileVisibility _
 
 instance WriteForeign Gender where
@@ -141,14 +117,10 @@ instance WriteForeign Gender where
 instance WriteForeign ProfileVisibility where
       writeImpl = F.unsafeToForeign <<< DE.fromEnum
 
-instance WriteForeign Availability where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum
-
 instance ToValue Gender where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
 derive instance Ord Gender
-derive instance Ord Availability
 derive instance Ord ProfileVisibility
 
 --refactor: should just use Enum (have to fix read/writeforeign instances for gender)
@@ -230,39 +202,6 @@ instance Enum ProfileVisibility where
             Contacts → Just NoTemporaryUsers
             Nobody → Just Contacts
             TemporarilyBanned → Just Nobody
-
-instance Bounded Availability where
-      bottom = Online
-      top = None
-
-instance BoundedEnum Availability where
-      cardinality = Cardinality 1
-
-      fromEnum = case _ of
-            Online → 0
-            LastSeen _ → 1
-            Unavailable → 2
-            None → 3
-
-      toEnum = case _ of
-            0 → Just Online
-            1 → Just (LastSeen $ UC.unsafeCoerce 3)
-            2 → Just Unavailable
-            3 → Just None
-            _ → Nothing
-
-instance Enum Availability where
-      succ = case _ of
-            Online → Just (LastSeen $ UC.unsafeCoerce 3)
-            LastSeen _ → Just Unavailable
-            Unavailable → Just None
-            None → Nothing
-
-      pred = case _ of
-            Online → Nothing
-            LastSeen _ → Just Online
-            Unavailable → Just (LastSeen $ UC.unsafeCoerce 3)
-            None → Just Unavailable
 
 instance FromValue Gender where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)

@@ -1854,9 +1854,7 @@ select {
 }
 
 .online-status {
-    min-height: 27px;
     margin-bottom: 7px;
-
 }
 
 .profile-karma {

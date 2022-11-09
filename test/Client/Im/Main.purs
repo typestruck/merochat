@@ -11,6 +11,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
+import Shared.Availability
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Impersonation (batman)
