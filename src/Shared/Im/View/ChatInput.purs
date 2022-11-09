@@ -265,7 +265,7 @@ sendButtonElements title =
       ]
 
 previewButton ∷ Html ImMessage
-previewButton = HE.svg [ HA.class' "svg-20", HA.onClick $ ToggleChatModal ShowPreview, HA.viewBox "0 0 16 16" ]
+previewButton = HE.svg [ HA.class' "svg-20 hidden", HA.onClick $ ToggleChatModal ShowPreview, HA.viewBox "0 0 16 16" ]
       [ HE.title "Preview"
       , HE.path' [ HA.class' "strokeless", HA.d "M1,11.05V3.12a0,0,0,0,1,0,0H12.43V6l1,.63v-2L16,2.07H.5A.51.51,0,0,0,0,2.6v8.85c0,.29.22.62.5.62H6.58l-.71-1Z" ]
       , HE.rect' [ HA.class' "strokeless", HA.x "2.42", HA.y "7.02", HA.width "3.99", HA.height "1.02" ]
