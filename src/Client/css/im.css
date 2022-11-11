@@ -1034,7 +1034,7 @@ svg.toolbar-action {
 }
 
 .message-content p a {
-    word-wrap: break-word;
+    word-break: break-word
 }
 
 .message p img {
