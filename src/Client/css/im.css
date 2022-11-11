@@ -1033,6 +1033,10 @@ svg.toolbar-action {
     margin: 5px 0px;
 }
 
+.message-content p a {
+    word-wrap: break-word;
+}
+
 .message p img {
     width: max-content;
     margin: 10px 0;
