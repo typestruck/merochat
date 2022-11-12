@@ -89,7 +89,7 @@ contactList
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
                                 [ HE.span (HA.class' "contact-name") contact.name
-                                , HE.div' [ HA.class' { "contact-list-last-message": true, hidden: typing }, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
+                                , HE.div' [ HA.class' { "contact-list-last-message": true, hidden: typing && typingStatus && user.typingStatus}, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
                                 , HE.div [ HA.class' { "contact-list-last-message typing": true, hidden: not typing || not typingStatus || not user.typingStatus } ] $ HE.p_ "Typing..."
                                 ]
                         , HE.div (HA.class' "contact-options")
