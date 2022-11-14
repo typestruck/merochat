@@ -1,24 +1,23 @@
 module Server.Token where
 
 import Prelude
-import Server.Types
 
-import Data.Array.NonEmpty as DAN
+import Data.Array ((!!))
 import Data.Either as DE
-
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
-import Data.String.Regex as DSR
-import Data.String.Regex.Flags (noFlags)
-import Data.String.Regex.Unsafe as DSSU
+import Data.String (Pattern(..))
+import Data.String as DS
 import Effect (Effect)
-import Node.Crypto.Hash as NCHA
+import Effect.Class (liftEffect)
+import Effect.Now as EN
+import Node.Buffer as NB
 import Node.Crypto.Hmac as NCH
+import Node.Encoding (Encoding(..))
 import Node.Simple.Jwt as NSJ
 import Run as R
-import Data.Int as DI
-import Node.Buffer as NB
 import Run.Reader as RR
-import Node.Encoding (Encoding(..))
+import Server.Types (ServerEffect)
 
 hashPassword ∷ String → ServerEffect String
 hashPassword password = do
@@ -31,7 +30,10 @@ hashPassword password = do
 createToken ∷ Int → ServerEffect String
 createToken id = do
       { configuration: { tokenSecret } } ← RR.ask
-      NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show id)
+      instant ← liftEffect EN.now
+      NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show instant <> "-" <> show id)
 
 userIdFromToken ∷ String → String → Effect (Maybe Int)
-userIdFromToken secret = map (DE.either (const Nothing) DI.fromString) <<< NSJ.decode secret <<< NSJ.fromString
+userIdFromToken secret = map (DE.either (const Nothing) toId) <<< NSJ.decode secret <<< NSJ.fromString
+      where
+      toId raw = (DS.split (Pattern "-") raw !! 1) >>= DI.fromString

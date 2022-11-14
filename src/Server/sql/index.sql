@@ -124,7 +124,7 @@ create table karma_histories
 
 -- select cron.schedule('0 * * * *', $$select crunch_karma_history(1)$$);
 -- select cron.schedule('10 0 * * *', $$select crunch_karma_history(24)$$);
--- select cron.schedule('30 0 * * 1', $$select crunch_karma_history(24 * 7)$$);
+-- select cron.schedule('20 0 * * 1', $$select crunch_karma_history(24 * 7)$$);
 -- select cron.schedule('30 4 1 * 4', $$select crunch_karma_history(24 * 7 * 4)$$);
 -- select cron.schedule('45 9 1 8 3', $$select crunch_karma_history(24 * 7 * 4 * 12)$$);
 create or replace function crunch_karma_history(hours_time integer)

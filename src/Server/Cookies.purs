@@ -26,6 +26,7 @@ makeExpiredCookieHeader = Tuple cookieHeader $ BC.encode expiredCookie
       expire cookie = cookie
             { opts = map update' cookie.opts
             }
+
       update' ∷ CookieOpts → CookieOpts
       update' = DN.over CookieOpts update
       update cookie = cookie
@@ -51,14 +52,14 @@ makeCookie value =
             , opts: Just $ CookieOpts
                     { maxAge: Just 3471300000.0
                     , expires: Just $ DJ.jsdate
-                    { day: 1.0
-                    , hour: 1.0
-                    , millisecond: 1.0
-                    , minute: 1.0
-                    , month: 1.0
-                    , second: 1.0
-                    , year: 2300.0
-                    }
+                            { day: 1.0
+                            , hour: 1.0
+                            , millisecond: 1.0
+                            , minute: 1.0
+                            , month: 1.0
+                            , second: 1.0
+                            , year: 2300.0
+                            }
                     , httpOnly: true
                     , samesite: if production then Just Strict else Nothing
                     , domain: if production then Just domain else Nothing
