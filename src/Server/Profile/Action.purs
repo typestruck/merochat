@@ -17,7 +17,7 @@ import Server.Profile.Database.Flat as SPDF
 import Server.Profile.Types (Payload)
 import Server.Response as SR
 import Server.ThreeK as ST
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
 import Shared.Privilege (Privilege(..))

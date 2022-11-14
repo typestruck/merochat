@@ -1,7 +1,7 @@
 module Server.Login.Action where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Maybe (Maybe(..))
 import Data.String as DS

@@ -1,7 +1,7 @@
 module Server.Settings.Action where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Droplet.Driver (Pool)
 import Server.AccountValidation as SA

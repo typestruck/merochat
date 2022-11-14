@@ -1,7 +1,7 @@
 module Server.Guard where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Either (Either(..))
 import Data.Map as DM
@@ -17,19 +17,23 @@ import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Guards as PSG
 import Payload.Server.Response as PSR
 import Server.Cookies (cookieName)
+import Server.Effect as SE
 import Server.Token as ST
 import Shared.Routes (routes)
+import Run as R
+import Run.Except as RE
+import Run.Reader as RR
 
-guards ∷ Configuration → _
-guards configuration =
-      { loggedUserId: checkLoggedUser configuration
-      , checkAnonymous: checkAnonymous configuration
+guards ∷ ServerReader → _
+guards reading =
+      { loggedUserId: checkLoggedUser reading
+      , checkAnonymous: checkAnonymous reading
       }
 
-checkLoggedUser ∷ Configuration → Request → Aff (Either (Response Empty) Int)
-checkLoggedUser { tokenSecret } request = do
+checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
+checkLoggedUser { configuration : {tokenSecret}, pool } request = do
       cookies ← PSG.cookies request
-      maybeUserId ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
             Just userId → pure $ Right userId
             _ →
@@ -41,10 +45,10 @@ checkLoggedUser { tokenSecret } request = do
       isPost = NH.requestMethod request == "POST"
       redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
 
-checkAnonymous ∷ Configuration → Request → Aff (Either (Response Empty) Unit)
-checkAnonymous { tokenSecret } request = do
+checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
+checkAnonymous { configuration : {tokenSecret}, pool } request = do
       cookies ← PSG.cookies request
-      maybeUserId ← liftEffect $ ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
             Just _ →
                   if isPost then

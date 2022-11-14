@@ -10,7 +10,7 @@ import Server.Cookies as SC
 import Server.Landing.Action as SLA
 import Server.Landing.Template as SLT
 import Server.Response as SR
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Account (RegisterLogin, RegisterTemporary)
 import Shared.Html (Html)
 

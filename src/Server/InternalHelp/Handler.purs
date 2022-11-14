@@ -1,6 +1,6 @@
 module Server.InternalHelp.Handler where
 
-import Server.Types
+import Server.Effect
 import Server.InternalHelp.Template as SIHT
 import Run as R
 

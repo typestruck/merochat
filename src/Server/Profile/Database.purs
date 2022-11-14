@@ -17,7 +17,7 @@ import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, users)
 import Server.Profile.Database.Flat (FlatProfileUser)
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Unsafe as SU
 import Simple.JSON as SJ
 import Type.Proxy (Proxy(..))

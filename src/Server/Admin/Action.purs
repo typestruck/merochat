@@ -8,7 +8,7 @@ import Environment (production)
 import Run.Reader as RR
 import Server.Response as SR
 import Server.Token as ST
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Server.WebSocket (WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.Im.Types (WebSocketPayloadServer(..))

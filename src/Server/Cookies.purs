@@ -8,7 +8,7 @@ import Data.JSDate as DJ
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Options.Domain (domain)
 import Environment (production)
 

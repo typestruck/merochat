@@ -4,7 +4,7 @@ import Prelude
 
 import Server.Banned.Template as SBT
 import Server.Response as SR
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Html (Html(..))
 
 banned ∷ ∀ r. { | r } → ServerEffect Html

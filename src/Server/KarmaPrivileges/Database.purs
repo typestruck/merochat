@@ -7,7 +7,7 @@ import Server.Database.Histories
 import Server.Database.KarmaLeaderboard
 import Server.Database.Messages
 import Server.Database.Users
-import Server.Types
+import Server.Effect
 import Shared.KarmaPrivileges.Types
 
 import Data.BigInt as DBI

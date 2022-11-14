@@ -1,7 +1,7 @@
 module Server.AccountValidation where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Maybe as DM
 import Data.String (Pattern(..))

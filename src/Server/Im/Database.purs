@@ -31,7 +31,7 @@ import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
-import Server.Types (BaseEffect, ServerEffect)
+import Server.Effect (BaseEffect, ServerEffect)
 import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU

@@ -5,7 +5,7 @@ import Prelude
 import Server.Database.Fields
 import Server.Database.Recoveries
 import Server.Database.Users
-import Server.Types
+import Server.Effect
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))

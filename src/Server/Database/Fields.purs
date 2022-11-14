@@ -23,6 +23,9 @@ _recipient = Proxy
 _age ∷ Proxy "age"
 _age = Proxy
 
+_contents ∷ Proxy "contents"
+_contents = Proxy
+
 c ∷ Proxy "c"
 c = Proxy
 

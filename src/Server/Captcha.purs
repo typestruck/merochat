@@ -1,7 +1,7 @@
 module Server.Captcha where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Affjax.Node as A
 import Affjax.RequestBody as RB

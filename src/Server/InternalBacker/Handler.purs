@@ -1,6 +1,6 @@
 module Server.InternalBacker.Handler where
 
-import Server.Types
+import Server.Effect
 import Server.InternalBacker.Template as SIBT
 import Run as R
 

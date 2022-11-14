@@ -1,7 +1,7 @@
 module Server.Backer.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Server.Backer.Template as SBT
 import Server.Response as SR

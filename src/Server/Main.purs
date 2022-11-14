@@ -16,7 +16,7 @@ import Server.Database as SD
 import Server.File as SF
 import Server.Guard (guards)
 import Server.Handler as SH
-import Server.Types (Configuration)
+import Server.Effect (Configuration)
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events (aliveDelay)
@@ -46,7 +46,7 @@ startHttpServer configuration@{ port } = do
       pool ← SD.newPool configuration
       EA.launchAff_ $ void do
             PS.startGuarded (defaultOpts { port = port }) spec
-                  { guards: guards configuration
+                  { guards: guards { configuration, pool }
                   , handlers: SH.handlers { configuration, pool }
                   }
       EC.log $ "HTTP now up on http://localhost:" <> show port

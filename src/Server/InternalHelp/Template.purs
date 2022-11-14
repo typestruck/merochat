@@ -1,6 +1,6 @@
 module Server.InternalHelp.Template where
 
-import Server.Types
+import Server.Effect
 
 import Effect (Effect)
 import Flame (QuerySelector(..))

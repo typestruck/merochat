@@ -1,7 +1,7 @@
 module Server.KarmaPrivileges.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Run as R
 import Server.KarmaPrivileges.Action as SLA

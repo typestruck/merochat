@@ -1,7 +1,7 @@
 module Test.Server where
 
 import Prelude
-import Server.Types
+import Server.Effect
 import Shared.Im.Types
 
 import Data.Maybe (Maybe(..))

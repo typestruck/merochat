@@ -1,7 +1,7 @@
 module Server.Login.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Either as DE
 import Data.Maybe (Maybe)

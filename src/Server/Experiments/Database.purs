@@ -10,7 +10,7 @@ import Shared.Experiments.Types
 
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 

@@ -19,7 +19,7 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Aff as NFA
 import Run as R
 import Server.Response as SR
-import Server.Types (BaseEffect, Configuration)
+import Server.Effect (BaseEffect, Configuration)
 import Shared.Options.File (allowedMediaTypes, maxImageSize, maxImageSizeKB)
 import Shared.Unsafe as SU
 

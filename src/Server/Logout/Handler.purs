@@ -1,12 +1,15 @@
 module Server.Logout.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Payload.ResponseTypes (Response)
 import Server.Logout as SL
-import Server.Ok
 import Shared.Routes (routes)
+import Server.Logout.Action as SLA
+import Server.Ok
 
-logout ∷ ∀ r. { | r } → ServerEffect (Response Ok)
-logout _ = pure $ SL.logout (routes.login.get {}) ok
+logout ∷ ∀ r. {  guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Response Ok)
+logout {guards: { loggedUserId }} = do
+      SLA.logout loggedUserId
+      pure $ SL.logout (routes.login.get {}) ok

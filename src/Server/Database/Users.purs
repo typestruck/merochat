@@ -3,7 +3,7 @@ module Server.Database.Users where
 import Droplet.Language
 import Prelude
 import Server.Database.Fields
-import Server.Types
+import Server.Effect
 
 import Data.Date (Date)
 import Data.DateTime (DateTime)

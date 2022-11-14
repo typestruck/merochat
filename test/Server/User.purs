@@ -4,7 +4,7 @@ import Droplet.Language
 import Prelude
 import Server.Database.Fields
 import Server.Database.Users
-import Server.Types
+import Server.Effect
 
 import Data.BigInt as DB
 import Data.Maybe (Maybe(..))

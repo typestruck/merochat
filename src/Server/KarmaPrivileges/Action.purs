@@ -3,7 +3,7 @@ module Server.KarmaPrivileges.Action where
 import Prelude
 
 import Server.KarmaPrivileges.Database as SLD
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 
 leaderboard ∷ Int → ServerEffect _
 leaderboard loggedUserId = do

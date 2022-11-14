@@ -1,7 +1,7 @@
 module Server.Feedback.Template where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)

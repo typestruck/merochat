@@ -1,7 +1,7 @@
 module Server.Feedback.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Maybe (Maybe)
 import Effect.Class (liftEffect)

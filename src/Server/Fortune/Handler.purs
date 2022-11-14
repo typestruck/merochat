@@ -1,7 +1,7 @@
 module Server.Fortune.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Server.Fortune.Action as SFA
 

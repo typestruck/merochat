@@ -8,7 +8,7 @@ import Data.Maybe (Maybe)
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.Fields (_id)
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Unsafe as SU
 
 insertFeedback ∷ Int → String → Maybe String → ServerEffect Int

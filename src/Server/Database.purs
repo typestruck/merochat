@@ -22,7 +22,7 @@ import Run as R
 import Run.Except (EXCEPT)
 import Run.Except as RE
 import Run.Reader as RR
-import Server.Types (BaseEffect, Configuration)
+import Server.Effect (BaseEffect, Configuration)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.ResponseError as ST
 import Type.Row (type (+))

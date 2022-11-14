@@ -244,6 +244,13 @@ create table last_seen (
     date timestamptz not null
 );
 
+create table tokens (
+    id integer generated always as identity primary key,
+    toker integer not null unique,
+    contents text not null,
+    constraint tokens_user_user foreign key (toker) references users(id) on delete cascade
+);
+
 -- create table badges
 -- (
 --     id integer generated always as identity primary key,

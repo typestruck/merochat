@@ -1,7 +1,7 @@
 module Server.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Either (Either(..))
 import Data.List (List(..))

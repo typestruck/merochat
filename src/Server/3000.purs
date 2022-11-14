@@ -15,9 +15,10 @@ import Data.String as DS
 import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Run as R
+import Server.Database.Fields
 import Server.Database as SD
 import Server.ThreeK.Name as STN
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 

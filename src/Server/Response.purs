@@ -6,7 +6,7 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Run as R
 import Run.Except as RE
-import Server.Types (BaseEffect, ServerEffect)
+import Server.Effect (BaseEffect, ServerEffect)
 import Shared.Html (Html(..))
 import Shared.ResponseError (ResponseError(..))
 

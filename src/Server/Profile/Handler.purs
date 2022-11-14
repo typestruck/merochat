@@ -1,7 +1,7 @@
 module Server.Profile.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 import Shared.Profile.Types
 
 import Data.Maybe (Maybe)

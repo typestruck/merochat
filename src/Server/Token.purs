@@ -12,12 +12,16 @@ import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Node.Buffer as NB
+import Server.Database.Tokens as SDT
 import Node.Crypto.Hmac as NCH
 import Node.Encoding (Encoding(..))
 import Node.Simple.Jwt as NSJ
 import Run as R
 import Run.Reader as RR
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
+import Server.Effect
+import Debug
+import Droplet.Driver (Pool)
 
 hashPassword ∷ String → ServerEffect String
 hashPassword password = do
@@ -31,9 +35,20 @@ createToken ∷ Int → ServerEffect String
 createToken id = do
       { configuration: { tokenSecret } } ← RR.ask
       instant ← liftEffect EN.now
-      NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show instant <> "-" <> show id)
+      token ← NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show instant <> "-" <> show id)
+      SDT.insertToken id token
+      pure token
 
-userIdFromToken ∷ String → String → Effect (Maybe Int)
-userIdFromToken secret = map (DE.either (const Nothing) toId) <<< NSJ.decode secret <<< NSJ.fromString
+userIdFromToken ∷ ∀ r. String → String → BaseEffect { pool ∷ Pool | r } (Maybe Int)
+userIdFromToken secret token = do
+      decoded ← map (DE.either (const Nothing) toId) <<< liftEffect <<< NSJ.decode secret $ NSJ.fromString token
+      case decoded of
+            Nothing → pure Nothing
+            Just id → do
+                  doesIt ← SDT.tokenExists id token
+                  if doesIt then
+                        pure $ Just id
+                  else
+                        pure Nothing
       where
       toId raw = (DS.split (Pattern "-") raw !! 1) >>= DI.fromString

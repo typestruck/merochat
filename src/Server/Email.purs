@@ -7,7 +7,7 @@ import Effect.Uncurried as EU
 import Environment (production)
 import Run as R
 import Run.Reader as RR
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 
 foreign import sendEmail_ ∷ EffectFn4 { host ∷ String, user ∷ String, password ∷ String } String String String Unit
 

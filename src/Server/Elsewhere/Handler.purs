@@ -4,7 +4,7 @@ import Prelude
 
 import Server.Elsewhere.Template as SET
 import Server.Response as SR
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 import Shared.Html (Html(..))
 
 elsewhere ∷ ∀ r. { | r } → ServerEffect Html

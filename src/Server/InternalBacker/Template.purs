@@ -1,6 +1,6 @@
 module Server.InternalBacker.Template where
 
-import Server.Types
+import Server.Effect
 
 import Effect (Effect)
 import Flame.Renderer.String as FRS

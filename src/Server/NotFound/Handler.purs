@@ -1,6 +1,6 @@
 module Server.NotFound.Handler where
 
-import Server.Types
+import Server.Effect
 
 import Server.NotFound.Template as SNT
 import Server.Response as SR

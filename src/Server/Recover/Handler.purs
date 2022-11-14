@@ -1,7 +1,7 @@
 module Server.Recover.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Data.Maybe (Maybe)
 import Server.Ok (Ok, ok)

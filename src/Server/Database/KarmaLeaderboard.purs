@@ -9,7 +9,7 @@ import Data.Tuple.Nested (type (/\))
 import Droplet.Driver (Configuration, Pool)
 import Server.Database as SD
 import Server.Database.Users (UsersTable)
-import Server.Types (ServerEffect, BaseEffect)
+import Server.Effect (ServerEffect, BaseEffect)
 import Type.Proxy (Proxy(..))
 
 type KarmaLeaderboard =

@@ -9,7 +9,7 @@ import Data.Tuple.Nested (type (/\))
 import Droplet.Driver (Pool)
 import Server.Database as SD
 import Server.Database.Fields (c)
-import Server.Types (ServerEffect, BaseEffect)
+import Server.Effect (ServerEffect, BaseEffect)
 import Shared.Privilege (Privilege)
 import Type.Proxy (Proxy(..))
 

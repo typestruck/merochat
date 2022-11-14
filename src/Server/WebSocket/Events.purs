@@ -1,7 +1,7 @@
 module Server.WebSocket.Events where
 
 import Prelude
-import Server.Types
+import Server.Effect
 import Shared.Im.Types
 import Shared.User
 
@@ -55,6 +55,7 @@ import Shared.DateTime as SDT
 import Shared.Experiments.Types as SET
 import Shared.Json as SJ
 import Shared.Options.WebSocket (loggedElsewhere)
+import Server.Effect as SE
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
@@ -94,12 +95,13 @@ aliveDelay = 1000 * 60 * aliveDelayMinutes
 aliveDelayMinutes ∷ Int
 aliveDelayMinutes = 5
 
+--check if it has been banned
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
-handleConnection configuration@{ tokenSecret } pool userAvailability connection request = do
-      maybeUserId ← ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
+handleConnection configuration@{ tokenSecret } pool userAvailability connection request = EA.launchAff_ do
+      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
-      case maybeUserId of
+      liftEffect $ case maybeUserId of
             Nothing → do
                   sendWebSocketMessage connection $ CloseConnection LoginPage
                   EC.log "terminated due to auth error"

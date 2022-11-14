@@ -13,7 +13,7 @@ import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Types (Checked(..))
 import Server.Settings.Database.Flat as SSDF
-import Server.Types (ServerEffect, BaseEffect)
+import Server.Effect (ServerEffect, BaseEffect)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility)

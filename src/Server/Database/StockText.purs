@@ -32,8 +32,5 @@ type StockText =
 stock_text ∷ Table "stock_text" StockText
 stock_text = Table
 
-_contents ∷ Proxy "contents"
-_contents = Proxy
-
 _text_type ∷ Proxy "text_type"
 _text_type = Proxy

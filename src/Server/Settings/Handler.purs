@@ -1,7 +1,7 @@
 module Server.Settings.Handler where
 
 import Prelude
-import Server.Types
+import Server.Effect
 
 import Payload.ResponseTypes (Response)
 import Run as R

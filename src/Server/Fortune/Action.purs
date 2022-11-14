@@ -8,7 +8,7 @@ import Effect (Effect)
 import Effect.Uncurried (EffectFn2, EffectFn3)
 import Effect.Uncurried as EU
 import Run as R
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 
 -- wrapper around crypto.getRandomValues
 foreign import randomInt_ :: EffectFn2 Int Int Int

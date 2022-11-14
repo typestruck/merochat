@@ -8,7 +8,7 @@ import Server.Email as SE
 import Server.Feedback.Dabatase as SFD
 import Server.File as SF
 import Server.Response as SR
-import Server.Types (ServerEffect)
+import Server.Effect (ServerEffect)
 
 sendFeedback :: Int -> String -> Maybe String -> ServerEffect Unit
 sendFeedback loggedUserId rawComments screenshot = do
