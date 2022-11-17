@@ -17,6 +17,7 @@
     "big-integer": "^1.6.48",
     "html-inline-css-webpack-plugin": "^1.11.1",
     "html-webpack-plugin": "^5.5.0",
+    "image-type": "^5.1.0",
     "insane": "^2.6.2",
     "marked": "^4.0.10",
     "nodemailer": "^6.4.11",

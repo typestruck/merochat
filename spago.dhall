@@ -7,6 +7,7 @@ You can edit this file as you like.
 , repository = "https://github.com/typestruck/merochat"
 , dependencies =
   [ "aff"
+  , "aff-promise"
   , "affjax"
   , "affjax-node"
   , "argonaut"
