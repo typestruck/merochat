@@ -17,7 +17,10 @@ import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
+import Data.Either as DE
 import Run as R
+import Data.Set as DST
+import Shared.Privilege (Privilege(..))
 import Server.Database as SD
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_temporary, users)
@@ -26,6 +29,7 @@ import Server.Im.Action as SIA
 import Server.Im.Database as SID
 import Server.Landing.Database as SLD
 import Server.Settings.Action as SSA
+import Data.Either (Either(..))
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -308,8 +312,8 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
-                          Tuple id _ ← map SU.fromJust <<< SIA.processMessage anotherUserId userId 1 $ Text "oi"
-                          Tuple anotherId _ ← map SU.fromJust <<< SIA.processMessage yetAnotherUserId userId 2 $ Text "ola"
+                          Tuple id _ ← map SU.fromRight <<< SIA.processMessage anotherUserId userId 1 $ Text "oi"
+                          Tuple anotherId _ ← map SU.fromRight <<< SIA.processMessage yetAnotherUserId userId 2 $ Text "ola"
                           void <<< SIA.processMessage yetAnotherUserId userId 3 $ Text "hey"
                           SID.changeStatus userId Delivered [ id, anotherId ]
                           { contacts } ← SIA.listMissedEvents userId Nothing $ Just 0
@@ -373,7 +377,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          Tuple id _ ← map SU.fromJust <<< SIA.processMessage userId anotherUserId 2 $ Text "oi"
+                          Tuple id _ ← map SU.fromRight <<< SIA.processMessage userId anotherUserId 2 $ Text "oi"
                           R.liftAff $ TUA.equal userId id
                           count ← SD.single $ select (count _id # as c) # from histories # wher (_sender .=. userId .&&. _recipient .=. anotherUserId)
                           R.liftAff $ TUA.equal (Just { c: BI.fromInt 1 }) count
@@ -382,24 +386,29 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          Tuple id _ ← map SU.fromJust <<< SIA.processMessage userId anotherUserId 2 $ Text "oi"
+                          Tuple id _ ← map SU.fromRight <<< SIA.processMessage userId anotherUserId 2 $ Text "oi"
                           R.liftAff $ TUA.equal userId id
                           chatStarter ← SD.single $ select _sender # from histories # orderBy _id # limit (Proxy ∷ _ 1)
                           R.liftAff $ TUA.equal (Just { sender: userId }) chatStarter
 
+            TU.test "processMessage accepts links"
+                  $ TS.serverAction
+                  $ do
+                          message ← SIA.processMessageContent (Text "[hey](http://a.com)") $ DST.singleton SendLinks
+                          R.liftAff $ TUA.equal "[hey](http://a.com)" message
+
             TU.test "processMessage accepts files"
                   $ TS.serverActionCatch (TS.catch invalidImageMessage)
                   $ do
-                          Tuple userId anotherUserId ← setUpUsers
-                          Tuple _ message ← map SU.fromJust <<< SIA.processMessage userId anotherUserId 2 $ Image "hey" "data:image/png;base64,ya"
-                          R.liftAff <<< TUA.assert "returns file" $ DSR.test (DSRU.unsafeRegex "!\\[hey\\]((.*)/upload/(.*).png)" noFlags) message
+                          message ← SIA.processMessageContent (Image "hey" "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") $ DST.singleton SendImages
+                          R.liftAff <<< TUA.assert "returns file" $ DSR.test (DSRU.unsafeRegex "!\\[hey\\]((.*)/upload/(.*).gif)" noFlags) message
 
             TU.test "processMessage sanitizes input"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          Tuple _ message ← map SU.fromJust <<< SIA.processMessage userId anotherUserId 2 $ Text "<script><script>"
-                          R.liftAff $ TUA.equal "" message
+                          ret ← SIA.processMessage userId anotherUserId 2 $ Text "<img/>"
+                          R.liftAff $ TUA.equal (Left InvalidMessage) ret
 
             TU.test "processMessage does not accept files too large"
                   $ TS.serverActionCatch (TS.catch imageTooBigMessage)
@@ -407,13 +416,25 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           SIA.processMessage userId anotherUserId 2 <<< Image "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 
+            TU.test "processMessage rejects links if user lacks privilege"
+                  $ TS.serverAction
+                  $ do
+                          message ← SIA.processMessageContent (Text "[hey](http://a.com)") DST.empty
+                          R.liftAff $ TUA.equal "" message
+
+            TU.test "processMessage rejects images if user lacks privilege"
+                  $ TS.serverAction
+                  $ do
+                          message ← SIA.processMessageContent (Image "hey" "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") DST.empty
+                          R.liftAff $ TUA.equal "" message
+
             TU.test "processMessage fails if recipient visibility is nobody"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SSA.changePrivacySettings anotherUserId { profileVisibility: Nobody, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
-                          R.liftAff $ TUA.equal Nothing processed
+                          R.liftAff $ TUA.equal (Left UserUnavailable) processed
 
             TU.test "processMessage fails if recipient blocked sender"
                   $ TS.serverAction
@@ -421,7 +442,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           SIA.blockUser anotherUserId userId
                           processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
-                          R.liftAff $ TUA.equal Nothing processed
+                          R.liftAff $ TUA.equal (Left UserUnavailable) processed
 
             TU.test "processMessage fails if recipient visibility is contacts and sender is not in contacts"
                   $ TS.serverAction
@@ -429,7 +450,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           SSA.changePrivacySettings anotherUserId { profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
-                          R.liftAff $ TUA.equal Nothing processed
+                          R.liftAff $ TUA.equal (Left UserUnavailable) processed
 
             TU.test "processMessage fails if recipient visibility is no temporary users and sender is a temporary user"
                   $ TS.serverAction
@@ -438,7 +459,7 @@ tests = do
                           SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. userId)
                           SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
-                          R.liftAff $ TUA.equal Nothing processed
+                          R.liftAff $ TUA.equal (Left UserUnavailable) processed
 
             TU.test "processMessage does not fail if recipient visibility is no temporary users and sender is not a temporary user"
                   $ TS.serverAction
@@ -446,7 +467,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId 2 $ Text "oi"
-                          R.liftAff <<< TUA.assert "is just" $ DM.isJust processed
+                          R.liftAff <<< TUA.assert "is right" $ DE.isRight processed
 
             TU.test "processMessage does not fail if recipient visibility is contacts and sender is in contacts"
                   $ TS.serverAction
@@ -455,7 +476,7 @@ tests = do
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "oi"
                           SSA.changePrivacySettings anotherUserId { profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId 2 $ Text "ola"
-                          R.liftAff <<< TUA.assert "is just" $ DM.isJust processed
+                          R.liftAff <<< TUA.assert "is right" $ DE.isRight processed
       where
       setUpUsers = do
             userId ← SLD.createUser $ baseUser { email = Just "b@b.com" }

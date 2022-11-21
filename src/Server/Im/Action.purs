@@ -2,29 +2,36 @@ module Server.Im.Action where
 
 import Debug
 import Prelude
+import Shared.Privilege
 
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Set (Set(..))
+import Data.Either(Either(..))
+import Data.Set as DST
 import Data.String as DS
 import Data.Tuple (Tuple(..))
+import Data.Nullable as DN
 import Droplet.Driver (Pool)
 import Run.Except as RE
 import Server.AccountValidation as SA
+import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Email as SE
 import Server.File as SF
 import Server.Im.Database as SID
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
+import Server.Im.Types
 import Server.Sanitize as SS
-import Server.Im.Types (Payload)
-import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Wheel as SW
-import Shared.Im.Types (ArrayPrimaryKey, Contact, HistoryMessage, MessageContent(..), MissedEvents, Report, Suggestion, Turn)
+import Shared.Im.Types
+import Shared.Markdown as SM
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
+import Shared.Markdown(Token(..))
 
 im ∷ Int → ServerEffect Payload
 im loggedUserId = do
@@ -35,7 +42,11 @@ im loggedUserId = do
             Just user → do
                   suggestions ← suggest loggedUserId 0 Nothing
                   contacts ← listContacts loggedUserId 0
-                  pure {contacts, suggestions, user: SIF.fromFlatUser user}
+                  pure
+                        { contacts
+                        , suggestions
+                        , user: SIF.fromFlatUser user
+                        }
 
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array Suggestion)
 suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip keys
@@ -43,7 +54,7 @@ suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUser
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
 
-listSingleContact ∷ Int → Int → Boolean -> ServerEffect (Array Contact)
+listSingleContact ∷ Int → Int → Boolean → ServerEffect (Array Contact)
 listSingleContact loggedUserId userId impersonation
       | impersonation = map fromFlatContact <$> SID.presentContactOnly loggedUserId userId
       | otherwise = presentContacts <$> SID.presentSingleContact loggedUserId userId 0
@@ -68,27 +79,48 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
       chatHistory records =
             let contact = DAN.head records in (fromFlatContact contact) { history = fromFlatMessage <$> DAN.toArray records }
 
-processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Maybe (Tuple Int String))
+processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Tuple Int String))
 processMessage loggedUserId userId temporaryId content = do
       isVisible ← SID.isRecipientVisible loggedUserId userId
       if isVisible then do
-            sanitized ← processMessageContent content
+            privileges ← markdownPrivileges loggedUserId
+            sanitized ← processMessageContent content privileges
             if DS.null sanitized then
-                  pure <<< Just $ Tuple temporaryId ""
+                  pure $ Left InvalidMessage
             else do
                   id ← SID.insertMessage loggedUserId userId temporaryId sanitized
-                  pure <<< Just $ Tuple id sanitized
-      else pure Nothing
+                  pure <<< Right $ Tuple id sanitized
+      else
+            pure $ Left UserUnavailable
+
+markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Privilege)
+markdownPrivileges loggedUserId = format <$> SID.markdownPrivileges loggedUserId
+      where
+      format = case _ of
+            [] → DST.empty
+            [ p ] | p.feature == SendLinks → DST.singleton SendLinks
+            [ p ] | p.feature == SendImages → DST.singleton SendImages
+            _ → DST.fromFoldable [ SendLinks, SendImages ]
 
 -- | Sanitizes markdown and handle image uploads
-processMessageContent ∷ ∀ r. MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } String
-processMessageContent content = do
+processMessageContent ∷ ∀ r. MessageContent → Set Privilege → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } String
+processMessageContent content privileges = do
       message ← case content of
-            Text m → pure m
-            Image caption base64 → do
+            Text m | allowed m → pure m
+            Image caption base64 | DST.member SendImages privileges → do
                   name ← SF.saveBase64File base64
                   pure $ "![" <> caption <> "](" <> SP.mediaPath (Upload name) Included <> ")"
+            _ → pure ""
       pure <<< DS.trim $ SS.sanitize message
+      where
+      allowed contents = DST.member SendImages privileges || noLinks contents
+      noLinks contents =
+            let
+                  canSendLinks = DST.member SendLinks privileges
+            in
+                  DM.isNothing <<< DA.find (link canSendLinks) $ SM.lexer contents
+      link canSendLinks (Token t) = DM.isJust (DN.toMaybe t.tokens >>= DA.find (isLink canSendLinks))
+      isLink canSendLinks (Token child) = child."type" == "image" || not canSendLinks && (child."type" == "link" || child."type" == "reflink")
 
 processKarma ∷ ∀ r. Int → Int → Turn → BaseEffect { pool ∷ Pool | r } Unit
 processKarma loggedUserId userId turn = SID.insertKarma loggedUserId userId $ SW.karmaFrom turn
@@ -108,10 +140,10 @@ reportUser loggedUserId report@{ reason, userId } = do
       SID.insertReport loggedUserId report
       SE.sendEmail "contact@mero.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userId <> ";"
 
-finishTutorial :: Int -> ServerEffect Unit
+finishTutorial ∷ Int → ServerEffect Unit
 finishTutorial loggedUserId = SID.updateTutorialCompleted loggedUserId
 
-registerUser :: Int -> String -> String -> ServerEffect Unit
+registerUser ∷ Int → String → String → ServerEffect Unit
 registerUser loggedUserId rawEmail password = do
       email ← SA.validateEmail rawEmail
       hash ← SA.validatePassword password

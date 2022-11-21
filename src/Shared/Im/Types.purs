@@ -380,9 +380,12 @@ data WebSocketPayloadClient
               , userId ∷ Int
               }
       | ContactUnavailable { userId ∷ Int, temporaryMessageId ∷ Maybe Int } --either block or change of privacy settings
+      | BadMessage { userId ∷ Int, temporaryMessageId ∷ Maybe Int } --either lacks privilege or forbidden html tags
       | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
 newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)
+
+data MessageError = UserUnavailable | InvalidMessage
 
 derive instance Ord ReportReason
 derive instance Ord MessageStatus
@@ -580,6 +583,9 @@ instance Show WebSocketPayloadClient where
 instance Show WebSocketPayloadServer where
       show = DGRS.genericShow
 
+instance Show MessageError where
+      show = DGRS.genericShow
+
 instance EncodeQueryParam ArrayPrimaryKey where
       encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
 
@@ -594,6 +600,7 @@ instance DecodeQueryParam ArrayPrimaryKey where
 derive instance Eq ShowContextMenu
 derive instance Eq AfterLogout
 derive instance Eq ProfilePresentation
+derive instance Eq MessageError
 derive instance Eq RetryableRequest
 derive instance Eq ShowChatModal
 derive instance Eq Step
@@ -606,6 +613,7 @@ derive instance Generic Step _
 derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
 derive instance Generic MessageContent _
+derive instance Generic MessageError _
 derive instance Generic WebSocketPayloadClient _
 derive instance Generic FullWebSocketPayloadClient _
 derive instance Generic WebSocketPayloadServer _

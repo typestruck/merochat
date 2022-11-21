@@ -21,6 +21,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
+import Shared.Markdown(Token(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
@@ -431,9 +432,9 @@ quoteMessage contents event model@{ chatting } = model :>
       where
       sanitized = case DA.find notSpaceQuote $ SM.lexer contents of
             Nothing → "> *quote*"
-            Just token → "> " <> token.raw
+            Just (Token token) → "> " <> token.raw
 
-      notSpaceQuote token = token."type" /= "space" && token."type" /= "blockquote"
+      notSpaceQuote (Token token) = token."type" /= "space" && token."type" /= "blockquote"
 
 focusCurrentSuggestion ∷ ImModel → NoMessages
 focusCurrentSuggestion model@{ chatting } = model :>

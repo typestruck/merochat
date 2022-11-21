@@ -52,6 +52,7 @@ import Server.WebSocket (CloseCode(..), CloseReason, WebSocketConnection, WebSoc
 import Server.WebSocket as SW
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
+import Data.Set as DS
 import Shared.Experiments.Types as SET
 import Shared.Json as SJ
 import Shared.Options.WebSocket (loggedElsewhere)
@@ -270,12 +271,12 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
       processed ← case experimenting of
             --impersonating experiment messages are not saved
             Just (SET.ImpersonationPayload _) → do
-                  msg ← SIA.processMessageContent content
-                  pure <<< Just $ Tuple temporaryId msg
+                  msg ← SIA.processMessageContent content DS.empty
+                  pure <<< Right $ Tuple temporaryId msg
             _ →
                   SIA.processMessage loggedUserId userId temporaryId content
       case processed of
-            Just (Tuple messageId finalContent) → do
+            Right (Tuple messageId finalContent) → do
                   sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
                         { previousId: temporaryId
                         , id: messageId
@@ -292,9 +293,10 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
                               }
                   --pass along karma calculation
                   DM.maybe (pure unit) (SIA.processKarma loggedUserId userId) turn
-            --meaning recipient can't be messaged
-            Nothing →
+            Left UserUnavailable →
                   sendWebSocketMessage connection <<< Content $ ContactUnavailable { userId, temporaryMessageId: Just temporaryId }
+            Left InvalidMessage →
+                  sendWebSocketMessage connection <<< Content $ BadMessage { userId, temporaryMessageId: Just temporaryId }
 
 whenJust ∷ ∀ r. Maybe { connection ∷ Maybe WebSocketConnection | r } → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
 whenJust value handler = do
