@@ -397,6 +397,12 @@ tests = do
                           message ← SIA.processMessageContent (Text "[hey](http://a.com)") $ DST.singleton SendLinks
                           R.liftAff $ TUA.equal "[hey](http://a.com)" message
 
+            TU.test "processMessage accepts links if url is text"
+                  $ TS.serverAction
+                  $ do
+                          message ← SIA.processMessageContent (Text "http://a.com") DST.empty
+                          R.liftAff $ TUA.equal "http://a.com" message
+
             TU.test "processMessage accepts files"
                   $ TS.serverActionCatch (TS.catch invalidImageMessage)
                   $ do

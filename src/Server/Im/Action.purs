@@ -120,7 +120,7 @@ processMessageContent content privileges = do
             in
                   DM.isNothing <<< DA.find (link canSendLinks) $ SM.lexer contents
       link canSendLinks (Token t) = DM.isJust (DN.toMaybe t.tokens >>= DA.find (isLink canSendLinks))
-      isLink canSendLinks (Token child) = child."type" == "image" || not canSendLinks && (child."type" == "link" || child."type" == "reflink")
+      isLink canSendLinks (Token child) = child."type" == "image" || not canSendLinks && ((child."type" == "link" || child."type" == "reflink") && child.raw /= child.text)
 
 processKarma ∷ ∀ r. Int → Int → Turn → BaseEffect { pool ∷ Pool | r } Unit
 processKarma loggedUserId userId turn = SID.insertKarma loggedUserId userId $ SW.karmaFrom turn

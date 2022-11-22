@@ -5,6 +5,7 @@ import Data.Nullable(Nullable(..))
 newtype Token = Token
       { "type" ∷ String
       , raw ∷ String
+      , text :: String
       , tokens :: Nullable (Array Token)
       }
 
