@@ -123,8 +123,8 @@ chatBarInput
               , HE.div [ HA.class' { "chat-input-area": true, side: not messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
-                              {-( if elementId == ChatInput then [ HA.onKeydown (CheckTyping <<< DT.snd) ] else [])
-                                    <> -}
+                              (if elementId == ChatInput then [ HA.onKeydown (CheckTyping <<< DT.snd) ] else [])
+                                    <>
                                           [ HA.class' "chat-input"
                                           , HA.id $ show elementId
                                           , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection..."

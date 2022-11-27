@@ -407,13 +407,13 @@ toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
 
 checkTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
 checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
-      if DS.length text > minimumLength && milliseconds >= 150.0 && milliseconds <= 1000.0 then
+      if DS.length text > minimumLength && enoughTime lt then
             CIF.nothingNext (model { lastTyping = DateTimeWrapper now }) <<< liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }
       else
-            F.noMessages model { lastTyping = DateTimeWrapper now }
+            F.noMessages model
       where
       minimumLength = 7
-      (Milliseconds milliseconds) = DT.diff now lt
+      enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
 
 quoteMessage ∷ String → Event → ImModel → NextMessage
 quoteMessage contents event model@{ chatting } = model :>
