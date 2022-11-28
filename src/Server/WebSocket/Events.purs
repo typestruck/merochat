@@ -2,6 +2,7 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Effect
+import Shared.Availability
 import Shared.Im.Types
 import Shared.User
 
@@ -19,8 +20,8 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Shared.Availability
 import Data.Newtype as DN
+import Data.Set as DS
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
@@ -44,6 +45,8 @@ import Run.Reader as RR
 import Server.Cookies (cookieName)
 import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.Privileges as SIP
+import Server.Database.Users as SBU
+import Server.Effect as SE
 import Server.Im.Action as SIA
 import Server.Im.Database as SID
 import Server.Settings.Action as SSA
@@ -52,11 +55,9 @@ import Server.WebSocket (CloseCode(..), CloseReason, WebSocketConnection, WebSoc
 import Server.WebSocket as SW
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Data.Set as DS
 import Shared.Experiments.Types as SET
 import Shared.Json as SJ
 import Shared.Options.WebSocket (loggedElsewhere)
-import Server.Effect as SE
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
@@ -99,9 +100,9 @@ aliveDelayMinutes = 5
 --check if it has been banned
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration@{ tokenSecret } pool userAvailability connection request = EA.launchAff_ do
-      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
-            uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
-            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
+      maybeUserId ← SE.poolEffect pool do
+            userId ← parseUserId
+            DM.maybe (pure Nothing) checkBanned userId
       liftEffect $ case maybeUserId of
             Nothing → do
                   sendWebSocketMessage connection $ CloseConnection LoginPage
@@ -124,6 +125,14 @@ handleConnection configuration@{ tokenSecret } pool userAvailability connection 
                   SW.onClose connection (handleClose userAvailability loggedUserId)
                   SW.onMessage connection (runMessageHandler loggedUserId)
       where
+      parseUserId = ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
+            uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
+            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
+
+      checkBanned loggedUserId = do
+            isIt ← SBU.isUserBanned loggedUserId
+            if isIt then pure Nothing else pure $ Just loggedUserId
+
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJSON message of
                   Right payload → do

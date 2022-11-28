@@ -8,7 +8,9 @@ import Server.Effect
 import Data.Date (Date)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
+import Data.Maybe as DM
 import Data.Tuple.Nested (type (/\), (/\))
+import Droplet.Driver (Pool)
 import Server.Database as SD
 import Server.Database.Countries (CountriesTable)
 import Server.Database.Types (Checked)
@@ -102,5 +104,8 @@ userBy ∷ By → ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
       Email value → SD.single $ baseQuery (\ft → ft .&&. _email .=. value)
       Id value → SD.single $ baseQuery (\ft → ft .&&. _id .=. value)
+
+isUserBanned :: forall r. Int -> BaseEffect { pool :: Pool | r} Boolean
+isUserBanned loggedUserId = map DM.isJust <<< SD.single $ select (1 # as c) # from users # wher (_visibility .=. TemporarilyBanned .&&. _id .=. loggedUserId)
 
 baseQuery ft = select (_id /\ _email /\ _password) # from users # wher (ft (_visibility .<>. TemporarilyBanned))
