@@ -85,7 +85,7 @@ contactList
                         ]
                         [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
                                 [ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
-                                , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.availability /= Online } ]
+                                , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.availability /= Online || not contact.onlineStatus || not onlineStatus } ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
                                 [ HE.span (HA.class' "contact-name") contact.name
