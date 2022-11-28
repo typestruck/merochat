@@ -116,7 +116,7 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
 
       availableStatus =
             HE.div
-                  [ HA.class' { hidden: isTyping || not loggedUser.onlineStatus || not contact.user.onlineStatus, duller: availability /= Online } ]
+                  [ HA.class' { hidden: isTyping && loggedUser.typingStatus && typingStatus || not loggedUser.onlineStatus || not contact.user.onlineStatus, duller: availability /= Online } ]
                   $ show availability
 
       profileIcon = HE.svg [ HA.class' "show-profile-icon", HA.viewBox "0 0 16 16" ]
