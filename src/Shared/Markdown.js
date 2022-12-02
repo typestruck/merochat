@@ -1,4 +1,4 @@
-import {marked} from 'marked';
+import { marked } from 'marked';
 
 export function lexer(value) {
       return marked.lexer(value);
@@ -52,7 +52,8 @@ export function parse(plainMarkdown) {
       defaultOptions();
 
       return marked.parse(plainMarkdown, {
-            smartypants: true
+            gfm: true,
+            breaks: true
       });
 }
 
@@ -60,6 +61,7 @@ export function parseRestricted(plainMarkdown) {
       restrictedOptions();
 
       return marked.parse(plainMarkdown, {
-            smartypants: true
+            gfm: true,
+            breaks: true
       });
 }

@@ -2,6 +2,7 @@ module Server.WebSocket.Events where
 
 import Prelude
 import Server.Effect
+import Shared.Availability
 import Shared.Im.Types
 import Shared.User
 
@@ -19,8 +20,8 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Shared.Availability
 import Data.Newtype as DN
+import Data.Set as DS
 import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
@@ -44,6 +45,8 @@ import Run.Reader as RR
 import Server.Cookies (cookieName)
 import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.Privileges as SIP
+import Server.Database.Users as SBU
+import Server.Effect as SE
 import Server.Im.Action as SIA
 import Server.Im.Database as SID
 import Server.Settings.Action as SSA
@@ -55,7 +58,6 @@ import Shared.DateTime as SDT
 import Shared.Experiments.Types as SET
 import Shared.Json as SJ
 import Shared.Options.WebSocket (loggedElsewhere)
-import Server.Effect as SE
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
@@ -98,9 +100,9 @@ aliveDelayMinutes = 5
 --check if it has been banned
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration@{ tokenSecret } pool userAvailability connection request = EA.launchAff_ do
-      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
-            uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
-            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
+      maybeUserId ← SE.poolEffect pool do
+            userId ← parseUserId
+            DM.maybe (pure Nothing) checkBanned userId
       liftEffect $ case maybeUserId of
             Nothing → do
                   sendWebSocketMessage connection $ CloseConnection LoginPage
@@ -123,6 +125,14 @@ handleConnection configuration@{ tokenSecret } pool userAvailability connection 
                   SW.onClose connection (handleClose userAvailability loggedUserId)
                   SW.onMessage connection (runMessageHandler loggedUserId)
       where
+      parseUserId = ST.userIdFromToken tokenSecret <<< DM.fromMaybe "" $ do
+            uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
+            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
+
+      checkBanned loggedUserId = do
+            isIt ← SBU.isUserBanned loggedUserId
+            if isIt then pure Nothing else pure $ Just loggedUserId
+
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJSON message of
                   Right payload → do
@@ -270,12 +280,12 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
       processed ← case experimenting of
             --impersonating experiment messages are not saved
             Just (SET.ImpersonationPayload _) → do
-                  msg ← SIA.processMessageContent content
-                  pure <<< Just $ Tuple temporaryId msg
+                  msg ← SIA.processMessageContent content DS.empty
+                  pure <<< Right $ Tuple temporaryId msg
             _ →
                   SIA.processMessage loggedUserId userId temporaryId content
       case processed of
-            Just (Tuple messageId finalContent) → do
+            Right (Tuple messageId finalContent) → do
                   sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
                         { previousId: temporaryId
                         , id: messageId
@@ -292,9 +302,10 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
                               }
                   --pass along karma calculation
                   DM.maybe (pure unit) (SIA.processKarma loggedUserId userId) turn
-            --meaning recipient can't be messaged
-            Nothing →
+            Left UserUnavailable →
                   sendWebSocketMessage connection <<< Content $ ContactUnavailable { userId, temporaryMessageId: Just temporaryId }
+            Left InvalidMessage →
+                  sendWebSocketMessage connection <<< Content $ BadMessage { userId, temporaryMessageId: Just temporaryId }
 
 whenJust ∷ ∀ r. Maybe { connection ∷ Maybe WebSocketConnection | r } → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
 whenJust value handler = do

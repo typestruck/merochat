@@ -21,6 +21,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
+import Shared.Markdown(Token(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
@@ -406,13 +407,13 @@ toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
 
 checkTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
 checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
-      if DS.length text > minimumLength && milliseconds >= 150.0 && milliseconds <= 1000.0 then
+      if DS.length text > minimumLength && enoughTime lt then
             CIF.nothingNext (model { lastTyping = DateTimeWrapper now }) <<< liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }
       else
-            F.noMessages model { lastTyping = DateTimeWrapper now }
+            F.noMessages model
       where
       minimumLength = 7
-      (Milliseconds milliseconds) = DT.diff now lt
+      enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
 
 quoteMessage ∷ String → Event → ImModel → NextMessage
 quoteMessage contents event model@{ chatting } = model :>
@@ -431,9 +432,9 @@ quoteMessage contents event model@{ chatting } = model :>
       where
       sanitized = case DA.find notSpaceQuote $ SM.lexer contents of
             Nothing → "> *quote*"
-            Just token → "> " <> token.raw
+            Just (Token token) → "> " <> token.raw
 
-      notSpaceQuote token = token."type" /= "space" && token."type" /= "blockquote"
+      notSpaceQuote (Token token) = token."type" /= "space" && token."type" /= "blockquote"
 
 focusCurrentSuggestion ∷ ImModel → NoMessages
 focusCurrentSuggestion model@{ chatting } = model :>

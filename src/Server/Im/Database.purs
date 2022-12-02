@@ -37,6 +37,7 @@ import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPer
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
+import Shared.Privilege
 
 userPresentationFields =
       (u ... _id # as _id)
@@ -316,6 +317,9 @@ upsertLastSeen jsonInput = void $ SD.unsafeExecute "INSERT INTO last_seen(who, d
 
 queryLastSeen ∷ NonEmptyArray Int → _
 queryLastSeen ids = SD.query $ select (_who /\ _date) # from last_seen # wher (_who `in_` ids)
+
+markdownPrivileges ∷ forall r. Int →  BaseEffect { pool ∷ Pool | r } _
+markdownPrivileges loggedUserId = SD.query $ select _feature  # from (join privileges karma_leaderboard # on ((_feature .=. SendLinks .||. _feature .=. SendImages) .&&._quantity .<=. _current_karma .&&. _ranker .=. loggedUserId))
 
 _chatStarter ∷ Proxy "chatStarter"
 _chatStarter = Proxy

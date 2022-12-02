@@ -473,6 +473,12 @@ receiveMessage
                                       Nothing → updatedContacts
                                       Just id → markErroredMessage updatedContacts userId id
                   }
+      BadMessage { userId, temporaryMessageId } →
+            F.noMessages model
+                  { contacts =  case temporaryMessageId of
+                        Nothing → currentContacts
+                        Just id → markErroredMessage currentContacts userId id
+                  }
       NewIncomingMessage payload@{ id: messageId, userId, content: messageContent, date: messageDate, experimenting } →
             --(for now) if the experiments don't match, discard the message
             if DA.elem userId blockedUsers || not (match experimenting) then

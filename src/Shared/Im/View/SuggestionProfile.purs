@@ -116,7 +116,7 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
 
       availableStatus =
             HE.div
-                  [ HA.class' { hidden: isTyping || not loggedUser.onlineStatus || not contact.user.onlineStatus, duller: availability /= Online } ]
+                  [ HA.class' { hidden: isTyping && loggedUser.typingStatus && typingStatus || not loggedUser.onlineStatus || not contact.user.onlineStatus, duller: availability /= Online } ]
                   $ show availability
 
       profileIcon = HE.svg [ HA.class' "show-profile-icon", HA.viewBox "0 0 16 16" ]
@@ -145,6 +145,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       profile =
             displayProfile index
+                  model.user
                   ( case impersonating of
                           Just impersonationId →
                                 SU.fromJust $ HS.lookup impersonationId impersonations
@@ -175,12 +176,12 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
-displayProfile ∷ ∀ message. Maybe Int → ImUser → Maybe message → Array (Html message)
-displayProfile index { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, country, languages, tags, description } temporaryUserMessage =
+displayProfile ∷ ∀ message. Maybe Int → ImUser → ImUser → Maybe message → Array (Html message)
+displayProfile index loggedUser { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, onlineStatus, country, languages, tags, description } temporaryUserMessage =
       [ HE.img [ HA.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
       , HE.h1 (HA.class' "profile-name") name
       , HE.div (HA.class' "headline") headline
-      , HE.div [ HA.class' { "online-status": true, duller: availability /= Online } ] $ show availability
+      , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not onlineStatus, duller: availability /= Online } ] $ show availability
       , HE.div (HA.class' "profile-karma")
               $
                     case temporaryUserMessage of
