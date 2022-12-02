@@ -26,6 +26,11 @@ MeroChat is written in PureScript, both server-side and client-side. PostgreSQL 
 
     * Refresh the page after any changes :)
 
+To run in Docker container:
+
+1. Run `sudo docker-compose -f dockerfile.yml up` to spin up the containers.
+2. When prompted, run `sudo docker exec -w /merochat -i merochat start-spago` and `sudo docker exec -w /merochat -i merochat start-npm` in two separate terminals.
+
 ## Pull requests
 
 Unless it is a small change, please include tests and a clear commit message. Bonus points if the code has documentation comments.

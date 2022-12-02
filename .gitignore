@@ -21,3 +21,4 @@ dce-output/
 .spago/
 dist/
 parcel*.log
+spago.log
