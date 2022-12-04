@@ -99,9 +99,9 @@ suggestBaseQuery loggedUserId skip filter =
       select star
             # from
                     ( select userPresentationFields
-                            # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId :: Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
+                            # from (leftJoin (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId :: Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
                             # wher filter
-                            # orderBy ((_sender # desc) /\ _score)
+                            # orderBy ((_sender # desc) /\ (l ... _date # desc) /\ _score)
                             # limit (Proxy ∷ Proxy 10)
                             # offset skip
                             # as u
