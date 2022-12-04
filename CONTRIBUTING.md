@@ -14,7 +14,15 @@ Don't hesitate to [contact](https://github.com/easafe) if you need help, or want
 
 ## Setup
 
-MeroChat is written in PureScript, both server-side and client-side. PostgreSQL is used for persistance. To get it running locally:
+MeroChat is written in PureScript, both server-side and client-side. PostgreSQL is used for persistance.
+
+You can run MeroChat locally with docker
+
+1. Run `sudo docker-compose -f dockerfile.yml up` to spin up the containers
+
+2. When prompted, run `sudo docker exec -w /merochat -i merochat start-spago` and `sudo docker exec -w /merochat -i merochat start-npm` in two separate terminals
+
+...or set it up manually
 
 1. Run `npm install && spago build`
 
@@ -25,11 +33,6 @@ MeroChat is written in PureScript, both server-side and client-side. PostgreSQL 
     * [purescript-ide](https://github.com/nwolverson/vscode-ide-purescript) is the fast and easy way to rebuild the project. Alternatively, run `spago build --watch` in a new terminal
 
     * Refresh the page after any changes :)
-
-To run in Docker container:
-
-1. Run `sudo docker-compose -f dockerfile.yml up` to spin up the containers.
-2. When prompted, run `sudo docker exec -w /merochat -i merochat start-spago` and `sudo docker exec -w /merochat -i merochat start-npm` in two separate terminals.
 
 ## Pull requests
 

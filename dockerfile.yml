@@ -14,12 +14,12 @@ services:
       POSTGRES_USER: merochat
       POSTGRES_PASSWORD: merochat
       POSTGRES_HOST_AUTH_METHOD: trust
-    
+
     # copying the index.sql in /docker-entrypoint-initdb.d will make postgresql
     # run the sql file and populate our db
     volumes:
       - ./src/Server/sql/index.sql:/docker-entrypoint-initdb.d/init.sql
-    
+
     networks:
       merochat_network:
         ipv4_address: 10.0.0.2
@@ -41,7 +41,7 @@ services:
       DATABASE_HOST: "10.0.0.2"
 
     command: sh -c "chmod +x /merochat/entrypoint.sh && /merochat/entrypoint.sh"
-      
+
     networks:
       merochat_network:
         ipv4_address: 10.0.0.3

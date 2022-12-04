@@ -2,6 +2,7 @@ module Server.Im.Database where
 
 import Droplet.Language
 import Prelude hiding (not, join)
+import Shared.Privilege
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as DAN
@@ -25,19 +26,18 @@ import Server.Database.LastSeen (_who, last_seen)
 import Server.Database.Messages (_content, _status, _temporary_id, messages)
 import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
-import Server.Database.Suggestions (_suggested, suggestions)
+import Server.Database.Suggestions
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
-import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
 import Server.Effect (BaseEffect, ServerEffect)
+import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
 import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
-import Shared.Privilege
 
 userPresentationFields =
       (u ... _id # as _id)
@@ -76,11 +76,11 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from user
 suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array FlatUser)
 suggest loggedUserId skip = case _ of
       Just (ArrayPrimaryKey []) →
-            SD.query $ suggestBaseQuery skip baseFilter -- no users to avoid when impersonating
+            SD.query $ suggestBaseQuery loggedUserId skip baseFilter -- no users to avoid when impersonating
       Just (ArrayPrimaryKey keys) →
-            SD.query $ suggestBaseQuery skip (baseFilter .&&. not (in_ (u ... _id) (SU.fromJust $ DAN.fromArray keys))) -- users to avoid when impersonating
+            SD.query $ suggestBaseQuery loggedUserId skip (baseFilter .&&. not (in_ (u ... _id) (SU.fromJust $ DAN.fromArray keys))) -- users to avoid when impersonating
       _ →
-            SD.query $ suggestBaseQuery skip baseFilter -- default case
+            SD.query $ suggestBaseQuery loggedUserId skip baseFilter -- default case
       where
       baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
 
@@ -95,16 +95,16 @@ suggest loggedUserId skip = case _ of
       blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))
 
 -- top level to avoid monomorphic filter
-suggestBaseQuery skip filter =
+suggestBaseQuery loggedUserId skip filter =
       select star
             # from
                     ( select userPresentationFields
-                            # from (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested))
+                            # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId :: Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
                             # wher filter
-                            # orderBy (s ... _id)
+                            # orderBy ((_sender # desc) /\ _score)
                             # limit (Proxy ∷ Proxy 10)
                             # offset skip
-                            # as t
+                            # as u
                     )
             # orderBy random
 
