@@ -31,18 +31,20 @@ checkFetchHistory model@{ freeToFetchChatHistory }
 
       | otherwise = F.noMessages model
 
+--to avoid issues with older missed unread messages just get the whole chat history on first load
 fetchHistory ∷ Boolean → ImModel → MoreMessages
 fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
       | shouldFetch =
               let
-                    { history, user: { id }, impersonating } = SIC.chattingContact contacts chatting
+                    { history, shouldFetchChatHistory, user: { id }, impersonating } = SIC.chattingContact contacts chatting
               in
                     if DM.isJust experimenting || DM.isJust impersonating then --impersonated messages are not saved in the database
+
                           displayHistory [] model
                     else
                           model
                                 { freeToFetchChatHistory = false
-                                } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: DA.length history } }) ]
+                                } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: if shouldFetchChatHistory then 0 else DA.length history } }) ]
       | otherwise = F.noMessages model
 
 displayHistory ∷ Array HistoryMessage → ImModel → NoMessages
@@ -56,7 +58,7 @@ displayHistory chatHistory model@{ chatting, contacts } =
                           let
                                 contact' = contact
                                       { shouldFetchChatHistory = false
-                                      , history = chatHistory <> history
+                                      , history = if shouldFetchChatHistory then chatHistory else (chatHistory <> history) --see fetchHistory
                                       }
                           DA.updateAt index contact' contacts
                   }

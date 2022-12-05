@@ -41,7 +41,7 @@ resumeChat ∷ Int → Maybe Int → ImModel → MoreMessages
 resumeChat searchId impersonating model@{ contacts, chatting, smallScreen } =
       let
             index = DA.findIndex (\cnt → cnt.user.id == searchId && cnt.impersonating == impersonating) contacts
-            cnt@{ shouldFetchChatHistory, user: { id } } = SIC.chattingContact contacts index
+            { shouldFetchChatHistory } = SIC.chattingContact contacts index
       in
             if index == chatting then
                   F.noMessages model
