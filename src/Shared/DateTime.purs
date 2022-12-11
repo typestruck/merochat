@@ -164,12 +164,13 @@ agoWithTime dateTime =
       timeString = localDateTimeWith time dateTime
 
 daysDiff ∷ DateTime → Int
-daysDiff dt = DI.floor $ DN.unwrap (DT.diff now dateTime ∷ Days)
+daysDiff dt = daysInYear now - daysInYear dateTime
       where localTime = SU.fromJust <<< DT.adjust offset
+            daysInYear dtp = DI.floor $ DN.unwrap (DT.diff dtp firstDay ∷ Days)
+            firstDay = DateTime (DD.canonicalDate (DD.year $ DT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
             offset = DTD.negateDuration $ EU.unsafePerformEffect EN.getTimezoneOffset
-            now = localTime $ zeroSM unsafeNow
-            dateTime = localTime $ zeroSM dt
-            zeroSM = DT.modifyTime (DTM.setSecond (SU.toEnum 0) <<< DTM.setMillisecond (SU.toEnum 0))
+            now = localTime unsafeNow
+            dateTime = localTime  dt
 
 localDateTimeWith ∷ (Number → String) → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
