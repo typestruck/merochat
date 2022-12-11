@@ -10,8 +10,7 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Array ((!!))
 import Data.Date as DD
 import Data.DateTime (Date, DateTime(..), Time(..))
-import Data.DateTime as DDT
-import Data.DateTime as DTT
+import Data.DateTime as DT
 import Data.DateTime.Instant as DDI
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum)
@@ -27,11 +26,12 @@ import Data.Number as DNM
 import Data.Show.Generic as DGRS
 import Data.String (Pattern(..))
 import Data.String as DS
-import Data.Time.Duration (Days(..))
+import Data.Time as DTM
+import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Time.Duration as DTD
 import Debug (spy)
 import Droplet.Language (class FromValue, class ToValue)
-import Droplet.Language (fromValue) as DL
+import Droplet.Language as DL
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
@@ -68,7 +68,7 @@ ageFrom' now birthday = calculate <$> birthday
                   birthdayDay = DD.day b
                   birthdayThisYear = DateTime (DD.canonicalDate currentYear birthdayMonth birthdayDay) zeroTime
             in
-                  DE.fromEnum currentYear - DE.fromEnum birthdayYear - if daysInYear (DateTime now zeroTime) < daysInYear birthdayThisYear then 1 else 0
+                  DE.fromEnum currentYear - DE.fromEnum birthdayYear - if DateTime now zeroTime < birthdayThisYear then 1 else 0
 
 --minimum age to sign up is 18
 latestEligibleBirthday ∷ Effect Date
@@ -151,7 +151,7 @@ ago dateTime =
       else
             localDateTimeWith fullDate dateTime
       where
-      days = daysDiff dateTime
+      days =  daysDiff dateTime
 
 agoWithTime ∷ DateTime → String
 agoWithTime dateTime =
@@ -160,24 +160,22 @@ agoWithTime dateTime =
       else
             ago dateTime <> " " <> timeString
       where
-      days = daysDiff dateTime
+      days =  daysDiff dateTime
       timeString = localDateTimeWith time dateTime
 
 daysDiff ∷ DateTime → Int
-daysDiff dateTime = daysInYear now - daysInYear dateTime
-      where now = unsafeNow
-
-daysInYear ∷ DateTime → Int
-daysInYear dateTime = DI.floor $ DN.unwrap (DDT.diff dateTime firstDay ∷ Days)
-      where
-      firstDay = DateTime (DD.canonicalDate (DD.year $ DDT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
-      now = unsafeNow
+daysDiff dt = DI.floor $ DN.unwrap (DT.diff now dateTime ∷ Days)
+      where localTime = SU.fromJust <<< DT.adjust offset
+            offset = DTD.negateDuration $ EU.unsafePerformEffect EN.getTimezoneOffset
+            now = localTime $ zeroSM unsafeNow
+            dateTime = localTime $ zeroSM dt
+            zeroSM = DT.modifyTime (DTM.setSecond (SU.toEnum 0) <<< DTM.setMillisecond (SU.toEnum 0))
 
 localDateTimeWith ∷ (Number → String) → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
 
 instance DecodeJson DateWrapper where
-      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateWrapper <<< DTT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
+      decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateWrapper <<< DT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
 
 instance DecodeJson DateTimeWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateTimeWrapper <<< DDI.toDateTime) <<< DAP.caseJsonNumber Nothing (DDI.instant <<< DTD.Milliseconds)
@@ -227,7 +225,7 @@ instance EncodeQueryParam DateTimeWrapper where
       encodeQueryParam = Just <<< show <<< dateTimeToNumber
 
 instance ReadForeign DateWrapper where
-      readImpl foreignDate = DateWrapper <<< DTT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
+      readImpl foreignDate = DateWrapper <<< DT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
 
 instance ReadForeign DateTimeWrapper where
       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
