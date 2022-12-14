@@ -2,6 +2,7 @@ module Server.Im.Database where
 
 import Droplet.Language
 import Prelude hiding (not, join)
+import Server.Database.Suggestions
 import Shared.Privilege
 
 import Data.Array.NonEmpty (NonEmptyArray)
@@ -12,6 +13,8 @@ import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
+import Effect.Class (liftEffect)
+import Effect.Console as EC
 import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
@@ -26,7 +29,6 @@ import Server.Database.LastSeen (_who, last_seen)
 import Server.Database.Messages (_content, _status, _temporary_id, messages)
 import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
-import Server.Database.Suggestions
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Types (Checked(..))
@@ -278,7 +280,9 @@ insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ 
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
       | senderKarma <= 0 && recipientKarma <= 0 = pure unit
-      | otherwise = SD.withTransaction $ \connection → do
+      | otherwise = do
+            liftEffect $ EC.log $ "karma turn: users " <> show loggedUserId <> " and " <> show userId <> " making " <> show senderKarma <> " and " <> show recipientKarma
+            SD.withTransaction $ \connection → do
               when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
               when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
 
