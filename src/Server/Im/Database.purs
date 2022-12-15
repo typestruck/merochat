@@ -65,8 +65,6 @@ userPresentationFields =
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
 
-contactPresentationFields uid = distinct $ (coalesce (_sender /\ uid) # as _chatStarter) /\ (h ... _date # as _lastMessageDate) /\ (datetime_part_age ("day" /\ coalesce (_first_message_date /\ utc_now)) # as _chatAge) /\ userPresentationFields
-
 senderRecipientFilter loggedUserId otherId = wher ((_sender .=. loggedUserId .&&. _recipient .=. otherId) .||. (_sender .=. otherId .&&. _recipient .=. loggedUserId))
 
 usersSource ∷ _
@@ -117,7 +115,7 @@ presentUserContactFields =
       , h.sender_deleted_to
       , h.recipient_deleted_to
       , h.last_message_date "lastMessageDate"
-      , date_part_age ('day', COALESCE(first_message_date, utc_now())) "chatAge"
+      , date_part ('day', utc_now() - COALESCE(first_message_date, utc_now())) "chatAge"
       , u.id
       , avatar
       , gender
@@ -280,9 +278,7 @@ insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ 
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
       | senderKarma <= 0 && recipientKarma <= 0 = pure unit
-      | otherwise = do
-            liftEffect $ EC.log $ "karma turn: users " <> show loggedUserId <> " and " <> show userId <> " making " <> show senderKarma <> " and " <> show recipientKarma
-            SD.withTransaction $ \connection → do
+      | otherwise = SD.withTransaction $ \connection → do
               when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
               when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
 
@@ -327,9 +323,6 @@ markdownPrivileges loggedUserId = SD.query $ select _feature  # from (join privi
 
 _chatStarter ∷ Proxy "chatStarter"
 _chatStarter = Proxy
-
-_chatAge ∷ Proxy "chatAge"
-_chatAge = Proxy
 
 _lastSeen ∷ Proxy "lastSeen"
 _lastSeen = Proxy
