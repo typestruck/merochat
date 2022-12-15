@@ -278,7 +278,9 @@ insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ 
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
       | senderKarma <= 0 && recipientKarma <= 0 = pure unit
-      | otherwise = SD.withTransaction $ \connection → do
+      | otherwise = do
+            liftEffect $ EC.log $ "karma turn: users " <> show loggedUserId <> " and " <> show userId <> " making " <> show senderKarma <> " and " <> show recipientKarma
+            SD.withTransaction $ \connection → do
               when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
               when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
 
