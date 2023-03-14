@@ -35,7 +35,7 @@
     "nodemon": "^2.0.4",
     "purescript-psa": "^0.8.2",
     "purs-loader": "^3.7.2",
-    "webpack": "^5.71.0",
+    "webpack": "^5.76.0",
     "webpack-cli": "4.9.2"
   },
   "optionalDependencies": {
