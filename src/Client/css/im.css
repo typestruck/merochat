@@ -1059,7 +1059,16 @@ svg.toolbar-action {
     flex-grow: 1;
 }
 
-.contact-options {
+.message-content-in {
+    display: flex;
+}
+
+.message-context-options {
+    margin-top:5px;
+    margin-left:10px
+}
+
+.message-context-options, .contact-options {
     display: flex;
     font-size: 0.96em;
     align-items: flex-end;
