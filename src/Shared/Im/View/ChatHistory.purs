@@ -81,7 +81,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                 [ HE.div [ HA.class' "message-content-in"]
                                         [ HE.div' [ HA.innerHtml $ SM.parse content ]
                                         , HE.div (HA.class' "message-context-options")
-                                                [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: true } ]
+                                                [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: false } ]
                                                         [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                                 [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                                 ]

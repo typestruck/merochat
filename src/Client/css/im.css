@@ -361,9 +361,19 @@ blockquote {
     vertical-align: bottom;
 }
 
-.contact:hover .message-context-menu,
+.message-content-in:hover .message-context-menu, .contact:hover .message-context-menu,
 .message-context-menu.visible {
     display: block;
+}
+
+.message-content-in {
+    position: relative;
+}
+
+.message-content-in .message-context-menu.outer-user-menu {
+    position: absolute;
+    z-index: 2;
+    background:#1b3a28;
 }
 
 .settings-name {
@@ -1065,7 +1075,7 @@ svg.toolbar-action {
 
 .message-context-options {
     margin-top:5px;
-    margin-left:10px
+    padding-left:15px
 }
 
 .message-context-options, .contact-options {
