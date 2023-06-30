@@ -179,6 +179,7 @@ data ShowContextMenu
       | ShowCompactProfileContextMenu
       | ShowFullProfileContextMenu
       | ShowContactContextMenu (Tuple Int (Maybe Int))
+      | ShowMessageContextMenu Int
 
 data ShowUserMenuModal
       = HideUserMenuModal
