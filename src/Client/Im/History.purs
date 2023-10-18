@@ -39,7 +39,6 @@ fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
                     { history, shouldFetchChatHistory, user: { id }, impersonating } = SIC.chattingContact contacts chatting
               in
                     if DM.isJust experimenting || DM.isJust impersonating then --impersonated messages are not saved in the database
-
                           displayHistory [] model
                     else
                           model
