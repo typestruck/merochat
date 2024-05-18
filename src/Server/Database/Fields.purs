@@ -44,21 +44,20 @@ lu = Proxy
 tu ∷ Proxy "tu"
 tu = Proxy
 
-
-profileVisibility :: Proxy "profileVisibility"
+profileVisibility ∷ Proxy "profileVisibility"
 profileVisibility = Proxy
 
-readReceipts :: Proxy  "readReceipts"
+readReceipts ∷ Proxy "readReceipts"
 readReceipts = Proxy
 
-typingStatus  :: Proxy "typingStatus"
+typingStatus ∷ Proxy "typingStatus"
 typingStatus = Proxy
 
-onlineStatus  :: Proxy "onlineStatus"
+onlineStatus ∷ Proxy "onlineStatus"
 onlineStatus = Proxy
 
-messageTimestamps :: Proxy  "messageTimestamps"
+messageTimestamps ∷ Proxy "messageTimestamps"
 messageTimestamps = Proxy
 
-completedTutorial :: Proxy "completedTutorial"
+completedTutorial ∷ Proxy "completedTutorial"
 completedTutorial = Proxy

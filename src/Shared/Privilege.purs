@@ -53,7 +53,7 @@ instance BoundedEnum Privilege where
             ReceiveChats → 0
             StartChats → 100
             StartChatExperiments → 200
-            ImpersonationChatExperiment -> 201
+            ImpersonationChatExperiment → 201
             MoreTags → 300
             SendLinks → 400
             SendImages → 500
@@ -62,7 +62,7 @@ instance BoundedEnum Privilege where
             0 → Just ReceiveChats
             100 → Just StartChats
             200 → Just StartChatExperiments
-            201 -> Just ImpersonationChatExperiment
+            201 → Just ImpersonationChatExperiment
             300 → Just MoreTags
             400 → Just SendLinks
             500 → Just SendImages
@@ -73,7 +73,7 @@ instance Enum Privilege where
             ReceiveChats → Just StartChats
             StartChats → Just StartChatExperiments
             StartChatExperiments → Just MoreTags
-            ImpersonationChatExperiment -> Nothing
+            ImpersonationChatExperiment → Nothing
             MoreTags → Just SendLinks
             SendLinks → Just SendImages
             SendImages → Nothing
@@ -82,7 +82,7 @@ instance Enum Privilege where
             ReceiveChats → Nothing
             StartChats → Just ReceiveChats
             StartChatExperiments → Just StartChats
-            ImpersonationChatExperiment -> Just StartChatExperiments
+            ImpersonationChatExperiment → Just StartChatExperiments
             MoreTags → Just StartChatExperiments
             SendLinks → Just MoreTags
             SendImages → Just SendLinks

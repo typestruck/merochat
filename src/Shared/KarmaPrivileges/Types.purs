@@ -41,8 +41,7 @@ type PrivilegeUser =
       , quantity ∷ Int
       }
 
-data KarmaPrivilegesMessage
-      = ToggleBoardDisplay ToggleBoard
+data KarmaPrivilegesMessage = ToggleBoardDisplay ToggleBoard
 
 data ToggleBoard
       = InBetween10

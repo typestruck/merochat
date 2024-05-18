@@ -25,8 +25,8 @@ tokens = Table
 _toker ∷ Proxy "toker"
 _toker = Proxy
 
-insertToken ∷ forall r. Int → String → BaseEffect { pool ∷ Pool | r } Unit
-insertToken id contents = SD.unsafeExecute "INSERT INTO tokens (toker, contents) VALUES (@id, @contents) ON CONFLICT (toker) DO UPDATE SET contents = @contents" {id, contents}
+insertToken ∷ ∀ r. Int → String → BaseEffect { pool ∷ Pool | r } Unit
+insertToken id contents = SD.unsafeExecute "INSERT INTO tokens (toker, contents) VALUES (@id, @contents) ON CONFLICT (toker) DO UPDATE SET contents = @contents" { id, contents }
 
-tokenExists ∷ forall r. Int → String → BaseEffect { pool ∷ Pool | r } Boolean
+tokenExists ∷ ∀ r. Int → String → BaseEffect { pool ∷ Pool | r } Boolean
 tokenExists id contents = map DM.isJust <<< SD.single $ select (1 # as _toker) # from tokens # wher (_contents .=. contents .&&. _toker .=. id)

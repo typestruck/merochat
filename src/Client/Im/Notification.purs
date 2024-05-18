@@ -38,10 +38,11 @@ createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
 notifyUnreadChats ∷ ImModel → Array (Tuple Int (Maybe Int)) → NextMessage
-notifyUnreadChats model userIds = model :> [ do
-      liftEffect $ notify model userIds
-      pure $ Just UpdateDelivered
-]
+notifyUnreadChats model userIds = model :>
+      [ do
+              liftEffect $ notify model userIds
+              pure $ Just UpdateDelivered
+      ]
 
 notify ∷ ImModel → Array (Tuple Int (Maybe Int)) → Effect Unit
 notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do

@@ -41,6 +41,6 @@ generateHeadline = map (_.contents <<< SU.fromJust) <<< SD.single $ select _cont
 -- | Descriptions are bullet point lists of quotes/about me/conversation starters
 generateDescription ∷ ServerEffect String
 generateDescription = do
-      n <- liftEffect $ ER.randomInt 1 6
-      quotes <- DR.reifyType n (\l -> SD.query $ select _contents # from stock_text # wher (_text_type .=. Description) # orderBy random # limit l)
+      n ← liftEffect $ ER.randomInt 1 6
+      quotes ← DR.reifyType n (\l → SD.query $ select _contents # from stock_text # wher (_text_type .=. Description) # orderBy random # limit l)
       pure <<< DS.joinWith "\n" $ map (("- " <> _) <<< _.contents) quotes

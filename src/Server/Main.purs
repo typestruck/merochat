@@ -26,7 +26,7 @@ import Shared.Spec (spec)
 
 main ∷ Effect Unit
 main = do
-      configuration@{storageApplicationKeyId, storageApplicationKey} ← CF.readConfiguration
+      configuration@{ storageApplicationKeyId, storageApplicationKey } ← CF.readConfiguration
       when production $ SF.init storageApplicationKeyId storageApplicationKey
       startWebSocketServer configuration
       startHttpServer configuration
@@ -38,7 +38,7 @@ startWebSocketServer configuration = do
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool userAvailability)
-      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen userAvailability *> SWE.persistLastSeen { pool, userAvailability})
+      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen userAvailability *> SWE.persistLastSeen { pool, userAvailability })
       SW.onServerClose webSocketServer (const (ET.clearInterval intervalId))
 
 startHttpServer ∷ Configuration → Effect Unit

@@ -19,6 +19,7 @@ data DatabaseError = MissingForeignKey
 
 instance Show ResponseError where
       show = DGRS.genericShow
+
 instance Show DatabaseError where
       show = DGRS.genericShow
 

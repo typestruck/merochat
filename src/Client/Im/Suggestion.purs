@@ -97,7 +97,8 @@ blockUser webSocket tupleId model =
                                 liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: blocked }
                                 pure Nothing
             ]
-      where blocked = DT.fst tupleId
+      where
+      blocked = DT.fst tupleId
 
 updateAfterBlock ∷ Int → ImModel → ImModel
 updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =

@@ -12,13 +12,13 @@ import Effect.Console as EC
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
-import Data.Maybe(Maybe(..))
+import Data.Maybe (Maybe(..))
 import Effect.Class
 
 type Configuration =
       { port ∷ Int
       , captchaSecret ∷ String
-      , adminSecret :: String
+      , adminSecret ∷ String
       , storageApplicationKey ∷ String
       , storageApplicationKeyId ∷ String
       , tokenSecret ∷ String
@@ -42,4 +42,4 @@ type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) 
 
 type ServerEffect a = BaseEffect ServerReader a
 
-poolEffect pool = R.runBaseAff' <<< RE.catch (\e -> liftEffect (EC.logShow e) *> pure Nothing) <<< RR.runReader {pool}
+poolEffect pool = R.runBaseAff' <<< RE.catch (\e → liftEffect (EC.logShow e) *> pure Nothing) <<< RR.runReader { pool }

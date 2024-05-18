@@ -15,7 +15,7 @@ import Shared.User (ProfileVisibility)
 
 settings ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
 settings { guards: { loggedUserId } } = do
-      privacySettings <- SSD.privacySettings loggedUserId
+      privacySettings ← SSD.privacySettings loggedUserId
       R.liftEffect $ SST.template privacySettings
 
 accountEmail ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { email ∷ String } } → ServerEffect (Response Ok)
@@ -33,7 +33,7 @@ accountTerminate { guards: { loggedUserId } } = do
       SSA.terminateAccount loggedUserId
       pure SL.expireCookies
 
-changePrivacy ∷ { guards ∷ { loggedUserId ∷ Int }, body :: PrivacySettings } → ServerEffect Ok
+changePrivacy ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ PrivacySettings } → ServerEffect Ok
 changePrivacy { guards: { loggedUserId }, body } = do
       SSA.changePrivacySettings loggedUserId body
       pure ok

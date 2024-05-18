@@ -53,7 +53,7 @@ userPresentationFields =
             /\ _temporary
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
-            /\ (select (_date # as _lastSeen) # from last_seen # wher (_who .=. u ... _id) # orderBy _who # limit (Proxy :: _ 1))
+            /\ (select (_date # as _lastSeen) # from last_seen # wher (_who .=. u ... _id) # orderBy _who # limit (Proxy ∷ _ 1))
             /\ (_messageTimestamps # as messageTimestamps)
             /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ _joined
@@ -99,7 +99,7 @@ suggestBaseQuery loggedUserId skip filter =
       select star
             # from
                     ( select userPresentationFields
-                            # from (leftJoin (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId :: Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
+                            # from (leftJoin (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
                             # wher filter
                             # orderBy ((_sender # desc) /\ (l ... _date # desc) /\ _score)
                             # limit (Proxy ∷ Proxy 10)
@@ -266,9 +266,12 @@ isRecipientVisible loggedUserId userId =
       map DM.isJust <<< SD.single $
             select (1 # as c)
                   # from (leftJoin (users # as u) (histories # as h) # on (_sender .=. loggedUserId .&&. _recipient .=. userId .||. _sender .=. userId .&&. _recipient .=. loggedUserId))
-                  # wher (u ... _id .=. userId .&&.
-                         not (exists $ select (1 # as c) # from blocks # wher (_blocked .=. loggedUserId .&&. _blocker .=. userId)) .&&.
-                         (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date)))
+                  # wher
+                          ( u ... _id .=. userId
+                                  .&&. not (exists $ select (1 # as c) # from blocks # wher (_blocked .=. loggedUserId .&&. _blocker .=. userId))
+                                  .&&.
+                                        (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date))
+                          )
 
 insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ \connection → do
@@ -279,10 +282,10 @@ insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ P
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
       | senderKarma <= 0 && recipientKarma <= 0 = pure unit
       | otherwise = do
-            liftEffect $ EC.log $ "karma turn: users " <> show loggedUserId <> " and " <> show userId <> " making " <> show senderKarma <> " and " <> show recipientKarma
-            SD.withTransaction $ \connection → do
-              when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
-              when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
+              liftEffect $ EC.log $ "karma turn: users " <> show loggedUserId <> " and " <> show userId <> " making " <> show senderKarma <> " and " <> show recipientKarma
+              SD.withTransaction $ \connection → do
+                    when (senderKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (senderKarma /\ loggedUserId))
+                    when (recipientKarma > 0) (SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (recipientKarma /\ userId))
 
 changeStatus ∷ ∀ r. Int → MessageStatus → Array Int → BaseEffect { pool ∷ Pool | r } Unit
 changeStatus loggedUserId status = case _ of
@@ -320,8 +323,8 @@ upsertLastSeen jsonInput = void $ SD.unsafeExecute "INSERT INTO last_seen(who, d
 queryLastSeen ∷ NonEmptyArray Int → _
 queryLastSeen ids = SD.query $ select (_who /\ _date) # from last_seen # wher (_who `in_` ids)
 
-markdownPrivileges ∷ forall r. Int →  BaseEffect { pool ∷ Pool | r } _
-markdownPrivileges loggedUserId = SD.query $ select _feature  # from (join privileges karma_leaderboard # on ((_feature .=. SendLinks .||. _feature .=. SendImages) .&&._quantity .<=. _current_karma .&&. _ranker .=. loggedUserId))
+markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } _
+markdownPrivileges loggedUserId = SD.query $ select _feature # from (join privileges karma_leaderboard # on ((_feature .=. SendLinks .||. _feature .=. SendImages) .&&. _quantity .<=. _current_karma .&&. _ranker .=. loggedUserId))
 
 _chatStarter ∷ Proxy "chatStarter"
 _chatStarter = Proxy

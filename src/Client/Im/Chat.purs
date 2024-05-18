@@ -21,7 +21,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
-import Shared.Markdown(Token(..))
+import Shared.Markdown (Token(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC

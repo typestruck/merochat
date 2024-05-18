@@ -69,6 +69,7 @@ instance
       makeRouteList _ _ _ = R.insert (Proxy ∷ _ routeName) asString rest
             where
             rest = makeRouteList (Proxy ∷ _ remRoutes) (Proxy ∷ _ basePath) (Proxy ∷ _ (Record baseParams))
+
             asString ∷ ToString payload
             asString payload =
                   makeUrlString (Route ∷ Route "GET" path routeSpec) (Proxy ∷ _ basePath) (Proxy ∷ _ (Record baseParams)) payload

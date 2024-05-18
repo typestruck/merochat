@@ -113,8 +113,8 @@ tutorial { chatting } = case _ of
             [ HE.span (HA.class' "bold") "Welcome!"
             , HE.span_ "Let's take you through a brief tutorial"
             , HE.div (HA.class' "buttons")
-                    [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial",
-                    HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatSuggestions ] "Start!"
+                    [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
+                    , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatSuggestions ] "Start!"
                     ]
             ]
       ChatSuggestions → HE.div (HA.class' "confirmation tutorial chat-step")

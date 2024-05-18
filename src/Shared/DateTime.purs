@@ -151,7 +151,7 @@ ago dateTime =
       else
             localDateTimeWith fullDate dateTime
       where
-      days =  daysDiff dateTime
+      days = daysDiff dateTime
 
 agoWithTime ∷ DateTime → String
 agoWithTime dateTime =
@@ -160,17 +160,18 @@ agoWithTime dateTime =
       else
             ago dateTime <> " " <> timeString
       where
-      days =  daysDiff dateTime
+      days = daysDiff dateTime
       timeString = localDateTimeWith time dateTime
 
 daysDiff ∷ DateTime → Int
 daysDiff dt = daysInYear now - daysInYear dateTime
-      where localTime = SU.fromJust <<< DT.adjust offset
-            daysInYear dtp = DI.floor $ DN.unwrap (DT.diff dtp firstDay ∷ Days)
-            firstDay = DateTime (DD.canonicalDate (DD.year $ DT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
-            offset = DTD.negateDuration $ EU.unsafePerformEffect EN.getTimezoneOffset
-            now = localTime unsafeNow
-            dateTime = localTime  dt
+      where
+      localTime = SU.fromJust <<< DT.adjust offset
+      daysInYear dtp = DI.floor $ DN.unwrap (DT.diff dtp firstDay ∷ Days)
+      firstDay = DateTime (DD.canonicalDate (DD.year $ DT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
+      offset = DTD.negateDuration $ EU.unsafePerformEffect EN.getTimezoneOffset
+      now = localTime unsafeNow
+      dateTime = localTime dt
 
 localDateTimeWith ∷ (Number → String) → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime

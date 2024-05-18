@@ -42,8 +42,8 @@ update model@{ comments, screenshot } =
                               } :>
                               [ do
                                       liftEffect do
-                                          input <-  getFileInput
-                                          WHI.setValue "" <<< SU.fromJust $ WHI.fromElement input
+                                            input ← getFileInput
+                                            WHI.setValue "" <<< SU.fromJust $ WHI.fromElement input
                                       EA.delay $ Milliseconds 4000.0
                                       pure <<< Just $ SetFeedbackStatus Nothing
                               ]

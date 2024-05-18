@@ -105,7 +105,7 @@ userBy = case _ of
       Email value → SD.single $ baseQuery (\ft → ft .&&. _email .=. value)
       Id value → SD.single $ baseQuery (\ft → ft .&&. _id .=. value)
 
-isUserBanned :: forall r. Int -> BaseEffect { pool :: Pool | r} Boolean
+isUserBanned ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } Boolean
 isUserBanned loggedUserId = map DM.isJust <<< SD.single $ select (1 # as c) # from users # wher (_visibility .=. TemporarilyBanned .&&. _id .=. loggedUserId)
 
 baseQuery ft = select (_id /\ _email /\ _password) # from users # wher (ft (_visibility .<>. TemporarilyBanned))

@@ -28,7 +28,7 @@ registerRegularUser { captchaResponse, email: rawEmail, password } = do
             , name
             , headline
             , description
-            , temporary : false
+            , temporary: false
             }
       ST.createToken id
 
@@ -44,6 +44,6 @@ registerTemporaryUser captchaResponse = do
             , name
             , headline
             , description
-            , temporary : true
+            , temporary: true
             }
       ST.createToken id

@@ -17,7 +17,7 @@ type FeedbackModel =
       { feedbackStatus ∷ Maybe Status
       , comments ∷ String
       , screenshot ∷ Maybe String
-      , loading :: Boolean
+      , loading ∷ Boolean
       }
 
 data FeedbackMessage

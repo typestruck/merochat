@@ -11,14 +11,14 @@ import Run as R
 import Server.Effect (ServerEffect)
 
 -- wrapper around crypto.getRandomValues
-foreign import randomInt_ :: EffectFn2 Int Int Int
+foreign import randomInt_ ∷ EffectFn2 Int Int Int
 
-foreign import randomInts_ :: EffectFn3 Int Int Int (Array Int)
+foreign import randomInts_ ∷ EffectFn3 Int Int Int (Array Int)
 
-randomInt :: Int -> Int -> Effect Int
+randomInt ∷ Int → Int → Effect Int
 randomInt = EU.runEffectFn2 randomInt_
 
-randomInts :: Int -> Int -> Int -> Effect (Array Int)
+randomInts ∷ Int → Int → Int → Effect (Array Int)
 randomInts = EU.runEffectFn3 randomInts_
 
 --select five (distinct) numbers from 1 to 69, and one number from 1 to 26

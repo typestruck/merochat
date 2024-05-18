@@ -9,7 +9,7 @@ import Type.Proxy (Proxy(..))
 
 type Feedbacks =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
-      , comments :: String
+      , comments ∷ String
       , file_name ∷ Maybe String
       , feedbacker ∷ Column Int (ForeignKey "id" UsersTable)
       )

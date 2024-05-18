@@ -29,15 +29,16 @@ update model =
                         } :> dispatchEvent (Just code)
             ToggleSection section → F.noMessages $ model { section = section }
             ConfirmImpersonation profile → F.noMessages model { impersonation = profile }
-            RedirectKarma -> model :> [do
-                  liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges
-                  pure Nothing
-            ]
-            UpdatePrivileges { privileges} -> F.noMessages model { user {privileges = privileges }  }
+            RedirectKarma → model :>
+                  [ do
+                          liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges
+                          pure Nothing
+                  ]
+            UpdatePrivileges { privileges } → F.noMessages model { user { privileges = privileges } }
       where
       dispatchEvent payload =
             [ liftEffect do
-                  --refactor: if experiments depends on im on webpack this can be safe
+                    --refactor: if experiments depends on im on webpack this can be safe
                     FSUC.broadcast setChatExperiment payload
                     pure Nothing
             ]

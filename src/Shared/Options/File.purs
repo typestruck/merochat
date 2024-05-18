@@ -10,10 +10,10 @@ import Data.Array as DA
 import Data.Set (Set)
 
 allowedMediaTypes ∷ HashMap String String
-allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64" , "data:image/gif;base64" ] $ DS.toUnfoldable allowedExtensions
+allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64" ] $ DS.toUnfoldable allowedExtensions
 
 allowedExtensions ∷ Set String
-allowedExtensions = DS.fromFoldable [".png", ".jpg", ".tiff", ".bmp",  ".gif" ]
+allowedExtensions = DS.fromFoldable [ ".png", ".jpg", ".tiff", ".bmp", ".gif" ]
 
 base ∷ Int
 base = 1000
@@ -31,7 +31,7 @@ developmentImageBasePath ∷ String
 developmentImageBasePath = "/client/media/"
 
 developmentJsBasePath ∷ String
-developmentJsBasePath ="/client/javascript/"
+developmentJsBasePath = "/client/javascript/"
 
 developmentCssBasePath ∷ String
 developmentCssBasePath = "/client/css/"

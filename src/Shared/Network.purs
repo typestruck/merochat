@@ -21,7 +21,6 @@ instance DecodeJson RequestStatus where
 instance EncodeJson RequestStatus where
       encodeJson = DAEGR.genericEncodeJson
 
-
 errorMessage ∷ ClientError → String
 errorMessage = case _ of
       DecodeError _ → "Server sent an unexpected response"

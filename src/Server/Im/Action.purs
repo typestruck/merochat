@@ -9,7 +9,7 @@ import Data.Array.NonEmpty as DAN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set (Set(..))
-import Data.Either(Either(..))
+import Data.Either (Either(..))
 import Data.Set as DST
 import Data.String as DS
 import Data.Tuple (Tuple(..))
@@ -31,7 +31,7 @@ import Shared.Markdown as SM
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
-import Shared.Markdown(Token(..))
+import Shared.Markdown (Token(..))
 
 im ∷ Int → ServerEffect Payload
 im loggedUserId = do

@@ -104,6 +104,7 @@ registerEvents callback = do
       onEnter event = do
             let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
             when (pressed == "Enter") callback
+
       listenIfExists ∷ ∀ a. Maybe Element → Effect a → Effect Unit
       listenIfExists maybeElement handler = case maybeElement of
             Nothing → pure unit

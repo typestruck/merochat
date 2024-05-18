@@ -13,15 +13,15 @@ data TextType = Headline | Description
 
 instance ToValue TextType where
       toValue = case _ of
-            Headline -> F.unsafeToForeign 0
-            Description -> F.unsafeToForeign 1
+            Headline → F.unsafeToForeign 0
+            Description → F.unsafeToForeign 1
 
 instance FromValue TextType where
       fromValue value =
             case CME.runExcept $ F.readInt value of
-                  Right 0 -> Right Headline
-                  Right 1 -> Right Description
-                  n -> Left $ "Invalid TextType " <> show n
+                  Right 0 → Right Headline
+                  Right 1 → Right Description
+                  n → Left $ "Invalid TextType " <> show n
 
 type StockText =
       ( id ∷ Column Int (PrimaryKey /\ Identity)

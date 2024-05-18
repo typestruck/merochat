@@ -20,8 +20,8 @@ view = HE.div (HA.class' "backer")
               , HE.img [ HA.alt "", HA.src "https://www.paypal.com/en_US/i/scr/pixel.gif", HA.width "1", HA.height "1" ]
               ]
       , HE.h3_ "Become a backer on Liberapay"
-      , HE.script' [HA.src "https://liberapay.com/merochat/widgets/button.js", HA.type' "text/javascript"]
-      , HE.a [HA.href "https://liberapay.com/merochat/donate", HA.target "_blank"] $ HE.img [HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg"]
+      , HE.script' [ HA.src "https://liberapay.com/merochat/widgets/button.js", HA.type' "text/javascript" ]
+      , HE.a [ HA.href "https://liberapay.com/merochat/donate", HA.target "_blank" ] $ HE.img [ HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg" ]
       , HE.h3_ "Become a backer on Patreon and get sweet rewards"
       , HE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button" ]
               [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
@@ -35,6 +35,6 @@ view = HE.div (HA.class' "backer")
       , HE.h3 ((HA.class' "bottom")) "Other ways to help"
       , HE.p_
               [ HE.text "Not all contributions have to be financial. Spreading the word, inviting new people to try MeroChat out, reporting bugs or undesired behavior is also a lot of help. Likewise, if you have any interest in design or programming, MeroChat is "
-              , HE.a [HA.href "https://github.com/typestruck/merochat" , HA.target "_blank"] "free and open source software."
+              , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] "free and open source software."
               ]
       ]

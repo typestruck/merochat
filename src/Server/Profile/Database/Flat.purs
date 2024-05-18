@@ -10,7 +10,7 @@ import Shared.Avatar as SA
 import Shared.DateTime (DateWrapper(..))
 import Shared.Privilege (Privilege)
 import Shared.Profile.Types (ProfileUser)
-import Shared.User ( Gender)
+import Shared.User (Gender)
 import Shared.Availability
 
 type FlatProfileUser =
@@ -20,7 +20,7 @@ type FlatProfileUser =
       , description ∷ String
       , gender ∷ Maybe Gender
       , headline ∷ String
-      , privileges :: Maybe (Array Privilege)
+      , privileges ∷ Maybe (Array Privilege)
       , id ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int

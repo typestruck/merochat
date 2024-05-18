@@ -105,9 +105,9 @@ handlers reading =
       , internalBacker: runJson reading SIBH.internalBacker
       , experiments: runJson reading SEH.experiments
       , developmentFiles: developmentFiles
-      , admin: {
-        ban: runJson reading SHA.ban
-      }
+      , admin:
+              { ban: runJson reading SHA.ban
+              }
       , notFound: runHtml reading SNH.notFound
       }
 

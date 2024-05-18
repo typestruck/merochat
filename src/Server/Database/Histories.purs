@@ -16,8 +16,8 @@ type Histories =
       , last_message_date ∷ Column DateTime Default
       , sender_archived ∷ Column Boolean Default
       , recipient_archived ∷ Column Boolean Default
-      , sender_deleted_to :: Maybe Int
-      , recipient_deleted_to :: Maybe Int
+      , sender_deleted_to ∷ Maybe Int
+      , recipient_deleted_to ∷ Maybe Int
       )
 
 histories ∷ Table "histories" Histories

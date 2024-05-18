@@ -12,6 +12,7 @@ import Client.Im.Scroll as CIS
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Debug
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
@@ -44,7 +45,7 @@ fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
                     else
                           model
                                 { freeToFetchChatHistory = false
-                                } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: if shouldFetchChatHistory then 0 else DA.length history } }) ]
+                                } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: if (spy "should fetch? " shouldFetchChatHistory) then 0 else (spy "skipping this much " $DA.length history) } }) ]
       | otherwise = F.noMessages model
 
 displayHistory ∷ Array HistoryMessage → ImModel → NoMessages

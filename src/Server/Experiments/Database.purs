@@ -21,6 +21,6 @@ fetchExperiments = SD.query $ select (_id /\ _code /\ _name /\ _description) # f
 fetchExperimentUser ∷ Int → ServerEffect ChatExperimentUser
 fetchExperimentUser loggedUserId = do
       record ← SD.single $ select (array_agg _feature # as _privileges) # from (join privileges karma_leaderboard # on (_ranker .=. loggedUserId .&&. _quantity .<=. _current_karma))
-      pure <<< { privileges : _ } $ SU.fromJust do
+      pure <<< { privileges: _ } $ SU.fromJust do
             r ← record
             r.privileges

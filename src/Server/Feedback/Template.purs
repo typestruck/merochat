@@ -18,6 +18,6 @@ template =
                     { feedbackStatus: Nothing
                     , screenshot: Nothing
                     , comments: ""
-                    , loading : false
+                    , loading: false
                     }
             }

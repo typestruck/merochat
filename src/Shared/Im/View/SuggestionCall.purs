@@ -16,7 +16,7 @@ import Shared.Im.Svg as SIS
 suggestionCall ∷ ImModel → Html ImMessage
 suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
       | DM.isJust chatting =
-              HE.div (HA.class' {"side-suggestions-container": true, highlighted: toggleModal == Tutorial BackSuggestions } )
+              HE.div (HA.class' { "side-suggestions-container": true, highlighted: toggleModal == Tutorial BackSuggestions })
                     [ HE.div [ HA.class' "side-suggestion back-side-suggestion", HA.onClick ResumeSuggesting, HA.title "Browse chat suggestions again" ]
                             [ SIS.arrow [ HA.class' "svg-back-suggestions" ]
                             , HE.span (HA.class' "back-suggestions") "Back to chat suggestions"
@@ -33,7 +33,7 @@ suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
                                                   HE.img [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass previousIndex, HA.src $ SA.avatarForRecipient previousIndex $ getAvatar previousIndex ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less-z", HA.onClick FocusCurrentSuggestion, HA.title "Move to this chat suggestion" ]
-                                          [ HE.img [HA.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", HA.class' $ avatarClasses avatar, HA.src $ SA.avatarForRecipient suggesting avatar ]
+                                          [ HE.img [ HA.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", HA.class' $ avatarClasses avatar, HA.src $ SA.avatarForRecipient suggesting avatar ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less faded", HA.onClick $ SpecialRequest NextSuggestion, HA.title "Move to this chat suggestion" ]
                                           [ let
@@ -59,5 +59,5 @@ suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
                     user.avatar
 
               avatarClasses avatar
-                        | DM.isNothing avatar = "avatar-contact-list " <> SA.avatarColorClass suggesting
-                        | otherwise = "avatar-contact-list"
+                    | DM.isNothing avatar = "avatar-contact-list " <> SA.avatarColorClass suggesting
+                    | otherwise = "avatar-contact-list"

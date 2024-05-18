@@ -166,8 +166,8 @@ setTitle title = do
 pushState ∷ String → Effect Unit
 pushState = EU.runEffectFn1 pushState_
 
-removeFromClassList :: Element -> String -> Effect Unit
+removeFromClassList ∷ Element → String → Effect Unit
 removeFromClassList = EU.runEffectFn2 removeFromClassList_
 
-addToClassList :: Element -> String -> Effect Unit
+addToClassList ∷ Element → String → Effect Unit
 addToClassList = EU.runEffectFn2 addToClassList_
