@@ -418,18 +418,19 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
 quoteMessage ∷ String → Maybe Event → ImModel → NextMessage
 quoteMessage contents event model@{ chatting } =
       case event of
-            Nothing ->
-                  model { toggleContextMenu = HideContextMenu } :>[ liftEffect quoteIt ]
-            Just evt ->
-                  model :> [ liftEffect do
-                        classes ← WDE.className <<< SU.fromJust $ do
-                              target ← WEE.target evt
-                              WDE.fromEventTarget target
-                        if DS.contains (Pattern "message") classes then
-                              quoteIt
-                        else
-                              pure Nothing
-                  ]
+            Nothing →
+                  model { toggleContextMenu = HideContextMenu } :> [ liftEffect quoteIt ]
+            Just evt →
+                  model :>
+                        [ liftEffect do
+                                classes ← WDE.className <<< SU.fromJust $ do
+                                      target ← WEE.target evt
+                                      WDE.fromEventTarget target
+                                if DS.contains (Pattern "message") classes then
+                                      quoteIt
+                                else
+                                      pure Nothing
+                        ]
       where
       quoteIt = do
             input ← chatInput chatting
