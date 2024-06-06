@@ -415,21 +415,27 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       minimumLength = 7
       enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
 
-quoteMessage ∷ String → Event → ImModel → NextMessage
-quoteMessage contents event model@{ chatting } = model :>
-      [ liftEffect do
-              classes ← WDE.className <<< SU.fromJust $ do
-                    target ← WEE.target event
-                    WDE.fromEventTarget target
-              if DS.contains (Pattern "message") classes then do
-                    input ← chatInput chatting
-                    let markup = sanitized <> "\n\n"
-                    value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
-                    setAtCursor input $ if DS.null value then markup else "\n" <> markup
-              else
-                    pure Nothing
-      ]
+quoteMessage ∷ String → Maybe Event → ImModel → NextMessage
+quoteMessage contents event model@{ chatting } =
+      case event of
+            Nothing ->
+                  model { toggleContextMenu = HideContextMenu } :>[ liftEffect quoteIt ]
+            Just evt ->
+                  model :> [ liftEffect do
+                        classes ← WDE.className <<< SU.fromJust $ do
+                              target ← WEE.target evt
+                              WDE.fromEventTarget target
+                        if DS.contains (Pattern "message") classes then
+                              quoteIt
+                        else
+                              pure Nothing
+                  ]
       where
+      quoteIt = do
+            input ← chatInput chatting
+            let markup = sanitized <> "\n\n"
+            value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
+            setAtCursor input $ if DS.null value then markup else "\n" <> markup
       sanitized = case DA.find notSpaceQuote $ SM.lexer contents of
             Nothing → "> *quote*"
             Just (Token token) → "> " <> token.raw

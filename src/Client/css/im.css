@@ -1012,6 +1012,10 @@ svg.toolbar-action {
     background: #373737;
 }
 
+.user-menu.in-message {
+    background-color: #373737;
+}
+
 .modal-menu .back {
     color: hsl(145, 80%, 28%);
     margin-bottom: 25px;
@@ -2163,11 +2167,9 @@ select {
     .logo-contact-list,
     .fortune,
     .avatar-settings,
-    .settings-name {
-        display: none;
-    }
-
-    .tutorial {
+    .settings-name,
+    .tutorial,
+    .message-content-in {
         display: none;
     }
 

@@ -288,7 +288,7 @@ data ImMessage
       | DropFile Event
       | ToggleMessageEnter
       | FocusInput ElementId
-      | QuoteMessage String Event
+      | QuoteMessage String (Maybe Event)
       | FocusCurrentSuggestion
       | EnterBeforeSendMessage Event
       | ForceBeforeSendMessage
