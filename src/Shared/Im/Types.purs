@@ -255,7 +255,6 @@ data RetryableRequest
 
 data ReportReason = DatingContent | Harassment | HateSpeech | Spam | Minor | OtherReason
 
-
 type Touch = { startX ∷ Int, endX ∷ Int, startY ∷ Int, endY ∷ Int }
 
 data ImMessage

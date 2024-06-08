@@ -432,7 +432,7 @@ quoteMessage contents event model@{ chatting } =
                                 else
                                       pure Nothing
                         ]
-            Left {startX, endX } -> model :> [ if startX < endX then liftEffect quoteIt else pure Nothing ]
+            Left { startX, endX } → model :> [ if startX < endX then liftEffect quoteIt else pure Nothing ]
       where
       quoteIt = do
             input ← chatInput chatting
