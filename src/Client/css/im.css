@@ -147,7 +147,8 @@ body {
     text-decoration: underline;
 }
 
-.contact-list-last-message ul, .contact-list-last-message ol {
+.contact-list-last-message ul,
+.contact-list-last-message ol {
     padding-left: 0;
 }
 
@@ -361,7 +362,8 @@ blockquote {
     vertical-align: bottom;
 }
 
-.message-content-in:hover .message-context-menu, .contact:hover .message-context-menu,
+.message-content-in:hover .message-context-menu,
+.contact:hover .message-context-menu,
 .message-context-menu.visible {
     display: block;
 }
@@ -373,7 +375,7 @@ blockquote {
 .message-content-in .message-context-menu.outer-user-menu {
     position: absolute;
     z-index: 2;
-    background:#1b3a28;
+    background: #1b3a28;
 }
 
 .settings-name {
@@ -1016,6 +1018,10 @@ svg.toolbar-action {
     background-color: #373737;
 }
 
+.user-menu.in-message.menu-up {
+    top: -82px;
+}
+
 .modal-menu .back {
     color: hsl(145, 80%, 28%);
     margin-bottom: 25px;
@@ -1078,12 +1084,13 @@ svg.toolbar-action {
 }
 
 .message-context-options {
-    margin-top:5px;
-    margin-left:auto;
-    padding-left:15px
+    margin-top: 5px;
+    margin-left: auto;
+    padding-left: 15px
 }
 
-.message-context-options, .contact-options {
+.message-context-options,
+.contact-options {
     display: flex;
     font-size: 0.96em;
     align-items: flex-end;
@@ -1240,7 +1247,8 @@ input:not(type=button):focus {
     color: rgb(238, 238, 238);
 }
 
-.image-buttons button, .buttons button {
+.image-buttons button,
+.buttons button {
     font-size: 1em;
 }
 

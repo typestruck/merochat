@@ -4,13 +4,13 @@ module Client.Im.Main where
 
 import Debug
 import Prelude
+import Shared.Availability
 import Shared.Im.Types
 import Shared.User
 
 import Client.Common.Dom (setChatExperiment)
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
-import Shared.Availability
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
@@ -180,8 +180,8 @@ update { webSocketRef, fileReader } model =
             ToggleUserContextMenu event → toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) → CIU.toggleModal toggle model
             SetModalContents file root html → CIU.setModalContents file root html model
-            SetContextMenuToggle toggle → CIU.toggleUserContextMenu toggle model
             --main
+            SetContextMenuToggle toggle → toggleContextMenu toggle model
             AskChatExperiment → askExperiment model
             SetChatExperiment experiment → setExperiment experiment model
             ReloadPage → reloadPage model
@@ -209,6 +209,9 @@ update { webSocketRef, fileReader } model =
             DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+
+toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
+toggleContextMenu toggle model= F.noMessages model { toggleContextMenu = toggle }
 
 pollPrivileges ∷ WebSocket → ImModel → NoMessages
 pollPrivileges webSocket model = model :>

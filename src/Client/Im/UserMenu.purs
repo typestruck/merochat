@@ -79,6 +79,3 @@ setModalContents resource root html model = CIF.nothingNext model loadModal
             case resource of
                   Just name → CCD.loadScript name
                   Nothing → pure unit
-
-toggleUserContextMenu ∷ ShowContextMenu → ImModel → NoMessages
-toggleUserContextMenu toggle model = F.noMessages $ model { toggleContextMenu = toggle }
