@@ -1015,11 +1015,17 @@ svg.toolbar-action {
 }
 
 .user-menu.in-message {
-    background-color: #373737;
+    background-color: #212120;
+    right:10px;
+    top:32px;
+}
+
+.incoming-message .message-context-menu.outer-user-menu {
+    background-color: #373737 !important;
 }
 
 .user-menu.in-message.menu-up {
-    top: -82px;
+    top: -92px;
 }
 
 .modal-menu .back {
