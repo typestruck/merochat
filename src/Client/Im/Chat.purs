@@ -14,21 +14,20 @@ import Control.Alt ((<|>))
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.DateTime as DT
+import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
-import Shared.Markdown (Token(..))
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Symbol as TDS
-import Data.Time.Duration (Days(..), Milliseconds(..), Minutes(..), Seconds)
+import Data.Time.Duration (Days, Milliseconds(..), Minutes)
 import Data.Tuple (Tuple(..))
-import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -43,6 +42,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
+import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Options.File (maxImageSize)
 import Shared.Unsafe ((!@))
@@ -415,21 +415,30 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       minimumLength = 7
       enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
 
-quoteMessage ∷ String → Event → ImModel → NextMessage
-quoteMessage contents event model@{ chatting } = model :>
-      [ liftEffect do
-              classes ← WDE.className <<< SU.fromJust $ do
-                    target ← WEE.target event
-                    WDE.fromEventTarget target
-              if DS.contains (Pattern "message") classes then do
-                    input ← chatInput chatting
-                    let markup = sanitized <> "\n\n"
-                    value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
-                    setAtCursor input $ if DS.null value then markup else "\n" <> markup
-              else
-                    pure Nothing
-      ]
+--this messy ass event can be from double click, context menu or swipe
+quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage
+quoteMessage contents event model@{ chatting } =
+      case event of
+            Right Nothing →
+                  model { toggleContextMenu = HideContextMenu } :> [ liftEffect quoteIt ]
+            Right (Just evt) →
+                  model :>
+                        [ liftEffect do
+                                classes ← WDE.className <<< SU.fromJust $ do
+                                      target ← WEE.target evt
+                                      WDE.fromEventTarget target
+                                if DS.contains (Pattern "message") classes then
+                                      quoteIt
+                                else
+                                      pure Nothing
+                        ]
+            Left { startX, endX } → model :> [ if startX < endX then liftEffect quoteIt else pure Nothing ]
       where
+      quoteIt = do
+            input ← chatInput chatting
+            let markup = sanitized <> "\n\n"
+            value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
+            setAtCursor input $ if DS.null value then markup else "\n" <> markup
       sanitized = case DA.find notSpaceQuote $ SM.lexer contents of
             Nothing → "> *quote*"
             Just (Token token) → "> " <> token.raw

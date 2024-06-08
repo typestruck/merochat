@@ -301,7 +301,7 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
                               , date
                               }
                   --pass along karma calculation
-                  DM.maybe (pure unit) (SIA.processKarma loggedUserId userId) $ spy "turn" turn
+                  DM.maybe (pure unit) (SIA.processKarma loggedUserId userId) turn
             Left UserUnavailable →
                   sendWebSocketMessage connection <<< Content $ ContactUnavailable { userId, temporaryMessageId: Just temporaryId }
             Left InvalidMessage →

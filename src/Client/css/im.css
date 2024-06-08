@@ -147,7 +147,8 @@ body {
     text-decoration: underline;
 }
 
-.contact-list-last-message ul, .contact-list-last-message ol {
+.contact-list-last-message ul,
+.contact-list-last-message ol {
     padding-left: 0;
 }
 
@@ -361,9 +362,20 @@ blockquote {
     vertical-align: bottom;
 }
 
+.message-content-in:hover .message-context-menu,
 .contact:hover .message-context-menu,
 .message-context-menu.visible {
     display: block;
+}
+
+.message-content-in {
+    position: relative;
+}
+
+.message-content-in .message-context-menu.outer-user-menu {
+    position: absolute;
+    z-index: 2;
+    background: #1b3a28;
 }
 
 .settings-name {
@@ -1002,6 +1014,20 @@ svg.toolbar-action {
     background: #373737;
 }
 
+.user-menu.in-message {
+    background-color: #212120;
+    right:10px;
+    top:32px;
+}
+
+.incoming-message .message-context-menu.outer-user-menu {
+    background-color: #373737 !important;
+}
+
+.user-menu.in-message.menu-up {
+    top: -92px;
+}
+
 .modal-menu .back {
     color: hsl(145, 80%, 28%);
     margin-bottom: 25px;
@@ -1059,6 +1085,17 @@ svg.toolbar-action {
     flex-grow: 1;
 }
 
+.message-content-in {
+    display: flex;
+}
+
+.message-context-options {
+    margin-top: 5px;
+    margin-left: auto;
+    padding-left: 15px
+}
+
+.message-context-options,
 .contact-options {
     display: flex;
     font-size: 0.96em;
@@ -1216,7 +1253,8 @@ input:not(type=button):focus {
     color: rgb(238, 238, 238);
 }
 
-.image-buttons button, .buttons button {
+.image-buttons button,
+.buttons button {
     font-size: 1em;
 }
 
@@ -2143,11 +2181,9 @@ select {
     .logo-contact-list,
     .fortune,
     .avatar-settings,
-    .settings-name {
-        display: none;
-    }
-
-    .tutorial {
+    .settings-name,
+    .tutorial,
+    .message-context-options {
         display: none;
     }
 

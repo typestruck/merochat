@@ -45,7 +45,7 @@ fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
                     else
                           model
                                 { freeToFetchChatHistory = false
-                                } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: if (spy "should fetch? " shouldFetchChatHistory) then 0 else (spy "skipping this much " $DA.length history) } }) ]
+                                } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: if (spy "should fetch? " shouldFetchChatHistory) then 0 else (spy "skipping this much " $ DA.length history) } }) ]
       | otherwise = F.noMessages model
 
 displayHistory ∷ Array HistoryMessage → ImModel → NoMessages
