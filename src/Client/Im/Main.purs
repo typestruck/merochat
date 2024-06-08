@@ -211,7 +211,7 @@ update { webSocketRef, fileReader } model =
       { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
-toggleContextMenu toggle model= F.noMessages model { toggleContextMenu = toggle }
+toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
 
 pollPrivileges ∷ WebSocket → ImModel → NoMessages
 pollPrivileges webSocket model = model :>

@@ -62,11 +62,13 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
       displayChatHistory { history, user } = DA.mapWithIndex (\i → chatHistoryEntry user $ map _.sender (history !! (i - 1))) history
 
       bottomMessage id =
-            let index = DM.fromMaybe (-100) do
-                  history <- _.history <$> contact
-                  DA.findIndex (\c -> c.id == id) history
-                length = DA.length $ DM.fromMaybe [] ( _.history <$> contact)
-            in index >= length - 2
+            let
+                  index = DM.fromMaybe (-100) do
+                        history ← _.history <$> contact
+                        DA.findIndex (\c → c.id == id) history
+                  length = DA.length $ DM.fromMaybe [] (_.history <$> contact)
+            in
+                  index >= length - 2
 
       chatHistoryEntry chatPartner previousSender { id, status, date, sender, content } =
             let
@@ -93,7 +95,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                                         [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                                 [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                                 ]
-                                                        , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up" : isContextMenuVisible && bottomMessage id } ] $
+                                                        , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && bottomMessage id } ] $
                                                                 HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage content Nothing) ] "Reply"
                                                         ]
                                                 ]
