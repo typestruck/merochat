@@ -432,8 +432,9 @@ quoteMessage contents event model@{ chatting } =
                                 else
                                       pure Nothing
                         ]
-            Left { startX, endX } → model :> [ if startX < endX then liftEffect quoteIt else pure Nothing ]
+            Left { startX, endX, startY, endY } → model :> [ if startX < endX && endX - startX >= threshold && startY - endY < threshold then liftEffect quoteIt else pure Nothing ]
       where
+      threshold = 40
       quoteIt = do
             input ← chatInput chatting
             let markup = sanitized <> "\n\n"
