@@ -6,8 +6,10 @@ import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
 
+import Client.Im.Swipe as CIT
 import Data.Array ((!!), (:))
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
@@ -84,10 +86,10 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                 , "incoming-message": incomingMessage
                                 , "same-bubble-message": previousSender == Just sender -- only the first message in a row has a bubble handle
                                 }
-                        , HA.onDblclick' (QuoteMessage content <<< Just)
+                        , HA.onDblclick' (QuoteMessage content <<< Right <<< Just)
                         ]
                         [ HE.div
-                                [ HA.class' "message-content", HA.id $ "m" <> show id ] -- id is used to scroll into view
+                                [ HA.class' "message-content", HA.id $ "m" <> show id, CIT.onTouchStart, CIT.onTouchEnd (QuoteMessage content <<< Left) ] -- id is used to scroll into view
                                 [ HE.div [ HA.class' "message-content-in" ]
                                         [ HE.div' [ HA.innerHtml $ SM.parse content ]
                                         , HE.div (HA.class' "message-context-options")
@@ -96,7 +98,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                                                 [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                                 ]
                                                         , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && bottomMessage id } ] $
-                                                                HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage content Nothing) ] "Reply"
+                                                                HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage content (Right Nothing)) ] "Reply"
                                                         ]
                                                 ]
                                         ]

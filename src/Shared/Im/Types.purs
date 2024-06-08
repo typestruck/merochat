@@ -255,6 +255,9 @@ data RetryableRequest
 
 data ReportReason = DatingContent | Harassment | HateSpeech | Spam | Minor | OtherReason
 
+
+type Touch = { startX ∷ Int, endX ∷ Int, startY ∷ Int, endY ∷ Int }
+
 data ImMessage
       =
         --history
@@ -288,7 +291,7 @@ data ImMessage
       | DropFile Event
       | ToggleMessageEnter
       | FocusInput ElementId
-      | QuoteMessage String (Maybe Event)
+      | QuoteMessage String (Either Touch (Maybe Event))
       | FocusCurrentSuggestion
       | EnterBeforeSendMessage Event
       | ForceBeforeSendMessage

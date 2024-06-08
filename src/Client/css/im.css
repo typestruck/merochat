@@ -2183,7 +2183,7 @@ select {
     .avatar-settings,
     .settings-name,
     .tutorial,
-    .message-content-in {
+    .message-context-options {
         display: none;
     }
 

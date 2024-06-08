@@ -147,7 +147,7 @@ update { webSocketRef, fileReader } model =
             ToggleMessageEnter → CIC.toggleMessageEnter model
             FocusCurrentSuggestion → CIC.focusCurrentSuggestion model
             FocusInput elementId → focusInput elementId model
-            QuoteMessage message event → CIC.quoteMessage message event model
+            QuoteMessage message et → CIC.quoteMessage message et model
             CheckTyping text → CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
             NoTyping id → F.noMessages $ CIC.updateTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
