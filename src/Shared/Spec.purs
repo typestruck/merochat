@@ -117,6 +117,10 @@ spec ∷
                                           POST "/tutorial"
                                                 { response ∷ Ok
                                                 }
+                                  , greeting ∷
+                                          POST "/greeting"
+                                                { response ∷ Ok
+                                                }
                                   }
                     , profile ∷
                             Routes "/profile"

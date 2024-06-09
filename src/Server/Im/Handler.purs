@@ -58,6 +58,11 @@ tutorial { guards: { loggedUserId } } = do
       SIA.finishTutorial loggedUserId
       pure ok
 
+greeting ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+greeting { guards: { loggedUserId } } = do
+      SIA.greet loggedUserId
+      pure ok
+
 register ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { email ∷ String, password ∷ String } } → ServerEffect Ok
 register { guards: { loggedUserId }, body: { email, password } } = do
       SIA.registerUser loggedUserId email password

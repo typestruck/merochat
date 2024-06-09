@@ -9,18 +9,20 @@ import Data.Tuple.Nested (type (/\))
 import Foreign as F
 import Type.Proxy (Proxy(..))
 
-data TextType = Headline | Description
+data TextType = Headline | Description | ConversationStarter
 
 instance ToValue TextType where
       toValue = case _ of
             Headline → F.unsafeToForeign 0
             Description → F.unsafeToForeign 1
+            ConversationStarter → F.unsafeToForeign 2
 
 instance FromValue TextType where
       fromValue value =
             case CME.runExcept $ F.readInt value of
                   Right 0 → Right Headline
                   Right 1 → Right Description
+                  Right 2 → Right ConversationStarter
                   n → Left $ "Invalid TextType " <> show n
 
 type StockText =

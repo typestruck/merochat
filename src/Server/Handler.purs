@@ -60,6 +60,7 @@ handlers reading =
               , register: runJson reading SIH.register
               , report: runJson reading SIH.report
               , tutorial: runJson reading SIH.tutorial
+              , greeting: runJson reading SIH.greeting
               }
       , profile:
               { get: runJson reading SPH.profile

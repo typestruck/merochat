@@ -2,11 +2,10 @@ module Server.ThreeK
       ( generateName
       , generateHeadline
       , generateDescription
+      , generateConversationStarter
       ) where
 
-import Droplet.Language
 import Prelude
-import Server.Database.StockText
 import Shared.Options.Profile
 
 import Data.Array as DA
@@ -15,12 +14,9 @@ import Data.String as DS
 import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Run as R
-import Server.Database.Fields
-import Server.Database as SD
 import Server.ThreeK.Name as STN
 import Server.Effect (ServerEffect)
-import Shared.Unsafe as SU
-import Type.Proxy (Proxy(..))
+import Server.ThreeK.Database as STBD
 
 -- | Names are generated according to the following patterns:
 -- |  <adjective> [, <adjective>] <noun>
@@ -36,11 +32,14 @@ generateName = R.liftEffect do
 
 -- | Headlines are pulled from a database of "funny" one liners
 generateHeadline ∷ ServerEffect String
-generateHeadline = map (_.contents <<< SU.fromJust) <<< SD.single $ select _contents # from stock_text # wher (_text_type .=. Headline) # orderBy random # limit (Proxy ∷ Proxy 1)
+generateHeadline = STBD.fetchHeadline 1
+
+generateConversationStarter ∷ ServerEffect String
+generateConversationStarter = STBD.fetchConversationStarter 1
 
 -- | Descriptions are bullet point lists of quotes/about me/conversation starters
 generateDescription ∷ ServerEffect String
 generateDescription = do
       n ← liftEffect $ ER.randomInt 1 6
-      quotes ← DR.reifyType n (\l → SD.query $ select _contents # from stock_text # wher (_text_type .=. Description) # orderBy random # limit l)
-      pure <<< DS.joinWith "\n" $ map (("- " <> _) <<< _.contents) quotes
+      quotes ← STBD.fetchDescription n
+      pure <<< DS.joinWith "\n" $ map (("- " <> _)) quotes
