@@ -2,36 +2,38 @@ module Server.Im.Action where
 
 import Debug
 import Prelude
+import Shared.Im.Types
 import Shared.Privilege
 
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Set (Set(..))
-import Data.Either (Either(..))
+import Data.Nullable as DN
+import Data.Set (Set)
 import Data.Set as DST
 import Data.String as DS
 import Data.Tuple (Tuple(..))
-import Data.Nullable as DN
 import Droplet.Driver (Pool)
 import Run.Except as RE
 import Server.AccountValidation as SA
 import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Email as SE
 import Server.File as SF
+import Environment (production)
 import Server.Im.Database as SID
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
-import Server.Im.Types
+import Server.Im.Types (Payload)
 import Server.Sanitize as SS
+import Server.ThreeK as ST
 import Server.Wheel as SW
-import Shared.Im.Types
+import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
-import Shared.Markdown (Token(..))
 
 im ∷ Int → ServerEffect Payload
 im loggedUserId = do
@@ -142,6 +144,17 @@ reportUser loggedUserId report@{ reason, userId } = do
 
 finishTutorial ∷ Int → ServerEffect Unit
 finishTutorial loggedUserId = SID.updateTutorialCompleted loggedUserId
+
+--makeshift action so new users have more attention
+greet ∷ Int → ServerEffect Unit
+greet loggedUserId =
+      if production then do
+            starter ← ST.generateConversationStarter
+            void $ SID.insertMessage sender loggedUserId 1 starter
+      else
+            pure unit
+      where
+      sender = 4
 
 registerUser ∷ Int → String → String → ServerEffect Unit
 registerUser loggedUserId rawEmail password = do

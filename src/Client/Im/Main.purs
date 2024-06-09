@@ -294,13 +294,18 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
             } :> [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
-finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } :> [ finish ]
+finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } :> [ finish, greet ]
       where
+      sender = 4
       finish = do
             void <<< CCNT.silentResponse $ request.im.tutorial {}
             case toggleModal of
                   Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
                   _ → pure Nothing
+      greet = do
+            void <<< CCNT.silentResponse $ request.im.greeting {}
+            contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender, impersonation: false } }
+            pure <<< Just $ DisplayNewContacts contact
 
 report ∷ Int → WebSocket → ImModel → MoreMessages
 report userId webSocket model@{ reportReason, reportComment } = case reportReason of
@@ -575,9 +580,7 @@ processIncomingMessage
       { id, userId, date, content, experimenting }
       model@
             { user: { id: recipientId }
-            , suggestions
             , contacts
-            , chatting
             } = case findAndUpdateContactList of
       Just contacts' →
             Right $ model
