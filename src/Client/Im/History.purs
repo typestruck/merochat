@@ -41,15 +41,15 @@ fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
               in
                     if DM.isJust experimenting || DM.isJust impersonating then --impersonated messages are not saved in the database
 
-                          displayHistory [] model
+                          displayHistory true [] model
                     else
                           model
                                 { freeToFetchChatHistory = false
-                                } :> [ CCN.retryableResponse (FetchHistory true) DisplayHistory (request.im.history { query: { with: id, skip: if (spy "should fetch? " shouldFetchChatHistory) then 0 else (spy "skipping this much " $ DA.length history) } }) ]
+                                } :> [ CCN.retryableResponse (FetchHistory true) (DisplayHistory shouldFetchChatHistory) (request.im.history { query: { with: id, skip: if (spy "should fetch? " shouldFetchChatHistory) then 0 else (spy "skipping this much " $ DA.length history) } }) ]
       | otherwise = F.noMessages model
 
-displayHistory ∷ Array HistoryMessage → ImModel → NoMessages
-displayHistory chatHistory model@{ chatting, contacts } =
+displayHistory ∷ Boolean -> Array HistoryMessage → ImModel → NoMessages
+displayHistory overwrite chatHistory model@{ chatting, contacts } =
       let
             contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
             updatedModel = model
@@ -59,7 +59,7 @@ displayHistory chatHistory model@{ chatting, contacts } =
                           let
                                 contact' = contact
                                       { shouldFetchChatHistory = false
-                                      , history = if shouldFetchChatHistory then chatHistory else (chatHistory <> history) --see fetchHistory
+                                      , history = if (spy "overwrite" overwrite) then chatHistory else (chatHistory <> history) --see fetchHistory
                                       }
                           DA.updateAt index contact' contacts
                   }

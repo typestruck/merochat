@@ -261,7 +261,7 @@ data ImMessage
       =
         --history
         CheckFetchHistory
-      | DisplayHistory (Array HistoryMessage)
+      | DisplayHistory Boolean (Array HistoryMessage)
 
       --user menu
       | ToggleInitialScreen Boolean -- | Mobile screen navigation

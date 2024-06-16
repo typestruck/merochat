@@ -165,7 +165,7 @@ update { webSocketRef, fileReader } model =
             --history
             CheckFetchHistory → CIH.checkFetchHistory model
             SpecialRequest (FetchHistory shouldFetch) → CIH.fetchHistory shouldFetch model
-            DisplayHistory history → CIH.displayHistory history model
+            DisplayHistory overwrite history → CIH.displayHistory overwrite history model
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model
