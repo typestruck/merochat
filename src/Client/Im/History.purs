@@ -48,7 +48,7 @@ fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
                                 } :> [ CCN.retryableResponse (FetchHistory true) (DisplayHistory shouldFetchChatHistory) (request.im.history { query: { with: id, skip: if (spy "should fetch? " shouldFetchChatHistory) then 0 else (spy "skipping this much " $ DA.length history) } }) ]
       | otherwise = F.noMessages model
 
-displayHistory ∷ Boolean -> Array HistoryMessage → ImModel → NoMessages
+displayHistory ∷ Boolean → Array HistoryMessage → ImModel → NoMessages
 displayHistory overwrite chatHistory model@{ chatting, contacts } =
       let
             contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting

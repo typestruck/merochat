@@ -102,9 +102,9 @@ template = do
                                             , HE.br
                                             , HE.text "Community driven:"
                                             , HE.br
-                                            , HE.text "feature available based on"
+                                            , HE.text "features available based on"
                                             , HE.br
-                                            , HE.text "how trusted an user is"
+                                            , HE.text "how trusted a user is"
                                             ]
                                     ]
                             , HE.div (HA.class' "point-column")
