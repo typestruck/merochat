@@ -42,7 +42,7 @@ spec ∷
                     , unsubscribe ∷
                             GET "/unsubscribe?email_id=<emailId>"
                                   { guards ∷ Guards Nil
-                                  , query :: { emailId :: String }
+                                  , query ∷ { emailId ∷ String }
                                   , response ∷ Html
                                   }
                     , login ∷

@@ -11,5 +11,5 @@ import Shared.Html (Html)
 
 unsubscribe ∷ { query ∷ { emailId ∷ String } } → ServerEffect Html
 unsubscribe { query: { emailId } } = do
-    unsubbed <- SUA.unsubscribe emailId
-    SR.serveTemplate $ if unsubbed then SUT.template else SUN.template
+      unsubbed ← SUA.unsubscribe emailId
+      SR.serveTemplate $ if unsubbed then SUT.template else SUN.template

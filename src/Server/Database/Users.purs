@@ -29,7 +29,7 @@ type Users =
       , completed_tutorial ∷ Column Checked Default
       , description ∷ String
       , avatar ∷ Maybe String
-      , receive_email :: Column ReceiveEmail Default
+      , receive_email ∷ Column ReceiveEmail Default
       , gender ∷ Maybe Gender
       , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
       , read_receipts ∷ Column Checked Default

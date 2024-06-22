@@ -38,9 +38,9 @@ import Server.Unsubscribe.Database as SUD
 
 unsubscribe ∷ String → ServerEffect Boolean
 unsubscribe token = do
-    maybeId <- SUD.fetchUnsubscriber token
-    case maybeId of
-        Nothing -> pure false
-        Just id -> do
-            SUD.unsubscribe id
-            pure true
+      maybeId ← SUD.fetchUnsubscriber token
+      case maybeId of
+            Nothing → pure false
+            Just id → do
+                  SUD.unsubscribe id
+                  pure true
