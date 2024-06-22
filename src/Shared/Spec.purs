@@ -39,6 +39,12 @@ spec ∷
                                   , body ∷ RegisterLogin
                                   , response ∷ Ok
                                   }
+                    , unsubscribe ∷
+                            GET "/unsubscribe?email_id=<emailId>"
+                                  { guards ∷ Guards Nil
+                                  , query ∷ { emailId ∷ String }
+                                  , response ∷ Html
+                                  }
                     , login ∷
                             Routes "/login"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)

@@ -64,6 +64,8 @@ type IU =
               )
       )
 
+data ReceiveEmail = AllEmails | UnreadMessageEmails | NoEmails
+
 data Gender
       = Female
       | Male
@@ -77,14 +79,21 @@ data ProfileVisibility
       | Nobody
       | TemporarilyBanned -- user is deleted when banned for good
 
+derive instance Eq ReceiveEmail
 derive instance Eq ProfileVisibility
 derive instance Eq Gender
+
+instance DecodeJson ReceiveEmail where
+      decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Gender where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson ProfileVisibility where
       decodeJson = DADGR.genericDecodeJson
+
+instance EncodeJson ReceiveEmail where
+      encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson Gender where
       encodeJson = DAEGR.genericEncodeJson
@@ -105,21 +114,32 @@ instance Show ProfileVisibility where
 instance ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
 
+instance ReadForeign ReceiveEmail where
+      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
+
 instance ReadForeign ProfileVisibility where
       readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
 
+derive instance Generic ReceiveEmail _
 derive instance Generic Gender _
 derive instance Generic ProfileVisibility _
 
 instance WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
 
+instance WriteForeign ReceiveEmail where
+      writeImpl = F.unsafeToForeign <<< DE.fromEnum
+
 instance WriteForeign ProfileVisibility where
       writeImpl = F.unsafeToForeign <<< DE.fromEnum
+
+instance ToValue ReceiveEmail where
+      toValue = F.unsafeToForeign <<< DE.fromEnum
 
 instance ToValue Gender where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
+derive instance Ord ReceiveEmail
 derive instance Ord Gender
 derive instance Ord ProfileVisibility
 
@@ -203,10 +223,42 @@ instance Enum ProfileVisibility where
             Nobody → Just Contacts
             TemporarilyBanned → Just Nobody
 
+instance Bounded ReceiveEmail where
+      bottom = AllEmails
+      top = NoEmails
+
+instance BoundedEnum ReceiveEmail where
+      cardinality = Cardinality 1
+
+      fromEnum = case _ of
+            AllEmails → 0
+            UnreadMessageEmails → 1
+            NoEmails → 2
+
+      toEnum = case _ of
+            0 → Just AllEmails
+            1 → Just UnreadMessageEmails
+            2 → Just NoEmails
+            _ → Nothing
+
+instance Enum ReceiveEmail where
+      succ = case _ of
+            AllEmails → Just UnreadMessageEmails
+            UnreadMessageEmails → Just NoEmails
+            NoEmails → Nothing
+
+      pred = case _ of
+            AllEmails → Nothing
+            UnreadMessageEmails → Just AllEmails
+            NoEmails → Just UnreadMessageEmails
+
 instance FromValue Gender where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
 
 instance FromValue ProfileVisibility where
+      fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
+
+instance FromValue ReceiveEmail where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
 
 instance ToValue ProfileVisibility where

@@ -2,8 +2,8 @@ module Server.Database.Users where
 
 import Droplet.Language
 import Prelude
-import Server.Database.Fields
-import Server.Effect
+import Server.Database.Fields (_id, c)
+import Server.Effect (BaseEffect, ServerEffect)
 
 import Data.Date (Date)
 import Data.DateTime (DateTime)
@@ -15,7 +15,7 @@ import Server.Database as SD
 import Server.Database.Countries (CountriesTable)
 import Server.Database.Types (Checked)
 import Shared.Account (RegisterLoginUser)
-import Shared.User (Gender, ProfileVisibility(..))
+import Shared.User (Gender, ProfileVisibility(..), ReceiveEmail)
 import Type.Proxy (Proxy(..))
 
 type Users =
@@ -29,6 +29,7 @@ type Users =
       , completed_tutorial ∷ Column Checked Default
       , description ∷ String
       , avatar ∷ Maybe String
+      , receive_email ∷ Column ReceiveEmail Default
       , gender ∷ Maybe Gender
       , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
       , read_receipts ∷ Column Checked Default
@@ -56,6 +57,9 @@ _headline = Proxy
 
 _joined ∷ Proxy "joined"
 _joined = Proxy
+
+_receiveEmail ∷ Proxy "receive_email"
+_receiveEmail = Proxy
 
 _email ∷ Proxy "email"
 _email = Proxy

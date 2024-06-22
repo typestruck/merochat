@@ -312,6 +312,14 @@ create table experiments
     added timestamptz not null default (utc_now())
 );
 
+create table unsubscribe_tokens
+(
+    id integer generated always as identity primary key,
+    unsubscriber integer not null,
+    contents text not null,
+    constraint unsubcribe_tokens_user foreign key (unsubscriber) references users(id) on delete cascade
+);
+
 create or replace function insert_history
 (sender_id int, recipient_id int) returns void as
 $$
