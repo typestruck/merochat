@@ -20,6 +20,6 @@ template = do
       content =
             [ HE.div (HA.class' "green-area green-box")
                     [ HE.h2 (HA.class' "ext-heading") "Email unsubscribed"
-                    , HE.p_ "You have been unsubscribed. If you wish to subscribe, log in and modify your emails settings"
+                    , HE.p_ "You have been unsubscribed. If you wish to subscribe again, log in and modify your emails settings"
                     ]
             ]
