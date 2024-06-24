@@ -417,21 +417,23 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
 
 --this messy ass event can be from double click, context menu or swipe
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage
-quoteMessage contents event model@{ chatting } =
+quoteMessage contents event model@{ chatting, smallScreen } =
       case event of
             Right Nothing →
                   model { toggleContextMenu = HideContextMenu } :> [ liftEffect quoteIt ]
             Right (Just evt) →
                   model :>
-                        [ liftEffect do
-                                classes ← WDE.className <<< SU.fromJust $ do
-                                      target ← WEE.target evt
-                                      WDE.fromEventTarget target
-                                if DS.contains (Pattern "message") classes then
-                                      quoteIt
-                                else
-                                      pure Nothing
-                        ]
+                        if smallScreen then []
+                        else
+                              [ liftEffect do
+                                      classes ← WDE.className <<< SU.fromJust $ do
+                                            target ← WEE.target evt
+                                            WDE.fromEventTarget target
+                                      if DS.contains (Pattern "message") classes then
+                                            quoteIt
+                                      else
+                                            pure Nothing
+                              ]
             Left { startX, endX, startY, endY } → model :> [ if startX < endX && endX - startX >= threshold && startY - endY < threshold then liftEffect quoteIt else pure Nothing ]
       where
       threshold = 40
