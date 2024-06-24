@@ -571,9 +571,14 @@ receiveMessage
 
 unsuggest ∷ Int → ImModel → ImModel
 unsuggest userId model@{ suggestions, suggesting } = model
-      { suggestions = DA.filter ((userId /= _) <<< _.id) suggestions
-      , suggesting = (\i → if i == 0 then 0 else i - 1) <$> suggesting
+      { suggestions = updatedSuggestions
+      , suggesting = updatedSuggested
       }
+      where
+      updatedSuggestions = DA.filter ((userId /= _) <<< _.id) suggestions
+      updatedSuggested
+            | DA.length suggestions == DA.length updatedSuggestions = suggesting
+            | otherwise = (max 0 <<< (_ - 1)) <$> suggesting
 
 processIncomingMessage ∷ ClientMessagePayload → ImModel → Either Int ImModel
 processIncomingMessage
