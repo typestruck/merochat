@@ -570,15 +570,18 @@ receiveMessage
             _, _ → true
 
 unsuggest ∷ Int → ImModel → ImModel
-unsuggest userId model@{ suggestions, suggesting } = model
+unsuggest userId model = model
       { suggestions = updatedSuggestions
-      , suggesting = updatedSuggested
+      , suggesting = updatedSuggesting
       }
       where
-      updatedSuggestions = DA.filter ((userId /= _) <<< _.id) suggestions
-      updatedSuggested
-            | DA.length suggestions == DA.length updatedSuggestions = suggesting
-            | otherwise = (max 0 <<< (_ - 1)) <$> suggesting
+      unsuggestedIndex = DA.findIndex ((userId == _) <<< _.id) model.suggestions
+      updatedSuggestions = DM.fromMaybe model.suggestions do
+            i ← unsuggestedIndex
+            DA.deleteAt i model.suggestions
+      updatedSuggesting
+            | unsuggestedIndex /= Nothing && unsuggestedIndex < model.suggesting = (max 0 <<< (_ - 1)) <$> model.suggesting
+            | otherwise = model.suggesting
 
 processIncomingMessage ∷ ClientMessagePayload → ImModel → Either Int ImModel
 processIncomingMessage

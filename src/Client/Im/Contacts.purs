@@ -254,25 +254,33 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
       onlyNew = DA.filter (\cnt → not $ DS.member (Tuple cnt.user.id cnt.impersonating) existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 deleteChat ∷ Tuple Int (Maybe Int) → ImModel → MoreMessages
-deleteChat tii@(Tuple id impersonating) model@{ contacts } =
+deleteChat tii@(Tuple id impersonating) model =
       updatedModel :>
             if DM.isNothing impersonating then
-                  [ backToSuggestions
-                  , do
-                          result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: SU.fromJust lastMessageId } }
+                  [ do
+                          result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: lastMessageId } }
                           case result of
                                 Left _ → pure <<< Just $ RequestFailed { request: DeleteChat tii, errorMessage: Nothing }
                                 _ → pure Nothing
                   ]
-            else [ backToSuggestions ]
+            else []
       where
-      backToSuggestions = pure $ Just ResumeSuggesting
 
+      deletedIndex = DA.findIndex (\cnt → cnt.user.id == id && cnt.impersonating == impersonating) model.contacts
       updatedModel = model
             { toggleModal = HideUserMenuModal
-            , contacts = DA.filter (\cnt → not (cnt.user.id == id && cnt.impersonating == impersonating)) contacts
+            , toggleChatModal = HideChatModal
+            , contacts = DM.fromMaybe model.contacts do
+                    i ← deletedIndex
+                    DA.deleteAt i model.contacts
+            , chatting =
+                    if deletedIndex < model.chatting then (max 0 <<< (_ - 1)) <$> model.chatting
+                    else if deletedIndex > model.chatting then model.chatting
+                    else Nothing
             }
-      lastMessageId = do
-            contact ← DA.find (\cnt → cnt.user.id == id && cnt.impersonating == impersonating) contacts
-            { id } ← DA.last contact.history
-            pure id
+
+      lastMessageId = SU.fromJust do
+            di ← deletedIndex
+            contact ← model.contacts !! di
+            entry ← DA.last contact.history
+            pure entry.id
