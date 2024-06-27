@@ -4,6 +4,8 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
+import Flame.Html.Attribute as HA
+import Flame.Types (NodeData)
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
@@ -44,3 +46,10 @@ avatarColorClass index = className <> show (mod (SU.fromJust index) totalColorCl
 
 parseAvatar ∷ Maybe String → Maybe String
 parseAvatar avatar = (\a → SP.mediaPath (Upload a) Included) <$> avatar
+
+async ∷ ∀ message. NodeData message
+async = HA.createAttribute "async" ""
+
+decoding ∷ ∀ (message ∷ Type). String → NodeData message
+decoding value = HA.createAttribute "decoding" value
+

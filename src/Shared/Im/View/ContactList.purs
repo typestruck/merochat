@@ -1,6 +1,7 @@
 module Shared.Im.View.ContactList where
 
 import Prelude
+import Shared.Availability
 import Shared.Experiments.Types
 import Shared.Im.Types
 
@@ -11,13 +12,11 @@ import Data.Foldable as DF
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Shared.Im.View.SuggestionProfile as SIVP
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Availability
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
@@ -25,6 +24,7 @@ import Shared.Experiments.Impersonation (impersonations)
 import Shared.Experiments.Impersonation as SEI
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.View.Retry as SIVR
+import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -84,7 +84,7 @@ contactList
                         , HA.onClick $ ResumeChat tupleId
                         ]
                         [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
-                                [ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
+                                [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
                                 , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.availability /= Online || not contact.onlineStatus || not onlineStatus } ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]

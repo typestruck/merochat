@@ -84,7 +84,7 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
       HE.div (HA.class' { "profile-contact": true, highlighted: toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfileAction
+                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
                             [ HE.h1 (HA.class' "contact-name") name
                             , typingNotice
@@ -178,7 +178,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
 displayProfile ∷ ∀ message. Maybe Int → ImUser → ImUser → Maybe message → Array (Html message)
 displayProfile index loggedUser { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, onlineStatus, country, languages, tags, description } temporaryUserMessage =
-      [ HE.img [ HA.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
+      [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
       , HE.h1 (HA.class' "profile-name") name
       , HE.div (HA.class' "headline") headline
       , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not onlineStatus, duller: availability /= Online } ] $ show availability
