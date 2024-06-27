@@ -30,16 +30,16 @@ suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
                                           [ let
                                                   previousIndex = map (_ - 1) suggesting
                                             in
-                                                  HE.img [ SA.async, SA.decoding "lazy", HA.class' $ "avatar-contact-list" <> SA.avatarColorClass previousIndex, HA.src $ SA.avatarForRecipient previousIndex $ getAvatar previousIndex ]
+                                                  SA.avatar [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass previousIndex, HA.src $ SA.avatarForRecipient previousIndex $ getAvatar previousIndex ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less-z", HA.onClick FocusCurrentSuggestion, HA.title "Move to this chat suggestion" ]
-                                          [ HE.img [ SA.async, SA.decoding "lazy", HA.class' $ avatarClasses avatar, HA.src $ SA.avatarForRecipient suggesting avatar ]
+                                          [ SA.avatar [ HA.class' $ avatarClasses avatar, HA.src $ SA.avatarForRecipient suggesting avatar ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less faded", HA.onClick $ SpecialRequest NextSuggestion, HA.title "Move to this chat suggestion" ]
                                           [ let
                                                   nextIndex = map (_ + 1) suggesting
                                             in
-                                                  HE.img [ SA.async, SA.decoding "lazy", HA.class' $ "avatar-contact-list" <> SA.avatarColorClass nextIndex, HA.src $ SA.avatarForRecipient nextIndex $ getAvatar nextIndex ]
+                                                  SA.avatar [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass nextIndex, HA.src $ SA.avatarForRecipient nextIndex $ getAvatar nextIndex ]
                                           ]
                                   , HE.div [ HA.class' "contact-profile", HA.title "Your chat suggestions" ]
                                           [ HE.span (HA.class' "contact-name") name

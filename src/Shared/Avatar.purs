@@ -4,11 +4,17 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
+import Effect (Effect)
 import Flame.Html.Attribute as HA
-import Flame.Types (NodeData)
-import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Flame.Html.Element (class ToNode)
+import Flame.Html.Element as HE
+import Flame.Types (Html, NodeData)
+import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
+import Web.DOM (Node)
+
+foreign import createImg :: Effect Node
 
 defaultAvatar ∷ String
 defaultAvatar = avatarPath 1
@@ -45,7 +51,7 @@ avatarColorClass index = className <> show (mod (SU.fromJust index) totalColorCl
       totalColorClasses = 4
 
 parseAvatar ∷ Maybe String → Maybe String
-parseAvatar avatar = (\a → SP.mediaPath (Upload a) Included) <$> avatar
+parseAvatar av = (\a → SP.mediaPath (Upload a) Included) <$> av
 
 async ∷ ∀ message. NodeData message
 async = HA.createAttribute "async" ""
@@ -53,3 +59,8 @@ async = HA.createAttribute "async" ""
 decoding ∷ ∀ (message ∷ Type). String → NodeData message
 decoding value = HA.createAttribute "decoding" value
 
+-- avoid lagging pictures when browsing suggestions
+avatar :: forall nd34 message35. ToNode nd34 message35 NodeData => nd34 -> Html message35
+avatar attributes = HE.managed { createNode, updateNode } attributes unit
+      where  createNode _ = createImg
+             updateNode _ _ _ = createImg

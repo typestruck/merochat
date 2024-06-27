@@ -178,7 +178,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
 displayProfile ∷ ∀ message. Maybe Int → ImUser → ImUser → Maybe message → Array (Html message)
 displayProfile index loggedUser { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, onlineStatus, country, languages, tags, description } temporaryUserMessage =
-      [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
+      [ SA.avatar [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
       , HE.h1 (HA.class' "profile-name") name
       , HE.div (HA.class' "headline") headline
       , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not onlineStatus, duller: availability /= Online } ] $ show availability
