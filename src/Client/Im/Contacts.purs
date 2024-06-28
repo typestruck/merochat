@@ -159,16 +159,17 @@ markDelivered webSocket model@{ experimenting, contacts, user: { id: sessionUser
                   hs → Tuple userId (map _.id hs) : running
 
 checkFetchContacts ∷ ImModel → MoreMessages
-checkFetchContacts model@{ freeToFetchContactList }
-      | freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
+checkFetchContacts model
+      | model.freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
               where
+              lenience = if model.smallScreen then 2.0 else 0.0
               getScrollBottom = liftEffect do
                     element ← CCD.unsafeGetElementById ContactList
                     top ← WDE.scrollTop element
                     height ← WDE.scrollHeight element
                     offset ← WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
-                    pure $ (spy "top" top) == (spy "height" height) - (spy "offset" offset)
+                    pure $ top + lenience >= height - offset
 
       | otherwise = F.noMessages model
 
