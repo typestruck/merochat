@@ -168,7 +168,7 @@ checkFetchContacts model@{ freeToFetchContactList }
                     top ← WDE.scrollTop element
                     height ← WDE.scrollHeight element
                     offset ← WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
-                    pure $ top == height - offset
+                    pure $ (spy "top" top) == (spy "height" height) - (spy "offset" offset)
 
       | otherwise = F.noMessages model
 

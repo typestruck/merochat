@@ -45,7 +45,7 @@ fetchHistory shouldFetch model@{ chatting, contacts, experimenting }
                     else
                           model
                                 { freeToFetchChatHistory = false
-                                } :> [ CCN.retryableResponse (FetchHistory true) (DisplayHistory shouldFetchChatHistory) (request.im.history { query: { with: id, skip: if (spy "should fetch? " shouldFetchChatHistory) then 0 else (spy "skipping this much " $ DA.length history) } }) ]
+                                } :> [ CCN.retryableResponse (FetchHistory true) (DisplayHistory shouldFetchChatHistory) (request.im.history { query: { with: id, skip: if shouldFetchChatHistory then 0 else DA.length history } }) ]
       | otherwise = F.noMessages model
 
 displayHistory ∷ Boolean → Array HistoryMessage → ImModel → NoMessages
@@ -59,7 +59,7 @@ displayHistory overwrite chatHistory model@{ chatting, contacts } =
                           let
                                 contact' = contact
                                       { shouldFetchChatHistory = false
-                                      , history = if (spy "overwrite" overwrite) then chatHistory else (chatHistory <> history) --see fetchHistory
+                                      , history = if overwrite then chatHistory else (chatHistory <> history) --see fetchHistory
                                       }
                           DA.updateAt index contact' contacts
                   }

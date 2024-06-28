@@ -14,7 +14,7 @@ import Shared.Resource as SP
 import Shared.Unsafe as SU
 import Web.DOM (Node)
 
-foreign import createImg :: Effect Node
+foreign import createImg ∷ Effect Node
 
 defaultAvatar ∷ String
 defaultAvatar = avatarPath 1
@@ -60,7 +60,8 @@ decoding ∷ ∀ (message ∷ Type). String → NodeData message
 decoding value = HA.createAttribute "decoding" value
 
 -- avoid lagging pictures when browsing suggestions
-avatar :: forall nd34 message35. ToNode nd34 message35 NodeData => nd34 -> Html message35
+avatar ∷ ∀ nd34 message35. ToNode nd34 message35 NodeData ⇒ nd34 → Html message35
 avatar attributes = HE.managed { createNode, updateNode } attributes unit
-      where  createNode _ = createImg
-             updateNode _ _ _ = createImg
+      where
+      createNode _ = createImg
+      updateNode _ _ _ = createImg
