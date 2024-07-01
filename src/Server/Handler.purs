@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.List (List(..))
 import Data.List as DL
 import Data.String as DS
+import Debug (spy)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
@@ -20,6 +21,8 @@ import Run.Except as RE
 import Run.Reader as RR
 import Server.Admin.Handler as SHA
 import Server.Backer.Handler as SBH
+import Server.Banned.Handler as SBNH
+import Server.Elsewhere.Handler as SESH
 import Server.Experiments.Handler as SEH
 import Server.Feedback.Handler as SFH
 import Server.Fortune.Handler as SFTH
@@ -28,8 +31,6 @@ import Server.Im.Handler as SIH
 import Server.InternalBacker.Handler as SIBH
 import Server.InternalError.Handler as SIEH
 import Server.InternalHelp.Handler as SIHH
-import Server.Elsewhere.Handler as SESH
-import Server.Banned.Handler as SBNH
 import Server.KarmaPrivileges.Handler as SLBH
 import Server.Landing.Handler as SLH
 import Server.Login.Handler as SLGH
@@ -40,6 +41,7 @@ import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
 import Server.Unsubscribe.Handler as SUH
+import Shared.Resource (developmentBasePath)
 import Shared.ResponseError (ResponseError(..))
 import Shared.Routes (routes)
 
@@ -141,13 +143,6 @@ runJson reading handler =
 developmentFiles ∷ { params ∷ { path ∷ List String } } → Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}
       where
-      clientBaseFolder = "src/Client/"
-      distBaseFolder = "dist/development/"
       fullPath = case path of
-            Cons "media" (Cons file Nil) → clientBaseFolder <> "media/" <> file
-            Cons "media" (Cons "upload" (Cons file Nil)) → clientBaseFolder <> "media/upload/" <> file
-            --js files are expected to be named like module.bundle.js
-            -- they are served from webpack output
-            Cons "javascript" (Cons file Nil) → distBaseFolder <> file
-            Cons folder (Cons file Nil) → clientBaseFolder <> folder <> "/" <> file
-            _ → distBaseFolder <> DS.joinWith "/" (DL.toUnfoldable path)
+            Cons folder (Cons file Nil) → developmentBasePath <> folder <> "/" <> file
+            _ → "notfound"

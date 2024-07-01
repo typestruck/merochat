@@ -19,8 +19,6 @@ type Configuration =
       { port ∷ Int
       , captchaSecret ∷ String
       , adminSecret ∷ String
-      , storageApplicationKey ∷ String
-      , storageApplicationKeyId ∷ String
       , tokenSecret ∷ String
       , salt ∷ String
       , databaseHost ∷ Maybe String

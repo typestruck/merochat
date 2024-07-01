@@ -28,7 +28,6 @@ import Shared.Unsafe as SU
 import Control.Promise (Promise)
 import Control.Promise as CP
 
-foreign import init_ ∷ EffectFn2 String String Unit
 foreign import upload_ ∷ EffectFn2 String Buffer Unit
 
 foreign import realFileExtension_ ∷ Buffer → Effect (Promise String)
@@ -38,9 +37,6 @@ realFileExtension buffer = CP.toAffE $ realFileExtension_ buffer
 
 upload ∷ String → Buffer → Effect Unit
 upload = EU.runEffectFn2 upload_
-
-init ∷ String → String → Effect Unit
-init = EU.runEffectFn2 init_
 
 invalidImageMessage ∷ String
 invalidImageMessage = "Invalid image"

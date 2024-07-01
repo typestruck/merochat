@@ -45,7 +45,7 @@ export default {
         backer: './src/Client/css/backer.css'
     },
     output: {
-        path: path.resolve(".", 'dist/production'),
+        path: path.resolve(".", 'file/bundle'),
         filename: '[name].[contenthash].bundle.js'
     },
     plugins: [
@@ -55,7 +55,7 @@ export default {
         new webpack.DefinePlugin({
             'process.env.PRODUCTION': true
         }),
-        new ReplaceHashPlugin({ files: [{ dir: 'dist/production', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
+        new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
     ],
     module: {
         rules: [

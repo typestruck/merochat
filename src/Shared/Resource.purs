@@ -25,7 +25,7 @@ productionBasePath ∷ String
 productionBasePath = "https://static.mero.chat/file/"
 
 developmentBasePath ∷ String
-developmentBasePath = "/file/"
+developmentBasePath = "file/"
 
 uploadFolder ∷ String
 uploadFolder = "upload/"
