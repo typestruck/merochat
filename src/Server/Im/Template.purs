@@ -91,6 +91,6 @@ template { contacts, suggestions, user } = do
                         height:20px;
                     }
                     .suggestion.new {
-                        background: url(https://static.mero.chat/file/ourmelon/suggestions.png);
+                        background: url(https://static.mero.chat/file/default/suggestions.png);
                   }"""
             ]

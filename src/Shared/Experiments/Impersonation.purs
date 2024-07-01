@@ -1,15 +1,16 @@
 module Shared.Experiments.Impersonation where
 
 import Prelude
+import Shared.Availability
 import Shared.Experiments.Types
 import Shared.User
 
 import Client.Common.Privilege as CCP
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
-import Shared.Availability
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Flame (Html)
@@ -81,7 +82,7 @@ batman =
       , typingStatus: true
       , onlineStatus: true
       , completedTutorial: true
-      , avatar: Just $ SP.mediaPath BatmanNounProjectAnushaNarvekar Png
+      , avatar: Just $ SP.resourcePath (Left BatmanNounProjectAnushaNarvekar) Png
       , headline: "*raspy voice* I am Batman"
       , description: "I am not afraid of bats. Don't tell Robin I am here."
       , tags: [ "Martial arts", "Detective work", "Costumes", "Bats" ]
@@ -100,7 +101,7 @@ socrates ∷ ImpersonationProfile
 socrates =
       { id: 2
       , name: "Socrates"
-      , avatar: Just $ SP.mediaPath SocratesStingWikimedia Png
+      , avatar: Just $ SP.resourcePath (Left SocratesStingWikimedia) Png
       , headline: "I know that I know nothing"
       , profileVisibility: Everyone
       , availability: None
@@ -131,7 +132,7 @@ nicolasCage ∷ ImpersonationProfile
 nicolasCage =
       { id: 3
       , name: "Nicolas Cage"
-      , avatar: Just $ SP.mediaPath NicolasCageHiclipart Png
+      , avatar: Just $ SP.resourcePath (Left NicolasCageHiclipart) Png
       , headline: "I think I jump around more when I'm alone"
       , profileVisibility: Everyone
       , readReceipts: true

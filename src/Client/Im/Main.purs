@@ -667,23 +667,23 @@ markContactUnavailable contacts userId = updateContact <$> contacts
             | otherwise = contact
 
 checkMissedEvents ∷ ImModel → MoreMessages
-checkMissedEvents model@{ experimenting, contacts, user: { id } } =
+checkMissedEvents model =
       model :>
-            if DM.isJust experimenting then []
+            if DM.isJust model.experimenting then []
             else
                   [ do
-                          let { lastSentMessageID, lastReceivedMessageID } = findLastMessages contacts id
+                          let { lastSentMessageId, lastReceivedMessageId } = findLastMessages model.contacts model.user.id
 
-                          if DM.isNothing lastSentMessageID && DM.isNothing lastReceivedMessageID then
+                          if DM.isNothing lastSentMessageId && DM.isNothing lastReceivedMessageId then
                                 pure Nothing
                           else
-                                CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderId: lastSentMessageID, lastRecipientId: lastReceivedMessageID } })
+                                CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderId: lastSentMessageId, lastRecipientId: lastReceivedMessageId } })
                   ]
 
-findLastMessages ∷ Array Contact → Int → { lastSentMessageID ∷ Maybe Int, lastReceivedMessageID ∷ Maybe Int }
+findLastMessages ∷ Array Contact → Int → { lastSentMessageId ∷ Maybe Int, lastReceivedMessageId ∷ Maybe Int }
 findLastMessages contacts sessionUserID =
-      { lastSentMessageID: findLast (\h → sessionUserID == h.sender && h.status == Received)
-      , lastReceivedMessageID: findLast ((sessionUserID /= _) <<< _.sender)
+      { lastSentMessageId: findLast (\h → sessionUserID == h.sender && h.status == Received)
+      , lastReceivedMessageId: findLast ((sessionUserID /= _) <<< _.sender)
       }
       where
       findLast f = do

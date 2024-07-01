@@ -22,16 +22,10 @@ maxImageSizeKB ∷ String
 maxImageSizeKB = show base <> " KB"
 
 productionBasePath ∷ String
-productionBasePath = "https://static.mero.chat/file/ourmelon/"
+productionBasePath = "https://static.mero.chat/file/"
 
-developmentImageBasePath ∷ String
-developmentImageBasePath = "/client/media/"
-
-developmentJsBasePath ∷ String
-developmentJsBasePath = "/client/javascript/"
-
-developmentCssBasePath ∷ String
-developmentCssBasePath = "/client/css/"
+developmentBasePath ∷ String
+developmentBasePath = "/file/"
 
 uploadFolder ∷ String
 uploadFolder = "upload/"
@@ -39,7 +33,10 @@ uploadFolder = "upload/"
 bundleFolder ∷ String
 bundleFolder = "bundle/"
 
-data ResourceType = Css | Js | Png | Ico | Included
+defaultFolder ∷ String
+defaultFolder = "default/"
+
+data ResourceType = Css | Js | Png | Ico | Ignore
 
 derive instance Eq ResourceType
 
@@ -104,32 +101,22 @@ data Media
 bundlePath ∷ Bundle → ResourceType → String
 bundlePath b = resourcePath (Right b)
 
-mediaPath ∷ Media → ResourceType → String
-mediaPath b = resourcePath (Left b)
-
 resourcePath ∷ Either Media Bundle → ResourceType → String
 resourcePath res tp = path <> named <> replaced <> resourceType tp
       where
       named = resourceName res
       replaced = DE.either (const "") (flip replacement tp) res
-
+      basePath
+            | production = productionBasePath
+            | otherwise = developmentBasePath
       path
-            | production =
-                    if tp == Js || tp == Css then
-                          productionBasePath <> bundleFolder
-                    else
-                          case res of
-                                Left (Upload _) → productionBasePath <> uploadFolder
-                                _ → productionBasePath
-            | otherwise = case tp of
-                    Js → developmentJsBasePath
-                    Css → developmentCssBasePath
-                    _ → case res of
-                          Left (Upload _) → developmentImageBasePath <> uploadFolder
-                          _ → developmentImageBasePath
-
-uploadedImagePath ∷ String
-uploadedImagePath = (if production then productionBasePath else developmentImageBasePath) <> uploadFolder
+            | tp == Js || tp == Css =
+                    basePath <> bundleFolder
+            | otherwise =
+                    --pictures
+                    case res of
+                          Left (Upload _) → basePath <> uploadFolder
+                          _ → basePath <> defaultFolder
 
 resourceName ∷ Either Media Bundle → String
 resourceName = case _ of
@@ -194,7 +181,7 @@ resourceType = case _ of
       Css → ".css"
       Png → ".png"
       Ico → ".ico"
-      Included → ""
+      Ignore → ""
 
 replacement ∷ Bundle → ResourceType → String
 replacement bundle tp

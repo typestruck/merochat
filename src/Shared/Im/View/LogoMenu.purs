@@ -3,6 +3,7 @@ module Shared.Im.View.LogoMenu where
 import Prelude
 import Shared.Im.Types
 
+import Data.Either (Either(..))
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Data.String as DS
@@ -48,8 +49,8 @@ logoMenu fortune = HE.div (HA.class' "relative")
               ]
       , HE.div [ HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true ] $
               HE.img
-                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.mediaPath Logo3Small Png, "180w,", SP.mediaPath LogoSmall Png, "210w" ]
+                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left Logo3Small) Png, "180w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
                     , HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px"
-                    , HA.src $ SP.mediaPath Logo Png
+                    , HA.src $ SP.resourcePath (Left Logo) Png
                     ]
       ]

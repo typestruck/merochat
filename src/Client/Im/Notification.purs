@@ -1,10 +1,12 @@
 module Client.Im.Notification where
 
 import Prelude
+import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Im.Flame (NextMessage)
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Foldable as DF
 import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
@@ -16,13 +18,12 @@ import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame ((:>))
 import Flame.Subscription as FS
+import Shared.Element as SE
 import Shared.Experiments.Impersonation (impersonations)
-import Shared.Im.Types
 import Shared.Im.Unread as SIU
 import Shared.Options.MountPoint (imId)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
-import Shared.Element as SE
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
 
@@ -56,7 +57,7 @@ notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
                             Nothing → user
                             Just id → SU.fromJust $ HS.lookup id impersonations
                     ).name
-            , icon: SP.mediaPath Loading Png
+            , icon: SP.resourcePath (Left Loading) Png
             , handler: FS.send imId <<< ResumeChat $ Tuple user.id impersonating --move to given chat when clicking on system notification
             }
 
