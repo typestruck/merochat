@@ -5,8 +5,6 @@ import Server.Effect
 
 import Data.Either (Either(..))
 import Data.List (List(..))
-import Data.List as DL
-import Data.String as DS
 import Debug (spy)
 import Effect.Aff (Aff)
 import Effect.Aff as EA
@@ -41,7 +39,7 @@ import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
 import Server.Unsubscribe.Handler as SUH
-import Shared.Resource (developmentBasePath)
+import Shared.Resource (localBasePath)
 import Shared.ResponseError (ResponseError(..))
 import Shared.Routes (routes)
 
@@ -144,5 +142,5 @@ developmentFiles ∷ { params ∷ { path ∷ List String } } → Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}
       where
       fullPath = case path of
-            Cons folder (Cons file Nil) → developmentBasePath <> folder <> "/" <> file
+            Cons folder (Cons file Nil) → localBasePath <> folder <> "/" <> file
             _ → "notfound"

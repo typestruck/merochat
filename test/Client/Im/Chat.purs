@@ -1,7 +1,6 @@
 module Test.Client.Im.Chat where
 
 import Prelude
-import Shared.Im.Types (MessageContent(..), MessageStatus(..))
 
 import Client.Im.Chat as CIC
 import Data.Array ((!!), (:))
@@ -13,7 +12,8 @@ import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Contact as SIC
-import Shared.Options.File (maxImageSize)
+import Shared.Im.Types (MessageContent(..), MessageStatus(..))
+import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN
 import Test.Client.Model (anotherImUserId, contact, historyMessage, imUser, imUserId, model, suggestion, webSocket)

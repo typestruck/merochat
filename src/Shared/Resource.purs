@@ -2,18 +2,23 @@ module Shared.Resource where
 
 import Prelude
 
+import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Either as DE
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
-import Data.Tuple (Tuple(..))
+import Data.Set (Set)
+import Data.Set as DS
 import Environment (production)
 
 allowedMediaTypes ∷ HashMap String String
-allowedMediaTypes = DH.fromFoldable [ Tuple "data:image/png;base64" ".png", Tuple "data:image/jpeg;base64" ".jpg", Tuple "data:image/tiff;base64" ".tiff", Tuple "data:image/bmp;base64" ".bmp" ]
+allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64" ] $ DS.toUnfoldable allowedExtensions
+
+allowedExtensions ∷ Set String
+allowedExtensions = DS.fromFoldable [ ".png", ".jpg", ".tiff", ".bmp", ".gif" ]
 
 base ∷ Int
-base = 500
+base = 1000
 
 maxImageSize ∷ Int
 maxImageSize = base * 1024
@@ -21,11 +26,11 @@ maxImageSize = base * 1024
 maxImageSizeKB ∷ String
 maxImageSizeKB = show base <> " KB"
 
-productionBasePath ∷ String
-productionBasePath = "https://static.mero.chat/file/"
+onlineBasePath ∷ String
+onlineBasePath = "https://static.mero.chat/file/"
 
-developmentBasePath ∷ String
-developmentBasePath = "file/"
+localBasePath ∷ String
+localBasePath = "file/"
 
 uploadFolder ∷ String
 uploadFolder = "upload/"
@@ -106,9 +111,12 @@ resourcePath res tp = path <> named <> replaced <> resourceType tp
       where
       named = resourceName res
       replaced = DE.either (const "") (flip replacement tp) res
+      isUpload = case res of
+            Left (Upload _) -> true
+            _ -> false
       basePath
-            | production = productionBasePath
-            | otherwise = developmentBasePath
+            | production && not isUpload = onlineBasePath
+            | otherwise = localBasePath
       path
             | tp == Js || tp == Css =
                     basePath <> bundleFolder

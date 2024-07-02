@@ -44,7 +44,7 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
-import Shared.Options.File (maxImageSize)
+import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
