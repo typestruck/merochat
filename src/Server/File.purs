@@ -20,7 +20,7 @@ import Node.FS.Aff as NFA
 import Run as R
 import Server.Effect (BaseEffect, Configuration)
 import Server.Response as SR
-import Shared.Resource (Media(..), ResourceType(..), allowedExtensions, allowedMediaTypes, maxImageSize, maxImageSizeKB)
+import Shared.Resource (Media(..), ResourceType(..), allowedExtensions, allowedMediaTypes, localBasePath, maxImageSize, maxImageSizeKB, uploadFolder)
 import Shared.Resource as SP
 
 foreign import realFileExtension_ ∷ Buffer → Effect (Promise String)
@@ -50,7 +50,7 @@ saveBase64File input =
                                     if DS.member extension allowedExtensions then do
                                           uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
                                           let fileName = uuid <> extension
-                                          R.liftAff $ NFA.writeFile (SP.resourcePath (Left $ Upload fileName) Ignore) buffer
+                                          R.liftAff $ NFA.writeFile (localBasePath <> uploadFolder <> fileName)  buffer
                                           pure fileName
                                     else
                                           invalidImage

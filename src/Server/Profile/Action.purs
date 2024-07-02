@@ -10,6 +10,7 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
+import Debug (spy)
 import Run as R
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
@@ -58,13 +59,7 @@ saveAvatar ∷ Int → Maybe String → ServerEffect Unit
 saveAvatar loggedUserId base64 = do
       avatar ← case base64 of
             Nothing → pure Nothing
-            Just path → do
-                  let fileName = DS.replace (Pattern $ SRS.resourcePath (Left $ Upload "") Ignore) (Replacement "") path
-                  --likely a base64 image
-                  if fileName == path then
-                        Just <$> SF.saveBase64File path
-                  else
-                        pure $ Just fileName
+            Just path → Just <$> SF.saveBase64File path
       SPD.saveField loggedUserId "avatar" avatar
 
 saveAge ∷ Int → Maybe DateWrapper → ServerEffect Unit

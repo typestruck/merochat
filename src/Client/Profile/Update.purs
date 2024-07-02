@@ -42,8 +42,8 @@ updatePrivileges ∷ _ → Aff (ProfileModel → ProfileModel)
 updatePrivileges { karma, privileges } = pure (_ { user { karma = karma, privileges = privileges } })
 
 saveField ∷ Environment ProfileModel ProfileMessage → Field → Aff (ProfileModel → ProfileModel)
-saveField rc@{ display } field = do
-      display $ _ { loading = true }
+saveField rc field = do
+      rc.display $ _ { loading = true }
       case field of
             Generated what → saveGeneratedField rc what
             Avatar base64 → saveAvatar rc base64

@@ -61,13 +61,13 @@ view { section, impersonation, user } = HE.div (HA.class' "impersonation")
             ]
 
       profiles s = HE.div (HA.class' { hidden: section /= s }) <<< DA.mapWithIndex toProfile
-      toProfile index p@{ avatar, name, headline } = HE.div [ HA.class' "contact", HA.onClick <<< ConfirmImpersonation $ Just p ]
+      toProfile index p = HE.div [ HA.class' "contact", HA.onClick <<< ConfirmImpersonation $ Just p ]
             [ HE.div (HA.class' "avatar-contact-list-div")
-                    [ HE.img [ HA.title $ SU.fromJust avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (Just index), HA.src $ SU.fromJust avatar ]
+                    [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (Just index), HA.src $ SU.fromJust p.avatar ]
                     ]
-            , HE.div [ HA.class' "contact-profile", HA.title $ "Start Impersonation as " <> name ]
-                    [ HE.span (HA.class' "contact-name") name
-                    , HE.span (HA.class' "duller") headline
+            , HE.div [ HA.class' "contact-profile", HA.title $ "Start Impersonation as " <> p.name ]
+                    [ HE.span (HA.class' "contact-name") p.name
+                    , HE.span (HA.class' "duller") p.headline
                     ]
             ]
 
