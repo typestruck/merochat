@@ -2,45 +2,31 @@ module Server.File where
 
 import Prelude
 
-import Data.Foldable as FD
-import Data.HashMap as DH
-import Data.String (Pattern(..))
-import Data.String as DS
-import Data.UUID as DU
-import Effect (Effect)
-import Effect.Class (liftEffect)
-import Effect.Uncurried (EffectFn1, EffectFn2)
-import Effect.Uncurried as EU
-import Environment (production)
-import Node.Buffer (Buffer)
-import Node.Buffer as NB
-import Effect.Aff (Aff)
-import Node.FS.Sync as NFS
-import Node.Encoding (Encoding(..))
-import Node.FS.Aff as NFA
-import Data.Maybe (Maybe(..))
-import Run as R
-import Data.Set as DS
-import Server.Response as SR
-import Server.Effect (BaseEffect, Configuration)
-import Shared.Options.File
-import Shared.Unsafe as SU
 import Control.Promise (Promise)
 import Control.Promise as CP
-
-foreign import init_ ∷ EffectFn2 String String Unit
-foreign import upload_ ∷ EffectFn2 String Buffer Unit
+import Data.Either (Either(..))
+import Data.HashMap as DH
+import Data.Maybe (Maybe(..))
+import Data.Set (member) as DS
+import Data.String (Pattern(..))
+import Data.String (split) as DS
+import Data.UUID as DU
+import Effect (Effect)
+import Effect.Aff (Aff)
+import Node.Buffer (Buffer)
+import Node.Buffer as NB
+import Node.Encoding (Encoding(..))
+import Node.FS.Aff as NFA
+import Run as R
+import Server.Effect (BaseEffect, Configuration)
+import Server.Response as SR
+import Shared.Resource (Media(..), ResourceType(..), allowedExtensions, allowedMediaTypes, maxImageSize, maxImageSizeKB)
+import Shared.Resource as SP
 
 foreign import realFileExtension_ ∷ Buffer → Effect (Promise String)
 
 realFileExtension ∷ Buffer → Aff String
 realFileExtension buffer = CP.toAffE $ realFileExtension_ buffer
-
-upload ∷ String → Buffer → Effect Unit
-upload = EU.runEffectFn2 upload_
-
-init ∷ String → String → Effect Unit
-init = EU.runEffectFn2 init_
 
 invalidImageMessage ∷ String
 invalidImageMessage = "Invalid image"
@@ -64,13 +50,7 @@ saveBase64File input =
                                     if DS.member extension allowedExtensions then do
                                           uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
                                           let fileName = uuid <> extension
-                                          if production then
-                                                liftEffect $ upload fileName buffer
-                                          else do
-                                                let localPath = "src/Client/media/upload/"
-                                                exists ← R.liftEffect $ NFS.exists localPath
-                                                unless exists <<< R.liftAff $ NFA.mkdir localPath
-                                                R.liftAff $ NFA.writeFile (localPath <> fileName) buffer
+                                          R.liftAff $ NFA.writeFile (SP.resourcePath (Left $ Upload fileName) Ignore) buffer
                                           pure fileName
                                     else
                                           invalidImage

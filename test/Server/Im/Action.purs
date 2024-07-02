@@ -10,17 +10,17 @@ import Shared.Im.Types
 
 import Data.Array as DA
 import Data.BigInt as BI
+import Data.Either (Either(..))
+import Data.Either as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Set as DST
 import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple(..))
-import Data.Either as DE
 import Run as R
-import Data.Set as DST
-import Shared.Privilege (Privilege(..))
 import Server.Database as SD
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_temporary, users)
@@ -29,8 +29,8 @@ import Server.Im.Action as SIA
 import Server.Im.Database as SID
 import Server.Landing.Database as SLD
 import Server.Settings.Action as SSA
-import Data.Either (Either(..))
-import Shared.Options.File (maxImageSize)
+import Shared.Privilege (Privilege(..))
+import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))

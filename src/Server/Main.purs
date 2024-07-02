@@ -8,12 +8,10 @@ import Effect.Aff as EA
 import Effect.Console as EC
 import Effect.Ref as ER
 import Effect.Timer as ET
-import Environment (production)
 import Payload.Server (defaultOpts)
 import Payload.Server as PS
 import Server.Configuration as CF
 import Server.Database as SD
-import Server.File as SF
 import Server.Guard (guards)
 import Server.Handler as SH
 import Server.Effect (Configuration)
@@ -26,8 +24,7 @@ import Shared.Spec (spec)
 
 main ∷ Effect Unit
 main = do
-      configuration@{ storageApplicationKeyId, storageApplicationKey } ← CF.readConfiguration
-      when production $ SF.init storageApplicationKeyId storageApplicationKey
+      configuration ← CF.readConfiguration
       startWebSocketServer configuration
       startHttpServer configuration
 

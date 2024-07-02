@@ -4,6 +4,7 @@ import Prelude
 import Shared.Options.Profile
 
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
@@ -11,19 +12,20 @@ import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Run as R
 import Server.Database.Privileges as SDP
+import Server.Effect (ServerEffect)
 import Server.File as SF
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Server.Profile.Types (Payload)
 import Server.Response as SR
+import Server.Sanitize as SS
 import Server.ThreeK as ST
-import Server.Effect (ServerEffect)
 import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (What(..))
-import Server.Sanitize as SS
-import Shared.Resource (uploadedImagePath)
+import Shared.Resource (Media(..), ResourceType(..))
+import Shared.Resource as SRS
 import Shared.User (Gender)
 
 tooYoungMessage ∷ String
@@ -57,7 +59,7 @@ saveAvatar loggedUserId base64 = do
       avatar ← case base64 of
             Nothing → pure Nothing
             Just path → do
-                  let fileName = DS.replace (Pattern uploadedImagePath) (Replacement "") path
+                  let fileName = DS.replace (Pattern $ SRS.resourcePath (Left $ Upload "") Ignore) (Replacement "") path
                   --likely a base64 image
                   if fileName == path then
                         Just <$> SF.saveBase64File path

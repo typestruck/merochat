@@ -2,6 +2,9 @@
 
 import path from 'path';
 import webpack from 'webpack';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+
+
 const isWatch = process.argv.some(a => a === '--watch');
 
 export default {
@@ -10,42 +13,45 @@ export default {
 
       entry: {
             im: {
-                  import: ['./loader/development/im.bundle.js'],
+                  import: ['./loader/development/im.bundle.js', './src/Client/css/im.css'],
                   dependOn: 'emoji'
             },
-            landing: ['./loader/development/landing.bundle.js'],
+            landing: ['./loader/development/landing.bundle.js', './src/Client/css/landing.css'],
             login: './loader/development/login.bundle.js',
             profile: {
-                  import: ['./loader/development/profile.bundle.js'],
+                  import: ['./loader/development/profile.bundle.js', './src/Client/css/profile.css'],
                   dependOn: 'im'
             },
             karmaPrivileges: {
-                  import: ['./loader/development/karmaPrivileges.bundle.js'],
+                  import: ['./loader/development/karmaPrivileges.bundle.js', './src/Client/css/karmaPrivileges.css'],
                   dependOn: 'im'
             },
-            help: ['./loader/development/help.bundle.js'],
+            help: ['./loader/development/help.bundle.js', './src/Client/css/help.css'],
             internalHelp: {
                   import: ['./loader/development/internalHelp.bundle.js'],
                   dependOn: 'im'
             },
             settings: {
-                  import: ['./loader/development/settings.bundle.js'],
+                  import: ['./loader/development/settings.bundle.js', './src/Client/css/settings.css'],
                   dependOn: 'im'
             },
             experiments: {
-                  import: ['./loader/development/experiments.bundle.js'],
+                  import: ['./loader/development/experiments.bundle.js', './src/Client/css/experiments.css'],
                   dependOn: 'im'
             },
             feedback: {
-                  import: ['./loader/development/feedback.bundle.js'],
+                  import: ['./loader/development/feedback.bundle.js',  './src/Client/css/feedback.css'],
                   dependOn: 'im'
             },
             recover: './loader/development/recover.bundle.js',
-            emoji: './output/Shared.Im.Emoji/index.js'
+            emoji: './output/Shared.Im.Emoji/index.js',
+            base: './src/Client/css/base.css',
+            external: './src/Client/css/external.css',
+            backer: './src/Client/css/backer.css'
       },
 
       output: {
-            path: path.resolve(".", './dist/development'),
+            path: path.resolve(".", './file/bundle'),
             filename: '[name].bundle.js'
       },
 
@@ -61,7 +67,19 @@ export default {
                               pscIde: true
                         }
                   }]
-            }]
+            },
+            {
+                  test: /\.css$/,
+                  use: [
+                      MiniCssExtractPlugin.loader,
+                      {
+                          loader: 'css-loader',
+                          options: {
+                              url: false,
+                          }
+                      }
+                  ]
+              }]
       },
 
       resolve: {
@@ -78,6 +96,9 @@ export default {
             minimize: false
       },
       plugins: [
+            new MiniCssExtractPlugin({
+                  filename: '[name].css',
+            }),
             new webpack.LoaderOptionsPlugin({
                   debug: true
             })

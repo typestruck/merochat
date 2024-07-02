@@ -2,6 +2,7 @@ module Shared.Avatar where
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Effect (Effect)
@@ -23,7 +24,7 @@ differentAvatarImages ∷ Int
 differentAvatarImages = 8
 
 avatarPath ∷ Int → String
-avatarPath index = SP.mediaPath name Png
+avatarPath index = SP.resourcePath (Left name) Png
       where
       name = case index of
             1 → Avatar1
@@ -51,7 +52,7 @@ avatarColorClass index = className <> show (mod (SU.fromJust index) totalColorCl
       totalColorClasses = 4
 
 parseAvatar ∷ Maybe String → Maybe String
-parseAvatar av = (\a → SP.mediaPath (Upload a) Included) <$> av
+parseAvatar av = (\a → SP.resourcePath (Left $ Upload a) Ignore) <$> av
 
 async ∷ ∀ message. NodeData message
 async = HA.createAttribute "async" ""

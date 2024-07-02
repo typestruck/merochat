@@ -1,6 +1,7 @@
 module Shared.Im.View.ChatInput where
 
 import Prelude
+import Shared.Availability
 import Shared.Im.Types
 import Shared.User
 
@@ -14,7 +15,6 @@ import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Shared.Availability
 import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -24,9 +24,9 @@ import Shared.Experiments.Impersonation (impersonations)
 import Shared.Im.Emoji as SIE
 import Shared.Im.Svg as SIS
 import Shared.Keydown as SK
-import Shared.Options.File (maxImageSizeKB)
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
+import Shared.Resource (maxImageSizeKB)
 import Shared.Setter as SS
 import Type.Proxy (Proxy(..))
 

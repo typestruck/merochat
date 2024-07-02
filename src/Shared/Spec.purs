@@ -292,7 +292,7 @@ spec ∷
                                                 }
                                   }
                     , developmentFiles ∷
-                            GET "/client/<..path>"
+                            GET "/file/<..path>"
                                   { params ∷ { path ∷ List String }
                                   , response ∷ File
                                   }

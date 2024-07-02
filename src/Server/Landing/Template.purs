@@ -2,6 +2,7 @@ module Server.Landing.Template where
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.String as DS
 import Effect (Effect)
 import Environment (production)
@@ -40,9 +41,9 @@ template = do
             [ HE.div (HA.class' "landing")
                     [ HE.div (HA.class' "header")
                             [ HE.a [ HA.href $ routes.landing {}, HA.class' "logo" ] $ HE.img
-                                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.mediaPath Logo3Small Png, "180w,", SP.mediaPath Logo Png, "250w,", SP.mediaPath LogoSmall Png, "210w" ]
+                                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left Logo3Small) Png, "180w,", SP.resourcePath (Left Logo) Png, "250w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
                                     , HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px"
-                                    , HA.src $ SP.mediaPath Logo Png
+                                    , HA.src $ SP.resourcePath (Left Logo) Png
                                     ]
                             , HE.div [ HA.class' "login-box" ] $ HE.a [ HA.class' "login", HA.href $ routes.login.get {} ] "Login"
                             ]
@@ -89,7 +90,7 @@ template = do
                     , HE.div (HA.class' "first-points")
                             [ HE.div (HA.class' "point-column")
                                     [ HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point1 Png ]
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point1) Png ]
                                             , HE.br
                                             , HE.text "No sleazy people!"
                                             , HE.br
@@ -98,7 +99,7 @@ template = do
                                             , HE.text "to have actual conversations"
                                             ]
                                     , HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point4 Png ]
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point4) Png ]
                                             , HE.br
                                             , HE.text "Community driven:"
                                             , HE.br
@@ -109,7 +110,7 @@ template = do
                                     ]
                             , HE.div (HA.class' "point-column")
                                     [ HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point2 Png ]
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point2) Png ]
                                             , HE.br
                                             , HE.text "Set the privacy level you"
                                             , HE.br
@@ -118,7 +119,7 @@ template = do
                                             , HE.text "Safe, anonymous and ad free"
                                             ]
                                     , HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point5 Png ]
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point5) Png ]
                                             , HE.br
                                             , HE.text "Ultra fancy algorithms"
                                             , HE.br
@@ -129,7 +130,7 @@ template = do
                                     ]
                             , HE.div (HA.class' "point-column")
                                     [ HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point3 Png ]
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point3) Png ]
                                             , HE.br
                                             , HE.text "Feeling uninspired?"
                                             , HE.br
@@ -138,7 +139,7 @@ template = do
                                             , HE.text "or suggest what to say"
                                             ]
                                     , HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point6 Png ]
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point6) Png ]
                                             , HE.br
                                             , HE.text "Send text, image & audio messages."
                                             , HE.br
@@ -150,7 +151,7 @@ template = do
                             ]
                     , HE.div (HA.class' "second-point")
                             [ HE.div (HA.class' "point")
-                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Point7 Png ]
+                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point7) Png ]
                                     , HE.br
                                     , HE.text "Full of watermelons!"
                                     ]
@@ -160,7 +161,7 @@ template = do
                             ]
                     , HE.div (HA.class' "third-points")
                             [ HE.div (HA.class' "point")
-                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Works1 Png ]
+                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works1) Png ]
                                     , HE.br
                                     , HE.text "New users randomized account needs Karma to access"
                                     , HE.br
@@ -172,7 +173,7 @@ template = do
                                     , HE.text "Creeps get weeded out; interesting folks get more visibility"
                                     ]
                             , HE.div (HA.class' "point")
-                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Works2 Png ]
+                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works2) Png ]
                                     , HE.br
                                     , HE.text "Whenever you feel like chatting, MeroChat suggests"
                                     , HE.br
@@ -184,7 +185,7 @@ template = do
                                     , HE.text "You decide what to share and who to share it with"
                                     ]
                             , HE.div (HA.class' "point")
-                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.mediaPath Works3 Png ]
+                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works3) Png ]
                                     , HE.br
                                     , HE.text "Want to take a break, or delete your account forever?"
                                     , HE.br

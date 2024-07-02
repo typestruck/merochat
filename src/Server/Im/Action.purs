@@ -111,7 +111,7 @@ processMessageContent content privileges = do
             Text m | allowed m → pure m
             Image caption base64 | DST.member SendImages privileges → do
                   name ← SF.saveBase64File base64
-                  pure $ "![" <> caption <> "](" <> SP.mediaPath (Upload name) Included <> ")"
+                  pure $ "![" <> caption <> "](" <> SP.resourcePath (Left $ Upload name) Ignore <> ")"
             _ → pure ""
       pure <<< DS.trim $ SS.sanitize message
       where

@@ -13,7 +13,6 @@
   "author": "Eduardo Asafe<e@asafe.dev>",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "b2-js": "^1.2.4",
     "big-integer": "^1.6.48",
     "html-inline-css-webpack-plugin": "^1.11.1",
     "html-webpack-plugin": "^5.5.0",

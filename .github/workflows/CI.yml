@@ -47,6 +47,7 @@ jobs:
             .spago
             output
       - run: psql -f src/Server/sql/index.sql postgresql://merochat_test:merochat_test@localhost:5432/merochat_test
+      - run: mkdir -p file/upload
       - run: npm install
       - run: spago build
       - run: spago test

@@ -3,6 +3,7 @@ module Server.Template where
 
 import Prelude
 
+import Data.Either (Either(..))
 import Data.String as DS
 import Effect (Effect)
 import Flame (Html)
@@ -25,7 +26,7 @@ type Parameters a =
 defaultParameters ∷ ∀ a. Parameters a
 defaultParameters =
       { title: "MeroChat - Friendly Random Chat"
-      , favicon: SP.mediaPath Favicon Ico
+      , favicon: SP.resourcePath (Left Favicon) Ico
       , javascript: []
       , css: []
       , --REFACTOR: should just be a list of file names
@@ -43,9 +44,9 @@ externalDefaultParameters = defaultParameters
               [ HE.div (HA.class' "header")
                       [ HE.a [ HA.href $ routes.landing {}, HA.class' "logo" ] $
                               HE.img
-                                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.mediaPath Logo3Small Png, "180w,", SP.mediaPath Logo Png, "250w,", SP.mediaPath LogoSmall Png, "210w" ]
+                                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left Logo3Small) Png, "180w,", SP.resourcePath (Left Logo) Png, "250w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
                                     , HA.createAttribute "sizes" "(max-width: 1365px) 180px, (max-width: 1919px) 210px, 250px"
-                                    , HA.src $ SP.mediaPath Logo Png
+                                    , HA.src $ SP.resourcePath (Left Logo) Png
                                     ]
                       ]
               ]
@@ -85,7 +86,7 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
 externalFooter ∷ ∀ a. Html a
 externalFooter =
       HE.div (HA.class' "footer")
-            [ HE.a (HA.href $ routes.landing {}) <<< HE.img <<< HA.src $ SP.mediaPath LogoSmall Png
+            [ HE.a (HA.href $ routes.landing {}) <<< HE.img <<< HA.src $ SP.resourcePath (Left LogoSmall) Png
             , HE.ul (HA.class' "footer-menu")
                     [ HE.li_ $ HE.a (HA.href $ routes.login.get {}) "Login"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#faq") "FAQ"
