@@ -112,8 +112,8 @@ resourcePath res tp = path <> named <> replaced <> resourceType tp
       named = resourceName res
       replaced = DE.either (const "") (flip replacement tp) res
       isUpload = case res of
-            Left (Upload _) -> true
-            _ -> false
+            Left (Upload _) → true
+            _ → false
       basePath
             | production && not isUpload = onlineBasePath
             | otherwise = localBasePath
