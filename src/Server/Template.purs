@@ -64,7 +64,7 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
                       , HE.meta [ HA.name "viewport", HA.content "width=device-width, initial-scale=1.0" ]
                       , HE.meta [ HA.name "description", HA.content "Chat to new people who also just want to chat. MeroChat is a text based chat site for having actual conversations" ]
                       , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href favicon ]
-                      , HE.link [ HA.rel "manifest", HA.href favicon, HA.href $ SP.resourcePath (Right Manifest) Json ]
+                      , HE.link [ HA.rel "manifest", HA.href favicon, HA.href "/file/default/manifest.json" ]
                       , HE.title title
                       ] <> styleSheets
                     )
@@ -82,7 +82,7 @@ templateWith parameters@{ title, content, css, bundled, footer, favicon } =
               else
                     [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js ]
                     ]
-            ) <> [ HE.script [HA.type' "text/javascript"] "if (`serviceWorker` in navigator) navigator.serviceWorker.register(`/file/default/sw.js`);" ] <> parameters.javascript
+            ) <> [ HE.script [ HA.type' "text/javascript" ] "if (`serviceWorker` in navigator) navigator.serviceWorker.register(`/file/default/sw.js`);" ] <> parameters.javascript
 
 externalFooter ∷ ∀ a. Html a
 externalFooter =
