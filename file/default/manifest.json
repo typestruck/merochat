@@ -1,0 +1,17 @@
+{
+  "theme_color": "#213027",
+  "start_url": "/im",
+  "orientation": "any",
+  "name": "MeroChat - Friendly Random Chat",
+  "short_name": "MeroChat",
+  "display": "standalone",
+  "background_color": "#213027",
+  "description": "Platonic only, karma based random chat",
+  "icons": [
+    {
+      "src": "/file/default/loading.png",
+      "sizes": "46x46",
+      "type": "image/png"
+    }
+  ]
+}

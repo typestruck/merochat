@@ -41,7 +41,7 @@ bundleFolder = "bundle/"
 defaultFolder ∷ String
 defaultFolder = "default/"
 
-data ResourceType = Css | Js | Png | Ico | Ignore
+data ResourceType = Css | Js | Png | Ico | Json | Ignore
 
 derive instance Eq ResourceType
 
@@ -57,6 +57,7 @@ data Bundle
       | InternalHelp
       | Landing
       | Feedback
+      | Manifest
       | KarmaPrivileges
       | Login
       | Profile
@@ -141,6 +142,7 @@ resourceName = case _ of
       Right Profile → "profile"
       Right Recover → "recover"
       Right Settings → "settings"
+      Right Manifest → "manifest"
       Left Logo3Small → "logo-3-small"
       Left LogoSmall → "logo-small"
       Left Logo → "logo"
@@ -185,6 +187,7 @@ resourceType = case _ of
       Js → ".bundle.js"
       Css → ".css"
       Png → ".png"
+      Json → ".json"
       Ico → ".ico"
       Ignore → ""
 
@@ -200,6 +203,7 @@ replacement bundle tp
                     External → reps ".[external-js-contenthash]" ".[external-css-contenthash]"
                     Help → reps ".[help-js-contenthash]" ".[help-css-contenthash]"
                     Im → reps ".[im-js-contenthash]" ".[im-css-contenthash]"
+                    Manifest → ""
                     Feedback → reps ".[feedback-js-contenthash]" ".[feedback-css-contenthash]"
                     InternalHelp → reps ".[internalHelp-js-contenthash]" ".[internalHelp-css-contenthash]"
                     Landing → reps ".[landing-js-contenthash]" ".[landing-css-contenthash]"

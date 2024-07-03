@@ -50,7 +50,7 @@ saveBase64File input =
                                     if DS.member extension allowedExtensions then do
                                           uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
                                           let fileName = uuid <> extension
-                                          R.liftAff $ NFA.writeFile (localBasePath <> uploadFolder <> fileName)  buffer
+                                          R.liftAff $ NFA.writeFile (localBasePath <> uploadFolder <> fileName) buffer
                                           pure fileName
                                     else
                                           invalidImage
