@@ -27,7 +27,7 @@ faq =
             , HE.h2 [ HA.id "canifilter" ] "Can I filter suggestions by gender/location/etc?"
             , HE.p_ "You may skip suggestions, but it is not possible to filter them in any way. MeroChat tries its best to give you quality people to talk to, but the fun is in discovering"
             , HE.h2 [ HA.id "dating" ] "Is MeroChat a dating/hookup app?"
-            , HE.p_ "No. MeroChat is for friendly conversations only, there is already plenty of other places for try getting laid"
+            , HE.p_ "No. MeroChat is for friendly conversations only, there is already plenty of other places for trying to get laid"
             , HE.h2 [ HA.id "isitfree" ] "Is MeroChat free?"
             , HE.p_ "Yes! The app is totally free and there is no ads. MeroChat runs on donations from people who like it enough (or might just be after the rewards, who can tell)"
             , HE.h2 [ HA.id "whatskarma" ] "What is karma?"
@@ -51,6 +51,6 @@ faq =
             , HE.p_
                     [ HE.text "Right?! If you can spare some, consider backing MeroChat. The entire "
                     , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] "source code"
-                    , HE.text " is also open source in case this is your thing. That being said, just letting others know about MeroChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated"
+                    , HE.text " is also freely avaible in case this is your thing. That being said, just letting others know about MeroChat is already a huge help. Reporting bugs, bad user behavior or other issues is also highly appreciated"
                     ]
             ]
