@@ -18,6 +18,10 @@ export function customEventDetail_(event) {
       return event.detail.value;
 }
 
+export function mediaMatches_(displayMode) {
+      return window.matchMedia('(display-mode: ' + displayMode + ')').matches;
+}
+
 export function documentHasFocus() {
       return document.hasFocus();
 }

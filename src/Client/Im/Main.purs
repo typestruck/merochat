@@ -112,10 +112,12 @@ main = do
       setUpWebSocket webSocketRef
       width ← CCD.screenWidth
       let smallScreen = width < mobileBreakpoint
-      if smallScreen then
-            FS.send imId SetSmallScreen --keep track of mobile (-like) screens for things that cant be done with media queries
+      if smallScreen then do
+            --keep track of mobile (-like) screens for things that cant be done with media queries
+            FS.send imId SetSmallScreen
+            checkMobileNotifications
       else
-            checkNotifications --notification permission (desktop)
+            checkDesktopNotifications
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen
@@ -126,6 +128,7 @@ main = do
       CCF.setUpFileChange (SetSelectedImage <<< Just) input imId
       --harass temporary users on their last day to make an account
       FS.send imId CheckUserExpiration
+
 
 update ∷ _ → ListUpdate ImModel ImMessage
 update { webSocketRef, fileReader } model =
@@ -729,8 +732,22 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
 preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
-checkNotifications ∷ Effect Unit
-checkNotifications = do
+checkMobileNotifications :: Effect Unit
+checkMobileNotifications = do
+      status ← CCD.notificationPermission
+      when (status == "default") do
+            --check if we are running as pwa instead of a web page
+            matches <- DT.traverse CCD.mediaMatches ["fullscreen", "standalone", "minimal-ui"]
+            when (DT.or matches) CCD.requestNotificationPermission
+
+      --       function isPwa() {
+--     return [].some(
+--         (displayMode) => window.matchMedia().matches
+--     );
+-- }
+
+checkDesktopNotifications ∷ Effect Unit
+checkDesktopNotifications = do
       status ← CCD.notificationPermission
       when (status == "default") $ FS.send imId ToggleAskNotification
 

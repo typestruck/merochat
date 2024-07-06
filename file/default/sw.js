@@ -21,9 +21,10 @@ registerRoute(imageRoute);
 
 self.addEventListener('install', _ => {});
 
+//ask for push notification permission
+//show push notifications
 //store chats and user data localy with indexeddb?
     //this would also require some sort of caching of the im page
     // and js/css scripts
     // and to enable multiple open sessions too
-//show push notifications
-//open links in external browser
+

@@ -60,6 +60,11 @@ foreign import notificationPermission ∷ Effect String
 
 foreign import scrollIntoView_ ∷ EffectFn1 Element Unit
 
+foreign import mediaMatches_ :: EffectFn1 String Boolean
+
+mediaMatches :: String -> Effect Boolean
+mediaMatches = EU.runEffectFn1 mediaMatches_
+
 setChatExperiment ∷ EventType
 setChatExperiment = EventType "setChatExperiment"
 
