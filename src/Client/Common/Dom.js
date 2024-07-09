@@ -19,6 +19,7 @@ export function customEventDetail_(event) {
 }
 
 export function mediaMatches_(displayMode) {
+      console.log(displayMode, window.matchMedia('(display-mode: ' + displayMode + ')').matches);
       return window.matchMedia('(display-mode: ' + displayMode + ')').matches;
 }
 

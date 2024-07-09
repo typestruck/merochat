@@ -129,7 +129,6 @@ main = do
       --harass temporary users on their last day to make an account
       FS.send imId CheckUserExpiration
 
-
 update ∷ _ → ListUpdate ImModel ImMessage
 update { webSocketRef, fileReader } model =
       case _ of
@@ -732,19 +731,13 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
 preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
-checkMobileNotifications :: Effect Unit
+checkMobileNotifications ∷ Effect Unit
 checkMobileNotifications = do
       status ← CCD.notificationPermission
       when (status == "default") do
             --check if we are running as pwa instead of a web page
-            matches <- DT.traverse CCD.mediaMatches ["fullscreen", "standalone", "minimal-ui"]
+            matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ]
             when (DT.or matches) CCD.requestNotificationPermission
-
-      --       function isPwa() {
---     return [].some(
---         (displayMode) => window.matchMedia().matches
---     );
--- }
 
 checkDesktopNotifications ∷ Effect Unit
 checkDesktopNotifications = do
