@@ -7,6 +7,13 @@ body {
     color: rgb(238, 238, 238)
 }
 
+/*avoid annoying ass input zoom on ios safari*/
+@supports (`-webkit-overflow-scrolling: touch) {
+    body {`
+        font-size: 100%;
+    }
+}
+
 .profile-description p,
 .description-message p,
 .profile-description li,
