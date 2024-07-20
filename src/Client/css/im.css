@@ -8,8 +8,8 @@ body {
 }
 
 /*avoid annoying ass input zoom on ios safari*/
-@supports (`-webkit-overflow-scrolling: touch) {
-    body {`
+@supports (-webkit-overflow-scrolling: touch) {
+    body {
         font-size: 100%;
     }
 }
