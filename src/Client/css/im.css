@@ -1804,6 +1804,10 @@ select {
     padding-top: 20px;
 }
 
+.suggestion.old .tags-description {
+    overflow-y: auto;
+}
+
 .suggestion-center .suggestion.new .tags-description {
     overflow-y: auto;
     overflow-x: hidden;
