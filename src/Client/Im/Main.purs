@@ -728,13 +728,12 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
 preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
-checkNotifications ∷ Boolean -> Effect Unit
+checkNotifications ∷ Boolean → Effect Unit
 checkNotifications smallScreen = do
       status ← CCD.notificationPermission
       when (status == "default") $ do
             matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ] --check if we are running as pwa instead of a web page
-            {- when (DT.or matches || not smallScreen) $ -}
-            FS.send imId ToggleAskNotification
+            when (DT.or matches || not smallScreen) $ FS.send imId ToggleAskNotification
 
 --refactor use popstate subscription
 historyChange ∷ Boolean → Effect Unit
