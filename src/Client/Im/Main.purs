@@ -112,12 +112,9 @@ main = do
       setUpWebSocket webSocketRef
       width ← CCD.screenWidth
       let smallScreen = width < mobileBreakpoint
-      if smallScreen then do
-            --keep track of mobile (-like) screens for things that cant be done with media queries
-            FS.send imId SetSmallScreen
-            checkMobileNotifications
-      else
-            checkDesktopNotifications
+      --keep track of mobile (-like) screens for things that cant be done with media queries
+      when smallScreen $ FS.send imId SetSmallScreen
+      checkNotifications smallScreen
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen
@@ -731,18 +728,13 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
 preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
-checkMobileNotifications ∷ Effect Unit
-checkMobileNotifications = do
+checkNotifications ∷ Boolean -> Effect Unit
+checkNotifications smallScreen = do
       status ← CCD.notificationPermission
-      when (status /= "granted") do
-            --check if we are running as pwa instead of a web page
-            matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ]
-            when (DT.or matches) CCD.requestNotificationPermission
-
-checkDesktopNotifications ∷ Effect Unit
-checkDesktopNotifications = do
-      status ← CCD.notificationPermission
-      when (status == "default") $ FS.send imId ToggleAskNotification
+      when (status == "default") $ do
+            matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ] --check if we are running as pwa instead of a web page
+            {- when (DT.or matches || not smallScreen) $ -}
+            FS.send imId ToggleAskNotification
 
 --refactor use popstate subscription
 historyChange ∷ Boolean → Effect Unit

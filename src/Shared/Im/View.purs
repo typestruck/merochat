@@ -20,22 +20,22 @@ import Shared.Unsafe ((!@))
 import Shared.Im.Types
 
 view ∷ Boolean → ImModel → Html ImMessage
-view isClientRender model@{ enableNotificationsVisible, errorMessage, fortune, initialScreen, chatting, contacts, imUpdated, smallScreen } = HE.div [ HA.class' "im" ]
-      [ HE.div (HA.class' { "contact-box": true, "current-mobile-screen": initialScreen })
+view isClientRender model = HE.div [ HA.class' "im" ]
+      [ HE.div (HA.class' { "contact-box": true, "current-mobile-screen": model.initialScreen })
               [ SIVU.userMenu model
-              , HE.div (HA.class' { "suggestion-box-error": true, flexed: smallScreen && (not $ DS.null errorMessage) }) errorMessage
-              , SIVN.reloadPage imUpdated
-              , SIVN.prompt $ not smallScreen && enableNotificationsVisible
+              , HE.div (HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && (not $ DS.null model.errorMessage) }) model.errorMessage
+              , SIVN.reloadPage model.imUpdated
+              , SIVN.prompt model.enableNotificationsVisible
               , SIVS.suggestionCall model
               , SIVCN.contactList isClientRender model
-              , SIVL.logoMenu fortune
+              , SIVL.logoMenu model.fortune
               , SIVM.modals model
               ]
-      , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]
-              [ HE.div (HA.class' { "suggestion-box-error": true, flexed: not $ DS.null errorMessage }) errorMessage
+      , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not model.initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]
+              [ HE.div (HA.class' { "suggestion-box-error": true, flexed: not $ DS.null model.errorMessage }) model.errorMessage
               , SIVNM.unreadNotification model
               , SIVP.suggestionProfile model
-              , SIVH.chatHistory model $ map (contacts !@ _) chatting
+              , SIVH.chatHistory model $ map (model.contacts !@ _) model.chatting
               , SIVC.chat model
               ]
       ]
