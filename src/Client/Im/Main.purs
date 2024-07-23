@@ -734,7 +734,7 @@ preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop
 checkMobileNotifications ∷ Effect Unit
 checkMobileNotifications = do
       status ← CCD.notificationPermission
-      when (status == "default") do
+      when (status /= "granted") do
             --check if we are running as pwa instead of a web page
             matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ]
             when (DT.or matches) CCD.requestNotificationPermission
