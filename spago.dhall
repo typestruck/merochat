@@ -14,6 +14,7 @@ You can edit this file as you like.
   , "argonaut-codecs"
   , "argonaut-core"
   , "argonaut-generic"
+  , "arraybuffer-types"
   , "arrays"
   , "bigints"
   , "browser-cookies"

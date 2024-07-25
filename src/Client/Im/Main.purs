@@ -114,7 +114,11 @@ main = do
       let smallScreen = width < mobileBreakpoint
       --keep track of mobile (-like) screens for things that cant be done with media queries
       when smallScreen $ FS.send imId SetSmallScreen
-      checkNotifications smallScreen
+      --check if we are running as pwa instead of a web page
+      matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ]
+      let pwa = DT.or matches
+      when (pwa || not smallScreen) checkNotifications
+      when pwa subscribePush
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen
@@ -728,12 +732,10 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
 preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
 
-checkNotifications ∷ Boolean → Effect Unit
-checkNotifications smallScreen = do
+checkNotifications ∷ Effect Unit
+checkNotifications = do
       status ← CCD.notificationPermission
-      when (status == "default") $ do
-            matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ] --check if we are running as pwa instead of a web page
-            when (DT.or matches || not smallScreen) $ FS.send imId ToggleAskNotification
+      when (status == "default") $ FS.send imId ToggleAskNotification
 
 --refactor use popstate subscription
 historyChange ∷ Boolean → Effect Unit
@@ -835,3 +837,14 @@ setSmallScreen model@{ toggleModal } =
                     Tutorial _ → HideUserMenuModal
                     tm → tm
             }
+
+subscribePush :: Effect Unit
+subscribePush = do
+      window <- WH.window
+      navigator <- WHW.navigator window
+      CCD.register navigator "/file/default/sw.js"
+      registration <- CCD.ready navigator
+      existing <- CCD.getSubscription registration
+      case existing of
+            Nothing -> CCD.subscribe registration
+            Just s -> pure unit

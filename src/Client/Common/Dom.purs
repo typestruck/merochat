@@ -1,12 +1,15 @@
+--this can be broken down into modules
 module Client.Common.Dom where
 
 import Prelude
 import Shared.Im.Types
 
+import Data.ArrayBuffer.Types (Uint8Array)
 import Data.Function.Uncurried (Fn2, Fn1)
-import Data.Function.Uncurried as DFU
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
+import Data.Nullable (Nullable)
+import Data.Nullable as DN
 import Effect (Effect)
 import Effect.Exception as EE
 import Effect.Uncurried (EffectFn1, EffectFn2)
@@ -28,6 +31,7 @@ import Web.Event.Event (EventType(..))
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
+import Web.HTML (Navigator, Window)
 import Web.HTML as WH
 import Web.HTML.HTMLDocument as WHHD
 import Web.HTML.HTMLElement as WHHE
@@ -61,6 +65,30 @@ foreign import notificationPermission ∷ Effect String
 foreign import scrollIntoView_ ∷ EffectFn1 Element Unit
 
 foreign import mediaMatches_ ∷ EffectFn1 String Boolean
+
+foreign import register_ ∷ EffectFn2 Navigator String Unit
+
+foreign import data Registration :: Type
+
+foreign import data Subscription :: Type
+
+foreign import ready_ :: EffectFn1 Navigator Registration
+
+foreign import getSubscription_ :: EffectFn1 Registration (Nullable Subscription)
+
+foreign import subscribe_ :: EffectFn1 Registration Unit
+
+subscribe :: Registration -> Effect Unit
+subscribe = EU.runEffectFn1 subscribe_
+
+getSubscription :: Registration -> Effect (Maybe Subscription)
+getSubscription = map DN.toMaybe <<< EU.runEffectFn1 getSubscription_
+
+ready :: Navigator -> Effect Registration
+ready = EU.runEffectFn1 ready_
+
+register :: Navigator -> String -> Effect Unit
+register = EU.runEffectFn2 register_
 
 mediaMatches ∷ String → Effect Boolean
 mediaMatches = EU.runEffectFn1 mediaMatches_

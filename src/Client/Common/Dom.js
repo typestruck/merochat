@@ -68,3 +68,29 @@ export function removeFromClassList_(element, c) {
 export function addToClassList_(element, c) {
       element.classList.add(c);
 }
+
+export function register_(navigator, file) {
+      navigator.register(file);
+}
+
+export async function ready_(navigator) {
+      return await navigator.serviceWorker.ready;
+}
+
+export async function getSubscription_(registration) {
+      return await registration.pushManager.getSubscription()
+}
+
+export async function subscribe_(registration) {
+      let base64String = '[VAPID-PUBLIC-KEY-contenthash]',
+            padding = '='.repeat((4 - base64String.length % 4) % 4),
+            base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/'),
+            rawData = Buffer.from(base64).toString('base64'),
+            vapidPublicKey = new Uint8Array(rawData.length);
+
+      for (let i = 0; i < rawData.length; ++i) {
+            vapidPublicKey[i] = rawData.charCodeAt(i);
+      }
+
+      await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey });
+}
