@@ -194,7 +194,7 @@ displayProfile index loggedUser { karmaPosition, name, availability, temporary, 
                                 , HE.div (HA.class' "explain-temporary-user duller")
                                         [ HE.p_ "Quick-sign up means users that just got started on MeroChat and have yet to finish creating their account"
                                         , HE.p_
-                                                [ HE.text "You can opt to not see (or be messaged by) quick-sign up users on the "
+                                                [ HE.text "You can opt to not be seen (or messaged by) quick-sign up users on the "
                                                 , HE.a (HA.onClick msg) " settings"
                                                 , HE.text " page"
                                                 ]
