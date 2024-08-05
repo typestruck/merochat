@@ -838,13 +838,13 @@ setSmallScreen model@{ toggleModal } =
                     tm → tm
             }
 
-subscribePush :: Effect Unit
+subscribePush ∷ Effect Unit
 subscribePush = do
-      window <- WH.window
-      navigator <- WHW.navigator window
+      window ← WH.window
+      navigator ← WHW.navigator window
       CCD.register navigator "/file/default/sw.js"
-      registration <- CCD.ready navigator
-      existing <- CCD.getSubscription registration
+      registration ← CCD.ready navigator
+      existing ← CCD.getSubscription registration
       case existing of
-            Nothing -> CCD.subscribe registration
-            Just s -> pure unit
+            Nothing → CCD.subscribe registration
+            Just s → pure unit
