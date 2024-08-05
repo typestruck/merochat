@@ -84,18 +84,18 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. anotherUserId)
-                          SSA.changePrivacySettings userId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
-                          suggestions ← SIA.suggest anotherUserId 0 Nothing
+                          SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. userId)
+                          SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          suggestions ← SIA.suggest userId 0 Nothing
                           R.liftAff $ TUA.equal [] suggestions
 
-            TU.test "suggest shows temporary users to temporary users"
+            TU.test "suggest never shows temporary users"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SD.execute $ update users # set (_temporary .=. Checked true)
+                          SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. anotherUserId)
                           suggestions ← SIA.suggest userId 0 Nothing
-                          R.liftAff <<< TUA.equal [anotherUserId] $ map _.id suggestions
+                          R.liftAff $ TUA.equal [] suggestions
 
             TU.test "suggest includes all users if impersonating"
                   $ TS.serverAction
