@@ -20,6 +20,7 @@ import Flame (Html)
 import Shared.Availability
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.Intl as SI
 import Safe.Coerce as SC
 import Shared.Avatar as SA
 import Shared.DateTime (DateTimeWrapper)
@@ -202,7 +203,7 @@ displayProfile index loggedUser { karmaPosition, name, availability, temporary, 
                                 ]
                           _ →
                                 [ HE.div_
-                                        [ HE.span [ HA.class' "span-info" ] $ show karma
+                                        [ HE.span [ HA.class' "span-info" ] $ SI.thousands karma
                                         , HE.span [ HA.class' "duller" ] " karma"
                                         , HE.span_ $ " (#" <> show karmaPosition <> ")"
                                         ]

@@ -35,6 +35,7 @@ import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Network (RequestStatus(..))
 import Shared.Privilege (Privilege(..))
+import Shared.Intl as SI
 import Shared.Privilege as SP
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
@@ -76,7 +77,7 @@ view
               , displayEditHeadline
               , HE.div (HA.class' "profile-karma")
                       [ HE.div_
-                              [ HE.span [ HA.class' "span-info" ] $ show user.karma
+                              [ HE.span [ HA.class' "span-info" ] $ SI.thousands user.karma
                               , HE.span [ HA.class' "duller" ] " karma"
                               ]
                       ]

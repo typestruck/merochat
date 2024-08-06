@@ -6,6 +6,7 @@ import Shared.KarmaPrivileges.Types
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Shared.Intl as SI
 import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -64,7 +65,7 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
       where
       statEntry (Tuple n lbl) = HE.div_
             [ HE.div (HA.class' "privilege-body")
-                    [ HE.div (HA.class' "privilege-quantity") $ show n
+                    [ HE.div (HA.class' "privilege-quantity") $ SI.thousands n
                     , HE.div (HA.class' "privilege-name-description") lbl
                     ]
             ]
@@ -97,7 +98,7 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
                         , HE.div (HA.class' "name-karma")
                                 [ HE.div_
                                         [ HE.div (HA.class' "name") name
-                                        , HE.span (HA.class' "duller") $ show karma
+                                        , HE.span (HA.class' "duller") $ SI.thousands karma
                                         ]
                                 , HE.div (HA.class' "position") <<< HE.span (HA.class' "position-number") $ show position
                                 ]

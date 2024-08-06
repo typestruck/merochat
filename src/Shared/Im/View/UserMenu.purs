@@ -7,6 +7,7 @@ import Shared.Im.Types
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Flame (Html)
+import Shared.Intl as SI
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
@@ -89,7 +90,7 @@ header model@{ user: { karma, karmaPosition }, experimenting } = HE.fragment
       , HE.div [ HA.class' "settings-name" ]
               [ HE.strong_ name
               , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]
-                      [ HE.span [ HA.class' "karma-number" ] $ show karma
+                      [ HE.span [ HA.class' "karma-number" ] $ SI.thousands karma
                       , HE.span [ HA.class' "karma-text" ] " karma "
                       , HE.span_ $ "(#" <> show karmaPosition <> ")"
                       ]
