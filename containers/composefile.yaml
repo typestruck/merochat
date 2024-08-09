@@ -1,4 +1,6 @@
-version: '3.1'
+# A compose file for development
+
+version: "3.1"
 
 networks:
   merochat_network:
@@ -8,22 +10,17 @@ networks:
 
 services:
   db:
-    image: postgres
+    build:
+      context: ..
+      dockerfile: containers/postgresql.containerfile
     restart: always
     environment:
       POSTGRES_USER: merochat
       POSTGRES_PASSWORD: merochat
       POSTGRES_HOST_AUTH_METHOD: trust
-
-    # copying the index.sql in /docker-entrypoint-initdb.d will make postgresql
-    # run the sql file and populate our db
-    volumes:
-      - ./src/Server/sql/index.sql:/docker-entrypoint-initdb.d/init.sql
-
     networks:
       merochat_network:
         ipv4_address: 10.0.0.2
-
     ports:
       - 5432:5432
 
@@ -32,23 +29,24 @@ services:
   # so we have to start from a node image and grab the release binary ourselves.
   merochat:
     container_name: merochat
-    image: "node:16-bullseye"
+    build:
+      context: ..
+      dockerfile: containers/merochat.containerfile
     volumes:
       - type: bind
-        source: .
+        source: ..
         target: /merochat
     environment:
       DATABASE_HOST: "10.0.0.2"
-
-    command: sh -c "chmod +x /merochat/entrypoint.sh && /merochat/entrypoint.sh"
-
     networks:
       merochat_network:
         ipv4_address: 10.0.0.3
-
     ports:
       - 8000:8000
       - 1339:1339
+    # This is needed because spago run --watch is an interactive command.
+    depends_on:
+      - db
 
   # this is just for handling the db from a web gui
   adminer:
@@ -59,3 +57,5 @@ services:
     networks:
       merochat_network:
         ipv4_address: 10.0.0.4
+    depends_on:
+      - db
