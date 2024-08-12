@@ -82,7 +82,7 @@ create table tags_users
     creator integer not null,
     tag integer not null,
     constraint tags_user_user foreign key (creator) references users(id) on delete cascade,
-    constraint tag_user_tag foreign key (tag) references tags(id)
+    constraint tag_user_tag foreign key (tag) references tags(id) on delete cascade
 );
 
 create table languages_users
