@@ -110,8 +110,8 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                                 }
                                         )
                                         [ HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
-                                        , HE.span (HA.class' { hidden: incomingMessage || noTimestamps || ( noReadReceipts && status /= Errored ) }) " - " 
-                                        , HE.span (HA.class' { hidden: incomingMessage || ( noReadReceipts && status /= Errored ) }) $ show status
+                                        , HE.span (HA.class' { hidden: incomingMessage || noTimestamps || noReadReceipts && status /= Errored }) " - "
+                                        , HE.span (HA.class' { hidden: incomingMessage || noReadReceipts && status /= Errored }) $ show status
                                         ]
                                 ]
                         ]
