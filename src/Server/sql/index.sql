@@ -882,6 +882,6 @@ insert into privileges (feature, name, description, quantity) values
     (100, 'Start chats', 'View new chat suggetions, and start new chats', 25),
     (200, 'Participate in chat experiments', 'Take part in chat experiments. Some experiments may require more karma', 50),
     (201, 'Impersonation', 'Start Impersonation chat experiment', 1000),
-    (300, 'More tags', 'Increased number of max profile tags', 500),
-    (400, 'Send links', 'Send and automatically highlight links in chats', 3000),
-    (500, 'Send images', 'Send pictures in chats', 10000);
+    (300, 'More tags', 'Increased number of max profile tags', 250),
+    (400, 'Send links', 'Send markdown links', 1000),
+    (500, 'Send images', 'Send pictures in chats', 3000);
