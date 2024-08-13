@@ -43,7 +43,7 @@ instance EncodeJson Privilege where
       encodeJson = DAEGR.genericEncodeJson
 
 instance Bounded Privilege where
-      bottom = StartChats
+      bottom = ReceiveChats
       top = SendImages
 
 instance BoundedEnum Privilege where

@@ -44,27 +44,18 @@ import Type.Proxy (Proxy(..))
 
 --REFACTOR: some bits can still be abstracted
 view ∷ ProfileModel → Html ProfileMessage
-view
-      model@
-            { user
-            , countries
-            , languages
-            , loading
-            , updateRequestStatus
-            , descriptionInputed
-            , registrationMessage
-            } = HE.div (show ProfileEditionForm)
+view model = HE.div (show ProfileEditionForm)
       [ HE.div [ HA.class' { "profile-edition suggestion contact": true } ]
-              [ HE.div (HA.class' { "loading-over": true, hidden: not loading })
+              [ HE.div (HA.class' { "loading-over": true, hidden: not model.loading })
                       [ HE.div' (HA.class' "loading")
                       ]
               , HE.div (HA.class' "request-result-message success")
                       [ HE.span (HA.class' { "request-error-message": true, hidden: failedRequest }) failedRequestMessage
                       ]
-              , HE.h3 (HA.class' { "registration-message": true, hidden: not registrationMessage }) "Your account has been created!"
+              , HE.h3 (HA.class' { "registration-message": true, hidden: not model.registrationMessage }) "Your account has been created!"
               , HE.div (HA.class' "avatar-edition")
                       [ HE.div (HA.onClick SelectAvatar)
-                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender user.avatar ]
+                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender model.user.avatar ]
                               , pen
                               ]
                       , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick resetAvatar ] $
@@ -74,10 +65,10 @@ view
               , displayEditName
               , displayEditHeadline
               , HE.div (HA.class' "profile-karma")
-                      [ HE.div_
-                              [ HE.span [ HA.class' "span-info" ] $ SI.thousands user.karma
+                      [ HE.div_ $
+                              [ HE.span [ HA.class' "span-info" ] $ SI.thousands model.user.karma
                               , HE.span [ HA.class' "duller" ] " karma"
-                              ]
+                              ] <> SIVP.badges model.user.badges
                       ]
               , HE.div (HA.class' "profile-asl")
                       [ displayEditAge
@@ -91,7 +82,7 @@ view
       ]
       where
       numberTags
-            | SP.hasPrivilege MoreTags user = maxFinalTags
+            | SP.hasPrivilege MoreTags model.user = maxFinalTags
             | otherwise = maxStartingTags
 
       displayEditName = displayEditGenerated Name (Proxy ∷ _ "name") "This is the name other users will see when looking at your profile" nameMaxCharacters
@@ -101,18 +92,18 @@ view
             let
                   field = Proxy ∷ _ "age"
                   fieldInputed = Proxy ∷ _ "ageInputed"
-                  currentFieldValue = map show <<< SDT.ageFrom $ map DN.unwrap user.age
+                  currentFieldValue = map show <<< SDT.ageFrom $ map DN.unwrap model.user.age
                   parser = map DateWrapper <<< SDT.unformatIsoDate
                   control = HE.input
                         [ HA.type' "date"
                         , HA.class' "modal-input"
                         , HA.placeholder "yyyy-mm-dd"
                         , HA.onInput (setFieldInputed fieldInputed <<< parser)
-                        , HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate user.age
+                        , HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate model.user.age
                         ]
             in
                   displayEditOptionalField field Age (map HE.span_ currentFieldValue) control
-      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ _ "gender") Gender (HE.span_ <<< show <$> user.gender)
+      displayEditGender = displayEditOptional DSR.read genders (Proxy ∷ _ "gender") Gender (HE.span_ <<< show <$> model.user.gender)
       displayEditCountry =
             let
                   display country = HE.div (HA.class' "blocky")
@@ -120,9 +111,9 @@ view
                         , HE.text country
                         ]
             in
-                  displayEditOptional DI.fromString countries (Proxy ∷ _ "country") Country do
-                        country ← user.country
-                        display <<< _.name <$> DF.find ((country == _) <<< _.id) countries
+                  displayEditOptional DI.fromString model.countries (Proxy ∷ _ "country") Country do
+                        country ← model.user.country
+                        display <<< _.name <$> DF.find ((country == _) <<< _.id) model.countries
 
       displayEditLanguages =
             let
@@ -133,7 +124,7 @@ view
                               [ HE.span (HA.class' "duller") "speaks "
                               , HE.text $ DS.joinWith ", " languages
                               ]
-                  control = HE.select [ HA.onInput (setFieldInputedMaybe fieldInputed <<< DI.fromString) ] $ displayOptionsWith "Select" model.languagesInputed languages
+                  control = HE.select [ HA.onInput (setFieldInputedMaybe fieldInputed <<< DI.fromString) ] $ displayOptionsWith "Select" model.languagesInputed model.languages
             in
                   displayEditList (Proxy ∷ _ "languages") Languages getLanguage currentFieldValue control ("You may select up to " <> show maxLanguages <> " four languages") maxLanguages
       displayEditTags =
@@ -156,14 +147,14 @@ view
 
       displayEditDescription = HE.fragment
             [ HE.div_
-                    [ HE.div [ title "description", HA.class' { hidden: DM.isJust descriptionInputed }, HA.onClick (editField (Proxy ∷ _ "description") (Proxy ∷ _ "descriptionInputed")) ]
+                    [ HE.div [ title "description", HA.class' { hidden: DM.isJust model.descriptionInputed }, HA.onClick (editField (Proxy ∷ _ "description") (Proxy ∷ _ "descriptionInputed")) ]
                             [ HE.div (HA.class' "about")
                                     [ HE.span (HA.class' "duller") "About"
                                     , pen
                                     ]
-                            , HE.div' [ HA.class' "profile-description", HA.innerHtml $ SM.parse user.description ]
+                            , HE.div' [ HA.class' "profile-description", HA.innerHtml $ SM.parse model.user.description ]
                             ]
-                    , HE.div [ title "description", HA.class' { "description-edition": true, hidden: DM.isNothing descriptionInputed } ]
+                    , HE.div [ title "description", HA.class' { "description-edition": true, hidden: DM.isNothing model.descriptionInputed } ]
                             [ HE.div (HA.class' "bold") "Your description"
                             , HE.div (HA.class' "duller")
                                     [ HE.text "Talk a little (or a lot) about yourself"
@@ -174,7 +165,7 @@ view
                                     [ HA.class' "profile-edition-description modal-input"
                                     , HA.maxlength descriptionMaxCharacters
                                     , HA.onInput (setFieldInputed (Proxy ∷ _ "descriptionInputed"))
-                                    , HA.value $ DM.fromMaybe "" descriptionInputed
+                                    , HA.value $ DM.fromMaybe "" model.descriptionInputed
                                     ]
                             , HE.div (HA.class' "save-cancel")
                                     [ check (Save $ Generated Description)
@@ -296,10 +287,10 @@ view
                                 ]
                         ]
 
-      languageHM = DH.fromArray $ map (\{ id, name } → Tuple id name) languages
+      languageHM = DH.fromArray $ map (\{ id, name } → Tuple id name) model.languages
       getLanguage = SU.fromJust <<< flip DH.lookup languageHM
 
-      Tuple failedRequest failedRequestMessage = case updateRequestStatus of
+      Tuple failedRequest failedRequestMessage = case model.updateRequestStatus of
             Just (Failure message) → Tuple false message
             _ → Tuple true ""
 

@@ -44,6 +44,12 @@ lu = Proxy
 tu ∷ Proxy "tu"
 tu = Proxy
 
+b ∷ Proxy "b"
+b = Proxy
+
+bu ∷ Proxy "bu"
+bu = Proxy
+
 profileVisibility ∷ Proxy "profileVisibility"
 profileVisibility = Proxy
 

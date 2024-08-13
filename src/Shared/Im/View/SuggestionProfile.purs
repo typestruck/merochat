@@ -1,7 +1,8 @@
-module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, displayProfile) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, displayProfile, badges) where
 
 import Debug
 import Prelude
+import Shared.Availability
 import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
@@ -9,6 +10,7 @@ import Shared.User
 import Client.Common.Privilege as CCP
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.HashMap as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
@@ -17,21 +19,25 @@ import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Flame (Html)
-import Shared.Availability
 import Flame.Html.Attribute as HA
+import Flame.Html.Element (class ToNode)
 import Flame.Html.Element as HE
-import Shared.Intl as SI
 import Safe.Coerce as SC
 import Shared.Avatar as SA
+import Shared.Badge (Badge)
+import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Retry as SIVR
+import Shared.Intl as SI
 import Shared.Markdown as SM
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
+import Shared.Resource (Media(..), ResourceType(..))
+import Shared.Resource as SR
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
@@ -79,13 +85,13 @@ unavailable name =
 
 -- | Compact profile view shown by default
 compactProfile ∷ ImModel → Contact → Html ImMessage
-compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: loggedUser } contact@{ user: { id, availability, typingStatus } } =
-      HE.div (HA.class' { "profile-contact": true, highlighted: toggleModal == Tutorial Chatting })
+compactProfile model contact =
+      HE.div (HA.class' { "profile-contact": true, highlighted: model.toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient chatting avatar ] <> showProfileAction
+                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient model.chatting contact.user.avatar ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
-                            [ HE.h1 (HA.class' "contact-name") name
+                            [ HE.div (HA.class' "contact-name-badge") $ HE.h1 (HA.class' "contact-name") contact.user.name : badges contact.user.badges
                             , typingNotice
                             , availableStatus
                             ]
@@ -93,7 +99,7 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
                             <<< HE.div [ HA.class' "outer-user-menu" ]
                             <<< SIA.contextMenu
                             $ show CompactProfileContextMenu
-                    , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu } ] $ blockReport id
+                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] $ blockReport contact.user.id
                     ]
             , HE.div (HA.class' "show-profile-icon-div" : showProfileAction) profileIcon
 
@@ -101,20 +107,18 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
       where
       showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
-      { name, avatar } = contact.user
-
       avatarClasses
-            | DM.isNothing avatar = "avatar-profile " <> SA.avatarColorClass chatting
+            | DM.isNothing contact.user.avatar = "avatar-profile " <> SA.avatarColorClass model.chatting
             | otherwise = "avatar-profile"
 
-      isTyping = (contacts !@ SU.fromJust chatting).typing
+      isTyping = (model.contacts !@ SU.fromJust model.chatting).typing
 
-      typingNotice = HE.div (HA.class' { "duller typing": true, hidden: not isTyping || not loggedUser.typingStatus || not typingStatus }) "Typing..."
+      typingNotice = HE.div (HA.class' { "duller typing": true, hidden: not isTyping || not model.user.typingStatus || not contact.user.typingStatus }) "Typing..."
 
       availableStatus =
             HE.div
-                  [ HA.class' { hidden: isTyping && loggedUser.typingStatus && typingStatus || not loggedUser.onlineStatus || not contact.user.onlineStatus, duller: availability /= Online } ]
-                  $ show availability
+                  [ HA.class' { hidden: isTyping && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus, duller: contact.user.availability /= Online } ]
+                  $ show contact.user.availability
 
       profileIcon = HE.svg [ HA.class' "show-profile-icon", HA.viewBox "0 0 16 16" ]
             [ HE.rect' [ HA.x "0.01", HA.y "2", HA.width "16", HA.height "2" ]
@@ -169,15 +173,15 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
 displayProfile ∷ ∀ message. Maybe Int → ImUser → ImUser → Maybe message → Array (Html message)
-displayProfile index loggedUser { karmaPosition, name, availability, temporary, avatar, age, karma, headline, gender, onlineStatus, country, languages, tags, description } temporaryUserMessage =
-      [ SA.avatar [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
-      , HE.h1 (HA.class' "profile-name") name
-      , HE.div (HA.class' "headline") headline
-      , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not onlineStatus, duller: availability /= Online } ] $ show availability
+displayProfile index loggedUser profileUser temporaryUserMessage =
+      [ SA.avatar [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profileUser.avatar ]
+      , HE.h1 (HA.class' "profile-name") profileUser.name
+      , HE.div (HA.class' "headline") profileUser.headline
+      , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not profileUser.onlineStatus, duller: profileUser.availability /= Online } ] $ show profileUser.availability
       , HE.div (HA.class' "profile-karma")
               $
                     case temporaryUserMessage of
-                          Just msg | temporary →
+                          Just msg | profileUser.temporary →
                                 [ HE.span [ HA.class' "quick-sign-up" ] "Quick-sign up user"
                                 -- from https://thenounproject.com/icon/question-646495/
                                 , HE.svg [ HA.class' "svg-explain-temporary-user", HA.viewBox "0 0 752 752" ]
@@ -193,43 +197,49 @@ displayProfile index loggedUser { karmaPosition, name, availability, temporary, 
                                         ]
                                 ]
                           _ →
-                                [ HE.div_
-                                        [ HE.span [ HA.class' "span-info" ] $ SI.thousands karma
+                                [ HE.div_ $
+                                        [ HE.span [ HA.class' "span-info" ] $ SI.thousands profileUser.karma
                                         , HE.span [ HA.class' "duller" ] " karma"
-                                        , HE.span_ $ " (#" <> show karmaPosition <> ")"
-                                        ]
+                                        , HE.span_ $ " (#" <> show profileUser.karmaPosition <> ")"
+                                        ] <> map spanWith (badges profileUser.badges)
                                 ]
       , HE.div (HA.class' "profile-asl")
               [ HE.div_
-                      [ toSpan $ map show age
-                      , duller (DM.isNothing age || DM.isNothing gender) ", "
-                      , toSpan gender
+                      [ toSpan $ map show profileUser.age
+                      , duller (DM.isNothing profileUser.age || DM.isNothing profileUser.gender) ", "
+                      , toSpan profileUser.gender
                       ]
               , HE.div_
-                      [ duller (DM.isNothing country) "from "
-                      , toSpan country
+                      [ duller (DM.isNothing profileUser.country) "from "
+                      , toSpan profileUser.country
                       ]
               , HE.div_
-                      ( [ duller (DA.null languages) "speaks "
-                        ] <> (DA.intercalate [ duller false ", " ] $ map (DA.singleton <<< spanWith) languages)
+                      ( [ duller (DA.null profileUser.languages) "speaks "
+                        ] <> (DA.intercalate [ duller false ", " ] $ map (DA.singleton <<< spanWith) profileUser.languages)
                       )
               ]
       , HE.div (HA.class' "tags-description")
-              [ HE.div (HA.class' "profile-tags") $ map (HE.span (HA.class' "tag")) tags
+              [ HE.div (HA.class' "profile-tags") $ map (HE.span (HA.class' "tag")) profileUser.tags
               , HE.span (HA.class' "duller profile-description-about") "About"
-              , HE.div' [ HA.class' "description-message", HA.innerHtml $ SM.parse description ]
+              , HE.div' [ HA.class' "description-message", HA.innerHtml $ SM.parse profileUser.description ]
               ]
       ]
       where
       avatarClasses
-            | DM.isNothing avatar = "avatar-profile " <> SA.avatarColorClass index
+            | DM.isNothing profileUser.avatar = "avatar-profile " <> SA.avatarColorClass index
             | otherwise = "avatar-profile"
 
       toSpan = DM.maybe (HE.createEmptyElement "span") spanWith
 
+      spanWith ∷ ∀ b m. ToNode b m Html ⇒ b → Html m
       spanWith = HE.span (HA.class' "span-info")
 
       duller hidden t = HE.span (HA.class' { "duller": true, "hidden": hidden }) t
+
+badges ∷ ∀ message. Array Badge → Array (Html message)
+badges source = map (it <<< SB.badgeFor) source
+      where
+      it bf = HE.div [ HA.class' "badge", HA.title bf.description ] [ HE.img $ [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.text bf.text ]
 
 blockReport ∷ Int → Array (Html ImMessage)
 blockReport id =

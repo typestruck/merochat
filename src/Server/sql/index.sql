@@ -252,12 +252,21 @@ create table tokens (
     constraint tokens_user_user foreign key (toker) references users(id) on delete cascade
 );
 
--- create table badges
--- (
---     id integer generated always as identity primary key,
---     kind smallint not null,
---     description text
--- );
+create table badges
+(
+    id integer generated always as identity primary key,
+    kind smallint not null,
+    description text
+);
+
+create table badges_users
+(
+    id integer generated always as identity primary key,
+    receiver integer not null,
+    badge integer not null,
+    constraint badge_user_user foreign key (receiver) references users(id) on delete cascade,
+    constraint badge_user_badge foreign key (badge) references badges(id) on delete cascade
+);
 
 -- create table reactions
 -- (
@@ -275,15 +284,6 @@ create table privileges
     description text,
     quantity integer not null
 );
-
--- create table badges_users
--- (
---     id integer generated always as identity primary key,
---     receiver integer not null,
---     badge integer not null,
---     constraint badge_user_user foreign key (receiver) references users(id) on delete cascade,
---     constraint badge_user_badge foreign key (badge) references badges(id)
--- );
 
 -- create table reactions_messages
 -- (
@@ -885,3 +885,7 @@ insert into privileges (feature, name, description, quantity) values
     (300, 'More tags', 'Increased number of max profile tags', 250),
     (400, 'Send links', 'Send markdown links', 1000),
     (500, 'Send images', 'Send pictures in chats', 3000);
+
+insert into badges (kind, description) values
+    (0, 'Admin' ),
+    (100, 'Contributor');

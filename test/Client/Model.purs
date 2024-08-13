@@ -88,6 +88,7 @@ imUser =
       , languages: []
       , completedTutorial: true
       , tags: []
+      , badges: []
       , privileges: []
       , headline: ""
       , description: ""

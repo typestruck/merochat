@@ -9,11 +9,13 @@ import Prelude (Unit, bind, discard, map, void, when, (#), ($), (<<<), (<>))
 import Prelude as P
 import Server.Database as SD
 import Server.Database.Countries (countries)
-import Server.Database.Fields (_id, _name, k, l, lu, tu, u)
+import Server.Database.Fields (_id, _name, k, l, lu, tu, u, b, bu)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.Tags (_tags, tags)
+import Server.Database.Badges
+import Server.Database.BadgesUsers
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, users)
 import Server.Profile.Database.Flat (FlatProfileUser)
@@ -36,6 +38,7 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
             /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg _kind # as _badges) # from (((badges # as b) `join` (badges_users # as bu)) # on (b ... _id .=. bu ... _badge .&&. bu ... _receiver .=. u ... _id)) # orderBy _badges # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
       source = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)

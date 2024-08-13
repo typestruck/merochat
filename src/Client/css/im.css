@@ -389,6 +389,10 @@ blockquote {
     padding: 5px 15px;
 }
 
+.contact-name-badge {
+    display: flex;
+}
+
 .contact-profile {
     padding: 5px 10px 5px 10px;
 }
@@ -1804,6 +1808,23 @@ select {
     padding-top: 20px;
 }
 
+.badge {
+    color: rgb(238, 238, 238);
+    font-weight:normal;
+    border: 1px solid rgb(238, 238, 238, 0.8);
+    border-radius: 4px;
+    padding: 0 6px;
+    align-self: center;
+    vertical-align: middle;
+    display: inline-flex;
+    margin-left:13px;
+}
+
+.badge-img {
+    margin-right:5px;
+    align-self: center;
+}
+
 .suggestion.old .tags-description {
     overflow-y: auto;
 }
@@ -2084,6 +2105,16 @@ select {
     .im {
         display: flex;
         overflow-x: hidden
+    }
+
+    .contact-name-badge {
+        flex-direction: column;
+    }
+
+    .contact-name-badge .badge{
+        margin-left: 0;
+        width: fit-content;
+        align-self: initial;
     }
 
     .sign-up-call {

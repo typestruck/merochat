@@ -16,9 +16,11 @@ import Droplet.Driver (Pool)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Server.Database as SD
+import Server.Database.BadgesUsers
+import Server.Database.Badges
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
-import Server.Database.Fields (_age, _date, _id, _name, _recipient, _sender, c, completedTutorial, k, l, lu, messageTimestamps, onlineStatus, profileVisibility, readReceipts, tu, typingStatus, u)
+import Server.Database.Fields (_age, _date, _id, _name, _recipient, _sender, c, completedTutorial, k, l, b, bu, lu, messageTimestamps, onlineStatus, profileVisibility, readReceipts, tu, typingStatus, u)
 import Server.Database.Functions (date_part_age, datetime_part_age, insert_history, utc_now)
 import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
 import Server.Database.KarmaHistories (_amount, _target, karma_histories)
@@ -61,6 +63,7 @@ userPresentationFields =
             /\ _description
             /\ (select _name # from countries # wher (_id .=. u ... _country) # orderBy _id # limit (Proxy ∷ _ 1) # as _country)
             /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg _kind # as _badges) # from (((badges # as b) `join` (badges_users # as bu)) # on (b ... _id .=. bu ... _badge .&&. bu ... _receiver .=. u ... _id)) # orderBy _badges # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
@@ -124,6 +127,7 @@ presentUserContactFields =
       , description
       , (SELECT name FROM countries WHERE id = u.country) country
       , (SELECT ARRAY_AGG(l.name ORDER BY name) FROM languages l JOIN languages_users lu ON l.id = lu.language AND lu.speaker = u.id) languages
+      , (SELECT ARRAY_AGG(kind) FROM badges b JOIN badges_users bu ON b.id = bu.badge AND bu.receiver = u.id) badges
       , (SELECT ARRAY_AGG(t.name ORDER BY t.id) FROM tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
       , k.current_karma karma
       , position "karmaPosition"

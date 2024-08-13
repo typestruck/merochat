@@ -1,6 +1,7 @@
 module Server.Im.Database.Flat where
 
 import Prelude
+import Shared.Availability
 import Shared.User
 
 import Data.DateTime (DateTime)
@@ -11,10 +12,10 @@ import Debug (spy)
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
+import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
 import Shared.Privilege (Privilege)
-import Shared.Availability
 import Shared.Unsafe as SU
 
 type FlatFields rest =
@@ -36,6 +37,7 @@ type FlatFields rest =
       , typingStatus ∷ Checked
       , temporary ∷ Checked
       , privileges ∷ Maybe (Array Privilege)
+      , badges ∷ Maybe (Array Badge)
       , onlineStatus ∷ Checked
       , name ∷ String
       , tags ∷ Maybe (Array String)
@@ -80,6 +82,7 @@ fromFlatUser fc =
       , completedTutorial: SC.coerce fc.completedTutorial
       , description: fc.description
       , privileges: DM.fromMaybe [] fc.privileges
+      , badges: DM.fromMaybe [] fc.badges
       , temporary: SC.coerce fc.temporary
       , joined: DateTimeWrapper fc.joined
       , avatar: SA.parseAvatar fc.avatar
