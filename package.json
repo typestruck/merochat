@@ -33,7 +33,6 @@
     "mini-css-extract-plugin": "^1.3.3",
     "nodemon": "^2.0.4",
     "purescript-psa": "^0.8.2",
-    "purs-backend-es": "^1.4.2",
     "purs-loader": "^3.7.2",
     "purs-tidy": "^0.11.0",
     "webpack": "^5.76.0",
