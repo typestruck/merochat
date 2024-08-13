@@ -53,6 +53,4 @@ function replaceInFile(fileName, hash) {
     writeFileSync(path, contents);
 }
 
-
-
 export default ReplaceHashPlugin;
