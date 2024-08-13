@@ -26,14 +26,14 @@ contacts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int } }
 contacts { guards: { loggedUserId }, query: { skip } } = SIA.listContacts loggedUserId skip
 
 --not sure if a bug, but payload has no DecodeResponse instance for Maybe, and sending one results in a runtime exception
-contact ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { id ∷ Int, impersonation ∷ Boolean } } → ServerEffect (Array Contact)
-contact { guards: { loggedUserId }, query: { id, impersonation } } = SIA.listSingleContact loggedUserId id impersonation
+contact ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { id ∷ Int } } → ServerEffect (Array Contact)
+contact { guards: { loggedUserId }, query: { id } } = SIA.listSingleContact loggedUserId id
 
 history ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int, with ∷ Int } } → ServerEffect (Array HistoryMessage)
 history { guards: { loggedUserId }, query: { with, skip } } = SIA.resumeChatHistory loggedUserId with skip
 
-suggestions ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int, avoid ∷ Maybe ArrayPrimaryKey } } → ServerEffect (Array Suggestion)
-suggestions { guards: { loggedUserId }, query: { skip, avoid } } = SIA.suggest loggedUserId skip avoid
+suggestions ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int } } → ServerEffect (Array Suggestion)
+suggestions { guards: { loggedUserId }, query: { skip } } = SIA.suggest loggedUserId skip
 
 block ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Ok
 block { guards: { loggedUserId }, body: { id } } = do

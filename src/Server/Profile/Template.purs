@@ -27,7 +27,6 @@ template { user: user, countries, languages } = do
                     , descriptionInputed: Nothing
                     , loading: false
                     , registrationMessage: false
-                    , experimenting: Nothing
                     , updateRequestStatus: Nothing
                     , user
                     , countries

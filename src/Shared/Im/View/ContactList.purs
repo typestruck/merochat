@@ -20,8 +20,6 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
-import Shared.Experiments.Impersonation (impersonations)
-import Shared.Experiments.Impersonation as SEI
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.View.Retry as SIVR
 import Shared.Im.View.SuggestionProfile as SIVP
@@ -36,7 +34,6 @@ contactList
       { failedRequests
       , chatting
       , toggleContextMenu
-      , experimenting
       , contacts
       , toggleModal
       , user: { joined, temporary, id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus }
@@ -63,25 +60,21 @@ contactList
                     in
                           if temporary then SIVP.signUpCall joined : entries else entries
 
-      displayContactListEntry index { history, user, impersonating, typing } =
+      displayContactListEntry index { history, user, typing } =
             let
                   justIndex = Just index
-                  --refactor: a neater way to do experiment that don't litter the code with case of
-                  contact = case impersonating of
-                        Just impersonationId → SU.fromJust $ DH.lookup impersonationId impersonations
-                        _ → user
+                  contact = user
                   numberUnreadMessages = countUnread history
                   lastHistoryEntry = SU.fromJust $ DA.last history
-                  tupleId = Tuple user.id impersonating
-                  isContextMenuVisible = toggleContextMenu == ShowContactContextMenu tupleId
+                  isContextMenuVisible = toggleContextMenu == ShowContactContextMenu user.id
                   avatarClasses
                         | DM.isNothing contact.avatar = "avatar-contact-list" <> SA.avatarColorClass justIndex
                         | otherwise = "avatar-contact-list"
 
             in
                   HE.div
-                        [ HA.class' { contact: true, "chatting-contact": chattingId == Just user.id && impersonatingId == impersonating }
-                        , HA.onClick $ ResumeChat tupleId
+                        [ HA.class' { contact: true, "chatting-contact": chattingId == Just user.id }
+                        , HA.onClick $ ResumeChat user.id
                         ]
                         [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
                                 [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
@@ -96,26 +89,24 @@ contactList
                                 [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not contact.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
                                 , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
                                 , HE.div (HA.class' { "message-status-contact": true, duller: true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == user.id || not contact.readReceipts || not readReceipts || isContextMenuVisible }) $ show lastHistoryEntry.status
-                                , HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowContactContextMenu tupleId ]
+                                , HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowContactContextMenu user.id ]
                                         [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                 [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                 ]
-                                        , HE.div [ HA.class' { "user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat tupleId ] $
+                                        , HE.div [ HA.class' { "user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat user.id ] $
                                                 HE.div [ HA.class' "user-menu-item menu-item-heading" ] "Delete chat"
                                         ]
                                 ]
                         ]
 
-      -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users/impersonations
+      -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
       suggestionsCall =
             let
-                  { welcome, first, second } = case experimenting of
-                        Just (Impersonation (Just { name })) → SEI.welcomeMessage name
-                        _ → welcomeMessage
+                  { welcome, first, second } = welcomeMessage
             in
                   HE.div (HA.class' "suggestions-call")
                         [ HE.div (HA.onClick $ ToggleInitialScreen false) backArrow
-                        , HE.div (HA.class' { "suggestions-call-middle": true, "welcome-impersonation": DM.isJust experimenting })
+                        , HE.div (HA.class' { "suggestions-call-middle": true })
                                 [ HE.div (HA.class' "welcome-suggestions-call") $ welcome
                                 , HE.div_ first
                                 , HE.div_ second
@@ -139,11 +130,6 @@ contactList
             index ← chatting
             { user: { id } } ← contacts !! index
             pure id
-
-      impersonatingId = do
-            index ← chatting
-            { impersonating } ← contacts !! index
-            impersonating
 
       -- | Displayed if loading contact from an incoming message fails
       retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." CheckMissedEvents failedRequests

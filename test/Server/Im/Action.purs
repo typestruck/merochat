@@ -48,11 +48,11 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          suggestions ← SIA.suggest userId 0 Nothing
+                          suggestions ← SIA.suggest userId 0
                           R.liftAff <<< TUA.equal 1 $ DA.length suggestions
 
                           void $ SIA.blockUser userId anotherUserId
-                          suggestions' ← SIA.suggest userId 0 Nothing
+                          suggestions' ← SIA.suggest userId 0
                           R.liftAff <<< TUA.equal 0 $ DA.length suggestions'
 
             TU.test "suggest respects hidden visibility"
@@ -60,7 +60,7 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SSA.changePrivacySettings anotherUserId { profileVisibility: Nobody, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
-                          suggestions ← SIA.suggest userId 0 Nothing
+                          suggestions ← SIA.suggest userId 0
                           R.liftAff $ TUA.equal [] suggestions
 
             TU.test "suggest respects contacts only visibility"
@@ -68,7 +68,7 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SSA.changePrivacySettings anotherUserId { profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
-                          suggestions ← SIA.suggest userId 0 Nothing
+                          suggestions ← SIA.suggest userId 0
                           R.liftAff $ TUA.equal [] suggestions
 
             TU.test "suggest respects no temporary users only visibility"
@@ -77,7 +77,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. anotherUserId)
                           SSA.changePrivacySettings userId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
-                          suggestions ← SIA.suggest userId 0 Nothing
+                          suggestions ← SIA.suggest userId 0
                           R.liftAff $ TUA.equal [] suggestions
 
             TU.test "suggest respects no temporary users only visibility when suggesting to temporary user"
@@ -86,7 +86,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. userId)
                           SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
-                          suggestions ← SIA.suggest userId 0 Nothing
+                          suggestions ← SIA.suggest userId 0
                           R.liftAff $ TUA.equal [] suggestions
 
             TU.test "suggest never shows temporary users"
@@ -94,23 +94,8 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. anotherUserId)
-                          suggestions ← SIA.suggest userId 0 Nothing
+                          suggestions ← SIA.suggest userId 0
                           R.liftAff $ TUA.equal [] suggestions
-
-            TU.test "suggest includes all users if impersonating"
-                  $ TS.serverAction
-                  $ do
-                          Tuple userId anotherUserId ← setUpUsers
-                          void <<< SIA.processMessage userId anotherUserId 2 $ Text "oi"
-                          suggestions ← SIA.suggest userId 0 <<< Just $ ArrayPrimaryKey []
-                          R.liftAff <<< TUA.equal 1 $ DA.length suggestions
-
-            TU.test "suggest avoids given users if impersonating"
-                  $ TS.serverAction
-                  $ do
-                          Tuple userId anotherUserId ← setUpUsers
-                          suggestions ← SIA.suggest userId 0 <<< Just $ ArrayPrimaryKey [ anotherUserId ]
-                          R.liftAff <<< TUA.equal 0 $ DA.length suggestions
 
             TU.test "listContacts orders contacts by date of last message"
                   $ TS.serverAction
@@ -265,7 +250,7 @@ tests = do
                           Tuple userId anotherUserId ← setUpUsers
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
-                          contacts ← SIA.listSingleContact userId anotherUserId false
+                          contacts ← SIA.listSingleContact userId anotherUserId
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           R.liftAff $ TUA.equal anotherUserId (contacts !@ 0).user.id
                           R.liftAff <<< TUA.equal [ "oi", "ola" ] $ map _.content (contacts !@ 0).history
@@ -277,7 +262,7 @@ tests = do
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
                           void $ SIA.deleteChat userId { userId: anotherUserId, messageId: 1 }
-                          contacts ← SIA.listSingleContact userId anotherUserId false
+                          contacts ← SIA.listSingleContact userId anotherUserId
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           R.liftAff <<< TUA.equal [ "ola" ] $ map _.content (contacts !@ 0).history
 
@@ -288,7 +273,7 @@ tests = do
                           void <<< SIA.processMessage userId anotherUserId 1 $ Text "oi"
                           void <<< SIA.processMessage userId anotherUserId 2 $ Text "ola"
                           void $ SIA.deleteChat anotherUserId { userId, messageId: 2 }
-                          contacts ← SIA.listSingleContact userId anotherUserId false
+                          contacts ← SIA.listSingleContact userId anotherUserId
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           R.liftAff <<< TUA.equal [ "oi", "ola" ] $ map _.content (contacts !@ 0).history
 

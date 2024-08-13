@@ -20,12 +20,10 @@ main ∷ Effect Unit
 main = do
       FAE.resumeMount (QuerySelector $ "#" <> show ProfileEditionForm) profileId
             { view: SPV.view
-            , subscribe: [ FS.onCustomEvent setChatExperiment SetProfileChatExperiment ]
+            , subscribe: []
             , init: Nothing
             , update: CPU.update
             }
-      --a pain, but a chat experiment might be going on before loading the modal
-      FS.send imId AskChatExperiment
       --avatar changes
       input ← CPU.getFileInput
       CCF.setUpFileChange (Save <<< Avatar <<< Just) input profileId

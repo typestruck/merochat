@@ -42,7 +42,7 @@ im loggedUserId = do
             --happens if the user has an invalid cookie/was suspended
             Nothing → RE.throw ExpiredSession
             Just user → do
-                  suggestions ← suggest loggedUserId 0 Nothing
+                  suggestions ← suggest loggedUserId 0
                   contacts ← listContacts loggedUserId 0
                   pure
                         { contacts
@@ -50,16 +50,14 @@ im loggedUserId = do
                         , user: SIF.fromFlatUser user
                         }
 
-suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array Suggestion)
-suggest loggedUserId skip keys = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip keys
+suggest ∷ Int → Int → ServerEffect (Array Suggestion)
+suggest loggedUserId skip = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
 
-listSingleContact ∷ Int → Int → Boolean → ServerEffect (Array Contact)
-listSingleContact loggedUserId userId impersonation
-      | impersonation = map fromFlatContact <$> SID.presentContactOnly loggedUserId userId
-      | otherwise = presentContacts <$> SID.presentSingleContact loggedUserId userId 0
+listSingleContact ∷ Int → Int → ServerEffect (Array Contact)
+listSingleContact loggedUserId userId = presentContacts <$> SID.presentSingleContact loggedUserId userId 0
 
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SID.presentSingleContact loggedUserId userId skip

@@ -109,7 +109,7 @@ beforeSendMessage
                   --an existing contact might be in the suggestions
                   let
                         user = suggestions !@ index
-                        maybeIndex = DA.findIndex (\cnt → cnt.user.id == user.id && cnt.impersonating == Nothing) contacts
+                        maybeIndex = DA.findIndex (\cnt → cnt.user.id == user.id) contacts
                         updatedContacts = if DM.isJust maybeIndex then contacts else DA.cons (SIC.defaultContact id user) contacts
                         updatedChatting = maybeIndex <|> Just 0
                         shouldFetchHistory = _.shouldFetchChatHistory $ SU.fromJust do
@@ -140,7 +140,6 @@ sendMessage
             , chatting
             , temporaryId
             , contacts
-            , experimenting
             } = CIF.nothingNext updatedModel $ liftEffect do
       CIS.scrollLastMessage
       input ← chatInput chatting
@@ -151,10 +150,6 @@ sendMessage
             { id: newTemporaryId
             , userId: recipientId
             , content
-            , experimenting: case experimenting, recipient.impersonating of
-                    Just (Impersonation (Just { id })), _ → Just $ ImpersonationPayload { id: id, sender: true }
-                    _, Just id → Just $ ImpersonationPayload { id: id, sender: false }
-                    _, _ → Nothing
             , turn
             }
       where

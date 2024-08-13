@@ -54,7 +54,6 @@ type Suggestion = ImUser
 
 type BasicMessage fields =
       { id ∷ Int
-      , experimenting ∷ Maybe ExperimentPayload
       | fields
       }
 
@@ -70,7 +69,6 @@ type BaseContact fields =
       , chatAge ∷ Number
       , lastMessageDate ∷ DateTimeWrapper
       , chatStarter ∷ Int
-      , impersonating ∷ Maybe Int
       | fields
       }
 
@@ -131,7 +129,6 @@ type Im =
       , fortune ∷ Maybe String
       , failedRequests ∷ Array RequestFailure
       , errorMessage ∷ String
-      , experimenting ∷ Maybe ExperimentData
       , modalsLoaded ∷ Array ShowUserMenuModal
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
@@ -178,15 +175,15 @@ data ShowContextMenu
       | ShowSuggestionContextMenu
       | ShowCompactProfileContextMenu
       | ShowFullProfileContextMenu
-      | ShowContactContextMenu (Tuple Int (Maybe Int))
+      | ShowContactContextMenu Int
       | ShowMessageContextMenu Int
 
 data ShowUserMenuModal
       = HideUserMenuModal
       | ConfirmLogout
       | ConfirmTerminationTemporaryUser
-      | ConfirmDeleteChat (Tuple Int (Maybe Int))
-      | ConfirmBlockUser (Tuple Int (Maybe Int))
+      | ConfirmDeleteChat Int
+      | ConfirmBlockUser Int
       | ShowExperiments
       | ShowProfile
       | ShowSettings
@@ -247,11 +244,11 @@ data RetryableRequest
       | FetchContacts Boolean
       | CheckMissedEvents
       | ToggleModal ShowUserMenuModal
-      | BlockUser (Tuple Int (Maybe Int))
+      | BlockUser Int
       | PreviousSuggestion
       | NextSuggestion
       | ReportUser Int
-      | DeleteChat (Tuple Int (Maybe Int))
+      | DeleteChat Int
 
 data ReportReason = DatingContent | Harassment | HateSpeech | Spam | Minor | OtherReason
 
@@ -270,13 +267,12 @@ data ImMessage
       | SetModalContents (Maybe Bundle) ElementId String
 
       --contact
-      | ResumeChat (Tuple Int (Maybe Int))
+      | ResumeChat Int
       | UpdateReadCount
       | CheckFetchContacts
       | UpdateDelivered
       | DisplayContacts (Array Contact)
       | DisplayNewContacts (Array Contact)
-      | DisplayImpersonatedContact Int HistoryMessage (Array Contact)
       | ResumeMissedEvents MissedEvents
 
       --suggestion
@@ -309,8 +305,6 @@ data ImMessage
       --main
       | DisplayAvailability AvailabilityStatus
       | SendPing Boolean
-      | AskChatExperiment
-      | SetChatExperiment (Maybe ExperimentData)
       | ReloadPage
       | FinishTutorial
       | ToggleUserContextMenu Event
@@ -345,7 +339,6 @@ data WebSocketPayloadServer
       | OutgoingMessage OutgoingRecord
       | ChangeStatus
               { status ∷ MessageStatus
-              , persisting ∷ Boolean
               , ids ∷ Array (Tuple Int (Array Int))
               }
       | UnavailableFor

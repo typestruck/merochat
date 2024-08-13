@@ -12,7 +12,6 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Shared.Experiments.Impersonation (batman)
 import Shared.Unsafe ((!@))
 import Test.Client.Model (contact, historyMessage, imUser, imUserId, model, webSocket)
 import Test.Unit (TestSuite)
@@ -24,22 +23,14 @@ tests = do
       TU.suite "im contacts update" do
             TU.test "resumeChat sets chatting" do
                   let
-                        m@{ chatting } = DT.fst <<< CICN.resumeChat anotherContactId Nothing $ model
+                        m@{ chatting } = DT.fst <<< CICN.resumeChat anotherContactId $ model
                               { chatting = Nothing
                               , contacts = [ contact { user = imUser }, anotherContact ]
                               }
                   TUA.equal (Just 1) chatting
 
-                  let { chatting } = DT.fst $ CICN.resumeChat imUserId Nothing m
+                  let { chatting } = DT.fst $ CICN.resumeChat imUserId m
                   TUA.equal (Just 0) chatting
-
-            TU.test "resumeChat finds impersonation contact" do
-                  let
-                        { chatting } = DT.fst <<< CICN.resumeChat imUser.id (Just batman.id) $ model
-                              { chatting = Nothing
-                              , contacts = [ contact { user = imUser }, anotherContact { user = imUser, impersonating = Just batman.id } ]
-                              }
-                  TUA.equal (Just 1) chatting
 
             TU.test "markRead sets received messages as read" do
                   let
@@ -158,7 +149,7 @@ tests = do
 
             TU.test "deleteChat removes deleted contact" do
                   let
-                        { contacts } = DT.fst <<< CICN.deleteChat (Tuple anotherContactId Nothing) $ model
+                        { contacts } = DT.fst <<< CICN.deleteChat anotherContactId $ model
                               { contacts = [ contact, anotherContact ]
                               }
                   TUA.equal [ contact ] contacts

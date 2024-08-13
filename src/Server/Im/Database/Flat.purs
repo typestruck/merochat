@@ -62,7 +62,6 @@ fromFlatContact fc =
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
       , chatStarter: fc.chatStarter
       , lastMessageDate: DateTimeWrapper fc.lastMessageDate
-      , impersonating: Nothing
       , history: []
       , user: fromFlatUser fc
       , typing: false

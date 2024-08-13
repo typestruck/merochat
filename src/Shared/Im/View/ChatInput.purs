@@ -20,7 +20,6 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Element (ElementId(..))
-import Shared.Experiments.Impersonation (impersonations)
 import Shared.Im.Emoji as SIE
 import Shared.Im.Svg as SIS
 import Shared.Keydown as SK
@@ -142,14 +141,7 @@ chatBarInput
       ]
       where
       available = DM.fromMaybe true $ getContact ((_ /= Unavailable) <<< _.availability <<< _.user)
-      recipientName = DM.fromMaybe "" $ impersonationName <|> getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
-
-      impersonationName = do
-            index ← chatting
-            { impersonating } ← contacts !! index
-            id ← impersonating
-            imp ← HS.lookup id impersonations
-            pure $ imp.name
+      recipientName = DM.fromMaybe "" $ getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
 
       getContact ∷ ∀ a. (Contact → a) → Maybe a
       getContact = getProperty chatting contacts

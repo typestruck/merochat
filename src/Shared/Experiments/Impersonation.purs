@@ -40,18 +40,22 @@ view { section, impersonation, user } = HE.div (HA.class' "impersonation")
       , profiles Celebrities [ nicolasCage ]
       , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: DM.isNothing impersonation })
               [ HE.div (HA.class' "confirmation")
-                      if SPV.hasPrivilege ImpersonationChatExperiment user then
-                            [ HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <> DM.maybe "" _.name impersonation <> "?"
-                            , HE.div (HA.class' "buttons")
-                                    [ HE.button [ HA.class' "cancel", HA.onClick $ ConfirmImpersonation Nothing ] "Cancel"
-                                    , HE.button [ HA.class' "green-button", HA.onClick <<< JoinExperiment $ Impersonation impersonation ] "Start"
-                                    ]
-                            ]
-                      else
-                            [ CCP.notEnoughKarma "start this chat experiment" RedirectKarma
-                            , HE.div (HA.class' "buttons")
-                                    $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
-                            ]
+                      --     if SPV.hasPrivilege ImpersonationChatExperiment user then
+                      --           [ HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <> DM.maybe "" _.name impersonation <> "?"
+                      --           , HE.div (HA.class' "buttons")
+                      --                   [ HE.button [ HA.class' "cancel", HA.onClick $ ConfirmImpersonation Nothing ] "Cancel"
+                      --                   , HE.button [ HA.class' "green-button", HA.onClick <<< JoinExperiment $ Impersonation impersonation ] "Start"
+                      --                   ]
+                      --           ]
+                      --     else
+                      --           [ CCP.notEnoughKarma "start this chat experiment" RedirectKarma
+                      --           , HE.div (HA.class' "buttons")
+                      --                   $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
+                      --           ]
+                      [ HE.text "Experiment currently not available :("
+                      , HE.div (HA.class' "buttons")
+                              $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
+                      ]
               ]
       ]
       where

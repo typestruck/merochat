@@ -15,7 +15,6 @@ defaultContact id chatted =
       { shouldFetchChatHistory: false
       , user: chatted
       , lastMessageDate: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
-      , impersonating: Nothing
       , chatStarter: id
       , history: []
       , chatAge: 0.0

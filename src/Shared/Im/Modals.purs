@@ -41,8 +41,8 @@ modals model@{ erroredFields, toggleModal, chatting } =
             , case toggleModal of
                     ShowReport id → report id erroredFields
                     ConfirmLogout → confirmLogout
-                    ConfirmDeleteChat tupleId → confirmDeleteChat tupleId
-                    ConfirmBlockUser tupleId → confirmBlockUser tupleId
+                    ConfirmDeleteChat id → confirmDeleteChat id
+                    ConfirmBlockUser id → confirmBlockUser id
                     Tutorial step → tutorial model step
                     ConfirmTerminationTemporaryUser → confirmTermination
                     _ → modalMenu model
@@ -87,23 +87,23 @@ confirmLogout =
                     ]
             ]
 
-confirmDeleteChat ∷ Tuple Int (Maybe Int) → Html ImMessage
-confirmDeleteChat tupleId =
+confirmDeleteChat ∷ Int → Html ImMessage
+confirmDeleteChat id =
       HE.div (HA.class' "confirmation")
             [ HE.span (HA.class' "bold") "Do you really want to delete this chat?"
             , HE.div (HA.class' "buttons")
                     [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] "Cancel"
-                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ DeleteChat tupleId ] "Delete"
+                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ DeleteChat id ] "Delete"
                     ]
             ]
 
-confirmBlockUser ∷ Tuple Int (Maybe Int) → Html ImMessage
-confirmBlockUser tupleId =
+confirmBlockUser ∷ Int → Html ImMessage
+confirmBlockUser id =
       HE.div (HA.class' "confirmation")
             [ HE.span (HA.class' "bold") "Do you really want to block this user?"
             , HE.div (HA.class' "buttons")
                     [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] "Cancel"
-                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ BlockUser tupleId ] "Block"
+                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ BlockUser id ] "Block"
                     ]
             ]
 

@@ -51,7 +51,7 @@ previousSuggestion model@{ suggesting } =
                         }
 
 fetchMoreSuggestions ∷ ImModel → NextMessage
-fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } =
+fetchMoreSuggestions model@{ contacts, suggestionsPage } =
       model
             { freeToFetchSuggestions = false
             , failedRequests = []
@@ -59,9 +59,6 @@ fetchMoreSuggestions model@{ contacts, suggestionsPage, experimenting } =
             [ CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions
                     { query:
                             { skip: suggestionsPerPage * suggestionsPage
-                            , avoid: case experimenting of
-                                    Just (Impersonation (Just _)) → Just <<< ArrayPrimaryKey $ map (_.id <<< _.user) contacts
-                                    _ → Nothing
                             }
                     }
             ]
@@ -86,19 +83,17 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
 
-blockUser ∷ WebSocket → Tuple Int (Maybe Int) → ImModel → NextMessage
-blockUser webSocket tupleId model =
-      updateAfterBlock blocked model :>
+blockUser ∷ WebSocket → Int → ImModel → NextMessage
+blockUser webSocket id model =
+      updateAfterBlock id model :>
             [ do
-                    result ← CCN.defaultResponse $ request.im.block { body: { id: blocked } }
+                    result ← CCN.defaultResponse $ request.im.block { body: { id } }
                     case result of
-                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser tupleId, errorMessage: Nothing }
+                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser id, errorMessage: Nothing }
                           _ → do
-                                liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: blocked }
+                                liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
                                 pure Nothing
             ]
-      where
-      blocked = DT.fst tupleId
 
 updateAfterBlock ∷ Int → ImModel → ImModel
 updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =

@@ -26,7 +26,6 @@ data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SelectAvatar
       | Save Field
-      | SetProfileChatExperiment (Maybe ExperimentData)
       | AfterRegistration
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
@@ -78,7 +77,6 @@ type PM =
       , countries ∷ Array { id ∷ Int, name ∷ String }
       , languages ∷ Array { id ∷ Int, name ∷ String }
       , updateRequestStatus ∷ Maybe RequestStatus
-      , experimenting ∷ Maybe ExperimentData
       )
 
 derive instance Generic Field _

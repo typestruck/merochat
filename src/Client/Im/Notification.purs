@@ -38,32 +38,28 @@ foreign import createNotification_ ∷ EffectFn1 Notification Unit
 createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
-notifyUnreadChats ∷ ImModel → Array (Tuple Int (Maybe Int)) → NextMessage
+notifyUnreadChats ∷ ImModel → Array Int → NextMessage
 notifyUnreadChats model userIds = model :>
       [ do
               liftEffect $ notify model userIds
               pure $ Just UpdateDelivered
       ]
 
-notify ∷ ImModel → Array (Tuple Int (Maybe Int)) → Effect Unit
+notify ∷ ImModel → Array Int → Effect Unit
 notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
       updateTabCount sessionUserId contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
       where
       contactUsers = DA.filter byKeys contacts
-      createNotification' { impersonating, user } = createNotification
-            { body: "New message from " <>
-                    ( case impersonating of
-                            Nothing → user
-                            Just id → SU.fromJust $ HS.lookup id impersonations
-                    ).name
+      createNotification' { user } = createNotification
+            { body: "New message from " <> user.name
             , icon: SP.resourcePath (Left Loading) Png
-            , handler: FS.send imId <<< ResumeChat $ Tuple user.id impersonating --move to given chat when clicking on system notification
+            , handler: FS.send imId $ ResumeChat user.id --move to given chat when clicking on system notification
             }
 
-      byKeys cnt = DA.any (\(Tuple id impersonating) → cnt.user.id == id && cnt.impersonating == impersonating) userIds
+      byKeys cnt = DA.any (\id → cnt.user.id == id) userIds
 
-notify' ∷ ImModel → Array (Tuple Int (Maybe Int)) → Aff (Maybe ImMessage)
+notify' ∷ ImModel → Array Int → Aff (Maybe ImMessage)
 notify' model userIds = do
       liftEffect $ notify model userIds
       pure Nothing

@@ -73,14 +73,8 @@ usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=.
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
 
-suggest ∷ Int → Int → Maybe ArrayPrimaryKey → ServerEffect (Array FlatUser)
-suggest loggedUserId skip = case _ of
-      Just (ArrayPrimaryKey []) →
-            SD.query $ suggestBaseQuery loggedUserId skip baseFilter -- no users to avoid when impersonating
-      Just (ArrayPrimaryKey keys) →
-            SD.query $ suggestBaseQuery loggedUserId skip (baseFilter .&&. not (in_ (u ... _id) (SU.fromJust $ DAN.fromArray keys))) -- users to avoid when impersonating
-      _ →
-            SD.query $ suggestBaseQuery loggedUserId skip baseFilter -- default case
+suggest ∷ Int → Int → ServerEffect (Array FlatUser)
+suggest loggedUserId skip = SD.query $ suggestBaseQuery loggedUserId skip baseFilter -- default case
       where
       baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
 
@@ -187,24 +181,6 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
                        ORDER BY date DESC) b
                  WHERE status < @status OR n <= @initialMessages
                  ORDER BY date) s"""
-
---only for impersonations, we will fix this someday
-presentContactOnly ∷ Int → Int → ServerEffect (Array FlatContact)
-presentContactOnly loggedUserId userId = SD.unsafeQuery query
-      { loggedUserId
-      , userId
-      , contacts: Contacts
-      }
-      where
-      query = "SELECT" <> presentUserContactFields <>
-            """FROM users u
-            JOIN karma_leaderboard k ON u.id = k.ranker
-            JOIN (select @userId::integer sender, @loggedUserId::integer recipient, null sender_deleted_to, null recipient_deleted_to, utc_now() last_message_date, utc_now() first_message_date) h ON true
-            LEFT JOIN last_seen ls ON u.id = ls.who
-      WHERE visibility <= @contacts
-            AND u.id = @userId
-            AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
-      """
 
 --refactor: this can use droplet
 presentSingleContact ∷ Int → Int → Int → ServerEffect (Array FlatContactHistoryMessage)

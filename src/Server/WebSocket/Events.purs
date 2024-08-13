@@ -252,9 +252,9 @@ sendPing { userAvailability, loggedUserId } { isActive, statusFor } connection =
                   id
                   hashMap
 
-sendStatusChange ∷ Ref (HashMap Int UserAvailability) → { ids ∷ Array (Tuple Int (Array Int)), persisting ∷ Boolean, status ∷ MessageStatus } → Int → WebSocketEffect
-sendStatusChange userAvailability { status, ids, persisting } loggedUserId = do
-      when persisting <<< SID.changeStatus loggedUserId status $ DA.concatMap DT.snd ids
+sendStatusChange ∷ Ref (HashMap Int UserAvailability) → { ids ∷ Array (Tuple Int (Array Int)), status ∷ MessageStatus } → Int → WebSocketEffect
+sendStatusChange userAvailability { status, ids } loggedUserId = do
+      SID.changeStatus loggedUserId status $ DA.concatMap DT.snd ids
       DF.traverse_ send ids
       where
       send (Tuple userId messageIds) = do
@@ -275,15 +275,9 @@ sendUnavailability userAvailability loggedUserId userId = do
             }
 
 sendOutgoingMessage ∷ Ref (HashMap Int UserAvailability) → OutgoingRecord → WebSocketConnection → Int → WebSocketEffect
-sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, experimenting } connection loggedUserId = do
+sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn } connection loggedUserId = do
       date ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
-      processed ← case experimenting of
-            --impersonating experiment messages are not saved
-            Just (SET.ImpersonationPayload _) → do
-                  msg ← SIA.processMessageContent content DS.empty
-                  pure <<< Right $ Tuple temporaryId msg
-            _ →
-                  SIA.processMessage loggedUserId userId temporaryId content
+      processed ← SIA.processMessage loggedUserId userId temporaryId content
       case processed of
             Right (Tuple messageId finalContent) → do
                   sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
@@ -297,7 +291,6 @@ sendOutgoingMessage userAvailability { id: temporaryId, userId, content, turn, e
                               { id: messageId
                               , userId: loggedUserId
                               , content: finalContent
-                              , experimenting: experimenting
                               , date
                               }
                   --pass along karma calculation

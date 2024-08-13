@@ -14,7 +14,6 @@ import Effect.Class (liftEffect)
 import Shared.Availability
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Experiments.Impersonation (batman)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
 import Test.Client.Model (anotherImUserId, contact, contactId, historyMessage, imUser, imUserId, model, webSocket)
@@ -60,7 +59,6 @@ tests = do
                                     ( NewIncomingMessage
                                             { date
                                             , id: newMessageID
-                                            , experimenting: Nothing
                                             , content
                                             , userId: contact.user.id
                                             }
@@ -80,7 +78,6 @@ tests = do
                                                     { id: 1
                                                     , userId: contact.user.id
                                                     , content: Text content
-                                                    , experimenting: Nothing
                                                     , turn: Nothing
                                                     }
                                             , context: Just MissingForeignKey
@@ -119,7 +116,6 @@ tests = do
                                             { date
                                             , id: newMessageID
                                             , content
-                                            , experimenting: Nothing
                                             , userId: contact.user.id
                                             }
                                     ) $ model
@@ -144,7 +140,6 @@ tests = do
                               DT.fst <<< CIM.receiveMessage webSocket true
                                     ( NewIncomingMessage
                                             { id: newMessageID
-                                            , experimenting: Nothing
                                             , userId: contactId
                                             , content
                                             , date
@@ -156,25 +151,6 @@ tests = do
                                     }
                   TUA.equal [ Tuple newMessageID Read ] $ map (\({ id, status }) → Tuple id status) (contacts !@ 0).history
 
-            TU.test "receiveMessage ignores impersonation messages that dont match current" do
-                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let
-                        { contacts } =
-                              DT.fst <<< CIM.receiveMessage webSocket true
-                                    ( NewIncomingMessage
-                                            { date
-                                            , id: newMessageID
-                                            , content
-                                            , experimenting: Just $ ImpersonationPayload { id: batman.id + 1, sender: false }
-                                            , userId: contact.user.id
-                                            }
-                                    ) $ model
-                                    { contacts = [ contact ]
-                                    , chatting = Nothing
-                                    , experimenting = Just <<< Impersonation $ Just batman
-                                    }
-                  TUA.equal Nothing $ getHistory contacts
-
             TU.test "receiveMessage does not mark messages as read if window is not focused" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
@@ -182,7 +158,6 @@ tests = do
                               DT.fst <<< CIM.receiveMessage webSocket false
                                     ( NewIncomingMessage
                                             { id: newMessageID
-                                            , experimenting: Nothing
                                             , userId: anotherImUserId
                                             , content
                                             , date

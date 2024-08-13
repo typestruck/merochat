@@ -53,10 +53,8 @@ view
             , updateRequestStatus
             , descriptionInputed
             , registrationMessage
-            , experimenting
             } = HE.div (show ProfileEditionForm)
-      [ impersonationProfile experimenting
-      , HE.div [ HA.class' { "profile-edition suggestion contact": true, hidden: DM.isJust experimenting } ]
+      [ HE.div [ HA.class' { "profile-edition suggestion contact": true } ]
               [ HE.div (HA.class' { "loading-over": true, hidden: not loading })
                       [ HE.div' (HA.class' "loading")
                       ]
@@ -304,19 +302,6 @@ view
       Tuple failedRequest failedRequestMessage = case updateRequestStatus of
             Just (Failure message) → Tuple false message
             _ → Tuple true ""
-
---refactor: abstract with shared/profile
-impersonationProfile ∷ Maybe ExperimentData → Html ProfileMessage
-impersonationProfile = case _ of
-      Just (Impersonation (Just profile@{ name })) →
-            HE.div [ HA.class' "suggestion old imper" ] $ warning name : SIVP.displayProfile (Just 0) profile profile Nothing
-      _ → HE.createEmptyElement "div"
-      where
-      warning name = HE.div (HA.class' "imp impersonation-warning")
-            [ HE.text "You are impersonating "
-            , HE.strong_ name
-            , HE.text ". Here is how your profile will be seen by other users:"
-            ]
 
 appendInputedMaybe ∷ ∀ t r u fieldInputedList fieldInputed. Ord t ⇒ IsSymbol fieldInputedList ⇒ Cons fieldInputedList (Maybe (Array t)) r PM ⇒ IsSymbol fieldInputed ⇒ Cons fieldInputed (Maybe t) u PM ⇒ Proxy fieldInputedList → Proxy fieldInputed → ProfileMessage
 appendInputedMaybe fieldInputedList fieldInputed =

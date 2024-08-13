@@ -25,8 +25,6 @@ import Safe.Coerce as SC
 import Shared.Avatar as SA
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
-import Shared.Experiments.Impersonation (impersonations)
-import Shared.Experiments.Impersonation as SEI
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
@@ -49,12 +47,12 @@ suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullConta
             case chatting, suggesting of
                   i@(Just index), _ →
                         let
-                              contact@{ user: { name, availability }, impersonating } = contacts !@ index
+                              contact@{ user: { name, availability } } = contacts !@ index
                         in
                               if availability == Unavailable then
                                     unavailable name
                               else if fullContactProfileVisible then
-                                    fullProfile FullContactProfile i model impersonating contact.user
+                                    fullProfile FullContactProfile i model contact.user
                               else
                                     compactProfile model contact
                   Nothing, (Just index) → suggestionCards model index
@@ -81,7 +79,7 @@ unavailable name =
 
 -- | Compact profile view shown by default
 compactProfile ∷ ImModel → Contact → Html ImMessage
-compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: loggedUser } contact@{ impersonating, user: { id, availability, typingStatus } } =
+compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: loggedUser } contact@{ user: { id, availability, typingStatus } } =
       HE.div (HA.class' { "profile-contact": true, highlighted: toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
@@ -95,7 +93,7 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
                             <<< HE.div [ HA.class' "outer-user-menu" ]
                             <<< SIA.contextMenu
                             $ show CompactProfileContextMenu
-                    , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu } ] <<< blockReport $ Tuple id impersonating
+                    , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowCompactProfileContextMenu } ] $ blockReport id
                     ]
             , HE.div (HA.class' "show-profile-icon-div" : showProfileAction) profileIcon
 
@@ -103,9 +101,7 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
       where
       showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
-      { name, avatar } = case impersonating of
-            Just impersonationId → SU.fromJust $ HS.lookup impersonationId impersonations
-            _ → contact.user
+      { name, avatar } = contact.user
 
       avatarClasses
             | DM.isNothing avatar = "avatar-profile " <> SA.avatarColorClass chatting
@@ -126,8 +122,8 @@ compactProfile { chatting, toggleContextMenu, contacts, toggleModal, user: logge
             ]
 
 -- | Suggestion cards/full screen profile view
-fullProfile ∷ ProfilePresentation → Maybe Int → ImModel → Maybe Int → ImUser → Html ImMessage
-fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions, toggleModal } impersonating user@{ id } =
+fullProfile ∷ ProfilePresentation → Maybe Int → ImModel → ImUser → Html ImMessage
+fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions, toggleModal } user@{ id } =
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
             CenterCard → HE.div [ HA.class' "suggestion-center" ] -- only center card suggestion can be chatted to
@@ -141,18 +137,13 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             , HE.div [ HA.class' "outer-user-menu" ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
-            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu } ] <<< blockReport $ Tuple id impersonating
+            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu } ] $ blockReport id
             ]
 
       profile =
             displayProfile index
                   model.user
-                  ( case impersonating of
-                          Just impersonationId →
-                                SU.fromJust $ HS.lookup impersonationId impersonations
-                          _ →
-                                user
-                  )
+                  user
                   (Just <<< SpecialRequest $ ToggleModal ShowSettings)
                   <>
                         [ arrow $ SpecialRequest PreviousSuggestion
@@ -172,7 +163,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
       currentSuggestionMenu = HE.div [ HA.class' "profile-context outer-user-menu" ]
             [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
             , SIA.contextMenu $ show SuggestionContextMenu
-            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu } ] <<< blockReport $ Tuple id impersonating
+            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu } ] <<< blockReport $ id
             ]
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
@@ -240,19 +231,17 @@ displayProfile index loggedUser { karmaPosition, name, availability, temporary, 
 
       duller hidden t = HE.span (HA.class' { "duller": true, "hidden": hidden }) t
 
-blockReport ∷ Tuple Int (Maybe Int) → Array (Html ImMessage)
-blockReport tupleId =
-      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser tupleId ] "Block"
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< ShowReport $ DT.fst tupleId ] "Report"
+blockReport ∷ Int → Array (Html ImMessage)
+blockReport id =
+      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser id ] "Block"
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
       ]
 
 -- | Suggestions are shown as a (three) card list
 suggestionCards ∷ ImModel → Int → Html ImMessage
-suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
+suggestionCards model@{ user, suggestions, toggleModal } index =
       HE.div (HA.class' "suggestion-cards")
-            [ case experimenting of
-                    Just (Impersonation (Just { name })) → welcomeImpersonation name
-                    _ → if user.temporary && isNotTutorial then welcomeTemporary user else welcome user
+            [ if user.temporary && isNotTutorial then welcomeTemporary user else welcome user
             , HE.div (HA.class' "cards") cardTrio
             ]
       where
@@ -274,23 +263,13 @@ suggestionCards model@{ user, suggestions, experimenting, toggleModal } index =
                         | isCenter = [ HA.class' { "card card-center": true, highlighted: toggleModal == Tutorial ChatSuggestions } ]
                         | otherwise = [ HA.class' "card card-sides faded" ]
             in
-                  HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) (Just suggesting) model Nothing profile
+                  HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) (Just suggesting) model profile
 
       isNotTutorial = case toggleModal of
             Tutorial _ → false
             _ → true
 
       dummyCard suggesting = HE.div [ HA.class' "card card-sides faded", HA.onClick <<< SpecialRequest $ if suggesting < index then PreviousSuggestion else NextSuggestion ] $ HE.div' [ HA.class' "suggestion new invisible" ]
-
-welcomeImpersonation ∷ String → Html ImMessage
-welcomeImpersonation name =
-      let
-            { welcome, first, second } = SEI.welcomeMessage name
-      in
-            HE.div (HA.class' "card-top-header imp")
-                  [ HE.div (HA.class' "welcome") $ welcome
-                  , HE.div (HA.class' "welcome-new") $ first <> second
-                  ]
 
 welcomeTemporary ∷ ImUser → Html ImMessage
 welcomeTemporary { name, joined } =

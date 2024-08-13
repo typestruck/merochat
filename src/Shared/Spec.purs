@@ -78,8 +78,8 @@ spec ∷
                                                 , response ∷ Array Contact
                                                 }
                                   , contact ∷
-                                          GET "/contact?id=<id>&impersonation=<impersonation>"
-                                                { query ∷ { id ∷ Int, impersonation ∷ Boolean }
+                                          GET "/contact?id=<id>"
+                                                { query ∷ { id ∷ Int }
                                                 , response ∷ Array Contact
                                                 }
                                   , history ∷
@@ -88,8 +88,8 @@ spec ∷
                                                 , response ∷ Array HistoryMessage
                                                 }
                                   , suggestions ∷
-                                          GET "/suggestions?skip=<skip>&avoid=<avoid>"
-                                                { query ∷ { skip ∷ Int, avoid ∷ Maybe ArrayPrimaryKey }
+                                          GET "/suggestions?skip=<skip>"
+                                                { query ∷ { skip ∷ Int }
                                                 , response ∷ Array Suggestion
                                                 }
                                   , block ∷

@@ -102,9 +102,6 @@ main = do
                     ,
                       --focus event has to be on the window as chrome is a whiny baby about document
                       FSW.onFocus UpdateReadCount
-                    ,
-                      --events from chat experiment
-                      FS.onCustomEvent setChatExperiment SetChatExperiment
                     ]
             , init: []
             , update: update { fileReader, webSocketRef }
@@ -155,7 +152,7 @@ update { webSocketRef, fileReader } model =
             NoTyping id → F.noMessages $ CIC.updateTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
             --contacts
-            ResumeChat (Tuple id impersonating) → CICN.resumeChat id impersonating model
+            ResumeChat id → CICN.resumeChat id model
             UpdateDelivered → CICN.markDelivered webSocket model
             UpdateReadCount → CICN.markRead webSocket model
             CheckFetchContacts → CICN.checkFetchContacts model
@@ -163,7 +160,6 @@ update { webSocketRef, fileReader } model =
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
-            DisplayImpersonatedContact id history contacts → CICN.displayImpersonatedContacts id history contacts model
             ResumeMissedEvents missed → CICN.resumeMissedEvents missed model
             --history
             CheckFetchHistory → CIH.checkFetchHistory model
@@ -185,8 +181,6 @@ update { webSocketRef, fileReader } model =
             SetModalContents file root html → CIU.setModalContents file root html model
             --main
             SetContextMenuToggle toggle → toggleContextMenu toggle model
-            AskChatExperiment → askExperiment model
-            SetChatExperiment experiment → setExperiment experiment model
             ReloadPage → reloadPage model
             ReceiveMessage payload isFocused → receiveMessage webSocket isFocused payload model
             SetNameFromProfile name → setName name model
@@ -307,7 +301,7 @@ finishTutorial model@{ toggleModal } = model { user { completedTutorial = true }
                   _ → pure Nothing
       greet = do
             void <<< CCNT.silentResponse $ request.im.greeting {}
-            contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender, impersonation: false } }
+            contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
             pure <<< Just $ DisplayNewContacts contact
 
 report ∷ Int → WebSocket → ImModel → MoreMessages
@@ -330,30 +324,6 @@ report userId webSocket model@{ reportReason, reportComment } = case reportReaso
       Nothing → F.noMessages $ model
             { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "reportReason") ]
             }
-
-askExperiment ∷ ImModel → MoreMessages
-askExperiment model@{ experimenting } = model :>
-      if DM.isNothing experimenting then []
-      else
-            [ do
-                    liftEffect $ FSUC.broadcast setChatExperiment experimenting
-                    pure Nothing
-            ]
-
-setExperiment ∷ Maybe SET.ExperimentData → ImModel → MoreMessages
-setExperiment experiment model@{ toggleModal, contacts, experimenting, suggestionsPage } =
-      model
-            { chatting = Nothing
-            , temporaryId = 3000000
-            , contacts = if impersonating then [] else contacts
-            , experimenting = experiment
-            , toggleModal = if toggleModal == ShowExperiments then HideUserMenuModal else toggleModal
-            , suggestionsPage = if impersonating then 0 else suggestionsPage
-            } :> if impersonating then [ pure $ Just FetchMoreSuggestions ] else []
-      where
-      impersonating = case experiment of
-            imp@(Just (SET.Impersonation (Just _))) → imp /= experimenting --avoid running more than once
-            _ → false
 
 reloadPage ∷ ImModel → NextMessage
 reloadPage model = CIF.nothingNext model $ liftEffect CCL.reload
@@ -490,30 +460,15 @@ receiveMessage
                           Nothing → currentContacts
                           Just id → markErroredMessage currentContacts userId id
                   }
-      NewIncomingMessage payload@{ id: messageId, userId, content: messageContent, date: messageDate, experimenting } →
-            --(for now) if the experiments don't match, discard the message
-            if DA.elem userId blockedUsers || not (match experimenting) then
+      NewIncomingMessage payload@{ id: messageId, userId, content: messageContent, date: messageDate } →
+            if DA.elem userId blockedUsers then
                   F.noMessages model
             else
                   let
                         model' = unsuggest userId model
                   in
                         case processIncomingMessage payload model' of
-                              Left userId →
-                                    let
-                                          message = case experimenting of
-                                                Just (SET.ImpersonationPayload { id: impersonationId }) →
-                                                      DisplayImpersonatedContact impersonationId
-                                                            { status: Received
-                                                            , sender: userId
-                                                            , recipient: recipientId
-                                                            , id: messageId
-                                                            , content: messageContent
-                                                            , date: messageDate
-                                                            }
-                                                _ → DisplayNewContacts
-                                    in
-                                          model' :> [ CCNT.retryableResponse CheckMissedEvents message $ request.im.contact { query: { id: userId, impersonation: DM.isJust experimenting } } ]
+                              Left userId → model' :> [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id: userId } } ]
                               --mark it as read if we received a message from the current chat
                               -- or as delivered otherwise
                               Right
@@ -536,18 +491,15 @@ receiveMessage
                                           { contacts
                                           } →
                                     let
-                                          impersonationId = case experimenting of
-                                                Just (SET.ImpersonationPayload { id }) → Just id
-                                                _ → Nothing
                                           Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
-                                                { index: SU.fromJust $ DA.findIndex (findContact userId impersonationId model.experimenting) contacts
+                                                { index: SU.fromJust $ DA.findIndex (findContact userId) contacts
                                                 , sessionUserId: recipientId
                                                 , newStatus: Delivered
                                                 , contacts
                                                 , webSocket
                                                 }
                                     in
-                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ Tuple payload.userId impersonationId ] : messages)
+                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ payload.userId ] : messages)
 
       PayloadError payload → case payload.origin of
             OutgoingMessage { id, userId } → F.noMessages $ model
@@ -566,12 +518,6 @@ receiveMessage
             in
                   recipientId == senderID
 
-      match experimenting = case model.experimenting, experimenting of
-            Just (SET.Impersonation (Just _)), Nothing → false
-            Just (SET.Impersonation (Just { id })), Just (SET.ImpersonationPayload { id: otherId, sender }) → id == otherId && not sender
-            Nothing, Just (SET.ImpersonationPayload { sender }) → sender
-            _, _ → true
-
 unsuggest ∷ Int → ImModel → ImModel
 unsuggest userId model = model
       { suggestions = updatedSuggestions
@@ -588,7 +534,7 @@ unsuggest userId model = model
 
 processIncomingMessage ∷ ClientMessagePayload → ImModel → Either Int ImModel
 processIncomingMessage
-      { id, userId, date, content, experimenting }
+      { id, userId, date, content }
       model@
             { user: { id: recipientId }
             , contacts
@@ -611,21 +557,13 @@ processIncomingMessage
                           , date
                           }
                   }
-      impersonationId = case experimenting of
-            Just (SET.ImpersonationPayload { id }) → Just id
-            _ → Nothing
 
       findAndUpdateContactList = do
-            index ← DA.findIndex (findContact userId impersonationId model.experimenting) contacts
-            { impersonating } ← contacts !! index
-            let updated = DA.modifyAt index (updateHistory { content, id, date }) contacts
-            --if impersonating, only the user can start new chats
-            case model.experimenting, experimenting, impersonating of
-                  Nothing, Just (SET.ImpersonationPayload _), Nothing → Nothing
-                  _, _, _ → updated
+            index ← DA.findIndex (findContact userId) contacts
+            DA.modifyAt index (updateHistory { content, id, date }) contacts
 
-findContact ∷ Int → Maybe Int → Maybe SET.ExperimentData → Contact → Boolean
-findContact userId impersonationId experimenting { user: { id }, impersonating } = userId == id && (DM.isJust experimenting || impersonating == impersonationId)
+findContact ∷ Int → Contact → Boolean
+findContact userId cnt = userId == cnt.user.id
 
 updateTemporaryId ∷ Array Contact → Int → Int → Int → Array Contact
 updateTemporaryId contacts userId previousMessageID messageId = updateContactHistory contacts userId updateTemporary
@@ -672,16 +610,14 @@ markContactUnavailable contacts userId = updateContact <$> contacts
 checkMissedEvents ∷ ImModel → MoreMessages
 checkMissedEvents model =
       model :>
-            if DM.isJust model.experimenting then []
-            else
-                  [ do
-                          let { lastSentMessageId, lastReceivedMessageId } = findLastMessages model.contacts model.user.id
+            [ do
+                    let { lastSentMessageId, lastReceivedMessageId } = findLastMessages model.contacts model.user.id
 
-                          if DM.isNothing lastSentMessageId && DM.isNothing lastReceivedMessageId then
-                                pure Nothing
-                          else
-                                CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderId: lastSentMessageId, lastRecipientId: lastReceivedMessageId } })
-                  ]
+                    if DM.isNothing lastSentMessageId && DM.isNothing lastReceivedMessageId then
+                          pure Nothing
+                    else
+                          CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderId: lastSentMessageId, lastRecipientId: lastReceivedMessageId } })
+            ]
 
 findLastMessages ∷ Array Contact → Int → { lastSentMessageId ∷ Maybe Int, lastReceivedMessageId ∷ Maybe Int }
 findLastMessages contacts sessionUserID =
@@ -694,7 +630,7 @@ findLastMessages contacts sessionUserID =
             { id } ← allHistories !! index
             pure id
 
-      allHistories = DA.sortBy byID <<< DA.concatMap _.history $ DA.filter (DM.isNothing <<< _.impersonating) contacts
+      allHistories = DA.sortBy byID $ DA.concatMap _.history contacts
       byID { id } { id: anotherID } = compare id anotherID
 
 setName ∷ String → ImModel → NoMessages

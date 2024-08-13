@@ -63,7 +63,6 @@ template { contacts, suggestions, user } = do
                     , toggleContextMenu: HideContextMenu
                     , toggleModal: if user.completedTutorial then HideUserMenuModal else Tutorial Welcome
                     , toggleChatModal: HideChatModal
-                    , experimenting: Nothing
                     , blockedUsers: []
                     , reportReason: Nothing
                     , reportComment: Nothing

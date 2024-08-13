@@ -34,7 +34,6 @@ update rc@{ message } =
             SelectAvatar → selectAvatar
             SetPField setter → pure setter
             Save field → saveField rc field
-            SetProfileChatExperiment experiment → setChatExperiment experiment
             AfterRegistration → setRegistrationMessage
             UpdatePrivileges kp → updatePrivileges kp
 
@@ -175,9 +174,6 @@ selectAvatar = do
             field ← getFileInput
             CCF.triggerFileSelect field
       FAE.noChanges
-
-setChatExperiment ∷ Maybe SET.ExperimentData → Aff (ProfileModel → ProfileModel)
-setChatExperiment experimenting = FAE.diff { experimenting }
 
 setRegistrationMessage ∷ Aff (ProfileModel → ProfileModel)
 setRegistrationMessage = pure $ _ { registrationMessage = true }

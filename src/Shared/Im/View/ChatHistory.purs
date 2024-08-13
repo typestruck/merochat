@@ -24,7 +24,7 @@ import Shared.Markdown as SM
 
 -- | Messages in a chat history
 chatHistory ∷ ImModel → Maybe Contact → Html ImMessage
-chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, toggleModal, toggleContextMenu, experimenting, failedRequests, freeToFetchChatHistory } contact =
+chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, toggleModal, toggleContextMenu, failedRequests, freeToFetchChatHistory } contact =
       HE.div
             [ HA.id $ show MessageHistory
             , HA.class' { "message-history": true, hidden: DM.isNothing contact }
@@ -44,16 +44,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                     if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries
                                     else entries
 
-      -- | If we don't have a contact, either an error occurred or we are impersonating, which can't fail
-      retryOrWarning = case experimenting of
-            Just (Impersonation (Just { name })) →
-                  HE.div (HA.class' "imp impersonation-warning-history")
-                        [ HE.div_
-                                [ HE.text "You are impersonating "
-                                , HE.strong_ name
-                                ]
-                        ]
-            _ → SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
+      retryOrWarning = SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
 
       temporaryChatWarning = if temporary && isNotTutorial then [ SIVP.signUpCall joined ] else []
 

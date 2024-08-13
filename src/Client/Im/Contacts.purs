@@ -37,10 +37,10 @@ import Web.DOM.Element as WDE
 import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
-resumeChat ∷ Int → Maybe Int → ImModel → MoreMessages
-resumeChat searchId impersonating model@{ contacts, chatting, smallScreen } =
+resumeChat ∷ Int → ImModel → MoreMessages
+resumeChat searchId model@{ contacts, chatting, smallScreen } =
       let
-            index = DA.findIndex (\cnt → cnt.user.id == searchId && cnt.impersonating == impersonating) contacts
+            index = DA.findIndex (\cnt → cnt.user.id == searchId) contacts
             { shouldFetchChatHistory } = SIC.chattingContact contacts index
       in
             if index == chatting then
@@ -87,7 +87,7 @@ updateStatus ∷
       , newStatus ∷ MessageStatus
       } →
       MoreMessages
-updateStatus model@{ experimenting } { webSocket, index, sessionUserId, contacts, newStatus } =
+updateStatus model { webSocket, index, sessionUserId, contacts, newStatus } =
       let
             contactRead@{ history, user: { id: contactUserId } } = contacts !@ index
             messagesToUpdate = DA.mapMaybe toChange history
@@ -118,9 +118,6 @@ updateStatus model@{ experimenting } { webSocket, index, sessionUserId, contacts
       sendStatusChange contactUserId messages = CIW.sendPayload webSocket $ ChangeStatus
             { status: newStatus
             , ids: [ Tuple contactUserId messages ]
-            , persisting: case experimenting of
-                    Just (Impersonation (Just _)) → false
-                    _ → true
             }
 
       alertUnread = CIUN.updateTabCount sessionUserId
@@ -130,15 +127,12 @@ updateStatus model@{ experimenting } { webSocket, index, sessionUserId, contacts
 -- chats from new users
 -- recovering from disconnect
 markDelivered ∷ WebSocket → ImModel → NoMessages
-markDelivered webSocket model@{ experimenting, contacts, user: { id: sessionUserId } } =
+markDelivered webSocket model@{ contacts, user: { id: sessionUserId } } =
       if DA.null ids then
             F.noMessages model
       else CIF.nothingNext updatedModel <<< liftEffect <<< CIW.sendPayload webSocket $ ChangeStatus
             { status: Delivered
             , ids
-            , persisting: case experimenting of
-                    Just (Impersonation (Just _)) → false
-                    _ → true
             }
       where
       ids = DA.foldl sent [] contacts
@@ -174,11 +168,11 @@ checkFetchContacts model
       | otherwise = F.noMessages model
 
 fetchContacts ∷ Boolean → ImModel → MoreMessages
-fetchContacts shouldFetch model@{ contacts, experimenting }
+fetchContacts shouldFetch model@{ contacts }
       | shouldFetch =
               model
                     { freeToFetchContactList = false
-                    } :> if DM.isJust experimenting then [] else [ CCN.retryableResponse (FetchContacts true) DisplayContacts $ request.im.contacts { query: { skip: DA.length contacts } } ]
+                    } :> [ CCN.retryableResponse (FetchContacts true) DisplayContacts $ request.im.contacts { query: { skip: DA.length contacts } } ]
       | otherwise = F.noMessages model
 
 --paginated contacts
@@ -187,11 +181,7 @@ displayContacts newContacts model = updateDisplayContacts newContacts [] model
 
 --new chats
 displayNewContacts ∷ Array Contact → ImModel → MoreMessages
-displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → Tuple cnt.user.id cnt.impersonating) newContacts) model
-
---new chats from impersonation experiment
-displayImpersonatedContacts ∷ Int → HistoryMessage → Array Contact → ImModel → MoreMessages
-displayImpersonatedContacts id history newContacts = displayNewContacts (map (_ { shouldFetchChatHistory = false, impersonating = Just id, history = [ history ] }) newContacts)
+displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → cnt.user.id) newContacts) model
 
 resumeMissedEvents ∷ MissedEvents → ImModel → MoreMessages
 resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =
@@ -205,7 +195,7 @@ resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, us
                             --wew lass
                             contacts = missedFromNewContacts <> missedFromExistingContacts
                           }
-                  ) $ map (\cnt → Tuple cnt.user.id cnt.impersonating) missedContacts
+                  ) $ map (\cnt → cnt.user.id) missedContacts
       where
       messageMap = DH.fromArrayBy _.temporaryId _.id messageIds
       markSenderError contact@{ history } = contact
@@ -240,7 +230,7 @@ resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, us
       findContact { user: { id } } = DA.findIndex (sameContact id) contacts
       sameContact userId { user: { id } } = userId == id
 
-updateDisplayContacts ∷ Array Contact → Array (Tuple Int (Maybe Int)) → ImModel → MoreMessages
+updateDisplayContacts ∷ Array Contact → Array Int → ImModel → MoreMessages
 updateDisplayContacts newContacts userIds model@{ contacts } =
       CIU.notifyUnreadChats
             ( model
@@ -250,23 +240,21 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
             )
             userIds
       where
-      existingContactIds = DS.fromFoldable $ map (\cnt → Tuple cnt.user.id cnt.impersonating) contacts
-      onlyNew = DA.filter (\cnt → not $ DS.member (Tuple cnt.user.id cnt.impersonating) existingContactIds) newContacts -- if a contact from pagination is already in the list
+      existingContactIds = DS.fromFoldable $ map (\cnt → cnt.user.id) contacts
+      onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
-deleteChat ∷ Tuple Int (Maybe Int) → ImModel → MoreMessages
-deleteChat tii@(Tuple id impersonating) model =
+deleteChat ∷ Int → ImModel → MoreMessages
+deleteChat id model =
       updatedModel :>
-            if DM.isNothing impersonating then
-                  [ do
-                          result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: lastMessageId } }
-                          case result of
-                                Left _ → pure <<< Just $ RequestFailed { request: DeleteChat tii, errorMessage: Nothing }
-                                _ → pure Nothing
-                  ]
-            else []
+            [ do
+                    result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: lastMessageId } }
+                    case result of
+                          Left _ → pure <<< Just $ RequestFailed { request: DeleteChat id, errorMessage: Nothing }
+                          _ → pure Nothing
+            ]
       where
 
-      deletedIndex = DA.findIndex (\cnt → cnt.user.id == id && cnt.impersonating == impersonating) model.contacts
+      deletedIndex = DA.findIndex (\cnt → cnt.user.id == id) model.contacts
       updatedModel = model
             { toggleModal = HideUserMenuModal
             , toggleChatModal = HideChatModal

@@ -45,7 +45,6 @@ model =
       , toggleContextMenu: HideContextMenu
       , imageCaption: Nothing
       , fullContactProfileVisible: false
-      , experimenting: Nothing
       , fortune: Nothing
       , link: Nothing
       , erroredFields: []
