@@ -727,8 +727,9 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
             else
                   [ pure $ Just UpdateDelivered ]
       where
-      lostConnectionMessage = "Connection to the server lost. Attempting to automatically reconnect... \n\
-      \You will not be able to send messages while the connection has not been restored."
+      lostConnectionMessage =
+            "Connection to the server lost. Attempting to automatically reconnect... \n\
+            \You will not be able to send messages while the connection has not been restored."
 
 preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
