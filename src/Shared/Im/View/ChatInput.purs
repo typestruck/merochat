@@ -6,11 +6,14 @@ import Shared.Im.Types
 import Shared.User
 
 import Client.Common.Privilege as CCP
+import Client.Im.Chat (enterBeforeSendMessage)
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
+import Data.BigInt (even)
 import Data.HashMap as HS
-import Data.Maybe (Maybe)
+import Data.Int (Parity(..))
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
@@ -19,6 +22,7 @@ import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Node.Buffer.Immutable (ImmutableBuffer)
 import Shared.Element (ElementId(..))
 import Shared.Experiments.Impersonation (impersonations)
 import Shared.Im.Emoji as SIE
@@ -28,7 +32,10 @@ import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Resource (maxImageSizeKB)
 import Shared.Setter as SS
+import Test.Client.Model (model)
 import Type.Proxy (Proxy(..))
+import Web.Event.Event (Event)
+import Web.Event.EventTarget (eventListener)
 
 chat ∷ ImModel → Html ImMessage
 chat model@{ chatting } =
@@ -129,13 +136,13 @@ chatBarInput
                                           , HA.id $ show elementId
                                           , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Can't send message while no connection"
                                           --, HA.disabled $ not isWebSocketConnected -- change this to disable sending
-                                          , SK.keyDownOn "Enter" $ if isWebSocketConnected then EnterBeforeSendMessage else ResizeChatInput
+                                          , SK.keyDownOn "Enter" enterBeforeSendMessageCheck
                                           , HA.onInput' ResizeChatInput
                                           , HA.autocomplete "off"
                                           ]
                       , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
-                              , sendButton messageEnter
+                              , sendButton messageEnter model
                               ]
                       ]
               ]
@@ -159,6 +166,9 @@ chatBarInput
             i ← index
             entry ← list !! i
             pure $ accessor entry
+
+      enterBeforeSendMessageCheck :: Event -> Maybe ImMessage
+      enterBeforeSendMessageCheck t = if isWebSocketConnected then Just EnterBeforeSendMessage else Nothing
 
 bold ∷ Html ImMessage
 bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
@@ -255,7 +265,7 @@ imageButton = HE.svg [ HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class'
       ]
 
 sendButton ∷ Boolean → ImModel -> Html ImMessage
-sendButton messageEnter model@{ isWebSocketConnected } = HE.div [ HA.class' { "send-button-div": true, hidden: messageEnter || not isWebSocketConnected }, HA.onClick ForceBeforeSendMessage ] $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
+sendButton messageEnter model = HE.div [ HA.class' { "send-button-div": true, hidden: messageEnter || not model.isWebSocketConnected }, HA.onClick ForceBeforeSendMessage ] $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
 
 sendButtonElements ∷ String → Array (Html ImMessage)
 sendButtonElements title =
