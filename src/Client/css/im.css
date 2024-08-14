@@ -1809,9 +1809,9 @@ select {
 }
 
 .badge {
-    color: rgb(238, 238, 238);
+    color: #db5a5d;
     font-weight:normal;
-    border: 1px solid rgb(238, 238, 238, 0.8);
+    border: 1px solid #db5a5d;
     border-radius: 4px;
     padding: 0 6px;
     align-self: center;
@@ -2107,14 +2107,8 @@ select {
         overflow-x: hidden
     }
 
-    .contact-name-badge {
-        flex-direction: column;
-    }
-
-    .contact-name-badge .badge{
-        margin-left: 0;
-        width: fit-content;
-        align-self: initial;
+    .contact-name-badge .badge-text {
+        display: none
     }
 
     .sign-up-call {
