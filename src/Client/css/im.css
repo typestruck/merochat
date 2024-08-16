@@ -126,6 +126,11 @@ body {
     justify-content: center;
 }
 
+.error-message-connection-lost {
+    text-align: center;
+    white-space: pre-wrap;
+}
+
 .report-reasons {
     display: flex;
     flex-direction: column;
