@@ -126,8 +126,7 @@ chatBarInput
                                     <>
                                           [ HA.class' "chat-input"
                                           , HA.id $ show elementId
-                                          , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Can't send message while no connection"
-                                          --, HA.disabled $ not isWebSocketConnected -- change this to disable sending
+                                          , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Can't send a message while there is no connection"
                                           , SK.keyDownOn "Enter" enterBeforeSendMessageCheck
                                           , HA.onInput' ResizeChatInput
                                           , HA.autocomplete "off"
