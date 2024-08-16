@@ -30,12 +30,12 @@ main = do
 
 startWebSocketServer ∷ Configuration → Effect Unit
 startWebSocketServer configuration = do
-      userAvailability ← ER.new DH.empty
+      allUsersAvailabilityRef ← ER.new DH.empty
       webSocketServer ← SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
-      SW.onConnection webSocketServer (SWE.handleConnection configuration pool userAvailability)
-      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen userAvailability *> SWE.persistLastSeen { pool, userAvailability })
+      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allUsersAvailabilityRef)
+      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen allUsersAvailabilityRef *> SWE.persistLastSeen { pool, allUsersAvailabilityRef })
       SW.onServerClose webSocketServer (const (ET.clearInterval intervalId))
 
 startHttpServer ∷ Configuration → Effect Unit

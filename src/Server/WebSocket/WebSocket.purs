@@ -32,6 +32,9 @@ foreign import sendMessage_ ∷ EffectFn2 WebSocketConnection WebSocketMessage U
 foreign import close_ ∷ EffectFn3 WebSocketConnection CloseCode CloseReason Unit
 foreign import terminate_ ∷ EffectFn1 WebSocketConnection Unit
 
+foreign import lastPing ∷ DateTime → WebSocketConnection → WebSocketConnection
+foreign import getLastPing ∷ WebSocketConnection → DateTime
+
 foreign import createWebSocket_ ∷ EffectFn2 String String WebSocketConnection
 foreign import onOpen_ ∷ EffectFn2 WebSocketConnection (EffectFn1 Unit Unit) Unit
 

@@ -2113,9 +2113,9 @@ select {
         overflow-x: hidden
     }
 
-    .contact-name-badge .badge-text {
+    /* .contact-name-badge .badge-text {
         display: none
-    }
+    } */
 
     .sign-up-call {
         display: flex;

@@ -67,7 +67,6 @@ import Shared.Json as SJ
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
 import Shared.Options.Profile (passwordMinCharacters)
-import Shared.Options.WebSocket (loggedElsewhere)
 import Shared.Profile.Types as SPT
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
@@ -743,8 +742,6 @@ setUpWebSocket webSocketRef = do
                   Content cnt → FS.send imId $ ReceiveMessage cnt isFocused
                   CloseConnection after → do
                         ER.modify_ (_ { closed = true }) webSocketRef
-                        { webSocket } ← ER.read webSocketRef
-                        when (after == Elsewhere) $ CIW.closeWith webSocket loggedElsewhere "logged elsewhere"
                         FS.send imId $ Logout after
 
       askForUpdates = do

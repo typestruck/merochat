@@ -31,11 +31,10 @@ self.addEventListener('push', (event) => {
             body: payload,
       })
     );
-  });
+});
 
 
 //store chats and user data localy with indexeddb?
     //this would also require some sort of caching of the im page
     // and js/css scripts
-    // and to enable multiple open sessions too
 

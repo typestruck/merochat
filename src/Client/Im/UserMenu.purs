@@ -36,7 +36,6 @@ logout after model = CIF.nothingNext model out
             void $ request.logout { body: {} }
             liftEffect <<< CCL.setLocation $ case after of
                   LoginPage → routes.login.get {}
-                  Elsewhere → routes.elsewhere {}
                   Banned → routes.banned {}
 
 toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage

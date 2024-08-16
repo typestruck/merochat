@@ -159,7 +159,6 @@ newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
 data AfterLogout
       = LoginPage
-      | Elsewhere
       | Banned
 
 data ShowChatModal
