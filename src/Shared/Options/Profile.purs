@@ -22,7 +22,7 @@ tagMaxCharacters ∷ Int
 tagMaxCharacters = 40
 
 descriptionMaxCharacters ∷ Int
-descriptionMaxCharacters = 1000
+descriptionMaxCharacters = 2500
 
 passwordMinCharacters ∷ Int
 passwordMinCharacters = 5

@@ -221,8 +221,9 @@ displayProfile index loggedUser profileUser temporaryUserMessage =
       , HE.div (HA.class' "tags-description")
               [ HE.div (HA.class' "profile-tags") $ map (HE.span (HA.class' "tag")) profileUser.tags
               , HE.span (HA.class' "duller profile-description-about") "About"
-              , HE.div' [ HA.class' "description-message", HA.innerHtml $ SM.parse profileUser.description ]
               ]
+      , HE.div (HA.class' "about-description")
+              [ HE.div' [ HA.class' "description-message", HA.innerHtml $ SM.parse profileUser.description ] ]
       ]
       where
       avatarClasses
