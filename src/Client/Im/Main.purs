@@ -274,7 +274,7 @@ sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
 sendPing webSocket isActive model@{ contacts, suggestions } =
       CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ Ping
             { isActive
-            , statusFor: map _.id suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) contacts)
+            , statusFor: DA.nub (map _.id suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) contacts))
             }
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage

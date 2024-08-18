@@ -56,7 +56,6 @@ import Server.WebSocket (CloseCode(..), CloseReason, WebSocketConnection, WebSoc
 import Server.WebSocket as SW
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Shared.Experiments.Types as SET
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
@@ -96,7 +95,10 @@ aliveDelay ∷ Int
 aliveDelay = 1000 * 60 * aliveDelayMinutes
 
 aliveDelayMinutes ∷ Int
-aliveDelayMinutes = 5
+aliveDelayMinutes = 1
+
+inactiveDelay ∷ Int
+inactiveDelay = 1000 * 60 * 60 * inactiveHours
 
 inactiveHours ∷ Int
 inactiveHours = 1
@@ -173,7 +175,7 @@ handleMessage payload = do
             UpdatePrivileges → sendUpdatedPrivileges context.loggedUserId allUsersAvailability
             UpdateHash → sendUpdatedHash context.loggedUserId allUsersAvailability
             Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
-            Ping ping → sendPing context.token context.loggedUserId context.allUsersAvailabilityRef ping
+            Ping ping → sendPong context.token context.loggedUserId context.allUsersAvailabilityRef ping
             ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
             UnavailableFor { id } → sendUnavailability context.loggedUserId allUsersAvailability id
             OutgoingMessage message → sendOutgoingMessage context.token context.loggedUserId allUsersAvailability message
@@ -219,8 +221,8 @@ sendTyping loggedUserId allUsersAvailability userId = do
 -- keep the connection alive
 -- maintain online status
 -- get contacts/suggestions online status
-sendPing ∷ String → Int → Ref (HashMap Int UserAvailability) → { isActive ∷ Boolean, statusFor ∷ Array Int } → WebSocketEffect
-sendPing token loggedUserId allUsersAvailabilityRef ping = do
+sendPong ∷ String → Int → Ref (HashMap Int UserAvailability) → { isActive ∷ Boolean, statusFor ∷ Array Int } → WebSocketEffect
+sendPong token loggedUserId allUsersAvailabilityRef ping = do
       allUsersAvailability ← liftEffect $ ER.read allUsersAvailabilityRef
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       Tuple users missing ← makeAvailability allUsersAvailability
