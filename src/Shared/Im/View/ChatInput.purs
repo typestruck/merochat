@@ -3,19 +3,17 @@ module Shared.Im.View.ChatInput where
 import Prelude
 import Shared.Availability
 import Shared.Im.Types
-import Shared.User
 
 import Client.Common.Privilege as CCP
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.HashMap as HS
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -28,10 +26,11 @@ import Shared.Privilege as SP
 import Shared.Resource (maxImageSizeKB)
 import Shared.Setter as SS
 import Type.Proxy (Proxy(..))
+import Web.Event.Event (Event)
 
 chat ∷ ImModel → Html ImMessage
 chat model@{ chatting } =
-      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ ToggleChatModal HideChatModal) ]
+      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ Just $ ToggleChatModal HideChatModal) ]
             [ linkModal model
             , imageModal model
             , chatBarInput ChatInput model
@@ -126,15 +125,14 @@ chatBarInput
                                     <>
                                           [ HA.class' "chat-input"
                                           , HA.id $ show elementId
-                                          , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Waiting for connection..."
-                                          , HA.disabled $ not isWebSocketConnected
-                                          , SK.keyDownOn "Enter" EnterBeforeSendMessage
+                                          , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Reconnecting..."
+                                          , SK.keyDownOn "Enter" enterBeforeSendMessageCheck
                                           , HA.onInput' ResizeChatInput
                                           , HA.autocomplete "off"
                                           ]
                       , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
-                              , sendButton messageEnter
+                              , sendButton messageEnter model
                               ]
                       ]
               ]
@@ -151,6 +149,9 @@ chatBarInput
             i ← index
             entry ← list !! i
             pure $ accessor entry
+
+      enterBeforeSendMessageCheck ∷ Event → Maybe ImMessage
+      enterBeforeSendMessageCheck event = if isWebSocketConnected then Just $ EnterBeforeSendMessage event else Nothing
 
 bold ∷ Html ImMessage
 bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
@@ -246,8 +247,10 @@ imageButton = HE.svg [ HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class'
       [ HE.path' [ HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z" ]
       ]
 
-sendButton ∷ Boolean → Html ImMessage
-sendButton messageEnter = HE.div [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick ForceBeforeSendMessage ] $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
+sendButton ∷ Boolean → ImModel → Html ImMessage
+sendButton messageEnter model =
+      HE.div
+            (if model.isWebSocketConnected then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick ForceBeforeSendMessage ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
 
 sendButtonElements ∷ String → Array (Html ImMessage)
 sendButtonElements title =

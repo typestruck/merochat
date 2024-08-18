@@ -12,7 +12,7 @@ import Shared.Unsafe as SU
 import Web.Event.Event (Event)
 import Web.UIEvent.KeyboardEvent as WUK
 
-keyDownOn ∷ Key → (Event → ImMessage) → NodeData ImMessage
+keyDownOn ∷ Key → (Event → Maybe ImMessage) → NodeData ImMessage
 keyDownOn keyName message = HA.createRawEvent "keydown" handler
       where
       handler event = do
@@ -20,6 +20,6 @@ keyDownOn keyName message = HA.createRawEvent "keydown" handler
                   keyboardEvent = SU.fromJust $ WUK.fromEvent event
                   key = WUK.key keyboardEvent
             if key == keyName && not WUK.shiftKey keyboardEvent then
-                  pure <<< Just $ message event
+                  pure $ message event
             else
                   pure Nothing
