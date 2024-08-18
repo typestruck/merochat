@@ -23,7 +23,7 @@ import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Set as DS
-import Data.Time.Duration (Minutes)
+import Data.Time.Duration (Hours(..), Minutes)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug (spy)
@@ -98,6 +98,9 @@ aliveDelay = 1000 * 60 * aliveDelayMinutes
 aliveDelayMinutes ∷ Int
 aliveDelayMinutes = 5
 
+inactiveHours ∷ Int
+inactiveHours = 1
+
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
       maybeUserId ← SE.poolEffect pool do
@@ -111,7 +114,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
                   EC.log "terminated due to auth error"
             Just loggedUserId → do
                   now ← EN.nowDateTime
-                  ER.modify_ (DH.alter (upsertUserAvailability now connection) loggedUserId) allUsersAvailabilityRef
+                  ER.modify_ (DH.alter (upsertUserAvailability now) loggedUserId) allUsersAvailabilityRef
                   SW.onError connection handleError
                   SW.onClose connection (handleClose token loggedUserId allUsersAvailabilityRef)
                   SW.onMessage connection (runMessageHandler loggedUserId)
@@ -121,9 +124,9 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
       parseUserId = ST.userIdFromToken configuration.tokenSecret token
 
-      upsertUserAvailability date connection =
+      upsertUserAvailability date =
             case _ of
-                  Nothing → Just $ makeUserAvailabity (DH.fromArray [ Tuple token connection ]) (Right token) true date None --could also query the db
+                  Nothing → Just $ makeUserAvailabity (DH.fromArray [Tuple token connection ]) (Right token) true date None --could also query the db
                   Just userAvailability → Just $ makeUserAvailabity (DH.insert token connection userAvailability.connections) (Right token) true date userAvailability.availability
 
       runMessageHandler loggedUserId (WebSocketMessage message) = do
@@ -153,6 +156,7 @@ handleError = EC.log <<< show
 
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
+      EC.log ( "closed connection " <> show loggedUserId)
       allUsersAvailability ← liftEffect $ ER.read allUsersAvailabilityRef
       ER.write (DH.update removeConnection loggedUserId allUsersAvailability) allUsersAvailabilityRef
       where
@@ -338,19 +342,21 @@ sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWe
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson
 
 -- | Connections are dropped after 5 minutes of inactivity
-checkLastSeen ∷ Ref (HashMap Int UserAvailability) → Effect Unit
-checkLastSeen allUsersAvailabilityRef = do
+terminateInactive ∷ Ref (HashMap Int UserAvailability) → Effect Unit
+terminateInactive allUsersAvailabilityRef = do
       now ← EN.nowDateTime
       allUsersAvailability ← ER.read allUsersAvailabilityRef
       DF.traverse_ (check now) $ DH.toArrayBy Tuple allUsersAvailability
       where
-      check now (Tuple id userAvailability)
-            | hasExpired userAvailability.lastSeen now = do
-                    DF.traverse_ SW.terminate $ DH.values userAvailability.connections
-                    ER.modify_ (DH.insert id (makeUserAvailabity DH.empty (Left "") false userAvailability.lastSeen userAvailability.availability)) allUsersAvailabilityRef
-            | otherwise = pure unit
+      check now (Tuple id userAvailability) = do
+            let expiredConnections
+                  | hasExpired now userAvailability.lastSeen = userAvailability.connections
+                  | otherwise = DH.filter (not hasExpired now <<< SW.getLastPing) userAvailability.connections
+            DF.traverse_ SW.terminate $ DH.values expiredConnections
+            when (not $ DH.isEmpty expiredConnections) $
+                  ER.modify_ (DH.insert id (makeUserAvailabity (DH.difference userAvailability.connections expiredConnections) (Left "") false userAvailability.lastSeen userAvailability.availability)) allUsersAvailabilityRef
 
-      hasExpired lastSeen now = aliveDelayMinutes <= DI.floor (DN.unwrap (DDT.diff now lastSeen ∷ Minutes))
+      hasExpired now lastSeen = inactiveHours <= DI.floor (DN.unwrap (DDT.diff now lastSeen ∷ Hours))
 
 -- | Last seen dates are serialized every 5 minutes
 -- |

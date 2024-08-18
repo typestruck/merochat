@@ -12,9 +12,9 @@ import Payload.Server (defaultOpts)
 import Payload.Server as PS
 import Server.Configuration as CF
 import Server.Database as SD
+import Server.Effect (Configuration)
 import Server.Guard (guards)
 import Server.Handler as SH
-import Server.Effect (Configuration)
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events (aliveDelay)
@@ -35,8 +35,9 @@ startWebSocketServer configuration = do
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allUsersAvailabilityRef)
-      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen allUsersAvailabilityRef *> SWE.persistLastSeen { pool, allUsersAvailabilityRef })
-      SW.onServerClose webSocketServer (const (ET.clearInterval intervalId))
+      lastSeenIntervalId ← ET.setInterval aliveDelay (SWE.persistLastSeen { pool, allUsersAvailabilityRef })
+      terminatetIntervalId ← ET.setInterval aliveDelay (SWE.terminateInactive allUsersAvailabilityRef)
+      SW.onServerClose webSocketServer (const (ET.clearInterval lastSeenIntervalId *> ET.clearInterval terminatetIntervalId))
 
 startHttpServer ∷ Configuration → Effect Unit
 startHttpServer configuration@{ port } = do

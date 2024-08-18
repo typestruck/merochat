@@ -30,10 +30,12 @@ export function onError_(ws, handleError) {
       ws.on('error', handleError);
 }
 
-export function lastPing(lp, connection) {
-      connection.lastPingTag = lp;
+export function lastPing(lp) {
+      return function (connection) {
+            connection.lastPingTag = lp;
 
-      return connection;
+            return connection;
+      }
 }
 
 export function getLastPing(connection) {
