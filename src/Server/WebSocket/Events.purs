@@ -159,8 +159,7 @@ handleError = EC.log <<< show
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
       EC.log ("closed connection " <> show loggedUserId)
-      allUsersAvailability ← liftEffect $ ER.read allUsersAvailabilityRef
-      ER.write (DH.update removeConnection loggedUserId allUsersAvailability) allUsersAvailabilityRef
+      ER.modify_ (DH.update removeConnection loggedUserId) allUsersAvailabilityRef
       where
       removeConnection userAvailability = Just $ userAvailability
             { connections = DH.delete token userAvailability.connections
@@ -228,8 +227,8 @@ sendPong token loggedUserId allUsersAvailabilityRef ping = do
       Tuple users missing ← makeAvailability allUsersAvailability
       liftEffect do
             now ← EN.nowDateTime
-            ER.write (DH.insert loggedUserId (makeUserAvailabity userAvailability.connections (Right token) ping.isActive now userAvailability.availability) allUsersAvailability) allUsersAvailabilityRef
-            ER.write (DH.union allUsersAvailability $ makeMissingAvailability missing) allUsersAvailabilityRef
+            ER.modify_ (DH.insert loggedUserId (makeUserAvailabity userAvailability.connections (Right token) ping.isActive now userAvailability.availability)) allUsersAvailabilityRef
+            ER.modify_ (\avl → DH.union avl $ makeMissingAvailability missing) allUsersAvailabilityRef
       sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) $ Pong { status: users }
       where
       makeAvailability avl = do
