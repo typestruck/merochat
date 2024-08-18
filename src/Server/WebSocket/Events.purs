@@ -128,8 +128,8 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
 
       upsertUserAvailability date =
             case _ of
-                  Nothing → Just $ makeUserAvailabity (DH.fromArray [ Tuple token connection ]) (Right token) true date None --could also query the db
-                  Just userAvailability → Just $ makeUserAvailabity (DH.insert token connection userAvailability.connections) (Right token) true date userAvailability.availability
+                  Nothing → Just $ makeUserAvailabity (DH.fromArray [ Tuple (spy "single c " token) connection ]) (Right token) true date None --could also query the db
+                  Just userAvailability → Just $ makeUserAvailabity (DH.insert (spy ("many c " <> show (DH.size userAvailability.connections + 1))  token) connection userAvailability.connections) (Right token) true date userAvailability.availability
 
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJSON message of
@@ -170,14 +170,14 @@ handleMessage payload = do
       context ← RR.ask
       allUsersAvailability ← liftEffect $ ER.read context.allUsersAvailabilityRef
       case payload of
-            Ban { id } → sendBan allUsersAvailability id
+            Ping ping → sendPong context.token context.loggedUserId context.allUsersAvailabilityRef ping
+            OutgoingMessage message → sendOutgoingMessage context.token context.loggedUserId allUsersAvailability message
+            ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
+            Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
             UpdatePrivileges → sendUpdatedPrivileges context.loggedUserId allUsersAvailability
             UpdateHash → sendUpdatedHash context.loggedUserId allUsersAvailability
-            Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
-            Ping ping → sendPong context.token context.loggedUserId context.allUsersAvailabilityRef ping
-            ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
             UnavailableFor { id } → sendUnavailability context.loggedUserId allUsersAvailability id
-            OutgoingMessage message → sendOutgoingMessage context.token context.loggedUserId allUsersAvailability message
+            Ban { id } → sendBan allUsersAvailability id
 
 sendBan ∷ HashMap Int UserAvailability → Int → WebSocketEffect
 sendBan allUsersAvailability userId = do
