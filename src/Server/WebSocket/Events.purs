@@ -126,7 +126,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
 
       upsertUserAvailability date =
             case _ of
-                  Nothing → Just $ makeUserAvailabity (DH.fromArray [Tuple token connection ]) (Right token) true date None --could also query the db
+                  Nothing → Just $ makeUserAvailabity (DH.fromArray [ Tuple token connection ]) (Right token) true date None --could also query the db
                   Just userAvailability → Just $ makeUserAvailabity (DH.insert token connection userAvailability.connections) (Right token) true date userAvailability.availability
 
       runMessageHandler loggedUserId (WebSocketMessage message) = do
@@ -156,7 +156,7 @@ handleError = EC.log <<< show
 
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
-      EC.log ( "closed connection " <> show loggedUserId)
+      EC.log ("closed connection " <> show loggedUserId)
       allUsersAvailability ← liftEffect $ ER.read allUsersAvailabilityRef
       ER.write (DH.update removeConnection loggedUserId allUsersAvailability) allUsersAvailabilityRef
       where
@@ -349,9 +349,10 @@ terminateInactive allUsersAvailabilityRef = do
       DF.traverse_ (check now) $ DH.toArrayBy Tuple allUsersAvailability
       where
       check now (Tuple id userAvailability) = do
-            let expiredConnections
-                  | hasExpired now userAvailability.lastSeen = userAvailability.connections
-                  | otherwise = DH.filter (not hasExpired now <<< SW.getLastPing) userAvailability.connections
+            let
+                  expiredConnections
+                        | hasExpired now userAvailability.lastSeen = userAvailability.connections
+                        | otherwise = DH.filter (not hasExpired now <<< SW.getLastPing) userAvailability.connections
             DF.traverse_ SW.terminate $ DH.values expiredConnections
             when (not $ DH.isEmpty expiredConnections) $
                   ER.modify_ (DH.insert id (makeUserAvailabity (DH.difference userAvailability.connections expiredConnections) (Left "") false userAvailability.lastSeen userAvailability.availability)) allUsersAvailabilityRef
