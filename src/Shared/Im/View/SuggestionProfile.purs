@@ -239,7 +239,7 @@ displayProfile index loggedUser profileUser temporaryUserMessage =
 badges ∷ ∀ message. Array Badge → Array (Html message)
 badges source = map (it <<< SB.badgeFor) source
       where
-      it bf = HE.div [ HA.class' "badge", HA.title bf.description ] [ HE.img $ [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.span [HA.class' "badge-text"] bf.text ]
+      it bf = HE.div [ HA.class' "badge", HA.title bf.description ] [ HE.img $ [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.span [ HA.class' "badge-text" ] bf.text ]
 
 blockReport ∷ Int → Array (Html ImMessage)
 blockReport id =
