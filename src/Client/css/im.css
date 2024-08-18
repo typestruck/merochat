@@ -86,7 +86,7 @@ body {
 
 .profile-description p:last-of-type,
 .description-message p:last-of-type {
-    margin-bottom: 0px;
+    margin-bottom: 25px;
 }
 
 .im {
@@ -1798,6 +1798,7 @@ select {
     margin-left: -5px;
 }
 
+.about-description,
 .tags-description {
     display: flex;
     flex-direction: column;
@@ -1825,11 +1826,11 @@ select {
     align-self: center;
 }
 
-.suggestion.old .tags-description {
+.suggestion.old .about-description {
     overflow-y: auto;
 }
 
-.suggestion-center .suggestion.new .tags-description {
+.suggestion-center .suggestion.new .about-description {
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0 5px;
@@ -2314,7 +2315,7 @@ select {
         text-align: center;
     }
 
-    .suggestion-center .suggestion.new .tags-description {
+    .suggestion-center .suggestion.new .about-description {
         padding: 0;
         overflow: unset;
     }
@@ -2509,6 +2510,7 @@ select {
     }
 
     .profile-tags,
+    .about-description,
     .tags-description {
         max-width: 100%;
     }
