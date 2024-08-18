@@ -729,7 +729,7 @@ toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage 
       where
       lostConnectionMessage =
             "Connection lost. Reconnecting...\n\
-            \You wont be able to send messages until connection is restored."
+            \You won't be able to send messages until connection is restored."
 
 preventStop ∷ Event → ImModel → NextMessage
 preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
