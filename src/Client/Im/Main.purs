@@ -141,7 +141,6 @@ update { webSocketRef, fileReader } model =
             SetMessageContent cursor content → CIC.setMessage cursor content model
             SetSelectedImage maybeBase64 → CIC.setSelectedImage maybeBase64 model
             Apply markup → CIC.applyMarkup markup model
-            SetSmallScreen → setSmallScreen model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
             FocusCurrentSuggestion → CIC.focusCurrentSuggestion model
@@ -198,6 +197,7 @@ update { webSocketRef, fileReader } model =
             DisplayFortune sequence → displayFortune sequence model
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
+            SetSmallScreen → setSmallScreen model
             PollPrivileges → pollPrivileges webSocket model
             SendPing isActive → sendPing webSocket isActive model
             SetRegistered → setRegistered model
@@ -399,123 +399,120 @@ displayFortune sequence model = F.noMessages $ model
       { fortune = Just sequence
       }
 
---refactor: this needs some serious cleanup
 receiveMessage ∷ WebSocket → Boolean → WebSocketPayloadClient → ImModel → MoreMessages
-receiveMessage
-      webSocket
-      isFocused
-      wsPayload
-      model@
-            { user: { id: recipientId }
-            , contacts: currentContacts
-            , typingIds
-            , hash
-            , blockedUsers
-            } = case wsPayload of
-      CurrentPrivileges kp@{ karma, privileges } →
-            model
-                  { user
-                          { karma = karma
-                          , privileges = privileges
-                          }
-                  } :>
-                  [ do
-                          liftEffect do
-                                FS.send profileId $ SPT.UpdatePrivileges kp
-                                FS.send experimentsId $ SET.UpdatePrivileges kp
-                          pure Nothing
-                  ]
-      CurrentHash newHash →
-            F.noMessages model
-                  { imUpdated = newHash /= hash
-                  }
-      ContactTyping { id } → CIC.updateTyping id true model :>
-            [ liftEffect do
-                    DT.traverse_ (ET.clearTimeout <<< SC.coerce) typingIds
-                    newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping id
-                    pure <<< Just $ TypingId newId
-            ]
-      ServerReceivedMessage { previousId, id, userId } →
-            F.noMessages $ model
-                  { contacts = updateTemporaryId currentContacts userId previousId id
-                  }
-      ServerChangedStatus { ids, status, userId } →
-            F.noMessages $ model
-                  { contacts = updateStatus currentContacts userId ids status
-                  }
-      ContactUnavailable { userId, temporaryMessageId } →
-            F.noMessages <<< unsuggest userId $ model
-                  { contacts =
-                          let
-                                updatedContacts = markContactUnavailable currentContacts userId
-                          in
-                                case temporaryMessageId of
-                                      Nothing → updatedContacts
-                                      Just id → markErroredMessage updatedContacts userId id
-                  }
-      BadMessage { userId, temporaryMessageId } →
-            F.noMessages model
-                  { contacts = case temporaryMessageId of
-                          Nothing → currentContacts
-                          Just id → markErroredMessage currentContacts userId id
-                  }
-      NewIncomingMessage payload@{ id: messageId, userId, content: messageContent, date: messageDate } →
-            if DA.elem userId blockedUsers then
-                  F.noMessages model
-            else
-                  let
-                        model' = unsuggest userId model
-                  in
-                        case processIncomingMessage payload model' of
-                              Left userId → model' :> [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id: userId } } ]
-                              --mark it as read if we received a message from the current chat
-                              -- or as delivered otherwise
-                              Right
-                                    updatedModel@
-                                          { chatting: Just index
-                                          , contacts
-                                          } | isFocused && isChatting userId updatedModel →
-                                    let
-                                          Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
-                                                { sessionUserId: recipientId
-                                                , contacts
-                                                , newStatus: Read
-                                                , webSocket
-                                                , index
-                                                }
-                                    in
-                                          furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
-                              Right
-                                    updatedModel@
-                                          { contacts
-                                          } →
-                                    let
-                                          Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
-                                                { index: SU.fromJust $ DA.findIndex (findContact userId) contacts
-                                                , sessionUserId: recipientId
-                                                , newStatus: Delivered
-                                                , contacts
-                                                , webSocket
-                                                }
-                                    in
-                                          furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ payload.userId ] : messages)
+receiveMessage webSocket isFocused payload model = case payload of
+      CurrentPrivileges kp -> receivePrivileges kp model
+      CurrentHash newHash → receiveHash newHash model
+      ContactTyping tp → receiveTyping tp model
+      ServerReceivedMessage rm -> receiveAcknowledgement rm model
+      ServerChangedStatus cs -> receiveStatusChange cs model
+      ContactUnavailable cu -> receiveUnavailable cu model
+      BadMessage bm -> receiveBadMessage bm model
+      NewIncomingMessage ni -> receiveIncomingMessage webSocket isFocused ni model
+      PayloadError p → receivePayloadError p model
 
-      PayloadError payload → case payload.origin of
+receivePayloadError received model = case received.origin of
             OutgoingMessage { id, userId } → F.noMessages $ model
                   { contacts =
                           --assume that it is because the other user no longer exists
-                          if payload.context == Just MissingForeignKey then
-                                markContactUnavailable currentContacts userId
+                          if received.context == Just MissingForeignKey then
+                                markContactUnavailable model.contacts userId
                           else
-                                markErroredMessage currentContacts userId id
+                                markErroredMessage model.contacts userId id
                   }
             _ → F.noMessages model
-      where
-      isChatting senderID { contacts, chatting } =
+
+receiveIncomingMessage webSocket isFocused received model
+      | DA.elem received.recipientId model.blockedUsers = F.noMessages model
+      | otherwise =
             let
-                  { user: { id: recipientId } } = contacts !@ SU.fromJust chatting
+                  model' = unsuggest received.recipientId model
             in
-                  recipientId == senderID
+                  case processIncomingMessage received model' of
+                        Left userId → model' :> [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id: received.recipientId } } ]
+                        --mark it as read if we received a message from the current chat
+                        -- or as delivered otherwise
+                        Right
+                              updatedModel@
+                                    { chatting: Just index
+                                    , contacts
+                                    } | isFocused && isChatting received.recipientId updatedModel →
+                              let
+                                    Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
+                                          { sessionUserId: model.user.id
+                                          , contacts
+                                          , newStatus: Read
+                                          , webSocket
+                                          , index
+                                          }
+                              in
+                                    furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
+                        Right
+                              updatedModel@
+                                    { contacts
+                                    } →
+                              let
+                                    Tuple furtherUpdatedModel messages = CICN.updateStatus updatedModel
+                                          { index: SU.fromJust $ DA.findIndex (findContact received.recipientId) contacts
+                                          , sessionUserId: model.user.id
+                                          , newStatus: Delivered
+                                          , contacts
+                                          , webSocket
+                                          }
+                              in
+                                    furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ received.recipientId ] : messages)
+      where
+            isChatting senderId { contacts, chatting } =
+                  let
+                        { user: { id: recipientId } } = contacts !@ SU.fromJust chatting
+                  in
+                        recipientId == senderId
+
+receiveBadMessage received model = F.noMessages model
+      { contacts = case received.temporaryMessageId of
+                  Nothing → model.contacts
+                  Just id → markErroredMessage model.contacts received.userId id
+      }
+
+receiveUnavailable received model  =
+            F.noMessages $ unsuggest received.userId model
+                  { contacts = case received.temporaryMessageId of
+                                    Nothing → updatedContacts
+                                    Just id → markErroredMessage updatedContacts received.userId id
+                  }
+            where updatedContacts = markContactUnavailable model.contacts received.userId
+
+receiveStatusChange received model = F.noMessages  model
+      { contacts = updateStatus model.contacts received.userId received.ids received.status
+      }
+
+receiveAcknowledgement received model = F.noMessages  model
+      { contacts = updateTemporaryId model.contacts received.userId received.previousId received.id
+      }
+
+receiveTyping received model = CIC.updateTyping received.id true model :>
+      [ liftEffect do
+                  DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
+                  newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping received.id
+                  pure <<< Just $ TypingId newId
+      ]
+
+receiveHash newHash model = F.noMessages model
+      { imUpdated = newHash /= model.hash
+      }
+
+receivePrivileges received model = model
+      { user
+            { karma = received.karma
+            , privileges = received.privileges
+            }
+      } :>
+      [ do
+                  liftEffect do
+                        FS.send profileId $ SPT.UpdatePrivileges received
+                        FS.send experimentsId $ SET.UpdatePrivileges received
+                  pure Nothing
+      ]
 
 unsuggest ∷ Int → ImModel → ImModel
 unsuggest userId model = model
@@ -532,34 +529,29 @@ unsuggest userId model = model
             | otherwise = model.suggesting
 
 processIncomingMessage ∷ ClientMessagePayload → ImModel → Either Int ImModel
-processIncomingMessage
-      { id, userId, date, content }
-      model@
-            { user: { id: recipientId }
-            , contacts
-            } = case findAndUpdateContactList of
-      Just contacts' →
-            Right $ model
-                  { contacts = contacts'
+processIncomingMessage payload model = case findAndUpdateContactList of
+      Just contacts →
+            Right model
+                  { contacts = contacts
                   }
-      Nothing → Left userId
+      Nothing → Left payload.recipientId
       where
-      updateHistory { id, content, date } contact@{ history } =
+      updateHistory contact =
             contact
-                  { lastMessageDate = date
-                  , history = DA.snoc history $
+                  { lastMessageDate = payload.date
+                  , history = DA.snoc contact.history $
                           { status: Received
-                          , sender: userId
-                          , recipient: recipientId
-                          , id
-                          , content
-                          , date
+                          , sender: payload.senderId
+                          , recipient: payload.recipientId
+                          , id: payload.id
+                          , content: payload.content
+                          , date: payload.date
                           }
                   }
 
       findAndUpdateContactList = do
-            index ← DA.findIndex (findContact userId) contacts
-            DA.modifyAt index (updateHistory { content, id, date }) contacts
+            index ← DA.findIndex (findContact payload.recipientId) model.contacts
+            DA.modifyAt index updateHistory model.contacts
 
 findContact ∷ Int → Contact → Boolean
 findContact userId cnt = userId == cnt.user.id
@@ -731,9 +723,8 @@ setUpWebSocket webSocketRef = do
       pollPrivilegesAction = FS.send imId PollPrivileges
 
       runMessage event = do
-            let
-                  payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
-                  message = SU.fromRight $ SJ.fromJSON payload
+            let  payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< CIW.data_ <<< SU.fromJust $ CIW.fromEvent event
+            let message = SU.fromRight $ SJ.fromJSON payload
             isFocused ← CCD.documentHasFocus
             case message of
                   Pong { status } → do

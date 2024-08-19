@@ -42,7 +42,6 @@ create table users
 create table messages
 (
     id integer generated always as identity primary key,
-    temporary_id integer not null,
     sender integer not null,
     recipient integer not null,
     date timestamptz not null default (utc_now()),

@@ -1,7 +1,7 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js');
 
 /// caching
-let { registerRoute } = workbox.routing;
+let { registerRoute, Route } = workbox.routing;
 let { CacheFirst } = workbox.strategies;
 let { CacheableResponsePlugin } = workbox.cacheableResponse;
 

@@ -60,7 +60,8 @@ tests = do
                                             { date
                                             , id: newMessageID
                                             , content
-                                            , userId: contact.user.id
+                                            , recipientId: contact.user.id
+                                            , senderId: 3
                                             }
                                     ) $ model
                                     { suggestions = [ contact.user ]
@@ -116,7 +117,8 @@ tests = do
                                             { date
                                             , id: newMessageID
                                             , content
-                                            , userId: contact.user.id
+                                            , recipientId: contact.user.id
+                                            , senderId: 2
                                             }
                                     ) $ model
                                     { contacts = [ contact ]
@@ -140,7 +142,8 @@ tests = do
                               DT.fst <<< CIM.receiveMessage webSocket true
                                     ( NewIncomingMessage
                                             { id: newMessageID
-                                            , userId: contactId
+                                            , recipientId: contactId
+                                            , senderId : 3
                                             , content
                                             , date
                                             }
@@ -158,7 +161,8 @@ tests = do
                               DT.fst <<< CIM.receiveMessage webSocket false
                                     ( NewIncomingMessage
                                             { id: newMessageID
-                                            , userId: anotherImUserId
+                                            , recipientId: anotherImUserId
+                                            , senderId : 3
                                             , content
                                             , date
                                             }

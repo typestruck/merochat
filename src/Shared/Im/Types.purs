@@ -59,7 +59,8 @@ type BasicMessage fields =
 
 type ClientMessagePayload = BasicMessage
       ( content ∷ String
-      , userId ∷ Int
+      , recipientId ∷ Int
+      , senderId ∷ Int
       , date ∷ DateTimeWrapper
       )
 
@@ -294,7 +295,6 @@ data ImMessage
       | SendMessage MessageContent DateTimeWrapper
       | SetMessageContent (Maybe Int) String
       | Apply Markup
-      | SetSmallScreen
       | SetEmoji Event
       | InsertLink
       | CheckTyping String
@@ -308,6 +308,7 @@ data ImMessage
       | FinishTutorial
       | ToggleUserContextMenu Event
       | SpecialRequest RetryableRequest
+      | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean
       | PreventStop Event
       | AskNotification

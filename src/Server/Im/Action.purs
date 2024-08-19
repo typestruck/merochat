@@ -64,7 +64,7 @@ resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SID.present
 
 listMissedEvents ∷ Int → Maybe Int → Maybe Int → ServerEffect MissedEvents
 listMissedEvents loggedUserId lastSenderId lastRecipientId = do
-      messageIds ← DM.maybe (pure []) (SID.messageIdsFor loggedUserId) lastSenderId
+      messageIds ← pure []
       contacts ← DM.maybe (pure []) (SID.presentMissedContacts loggedUserId) lastRecipientId
       pure
             { contacts: presentContacts contacts
@@ -79,8 +79,8 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
       chatHistory records =
             let contact = DAN.head records in (fromFlatContact contact) { history = fromFlatMessage <$> DAN.toArray records }
 
-processMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Tuple Int String))
-processMessage loggedUserId userId temporaryId content = do
+processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Tuple Int String))
+processMessage loggedUserId userId content = do
       isVisible ← SID.isRecipientVisible loggedUserId userId
       if isVisible then do
             privileges ← markdownPrivileges loggedUserId
@@ -88,7 +88,7 @@ processMessage loggedUserId userId temporaryId content = do
             if DS.null sanitized then
                   pure $ Left InvalidMessage
             else do
-                  id ← SID.insertMessage loggedUserId userId temporaryId sanitized
+                  id ← SID.insertMessage loggedUserId userId sanitized
                   pure <<< Right $ Tuple id sanitized
       else
             pure $ Left UserUnavailable
@@ -148,7 +148,7 @@ greet ∷ Int → ServerEffect Unit
 greet loggedUserId =
       if production then do
             starter ← ST.generateConversationStarter
-            void $ SID.insertMessage sender loggedUserId 1 starter
+            void $ SID.insertMessage sender loggedUserId starter
       else
             pure unit
       where
