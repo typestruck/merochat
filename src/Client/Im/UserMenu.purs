@@ -26,7 +26,7 @@ toggleInitialScreen toggle model = F.noMessages $ model
       }
 
 logout ∷ AfterLogout → ImModel → MoreMessages
-logout after model = model /\ [out]
+logout after model = model /\ [ out ]
       where
       out = do
             void $ request.logout { body: {} }
@@ -66,7 +66,7 @@ toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
                         ]
 
 setModalContents ∷ Maybe Bundle → ElementId → String → ImModel → NextMessage
-setModalContents resource root html model = model /\ [loadModal]
+setModalContents resource root html model = model /\ [ loadModal ]
       where
       loadModal = liftEffect do
             element ← CCD.unsafeGetElementById root

@@ -140,19 +140,20 @@ sendMessage
             , chatting
             , temporaryId
             , contacts
-            } = updatedModel /\ [liftEffect do
-      CIS.scrollLastMessage
-      input ← chatInput chatting
-      WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
-      CCD.setValue input ""
-      resizeTextarea input
-      CIW.sendPayload webSocket $ OutgoingMessage
-            { id: newTemporaryId
-            , userId: recipientId
-            , content
-            , turn
-            }
-      pure Nothing
+            } = updatedModel /\
+      [ liftEffect do
+              CIS.scrollLastMessage
+              input ← chatInput chatting
+              WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
+              CCD.setValue input ""
+              resizeTextarea input
+              CIW.sendPayload webSocket $ OutgoingMessage
+                    { id: newTemporaryId
+                    , userId: recipientId
+                    , content
+                    , turn
+                    }
+              pure Nothing
       ]
       where
       index = SU.fromJust chatting
@@ -289,24 +290,27 @@ chatInput chatting
 
 setMessage ∷ Maybe Int → String → ImModel → NextMessage
 setMessage cursor markdown model@{ chatting } =
-      model /\ [liftEffect do
-            case cursor of
-                  Just position → do
-                        input ← chatInput chatting
-                        let textarea = SU.fromJust $ WHHTA.fromElement input
-                        WHHEL.focus $ WHHTA.toHTMLElement textarea
-                        WHHTA.setValue markdown textarea
-                        WHHTA.setSelectionEnd position textarea
-                        resizeTextarea input
-                  Nothing → pure unit
-            pure Nothing
-      ]
+      model /\
+            [ liftEffect do
+                    case cursor of
+                          Just position → do
+                                input ← chatInput chatting
+                                let textarea = SU.fromJust $ WHHTA.fromElement input
+                                WHHEL.focus $ WHHTA.toHTMLElement textarea
+                                WHHTA.setValue markdown textarea
+                                WHHTA.setSelectionEnd position textarea
+                                resizeTextarea input
+                          Nothing → pure unit
+                    pure Nothing
+            ]
 
 catchFile ∷ FileReader → Event → ImModel → NoMessages
-catchFile fileReader event model =  model /\ [liftEffect do
-      CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
-      CCD.preventStop event
-      pure Nothing]
+catchFile fileReader event model = model /\
+      [ liftEffect do
+              CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
+              CCD.preventStop event
+              pure Nothing
+      ]
 
 setSelectedImage ∷ Maybe String → ImModel → NextMessage
 setSelectedImage maybeBase64 model@{ smallScreen } =
@@ -394,7 +398,7 @@ resizeTextarea ∷ Element → Effect Unit
 resizeTextarea = EU.runEffectFn1 resizeTextarea_
 
 resizeChatInput ∷ Event → ImModel → NoMessages
-resizeChatInput event model =  model /\ [resize *> pure Nothing]
+resizeChatInput event model = model /\ [ resize *> pure Nothing ]
       where
       resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
             target ← WEE.target event
@@ -408,7 +412,7 @@ toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
 checkTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
 checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
       if DS.length text > minimumLength && enoughTime lt then
-            model { lastTyping = DateTimeWrapper now } /\ [liftEffect (CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }) *> pure Nothing ]
+            model { lastTyping = DateTimeWrapper now } /\ [ liftEffect (CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }) *> pure Nothing ]
       else
             F.noMessages model
       where

@@ -7,11 +7,9 @@ import Shared.Im.Types
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.Im.Flame as CIF
 import Client.Im.Scroll as CIS
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Debug
 import Effect.Class (liftEffect)
 import Data.Tuple.Nested ((/\))
@@ -61,8 +59,8 @@ displayHistory overwrite chatHistory model@{ chatting, contacts } =
                   }
       in
             if shouldFetchChatHistory then
-                  updatedModel /\ [liftEffect CIS.scrollLastMessage *> pure Nothing]
+                  updatedModel /\ [ liftEffect CIS.scrollLastMessage *> pure Nothing ]
             else if not $ DA.null chatHistory then
-                  updatedModel /\ [liftEffect (CIS.scrollIntoView <<< SU.fromJust $ DA.last chatHistory) *> pure Nothing]
+                  updatedModel /\ [ liftEffect (CIS.scrollIntoView <<< SU.fromJust $ DA.last chatHistory) *> pure Nothing ]
             else
                   F.noMessages updatedModel

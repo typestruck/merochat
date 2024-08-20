@@ -1,13 +1,21 @@
-module Client.Im.WebSocket.Events (startWebSocket, toggleConnectedWebSocket, sendPing, pollPrivileges) where
+module Client.Im.WebSocket.Events (startWebSocket, toggleConnectedWebSocket, sendPing, receiveMessage) where
 
 import Prelude
 
 import Client.Common.Dom as CCD
-import Client.Im.Flame (MoreMessages, NoMessages)
-import Client.Im.Flame as CIF
+import Client.Common.Network (request)
+import Client.Common.Network as CCNT
+import Client.Im.Chat as CIC
+import Client.Im.Contacts as CICN
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Notification as CIUC
+import Client.Im.Scroll as CISM
 import Client.Im.WebSocket as CIW
 import Control.Monad.Except as CME
+import Data.Array ((:))
 import Data.Array as DA
+import Data.Either (Either(..))
+import Data.Foldable as DT
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
@@ -18,12 +26,18 @@ import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Timer (IntervalId, TimeoutId)
 import Effect.Timer as ET
+import Flame as F
 import Flame.Subscription as FS
 import Foreign as FO
+import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
-import Shared.Im.Types (FullWebSocketPayloadClient(..), ImMessage(..), ImModel, RetryableRequest(..), WebSocketPayloadServer(..))
+import Shared.Experiments.Types as SET
+import Shared.Im.Types (ClientMessagePayload, Contact, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), ImModel)
 import Shared.Json as SJ
-import Shared.Options.MountPoint (imId)
+import Shared.Options.MountPoint (experimentsId, imId, profileId)
+import Shared.Profile.Types as SPT
+import Shared.ResponseError (DatabaseError(..))
+import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
@@ -68,7 +82,7 @@ handleOpen webSocketStateRef _ = do
       state ← ER.read webSocketStateRef
       --close event may have set up to open a new connection after this timeout
       DM.maybe (pure unit) ET.clearTimeout state.reconnectId
-      newPrivilegesId ← ET.setInterval privilegeDelay pollPrivileges
+      newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
       newPingId ← ET.setInterval pingDelay ping
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId, reconnectId = Nothing }) webSocketStateRef
 
@@ -78,7 +92,7 @@ handleOpen webSocketStateRef _ = do
 
       where
       privilegeDelay = 1000 * 60 * 60
-      pollPrivileges = FS.send imId PollPrivileges
+      pollPrivileges webSocket = CIW.sendPayload webSocket UpdatePrivileges
 
       pingDelay = 1000 * 30
       ping = do
@@ -116,6 +130,216 @@ handleClose webSocketStateRef _ = do
                   setUpWebsocket webSocketStateRef
             ER.modify_ (_ { reconnectId = Just id }) webSocketStateRef
 
+-- | Send ping with users to learn availability of
+sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
+sendPing webSocket isActive model =
+      model /\
+            [ liftEffect do
+                    CIW.sendPayload webSocket $ Ping
+                          { isActive
+                          , statusFor: DA.nub (map _.id model.suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) model.contacts)) -- user might be both in contacts and suggestions
+                          }
+                    pure Nothing
+            ]
+
+-- | Handle content messages from the server
+receiveMessage ∷ WebSocket → Boolean → WebSocketPayloadClient → ImModel → MoreMessages
+receiveMessage webSocket isFocused payload model = case payload of
+      ServerChangedStatus cs → receiveStatusChange cs model
+      ServerReceivedMessage rm → receiveAcknowledgement rm model
+      NewIncomingMessage ni → receiveIncomingMessage webSocket isFocused ni model
+      ContactTyping tp → receiveTyping tp model
+      CurrentPrivileges kp → receivePrivileges kp model
+      CurrentHash newHash → receiveHash newHash model
+      ContactUnavailable cu → receiveUnavailable cu model
+      BadMessage bm → receiveBadMessage bm model
+      PayloadError p → receivePayloadError p model
+
+-- | Update message status
+receiveStatusChange ∷ { ids ∷ Array Int, status ∷ MessageStatus, userId ∷ Int } → ImModel -> NoMessages
+receiveStatusChange received model = F.noMessages model
+      { contacts = updateHistory model.contacts received.userId updateStatus
+      }
+      where
+      updateStatus history
+            | DA.elem history.id received.ids = history { status = received.status }
+            | otherwise = history
+
+-- | Move status from 'sending' to 'sent' and update message id
+receiveAcknowledgement :: { id ∷ Int , previousId ∷ Int , userId ∷ Int } -> ImModel -> NoMessages
+receiveAcknowledgement received model = F.noMessages model
+      { contacts = updateHistory model.contacts received.userId updateIdStatus
+      }
+      where
+      updateIdStatus history
+            | history.id == received.previousId = history { id = received.id, status = Received }
+            | otherwise = history
+
+receivePayloadError :: { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError } -> ImModel -> NoMessages
+receivePayloadError received model = case received.origin of
+      OutgoingMessage { id, userId } → F.noMessages model
+            { contacts =
+                    --assume that it is because the other user no longer exists
+                    if received.context == Just MissingForeignKey then
+                          markContactUnavailable model.contacts userId
+                    else
+                          markErroredMessage model.contacts userId id
+            }
+      _ → F.noMessages model
+
+-- | A new message from others users or sent by the logged user with another connection
+receiveIncomingMessage ∷ WebSocket → Boolean → ClientMessagePayload → ImModel -> NextMessage
+receiveIncomingMessage webSocket isFocused payload model
+      | DA.elem payload.recipientId model.blockedUsers = F.noMessages model --prevents messages already in flight to deliver after block
+      | otherwise =
+            case fromIncomingMessage payload unsuggestedModel of
+                  Left id → unsuggestedModel /\ [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } } ] -- query this user as they are not in the contacts
+                  Right updatedModel | model.user.id == payload.senderId -> --syncing message sent from other connections
+                        F.noMessages updatedModel
+                  Right
+                        updatedModel@
+                              { chatting: Just index
+                              } | isFocused && (updatedModel.contacts !@ index).user.id == userId → --new message from user being chatted with
+                        CICN.updateStatus updatedModel
+                                    { loggedUserId: model.user.id
+                                    , contacts: updatedModel.contacts
+                                    , newStatus: Read
+                                    , webSocket
+                                    , index
+                                    } # withExtraMessage CISM.scrollLastMessage'
+                  Right updatedModel →
+                        CICN.updateStatus updatedModel
+                                    { loggedUserId: model.user.id
+                                    , contacts: updatedModel.contacts
+                                    , newStatus: Delivered
+                                    , webSocket
+                                    , index: SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts
+                                    } # withExtraMessage (CIUC.notify' updatedModel [ userId ])
+              where
+              unsuggestedModel = unsuggest payload.recipientId model
+
+              userId
+                  | payload.senderId == model.user.id = payload.recipientId
+                  | otherwise = payload.senderId
+
+              withExtraMessage e (m /\ ms) = m /\ e : ms
+
+receiveBadMessage received model = F.noMessages model
+      { contacts = case received.temporaryMessageId of
+              Nothing → model.contacts
+              Just id → markErroredMessage model.contacts received.userId id
+      }
+
+receiveUnavailable received model =
+      F.noMessages $ unsuggest received.userId model
+            { contacts = case received.temporaryMessageId of
+                    Nothing → updatedContacts
+                    Just id → markErroredMessage updatedContacts received.userId id
+            }
+      where
+      updatedContacts = markContactUnavailable model.contacts received.userId
+
+receiveTyping received model = CIC.updateTyping received.id true model /\
+      [ liftEffect do
+              DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
+              newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping received.id
+              pure <<< Just $ TypingId newId
+      ]
+
+receiveHash newHash model = F.noMessages model
+      { imUpdated = newHash /= model.hash
+      }
+
+receivePrivileges received model =
+      model
+            { user
+                    { karma = received.karma
+                    , privileges = received.privileges
+                    }
+            } /\
+            [ do
+                    liftEffect do
+                          FS.send profileId $ SPT.UpdatePrivileges received
+                          FS.send experimentsId $ SET.UpdatePrivileges received
+                    pure Nothing
+            ]
+
+markContactUnavailable ∷ Array Contact → Int → Array Contact
+markContactUnavailable contacts userId = updateContact <$> contacts
+      where
+      updateContact contact@{ user: { id } }
+            | id == userId = contact
+                    { user
+                            { availability = Unavailable
+                            }
+                    }
+            | otherwise = contact
+
+markErroredMessage ∷ Array Contact → Int → Int → Array Contact
+markErroredMessage contacts userId messageId = updateHistory contacts userId updateStatus
+      where
+      updateStatus history@{ id }
+            | messageId == id = history { status = Errored }
+            | otherwise = history
+
+-- | Remove an user from the suggestions
+unsuggest ∷ Int → ImModel → ImModel
+unsuggest userId model = model
+      { suggestions = updatedSuggestions
+      , suggesting = updatedSuggesting
+      }
+      where
+      unsuggestedIndex = DA.findIndex ((userId == _) <<< _.id) model.suggestions
+      updatedSuggestions = DM.fromMaybe model.suggestions do
+            i ← unsuggestedIndex
+            DA.deleteAt i model.suggestions
+      updatedSuggesting
+            | unsuggestedIndex /= Nothing && unsuggestedIndex < model.suggesting = (max 0 <<< (_ - 1)) <$> model.suggesting
+            | otherwise = model.suggesting
+
+-- | Updated contacts if user is already there
+fromIncomingMessage ∷ ClientMessagePayload → ImModel → Either Int ImModel
+fromIncomingMessage payload model = case updatedContacts of
+      Just contacts →
+            Right model
+                  { contacts = contacts
+                  }
+      Nothing → Left userId
+      where
+      userId
+            | payload.senderId == model.user.id = payload.recipientId
+            | otherwise = payload.senderId
+
+      updatedContacts = do
+            index ← DA.findIndex (findContact userId) model.contacts
+            DA.modifyAt index addHistory model.contacts
+
+      addHistory contact =
+            contact
+                  { lastMessageDate = payload.date
+                  , history = DA.snoc contact.history $
+                          { status: Received
+                          , sender: payload.senderId
+                          , recipient: payload.recipientId
+                          , id: payload.id
+                          , content: payload.content
+                          , date: payload.date
+                          }
+                  }
+
+findContact ∷ Int → Contact → Boolean
+findContact userId cnt = userId == cnt.user.id
+
+--refactor: should be abstract with updateReadCount
+updateHistory ∷ Array Contact → Int → (HistoryMessage → HistoryMessage) → Array Contact
+updateHistory contacts userId updater = updateIt <$> contacts
+      where
+      updateIt contact
+            | contact.user.id == userId = contact
+                    { history = updater <$> contact.history
+                    }
+            | otherwise = contact
+
 toggleConnectedWebSocket ∷ Boolean → ImModel → MoreMessages
 toggleConnectedWebSocket isConnected model =
       model
@@ -131,23 +355,5 @@ toggleConnectedWebSocket isConnected model =
             else
                   [ pure $ Just UpdateDelivered ]
       where
-      lostConnectionMessage =  "Connection lost. Reconnecting...\n\
+      lostConnectionMessage = "Connection lost. Reconnecting...\n\
             \You won't be able to send messages until connection is restored"
-
-sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
-sendPing webSocket isActive model =
-      model /\ [
-            liftEffect do
-                  CIW.sendPayload webSocket $ Ping
-                        { isActive
-                        , statusFor: DA.nub (map _.id model.suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) model.contacts))
-                        }
-                  pure Nothing
-      ]
-
-pollPrivileges ∷ WebSocket → ImModel → NoMessages
-pollPrivileges webSocket model = model /\
-      [ do
-              liftEffect $ CIW.sendPayload webSocket UpdatePrivileges
-              pure Nothing
-      ]

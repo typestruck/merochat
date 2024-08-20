@@ -70,21 +70,21 @@ markRead webSocket =
                   { newStatus: Read
                   , index
                   , webSocket
-                  , sessionUserId: userId
+                  , loggedUserId: userId
                   , contacts
                   }
             model → F.noMessages model
 
 updateStatus ∷
       ImModel →
-      { sessionUserId ∷ Int
+      { loggedUserId ∷ Int
       , webSocket ∷ WebSocket
       , contacts ∷ Array Contact
       , index ∷ Int
       , newStatus ∷ MessageStatus
       } →
       MoreMessages
-updateStatus model { webSocket, index, sessionUserId, contacts, newStatus } =
+updateStatus model { webSocket, index, loggedUserId, contacts, newStatus } =
       let
             contactRead@{ history, user: { id: contactUserId } } = contacts !@ index
             messagesToUpdate = DA.mapMaybe toChange history
@@ -95,19 +95,20 @@ updateStatus model { webSocket, index, sessionUserId, contacts, newStatus } =
                   let
                         updatedModel@{ contacts } = updateContacts contactRead
                   in
-                        updatedModel /\ [liftEffect do
-                              sendStatusChange contactUserId messagesToUpdate
-                              alertUnread contacts
-                              pure Nothing
-                        ]
+                        updatedModel /\
+                              [ liftEffect do
+                                      sendStatusChange contactUserId messagesToUpdate
+                                      alertUnread contacts
+                                      pure Nothing
+                              ]
 
       where
       toChange { recipient, id, status }
-            | status >= Sent && status < newStatus && recipient == sessionUserId = Just id
+            | status >= Sent && status < newStatus && recipient == loggedUserId = Just id
             | otherwise = Nothing
 
       changeStatus historyEntry@{ recipient, status }
-            | status >= Sent && status < newStatus && recipient == sessionUserId = historyEntry { status = newStatus }
+            | status >= Sent && status < newStatus && recipient == loggedUserId = historyEntry { status = newStatus }
             | otherwise = historyEntry
 
       updateContacts contactRead@{ history } = model
@@ -119,23 +120,24 @@ updateStatus model { webSocket, index, sessionUserId, contacts, newStatus } =
             , ids: [ Tuple contactUserId messages ]
             }
 
-      alertUnread = CIUN.updateTabCount sessionUserId
+      alertUnread = CIUN.updateTabCount loggedUserId
 
 --we need to update message status from sent to unread in the cases of
 -- opening ws connection (messages might have been sent while offline)
 -- chats from new users
 -- recovering from disconnect
 markDelivered ∷ WebSocket → ImModel → NoMessages
-markDelivered webSocket model@{ contacts, user: { id: sessionUserId } } =
+markDelivered webSocket model@{ contacts, user: { id: loggedUserId } } =
       if DA.null ids then
             F.noMessages model
-      else  updatedModel /\ [liftEffect do
-                  CIW.sendPayload webSocket $ ChangeStatus
-                        { status: Delivered
-                        , ids
-                        }
-                  pure Nothing
-                  ]
+      else updatedModel /\
+            [ liftEffect do
+                    CIW.sendPayload webSocket $ ChangeStatus
+                          { status: Delivered
+                          , ids
+                          }
+                    pure Nothing
+            ]
       where
       ids = DA.foldl sent [] contacts
 
@@ -144,13 +146,13 @@ markDelivered webSocket model@{ contacts, user: { id: sessionUserId } } =
       updateDelivered contact@{ history } =
             let
                   update h@{ status, recipient }
-                        | recipient == sessionUserId && status == Received = h { status = Delivered }
+                        | recipient == loggedUserId && status == Received = h { status = Delivered }
                         | otherwise = h
             in
                   contact { history = map update history }
 
       sent running { history, user: { id: userId } } =
-            case DA.filter (\h → h.recipient == sessionUserId && h.status == Received) history of
+            case DA.filter (\h → h.recipient == loggedUserId && h.status == Received) history of
                   [] → running
                   hs → Tuple userId (map _.id hs) : running
 

@@ -315,7 +315,6 @@ data ImMessage
       | ToggleAskNotification
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)
-      | PollPrivileges
       | CheckUserExpiration
       | ToggleConnected Boolean
       | SetField (ImModel → ImModel)

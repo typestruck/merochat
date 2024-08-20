@@ -158,10 +158,10 @@ handleError = EC.log <<< show
 
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
-      now <- EN.nowDateTime
+      now ← EN.nowDateTime
       ER.modify_ (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
       where
-      removeConnection date userAvailability = Just $ makeUserAvailabity userAvailability.connections (Left token) false date userAvailability.availability --this will may set an incorrect last seen but it is preferable to saying an user is online when they are not
+      removeConnection date userAvailability = Just $ makeUserAvailabity userAvailability.connections (Left token) false date userAvailability.availability --this may set an incorrect last seen but it is preferable to saying an user is online when they are not
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do

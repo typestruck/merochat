@@ -6,7 +6,6 @@ import Data.Maybe (Maybe)
 import Data.Tuple (Tuple)
 import Effect.Aff (Aff)
 
-
 -- | This action has no further effects
 type NoMessages = Tuple ImModel (Array (Aff (Maybe ImMessage)))
 

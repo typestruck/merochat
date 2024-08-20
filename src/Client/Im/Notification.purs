@@ -46,8 +46,8 @@ notifyUnreadChats model userIds = model /\
       ]
 
 notify ∷ ImModel → Array Int → Effect Unit
-notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
-      updateTabCount sessionUserId contacts
+notify { user: { id: loggedUserId }, contacts, smallScreen } userIds = do
+      updateTabCount loggedUserId contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
       where
       contactUsers = DA.filter byKeys contacts
