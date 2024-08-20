@@ -16,7 +16,7 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Flame ((:>))
+import Data.Tuple.Nested ((/\))
 import Flame.Subscription as FS
 import Shared.Element as SE
 import Shared.Experiments.Impersonation (impersonations)
@@ -35,12 +35,11 @@ type Notification =
 
 foreign import createNotification_ ∷ EffectFn1 Notification Unit
 
-
 createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
 notifyUnreadChats ∷ ImModel → Array Int → NextMessage
-notifyUnreadChats model userIds = model :>
+notifyUnreadChats model userIds = model /\
       [ do
               liftEffect $ notify model userIds
               pure $ Just UpdateDelivered

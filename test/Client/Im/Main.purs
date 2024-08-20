@@ -1,9 +1,7 @@
 module Test.Client.Im.Main where
 
 import Prelude
-import Shared.Experiments.Types
 import Shared.Im.Types
-import Shared.User
 
 import Client.Im.Main as CIM
 import Data.Array as DA

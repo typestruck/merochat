@@ -14,7 +14,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Debug
 import Effect.Class (liftEffect)
-import Flame ((:>))
+import Data.Tuple.Nested ((/\))
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
@@ -23,7 +23,7 @@ import Web.DOM.Element as WDE
 
 checkFetchHistory ∷ ImModel → MoreMessages
 checkFetchHistory model@{ freeToFetchChatHistory }
-      | freeToFetchChatHistory = model :> [ Just <<< SpecialRequest <<< FetchHistory <$> getScrollTop ]
+      | freeToFetchChatHistory = model /\ [ Just <<< SpecialRequest <<< FetchHistory <$> getScrollTop ]
 
               where
               getScrollTop = liftEffect do
@@ -41,7 +41,7 @@ fetchHistory shouldFetch model@{ chatting, contacts }
               in
                     model
                           { freeToFetchChatHistory = false
-                          } :> [ CCN.retryableResponse (FetchHistory true) (DisplayHistory shouldFetchChatHistory) (request.im.history { query: { with: id, skip: if shouldFetchChatHistory then 0 else DA.length history } }) ]
+                          } /\ [ CCN.retryableResponse (FetchHistory true) (DisplayHistory shouldFetchChatHistory) (request.im.history { query: { with: id, skip: if shouldFetchChatHistory then 0 else DA.length history } }) ]
       | otherwise = F.noMessages model
 
 displayHistory ∷ Boolean → Array HistoryMessage → ImModel → NoMessages
@@ -61,8 +61,8 @@ displayHistory overwrite chatHistory model@{ chatting, contacts } =
                   }
       in
             if shouldFetchChatHistory then
-                  CIF.nothingNext updatedModel $ liftEffect CIS.scrollLastMessage
+                  updatedModel /\ [liftEffect CIS.scrollLastMessage *> pure Nothing]
             else if not $ DA.null chatHistory then
-                  CIF.nothingNext updatedModel <<< liftEffect <<< CIS.scrollIntoView <<< SU.fromJust $ DA.last chatHistory
+                  updatedModel /\ [liftEffect (CIS.scrollIntoView <<< SU.fromJust $ DA.last chatHistory) *> pure Nothing]
             else
                   F.noMessages updatedModel

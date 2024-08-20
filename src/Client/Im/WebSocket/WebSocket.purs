@@ -14,6 +14,7 @@ import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSWS
 
 foreign import closeWith_ ∷ EffectFn3 WebSocket Int String Unit
+
 createWebSocket ∷ Effect WebSocket
 createWebSocket = do
       hostName ← CCD.hostName

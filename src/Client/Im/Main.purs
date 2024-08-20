@@ -40,6 +40,7 @@ import Data.Symbol as TDS
 import Data.Time.Duration (Days(..), Milliseconds(..))
 import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
@@ -47,13 +48,12 @@ import Effect.Now as EN
 import Effect.Ref as ER
 import Effect.Timer as ET
 import Effect.Unsafe as EU
-import Flame (ListUpdate, QuerySelector(..), (:>))
+import Flame (ListUpdate, QuerySelector(..))
 import Flame as F
 import Flame.Subscription as FS
 import Flame.Subscription.Document as FSD
 import Flame.Subscription.Window as FSW
 import Safe.Coerce as SC
-import Shared.Breakpoint (mobileBreakpoint)
 import Shared.Element (ElementId(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.View as SIV
@@ -82,7 +82,7 @@ import Web.Socket.WebSocket (WebSocket)
 
 main ∷ Effect Unit
 main = do
-      webSocketRef <- CIWE.setUpWebSocket
+      webSocketRef ← CIWE.startWebSocket
       fileReader ← WFR.fileReader
 
       --im is server side rendered
@@ -100,8 +100,8 @@ main = do
             , update: update { fileReader, webSocketRef }
             }
 
-      smallScreen <- CISS.checkSmallScreen
-      pwa <- CIP.checkPwa
+      smallScreen ← CISS.checkSmallScreen
+      pwa ← CIP.checkPwa
 
       when smallScreen CISS.sendSmallScreen
       when (pwa || not smallScreen) CIN.checkNotifications
@@ -122,12 +122,12 @@ main = do
       FS.send imId CheckUserExpiration
 
 update ∷ _ → ListUpdate ImModel ImMessage
-update { webSocketRef, fileReader } model =
+update st model =
       case _ of
             --chat
             InsertLink → CIC.insertLink model
             ToggleChatModal modal → CIC.toggleModal modal model
-            DropFile event → CIC.catchFile fileReader event model
+            DropFile event → CIC.catchFile st.fileReader event model
             EnterBeforeSendMessage event → CIC.enterBeforeSendMessage event model
             ForceBeforeSendMessage → CIC.forceBeforeSendMessage model
             ResizeChatInput event → CIC.resizeChatInput event model
@@ -184,7 +184,7 @@ update { webSocketRef, fileReader } model =
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             FinishTutorial → finishTutorial model
-            ToggleConnected isConnected → toggleConnectedWebSocket isConnected model
+            ToggleConnected isConnected → CIWE.toggleConnectedWebSocket isConnected model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest CheckMissedEvents → checkMissedEvents model
             SetField setter → F.noMessages $ setter model
@@ -193,23 +193,16 @@ update { webSocketRef, fileReader } model =
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
             SetSmallScreen → CISS.setSmallScreen model
-            PollPrivileges → pollPrivileges webSocket model
-            SendPing isActive → sendPing webSocket isActive model
+            PollPrivileges → CIWE.pollPrivileges webSocket model
+            SendPing isActive → CIWE.sendPing webSocket isActive model
             SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
             DisplayAvailability availability → displayAvailability availability model
       where
-      { webSocket } = EU.unsafePerformEffect $ ER.read webSocketRef -- u n s a f e
+      { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
-
-pollPrivileges ∷ WebSocket → ImModel → NoMessages
-pollPrivileges webSocket model = model :>
-      [ do
-              liftEffect $ CIW.sendPayload webSocket UpdatePrivileges
-              pure Nothing
-      ]
 
 displayAvailability ∷ AvailabilityStatus → ImModel → NoMessages
 displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
@@ -226,7 +219,7 @@ displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
             Nothing → user
 
 setRegistered ∷ ImModel → NoMessages
-setRegistered model = model { user { temporary = false } } :>
+setRegistered model = model { user { temporary = false } } /\
       [ do
               liftEffect $ FS.send profileId SPT.AfterRegistration
               pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
@@ -239,7 +232,7 @@ registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
       else if invalidPassword then
             F.noMessages $ model { erroredFields = DA.snoc erroredFields $ DST.reflectSymbol (Proxy ∷ _ "temporaryPassword") }
       else
-            model { erroredFields = [] } :>
+            model { erroredFields = [] } /\
                   [ do
                           status ← CCN.formRequest (show TemporaryUserSignUpForm) $ request.im.register { body: { email: SU.fromJust temporaryEmail, password: SU.fromJust temporaryPassword } }
                           case status of
@@ -251,7 +244,7 @@ registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
       invalidPassword = DM.maybe true (\password → DS.length password < passwordMinCharacters) temporaryPassword
 
 terminateAccount ∷ ImModel → NextMessage
-terminateAccount model = model :>
+terminateAccount model = model /\
       [ do
               status ← CNN.formRequest (show ConfirmAccountTerminationForm) $ request.settings.account.terminate { body: {} }
               when (status == Success) $ do
@@ -262,15 +255,8 @@ terminateAccount model = model :>
 
 checkUserExpiration ∷ ImModel → MoreMessages
 checkUserExpiration model@{ user: { temporary, joined } }
-      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model :> [ pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile ]
+      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile ]
       | otherwise = F.noMessages model
-
-sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
-sendPing webSocket isActive model@{ contacts, suggestions } =
-      CIF.nothingNext model <<< liftEffect <<< CIW.sendPayload webSocket $ Ping
-            { isActive
-            , statusFor: DA.nub (map _.id suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) contacts))
-            }
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
 setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } model =
@@ -282,10 +268,10 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
                     , onlineStatus = onlineStatus
                     , messageTimestamps = messageTimestamps
                     }
-            } :> [ pure $ Just FetchMoreSuggestions ]
+            } /\ [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
-finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } :> [ finish, greet ]
+finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } /\ [ finish, greet ]
       where
       sender = 4
       finish = do
@@ -306,7 +292,7 @@ report userId webSocket model@{ reportReason, reportComment } = case reportReaso
                           { reportReason = Nothing
                           , reportComment = Nothing
                           }
-                  ) :>
+                  ) /\
                   [ do
                           result ← CCN.defaultResponse $ request.im.report { body: { userId, reason: rs, comment: reportComment } }
                           case result of
@@ -320,10 +306,10 @@ report userId webSocket model@{ reportReason, reportComment } = case reportReaso
             }
 
 reloadPage ∷ ImModel → NextMessage
-reloadPage model = CIF.nothingNext model $ liftEffect CCL.reload
+reloadPage model =  model /\ [liftEffect CCL.reload *> pure Nothing]
 
 askNotification ∷ ImModel → MoreMessages
-askNotification model = CIF.nothingNext (model { enableNotificationsVisible = false }) $ liftEffect CCD.requestNotificationPermission
+askNotification model =  model { enableNotificationsVisible = false } /\ [liftEffect CCD.requestNotificationPermission *> pure Nothing]
 
 --refactor: all messages like this can be dryed into a single function
 toggleAskNotification ∷ ImModel → NoMessages
@@ -336,7 +322,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
       | toggleContextMenu /= HideContextMenu =
               F.noMessages $ model { toggleContextMenu = HideContextMenu }
       | otherwise =
-              model :>
+              model /\
                     [
                       --we cant use node.contains as some of the elements are dynamically created/destroyed
                       liftEffect do
@@ -360,7 +346,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
                     | otherwise = HideContextMenu
 
 focusInput ∷ ElementId → ImModel → NextMessage
-focusInput elementId model = model :>
+focusInput elementId model = model /\
       [ liftEffect do
               element ← CCD.getElementById elementId
               WHHE.focus $ SU.fromJust do
@@ -384,7 +370,7 @@ addFailure failure@{ request } model@{ failedRequests, errorMessage } = F.noMess
 
 toggleFortune ∷ Boolean → ImModel → MoreMessages
 toggleFortune isVisible model
-      | isVisible = model :> [ Just <<< DisplayFortune <$> CCNT.silentResponse (request.im.fortune {}) ]
+      | isVisible = model /\ [ Just <<< DisplayFortune <$> CCNT.silentResponse (request.im.fortune {}) ]
       | otherwise = F.noMessages $ model
               { fortune = Nothing
               }
@@ -424,7 +410,7 @@ receiveIncomingMessage webSocket isFocused received model
                     model' = unsuggest received.recipientId model
               in
                     case processIncomingMessage received model' of
-                          Left userId → model' :> [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id: received.recipientId } } ]
+                          Left userId → model' /\ [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id: received.recipientId } } ]
                           --mark it as read if we received a message from the current chat
                           -- or as delivered otherwise
                           Right
@@ -441,7 +427,7 @@ receiveIncomingMessage webSocket isFocused received model
                                             , index
                                             }
                                 in
-                                      furtherUpdatedModel :> (CISM.scrollLastMessage' : messages)
+                                      furtherUpdatedModel /\ (CISM.scrollLastMessage' : messages)
                           Right
                                 updatedModel@
                                       { contacts
@@ -455,7 +441,7 @@ receiveIncomingMessage webSocket isFocused received model
                                             , webSocket
                                             }
                                 in
-                                      furtherUpdatedModel :> (CIUC.notify' furtherUpdatedModel [ received.recipientId ] : messages)
+                                      furtherUpdatedModel /\ (CIUC.notify' furtherUpdatedModel [ received.recipientId ] : messages)
               where
               isChatting senderId { contacts, chatting } =
                     let
@@ -486,7 +472,7 @@ receiveAcknowledgement received model = F.noMessages model
       { contacts = updateTemporaryId model.contacts received.userId received.previousId received.id
       }
 
-receiveTyping received model = CIC.updateTyping received.id true model :>
+receiveTyping received model = CIC.updateTyping received.id true model /\
       [ liftEffect do
               DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
               newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping received.id
@@ -503,7 +489,7 @@ receivePrivileges received model =
                     { karma = received.karma
                     , privileges = received.privileges
                     }
-            } :>
+            } /\
             [ do
                     liftEffect do
                           FS.send profileId $ SPT.UpdatePrivileges received
@@ -597,7 +583,7 @@ markContactUnavailable contacts userId = updateContact <$> contacts
 
 checkMissedEvents ∷ ImModel → MoreMessages
 checkMissedEvents model =
-      model :>
+      model /\
             [ do
                     let { lastSentMessageId, lastReceivedMessageId } = findLastMessages model.contacts model.user.id
 
@@ -636,27 +622,8 @@ setAvatar base64 model = F.noMessages $ model
               }
       }
 
-toggleConnectedWebSocket ∷ Boolean → ImModel → MoreMessages
-toggleConnectedWebSocket isConnected model@{ hasTriedToConnectYet, errorMessage } =
-      model
-            { hasTriedToConnectYet = true
-            , isWebSocketConnected = isConnected
-            , errorMessage = if not isConnected then lostConnectionMessage else if errorMessage == lostConnectionMessage then "" else errorMessage
-            } :>
-            if hasTriedToConnectYet && isConnected then
-                  [ do
-                          liftEffect $ FS.send imId CheckUserExpiration
-                          pure <<< Just $ SpecialRequest CheckMissedEvents
-                  ]
-            else
-                  [ pure $ Just UpdateDelivered ]
-      where
-      lostConnectionMessage =
-            "Connection lost. Reconnecting...\n\
-            \You won't be able to send messages until connection is restored"
-
-preventStop ∷ Event → ImModel → NextMessage
-preventStop event model = CIF.nothingNext model <<< liftEffect $ CCD.preventStop event
+preventStop ∷ Event → ImModel → NoMessages
+preventStop event model = model /\ [liftEffect $ CCD.preventStop event *> pure Nothing]
 
 --refactor use popstate subscription
 historyChange ∷ Boolean → Effect Unit
@@ -668,5 +635,4 @@ historyChange smallScreen = do
       handler = do
             CCD.pushState $ routes.im.get {}
             when smallScreen <<< FS.send imId $ ToggleInitialScreen true
-
 

@@ -24,7 +24,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug (spy)
 import Effect.Class (liftEffect)
-import Flame ((:>))
+import Data.Tuple.Nested ((/\))
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
@@ -50,14 +50,14 @@ resumeChat searchId model@{ contacts, chatting, smallScreen } =
                         , initialScreen = false
                         , selectedImage = Nothing
                         , failedRequests = []
-                        } :>
-                        ( [ CIF.next UpdateReadCount
+                        } /\
+                        ( [ pure $ Just UpdateReadCount
                           , CIS.scrollLastMessage'
-                          , CIF.next <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
+                          , pure <<< Just <<< SpecialRequest $ FetchHistory shouldFetchChatHistory
                           ] <> smallScreenEffect
                         )
       where
-      smallScreenEffect = if smallScreen then [] else [ CIF.next $ FocusInput ChatInput ]
+      smallScreenEffect = if smallScreen then [] else [ pure <<< Just $ FocusInput ChatInput ]
 
 markRead ∷ WebSocket → ImModel → MoreMessages
 markRead webSocket =
@@ -95,9 +95,11 @@ updateStatus model { webSocket, index, sessionUserId, contacts, newStatus } =
                   let
                         updatedModel@{ contacts } = updateContacts contactRead
                   in
-                        CIF.nothingNext updatedModel $ liftEffect do
+                        updatedModel /\ [liftEffect do
                               sendStatusChange contactUserId messagesToUpdate
                               alertUnread contacts
+                              pure Nothing
+                        ]
 
       where
       toChange { recipient, id, status }
@@ -127,10 +129,13 @@ markDelivered ∷ WebSocket → ImModel → NoMessages
 markDelivered webSocket model@{ contacts, user: { id: sessionUserId } } =
       if DA.null ids then
             F.noMessages model
-      else CIF.nothingNext updatedModel <<< liftEffect <<< CIW.sendPayload webSocket $ ChangeStatus
-            { status: Delivered
-            , ids
-            }
+      else  updatedModel /\ [liftEffect do
+                  CIW.sendPayload webSocket $ ChangeStatus
+                        { status: Delivered
+                        , ids
+                        }
+                  pure Nothing
+                  ]
       where
       ids = DA.foldl sent [] contacts
 
@@ -151,7 +156,7 @@ markDelivered webSocket model@{ contacts, user: { id: sessionUserId } } =
 
 checkFetchContacts ∷ ImModel → MoreMessages
 checkFetchContacts model
-      | model.freeToFetchContactList = model :> [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
+      | model.freeToFetchContactList = model /\ [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
               where
               lenience = if model.smallScreen then 2.0 else 0.0
@@ -169,7 +174,7 @@ fetchContacts shouldFetch model@{ contacts }
       | shouldFetch =
               model
                     { freeToFetchContactList = false
-                    } :> [ CCN.retryableResponse (FetchContacts true) DisplayContacts $ request.im.contacts { query: { skip: DA.length contacts } } ]
+                    } /\ [ CCN.retryableResponse (FetchContacts true) DisplayContacts $ request.im.contacts { query: { skip: DA.length contacts } } ]
       | otherwise = F.noMessages model
 
 --paginated contacts
@@ -242,7 +247,7 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
 
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat id model =
-      updatedModel :>
+      updatedModel /\
             [ do
                     result ← CCN.defaultResponse $ request.im.delete { body: { userId: id, messageId: lastMessageId } }
                     case result of

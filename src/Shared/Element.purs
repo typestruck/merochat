@@ -79,7 +79,7 @@ instance Show ElementId where
             PrivacyLink → "privacy-link"
             Faq → "faq"
             TermsSection → "terms"
-            Im -> "im"
+            Im → "im"
             EmailDiv → "email"
             EmailInput → "email-input"
             PrivacySection → "privacy"

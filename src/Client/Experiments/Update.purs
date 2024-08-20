@@ -6,8 +6,9 @@ import Shared.Experiments.Types
 import Client.Common.Dom (setChatExperiment)
 import Client.Common.Location as CCL
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
-import Flame (ListUpdate, (:>))
+import Flame (ListUpdate)
 import Flame as F
 import Flame.Subscription as FS
 import Flame.Subscription.Unsafe.CustomEvent as FSUC
@@ -17,7 +18,7 @@ import Shared.Options.MountPoint (imId)
 update ∷ ListUpdate ChatExperimentModel ChatExperimentMessage
 update model =
       case _ of
-            QuitExperiment → model :>
+            QuitExperiment → model /\
                   [ do
                           liftEffect CCL.reload
                           pure Nothing
@@ -26,10 +27,10 @@ update model =
                   model
                         { section = HideSections
                         , current = Just code
-                        } :> dispatchEvent (Just code)
+                        } /\ dispatchEvent (Just code)
             ToggleSection section → F.noMessages $ model { section = section }
             ConfirmImpersonation profile → F.noMessages model { impersonation = profile }
-            RedirectKarma → model :>
+            RedirectKarma → model /\
                   [ do
                           liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges
                           pure Nothing
