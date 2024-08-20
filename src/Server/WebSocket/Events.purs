@@ -132,7 +132,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
                   Just userAvailability → Just $ makeUserAvailabity (DH.insert token connection userAvailability.connections) (Right token) true date userAvailability.availability
 
       runMessageHandler loggedUserId (WebSocketMessage message) = do
-            case SJ.fromJSON message of
+            case SJ.fromJson message of
                   Right payload → do
                         let
                               run =
@@ -286,7 +286,7 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
             let loggedUserConnections = DM.maybe [] (DH.values <<< DH.filterKeys (token /= _) <<< _.connections) $ DH.lookup loggedUserId allUsersAvailability
             DF.traverse_ (\connection → send connection messageIds userId) loggedUserConnections
 
-sendOutgoingMessage ∷ String -> Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect
+sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect
 sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
       processed ← SIA.processMessage loggedUserId outgoing.userId outgoing.content
       case processed of
@@ -326,10 +326,10 @@ sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
       loggedUserAvailability = DH.lookup loggedUserId allUsersAvailability
 
       acknowledgeMessage messageId connection = sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
-                        { previousId: outgoing.id
-                        , id: messageId
-                        , userId: outgoing.userId
-                        }
+            { previousId: outgoing.id
+            , id: messageId
+            , userId: outgoing.userId
+            }
 
       sendLoggedUser payload = do
             withConnections loggedUserAvailability $ \connection → sendWebSocketMessage connection payload

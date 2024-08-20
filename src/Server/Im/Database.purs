@@ -245,7 +245,7 @@ isRecipientVisible loggedUserId userId =
                                         (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date))
                           )
 
-insertMessage ∷ ∀ r. Int → Int  → String → BaseEffect { pool ∷ Pool | r } Int
+insertMessage ∷ ∀ r. Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient content = SD.withTransaction $ \connection → do
       void $ SD.singleWith connection $ select (insert_history (loggedUserId /\ recipient) # as u)
       _.id <<< SU.fromJust <$> (SD.singleWith connection $ insert # into messages (_sender /\ _recipient /\ _content) # values (loggedUserId /\ recipient /\ content) # returning _id)

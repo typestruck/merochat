@@ -12,7 +12,6 @@ import Client.Im.Flame as CIF
 import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
 import Client.Im.Scroll as CIS
-import Client.Im.WebSocket (WebSocket)
 import Client.Im.WebSocket as CIW
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
@@ -21,14 +20,12 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
-import Data.Traversable as DTV
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Debug (spy)
 import Effect.Class (liftEffect)
 import Flame ((:>))
 import Flame as F
-import Flame.Html.Attribute (d)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Unsafe ((!@))

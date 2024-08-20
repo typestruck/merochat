@@ -35,6 +35,7 @@ type Notification =
 
 foreign import createNotification_ ∷ EffectFn1 Notification Unit
 
+
 createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
@@ -71,3 +72,8 @@ updateTabCount id contacts = do
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
       where
       unreadChats = SIU.countUnreadChats id contacts
+
+checkNotifications ∷ Effect Unit
+checkNotifications = do
+      status ← CCD.notificationPermission
+      when (status == "default") $ FS.send imId ToggleAskNotification
