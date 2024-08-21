@@ -7,7 +7,7 @@ import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Notification as CIUC
 import Client.Im.Scroll as CISM
 import Client.Im.WebSocket as CIW
@@ -156,7 +156,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       PayloadError p → receivePayloadError p model
 
 -- | Update message status
-receiveStatusChange ∷ { ids ∷ Array Int, status ∷ MessageStatus, userId ∷ Int } → ImModel -> NoMessages
+receiveStatusChange ∷ { ids ∷ Array Int, status ∷ MessageStatus, userId ∷ Int } → ImModel → NoMessages
 receiveStatusChange received model = F.noMessages model
       { contacts = updateHistory model.contacts received.userId updateStatus
       }
@@ -166,7 +166,7 @@ receiveStatusChange received model = F.noMessages model
             | otherwise = history
 
 -- | Move status from 'sending' to 'sent' and update message id
-receiveAcknowledgement :: { id ∷ Int , previousId ∷ Int , userId ∷ Int } -> ImModel -> NoMessages
+receiveAcknowledgement ∷ { id ∷ Int, previousId ∷ Int, userId ∷ Int } → ImModel → NoMessages
 receiveAcknowledgement received model = F.noMessages model
       { contacts = updateHistory model.contacts received.userId updateIdStatus
       }
@@ -175,54 +175,56 @@ receiveAcknowledgement received model = F.noMessages model
             | history.id == received.previousId = history { id = received.id, status = Received }
             | otherwise = history
 
-receivePayloadError :: { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError } -> ImModel -> NoMessages
-receivePayloadError received model = case received.origin of
-      OutgoingMessage { id, userId } → F.noMessages model
-            { contacts =
-                    --assume that it is because the other user no longer exists
-                    if received.context == Just MissingForeignKey then
-                          markContactUnavailable model.contacts userId
-                    else
-                          markErroredMessage model.contacts userId id
-            }
-      _ → F.noMessages model
-
 -- | A new message from others users or sent by the logged user with another connection
-receiveIncomingMessage ∷ WebSocket → Boolean → ClientMessagePayload → ImModel -> NextMessage
-receiveIncomingMessage webSocket isFocused payload model
-      | DA.elem payload.recipientId model.blockedUsers = F.noMessages model --prevents messages already in flight to deliver after block
-      | otherwise =
+receiveIncomingMessage ∷ WebSocket → Boolean → ClientMessagePayload → ImModel → NextMessage
+receiveIncomingMessage webSocket isFocused payload model =
+      if DA.elem userId model.blockedUsers then
+            F.noMessages model --prevents messages already in flight to deliver after block
+      else
             case fromIncomingMessage payload unsuggestedModel of
-                  Left id → unsuggestedModel /\ [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } } ] -- query this user as they are not in the contacts
-                  Right updatedModel | model.user.id == payload.senderId -> --syncing message sent from other connections
+                  Left id →
+                        --new message from an user that is not currently in the contacts
+                        unsuggestedModel /\ [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } } ]
+                  Right updatedModel | model.user.id == payload.senderId →
+                        --syncing message sent from other connections
                         F.noMessages updatedModel
                   Right
                         updatedModel@
                               { chatting: Just index
-                              } | isFocused && (updatedModel.contacts !@ index).user.id == userId → --new message from user being chatted with
+                              } | isFocused && (updatedModel.contacts !@ index).user.id == userId →
+                        --new message from the user being chatted with
                         CICN.updateStatus updatedModel
-                                    { loggedUserId: model.user.id
-                                    , contacts: updatedModel.contacts
-                                    , newStatus: Read
-                                    , webSocket
-                                    , index
-                                    } # withExtraMessage CISM.scrollLastMessage'
+                              { loggedUserId: model.user.id
+                              , contacts: updatedModel.contacts
+                              , newStatus: Read
+                              , webSocket
+                              , index
+                              } # withExtraMessage CISM.scrollLastMessage'
                   Right updatedModel →
+                        --new message when away/other usesr
                         CICN.updateStatus updatedModel
-                                    { loggedUserId: model.user.id
-                                    , contacts: updatedModel.contacts
-                                    , newStatus: Delivered
-                                    , webSocket
-                                    , index: SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts
-                                    } # withExtraMessage (CIUC.notify' updatedModel [ userId ])
-              where
-              unsuggestedModel = unsuggest payload.recipientId model
+                              { loggedUserId: model.user.id
+                              , contacts: updatedModel.contacts
+                              , newStatus: Delivered
+                              , webSocket
+                              , index: SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts
+                              } # withExtraMessage (CIUC.notify' updatedModel [ userId ])
+      where
+      unsuggestedModel = unsuggest payload.recipientId model
 
-              userId
-                  | payload.senderId == model.user.id = payload.recipientId
-                  | otherwise = payload.senderId
+      userId
+            | payload.recipientId == model.user.id = payload.senderId
+            | otherwise = payload.recipientId
 
-              withExtraMessage e (m /\ ms) = m /\ e : ms
+      withExtraMessage e (m /\ ms) = m /\ e : ms
+
+receiveTyping ∷ { id ∷ Int } → ImModel → MoreMessages
+receiveTyping received model = CIC.updateTyping received.id true model /\
+      [ liftEffect do
+              DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
+              newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping received.id
+              pure <<< Just $ TypingId newId
+      ]
 
 receiveBadMessage received model = F.noMessages model
       { contacts = case received.temporaryMessageId of
@@ -238,13 +240,6 @@ receiveUnavailable received model =
             }
       where
       updatedContacts = markContactUnavailable model.contacts received.userId
-
-receiveTyping received model = CIC.updateTyping received.id true model /\
-      [ liftEffect do
-              DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
-              newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping received.id
-              pure <<< Just $ TypingId newId
-      ]
 
 receiveHash newHash model = F.noMessages model
       { imUpdated = newHash /= model.hash
@@ -263,6 +258,18 @@ receivePrivileges received model =
                           FS.send experimentsId $ SET.UpdatePrivileges received
                     pure Nothing
             ]
+
+receivePayloadError ∷ { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError } → ImModel → NoMessages
+receivePayloadError received model = case received.origin of
+      OutgoingMessage { id, userId } → F.noMessages model
+            { contacts =
+                    --assume that it is because the other user no longer exists
+                    if received.context == Just MissingForeignKey then
+                          markContactUnavailable model.contacts userId
+                    else
+                          markErroredMessage model.contacts userId id
+            }
+      _ → F.noMessages model
 
 markContactUnavailable ∷ Array Contact → Int → Array Contact
 markContactUnavailable contacts userId = updateContact <$> contacts

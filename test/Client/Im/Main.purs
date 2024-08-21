@@ -1,15 +1,15 @@
 module Test.Client.Im.Main where
 
 import Prelude
+import Shared.Availability
 import Shared.Im.Types
 
-import Client.Im.Main as CIM
+import Client.Im.WebSocket.Events as CIWE
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
-import Shared.Availability
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.ResponseError (DatabaseError(..))
@@ -21,12 +21,12 @@ import Test.Unit.Assert as TUA
 
 tests ∷ TestSuite
 tests = do
-      TU.suite "socket operations" do
+      TU.suiteOnly "socket operations" do
             TU.test "receiveMessage substitutes temporary id" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         { contacts } =
-                              DT.fst <<< CIM.receiveMessage webSocket true
+                              DT.fst <<< CIWE.receiveMessage webSocket true
                                     ( ServerReceivedMessage
                                             { previousId: messageId
                                             , id: newMessageID
@@ -53,7 +53,7 @@ tests = do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         { suggestions } =
-                              DT.fst <<< CIM.receiveMessage webSocket true
+                              DT.fst <<< CIWE.receiveMessage webSocket true
                                     ( NewIncomingMessage
                                             { date
                                             , id: newMessageID
@@ -71,7 +71,7 @@ tests = do
             TU.test "receiveMessage marks deleted users as unavailable" do
                   let
                         { contacts } =
-                              DT.fst <<< CIM.receiveMessage webSocket true
+                              DT.fst <<< CIWE.receiveMessage webSocket true
                                     ( PayloadError
                                             { origin: OutgoingMessage
                                                     { id: 1
@@ -90,7 +90,7 @@ tests = do
 
             TU.test "receiveMessage marks blocker users as unavailable" do
                   let
-                        { contacts } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { userId: contact.user.id, temporaryMessageId: Just 1 }) $ model
+                        { contacts } = DT.fst <<< CIWE.receiveMessage webSocket true (ContactUnavailable { userId: contact.user.id, temporaryMessageId: Just 1 }) $ model
                               { contacts = [ contact { history = [ historyMessage ] } ]
                               , chatting = Nothing
                               }
@@ -99,7 +99,7 @@ tests = do
 
             TU.test "receiveMessage removes blocker users from suggestions" do
                   let
-                        { suggestions } = DT.fst <<< CIM.receiveMessage webSocket true (ContactUnavailable { userId: contact.user.id, temporaryMessageId: Nothing }) $ model
+                        { suggestions } = DT.fst <<< CIWE.receiveMessage webSocket true (ContactUnavailable { userId: contact.user.id, temporaryMessageId: Nothing }) $ model
                               { suggestions = [ contact.user ]
                               , chatting = Nothing
                               }
@@ -110,7 +110,7 @@ tests = do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         { contacts } =
-                              DT.fst <<< CIM.receiveMessage webSocket true
+                              DT.fst <<< CIWE.receiveMessage webSocket true
                                     ( NewIncomingMessage
                                             { date
                                             , id: newMessageID
@@ -137,7 +137,7 @@ tests = do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         { contacts } =
-                              DT.fst <<< CIM.receiveMessage webSocket true
+                              DT.fst <<< CIWE.receiveMessage webSocket true
                                     ( NewIncomingMessage
                                             { id: newMessageID
                                             , recipientId: contactId
@@ -156,11 +156,11 @@ tests = do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         { contacts } =
-                              DT.fst <<< CIM.receiveMessage webSocket false
+                              DT.fst <<< CIWE.receiveMessage webSocket false
                                     ( NewIncomingMessage
                                             { id: newMessageID
-                                            , recipientId: anotherImUserId
-                                            , senderId : 3
+                                            , recipientId: model.user.id
+                                            , senderId: anotherImUserId
                                             , content
                                             , date
                                             }
@@ -172,18 +172,20 @@ tests = do
                   TUA.equal [ Tuple newMessageID Delivered ] $ map (\({ id, status }) → Tuple id status) (contacts !@ 0).history
 
             TU.test "checkMissedEvents finds last sent message id" do
-                  let
-                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
-                        anotherDummyContact = dummyContact { history = [ historyMessage, historyMessage { id = 25 } ] }
-                        { lastSentMessageId } = CIM.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
-                  TUA.equal (Just 25) lastSentMessageId
+                  TU.failure "ni"
+                  -- let
+                  --       dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
+                  --       anotherDummyContact = dummyContact { history = [ historyMessage, historyMessage { id = 25 } ] }
+                  --       { lastSentMessageId } = CIWE.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
+                  -- TUA.equal (Just 25) lastSentMessageId
 
             TU.test "checkMissedEvents finds last received message id" do
-                  let
-                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
-                        anotherDummyContact = dummyContact { history = [ historyMessage { sender = anotherImUserId, id = 25 }, historyMessage { sender = anotherImUserId, id = 2 } ] }
-                        { lastReceivedMessageId } = CIM.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
-                  TUA.equal (Just 25) lastReceivedMessageId
+                  TU.failure "ni ni"
+                  -- let
+                  --       dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
+                  --       anotherDummyContact = dummyContact { history = [ historyMessage { sender = anotherImUserId, id = 25 }, historyMessage { sender = anotherImUserId, id = 2 } ] }
+                  --       { lastReceivedMessageId } = CIWE.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
+                  -- TUA.equal (Just 25) lastReceivedMessageId
 
       where
       getHistory contacts = do

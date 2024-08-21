@@ -86,7 +86,7 @@ main = do
       fileReader ← WFR.fileReader
 
       --im is server side rendered
-      F.resumeMount (QuerySelector $ show Im) imId
+      F.resumeMount (QuerySelector $ "#" <> show Im) imId
             { view: SIV.view true
             , subscribe:
                     [
