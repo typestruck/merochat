@@ -8,18 +8,16 @@ import Client.Im.Flame (NextMessage)
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Foldable as DF
-import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Data.Tuple.Nested ((/\))
 import Flame.Subscription as FS
 import Shared.Element as SE
-import Shared.Experiments.Impersonation (impersonations)
 import Shared.Im.Unread as SIU
 import Shared.Options.MountPoint (imId)
 import Shared.Resource (Media(..), ResourceType(..))

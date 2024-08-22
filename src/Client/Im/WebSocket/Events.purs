@@ -7,7 +7,7 @@ import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Notification as CIUC
 import Client.Im.Scroll as CISM
 import Client.Im.WebSocket as CIW
@@ -157,10 +157,13 @@ receiveMessage webSocket isFocused payload model = case payload of
 
 -- | Update message status
 receiveStatusChange ∷ { ids ∷ Array Int, status ∷ MessageStatus, userId ∷ Int } → ImModel → NoMessages
-receiveStatusChange received model = F.noMessages model
-      { contacts = updateHistory model.contacts received.userId updateStatus
-      }
+receiveStatusChange received model =
+      model
+      { contacts = updatedContacts
+      } /\ [ when (received.status == Read) (liftEffect $ CIUC.updateTabCount model.user.id updatedContacts) *> pure Nothing ]
       where
+      updatedContacts = updateHistory model.contacts received.userId updateStatus
+
       updateStatus history
             | DA.elem history.id received.ids = history { status = received.status }
             | otherwise = history
@@ -187,7 +190,7 @@ receiveIncomingMessage webSocket isFocused payload model =
                         unsuggestedModel /\ [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } } ]
                   Right updatedModel | model.user.id == payload.senderId →
                         --syncing message sent from other connections
-                        F.noMessages updatedModel
+                        updatedModel /\ [liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing]
                   Right
                         updatedModel@
                               { chatting: Just index
@@ -218,6 +221,7 @@ receiveIncomingMessage webSocket isFocused payload model =
 
       withExtraMessage e (m /\ ms) = m /\ e : ms
 
+-- | Set typing status and a timeout to clear it
 receiveTyping ∷ { id ∷ Int } → ImModel → MoreMessages
 receiveTyping received model = CIC.updateTyping received.id true model /\
       [ liftEffect do
@@ -226,25 +230,8 @@ receiveTyping received model = CIC.updateTyping received.id true model /\
               pure <<< Just $ TypingId newId
       ]
 
-receiveBadMessage received model = F.noMessages model
-      { contacts = case received.temporaryMessageId of
-              Nothing → model.contacts
-              Just id → markErroredMessage model.contacts received.userId id
-      }
-
-receiveUnavailable received model =
-      F.noMessages $ unsuggest received.userId model
-            { contacts = case received.temporaryMessageId of
-                    Nothing → updatedContacts
-                    Just id → markErroredMessage updatedContacts received.userId id
-            }
-      where
-      updatedContacts = markContactUnavailable model.contacts received.userId
-
-receiveHash newHash model = F.noMessages model
-      { imUpdated = newHash /= model.hash
-      }
-
+-- | User privileges are requested on socket (re)connection
+receivePrivileges :: _ -> ImModel -> NoMessages
 receivePrivileges received model =
       model
             { user
@@ -259,23 +246,48 @@ receivePrivileges received model =
                     pure Nothing
             ]
 
+-- | When the site updates the bundle file hashs change
+receiveHash :: String -> ImModel -> NoMessages
+receiveHash newHash model = F.noMessages model
+      { imUpdated = newHash /= model.hash
+      }
+
+receiveUnavailable :: _ -> ImModel -> NoMessages
+receiveUnavailable received model =
+      F.noMessages $ unsuggest received.userId model
+            { contacts = case received.temporaryMessageId of
+                    Nothing → updatedContacts
+                    Just id → markErroredMessage updatedContacts received.userId id
+            }
+      where
+      updatedContacts = setContactUnavailable model.contacts received.userId
+
+-- | Message sent was unsanitary
+receiveBadMessage :: _ -> ImModel -> NoMessages
+receiveBadMessage received model = F.noMessages model
+      { contacts = case received.temporaryMessageId of
+              Nothing → model.contacts
+              Just id → markErroredMessage model.contacts received.userId id
+      }
+
 receivePayloadError ∷ { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError } → ImModel → NoMessages
 receivePayloadError received model = case received.origin of
-      OutgoingMessage { id, userId } → F.noMessages model
+      OutgoingMessage msg → F.noMessages model
             { contacts =
                     --assume that it is because the other user no longer exists
                     if received.context == Just MissingForeignKey then
-                          markContactUnavailable model.contacts userId
+                          setContactUnavailable model.contacts msg.userId
                     else
-                          markErroredMessage model.contacts userId id
+                          markErroredMessage model.contacts msg.userId msg.id
             }
       _ → F.noMessages model
 
-markContactUnavailable ∷ Array Contact → Int → Array Contact
-markContactUnavailable contacts userId = updateContact <$> contacts
+-- | Block, ban or account termination
+setContactUnavailable ∷ Array Contact → Int → Array Contact
+setContactUnavailable contacts userId = updateContact <$> contacts
       where
-      updateContact contact@{ user: { id } }
-            | id == userId = contact
+      updateContact contact
+            | contact.user.id == userId = contact
                     { user
                             { availability = Unavailable
                             }
@@ -285,8 +297,8 @@ markContactUnavailable contacts userId = updateContact <$> contacts
 markErroredMessage ∷ Array Contact → Int → Int → Array Contact
 markErroredMessage contacts userId messageId = updateHistory contacts userId updateStatus
       where
-      updateStatus history@{ id }
-            | messageId == id = history { status = Errored }
+      updateStatus history
+            | messageId == history.id = history { status = Errored }
             | otherwise = history
 
 -- | Remove an user from the suggestions
@@ -337,7 +349,6 @@ fromIncomingMessage payload model = case updatedContacts of
 findContact ∷ Int → Contact → Boolean
 findContact userId cnt = userId == cnt.user.id
 
---refactor: should be abstract with updateReadCount
 updateHistory ∷ Array Contact → Int → (HistoryMessage → HistoryMessage) → Array Contact
 updateHistory contacts userId updater = updateIt <$> contacts
       where
