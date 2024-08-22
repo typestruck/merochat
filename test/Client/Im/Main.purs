@@ -9,6 +9,7 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
@@ -106,6 +107,32 @@ tests = do
 
                   TUA.equal [] suggestions
 
+            TU.test "receiveMessage syncs message to history" do
+                  date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
+                  let
+                        updatedModel /\ _ = CIWE.receiveMessage webSocket true
+                                    ( NewIncomingMessage
+                                            { date
+                                            , id: newMessageID
+                                            , content
+                                            , recipientId: contact.user.id
+                                            , senderId: model.user.id
+                                            }
+                                    )  model
+                                    { contacts = [ contact ]
+                                    , chatting = Nothing
+                                    }
+                  TUA.equal
+                        ( Just
+                                { status: Received
+                                , id: newMessageID
+                                , content
+                                , sender: model.user.id
+                                , recipient: contact.user.id
+                                , date
+                                }
+                        ) $ getHistory updatedModel.contacts
+
             TU.test "receiveMessage adds message to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
@@ -115,8 +142,8 @@ tests = do
                                             { date
                                             , id: newMessageID
                                             , content
-                                            , recipientId: contact.user.id
-                                            , senderId: 2
+                                            , recipientId:model.user.id
+                                            , senderId: contact.user.id
                                             }
                                     ) $ model
                                     { contacts = [ contact ]
@@ -128,7 +155,7 @@ tests = do
                                 , id: newMessageID
                                 , content
                                 , sender: contact.user.id
-                                , recipient: recipientId
+                                , recipient: model.user.id
                                 , date
                                 }
                         ) $ getHistory contacts
@@ -140,8 +167,8 @@ tests = do
                               DT.fst <<< CIWE.receiveMessage webSocket true
                                     ( NewIncomingMessage
                                             { id: newMessageID
-                                            , recipientId: contactId
-                                            , senderId : 3
+                                            , recipientId: model.user.id
+                                            , senderId : contactId
                                             , content
                                             , date
                                             }

@@ -19,6 +19,7 @@ import Data.Foldable as DT
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Random as ERD
@@ -159,8 +160,8 @@ receiveMessage webSocket isFocused payload model = case payload of
 receiveStatusChange ∷ { ids ∷ Array Int, status ∷ MessageStatus, userId ∷ Int } → ImModel → NoMessages
 receiveStatusChange received model =
       model
-      { contacts = updatedContacts
-      } /\ [ when (received.status == Read) (liftEffect $ CIUC.updateTabCount model.user.id updatedContacts) *> pure Nothing ]
+            { contacts = updatedContacts
+            } /\ [ when (received.status == Read) (liftEffect $ CIUC.updateTabCount model.user.id updatedContacts) *> pure Nothing ]
       where
       updatedContacts = updateHistory model.contacts received.userId updateStatus
 
@@ -190,7 +191,7 @@ receiveIncomingMessage webSocket isFocused payload model =
                         unsuggestedModel /\ [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } } ]
                   Right updatedModel | model.user.id == payload.senderId →
                         --syncing message sent from other connections
-                        updatedModel /\ [liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing]
+                        updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
                   Right
                         updatedModel@
                               { chatting: Just index
@@ -231,7 +232,7 @@ receiveTyping received model = CIC.updateTyping received.id true model /\
       ]
 
 -- | User privileges are requested on socket (re)connection
-receivePrivileges :: _ -> ImModel -> NoMessages
+receivePrivileges ∷ _ → ImModel → NoMessages
 receivePrivileges received model =
       model
             { user
@@ -247,12 +248,12 @@ receivePrivileges received model =
             ]
 
 -- | When the site updates the bundle file hashs change
-receiveHash :: String -> ImModel -> NoMessages
+receiveHash ∷ String → ImModel → NoMessages
 receiveHash newHash model = F.noMessages model
       { imUpdated = newHash /= model.hash
       }
 
-receiveUnavailable :: _ -> ImModel -> NoMessages
+receiveUnavailable ∷ _ → ImModel → NoMessages
 receiveUnavailable received model =
       F.noMessages $ unsuggest received.userId model
             { contacts = case received.temporaryMessageId of
@@ -263,7 +264,7 @@ receiveUnavailable received model =
       updatedContacts = setContactUnavailable model.contacts received.userId
 
 -- | Message sent was unsanitary
-receiveBadMessage :: _ -> ImModel -> NoMessages
+receiveBadMessage ∷ _ → ImModel → NoMessages
 receiveBadMessage received model = F.noMessages model
       { contacts = case received.temporaryMessageId of
               Nothing → model.contacts
