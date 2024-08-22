@@ -1,8 +1,11 @@
 # Feel free to bump versions in this file!
+
+# Check for updates here: https://hub.docker.com/_/node
 FROM node:22.5.1@sha256:86915971d2ce1548842315fcce7cda0da59319a4dab6b9fc0827e762ef04683a
 
 # Install purescript and tooling.
-RUN npm install --global purescript@0.15.15 spago@0.21.0
+# Check for updates here: https://www.npmjs.com
+RUN npm install --global purescript@0.15.15 spago@0.21.0 webpack-cli@5.1.4
 
 # Bind mount your project directory here.
 RUN mkdir /merochat
@@ -24,4 +27,6 @@ RUN apt-get update && \
 
 # Start the application and watch for changes.
 # https://github.com/purescript/spago?tab=readme-ov-file#watch-mode
-CMD [ "watchexec", "--exts=purs,js,yaml", "--restart", "--", "spago", "run", "--main", "Server.Main" ]
+CMD watchexec --exts=purs,js,yaml --restart -- "spago build && \
+    webpack-cli --progress --config webpack.development.config.js && \
+    spago run --main Server.Main"

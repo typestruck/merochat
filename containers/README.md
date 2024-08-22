@@ -1,4 +1,4 @@
 # Containers directory
 
 All things related to MeroChat's containerization.
-ATM this is just the delvelopment containers.
+ATM this is just the development containers.
