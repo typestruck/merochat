@@ -19,12 +19,13 @@ MeroChat is written in PureScript, both server-side and client-side. PostgreSQL 
 
 ### Containers
 
-You can run MeroChat locally with podman or docker.
+You can run MeroChat locally with podman or docker. The following uses podman, but you can substitute docker-compose in ther too.
 
-Just run `podman-compose -f containers/composefile.yaml up` to spin up the containers.
-Your very own MeroChat is now accessible at http://localhost:8000, and will be rebuilt when you make changes to the code. This isn't instantaneous though. Keep an eye at the container runtime output.
+1. Run `podman-compose -f containers/composefile.yaml up` to spin up the containers. Wait a moment for the containers to build.
 
-Finally tear the containers down with `ctr+c` followed by `podman-compose -f containers/composefile.yaml down`
+2. Your very own MeroChat is now accessible at http://localhost:8000, and will be rebuilt when you make changes to the code. This isn't instantaneous though. Keep an eye at the container runtime output.
+
+3. Finally tear the containers down with `ctr+c` followed by `podman-compose -f containers/composefile.yaml down`
 
 
 

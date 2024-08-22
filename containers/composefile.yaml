@@ -2,12 +2,6 @@
 
 version: "3.1"
 
-networks:
-  merochat_network:
-    ipam:
-      config:
-        - subnet: 10.0.0.0/24
-
 services:
   db:
     build:
@@ -18,10 +12,8 @@ services:
       POSTGRES_USER: merochat
       POSTGRES_PASSWORD: merochat
       POSTGRES_HOST_AUTH_METHOD: trust
-    networks:
-      merochat_network:
-        ipv4_address: 10.0.0.2
     ports:
+      # You can hook up your favorite DB tool to the container just as you normally would.
       - 5432:5432
 
 
@@ -37,25 +29,10 @@ services:
         source: ..
         target: /merochat
     environment:
-      DATABASE_HOST: "10.0.0.2"
-    networks:
-      merochat_network:
-        ipv4_address: 10.0.0.3
+      DATABASE_HOST: db
     ports:
       - 8000:8000
       - 1339:1339
     # This is needed because spago run --watch is an interactive command.
-    depends_on:
-      - db
-
-  # this is just for handling the db from a web gui
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8080:8080
-    networks:
-      merochat_network:
-        ipv4_address: 10.0.0.4
     depends_on:
       - db
