@@ -1,0 +1,38 @@
+# A compose file for development
+
+version: "3.1"
+
+services:
+  db:
+    build:
+      context: ..
+      dockerfile: containers/postgresql.containerfile
+    restart: always
+    environment:
+      POSTGRES_USER: merochat
+      POSTGRES_PASSWORD: merochat
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      # You can hook up your favorite DB tool to the container just as you normally would.
+      - 5432:5432
+
+
+  # unfortunately, there is no purescript docker image for 0.15.x (only 0.14.x)
+  # so we have to start from a node image and grab the release binary ourselves.
+  merochat:
+    container_name: merochat
+    build:
+      context: ..
+      dockerfile: containers/merochat.containerfile
+    volumes:
+      - type: bind
+        source: ..
+        target: /merochat
+    environment:
+      DATABASE_HOST: db
+    ports:
+      - 8000:8000
+      - 1339:1339
+    # This is needed because spago run --watch is an interactive command.
+    depends_on:
+      - db

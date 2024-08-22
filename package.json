@@ -7,7 +7,8 @@
   },
   "description": "Friendly random chat",
   "scripts": {
-    "watch": "nodemon loader/development/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js"
+    "watch": "nodemon loader/development/server.js --watch output/Server*/**/* --watch output/Shared*/**/* & webpack --watch --progress --config webpack.development.config.js",
+    "nowatch": "node loader/development/server.js & webpack --progress --config webpack.development.config.js"
   },
   "type": "module",
   "author": "Eduardo Asafe<e@asafe.dev>",
