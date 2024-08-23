@@ -9,7 +9,6 @@ import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Common.Network as CCNT
 import Client.Im.Flame (MoreMessages, NoMessages)
-import Client.Im.Flame as CIF
 import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
 import Client.Im.Scroll as CIS
@@ -17,13 +16,11 @@ import Client.Im.WebSocket as CIW
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
 import Data.Tuple (Tuple(..))
-import Data.Tuple as DT
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
@@ -196,7 +193,7 @@ resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNew
             { contacts = map updateHistory model.contacts
             }
 
-      messagesByUser = DA.foldl (\hm v → DH.insertWith (<>) (if v.recipient == model.user.id then v.sender else v.recipient) [ v ] hm) DH.empty (spy "received" ev.missedMessages)
+      messagesByUser = DA.foldl (\hm v → DH.insertWith (<>) (if v.recipient == model.user.id then v.sender else v.recipient) [ v ] hm) DH.empty ev.missedMessages
       updateHistory contact = case DH.lookup contact.user.id messagesByUser of
             Nothing → contact
             Just found → contact

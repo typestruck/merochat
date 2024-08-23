@@ -28,7 +28,7 @@ import Client.Im.UserMenu as CIU
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
 import Control.Alt ((<|>))
-import Data.Array ( (:))
+import Data.Array ((:))
 import Data.Array as DA
 import Data.DateTime as DDT
 import Data.Either (Either(..))

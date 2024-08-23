@@ -4,6 +4,7 @@ import Prelude
 import Shared.Availability
 import Shared.Im.Types
 
+import Client.Im.Main as CIM
 import Client.Im.WebSocket.Events as CIWE
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -198,21 +199,19 @@ tests = do
                                     }
                   TUA.equal [ Tuple newMessageID Delivered ] $ map (\({ id, status }) → Tuple id status) (contacts !@ 0).history
 
-            TU.test "checkMissedEvents finds last sent message id" do
-                  TU.failure "ni"
-                  -- let
-                  --       dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
-                  --       anotherDummyContact = dummyContact { history = [ historyMessage, historyMessage { id = 25 } ] }
-                  --       { lastSentMessageId } = CIWE.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
-                  -- TUA.equal (Just 25) lastSentMessageId
+            TU.test "checkMissedEvents finds first message with sent status" do
+                  let
+                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage { status = Sent, id = 25 }  ] }
+                        anotherDummyContact = dummyContact { history = [ historyMessage, historyMessage ] }
+                        msg  = CIM.checkMessagesFrom [ dummyContact, anotherDummyContact ] imUserId
+                  TUA.equal (Just 25) msg
 
-            TU.test "checkMissedEvents finds last received message id" do
-                  TU.failure "ni ni"
-                  -- let
-                  --       dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
-                  --       anotherDummyContact = dummyContact { history = [ historyMessage { sender = anotherImUserId, id = 25 }, historyMessage { sender = anotherImUserId, id = 2 } ] }
-                  --       { lastReceivedMessageId } = CIWE.findLastMessages [ dummyContact, anotherDummyContact ] imUserId
-                  -- TUA.equal (Just 25) lastReceivedMessageId
+            TU.test "checkMissedEvents finds last sent message" do
+                  let
+                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage  ] }
+                        anotherDummyContact = dummyContact { history = [ historyMessage { id = 25, sender  = imUserId}, historyMessage { sender = anotherImUserId, id = 2 } ] }
+                        msg = CIM.checkMessagesFrom [ dummyContact, anotherDummyContact ] imUserId
+                  TUA.equal (Just 25) msg
 
       where
       getHistory contacts = do

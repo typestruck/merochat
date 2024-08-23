@@ -69,7 +69,6 @@ startWebSocket = do
 setUpWebsocket ∷ Ref WebSocketState → Effect Unit
 setUpWebsocket webSocketStateRef = do
       state ← ER.read webSocketStateRef
-
       let webSocketTarget = WSW.toEventTarget state.webSocket
       openListener ← WET.eventListener (handleOpen webSocketStateRef)
       messageListener ← WET.eventListener handleMessage
