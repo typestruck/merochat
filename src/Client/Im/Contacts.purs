@@ -196,8 +196,8 @@ resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNew
             { contacts = map updateHistory model.contacts
             }
 
-      messagesByRecipient = DA.foldl (\hm v → DH.insertWith (<>) v.recipient [ v ] hm) DH.empty ev.missedMessages
-      updateHistory contact = case DH.lookup contact.user.id messagesByRecipient of
+      messagesByUser = DA.foldl (\hm v → DH.insertWith (<>) (if v.recipient == model.user.id then v.sender else v.recipient) [ v ] hm) DH.empty (spy "received" ev.missedMessages)
+      updateHistory contact = case DH.lookup contact.user.id messagesByUser of
             Nothing → contact
             Just found → contact
                   { history = DA.sortWith _.date $ DA.nubBy (\g h → compare g.id h.id) (contact.history <> found)

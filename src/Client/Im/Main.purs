@@ -28,9 +28,8 @@ import Client.Im.UserMenu as CIU
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
 import Control.Alt ((<|>))
-import Data.Array ((!!), (:))
+import Data.Array ( (:))
 import Data.Array as DA
-import Data.DateTime (DateTime(..))
 import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.HashMap as DH
@@ -41,7 +40,6 @@ import Data.String as DS
 import Data.Symbol as DST
 import Data.Symbol as TDS
 import Data.Time.Duration (Days(..), Milliseconds(..), Minutes(..))
-import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
@@ -49,7 +47,6 @@ import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Effect.Ref as ER
-import Effect.Timer as ET
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..))
 import Flame as F
@@ -59,7 +56,6 @@ import Flame.Subscription.Window as FSW
 import Safe.Coerce as SC
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
-import Shared.Experiments.Types as SET
 import Shared.Im.View as SIV
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
@@ -388,7 +384,7 @@ checkMissedEvents model =
       model /\
             [ do
                     now ← map (SU.fromJust <<< DDT.adjust (Minutes (-1.5))) $ liftEffect EN.nowDateTime
-                    CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { id: checkMessagesFrom model.contacts model.user.id, from: DateTimeWrapper now } })
+                    CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { id: spy "last id" (checkMessagesFrom model.contacts model.user.id), from: DateTimeWrapper $ spy "now" now } })
             ]
 
 -- | The first message which could have not had its status updated or the last one sent
