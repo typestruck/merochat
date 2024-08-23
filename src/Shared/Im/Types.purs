@@ -103,8 +103,7 @@ type TemporaryMessageId =
       }
 
 type MissedEvents =
-      { contacts ∷ Array Contact
-      , messageIds ∷ Array TemporaryMessageId
+      { missedMessages ∷ Array HistoryMessage
       }
 
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })

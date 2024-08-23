@@ -22,7 +22,7 @@ import Test.Unit.Assert as TUA
 
 tests ∷ TestSuite
 tests = do
-      TU.suiteOnly "socket operations" do
+      TU.suite "socket operations" do
             TU.test "receiveMessage substitutes temporary id" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let

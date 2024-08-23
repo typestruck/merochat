@@ -7,6 +7,7 @@ import Shared.Im.Types
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
+import Client.Common.Network as CCNT
 import Client.Im.Flame (MoreMessages, NoMessages)
 import Client.Im.Flame as CIF
 import Client.Im.Notification as CIU
@@ -16,15 +17,16 @@ import Client.Im.WebSocket as CIW
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
-import Data.Tuple.Nested ((/\))
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
@@ -188,51 +190,28 @@ displayNewContacts ∷ Array Contact → ImModel → MoreMessages
 displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → cnt.user.id) newContacts) model
 
 resumeMissedEvents ∷ MissedEvents → ImModel → MoreMessages
-resumeMissedEvents { contacts: missedContacts, messageIds } model@{ contacts, user: { id: senderID } } =
-      let
-            missedFromExistingContacts = map markSenderError $ DA.updateAtIndices (map getExisting existing) contacts
-            missedFromNewContacts = map getNew new
-      in
-            CIU.notifyUnreadChats
-                  ( model
-                          {
-                            --wew lass
-                            contacts = missedFromNewContacts <> missedFromExistingContacts
-                          }
-                  ) $ map (\cnt → cnt.user.id) missedContacts
+resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNewMessages # thenPerform fetchNew
       where
-      messageMap = DH.fromArrayBy _.temporaryId _.id messageIds
-      markSenderError contact@{ history } = contact
-            { history = map updateSenderError history
+      updatedModel = model
+            { contacts = map updateHistory model.contacts
             }
-      updateSenderError history@{ sender, status, id }
-            | status == Sent && sender == senderID =
-                    if DH.member id messageMap then --received or not by the server
 
-                          history
-                                { status = Received
-                                , id = SU.lookup id messageMap
-                                }
-                    else
-                          history { status = Errored }
-            | otherwise = history
-
-      indexesToIndexes = DA.zip (0 .. DA.length missedContacts) $ findContact <$> missedContacts
-      existing = DA.filter (DM.isJust <<< DT.snd) indexesToIndexes
-      new = DA.filter (DM.isNothing <<< DT.snd) indexesToIndexes
-
-      getNew (Tuple newIndex _) = missedContacts !@ newIndex
-
-      getExisting (Tuple existingIndex contactsIndex) = SU.fromJust do
-            index ← contactsIndex
-            currentContact ← contacts !! index
-            contact ← missedContacts !! existingIndex
-            pure <<< Tuple index $ currentContact
-                  { history = currentContact.history <> contact.history
+      messagesByRecipient = DA.foldl (\hm v → DH.insertWith (<>) v.recipient [ v ] hm) DH.empty ev.missedMessages
+      updateHistory contact = case DH.lookup contact.user.id messagesByRecipient of
+            Nothing → contact
+            Just found → contact
+                  { history = DA.sortWith _.date $ DA.nubBy (\g h → compare g.id h.id) (contact.history <> found)
                   }
 
-      findContact { user: { id } } = DA.findIndex (sameContact id) contacts
-      sameContact userId { user: { id } } = userId == id
+      --if the new message comes from an user that is already in the contact list show notifications
+      -- otherwise fetch the user
+      existingContacts = DS.fromFoldable $ map (\c → c.user.id) model.contacts
+      contactsWithNewMessages = map _.sender $ DA.filter (\h → h.status < Read && h.recipient == model.user.id && DS.member h.sender existingContacts) ev.missedMessages
+      newContacts = map _.sender $ DA.filter (\h → h.recipient == model.user.id && not (DS.member h.sender existingContacts)) ev.missedMessages
+
+      thenPerform e (m /\ ms) = m /\ (ms <> e)
+      fetchNew =
+            map (\id → CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } }) newContacts
 
 updateDisplayContacts ∷ Array Contact → Array Int → ImModel → MoreMessages
 updateDisplayContacts newContacts userIds model@{ contacts } =

@@ -2,12 +2,15 @@ module Server.Im.Database where
 
 import Droplet.Language
 import Prelude hiding (not, join)
+import Server.Database.Badges
+import Server.Database.BadgesUsers
 import Server.Database.Suggestions
 import Shared.Privilege
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as DAN
 import Data.BigInt as DB
+import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
@@ -16,8 +19,6 @@ import Droplet.Driver (Pool)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Server.Database as SD
-import Server.Database.BadgesUsers
-import Server.Database.Badges
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
 import Server.Database.Fields (_age, _date, _id, _name, _recipient, _sender, c, completedTutorial, k, l, b, bu, lu, messageTimestamps, onlineStatus, profileVisibility, readReceipts, tu, typingStatus, u)
@@ -37,7 +38,7 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
-import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId)
+import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId, HistoryMessage)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -133,10 +134,10 @@ presentUserContactFields =
       , position "karmaPosition"
 """
 
-presentMessageContactFields ∷ String
-presentMessageContactFields =
+presentMessageFields ∷ String
+presentMessageFields =
       """
-      , s.id as "messageId"
+       s.id as "messageId"
       , s.sender
       , s.recipient
       , s.date
@@ -144,7 +145,7 @@ presentMessageContactFields =
       , s.status """
 
 presentContactFields ∷ String
-presentContactFields = presentUserContactFields <> presentMessageContactFields
+presentContactFields = presentUserContactFields <> "," <> presentMessageFields
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentContacts loggedUserId skip = presentNContacts loggedUserId contactsPerPage skip
@@ -174,8 +175,8 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       ORDER BY last_message_date DESC LIMIT @limit OFFSET @offset) uh
       , LATERAL (SELECT *
                  FROM (SELECT
-                              ROW_NUMBER() OVER (ORDER BY date DESC) n"""
-                  <> presentMessageContactFields
+                              ROW_NUMBER() OVER (ORDER BY date DESC) n,"""
+                  <> presentMessageFields
                   <>
                         """FROM messages s
                        WHERE (s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
@@ -211,27 +212,34 @@ ORDER BY s.date DESC
 LIMIT @messagesPerPage
 OFFSET @offset) m ORDER BY m.date"""
 
---refactor: this can use droplet
-presentMissedContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
-presentMissedContacts loggedUserId lastId = SD.unsafeQuery query
+presentMissedMessages ∷ Int → Maybe Int → DateTime → ServerEffect (Array HistoryMessage)
+presentMissedMessages loggedUserId messageId dt = SD.unsafeQuery query
       { loggedUserId
+      , messageId
+      , dt
       , status: Delivered
-      , contacts: Contacts
-      , lastId
       }
       where
-      query = "SELECT" <> presentContactFields <>
-            """FROM users u
-      JOIN karma_leaderboard k ON u.id = k.ranker
-      JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
-      JOIN messages s ON s.sender = h.sender OR s.sender = h.recipient
-      LEFT JOIN last_seen ls ON u.id = ls.who
-WHERE visibility <= @contacts
-      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
-      AND s.status < @status
-      AND s.recipient = @loggedUserId
-      AND s.id > @lastId
-ORDER BY "lastMessageDate" DESC, s.sender, s.date"""
+      query =
+            """SELECT
+      s.id
+      , s.sender
+      , s.recipient
+      , s.date
+      , s.content
+      , s.status
+      FROM messages s
+WHERE  ((@messageId :: integer) IS NOT NULL
+           AND sender = @loggedUserId
+           AND id >= @messageId
+           OR
+           @messageId IS NULL
+           AND date >= @dt
+           OR
+           recipient = @loggedUserId
+           AND status < @status
+           AND date >= @dt)
+      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = s.recipient AND blocked = s.sender OR blocker = s.sender AND blocked = s.recipient)"""
 
 isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
 isRecipientVisible loggedUserId userId =
@@ -311,6 +319,3 @@ s = Proxy
 
 t ∷ Proxy "t"
 t = Proxy
-
-_lastMessageDate ∷ Proxy "lastMessageDate"
-_lastMessageDate = Proxy

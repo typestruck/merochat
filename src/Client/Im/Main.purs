@@ -27,8 +27,11 @@ import Client.Im.Suggestion as CIS
 import Client.Im.UserMenu as CIU
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
+import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
+import Data.DateTime (DateTime(..))
+import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
@@ -37,7 +40,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Symbol as DST
 import Data.Symbol as TDS
-import Data.Time.Duration (Days(..), Milliseconds(..))
+import Data.Time.Duration (Days(..), Milliseconds(..), Minutes(..))
 import Data.Traversable as DT
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
@@ -54,6 +57,7 @@ import Flame.Subscription as FS
 import Flame.Subscription.Document as FSD
 import Flame.Subscription.Window as FSW
 import Safe.Coerce as SC
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.View as SIV
@@ -383,27 +387,16 @@ checkMissedEvents ∷ ImModel → MoreMessages
 checkMissedEvents model =
       model /\
             [ do
-                    let { lastSentMessageId, lastReceivedMessageId } = findLastMessages model.contacts model.user.id
-
-                    if DM.isNothing lastSentMessageId && DM.isNothing lastReceivedMessageId then
-                          pure Nothing
-                    else
-                          CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { lastSenderId: lastSentMessageId, lastRecipientId: lastReceivedMessageId } })
+                    now ← map (SU.fromJust <<< DDT.adjust (Minutes (-1.5))) $ liftEffect EN.nowDateTime
+                    CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { id: checkMessagesFrom model.contacts model.user.id, from: DateTimeWrapper now } })
             ]
 
-findLastMessages ∷ Array Contact → Int → { lastSentMessageId ∷ Maybe Int, lastReceivedMessageId ∷ Maybe Int }
-findLastMessages contacts sessionUserID =
-      { lastSentMessageId: findLast (\h → sessionUserID == h.sender && h.status == Received)
-      , lastReceivedMessageId: findLast ((sessionUserID /= _) <<< _.sender)
-      }
+-- | The first message which could have not had its status updated or the last one sent
+checkMessagesFrom ∷ Array Contact → Int → Maybe Int
+checkMessagesFrom contacts loggedUserId = _.id <$> (DA.find (\h → loggedUserId == h.sender && h.status == Sent) allHistories <|> DA.find (\h → loggedUserId == h.sender) (DA.reverse allHistories))
       where
-      findLast f = do
-            index ← DA.findLastIndex f allHistories
-            { id } ← allHistories !! index
-            pure id
-
-      allHistories = DA.sortBy byID $ DA.concatMap _.history contacts
-      byID { id } { id: anotherID } = compare id anotherID
+      allHistories = DA.sortBy ids $ DA.concatMap _.history contacts
+      ids history anotherHistory = compare history.id anotherHistory.id
 
 setName ∷ String → ImModel → NoMessages
 setName name model =

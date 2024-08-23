@@ -1,13 +1,12 @@
 module Server.WebSocket.Events where
 
 import Prelude
-import Server.Effect
-import Shared.Availability
-import Shared.Im.Types
-import Shared.User
+import Server.Effect (BaseEffect, BaseReader, Configuration)
+import Shared.Availability (Availability(..))
+import Shared.Im.Types (AfterLogout(..), FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
+import Shared.User (ProfileVisibility(..))
 
 import Browser.Cookies.Internal as BCI
-import Data.Array ((:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime(..), Time(..))
@@ -22,11 +21,9 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
-import Data.Set as DS
-import Data.Time.Duration (Hours(..), Minutes)
+import Data.Time.Duration (Hours)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
 import Effect.Aff as EA
@@ -52,7 +49,7 @@ import Server.Im.Action as SIA
 import Server.Im.Database as SID
 import Server.Settings.Action as SSA
 import Server.Token as ST
-import Server.WebSocket (CloseCode(..), CloseReason, WebSocketConnection, WebSocketMessage(..))
+import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
@@ -63,6 +60,7 @@ import Shared.Unsafe as SU
 import Simple.JSON (class WriteForeign)
 import Simple.JSON as SJS
 
+-- | Keep each users web socket/availability in a ref
 type UserAvailability =
       { connections ∷ HashMap String WebSocketConnection
       , lastSeen ∷ DateTime
@@ -82,21 +80,17 @@ type WebSocketReaderLite = BaseReader
       ( allUsersAvailabilityRef ∷ Ref (HashMap Int UserAvailability)
       )
 
+-- | Wrapper so we can serialize dates in a way postgresql understands
 newtype DT = DT DateTime
 
-instance Newtype DT DateTime
-
-instance WriteForeign DT where
-      writeImpl (DT (DateTime dt (Time h m s ms))) = F.unsafeToForeign (SDT.formatIsoDate' dt <> "t" <> time <> "+0000")
-            where
-            time = show (DEN.fromEnum h) <> ":" <> show (DEN.fromEnum m) <> ":" <> show (DEN.fromEnum s) <> "." <> show (DEN.fromEnum ms)
-
+-- | How often should availability be serialized
 aliveDelay ∷ Int
 aliveDelay = 1000 * 60 * aliveDelayMinutes
 
 aliveDelayMinutes ∷ Int
-aliveDelayMinutes = 1
+aliveDelayMinutes = 5
 
+-- | How often do we check for inactive connections
 inactiveDelay ∷ Int
 inactiveDelay = 1000 * 60 * 60 * inactiveHours
 
@@ -284,6 +278,7 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
             let loggedUserConnections = DM.maybe [] (DH.values <<< DH.filterKeys (token /= _) <<< _.connections) $ DH.lookup loggedUserId allUsersAvailability
             DF.traverse_ (\connection → send connection messageIds userId) loggedUserConnections
 
+-- | Send a message or another user or sync a message sent from another connection
 sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect
 sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
       processed ← SIA.processMessage loggedUserId outgoing.userId outgoing.content
@@ -337,7 +332,7 @@ makeUserAvailabity connections token isActive lastSeen previousAvailability =
       { lastSeen
       , connections:
               case token of
-                    Right t → DH.update (Just <<< SW.lastPing lastSeen) t connections
+                    Right t → DH.update (Just <<< SW.lastPing lastSeen) t connections -- ping on the socket is used to determine inactive connections
                     Left t → DH.delete t connections
       , availability:
               if isActive then
@@ -348,10 +343,11 @@ makeUserAvailabity connections token isActive lastSeen previousAvailability =
                     previousAvailability
       }
 
+-- | Send a json encoded message
 sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWebSocketPayloadClient → b Unit
 sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson
 
--- | Connections are dropped after 5 minutes of inactivity
+-- | Connections are dropped after 1 hour of inactivity
 terminateInactive ∷ Ref (HashMap Int UserAvailability) → Effect Unit
 terminateInactive allUsersAvailabilityRef = do
       now ← EN.nowDateTime
@@ -369,6 +365,12 @@ terminateInactive allUsersAvailabilityRef = do
 
       hasExpired now lastSeen = inactiveHours <= DI.floor (DN.unwrap (DDT.diff now lastSeen ∷ Hours))
 
+withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
+withConnections userAvailability handler =
+      case userAvailability of
+            Just ua → DF.traverse_ handler $ DH.values ua.connections
+            Nothing → pure unit
+
 -- | Last seen dates are serialized every 5 minutes
 -- |
 -- | We don't try to be precise, e.g. users with Online availability are ignored
@@ -385,8 +387,9 @@ persistLastSeen context = do
 
       logError = liftEffect <<< EC.logShow
 
-withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
-withConnections userAvailability handler =
-      case userAvailability of
-            Just ua → DF.traverse_ handler $ DH.values ua.connections
-            Nothing → pure unit
+instance Newtype DT DateTime
+
+instance WriteForeign DT where
+      writeImpl (DT (DateTime dt (Time h m s ms))) = F.unsafeToForeign (SDT.formatIsoDate' dt <> "t" <> time <> "+0000")
+            where
+            time = show (DEN.fromEnum h) <> ":" <> show (DEN.fromEnum m) <> ":" <> show (DEN.fromEnum s) <> "." <> show (DEN.fromEnum ms)

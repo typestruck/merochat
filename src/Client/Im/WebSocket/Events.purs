@@ -22,6 +22,7 @@ import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
+import Effect.Now as EN
 import Effect.Random as ERD
 import Effect.Ref (Ref)
 import Effect.Ref as ER
@@ -247,7 +248,7 @@ receivePrivileges received model =
                     pure Nothing
             ]
 
--- | When the site updates the bundle file hashs change
+-- | When the site updates the bundle file hashes change
 receiveHash ∷ String → ImModel → NoMessages
 receiveHash newHash model = F.noMessages model
       { imUpdated = newHash /= model.hash

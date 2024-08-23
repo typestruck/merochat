@@ -77,75 +77,79 @@ tests = do
                   TUA.equal [ contact ] contacts
 
             TU.test "resumeMissedEvents adds missed contacts" do
-                  let
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [ contact ], messageIds: [] } $ model
-                              { contacts = []
-                              }
-                  TUA.equal [ contact ] contacts
+                  TU.failure "meh"
+                  -- let
+                  --       { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [ contact ], messageIds: [] } $ model
+                  --             { contacts = []
+                  --             }
+                  -- TUA.equal [ contact ] contacts
 
             TU.test "resumeMissedEvents adds missed messages" do
-                  let
-                        updated = [ contact { history = [ historyMessage ] } ]
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: updated, messageIds: [] } $ model
-                              { contacts = [ contact { history = [] } ]
-                              }
-                  TUA.equal updated contacts
+                  TU.failure "meh"
+                  -- let
+                  --       updated = [ contact { history = [ historyMessage ] } ]
+                  --       { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: updated, messageIds: [] } $ model
+                  --             { contacts = [ contact { history = [] } ]
+                  --             }
+                  -- TUA.equal updated contacts
 
             TU.test "resumeMissedEvents sets successful messages" do
-                  let
-                        temporaryId = 1
-                        newID = 10
-                        existing =
-                              [ contact
-                                      { history =
-                                              [ historyMessage
-                                                      { status = Sent
-                                                      , id = temporaryId
-                                                      }
-                                              ]
-                                      }
-                              ]
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIds: [ { id: newID, temporaryId } ] } $ model
-                              { contacts = existing
-                              }
-                        updated =
-                              [ contact
-                                      { history =
-                                              [ historyMessage
-                                                      { status = Received
-                                                      , id = newID
-                                                      }
-                                              ]
-                                      }
-                              ]
-                  TUA.equal updated contacts
+                  TU.failure "meh"
+                  -- let
+                  --       temporaryId = 1
+                  --       newID = 10
+                  --       existing =
+                  --             [ contact
+                  --                     { history =
+                  --                             [ historyMessage
+                  --                                     { status = Sent
+                  --                                     , id = temporaryId
+                  --                                     }
+                  --                             ]
+                  --                     }
+                  --             ]
+                  --       { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIds: [ { id: newID, temporaryId } ] } $ model
+                  --             { contacts = existing
+                  --             }
+                  --       updated =
+                  --             [ contact
+                  --                     { history =
+                  --                             [ historyMessage
+                  --                                     { status = Received
+                  --                                     , id = newID
+                  --                                     }
+                  --                             ]
+                  --                     }
+                  --             ]
+                  -- TUA.equal updated contacts
 
             TU.test "resumeMissedEvents sets errored messages" do
-                  let
-                        temporaryId = 1
-                        existing =
-                              [ contact
-                                      { history =
-                                              [ historyMessage
-                                                      { status = Sent
-                                                      , id = temporaryId
-                                                      }
-                                              ]
-                                      }
-                              ]
-                        { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIds: [] } $ model
-                              { contacts = existing
-                              }
-                        updated =
-                              [ contact
-                                      { history =
-                                              [ historyMessage
-                                                      { status = Errored
-                                                      }
-                                              ]
-                                      }
-                              ]
-                  TUA.equal updated contacts
+                  TU.failure "meh"
+                  -- let
+                  --       temporaryId = 1
+                  --       existing =
+                  --             [ contact
+                  --                     { history =
+                  --                             [ historyMessage
+                  --                                     { status = Sent
+                  --                                     , id = temporaryId
+                  --                                     }
+                  --                             ]
+                  --                     }
+                  --             ]
+                  --       { contacts } = DT.fst <<< CICN.resumeMissedEvents { contacts: [], messageIds: [] } $ model
+                  --             { contacts = existing
+                  --             }
+                  --       updated =
+                  --             [ contact
+                  --                     { history =
+                  --                             [ historyMessage
+                  --                                     { status = Errored
+                  --                                     }
+                  --                             ]
+                  --                     }
+                  --             ]
+                  -- TUA.equal updated contacts
 
             TU.test "deleteChat removes deleted contact" do
                   let

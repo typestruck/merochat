@@ -7,6 +7,7 @@ import Shared.Privilege
 
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
+import Data.DateTime (DateTime(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -16,12 +17,12 @@ import Data.Set as DST
 import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Droplet.Driver (Pool)
+import Environment (production)
 import Run.Except as RE
 import Server.AccountValidation as SA
 import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Email as SE
 import Server.File as SF
-import Environment (production)
 import Server.Im.Database as SID
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
@@ -62,13 +63,11 @@ listSingleContact loggedUserId userId = presentContacts <$> SID.presentSingleCon
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SID.presentSingleContact loggedUserId userId skip
 
-listMissedEvents ∷ Int → Maybe Int → Maybe Int → ServerEffect MissedEvents
-listMissedEvents loggedUserId lastSenderId lastRecipientId = do
-      messageIds ← pure []
-      contacts ← DM.maybe (pure []) (SID.presentMissedContacts loggedUserId) lastRecipientId
+listMissedEvents ∷ Int → Maybe Int → DateTime → ServerEffect MissedEvents
+listMissedEvents loggedUserId messageId dt = do
+      messages ← SID.presentMissedMessages loggedUserId messageId dt
       pure
-            { contacts: presentContacts contacts
-            , messageIds
+            { missedMessages: messages
             }
 
 presentContacts ∷ Array FlatContactHistoryMessage → Array Contact

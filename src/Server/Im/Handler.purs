@@ -5,6 +5,7 @@ import Server.Effect
 import Shared.Im.Types
 
 import Data.Maybe (Maybe)
+import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Payload.ContentType (html)
 import Payload.Headers as PH
@@ -14,6 +15,7 @@ import Server.Im.Action as SIA
 import Server.Im.Template as SIT
 import Server.Ok (Ok, ok)
 import Server.Response as SR
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
 
 im ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Response String)
@@ -45,8 +47,8 @@ deleteChat { guards: { loggedUserId }, body } = do
       SIA.deleteChat loggedUserId body
       pure ok
 
-missedEvents ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { lastSenderId ∷ Maybe Int, lastRecipientId ∷ Maybe Int } } → ServerEffect MissedEvents
-missedEvents { guards: { loggedUserId }, query: { lastSenderId, lastRecipientId } } = SIA.listMissedEvents loggedUserId lastSenderId lastRecipientId
+missedEvents ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { id ∷ Maybe Int, from ∷ DateTimeWrapper } } → ServerEffect MissedEvents
+missedEvents request = SIA.listMissedEvents request.guards.loggedUserId request.query.id $ DN.unwrap request.query.from
 
 report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ Report } → ServerEffect Ok
 report { guards: { loggedUserId }, body } = do

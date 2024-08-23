@@ -25,6 +25,8 @@ import Shared.Resource as SP
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
 
+-- this can be seriously cleaned up
+
 type Notification =
       { body ∷ String
       , icon ∷ String
@@ -49,13 +51,13 @@ notify { user: { id: loggedUserId }, contacts, smallScreen } userIds = do
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
       where
       contactUsers = DA.filter byKeys contacts
+      byKeys cnt = DA.any (\id → cnt.user.id == id) userIds
+
       createNotification' { user } = createNotification
             { body: "New message from " <> user.name
             , icon: SP.resourcePath (Left Loading) Png
             , handler: FS.send imId $ ResumeChat user.id --move to given chat when clicking on system notification
             }
-
-      byKeys cnt = DA.any (\id → cnt.user.id == id) userIds
 
 notify' ∷ ImModel → Array Int → Aff (Maybe ImMessage)
 notify' model userIds = do
