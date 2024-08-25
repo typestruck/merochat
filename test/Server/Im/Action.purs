@@ -10,6 +10,7 @@ import Shared.Im.Types
 
 import Data.Array as DA
 import Data.BigInt as BI
+import Data.DateTime as DT
 import Data.Either (Either(..))
 import Data.Either as DE
 import Data.Maybe (Maybe(..))
@@ -19,6 +20,7 @@ import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
+import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
@@ -289,7 +291,24 @@ tests = do
                           void <<< SIA.processMessage yetAnotherUserId userId $ Text "ola"
                           void <<< SIA.processMessage yetAnotherUserId userId $ Text "hey"
                           dt ← liftEffect $ EN.nowDateTime
-                          ev ← SIA.listMissedEvents userId Nothing dt
+                          ev ← SIA.listMissedEvents userId (Just 0) dt
+                          R.liftAff <<< TUA.equal 3 $ DA.length ev.missedMessages
+                          R.liftAff $ TUA.equal anotherUserId (ev.missedMessages !@ 0).sender
+                          R.liftAff $ TUA.equal "oi" (ev.missedMessages !@ 0).content
+                          R.liftAff $ TUA.equal yetAnotherUserId (ev.missedMessages !@ 1).sender
+                          R.liftAff $ TUA.equal "ola" (ev.missedMessages !@ 1).content
+                          R.liftAff $ TUA.equal "hey" (ev.missedMessages !@ 2).content
+
+            TU.test "listMissedEvents finds missed messages past date"
+                  $ TS.serverAction
+                  $ do
+                          Tuple userId anotherUserId ← setUpUsers
+                          yetAnotherUserId ← SLD.createUser $ baseUser { email = Just "d@d.com" }
+                          void <<< SIA.processMessage anotherUserId userId $ Text "oi"
+                          void <<< SIA.processMessage yetAnotherUserId userId $ Text "ola"
+                          void <<< SIA.processMessage yetAnotherUserId userId $ Text "hey"
+                          dt ← liftEffect $ EN.nowDateTime
+                          ev ← SIA.listMissedEvents userId Nothing <<< SU.fromJust $ DT.adjust (Days (-1.0))  dt
                           R.liftAff <<< TUA.equal 3 $ DA.length ev.missedMessages
                           R.liftAff $ TUA.equal anotherUserId (ev.missedMessages !@ 0).sender
                           R.liftAff $ TUA.equal "oi" (ev.missedMessages !@ 0).content
@@ -307,7 +326,7 @@ tests = do
                           yetAnotherId /\ _ ← map SU.fromRight <<< SIA.processMessage yetAnotherUserId userId $ Text "hey"
                           SID.changeStatus userId Delivered [ id, anotherId, yetAnotherId ]
                           dt ← liftEffect $ EN.nowDateTime
-                          ev ← SIA.listMissedEvents userId Nothing dt
+                          ev ← SIA.listMissedEvents userId (Just 0) dt
                           R.liftAff <<< TUA.equal 0 $ DA.length ev.missedMessages
 
             TU.test "listMissedEvents syncs messages"
