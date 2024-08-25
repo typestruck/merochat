@@ -42,7 +42,6 @@ create table users
 create table messages
 (
     id integer generated always as identity primary key,
-    temporary_id integer not null,
     sender integer not null,
     recipient integer not null,
     date timestamptz not null default (utc_now()),
@@ -247,8 +246,8 @@ create table last_seen (
 
 create table tokens (
     id integer generated always as identity primary key,
-    toker integer not null unique,
-    contents text not null,
+    toker integer not null,
+    contents text not null unique,
     constraint tokens_user_user foreign key (toker) references users(id) on delete cascade
 );
 

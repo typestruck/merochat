@@ -1,7 +1,7 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js');
 
 /// caching
-let { registerRoute } = workbox.routing;
+let { registerRoute, Route } = workbox.routing;
 let { CacheFirst } = workbox.strategies;
 let { CacheableResponsePlugin } = workbox.cacheableResponse;
 
@@ -31,11 +31,10 @@ self.addEventListener('push', (event) => {
             body: payload,
       })
     );
-  });
+});
 
 
 //store chats and user data localy with indexeddb?
     //this would also require some sort of caching of the im page
     // and js/css scripts
-    // and to enable multiple open sessions too
 

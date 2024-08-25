@@ -8,24 +8,24 @@ import Client.Im.Flame (NextMessage)
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Foldable as DF
-import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Flame ((:>))
 import Flame.Subscription as FS
 import Shared.Element as SE
-import Shared.Experiments.Impersonation (impersonations)
 import Shared.Im.Unread as SIU
 import Shared.Options.MountPoint (imId)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
 import Web.HTML.HTMLLinkElement as WHL
+
+-- this can be seriously cleaned up
 
 type Notification =
       { body ∷ String
@@ -39,25 +39,25 @@ createNotification ∷ Notification → Effect Unit
 createNotification = EU.runEffectFn1 createNotification_
 
 notifyUnreadChats ∷ ImModel → Array Int → NextMessage
-notifyUnreadChats model userIds = model :>
+notifyUnreadChats model userIds = model /\
       [ do
               liftEffect $ notify model userIds
               pure $ Just UpdateDelivered
       ]
 
 notify ∷ ImModel → Array Int → Effect Unit
-notify { user: { id: sessionUserId }, contacts, smallScreen } userIds = do
-      updateTabCount sessionUserId contacts
+notify { user: { id: loggedUserId }, contacts, smallScreen } userIds = do
+      updateTabCount loggedUserId contacts
       unless smallScreen $ DF.traverse_ createNotification' contactUsers
       where
       contactUsers = DA.filter byKeys contacts
+      byKeys cnt = DA.any (\id → cnt.user.id == id) userIds
+
       createNotification' { user } = createNotification
             { body: "New message from " <> user.name
             , icon: SP.resourcePath (Left Loading) Png
             , handler: FS.send imId $ ResumeChat user.id --move to given chat when clicking on system notification
             }
-
-      byKeys cnt = DA.any (\id → cnt.user.id == id) userIds
 
 notify' ∷ ImModel → Array Int → Aff (Maybe ImMessage)
 notify' model userIds = do
@@ -71,3 +71,8 @@ updateTabCount id contacts = do
       WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
       where
       unreadChats = SIU.countUnreadChats id contacts
+
+checkNotifications ∷ Effect Unit
+checkNotifications = do
+      status ← CCD.notificationPermission
+      when (status == "default") $ FS.send imId ToggleAskNotification

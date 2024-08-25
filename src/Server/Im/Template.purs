@@ -4,7 +4,6 @@ import Prelude
 import Shared.Im.Types
 
 import Data.Array as DA
-import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
@@ -16,18 +15,19 @@ import Server.Im.Types (Payload)
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.Element as SE
 import Shared.Im.Unread as SIU
 import Shared.Im.View as SIV
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 
 template ∷ Payload → Effect String
-template { contacts, suggestions, user } = do
+template payload = do
       let
-            unreadChats = SIU.countUnreadChats user.id contacts
-            suggestionsCount = DA.length suggestions
+            unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
+            suggestionsCount = DA.length payload.suggestions
       lt ← EN.nowDateTime
-      F.preMount (QuerySelector ".im")
+      F.preMount (QuerySelector $ show SE.Im)
             { view: \model → ST.templateWith $ defaultParameters
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
@@ -61,7 +61,7 @@ template { contacts, suggestions, user } = do
                     , erroredFields: []
                     , fortune: Nothing
                     , toggleContextMenu: HideContextMenu
-                    , toggleModal: if user.completedTutorial then HideUserMenuModal else Tutorial Welcome
+                    , toggleModal: if payload.user.completedTutorial then HideUserMenuModal else Tutorial Welcome
                     , toggleChatModal: HideChatModal
                     , blockedUsers: []
                     , reportReason: Nothing
@@ -71,9 +71,9 @@ template { contacts, suggestions, user } = do
                     , failedRequests: []
                     , hasTriedToConnectYet: false
                     , hash: updateHash
-                    , contacts
-                    , suggestions
-                    , user
+                    , contacts: payload.contacts
+                    , suggestions: payload.suggestions
+                    , user: payload.user
                     }
             }
       where

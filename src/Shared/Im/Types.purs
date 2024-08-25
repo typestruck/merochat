@@ -59,7 +59,8 @@ type BasicMessage fields =
 
 type ClientMessagePayload = BasicMessage
       ( content ∷ String
-      , userId ∷ Int
+      , recipientId ∷ Int
+      , senderId ∷ Int
       , date ∷ DateTimeWrapper
       )
 
@@ -102,8 +103,7 @@ type TemporaryMessageId =
       }
 
 type MissedEvents =
-      { contacts ∷ Array Contact
-      , messageIds ∷ Array TemporaryMessageId
+      { missedMessages ∷ Array HistoryMessage
       }
 
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
@@ -159,7 +159,6 @@ newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
 data AfterLogout
       = LoginPage
-      | Elsewhere
       | Banned
 
 data ShowChatModal
@@ -295,7 +294,6 @@ data ImMessage
       | SendMessage MessageContent DateTimeWrapper
       | SetMessageContent (Maybe Int) String
       | Apply Markup
-      | SetSmallScreen
       | SetEmoji Event
       | InsertLink
       | CheckTyping String
@@ -309,13 +307,13 @@ data ImMessage
       | FinishTutorial
       | ToggleUserContextMenu Event
       | SpecialRequest RetryableRequest
+      | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean
       | PreventStop Event
       | AskNotification
       | ToggleAskNotification
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)
-      | PollPrivileges
       | CheckUserExpiration
       | ToggleConnected Boolean
       | SetField (ImModel → ImModel)

@@ -30,8 +30,8 @@ model =
       , freeToFetchSuggestions: true
       , typingIds: []
       , initialScreen: true
-      , temporaryEmail : Nothing
-      , temporaryPassword : Nothing
+      , temporaryEmail: Nothing
+      , temporaryPassword: Nothing
       , suggestionsPage: 0
       , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , hash: ""
@@ -78,7 +78,7 @@ imUser =
       , profileVisibility: Everyone
       , readReceipts: true
       , messageTimestamps: true
-      , joined : DateTimeWrapper epoch
+      , joined: DateTimeWrapper epoch
       , temporary: false
       , typingStatus: true
       , onlineStatus: true

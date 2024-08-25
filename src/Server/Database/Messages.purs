@@ -12,7 +12,6 @@ import Type.Proxy (Proxy(..))
 
 type Messages =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
-      , temporary_id ∷ Int
       , sender ∷ Column Int (Constraint "from_user_message" (ForeignKey "id" UsersTable))
       , recipient ∷ Column Int (Constraint "to_user_message" (ForeignKey "id" UsersTable))
       , date ∷ Column DateTimeWrapper Default
@@ -23,9 +22,6 @@ type Messages =
 
 messages ∷ Table "messages" Messages
 messages = Table
-
-_temporary_id ∷ Proxy "temporary_id"
-_temporary_id = Proxy
 
 _content ∷ Proxy "content"
 _content = Proxy

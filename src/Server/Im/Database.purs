@@ -2,12 +2,15 @@ module Server.Im.Database where
 
 import Droplet.Language
 import Prelude hiding (not, join)
+import Server.Database.Badges
+import Server.Database.BadgesUsers
 import Server.Database.Suggestions
 import Shared.Privilege
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as DAN
 import Data.BigInt as DB
+import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
@@ -16,8 +19,6 @@ import Droplet.Driver (Pool)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Server.Database as SD
-import Server.Database.BadgesUsers
-import Server.Database.Badges
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
 import Server.Database.Fields (_age, _date, _id, _name, _recipient, _sender, c, completedTutorial, k, l, b, bu, lu, messageTimestamps, onlineStatus, profileVisibility, readReceipts, tu, typingStatus, u)
@@ -28,7 +29,7 @@ import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition,
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.LastSeen (_who, last_seen)
-import Server.Database.Messages (_content, _status, _temporary_id, messages)
+import Server.Database.Messages (_content, _status, messages)
 import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Tags (_tags, tags)
@@ -37,7 +38,7 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
-import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId)
+import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId, HistoryMessage)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -133,10 +134,10 @@ presentUserContactFields =
       , position "karmaPosition"
 """
 
-presentMessageContactFields ∷ String
-presentMessageContactFields =
+presentMessageFields ∷ String
+presentMessageFields =
       """
-      , s.id as "messageId"
+       s.id as "messageId"
       , s.sender
       , s.recipient
       , s.date
@@ -144,7 +145,7 @@ presentMessageContactFields =
       , s.status """
 
 presentContactFields ∷ String
-presentContactFields = presentUserContactFields <> presentMessageContactFields
+presentContactFields = presentUserContactFields <> "," <> presentMessageFields
 
 presentContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
 presentContacts loggedUserId skip = presentNContacts loggedUserId contactsPerPage skip
@@ -174,8 +175,8 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       ORDER BY last_message_date DESC LIMIT @limit OFFSET @offset) uh
       , LATERAL (SELECT *
                  FROM (SELECT
-                              ROW_NUMBER() OVER (ORDER BY date DESC) n"""
-                  <> presentMessageContactFields
+                              ROW_NUMBER() OVER (ORDER BY date DESC) n,"""
+                  <> presentMessageFields
                   <>
                         """FROM messages s
                        WHERE (s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
@@ -211,30 +212,30 @@ ORDER BY s.date DESC
 LIMIT @messagesPerPage
 OFFSET @offset) m ORDER BY m.date"""
 
---refactor: this can use droplet
-presentMissedContacts ∷ Int → Int → ServerEffect (Array FlatContactHistoryMessage)
-presentMissedContacts loggedUserId lastId = SD.unsafeQuery query
+presentMissedMessages ∷ Int → Maybe Int → DateTime → ServerEffect (Array HistoryMessage)
+presentMissedMessages loggedUserId messageId dt = SD.unsafeQuery query
       { loggedUserId
+      , messageId
+      , dt
       , status: Delivered
-      , contacts: Contacts
-      , lastId
       }
       where
-      query = "SELECT" <> presentContactFields <>
-            """FROM users u
-      JOIN karma_leaderboard k ON u.id = k.ranker
-      JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
-      JOIN messages s ON s.sender = h.sender OR s.sender = h.recipient
-      LEFT JOIN last_seen ls ON u.id = ls.who
-WHERE visibility <= @contacts
-      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
-      AND s.status < @status
-      AND s.recipient = @loggedUserId
-      AND s.id > @lastId
-ORDER BY "lastMessageDate" DESC, s.sender, s.date"""
-
-messageIdsFor ∷ Int → Int → ServerEffect (Array TemporaryMessageId)
-messageIdsFor loggedUserId messageId = SD.query $ select (_id /\ (_temporary_id # as (Proxy ∷ _ "temporaryId"))) # from messages # wher (_sender .=. loggedUserId .&&. _id .>. messageId)
+      query =
+            """SELECT
+      s.id
+      , s.sender
+      , s.recipient
+      , s.date
+      , s.content
+      , s.status
+      FROM messages s
+WHERE  (   sender = @loggedUserId
+           AND ((@messageId :: integer) IS NOT NULL AND id >= @messageId OR (@messageId :: integer) IS NULL AND date >= @dt)
+           OR
+           recipient = @loggedUserId
+           AND status < @status
+           AND date >= @dt)
+      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = s.recipient AND blocked = s.sender OR blocker = s.sender AND blocked = s.recipient)"""
 
 isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
 isRecipientVisible loggedUserId userId =
@@ -248,10 +249,10 @@ isRecipientVisible loggedUserId userId =
                                         (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date))
                           )
 
-insertMessage ∷ ∀ r. Int → Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
-insertMessage loggedUserId recipient temporaryId content = SD.withTransaction $ \connection → do
+insertMessage ∷ ∀ r. Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
+insertMessage loggedUserId recipient content = SD.withTransaction $ \connection → do
       void $ SD.singleWith connection $ select (insert_history (loggedUserId /\ recipient) # as u)
-      _.id <<< SU.fromJust <$> (SD.singleWith connection $ insert # into messages (_sender /\ _recipient /\ _temporary_id /\ _content) # values (loggedUserId /\ recipient /\ temporaryId /\ content) # returning _id)
+      _.id <<< SU.fromJust <$> (SD.singleWith connection $ insert # into messages (_sender /\ _recipient /\ _content) # values (loggedUserId /\ recipient /\ content) # returning _id)
 
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)
@@ -314,6 +315,3 @@ s = Proxy
 
 t ∷ Proxy "t"
 t = Proxy
-
-_lastMessageDate ∷ Proxy "lastMessageDate"
-_lastMessageDate = Proxy

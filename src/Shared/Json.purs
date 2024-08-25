@@ -12,8 +12,8 @@ import Data.Either (Either(..))
 import Data.Either as DT
 import Data.Generic.Rep (class Generic)
 
-fromJSON ∷ ∀ v value. Generic value v ⇒ DecodeRep v ⇒ String → Either String value
-fromJSON content = do
+fromJson ∷ ∀ v value. Generic value v ⇒ DecodeRep v ⇒ String → Either String value
+fromJson content = do
       json ← DAP.jsonParser content
       DT.either (Left <<< show) Right $ DADGR.genericDecodeJson json
 

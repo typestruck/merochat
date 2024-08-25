@@ -12,12 +12,12 @@ import Payload.Server (defaultOpts)
 import Payload.Server as PS
 import Server.Configuration as CF
 import Server.Database as SD
+import Server.Effect (Configuration)
 import Server.Guard (guards)
 import Server.Handler as SH
-import Server.Effect (Configuration)
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
-import Server.WebSocket.Events (aliveDelay)
+import Server.WebSocket.Events (aliveDelay, inactiveDelay)
 import Server.WebSocket.Events as SWE
 import Shared.Options.WebSocket (port)
 import Shared.Spec (spec)
@@ -30,13 +30,14 @@ main = do
 
 startWebSocketServer ∷ Configuration → Effect Unit
 startWebSocketServer configuration = do
-      userAvailability ← ER.new DH.empty
+      allUsersAvailabilityRef ← ER.new DH.empty
       webSocketServer ← SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
-      SW.onConnection webSocketServer (SWE.handleConnection configuration pool userAvailability)
-      intervalId ← ET.setInterval aliveDelay (SWE.checkLastSeen userAvailability *> SWE.persistLastSeen { pool, userAvailability })
-      SW.onServerClose webSocketServer (const (ET.clearInterval intervalId))
+      SW.onConnection webSocketServer (SWE.handleConnection configuration pool allUsersAvailabilityRef)
+      lastSeenIntervalId ← ET.setInterval aliveDelay (SWE.persistLastSeen { pool, allUsersAvailabilityRef })
+      terminatetIntervalId ← ET.setInterval inactiveDelay (SWE.terminateInactive allUsersAvailabilityRef)
+      SW.onServerClose webSocketServer (const (ET.clearInterval lastSeenIntervalId *> ET.clearInterval terminatetIntervalId))
 
 startHttpServer ∷ Configuration → Effect Unit
 startHttpServer configuration@{ port } = do

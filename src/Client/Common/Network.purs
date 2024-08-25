@@ -1,6 +1,5 @@
 module Client.Common.Network where
 
-import Client.Common.Types
 import Prelude
 import Shared.Im.Types
 
@@ -17,9 +16,8 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console as EC
 import Effect.Exception as EE
-import Payload.Client (ClientError(..), ClientResponse, defaultOpts)
+import Payload.Client (ClientError, ClientResponse, defaultOpts)
 import Payload.Client as PC
-import Payload.ResponseTypes (Response(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Spec (spec)

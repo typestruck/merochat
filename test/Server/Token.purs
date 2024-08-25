@@ -11,7 +11,7 @@ import Test.Server as TS
 import Test.Unit (TestSuite)
 import Server.Landing.Database as SLD
 import Test.Unit as TU
-import Data.Maybe(Maybe(..))
+import Data.Maybe (Maybe(..))
 import Test.Server.User (baseUser)
 import Test.Unit.Assert as TUA
 

@@ -25,26 +25,26 @@ tests = do
             TU.test "does not accept empty login and password"
                   $ TS.serverActionCatch (TS.catch invalidEmailMessage)
                   $ expectException
-                        { email: ""
-                        , password: ""
-                        , captchaResponse: Nothing
-                        }
+                          { email: ""
+                          , password: ""
+                          , captchaResponse: Nothing
+                          }
 
             TU.test "does not accept empty password"
                   $ TS.serverActionCatch (TS.catch invalidPasswordMessage)
                   $ expectException
-                        { email
-                        , password: ""
-                        , captchaResponse: Nothing
-                        }
+                          { email
+                          , password: ""
+                          , captchaResponse: Nothing
+                          }
 
             TU.test "does not accept inexistent login"
                   $ TS.serverActionCatch (TS.catch invalidLogin)
                   $ expectException
-                        { email
-                        , password
-                        , captchaResponse: Nothing
-                        }
+                          { email
+                          , password
+                          , captchaResponse: Nothing
+                          }
 
             TU.test "does not accept wrong password" $
                   TS.serverActionCatch (TS.catch invalidLogin) do

@@ -8,12 +8,13 @@ import Client.Common.Network (request)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String as DS
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Flame (ListUpdate, (:>))
+import Flame (ListUpdate)
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Network (RequestStatus(..))
@@ -39,7 +40,7 @@ update model@{ comments, screenshot } =
                               , feedbackStatus = Request <$> status
                               , comments = ""
                               , screenshot = Nothing
-                              } :>
+                              } /\
                               [ do
                                       liftEffect do
                                             input ← getFileInput
@@ -50,7 +51,7 @@ update model@{ comments, screenshot } =
                   Nothing → F.noMessages model { feedbackStatus = Nothing }
             SendFeedback → case DS.trim comments of
                   "" → F.noMessages model { feedbackStatus = Just NoComments }
-                  trimmed → model { loading = true } :>
+                  trimmed → model { loading = true } /\
                         [ do
                                 response ← request.feedback.send { body: { comments: trimmed, screenshot } }
                                 case response of

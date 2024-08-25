@@ -8,19 +8,15 @@ import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
-import Client.Im.Flame as CIF
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
-import Flame ((:>))
+import Data.Tuple.Nested ((/\))
 import Flame as F
-import Flame.Subscription as FS
 import Shared.Element (ElementId(..))
-import Shared.Options.MountPoint (karmaPrivilegesId)
 import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
-import Shared.KarmaPrivileges.Types as SKT
 
 toggleInitialScreen ∷ Boolean → ImModel → NoMessages
 toggleInitialScreen toggle model = F.noMessages $ model
@@ -30,14 +26,14 @@ toggleInitialScreen toggle model = F.noMessages $ model
       }
 
 logout ∷ AfterLogout → ImModel → MoreMessages
-logout after model = CIF.nothingNext model out
+logout after model = model /\ [ out ]
       where
       out = do
             void $ request.logout { body: {} }
             liftEffect <<< CCL.setLocation $ case after of
                   LoginPage → routes.login.get {}
-                  Elsewhere → routes.elsewhere {}
                   Banned → routes.banned {}
+            pure Nothing
 
 toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
 toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
@@ -61,7 +57,7 @@ toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
                   , toggleContextMenu = HideContextMenu
                   , failedRequests = []
                   , modalsLoaded = toggle : modalsLoaded
-                  } :>
+                  } /\
                   if toggle /= ShowKarmaPrivileges && DA.elem toggle modalsLoaded then []
                   else
                         [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents resource root) (req {})
@@ -70,7 +66,7 @@ toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
                         ]
 
 setModalContents ∷ Maybe Bundle → ElementId → String → ImModel → NextMessage
-setModalContents resource root html model = CIF.nothingNext model loadModal
+setModalContents resource root html model = model /\ [ loadModal ]
       where
       loadModal = liftEffect do
             element ← CCD.unsafeGetElementById root
@@ -79,3 +75,5 @@ setModalContents resource root html model = CIF.nothingNext model loadModal
             case resource of
                   Just name → CCD.loadScript name
                   Nothing → pure unit
+            pure Nothing
+

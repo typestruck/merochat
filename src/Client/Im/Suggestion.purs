@@ -17,7 +17,7 @@ import Data.Tuple (Tuple)
 import Data.Tuple as DT
 import Debug (spy)
 import Effect.Class (liftEffect)
-import Flame ((:>))
+import Data.Tuple.Nested ((/\))
 import Flame as F
 import Shared.Options.Page (suggestionsPerPage)
 import Web.Socket.WebSocket (WebSocket)
@@ -55,7 +55,7 @@ fetchMoreSuggestions model@{ contacts, suggestionsPage } =
       model
             { freeToFetchSuggestions = false
             , failedRequests = []
-            } :>
+            } /\
             [ CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions
                     { query:
                             { skip: suggestionsPerPage * suggestionsPage
@@ -85,7 +85,7 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
 blockUser webSocket id model =
-      updateAfterBlock id model :>
+      updateAfterBlock id model /\
             [ do
                     result ← CCN.defaultResponse $ request.im.block { body: { id } }
                     case result of

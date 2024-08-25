@@ -30,6 +30,18 @@ export function onError_(ws, handleError) {
       ws.on('error', handleError);
 }
 
+export function lastPing(lp) {
+      return function (connection) {
+            connection.lastPingTag = lp;
+
+            return connection;
+      }
+}
+
+export function getLastPing(connection) {
+      return connection.lastPingTag;
+}
+
 export function onPong_(ws, handlePong) {
       ws.on('pong', handlePong);
 }

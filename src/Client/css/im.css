@@ -89,7 +89,7 @@ body {
     margin-bottom: 25px;
 }
 
-.im {
+#im {
     display: grid;
     grid-template-columns: 25% 75%;
     overflow-y: auto;
@@ -2108,14 +2108,14 @@ select {
 /* dry this shite  */
 
 @media (max-width:1279px) {
-    .im {
+    #im {
         display: flex;
         overflow-x: hidden
     }
 
-    .contact-name-badge .badge-text {
+    /* .contact-name-badge .badge-text {
         display: none
-    }
+    } */
 
     .sign-up-call {
         display: flex;

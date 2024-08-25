@@ -28,6 +28,7 @@ import Data.String.CodeUnits as DSC
 import Data.Symbol as TDS
 import Data.Time.Duration (Days, Milliseconds(..), Minutes)
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -35,7 +36,6 @@ import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Flame ((:>))
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
@@ -65,7 +65,7 @@ foreign import resizeTextarea_ ∷ EffectFn1 Element Unit
 -- this event is filtered to run only on Enter keydown
 enterBeforeSendMessage ∷ Event → ImModel → NoMessages
 enterBeforeSendMessage event model@{ messageEnter } =
-      model :> if messageEnter then [ prevent, getMessage model ] else []
+      model /\ if messageEnter then [ prevent, getMessage model ] else []
       where
       prevent = liftEffect do
             WEE.preventDefault event
@@ -82,7 +82,7 @@ getMessage model@{ selectedImage, imageCaption, chatting } = do
 --send message/image button
 forceBeforeSendMessage ∷ ImModel → MoreMessages
 forceBeforeSendMessage model =
-      model :>
+      model /\
             [ getMessage model
             ]
 
@@ -98,8 +98,8 @@ beforeSendMessage
             } = case content of
       t@(Text message)
             | isEmpty message → F.noMessages model
-            | otherwise → updatedModel :> nextEffects t
-      image → updatedModel :> nextEffects image
+            | otherwise → updatedModel /\ nextEffects t
+      image → updatedModel /\ nextEffects image
 
       where
       isEmpty = DS.null <<< DS.trim
@@ -128,7 +128,7 @@ beforeSendMessage
       fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory shouldFetchHistory
       nextSendMessage input = do
             date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
-            CIF.next $ SendMessage input date
+            pure <<< Just $ SendMessage input date
 
 sendMessage ∷ WebSocket → MessageContent → DateTimeWrapper → ImModel → NoMessages
 sendMessage
@@ -140,18 +140,21 @@ sendMessage
             , chatting
             , temporaryId
             , contacts
-            } = CIF.nothingNext updatedModel $ liftEffect do
-      CIS.scrollLastMessage
-      input ← chatInput chatting
-      WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
-      CCD.setValue input ""
-      resizeTextarea input
-      CIW.sendPayload webSocket $ OutgoingMessage
-            { id: newTemporaryId
-            , userId: recipientId
-            , content
-            , turn
-            }
+            } = updatedModel /\
+      [ liftEffect do
+              CIS.scrollLastMessage
+              input ← chatInput chatting
+              WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
+              CCD.setValue input ""
+              resizeTextarea input
+              CIW.sendPayload webSocket $ OutgoingMessage
+                    { id: newTemporaryId
+                    , userId: recipientId
+                    , content
+                    , turn
+                    }
+              pure Nothing
+      ]
       where
       index = SU.fromJust chatting
       recipient@{ user: { id: recipientId }, history } = contacts !@ index
@@ -250,7 +253,7 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
 
 applyMarkup ∷ Markup → ImModel → MoreMessages
 applyMarkup markup model@{ chatting } =
-      model :>
+      model /\
             [ liftEffect (Just <$> apply)
             ]
       where
@@ -287,21 +290,27 @@ chatInput chatting
 
 setMessage ∷ Maybe Int → String → ImModel → NextMessage
 setMessage cursor markdown model@{ chatting } =
-      CIF.nothingNext model <<< liftEffect $
-            case cursor of
-                  Just position → do
-                        input ← chatInput chatting
-                        let textarea = SU.fromJust $ WHHTA.fromElement input
-                        WHHEL.focus $ WHHTA.toHTMLElement textarea
-                        WHHTA.setValue markdown textarea
-                        WHHTA.setSelectionEnd position textarea
-                        resizeTextarea input
-                  Nothing → pure unit
+      model /\
+            [ liftEffect do
+                    case cursor of
+                          Just position → do
+                                input ← chatInput chatting
+                                let textarea = SU.fromJust $ WHHTA.fromElement input
+                                WHHEL.focus $ WHHTA.toHTMLElement textarea
+                                WHHTA.setValue markdown textarea
+                                WHHTA.setSelectionEnd position textarea
+                                resizeTextarea input
+                          Nothing → pure unit
+                    pure Nothing
+            ]
 
 catchFile ∷ FileReader → Event → ImModel → NoMessages
-catchFile fileReader event model = CIF.nothingNext model $ liftEffect do
-      CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
-      CCD.preventStop event
+catchFile fileReader event model = model /\
+      [ liftEffect do
+              CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
+              CCD.preventStop event
+              pure Nothing
+      ]
 
 setSelectedImage ∷ Maybe String → ImModel → NextMessage
 setSelectedImage maybeBase64 model@{ smallScreen } =
@@ -313,7 +322,7 @@ setSelectedImage maybeBase64 model@{ smallScreen } =
                           [ TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage") ]
                     else
                           []
-            } :> (if smallScreen then [] else [ CIF.next $ FocusInput ImageFormCaption ])
+            } /\ (if smallScreen then [] else [ pure <<< Just $ FocusInput ImageFormCaption ])
       where
       isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
@@ -324,9 +333,9 @@ toggleModal toggle model@{ chatting } =
             , link = Nothing
             , selectedImage = Nothing
             , linkText = Nothing
-            } :> case toggle of
+            } /\ case toggle of
             ShowSelectedImage → [ pickImage ]
-            ShowLinkForm → [ CIF.next $ FocusInput LinkFormUrl ]
+            ShowLinkForm → [ pure <<< Just $ FocusInput LinkFormUrl ]
             ShowPreview → [ setPreview ]
             _ → []
       where
@@ -344,7 +353,7 @@ toggleModal toggle model@{ chatting } =
 
 setEmoji ∷ Event → ImModel → NextMessage
 setEmoji event model@{ chatting } =
-      model :>
+      model /\
             if CCD.tagNameFromTarget event == "SPAN" then
                   [ liftEffect do
                           emoji ← CCD.innerTextFromTarget event
@@ -367,8 +376,8 @@ insertLink model@{ linkText, link, chatting } =
                   in
                         model
                               { erroredFields = []
-                              } :>
-                              [ CIF.next $ ToggleChatModal HideChatModal
+                              } /\
+                              [ pure <<< Just $ ToggleChatModal HideChatModal
                               , insert $ if protocol == null then "http://" <> url else url
                               ]
       where
@@ -383,13 +392,13 @@ setAtCursor input text = do
       end ← WHHTA.selectionEnd textarea
       value ← WHHTA.value textarea
       let { before, after } = DS.splitAt end value
-      CIF.next <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after
+      pure <<< Just <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after
 
 resizeTextarea ∷ Element → Effect Unit
 resizeTextarea = EU.runEffectFn1 resizeTextarea_
 
-resizeChatInput ∷ Event → ImModel → NextMessage
-resizeChatInput event model = CIF.nothingNext model resize
+resizeChatInput ∷ Event → ImModel → NoMessages
+resizeChatInput event model = model /\ [ resize *> pure Nothing ]
       where
       resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
             target ← WEE.target event
@@ -403,7 +412,7 @@ toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
 checkTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
 checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
       if DS.length text > minimumLength && enoughTime lt then
-            CIF.nothingNext (model { lastTyping = DateTimeWrapper now }) <<< liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }
+            model { lastTyping = DateTimeWrapper now } /\ [ liftEffect (CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }) *> pure Nothing ]
       else
             F.noMessages model
       where
@@ -415,9 +424,9 @@ quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessa
 quoteMessage contents event model@{ chatting, smallScreen } =
       case event of
             Right Nothing →
-                  model { toggleContextMenu = HideContextMenu } :> [ liftEffect quoteIt ]
+                  model { toggleContextMenu = HideContextMenu } /\ [ liftEffect quoteIt ]
             Right (Just evt) →
-                  model :>
+                  model /\
                         if smallScreen then []
                         else
                               [ liftEffect do
@@ -429,7 +438,7 @@ quoteMessage contents event model@{ chatting, smallScreen } =
                                       else
                                             pure Nothing
                               ]
-            Left { startX, endX, startY, endY } → model :> [ if startX < endX && endX - startX >= threshold && startY - endY < threshold then liftEffect quoteIt else pure Nothing ]
+            Left { startX, endX, startY, endY } → model /\ [ if startX < endX && endX - startX >= threshold && startY - endY < threshold then liftEffect quoteIt else pure Nothing ]
       where
       threshold = 40
       quoteIt = do
@@ -444,7 +453,7 @@ quoteMessage contents event model@{ chatting, smallScreen } =
       notSpaceQuote (Token token) = token."type" /= "space" && token."type" /= "blockquote"
 
 focusCurrentSuggestion ∷ ImModel → NoMessages
-focusCurrentSuggestion model@{ chatting } = model :>
+focusCurrentSuggestion model@{ chatting } = model /\
       [ do
               liftEffect do
                     input ← chatInput chatting
