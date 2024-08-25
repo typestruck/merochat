@@ -124,7 +124,7 @@ handleClose webSocketStateRef _ = do
       --skip if we already are waiting on a timeout
       when (DM.isNothing state.reconnectId) do
             --we need it random so the server is not flooded with a zillion simultaneous connections
-            milliseconds ← pure 10000 --ERD.randomInt 2000 10000
+            milliseconds ← ERD.randomInt 2000 10000
             id ← ET.setTimeout milliseconds do
                   webSocket ← CIW.createWebSocket
                   ER.modify_ (_ { webSocket = webSocket }) webSocketStateRef
