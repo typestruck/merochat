@@ -374,5 +374,6 @@ toggleConnectedWebSocket isConnected model =
             else
                   [ pure $ Just UpdateDelivered ]
       where
-      lostConnectionMessage = "Connection lost. Reconnecting...\n\
+      lostConnectionMessage =
+            "Connection lost. Reconnecting...\n\
             \You won't be able to send messages until connection is restored"

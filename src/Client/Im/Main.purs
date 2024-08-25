@@ -384,7 +384,7 @@ checkMissedEvents model =
       model /\
             [ do
                     now ← map (SU.fromJust <<< DDT.adjust (Minutes (-1.5))) $ liftEffect EN.nowDateTime
-                    CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { id: spy "last id" (checkMessagesFrom model.contacts model.user.id), from: DateTimeWrapper $ spy "now" now } })
+                    CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { id: checkMessagesFrom model.contacts model.user.id, from: DateTimeWrapper now } })
             ]
 
 -- | The first message which could have not had its status updated or the last one sent
