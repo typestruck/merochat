@@ -229,12 +229,8 @@ presentMissedMessages loggedUserId messageId dt = SD.unsafeQuery query
       , s.content
       , s.status
       FROM messages s
-WHERE  ((@messageId :: integer) IS NOT NULL
-           AND sender = @loggedUserId
-           AND id >= @messageId
-           OR
-           @messageId IS NULL
-           AND date >= @dt
+WHERE  (   sender = @loggedUserId
+           AND ((@messageId :: integer) IS NOT NULL AND id >= @messageId OR (@messageId :: integer) IS NULL AND date >= @dt)
            OR
            recipient = @loggedUserId
            AND status < @status

@@ -186,6 +186,7 @@ displayContacts newContacts model = updateDisplayContacts newContacts [] model
 displayNewContacts ∷ Array Contact → ImModel → MoreMessages
 displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → cnt.user.id) newContacts) model
 
+-- | Messages sent or received while the web socket connection was down
 resumeMissedEvents ∷ MissedEvents → ImModel → MoreMessages
 resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNewMessages # thenPerform fetchNew
       where
@@ -197,7 +198,7 @@ resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNew
       updateHistory contact = case DH.lookup contact.user.id messagesByUser of
             Nothing → contact
             Just found → contact
-                  { history = DA.sortWith _.date $ DA.nubBy (\g h → compare g.id h.id) (contact.history <> found)
+                  { history = DA.sortWith _.date $ DA.nubBy (\g h → compare g.id h.id) (found <> contact.history)
                   }
 
       --if the new message comes from an user that is already in the contact list show notifications

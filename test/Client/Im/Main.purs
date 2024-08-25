@@ -112,14 +112,15 @@ tests = do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         updatedModel /\ _ = CIWE.receiveMessage webSocket true
-                                    ( NewIncomingMessage
-                                            { date
-                                            , id: newMessageID
-                                            , content
-                                            , recipientId: contact.user.id
-                                            , senderId: model.user.id
-                                            }
-                                    )  model
+                              ( NewIncomingMessage
+                                      { date
+                                      , id: newMessageID
+                                      , content
+                                      , recipientId: contact.user.id
+                                      , senderId: model.user.id
+                                      }
+                              )
+                              model
                                     { contacts = [ contact ]
                                     , chatting = Nothing
                                     }
@@ -143,7 +144,7 @@ tests = do
                                             { date
                                             , id: newMessageID
                                             , content
-                                            , recipientId:model.user.id
+                                            , recipientId: model.user.id
                                             , senderId: contact.user.id
                                             }
                                     ) $ model
@@ -169,7 +170,7 @@ tests = do
                                     ( NewIncomingMessage
                                             { id: newMessageID
                                             , recipientId: model.user.id
-                                            , senderId : contactId
+                                            , senderId: contactId
                                             , content
                                             , date
                                             }
@@ -201,15 +202,15 @@ tests = do
 
             TU.test "checkMissedEvents finds first message with sent status" do
                   let
-                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage { status = Sent, id = 25 }  ] }
+                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage { status = Sent, id = 25 } ] }
                         anotherDummyContact = dummyContact { history = [ historyMessage, historyMessage ] }
-                        msg  = CIM.checkMessagesFrom [ dummyContact, anotherDummyContact ] imUserId
+                        msg = CIM.checkMessagesFrom [ dummyContact, anotherDummyContact ] imUserId
                   TUA.equal (Just 25) msg
 
             TU.test "checkMissedEvents finds last sent message" do
                   let
-                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage  ] }
-                        anotherDummyContact = dummyContact { history = [ historyMessage { id = 25, sender  = imUserId}, historyMessage { sender = anotherImUserId, id = 2 } ] }
+                        dummyContact = contact { user = imUser, history = [ historyMessage, historyMessage ] }
+                        anotherDummyContact = dummyContact { history = [ historyMessage { id = 25, sender = imUserId }, historyMessage { sender = anotherImUserId, id = 2 } ] }
                         msg = CIM.checkMessagesFrom [ dummyContact, anotherDummyContact ] imUserId
                   TUA.equal (Just 25) msg
 

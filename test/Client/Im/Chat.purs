@@ -119,21 +119,21 @@ tests = do
             TU.test "makeTurn calculates recipient characters" do
                   let
                         contact' = contact
-                              { history = [ senderMessage, recipientMessage { content = "hello"}, senderMessage ]
+                              { history = [ senderMessage, recipientMessage { content = "hello" }, senderMessage ]
                               }
                   TUA.equal (Just 5.0) (_.characters <<< _.recipientStats <$> CIC.makeTurn imUser contact')
 
             TU.test "makeTurn calculates sender characters" do
                   let
                         contact' = contact
-                              { history = [ senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "hello"}, senderMessage { content = "hello"}, senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "hello"} ]
+                              { history = [ senderMessage { content = "hello" }, recipientMessage, senderMessage { content = "hello" }, senderMessage { content = "hello" }, senderMessage { content = "hello" }, recipientMessage, senderMessage { content = "hello" } ]
                               }
                   TUA.equal (Just 15.0) (_.characters <<< _.senderStats <$> CIC.makeTurn imUser contact')
 
             TU.test "makeTurn calculates recipient interest" do
                   let
                         contact' = contact
-                              { history = [ senderMessage { content = "hello"}, recipientMessage { content = "hello"}, senderMessage ]
+                              { history = [ senderMessage { content = "hello" }, recipientMessage { content = "hello" }, senderMessage ]
                               }
 
                   TUA.equal (Just $ Just 1.0) (_.interest <<< _.recipientStats <$> CIC.makeTurn imUser contact')
@@ -141,14 +141,14 @@ tests = do
             TU.test "makeTurn calculates sender interest for first message" do
                   let
                         contact' = contact
-                              { history = [ senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "hello"}]
+                              { history = [ senderMessage { content = "hello" }, recipientMessage, senderMessage { content = "hello" } ]
                               }
                   TUA.equal (Just Nothing) (_.interest <<< _.senderStats <$> CIC.makeTurn imUser contact')
 
             TU.test "makeTurn calculates sender interest for later message" do
                   let
                         contact' = contact
-                              { history = [ recipientMessage { content = "hello"}, senderMessage { content = "hello"}, recipientMessage, senderMessage { content = "oi"}]
+                              { history = [ recipientMessage { content = "hello" }, senderMessage { content = "hello" }, recipientMessage, senderMessage { content = "oi" } ]
                               }
                   TUA.equal (Just $ Just 1.0) (_.interest <<< _.senderStats <$> CIC.makeTurn imUser contact')
 
