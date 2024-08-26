@@ -7,7 +7,6 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
-import Debug (spy)
 
 -- | The karma from a chat is calculated from each "turn" in a conversation:
 -- | a turn is all messages from sender (the person who started the chat), recipient replies until the next sender message

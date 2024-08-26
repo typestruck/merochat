@@ -24,6 +24,7 @@ create table users
     gender smallint,
     headline text not null,
     avatar text,
+    backer boolean not null default false,
     description text not null,
     country integer,
     receive_email smallint not null default(0),
