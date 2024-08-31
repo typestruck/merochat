@@ -308,7 +308,7 @@ tests = do
                           void <<< SIA.processMessage yetAnotherUserId userId $ Text "ola"
                           void <<< SIA.processMessage yetAnotherUserId userId $ Text "hey"
                           dt ← liftEffect $ EN.nowDateTime
-                          ev ← SIA.listMissedEvents userId Nothing <<< SU.fromJust $ DT.adjust (Days (-1.0))  dt
+                          ev ← SIA.listMissedEvents userId Nothing <<< SU.fromJust $ DT.adjust (Days (-1.0)) dt
                           R.liftAff <<< TUA.equal 3 $ DA.length ev.missedMessages
                           R.liftAff $ TUA.equal anotherUserId (ev.missedMessages !@ 0).sender
                           R.liftAff $ TUA.equal "oi" (ev.missedMessages !@ 0).content

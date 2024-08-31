@@ -96,7 +96,7 @@ tests = do
             TU.test "resumeMissedEvents ignores messages from new contacts" do
                   let
                         updatedModel /\ _ = CICN.resumeMissedEvents { missedMessages: [ historyMessage ] } model
-                              { contacts = [  ]
+                              { contacts = []
                               }
                   TUA.equal 0 $ DA.length updatedModel.contacts
 

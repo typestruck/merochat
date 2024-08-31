@@ -1,6 +1,7 @@
 module Shared.Im.Types where
 
 import Prelude
+import Shared.Availability
 import Shared.Element
 
 import Data.Argonaut.Decode (class DecodeJson)
@@ -13,7 +14,6 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Hashable (class Hashable)
-import Shared.Availability
 import Data.Hashable as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
@@ -30,7 +30,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Shared.DateTime (DateTimeWrapper)
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
 import Shared.Privilege (Privilege)
 import Shared.Resource (Bundle)
@@ -241,7 +241,7 @@ type RequestFailure =
 data RetryableRequest
       = FetchHistory Boolean
       | FetchContacts Boolean
-      | CheckMissedEvents
+      | CheckMissedEvents (Maybe DateTimeWrapper)
       | ToggleModal ShowUserMenuModal
       | BlockUser Int
       | PreviousSuggestion

@@ -209,7 +209,7 @@ resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNew
 
       thenPerform e (m /\ ms) = m /\ (ms <> e)
       fetchNew =
-            map (\id → CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } }) newContacts
+            map (\id → CCNT.retryableResponse (CheckMissedEvents Nothing) DisplayNewContacts $ request.im.contact { query: { id } }) newContacts
 
 updateDisplayContacts ∷ Array Contact → Array Int → ImModel → MoreMessages
 updateDisplayContacts newContacts userIds model@{ contacts } =

@@ -14,6 +14,7 @@ import Client.Im.WebSocket as CIW
 import Control.Monad.Except as CME
 import Data.Array ((:))
 import Data.Array as DA
+import Data.DateTime (DateTime(..))
 import Data.Either (Either(..))
 import Data.Foldable as DT
 import Data.Maybe (Maybe(..))
@@ -33,6 +34,7 @@ import Flame.Subscription as FS
 import Foreign as FO
 import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.Types (ClientMessagePayload, Contact, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), ImModel)
 import Shared.Json as SJ
@@ -53,6 +55,7 @@ type WebSocketState =
       { webSocket ∷ WebSocket
       , reconnectId ∷ Maybe TimeoutId
       , pingId ∷ Maybe IntervalId
+      , lastPongDate ∷ DateTime
       , privilegesId ∷ Maybe IntervalId
       }
 
@@ -60,7 +63,8 @@ type WebSocketState =
 startWebSocket ∷ Effect (Ref WebSocketState)
 startWebSocket = do
       webSocket ← CIW.createWebSocket
-      webSocketStateRef ← ER.new { webSocket, reconnectId: Nothing, pingId: Nothing, privilegesId: Nothing }
+      now ← EN.nowDateTime
+      webSocketStateRef ← ER.new { webSocket, reconnectId: Nothing, pingId: Nothing, privilegesId: Nothing, lastPongDate: now }
 
       setUpWebsocket webSocketStateRef
       pure webSocketStateRef
@@ -71,7 +75,7 @@ setUpWebsocket webSocketStateRef = do
       state ← ER.read webSocketStateRef
       let webSocketTarget = WSW.toEventTarget state.webSocket
       openListener ← WET.eventListener (handleOpen webSocketStateRef)
-      messageListener ← WET.eventListener handleMessage
+      messageListener ← WET.eventListener (handleMessage webSocketStateRef)
       closeListener ← WET.eventListener (handleClose webSocketStateRef)
 
       WET.addEventListener onMessage messageListener false webSocketTarget
@@ -82,7 +86,11 @@ handleOpen ∷ Ref WebSocketState → Event → Effect Unit
 handleOpen webSocketStateRef _ = do
       state ← ER.read webSocketStateRef
       --close event may have set up to open a new connection after this timeout
-      DM.maybe (pure unit) ET.clearTimeout state.reconnectId
+      case state.reconnectId of
+            Nothing → pure unit
+            Just id → do
+                  ET.clearTimeout id
+                  FS.send imId <<< SpecialRequest <<< CheckMissedEvents <<< Just $ DateTimeWrapper state.lastPongDate
       newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
       newPingId ← ET.setInterval pingDelay ping
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId, reconnectId = Nothing }) webSocketStateRef
@@ -101,13 +109,16 @@ handleOpen webSocketStateRef _ = do
             FS.send imId $ SendPing isFocused
 
 -- | Handle an incoming (json encoded) message from the server
-handleMessage ∷ Event → Effect Unit
-handleMessage event = do
+handleMessage ∷ Ref WebSocketState → Event → Effect Unit
+handleMessage webSocketStateRef event = do
       let payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust $ WSEM.fromEvent event
       let message = SU.fromRight $ SJ.fromJson payload
       case message of
-            Pong p → FS.send imId $ DisplayAvailability p.status --pings are set up when the socket is open
             CloseConnection cc → FS.send imId $ Logout cc --user has been banned or server is on fire
+            Pong p → do
+                  now ← EN.nowDateTime
+                  ER.modify_ (_ { lastPongDate = now }) webSocketStateRef
+                  FS.send imId $ DisplayAvailability p.status --pings are set up when the socket is open
             Content c → do
                   isFocused ← CCD.documentHasFocus
                   FS.send imId $ ReceiveMessage c isFocused --actual site events, like new messages or status updates
@@ -123,7 +134,7 @@ handleClose webSocketStateRef _ = do
       ER.modify_ (_ { pingId = Nothing, privilegesId = Nothing }) webSocketStateRef
       --skip if we already are waiting on a timeout
       when (DM.isNothing state.reconnectId) do
-            --we need it random so the server is not flooded with a zillion simultaneous connections
+            --random so the server is not flooded with a zillion simultaneous connections
             milliseconds ← ERD.randomInt 2000 10000
             id ← ET.setTimeout milliseconds do
                   webSocket ← CIW.createWebSocket
@@ -188,7 +199,7 @@ receiveIncomingMessage webSocket isFocused payload model =
             case fromIncomingMessage payload unsuggestedModel of
                   Left id →
                         --new message from an user that is not currently in the contacts
-                        unsuggestedModel /\ [ CCNT.retryableResponse CheckMissedEvents DisplayNewContacts $ request.im.contact { query: { id } } ]
+                        unsuggestedModel /\ [ CCNT.retryableResponse (CheckMissedEvents Nothing) DisplayNewContacts $ request.im.contact { query: { id } } ]
                   Right updatedModel | model.user.id == payload.senderId →
                         --syncing message sent from other connections
                         updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
@@ -367,9 +378,7 @@ toggleConnectedWebSocket isConnected model =
             , errorMessage = if not isConnected then lostConnectionMessage else if model.errorMessage == lostConnectionMessage then "" else model.errorMessage
             } /\
             if model.hasTriedToConnectYet && isConnected then
-                  [ do
-                          liftEffect $ FS.send imId CheckUserExpiration
-                          pure <<< Just $ SpecialRequest CheckMissedEvents
+                  [ liftEffect $ FS.send imId CheckUserExpiration *> pure Nothing
                   ]
             else
                   [ pure $ Just UpdateDelivered ]

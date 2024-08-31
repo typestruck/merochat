@@ -15,7 +15,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Network as CNN
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Flame as CIF
 import Client.Im.History as CIH
 import Client.Im.Notification as CIN
@@ -186,7 +186,7 @@ update st model =
             FinishTutorial → finishTutorial model
             ToggleConnected isConnected → CIWE.toggleConnectedWebSocket isConnected model
             TerminateTemporaryUser → terminateAccount model
-            SpecialRequest CheckMissedEvents → checkMissedEvents model
+            SpecialRequest (CheckMissedEvents dt) → checkMissedEvents dt model
             SetField setter → F.noMessages $ setter model
             ToggleFortune isVisible → toggleFortune isVisible model
             DisplayFortune sequence → displayFortune sequence model
@@ -379,12 +379,14 @@ displayFortune sequence model = F.noMessages $ model
       { fortune = Just sequence
       }
 
-checkMissedEvents ∷ ImModel → MoreMessages
-checkMissedEvents model =
+checkMissedEvents ∷ Maybe DateTimeWrapper → ImModel → MoreMessages
+checkMissedEvents dt model =
       model /\
             [ do
-                    now ← map (SU.fromJust <<< DDT.adjust (Minutes (-1.5))) $ liftEffect EN.nowDateTime
-                    CCNT.retryableResponse CheckMissedEvents ResumeMissedEvents (request.im.missedEvents { query: { id: checkMessagesFrom model.contacts model.user.id, from: DateTimeWrapper now } })
+                    from ← case dt of
+                          Nothing → map (DateTimeWrapper <<< SU.fromJust <<< DDT.adjust (Minutes (-1.5))) $ liftEffect EN.nowDateTime
+                          Just w → pure w
+                    CCNT.retryableResponse (CheckMissedEvents dt) ResumeMissedEvents (request.im.missedEvents { query: { id: checkMessagesFrom model.contacts model.user.id, from } })
             ]
 
 -- | The first message which could have not had its status updated or the last one sent
