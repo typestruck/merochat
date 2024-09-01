@@ -42,7 +42,7 @@ notifyUnreadChats ∷ ImModel → Array Int → NextMessage
 notifyUnreadChats model userIds = model /\
       [ do
               liftEffect $ notify model userIds
-              pure $ Just UpdateDelivered
+              pure $ Just SetDeliveredStatus
       ]
 
 notify ∷ ImModel → Array Int → Effect Unit

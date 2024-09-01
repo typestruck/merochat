@@ -33,17 +33,17 @@ tests = do
                   let { chatting } = DT.fst $ CICN.resumeChat imUserId m
                   TUA.equal (Just 0) chatting
 
-            TU.test "markRead sets received messages as read" do
+            TU.test "setReadStatus sets received messages as read" do
                   let
-                        { contacts } = DT.fst <<< CICN.markRead webSocket $ model
+                        { contacts } = DT.fst <<< CICN.setReadStatus webSocket $ model
                               { chatting = Just 1
                               , contacts = [ contact, anotherContact ]
                               }
                   TUA.equal [ Tuple 1 Read, Tuple 2 Received, Tuple 3 Read ] <<< map (\({ id, status }) → Tuple id status) $ (contacts !@ 1).history
 
-            TU.test "markDelivered sets received messages as unread" do
+            TU.test "setDeliveredStatus sets received messages as unread" do
                   let
-                        { contacts } = DT.fst <<< CICN.markDelivered webSocket $ model
+                        { contacts } = DT.fst <<< CICN.setDeliveredStatus webSocket $ model
                               { user { id = 4 }
                               , chatting = Just 1
                               , contacts =

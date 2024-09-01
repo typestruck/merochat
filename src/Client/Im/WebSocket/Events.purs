@@ -14,7 +14,7 @@ import Client.Im.WebSocket as CIW
 import Control.Monad.Except as CME
 import Data.Array ((:))
 import Data.Array as DA
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Data.Foldable as DT
 import Data.Maybe (Maybe(..))
@@ -33,6 +33,7 @@ import Flame as F
 import Flame.Subscription as FS
 import Foreign as FO
 import Safe.Coerce as SC
+import Server.WebSocket (WebSocketConnection)
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Types as SET
@@ -94,7 +95,6 @@ handleOpen webSocketStateRef _ = do
       newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
       newPingId ← ET.setInterval pingDelay ping
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId, reconnectId = Nothing }) webSocketStateRef
-
       FS.send imId $ ToggleConnected true
       --check if the page needs to be reloaded
       CIW.sendPayload state.webSocket UpdateHash
@@ -208,22 +208,10 @@ receiveIncomingMessage webSocket isFocused payload model =
                               { chatting: Just index
                               } | isFocused && (updatedModel.contacts !@ index).user.id == userId →
                         --new message from the user being chatted with
-                        CICN.updateStatus updatedModel
-                              { loggedUserId: model.user.id
-                              , contacts: updatedModel.contacts
-                              , newStatus: Read
-                              , webSocket
-                              , index
-                              } # withExtraMessage CISM.scrollLastMessage'
+                        CICN.setMessageStatus webSocket index Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
                   Right updatedModel →
                         --new message when away/other usesr
-                        CICN.updateStatus updatedModel
-                              { loggedUserId: model.user.id
-                              , contacts: updatedModel.contacts
-                              , newStatus: Delivered
-                              , webSocket
-                              , index: SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts
-                              } # withExtraMessage (CIUC.notify' updatedModel [ userId ])
+                        CICN.setMessageStatus webSocket (SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts) Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
       where
       unsuggestedModel = unsuggest payload.recipientId model
 
@@ -381,7 +369,7 @@ toggleConnectedWebSocket isConnected model =
                   [ liftEffect $ FS.send imId CheckUserExpiration *> pure Nothing
                   ]
             else
-                  [ pure $ Just UpdateDelivered ]
+                  [ pure $ Just SetDeliveredStatus ] -- when the site is first loaded, signal that messages have been delivered
       where
       lostConnectionMessage =
             "Connection lost. Reconnecting...\n\

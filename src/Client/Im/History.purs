@@ -35,7 +35,7 @@ fetchHistory ∷ Boolean → ImModel → MoreMessages
 fetchHistory shouldFetch model@{ chatting, contacts }
       | shouldFetch =
               let
-                    { history, shouldFetchChatHistory, user: { id } } = SIC.chattingContact contacts chatting
+                    { history, shouldFetchChatHistory, user: { id } } = SIC.chattingWith contacts chatting
               in
                     model
                           { freeToFetchChatHistory = false
@@ -45,7 +45,7 @@ fetchHistory shouldFetch model@{ chatting, contacts }
 displayHistory ∷ Boolean → Array HistoryMessage → ImModel → NoMessages
 displayHistory overwrite chatHistory model@{ chatting, contacts } =
       let
-            contact@{ history, shouldFetchChatHistory } = SIC.chattingContact contacts chatting
+            contact@{ history, shouldFetchChatHistory } = SIC.chattingWith contacts chatting
             updatedModel = model
                   { freeToFetchChatHistory = true
                   , contacts = SU.fromJust do

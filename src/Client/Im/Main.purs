@@ -94,7 +94,7 @@ main = do
                       FSD.onClick' ToggleUserContextMenu
                     ,
                       --focus event has to be on the window as chrome is a whiny baby about document
-                      FSW.onFocus UpdateReadCount
+                      FSW.onFocus SetReadStatus
                     ]
             , init: [] -- we use subscription instead of init events
             , update: update { fileReader, webSocketRef }
@@ -145,9 +145,9 @@ update st model =
             NoTyping id → F.noMessages $ CIC.updateTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
             --contacts
-            ResumeChat id → CICN.resumeChat id model
-            UpdateDelivered → CICN.markDelivered webSocket model
-            UpdateReadCount → CICN.markRead webSocket model
+            ResumeChat userId → CICN.resumeChat userId model
+            SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
+            SetReadStatus → CICN.setReadStatus webSocket model
             CheckFetchContacts → CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model

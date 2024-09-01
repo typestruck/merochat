@@ -1,10 +1,10 @@
 module Shared.Im.Contact where
 
 import Prelude
-import Shared.Im.Types
+import Shared.Im.Types (Contact, ImUser)
 
 import Data.Array ((!!))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.DateTime (DateTimeWrapper(..))
@@ -21,7 +21,7 @@ defaultContact id chatted =
       , typing: false
       }
 
-chattingContact ∷ Array Contact → Maybe Int → Contact
-chattingContact contacts chatting = SU.fromJust do
+chattingWith ∷ Array Contact → Maybe Int → Contact
+chattingWith contacts chatting = SU.fromJust do
       index ← chatting
       contacts !! index
