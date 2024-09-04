@@ -701,7 +701,8 @@ values
     ('Zimbabwe');
 
 insert into experiments (code, name, description) values
-    (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it');
+    (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it'),
+    (10, 'Word chain', 'Play Word Chain with other users');
 
 insert into stock_text (contents, text_type) values
     ('I stayed up all night wondering where the sun went, then it dawned on me', 0),

@@ -5,13 +5,13 @@ import Droplet.Language
 import Data.Date (Date)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
-import Shared.Experiments.Types (ExperimentData)
+import Shared.Experiments.Types (Experiment)
 import Data.Tuple.Nested (type (/\))
 import Type.Proxy (Proxy(..))
 
 type Experiments =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
-      , code ∷ ExperimentData
+      , code ∷ Experiment
       , name ∷ String
       , description ∷ String
       , added ∷ Column DateTime Default

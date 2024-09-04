@@ -7,7 +7,6 @@ import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
-import Shared.Experiments.Types (ExperimentData)
 
 type InternalHelpModel =
       { toggleHelp ∷ DisplayHelpSection

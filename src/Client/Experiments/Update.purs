@@ -25,11 +25,10 @@ update model =
                   ]
             JoinExperiment code →
                   model
-                        { section = HideSections
-                        , current = Just code
+                        { current = Just code
                         } /\ dispatchEvent (Just code)
-            ToggleSection section → F.noMessages $ model { section = section }
-            ConfirmImpersonation profile → F.noMessages model { impersonation = profile }
+            --     ToggleSection section → F.noMessages $ model { section = section }
+            --     ConfirmImpersonation profile → F.noMessages model { impersonation = profile }
             RedirectKarma → model /\
                   [ do
                           liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges
