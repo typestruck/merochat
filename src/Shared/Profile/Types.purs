@@ -12,7 +12,6 @@ import Data.Maybe (Maybe(..))
 import Data.Show.Generic as DGRS
 import Foreign as F
 import Shared.DateTime (DateWrapper)
-import Shared.Experiments.Types (ExperimentData)
 import Shared.Network (RequestStatus)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
