@@ -33,7 +33,7 @@ import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Experiments.Types (ExperimentData, ExperimentPayload)
+import Shared.Experiments.Types (Experiment)
 import Shared.Privilege (Privilege)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)

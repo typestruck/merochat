@@ -6,13 +6,20 @@ import Shared.Experiments.Types
 import Shared.User
 
 import Client.Common.Privilege as CCP
+import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Argonaut.Decode.Generic as DADGR
+import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
+import Data.Generic.Rep (class Generic)
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Show.Generic as DGRS
 import Data.Tuple (Tuple(..))
+import Droplet.Language (class FromValue)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -24,6 +31,42 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
 
+type ImpersonationProfile = Record IU
+
+data ExperimentData = Impersonation (Maybe ImpersonationProfile)
+
+data ExperimentPayload = ImpersonationPayload
+      { id ∷ Int
+      , sender ∷ Boolean
+      }
+
+data ImpersonationSection
+      = HideSections
+      | Characters
+      | HistoricalFigures
+      | Celebrities
+
+derive instance Generic ImpersonationSection _
+
+derive instance Generic ExperimentPayload _
+
+derive instance Eq ImpersonationSection
+
+instance EncodeJson ExperimentPayload where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson ImpersonationSection where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance DecodeJson ExperimentPayload where
+      decodeJson = DADGR.genericDecodeJson
+
+instance DecodeJson ImpersonationSection where
+      decodeJson = DADGR.genericDecodeJson
+
+instance Show ExperimentPayload where
+      show = DGRS.genericShow
+
 joined ∷ ImpersonationProfile → Html ChatExperimentMessage
 joined profile = HE.div (HA.class' "exit-impersonation")
       [ HE.strong_ "You have already joined the Impersonation Experiment"
@@ -31,14 +74,14 @@ joined profile = HE.div (HA.class' "exit-impersonation")
       ]
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
-view { section, impersonation, user } = HE.div (HA.class' "impersonation")
+view model = HE.div (HA.class' "impersonation")
       [ header Characters "Fictional"
       , profiles Characters [ batman ]
       , header HistoricalFigures "Historical figures"
       , profiles HistoricalFigures [ socrates ]
       , header Celebrities "Celebrities"
       , profiles Celebrities [ nicolasCage ]
-      , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: DM.isNothing impersonation })
+      , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: true }) --DM.isNothing impersonation })
               [ HE.div (HA.class' "confirmation")
                       --     if SPV.hasPrivilege ImpersonationChatExperiment user then
                       --           [ HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <> DM.maybe "" _.name impersonation <> "?"
@@ -54,18 +97,18 @@ view { section, impersonation, user } = HE.div (HA.class' "impersonation")
                       --           ]
                       [ HE.text "Experiment currently not available :("
                       , HE.div (HA.class' "buttons")
-                              $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
+                              $ HE.button [ HA.class' "green-button" ] {- , HA.onClick $ ConfirmImpersonation Nothing ] -}  "Dismiss"
                       ]
               ]
       ]
       where
-      header s name = HE.div [ HA.class' "impersonation-header", HA.onClick $ ToggleSection s ]
+      header s name = HE.div [ HA.class' "impersonation-header" ] --, HA.onClick $ ToggleSection s ]
             [ HE.text name
-            , HE.span (HA.class' "header-plus") $ if section == s then "-" else "+"
+            , HE.span (HA.class' "header-plus") "+" -- $ if section == s then "-" else "+"
             ]
 
-      profiles s = HE.div (HA.class' { hidden: section /= s }) <<< DA.mapWithIndex toProfile
-      toProfile index p = HE.div [ HA.class' "contact", HA.onClick <<< ConfirmImpersonation $ Just p ]
+      profiles s = HE.div (HA.class' { hidden: s /= s }) <<< DA.mapWithIndex toProfile -- (HA.class' { hidden: section /= s }) <<< DA.mapWithIndex toProfile
+      toProfile index p = HE.div [ HA.class' "contact" ] --, HA.onClick <<< ConfirmImpersonation $ Just p ]
             [ HE.div (HA.class' "avatar-contact-list-div")
                     [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (Just index), HA.src $ SU.fromJust p.avatar ]
                     ]
@@ -169,6 +212,3 @@ Let me thank the awesome, multi-talented Mike Figgis. My incredible, amazing co-
 
 impersonations ∷ HashMap Int ImpersonationProfile
 impersonations = DH.fromFoldable [ Tuple batman.id batman, Tuple socrates.id socrates, Tuple nicolasCage.id nicolasCage ]
-
-welcomeMessage ∷ String → _
-welcomeMessage name = { welcome: "You are impersonating: " <> name, first: "Tip: quit the experiment at any time ", second: "to go back to your chats" }
