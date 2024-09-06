@@ -153,7 +153,7 @@ language plpgsql;
 create table karma_leaderboard
 (
     id integer generated always as identity primary key,
-    ranker integer not null,
+    ranker integer not null unique,
     position integer not null,
     current_karma integer not null,
     gained integer not null,
@@ -181,7 +181,6 @@ end;
 $$
 language plpgsql;
 
-
 -- select cron.schedule('45 2 * * *', $$select purge_temporary_users()$$);
 create or replace function purge_temporary_users()
     returns void as
@@ -191,7 +190,6 @@ begin
 end;
 $$
 language plpgsql;
-
 
 create table histories
 (
@@ -355,6 +353,8 @@ begin
 end;
   $body$
   language plpgsql;
+
+create index sender_recipient_messages on messages(sender, recipient);
 
 insert into languages
     (name)

@@ -14,7 +14,7 @@ import Type.Proxy (Proxy(..))
 
 type KarmaLeaderboard =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
-      , ranker ∷ Column Int (ForeignKey "id" UsersTable)
+      , ranker ∷ Column Int (ForeignKey "id" UsersTable /\ Unique)
       , position ∷ Int
       , current_karma ∷ Int
       , gained ∷ Int
