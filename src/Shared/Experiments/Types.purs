@@ -13,6 +13,7 @@ import Data.Maybe (Maybe(..))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
+import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
@@ -23,13 +24,13 @@ type ChatExperiment =
       , code ∷ Experiment
       }
 
-type ChatExperimentUser = { privileges ∷ Array Experiment }
+type ChatExperimentUser = { privileges ∷ Array Privilege }
 
 data ChatExperimentMessage
       = QuitExperiment
       | JoinExperiment ChatExperiment
       | RedirectKarma
-      | UpdateExperiments { karma ∷ Int, privileges ∷ Array Experiment }
+      | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
 type ChatExperimentModel =
       { experiments ∷ Array ChatExperiment
