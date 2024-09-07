@@ -17,7 +17,7 @@ import Web.DOM (Node)
 
 foreign import createImg ∷ Effect Node
 
-foreign import resetImg ∷ forall a. Node -> a -> a -> Node
+foreign import resetImg ∷ ∀ a. Node → a → a → Node
 
 defaultAvatar ∷ String
 defaultAvatar = avatarPath 1
