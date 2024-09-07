@@ -40,6 +40,7 @@ import Shared.Experiments.Types as SET
 import Shared.Im.Types (ClientMessagePayload, Contact, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), ImModel)
 import Shared.Json as SJ
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
+import Shared.Privilege (Privilege)
 import Shared.Profile.Types as SPT
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
@@ -231,7 +232,7 @@ receiveTyping received model = CIC.updateTyping received.id true model /\
       ]
 
 -- | User privileges are requested on socket (re)connection
-receivePrivileges ∷ _ → ImModel → NoMessages
+receivePrivileges ∷ { karma ∷ Int, privileges ∷ Array Privilege } → ImModel → NoMessages
 receivePrivileges received model =
       model
             { user
