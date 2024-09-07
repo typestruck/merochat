@@ -6,3 +6,13 @@ export function createImg() {
 
     return i;
 }
+
+export function resetImg(node) {
+    return function(a) {
+        return function(b) {
+            if (a != b)
+                node.src = null;
+            return node;
+        }
+    }
+}

@@ -17,6 +17,8 @@ import Web.DOM (Node)
 
 foreign import createImg ∷ Effect Node
 
+foreign import resetImg ∷ forall a. Node -> a -> a -> Node
+
 defaultAvatar ∷ String
 defaultAvatar = avatarPath 1
 
@@ -65,4 +67,4 @@ avatar ∷ ∀ nd34 message35. ToNode nd34 message35 NodeData ⇒ nd34 → Html 
 avatar attributes = HE.managed { createNode, updateNode } attributes unit
       where
       createNode _ = createImg
-      updateNode _ _ _ = createImg
+      updateNode n o p = pure $ resetImg n o p
