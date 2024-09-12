@@ -23,6 +23,7 @@ import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
 import Effect.Class (liftEffect)
+import Effect.Console as EC
 import Effect.Now as EN
 import Effect.Random as ERD
 import Effect.Ref (Ref)
@@ -46,7 +47,7 @@ import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
-import Web.Socket.Event.EventTypes (onMessage, onOpen, onClose)
+import Web.Socket.Event.EventTypes (onClose, onError, onMessage, onOpen)
 import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
@@ -78,10 +79,12 @@ setUpWebsocket webSocketStateRef = do
       openListener ← WET.eventListener (handleOpen webSocketStateRef)
       messageListener ← WET.eventListener (handleMessage webSocketStateRef)
       closeListener ← WET.eventListener (handleClose webSocketStateRef)
+      errorListener ← WET.eventListener (handleError webSocketStateRef)
 
       WET.addEventListener onMessage messageListener false webSocketTarget
       WET.addEventListener onOpen openListener false webSocketTarget
       WET.addEventListener onClose closeListener false webSocketTarget
+      WET.addEventListener onError errorListener false webSocketTarget
 
 handleOpen ∷ Ref WebSocketState → Event → Effect Unit
 handleOpen webSocketStateRef _ = do
@@ -125,7 +128,8 @@ handleMessage webSocketStateRef event = do
 
 -- | Clear intervals and set up new web socket connection after a random timeout
 handleClose ∷ Ref WebSocketState → Event → Effect Unit
-handleClose webSocketStateRef _ = do
+handleClose webSocketStateRef event = do
+      let e = spy "ev close" event
       state ← ER.read webSocketStateRef
       FS.send imId $ ToggleConnected false
 
@@ -141,6 +145,11 @@ handleClose webSocketStateRef _ = do
                   ER.modify_ (_ { webSocket = webSocket }) webSocketStateRef
                   setUpWebsocket webSocketStateRef
             ER.modify_ (_ { reconnectId = Just id }) webSocketStateRef
+
+handleError ∷ Ref WebSocketState → Event → Effect Unit
+handleError webSocketStateRef event = do
+      let e = spy "ev" event
+      EC.log "errored"
 
 -- | Send ping with users to learn availability of
 sendPing ∷ WebSocket → Boolean → ImModel → NoMessages

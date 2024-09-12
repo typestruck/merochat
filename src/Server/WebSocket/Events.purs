@@ -1,10 +1,6 @@
 module Server.WebSocket.Events where
 
 import Prelude
-import Server.Effect (BaseEffect, BaseReader, Configuration)
-import Shared.Availability (Availability(..))
-import Shared.Im.Types (AfterLogout(..), FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
-import Shared.User (ProfileVisibility(..))
 
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
@@ -24,6 +20,7 @@ import Data.Newtype as DN
 import Data.Time.Duration (Hours)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
 import Effect.Aff as EA
@@ -44,6 +41,7 @@ import Server.Cookies (cookieName)
 import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.Privileges as SIP
 import Server.Database.Users as SBU
+import Server.Effect (BaseEffect, BaseReader, Configuration)
 import Server.Effect as SE
 import Server.Im.Action as SIA
 import Server.Im.Database as SID
@@ -51,12 +49,15 @@ import Server.Settings.Action as SSA
 import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
 import Server.WebSocket as SW
+import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
+import Shared.Im.Types (AfterLogout(..), FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
+import Shared.User (ProfileVisibility(..))
 import Simple.JSON (class WriteForeign)
 import Simple.JSON as SJS
 
@@ -99,11 +100,12 @@ inactiveHours = 1
 
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
+      liftEffect $ EC.log "sockets"
       maybeUserId ← SE.poolEffect pool do
             userId ← parseUserId
             isIt ← DM.maybe (pure false) SBU.isUserBanned userId
             pure $ if isIt then Nothing else userId
-      liftEffect $ case maybeUserId of
+      liftEffect $ case (spy "maybe user" maybeUserId) of
             Nothing → do
                   --this can be made more clear for the end user
                   sendWebSocketMessage connection $ CloseConnection LoginPage
