@@ -105,7 +105,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
             userId ← parseUserId
             isIt ← DM.maybe (pure false) SBU.isUserBanned userId
             pure $ if isIt then Nothing else userId
-      liftEffect $ case (spy "maybe user" maybeUserId) of
+      liftEffect $ case maybeUserId of
             Nothing → do
                   --this can be made more clear for the end user
                   sendWebSocketMessage connection $ CloseConnection LoginPage

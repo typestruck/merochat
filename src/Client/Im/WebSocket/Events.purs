@@ -79,7 +79,7 @@ setUpWebsocket webSocketStateRef = do
       openListener ← WET.eventListener (handleOpen webSocketStateRef)
       messageListener ← WET.eventListener (handleMessage webSocketStateRef)
       closeListener ← WET.eventListener (handleClose webSocketStateRef)
-      errorListener ← WET.eventListener (handleError webSocketStateRef)
+      errorListener ← WET.eventListener (handleClose webSocketStateRef)
 
       WET.addEventListener onMessage messageListener false webSocketTarget
       WET.addEventListener onOpen openListener false webSocketTarget
@@ -128,8 +128,7 @@ handleMessage webSocketStateRef event = do
 
 -- | Clear intervals and set up new web socket connection after a random timeout
 handleClose ∷ Ref WebSocketState → Event → Effect Unit
-handleClose webSocketStateRef event = do
-      let e = spy "ev close" event
+handleClose webSocketStateRef _ = do
       state ← ER.read webSocketStateRef
       FS.send imId $ ToggleConnected false
 
@@ -145,11 +144,6 @@ handleClose webSocketStateRef event = do
                   ER.modify_ (_ { webSocket = webSocket }) webSocketStateRef
                   setUpWebsocket webSocketStateRef
             ER.modify_ (_ { reconnectId = Just id }) webSocketStateRef
-
-handleError ∷ Ref WebSocketState → Event → Effect Unit
-handleError webSocketStateRef event = do
-      let e = spy "ev" event
-      EC.log "errored"
 
 -- | Send ping with users to learn availability of
 sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
