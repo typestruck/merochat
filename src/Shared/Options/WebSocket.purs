@@ -1,4 +1,7 @@
 module Shared.Options.WebSocket where
 
-port ∷ Int
-port = 1339
+localPort ∷ Int
+localPort = 1339
+
+externalPort ∷ Int
+externalPort = 1443

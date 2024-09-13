@@ -19,7 +19,7 @@ import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
 import Server.WebSocket.Events (aliveDelay, inactiveDelay)
 import Server.WebSocket.Events as SWE
-import Shared.Options.WebSocket (port)
+import Shared.Options.WebSocket (localPort)
 import Shared.Spec (spec)
 
 main ∷ Effect Unit
@@ -31,7 +31,7 @@ main = do
 startWebSocketServer ∷ Configuration → Effect Unit
 startWebSocketServer configuration = do
       allUsersAvailabilityRef ← ER.new DH.empty
-      webSocketServer ← SW.createWebSocketServerWithPort (Port port) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show port)
+      webSocketServer ← SW.createWebSocketServerWithPort (Port localPort) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show localPort)
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allUsersAvailabilityRef)
