@@ -23,6 +23,7 @@ import Safe.Coerce as SC
 import Server.AccountValidation as SA
 import Server.Database.Types (Checked(..))
 import Server.Effect (BaseEffect, Configuration, ServerEffect)
+import Server.Email (Email(..))
 import Server.Email as SE
 import Server.File as SF
 import Server.Im.Database.Execute as SIDE
@@ -158,9 +159,9 @@ deleteChat loggedUserId ids@{ userId } = do
             Just { sender } → SIDE.markAsDeleted (sender == loggedUserId) loggedUserId ids
 
 reportUser ∷ Int → Report → ServerEffect Unit
-reportUser loggedUserId report@{ reason, userId } = do
-      SIDE.insertReport loggedUserId report
-      SE.sendEmail "contact@mero.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userId <> ";"
+reportUser loggedUserId report = do
+      id <- SID.insertReport loggedUserId report
+      SE.sendEmail loggedUserId id Report
 
 finishTutorial ∷ Int → ServerEffect Unit
 finishTutorial loggedUserId = SIDE.updateTutorialCompleted loggedUserId
