@@ -13,6 +13,7 @@ import Data.Maybe (Maybe(..))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
+
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
@@ -30,17 +31,28 @@ data ChatExperimentMessage
       = QuitExperiment
       | JoinExperiment ChatExperiment
       | RedirectKarma
+      | ToggleSection ImpersonationSection
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
 type ChatExperimentModel =
       { experiments ∷ Array ChatExperiment
       , current ∷ Maybe ChatExperiment
       , user ∷ ChatExperimentUser
+      --impersonation
+      , section ∷ ImpersonationSection
       }
 
 data Experiment = Impersonation | WordChain
 
+data ImpersonationSection
+      = HideSections
+      | Characters
+      | HistoricalFigures
+      | Celebrities
+
 derive instance Eq Experiment
+
+derive instance Eq ImpersonationSection
 
 derive instance Ord Experiment
 
@@ -85,3 +97,11 @@ instance ToValue Experiment where
 
 instance FromValue Experiment where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
+
+derive instance Generic ImpersonationSection _
+
+instance EncodeJson ImpersonationSection where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance DecodeJson ImpersonationSection where
+      decodeJson = DADGR.genericDecodeJson

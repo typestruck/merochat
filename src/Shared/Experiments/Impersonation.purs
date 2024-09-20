@@ -2,8 +2,8 @@ module Shared.Experiments.Impersonation where
 
 import Prelude
 import Shared.Availability
-import Shared.Experiments.Types
 import Shared.User
+import Shared.Experiments.Types
 
 import Client.Common.Privilege as CCP
 import Data.Argonaut (class DecodeJson, class EncodeJson)
@@ -40,29 +40,16 @@ data ExperimentPayload = ImpersonationPayload
       , sender ∷ Boolean
       }
 
-data ImpersonationSection
-      = HideSections
-      | Characters
-      | HistoricalFigures
-      | Celebrities
 
-derive instance Generic ImpersonationSection _
 
 derive instance Generic ExperimentPayload _
 
-derive instance Eq ImpersonationSection
-
 instance EncodeJson ExperimentPayload where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance EncodeJson ImpersonationSection where
       encodeJson = DAEGR.genericEncodeJson
 
 instance DecodeJson ExperimentPayload where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson ImpersonationSection where
-      decodeJson = DADGR.genericDecodeJson
 
 instance Show ExperimentPayload where
       show = DGRS.genericShow
@@ -102,12 +89,12 @@ view model = HE.div (HA.class' "impersonation")
               ]
       ]
       where
-      header s name = HE.div [ HA.class' "impersonation-header" ] --, HA.onClick $ ToggleSection s ]
+      header s name = HE.div [ HA.class' "impersonation-header", HA.onClick $ ToggleSection s ]
             [ HE.text name
-            , HE.span (HA.class' "header-plus") "+" -- $ if section == s then "-" else "+"
+            , HE.span (HA.class' "header-plus") if model.section == s then "-" else "+"
             ]
 
-      profiles s = HE.div (HA.class' { hidden: s /= s }) <<< DA.mapWithIndex toProfile -- (HA.class' { hidden: section /= s }) <<< DA.mapWithIndex toProfile
+      profiles s = HE.div (HA.class' { hidden: model.section /= s }) <<< DA.mapWithIndex toProfile
       toProfile index p = HE.div [ HA.class' "contact" ] --, HA.onClick <<< ConfirmImpersonation $ Just p ]
             [ HE.div (HA.class' "avatar-contact-list-div")
                     [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (Just index), HA.src $ SU.fromJust p.avatar ]
