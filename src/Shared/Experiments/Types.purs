@@ -30,6 +30,7 @@ type ChatExperimentUser = { privileges ∷ Array Privilege }
 data ChatExperimentMessage
       = QuitExperiment
       | JoinExperiment ChatExperiment
+      | ConfirmExperiment ChatExperiment
       | RedirectKarma
       | ToggleSection ImpersonationSection
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
