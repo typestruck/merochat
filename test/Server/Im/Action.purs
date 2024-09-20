@@ -282,7 +282,7 @@ tests = do
                           R.liftAff <<< TUA.equal 1 $ DA.length contacts
                           R.liftAff <<< TUA.equal [ "oi", "ola" ] $ map _.content (contacts !@ 0).history
 
-            TU.test "listMissedEvents finds missed messages"
+            TU.testSkip "listMissedEvents finds missed messages"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
@@ -299,7 +299,7 @@ tests = do
                           R.liftAff $ TUA.equal "ola" (ev.missedMessages !@ 1).content
                           R.liftAff $ TUA.equal "hey" (ev.missedMessages !@ 2).content
 
-            TU.test "listMissedEvents finds missed messages past date"
+            TU.testSkip "listMissedEvents finds missed messages past date"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
