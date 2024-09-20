@@ -70,22 +70,18 @@ view model = HE.div (HA.class' "impersonation")
       , profiles Celebrities [ nicolasCage ]
       , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: true }) --DM.isNothing impersonation })
               [ HE.div (HA.class' "confirmation")
-                      --     if SPV.hasPrivilege ImpersonationChatExperiment user then
-                      --           [ HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <> DM.maybe "" _.name impersonation <> "?"
-                      --           , HE.div (HA.class' "buttons")
-                      --                   [ HE.button [ HA.class' "cancel", HA.onClick $ ConfirmImpersonation Nothing ] "Cancel"
-                      --                   , HE.button [ HA.class' "green-button", HA.onClick <<< JoinExperiment $ Impersonation impersonation ] "Start"
-                      --                   ]
-                      --           ]
-                      --     else
-                      --           [ CCP.notEnoughKarma "start this chat experiment" RedirectKarma
-                      --           , HE.div (HA.class' "buttons")
-                      --                   $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
-                      --           ]
-                      [ HE.text "Experiment currently not available :("
-                      , HE.div (HA.class' "buttons")
-                              $ HE.button [ HA.class' "green-button" ] {- , HA.onClick $ ConfirmImpersonation Nothing ] -}  "Dismiss"
-                      ]
+                          if SPV.hasPrivilege ImpersonationChatExperiment user then
+                                [ HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <> DM.maybe "" _.name impersonation <> "?"
+                                , HE.div (HA.class' "buttons")
+                                        [ HE.button [ HA.class' "cancel", HA.onClick $ ConfirmImpersonation Nothing ] "Cancel"
+                                        , HE.button [ HA.class' "green-button", HA.onClick <<< JoinExperiment $ Impersonation impersonation ] "Start"
+                                        ]
+                                ]
+                          else
+                                [ CCP.notEnoughKarma "start this chat experiment" RedirectKarma
+                                , HE.div (HA.class' "buttons")
+                                        $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
+                                ]
               ]
       ]
       where
@@ -95,7 +91,7 @@ view model = HE.div (HA.class' "impersonation")
             ]
 
       profiles s = HE.div (HA.class' { hidden: model.section /= s }) <<< DA.mapWithIndex toProfile
-      toProfile index p = HE.div [ HA.class' "contact" ] --, HA.onClick <<< ConfirmImpersonation $ Just p ]
+      toProfile index p = HE.div [ HA.class' "contact", HA.onClick <<< ConfirmImpersonation $ Just p ]
             [ HE.div (HA.class' "avatar-contact-list-div")
                     [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (Just index), HA.src $ SU.fromJust p.avatar ]
                     ]
