@@ -27,7 +27,7 @@ update model =
                   model
                         { current = Just code
                         } /\ dispatchEvent (Just code)
-            --     ToggleSection section → F.noMessages $ model { section = section }
+            ToggleSection section → F.noMessages $ model { section = section }
             --     ConfirmImpersonation profile → F.noMessages model { impersonation = profile }
             RedirectKarma → model /\
                   [ do
