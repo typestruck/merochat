@@ -61,7 +61,7 @@ makeCookie value =
                             , year: 2300.0
                             }
                     , httpOnly: true
-                    , samesite: if production then Just Lax else Nothing
+                    , samesite:  Nothing
                     , domain: if production then Just domain else Nothing
                     , path: Just "/"
                     , secure: production
