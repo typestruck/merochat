@@ -7,6 +7,7 @@ import Data.Either (Either(..))
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DMB
+import Debug (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Node.HTTP (Request)
@@ -16,13 +17,13 @@ import Payload.Headers as PH
 import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Guards as PSG
 import Payload.Server.Response as PSR
+import Run as R
+import Run.Except as RE
+import Run.Reader as RR
 import Server.Cookies (cookieName)
 import Server.Effect as SE
 import Server.Token as ST
 import Shared.Routes (routes)
-import Run as R
-import Run.Except as RE
-import Run.Reader as RR
 
 guards ∷ ServerReader → _
 guards reading =
@@ -37,6 +38,10 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
       case maybeUserId of
             Just userId → pure $ Right userId
             _ →
+                  let a = spy "request" (NH.requestMethod request)
+                      b = spy "cookies" cookies
+                      c = spy "mero"  (DM.lookup cookieName cookies)
+                  in
                   if isPost then
                         pure <<< Left $ PSR.unauthorized Empty
                   else
