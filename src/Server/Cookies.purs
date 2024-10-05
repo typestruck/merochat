@@ -8,9 +8,9 @@ import Data.JSDate as DJ
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
+import Environment (production)
 import Server.Effect (ServerEffect)
 import Shared.Options.Domain (domain)
-import Environment (production)
 
 cookieHeader ∷ String
 cookieHeader = "Set-Cookie"
@@ -61,7 +61,7 @@ makeCookie value =
                             , year: 2300.0
                             }
                     , httpOnly: true
-                    , samesite: if production then Just Strict else Nothing
+                    , samesite: if production then Just Lax else Nothing
                     , domain: if production then Just domain else Nothing
                     , path: Just "/"
                     , secure: production
