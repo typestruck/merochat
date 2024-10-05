@@ -38,11 +38,7 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
       maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
             Just userId → pure $ Right userId
-            _ → do
-                  liftEffect $ EC.log ("request " <>  NH.requestMethod request)
-                  liftEffect $ EC.logShow $ DM.keys cookies
-                  liftEffect $ EC.logShow $ DM.lookup cookieName cookies
-                  if isPost then
+            _ →   if isPost then
                         pure <<< Left $ PSR.unauthorized Empty
                   else
                         redirectLogin
