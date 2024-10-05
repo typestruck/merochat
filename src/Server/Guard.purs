@@ -10,6 +10,7 @@ import Data.Maybe as DMB
 import Debug (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Class.Console as EC
 import Node.HTTP (Request)
 import Node.HTTP as NH
 import Payload.Headers (empty)
@@ -37,11 +38,10 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
       maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
             Just userId → pure $ Right userId
-            _ →
-                  let a = spy "request" (NH.requestMethod request)
-                      b = spy "cookies" cookies
-                      c = spy "mero"  (DM.lookup cookieName cookies)
-                  in
+            _ → do
+                  liftEffect $ EC.log ("request " <>  NH.requestMethod request)
+                  liftEffect $ EC.logShow $ DM.keys cookies
+                  liftEffect $ EC.logShow $ DM.lookup cookieName cookies
                   if isPost then
                         pure <<< Left $ PSR.unauthorized Empty
                   else
