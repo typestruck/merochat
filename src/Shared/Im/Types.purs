@@ -295,6 +295,8 @@ data ImMessage
       | SetMessageContent (Maybe Int) String
       | Apply Markup
       | SetEmoji Event
+      | BeforeAudioMessage
+      | AudioMessage Touch
       | InsertLink
       | CheckTyping String
       | NoTyping Int

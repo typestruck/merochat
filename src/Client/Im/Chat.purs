@@ -6,7 +6,7 @@ import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Flame as CIF
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
@@ -418,6 +418,18 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       where
       minimumLength = 7
       enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
+
+beforeAudioMessage :: ImModel -> MoreMessages
+beforeAudioMessage model = model /\ [pure Nothing]
+
+audioMessage :: Touch -> ImModel -> MoreMessages
+audioMessage touch model =
+      if touch.startX - touch.endX >= threshold && touch.startY - touch.endY < threshold then
+            model /\ [pure Nothing]
+      else
+            model /\ [pure Nothing]
+      where
+      threshold = 40
 
 --this messy ass event can be from double click, context menu or swipe
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage
