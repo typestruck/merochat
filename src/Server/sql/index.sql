@@ -884,6 +884,7 @@ insert into privileges (feature, name, description, quantity) values
     (201, 'Impersonation', 'Start Impersonation chat experiment', 1000),
     (300, 'More tags', 'Increased number of max profile tags', 250),
     (400, 'Send links', 'Send markdown links', 1000),
+    (401, 'Send audio', 'Send voice messages', 2000),
     (500, 'Send images', 'Send pictures in chats', 3000);
 
 insert into badges (kind, description) values
