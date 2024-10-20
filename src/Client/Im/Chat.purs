@@ -34,6 +34,7 @@ import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Class.Console as EC
 import Effect.Now as EN
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
@@ -427,15 +428,15 @@ audioMessage ∷ Touch → ImModel → MoreMessages
 audioMessage touch model =
       model /\
             [ do
-                    blob ← liftEffect CIR.stop
-                    if touch.startX - touch.endX >= threshold && touch.startY - touch.endY < threshold then
-                          pure Nothing
+                    base64 ← liftEffect CIR.stop
+                    if touch.startX - touch.endX <= threshold && touch.startY - touch.endY <= threshold then do
+                        liftEffect (EC.log "sent") *> pure Nothing
                     else
-                          pure Nothing
+                        liftEffect (EC.log "discarded") *> pure Nothing
             ]
 
       where
-      threshold = 40
+      threshold = 20
 
 --this messy ass event can be from double click, context menu or swipe
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage

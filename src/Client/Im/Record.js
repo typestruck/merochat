@@ -11,17 +11,17 @@ function st(stream) {
     };
 }
 
-export function start_() {
+export function start_(constraints) {
     navigator.mediaDevices.getUserMedia(constraints).then(st, e => console.log(e));
 }
 
 export function stop_() {
     mediaRecorder.stop();
 
-    let blob = new Blob(chunks, { type: mediaRecorder.mimeType });
+    let base64 = btoa((new Blob(chunks, { type: mediaRecorder.mimeType })).text());
 
     chunks = [];
     mediaRecorder = undefined;
 
-    return blob;
+    return base64;
 }
