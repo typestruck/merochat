@@ -222,8 +222,8 @@ data ProfilePresentation
 
 data MessageContent
       = Image String String
-      | --caption & base64
-        Text String
+      | Text String
+      | Audio String
 
 data Markup
       = Bold
@@ -295,6 +295,8 @@ data ImMessage
       | SetMessageContent (Maybe Int) String
       | Apply Markup
       | SetEmoji Event
+      | BeforeAudioMessage
+      | AudioMessage Touch
       | InsertLink
       | CheckTyping String
       | NoTyping Int

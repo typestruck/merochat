@@ -138,6 +138,8 @@ update st model =
             Apply markup → CIC.applyMarkup markup model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
+            BeforeAudioMessage -> CIC.beforeAudioMessage model
+            AudioMessage touch -> CIC.audioMessage touch model
             FocusCurrentSuggestion → CIC.focusCurrentSuggestion model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message et → CIC.quoteMessage message et model

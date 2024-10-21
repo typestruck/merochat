@@ -18,6 +18,7 @@ import Shared.Element (ElementId)
 import Shared.Resource (Bundle, ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
+import Type.Row.Homogeneous (class Homogeneous)
 import Web.DOM.Document as WDD
 import Web.DOM.Element (Element)
 import Web.DOM.Element as WDE

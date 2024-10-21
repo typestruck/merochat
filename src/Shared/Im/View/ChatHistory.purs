@@ -80,7 +80,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                         , HA.onDblclick' (QuoteMessage content <<< Right <<< Just)
                         ]
                         [ HE.div
-                                [ HA.class' "message-content", HA.id $ "m" <> show id, CIT.onTouchStart, CIT.onTouchEnd (QuoteMessage content <<< Left) ] -- id is used to scroll into view
+                                [ HA.class' "message-content", HA.id $ "m" <> show id, CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage content <<< Left) ] -- id is used to scroll into view
                                 [ HE.div [ HA.class' "message-content-in" ]
                                         [ HE.div' [ HA.innerHtml $ SM.parse content ]
                                         , HE.div (HA.class' "message-context-options")
