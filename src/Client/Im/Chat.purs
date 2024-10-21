@@ -173,6 +173,7 @@ sendMessage
                     , content: case content of
                             Text message → message
                             Image caption base64File → asMarkdownImage caption base64File
+                            Audio base64 -> asAudioMessage base64
                     }
             }
       updatedModel = model
@@ -184,6 +185,8 @@ sendMessage
       turn = makeTurn user updatedContact
 
       asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
+
+      asAudioMessage base64 = "<audio controls src='"<> base64 <> "'></audio>"
 
 makeTurn ∷ ImUser → Contact → Maybe Turn
 makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
@@ -422,7 +425,7 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
 
 beforeAudioMessage ∷ ImModel → MoreMessages
-beforeAudioMessage model = model /\ [ liftEffect (CIR.start { audio: true }) *> pure Nothing ]
+beforeAudioMessage model = model /\ [ liftEffect (CIR.start { audio: true } { mimeType: "audio/webm; codecs=opus" }) *> pure Nothing ]
 
 audioMessage ∷ Touch → ImModel → MoreMessages
 audioMessage touch model =
@@ -430,9 +433,10 @@ audioMessage touch model =
             [ do
                     base64 ← liftEffect CIR.stop
                     if touch.startX - touch.endX <= threshold && touch.startY - touch.endY <= threshold then do
-                        liftEffect (EC.log "sent") *> pure Nothing
+                        date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
+                        pure <<< Just $ SendMessage (Audio base64) date
                     else
-                        liftEffect (EC.log "discarded") *> pure Nothing
+                        pure Nothing
             ]
 
       where

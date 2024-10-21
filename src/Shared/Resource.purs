@@ -12,10 +12,10 @@ import Data.Set as DS
 import Environment (production)
 
 allowedMediaTypes ∷ HashMap String String
-allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64" ] $ DS.toUnfoldable allowedExtensions
+allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64", "data:audio/webm;base64" ] $ DS.toUnfoldable allowedExtensions
 
 allowedExtensions ∷ Set String
-allowedExtensions = DS.fromFoldable [ ".png", ".jpg", ".tiff", ".bmp", ".gif" ]
+allowedExtensions = DS.fromFoldable [ ".png", ".jpg", ".tiff", ".bmp", ".gif", ".webm" ]
 
 base ∷ Int
 base = 1000

@@ -109,6 +109,9 @@ processMessageContent content privileges = do
             Image caption base64 | DST.member SendImages privileges → do
                   name ← SF.saveBase64File base64
                   pure $ "![" <> caption <> "](" <> SP.resourcePath (Left $ Upload name) Ignore <> ")"
+            Audio base64 | DST.member SendAudios privileges → do
+                  name ← SF.saveBase64File base64
+                  pure $ "<audio controls src='" <> SP.resourcePath (Left $ Upload name) Ignore <> "'></audio>"
             _ → pure ""
       pure <<< DS.trim $ SS.sanitize message
       where

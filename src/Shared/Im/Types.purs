@@ -222,8 +222,8 @@ data ProfilePresentation
 
 data MessageContent
       = Image String String
-      | --caption & base64
-        Text String
+      | Text String
+      | Audio String
 
 data Markup
       = Bold

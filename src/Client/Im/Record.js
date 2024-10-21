@@ -18,7 +18,7 @@ export function start_(constraints) {
 export function stop_() {
     mediaRecorder.stop();
 
-    let base64 = btoa((new Blob(chunks, { type: mediaRecorder.mimeType })).text());
+    let base64 = 'data:audio/webm;base64,' + btoa((new Blob(chunks, { type: mediaRecorder.mimeType })).text());
 
     chunks = [];
     mediaRecorder = undefined;
