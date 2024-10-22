@@ -11,6 +11,7 @@ import Data.Set (member) as DS
 import Data.String (Pattern(..))
 import Data.String (split) as DS
 import Data.UUID as DU
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Node.Buffer (Buffer)

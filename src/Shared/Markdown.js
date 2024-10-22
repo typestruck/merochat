@@ -23,6 +23,9 @@ function defaultOptions() {
                   },
                   blockquote(q) {
                         return `<blockquote>${q}</blockquote>`;
+                  },
+                  html(token) {
+                        return token;
                   }
             }
       });
@@ -43,6 +46,12 @@ function restrictedOptions() {
                   },
                   blockquote() {
                         return '<i>Quote:</i>&nbsp;';
+                  },
+                  html(token) {
+                        if (token.startsWith("<audio")) {
+                              return '<i>Audio</i>&nbsp;';
+                        }
+                        return token;
                   }
             }
       });

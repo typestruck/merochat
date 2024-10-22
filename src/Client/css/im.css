@@ -2105,6 +2105,18 @@ select {
     margin-bottom: 20px;
 }
 
+.audio-button {
+    display: none;
+}
+
+.chat-input:placeholder-shown + .chat-right-buttons .send-button-div {
+    display: none;
+}
+
+.chat-input:not(:placeholder-shown) + .chat-right-buttons .attachment-button {
+    display: none;
+}
+
 /* dry this shite  */
 
 @media (max-width:1279px) {
@@ -2113,9 +2125,9 @@ select {
         overflow-x: hidden
     }
 
-    /* .contact-name-badge .badge-text {
-        display: none
-    } */
+    .audio-button {
+        display: block;
+    }
 
     .sign-up-call {
         display: flex;
@@ -2605,6 +2617,21 @@ select {
     .svg-suggestion-button {
         width: 25px;
         height: 25px;
+    }
+
+    .modal-form .audio-button {
+        width: 56px;
+        height: 56px;
+        margin-top: 10px;
+    }
+
+    .audio-form {
+        text-align: center;
+        align-items: center;
+    }
+
+    .modal-form .audio-button:active {
+        fill: rgb(195, 211, 101);
     }
 
     .settings {

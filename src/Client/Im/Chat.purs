@@ -6,8 +6,8 @@ import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
-import Client.Im.Flame as CIF
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
@@ -171,6 +171,7 @@ sendMessage
                     , content: case content of
                             Text message → message
                             Image caption base64File → asMarkdownImage caption base64File
+                            Audio base64 -> asAudioMessage base64
                     }
             }
       updatedModel = model
@@ -182,6 +183,8 @@ sendMessage
       turn = makeTurn user updatedContact
 
       asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
+
+      asAudioMessage base64 = "<audio controls src='"<> base64 <> "'></audio>"
 
 makeTurn ∷ ImUser → Contact → Maybe Turn
 makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
@@ -418,6 +421,27 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       where
       minimumLength = 7
       enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
+
+beforeAudioMessage ∷ ImModel → MoreMessages
+beforeAudioMessage model = model /\ [ liftEffect (CIR.start { audio: true } { mimeType: "audio/webm" } SendAudioMessage) *> pure Nothing ]
+
+audioMessage ∷ Touch → ImModel → MoreMessages
+audioMessage touch model =
+      model { toggleChatModal = HideChatModal } /\
+            [ do
+                  when (touch.startX - touch.endX <= threshold && touch.startY - touch.endY <= threshold) $ liftEffect CIR.stop
+                  pure Nothing
+            ]
+
+      where
+      threshold = 20
+
+sendAudioMessage :: String -> ImModel -> MoreMessages
+sendAudioMessage base64 model =
+      model /\ [ do
+            date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
+            pure <<< Just $ SendMessage (Audio base64) date
+      ]
 
 --this messy ass event can be from double click, context menu or swipe
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage

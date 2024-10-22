@@ -25,6 +25,7 @@ data Privilege
       | ImpersonationChatExperiment
       | MoreTags
       | SendLinks
+      | SendAudios
       | SendImages
 
 hasPrivilege ∷ ∀ r. Privilege → { privileges ∷ Array Privilege | r } → Boolean
@@ -56,6 +57,7 @@ instance BoundedEnum Privilege where
             ImpersonationChatExperiment → 201
             MoreTags → 300
             SendLinks → 400
+            SendAudios → 401
             SendImages → 500
 
       toEnum = case _ of
@@ -65,6 +67,7 @@ instance BoundedEnum Privilege where
             201 → Just ImpersonationChatExperiment
             300 → Just MoreTags
             400 → Just SendLinks
+            401 → Just SendAudios
             500 → Just SendImages
             _ → Nothing
 
@@ -76,6 +79,7 @@ instance Enum Privilege where
             ImpersonationChatExperiment → Nothing
             MoreTags → Just SendLinks
             SendLinks → Just SendImages
+            SendAudios → Just SendImages
             SendImages → Nothing
 
       pred = case _ of
@@ -85,7 +89,8 @@ instance Enum Privilege where
             ImpersonationChatExperiment → Just StartChatExperiments
             MoreTags → Just StartChatExperiments
             SendLinks → Just MoreTags
-            SendImages → Just SendLinks
+            SendAudios → Just SendLinks
+            SendImages → Just SendAudios
 
 instance Show Privilege where
       show = DSG.genericShow

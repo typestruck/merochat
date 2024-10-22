@@ -17,6 +17,8 @@ import Data.Set as DST
 import Data.String as DS
 import Data.Tuple (Tuple(..))
 import Droplet.Driver (Pool)
+import Effect.Class (liftEffect)
+import Effect.Class.Console as EC
 import Environment (production)
 import Run.Except as RE
 import Server.AccountValidation as SA
@@ -93,13 +95,7 @@ processMessage loggedUserId userId content = do
             pure $ Left UserUnavailable
 
 markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Privilege)
-markdownPrivileges loggedUserId = format <$> SID.markdownPrivileges loggedUserId
-      where
-      format = case _ of
-            [] → DST.empty
-            [ p ] | p.feature == SendLinks → DST.singleton SendLinks
-            [ p ] | p.feature == SendImages → DST.singleton SendImages
-            _ → DST.fromFoldable [ SendLinks, SendImages ]
+markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SID.markdownPrivileges loggedUserId
 
 -- | Sanitizes markdown and handle image uploads
 processMessageContent ∷ ∀ r. MessageContent → Set Privilege → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } String
@@ -109,6 +105,9 @@ processMessageContent content privileges = do
             Image caption base64 | DST.member SendImages privileges → do
                   name ← SF.saveBase64File base64
                   pure $ "![" <> caption <> "](" <> SP.resourcePath (Left $ Upload name) Ignore <> ")"
+            Audio base64 | DST.member SendAudios privileges → do
+                  name ← SF.saveBase64File base64
+                  pure $ "<audio controls src='" <> SP.resourcePath (Left $ Upload name) Ignore <> "'></audio>"
             _ → pure ""
       pure <<< DS.trim $ SS.sanitize message
       where
