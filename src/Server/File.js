@@ -5,7 +5,7 @@ function webm(buffer) {
     return buffer[0] === 26 &&
         buffer[1] === 69 &&
         buffer[2] === 223 &&
-        buffer[3] === 163 ? '.webm' : '';
+        buffer[3] === 163 ? 'webm' : '';
 }
 
 export function realFileExtension_(buffer) {

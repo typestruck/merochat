@@ -2619,6 +2619,21 @@ select {
         height: 25px;
     }
 
+    .modal-form .audio-button {
+        width: 56px;
+        height: 56px;
+        margin-top: 10px;
+    }
+
+    .audio-form {
+        text-align: center;
+        align-items: center;
+    }
+
+    .modal-form .audio-button:active {
+        fill: rgb(195, 211, 101);
+    }
+
     .settings {
         padding: 10px;
     }

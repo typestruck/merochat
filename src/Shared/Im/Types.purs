@@ -164,6 +164,7 @@ data AfterLogout
 data ShowChatModal
       = HideChatModal
       | ShowSelectedImage
+      | ShowAudioPrompt
       | ShowPreview
       | ShowEmojis
       | ShowLinkForm
@@ -297,6 +298,7 @@ data ImMessage
       | SetEmoji Event
       | BeforeAudioMessage
       | AudioMessage Touch
+      | SendAudioMessage String
       | InsertLink
       | CheckTyping String
       | NoTyping Int

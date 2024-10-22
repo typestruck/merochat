@@ -3,18 +3,22 @@ module Client.Im.Record where
 import Prelude
 
 import Effect (Effect)
-import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried (EffectFn1, EffectFn3)
 import Effect.Uncurried as EU
+import Flame.Subscription as FS
+import Shared.Im.Types (ImMessage)
+import Shared.Options.MountPoint (imId)
 import Type.Row.Homogeneous (class Homogeneous)
 
 foreign import data Recorder :: Type
 
-foreign import start_ :: forall r s. EffectFn2 r s Unit
+foreign import start_ :: forall r s. EffectFn3 r s (EffectFn1 String Unit) Unit
 
-foreign import stop_ :: Effect String
+foreign import stop_ :: Effect Unit
 
-start :: forall r s. Homogeneous r Boolean => Homogeneous s String => Record r -> Record s -> Effect Unit
-start constraints options = EU.runEffectFn2 start_ constraints options
+start :: forall r s. Homogeneous r Boolean => Homogeneous s String => Record r -> Record s -> (String -> ImMessage) -> Effect Unit
+start constraints options message = EU.runEffectFn3 start_ constraints options (EU.mkEffectFn1 handler)
+    where handler s = FS.send imId (message s)
 
-stop :: Effect String
+stop :: Effect Unit
 stop = stop_

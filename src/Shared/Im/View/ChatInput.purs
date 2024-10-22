@@ -18,6 +18,7 @@ import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Flame.Types (NodeData)
 import Shared.Element (ElementId(..))
 import Shared.Im.Emoji as SIE
 import Shared.Im.Svg as SIS
@@ -34,6 +35,7 @@ chat model@{ chatting } =
       HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ Just $ ToggleChatModal HideChatModal) ]
             [ linkModal model
             , imageModal model
+            , audioModal model
             , chatBarInput ChatInput model
             ]
 
@@ -85,6 +87,18 @@ imageModal { selectedImage, erroredFields, user } =
       where
       imageValidationFailed = DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) erroredFields
 
+audioModal ∷ ImModel → Html ImMessage
+audioModal model =
+      HE.div [ HA.class' { "modal-form audio-form": true, hidden: model.toggleChatModal /= ShowAudioPrompt } ]
+            if SP.hasPrivilege SendAudios model.user then
+                  [ HE.div (HA.class' "duller") "Hold the button to record. Release to send, or slide left to discard"
+                  , audioButton [ CIT.onTouchStart $ Just BeforeAudioMessage, CIT.onTouchEnd AudioMessage ]
+                  ]
+            else
+                  [ CCP.notEnoughKarma "send audios" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
+                  , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
+                  ]
+
 chatBarInput ∷ ElementId → ImModel → Html ImMessage
 chatBarInput
       elementId
@@ -133,7 +147,7 @@ chatBarInput
                                           ]
                       , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
-                              , audioButton
+                              , audioButton [ HA.onClick $ ToggleChatModal ShowAudioPrompt ]
                               , sendButton messageEnter model
                               ]
                       ]
@@ -218,7 +232,7 @@ linkButton toggle = HE.svg [ HA.class' "svg-20 link-button", HA.onClick <<< Togg
       ]
 
 emojiButton ∷ ImModel → Html ImMessage
-emojiButton model@{ toggleChatModal, smallScreen }
+emojiButton { toggleChatModal, smallScreen }
       | toggleChatModal == ShowEmojis =
               HE.div (HA.class' "emoji-access-div") $ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "emoji-access", HA.viewBox "0 0 16 16" ] $
                     if smallScreen then
@@ -249,13 +263,12 @@ imageButton = HE.svg [ HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class'
       [ HE.path' [ HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z" ]
       ]
 
-audioButton ∷ Html ImMessage
-audioButton = HE.svg [ CIT.onTouchStart $ Just BeforeAudioMessage, CIT.onTouchEnd AudioMessage, HA.class' "attachment-button audio-button", HA.viewBox "0 0 512 512" ]
-      [
-            HE.g_
-                  [ HE.path' [HA.class' "strokeless", HA.d "m439.5,236c0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,70-64,126.9-142.7,126.9-78.7,0-142.7-56.9-142.7-126.9 0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,86.2 71.5,157.4 163.1,166.7v57.5h-23.6c-11.3,0-20.4,9.1-20.4,20.4 0,11.3 9.1,20.4 20.4,20.4h88c11.3,0 20.4-9.1 20.4-20.4 0-11.3-9.1-20.4-20.4-20.4h-23.6v-57.5c91.6-9.3 163.1-80.5 163.1-166.7z" ]
-                  , HE.path' [ HA.class' "strokeless", HA.d "m256,323.5c51,0 92.3-41.3 92.3-92.3v-127.9c0-51-41.3-92.3-92.3-92.3s-92.3,41.3-92.3,92.3v127.9c0,51 41.3,92.3 92.3,92.3zm-52.3-220.2c0-28.8 23.5-52.3 52.3-52.3s52.3,23.5 52.3,52.3v127.9c0,28.8-23.5,52.3-52.3,52.3s-52.3-23.5-52.3-52.3v-127.9z" ]
-                  ]
+audioButton ∷ Array (NodeData ImMessage) → Html ImMessage
+audioButton actions = HE.svg (actions <> [ HA.class' "attachment-button audio-button", HA.viewBox "0 0 512 512" ])
+      [ HE.g_
+              [ HE.path' [ HA.class' "strokeless", HA.d "m439.5,236c0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,70-64,126.9-142.7,126.9-78.7,0-142.7-56.9-142.7-126.9 0-11.3-9.1-20.4-20.4-20.4s-20.4,9.1-20.4,20.4c0,86.2 71.5,157.4 163.1,166.7v57.5h-23.6c-11.3,0-20.4,9.1-20.4,20.4 0,11.3 9.1,20.4 20.4,20.4h88c11.3,0 20.4-9.1 20.4-20.4 0-11.3-9.1-20.4-20.4-20.4h-23.6v-57.5c91.6-9.3 163.1-80.5 163.1-166.7z" ]
+              , HE.path' [ HA.class' "strokeless", HA.d "m256,323.5c51,0 92.3-41.3 92.3-92.3v-127.9c0-51-41.3-92.3-92.3-92.3s-92.3,41.3-92.3,92.3v127.9c0,51 41.3,92.3 92.3,92.3zm-52.3-220.2c0-28.8 23.5-52.3 52.3-52.3s52.3,23.5 52.3,52.3v127.9c0,28.8-23.5,52.3-52.3,52.3s-52.3-23.5-52.3-52.3v-127.9z" ]
+              ]
       ]
 
 sendButton ∷ Boolean → ImModel → Html ImMessage
