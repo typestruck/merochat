@@ -27,5 +27,6 @@ export function start_(constraints, options, handler) {
 }
 
 export function stop_() {
-    mediaRecorder.stop();
+    setTimeout(() =>{mediaRecorder.stop();}, 2000);
+
 }
