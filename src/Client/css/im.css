@@ -2628,6 +2628,7 @@ select {
     .audio-form {
         text-align: center;
         align-items: center;
+        -webkit-user-select: none;
     }
 
     .modal-form .audio-button:active {
