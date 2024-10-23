@@ -4,12 +4,14 @@ import Prelude
 
 import Control.Promise (Promise)
 import Control.Promise as CP
-import Data.Either (Either(..))
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
-import Data.Set (member) as DS
+import Data.Set (member) as DST
 import Data.String (Pattern(..))
-import Data.String (split) as DS
+import Data.String as DS
+import Data.String.Regex as DSR
+import Data.String.Regex.Flags (noFlags)
+import Data.String.Regex.Unsafe as DSRU
 import Data.UUID as DU
 import Debug (spy)
 import Effect (Effect)
@@ -21,8 +23,7 @@ import Node.FS.Aff as NFA
 import Run as R
 import Server.Effect (BaseEffect, Configuration)
 import Server.Response as SR
-import Shared.Resource (Media(..), ResourceType(..), allowedExtensions, allowedMediaTypes, localBasePath, maxImageSize, maxImageSizeKB, uploadFolder)
-import Shared.Resource as SP
+import Shared.Resource (allowedExtensions, allowedMediaTypes, localBasePath, maxImageSize, maxImageSizeKB, uploadFolder)
 
 foreign import realFileExtension_ ∷ Buffer → Effect (Promise String)
 
@@ -39,7 +40,7 @@ saveBase64File ∷ ∀ r. String → BaseEffect { configuration ∷ Configuratio
 saveBase64File input =
       case DS.split (Pattern ",") input of
             [ mediaType, base64 ] → do
-                  case DH.lookup mediaType allowedMediaTypes of
+                  case DH.lookup (DSR.replace (DSRU.unsafeRegex "codecs=.+;" noFlags) "" mediaType) allowedMediaTypes of
                         Nothing → invalidImage
                         Just _ → do
                               buffer ← R.liftEffect $ NB.fromString base64 Base64
@@ -48,7 +49,7 @@ saveBase64File input =
                                     SR.throwBadRequest imageTooBigMessage
                               else do
                                     extension ← map ("." <> _) <<< R.liftAff $ realFileExtension buffer
-                                    if DS.member extension allowedExtensions then do
+                                    if DST.member extension allowedExtensions then do
                                           uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
                                           let fileName = uuid <> extension
                                           R.liftAff $ NFA.writeFile (localBasePath <> uploadFolder <> fileName) buffer
