@@ -40,8 +40,6 @@ data ExperimentPayload = ImpersonationPayload
       , sender ∷ Boolean
       }
 
-
-
 derive instance Generic ExperimentPayload _
 
 instance EncodeJson ExperimentPayload where
@@ -49,7 +47,6 @@ instance EncodeJson ExperimentPayload where
 
 instance DecodeJson ExperimentPayload where
       decodeJson = DADGR.genericDecodeJson
-
 
 instance Show ExperimentPayload where
       show = DGRS.genericShow
@@ -70,17 +67,17 @@ view model = HE.div (HA.class' "impersonation")
       , profiles Celebrities [ nicolasCage ]
       , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: true }) --DM.isNothing impersonation })
               [ HE.div (HA.class' "confirmation")
-                          if SPV.hasPrivilege ImpersonationChatExperiment user then
-                                [ HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <> DM.maybe "" _.name impersonation <> "?"
+                          if SPV.hasPrivilege ImpersonationChatExperiment model.user then
+                                [ HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <> {- DM.maybe "" _.name model.impersonation -}  "?"
                                 , HE.div (HA.class' "buttons")
-                                        [ HE.button [ HA.class' "cancel", HA.onClick $ ConfirmImpersonation Nothing ] "Cancel"
-                                        , HE.button [ HA.class' "green-button", HA.onClick <<< JoinExperiment $ Impersonation impersonation ] "Start"
+                                        [ HE.button [ HA.class' "cancel" {- , HA.onClick $ ConfirmImpersonation Nothing -}] "Cancel"
+                                        , HE.button [ HA.class' "green-button" {-, HA.onClick <<< JoinExperiment $ Impersonation impersonation -}] "Start"
                                         ]
                                 ]
                           else
                                 [ CCP.notEnoughKarma "start this chat experiment" RedirectKarma
                                 , HE.div (HA.class' "buttons")
-                                        $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmImpersonation Nothing ] "Dismiss"
+                                        $ HE.button [ HA.class' "green-button" {-, HA.onClick $ ConfirmImpersonation Nothing -}] "Dismiss"
                                 ]
               ]
       ]
@@ -91,7 +88,7 @@ view model = HE.div (HA.class' "impersonation")
             ]
 
       profiles s = HE.div (HA.class' { hidden: model.section /= s }) <<< DA.mapWithIndex toProfile
-      toProfile index p = HE.div [ HA.class' "contact", HA.onClick <<< ConfirmImpersonation $ Just p ]
+      toProfile index p = HE.div [ HA.class' "contact" {-, HA.onClick $ ConfirmExperiment Impersonation -}]
             [ HE.div (HA.class' "avatar-contact-list-div")
                     [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (Just index), HA.src $ SU.fromJust p.avatar ]
                     ]
