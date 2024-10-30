@@ -13,9 +13,9 @@ import Data.Maybe (Maybe(..))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
-
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
+import Shared.User (IU)
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
 type ChatExperiment =
@@ -30,20 +30,22 @@ type ChatExperimentUser = { privileges ∷ Array Privilege }
 data ChatExperimentMessage
       = QuitExperiment
       | JoinExperiment ChatExperiment
-      | ConfirmExperiment Experiment
+      | ConfirmExperiment (Maybe Experiment)
       | RedirectKarma
       | ToggleSection ImpersonationSection
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
 type ChatExperimentModel =
       { experiments ∷ Array ChatExperiment
-      , current ∷ Maybe ChatExperiment
+      , confirming ∷ Maybe Experiment
+      , current ∷ Maybe Experiment
       , user ∷ ChatExperimentUser
-      --impersonation
       , section ∷ ImpersonationSection
       }
 
-data Experiment = Impersonation | WordChain
+data Experiment = Impersonation (Maybe ImpersonationProfile) | WordChain
+
+type ImpersonationProfile = Record IU
 
 data ImpersonationSection
       = HideSections
@@ -58,26 +60,26 @@ derive instance Eq ImpersonationSection
 derive instance Ord Experiment
 
 instance Bounded Experiment where
-      bottom = Impersonation
+      bottom = Impersonation Nothing
       top = WordChain
 
 instance BoundedEnum Experiment where
       cardinality = Cardinality 1
       fromEnum = case _ of
-            Impersonation → 0
+            Impersonation _ → 0
             WordChain → 10
       toEnum = case _ of
-            0 → Just Impersonation
+            0 → Just (Impersonation Nothing)
             10 → Just WordChain
             _ → Nothing
 
 instance Enum Experiment where
       succ = case _ of
-            Impersonation → Just WordChain
+            Impersonation _ → Just WordChain
             WordChain → Nothing
       pred = case _ of
-            Impersonation → Nothing
-            WordChain → Just Impersonation
+            Impersonation _ → Nothing
+            WordChain → Just (Impersonation Nothing)
 
 derive instance Generic Experiment _
 
