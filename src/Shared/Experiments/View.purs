@@ -11,7 +11,7 @@ import Shared.Experiments.Impersonation as SEI
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
 view model = HE.div (HA.class' "chat-experiments") $ case model.current of
-      Just { code: Impersonation } →
+      Just _ →
             HE.div (HA.class' "modal-section") "joined" -- $ SEI.joined profile
       _ →
             HE.div (HA.class' "modal-section") $ map toDiv model.experiments
@@ -26,5 +26,5 @@ view model = HE.div (HA.class' "chat-experiments") $ case model.current of
 
 extra :: ChatExperimentModel → Experiment -> Html ChatExperimentMessage
 extra model = case _ of
-      Impersonation -> SEI.view model
+      Impersonation ip -> SEI.view model
       WordChain -> HE.div_ "wordchain"

@@ -40,8 +40,8 @@ import Shared.ResponseError (ResponseError(..))
 
 im ∷ Int → ServerEffect Payload
 im loggedUserId = do
-      maybeUser ← SID.presentUser $ spy "log" loggedUserId
-      case spy "mb" maybeUser of
+      maybeUser ← SID.presentUser loggedUserId
+      case maybeUser of
             --happens if the user has an invalid cookie/was suspended
             Nothing → RE.throw ExpiredSession
             Just user → do
