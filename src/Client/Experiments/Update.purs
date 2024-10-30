@@ -28,7 +28,7 @@ update model =
                         { current = Just code
                         } /\ dispatchEvent (Just code)
             ToggleSection section → F.noMessages $ model { section = section }
-            --     ConfirmImpersonation profile → F.noMessages model { impersonation = profile }
+            ConfirmExperiment experiment → F.noMessages model
             RedirectKarma → model /\
                   [ do
                           liftEffect <<< FS.send imId <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges
