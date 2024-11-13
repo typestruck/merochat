@@ -25,6 +25,18 @@
     margin: 10px 0;
 }
 
+.word-chain {
+    margin: 10px 25px;
+}
+
+.word-chain .green-button {
+    font-weight: bold;
+}
+
+.chat-experiments .modal-part {
+    margin-bottom: 40px;
+}
+
 .impersonation-header {
     border-bottom: 1px solid #373737;
     padding: 0px 5px;
