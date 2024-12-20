@@ -7,10 +7,8 @@ import Data.Either (Either(..))
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DMB
-import Debug (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Class.Console as EC
 import Node.HTTP (Request)
 import Node.HTTP as NH
 import Payload.Headers (empty)
@@ -66,6 +64,6 @@ badRequest ∷ ∀ r. Aff (Either (Response Empty) r)
 badRequest = pure <<< Left $ PSR.badRequest Empty
 
 redirect ∷ ∀ r. String → Aff (Either (Response Empty) r)
-redirect route = pure <<< Left <<< PSR.setHeaders location $ PSR.found Empty
+redirect route = pure <<< Left <<< PSR.setHeaders location $ PSR.seeOther Empty
       where
       location = PH.set "Location" route empty
