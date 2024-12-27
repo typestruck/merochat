@@ -78,7 +78,7 @@ presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
 
 suggest ∷ Int → Int → ServerEffect (Array FlatUser)
-suggest loggedUserId skip = SD.query $ suggestBaseQuery loggedUserId skip baseFilter -- default case
+suggest loggedUserId skip = SD.query $ suggestBaseQuery loggedUserId skip baseFilter
       where
       baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
 

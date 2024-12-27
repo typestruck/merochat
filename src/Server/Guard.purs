@@ -64,6 +64,6 @@ badRequest ∷ ∀ r. Aff (Either (Response Empty) r)
 badRequest = pure <<< Left $ PSR.badRequest Empty
 
 redirect ∷ ∀ r. String → Aff (Either (Response Empty) r)
-redirect route = pure <<< Left <<< PSR.setHeaders location $ PSR.seeOther Empty
+redirect route = pure <<< Left <<< PSR.setHeaders location $ PSR.found Empty
       where
       location = PH.set "Location" route empty
