@@ -214,6 +214,7 @@ create table suggestions
     id integer generated always as identity primary key,
     suggested integer not null,
     score integer not null,
+    bin smallint not null default 4,
 
     constraint user_suggested foreign key (suggested) references users(id) on delete cascade
 );
@@ -326,6 +327,20 @@ create table complete_profiles
     constraint complete_profile_user foreign key (completer) references users(id) on delete cascade,
     constraint unique_completer_completed_profile unique(completer, completed)
 );
+
+-- when users first edit new field in their profile, place them higher in the suggestions list if have filled 3 or more profile fields
+create or replace function temporarily_place_at_top() returns trigger as
+$$
+begin
+    if (select count(1) from complete_profiles where completer = new.completer) >= 3 then
+        update suggestions set bin = 1 where suggested = new.completer;
+    end if;
+    return new;
+end;
+$$
+language plpgsql;
+
+create trigger recent_edit_boom after insert on complete_profiles for each row execute function temporarily_place_at_top();
 
 create or replace function insert_history
 (sender_id int, recipient_id int) returns void as

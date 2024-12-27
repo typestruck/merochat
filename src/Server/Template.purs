@@ -93,7 +93,7 @@ externalFooter =
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#faq") "FAQ"
                     , HE.li_ $ HE.a (HA.href $ routes.backer {}) "Become a backer"
                     , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#terms") "Terms and conditions"
-                    , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy police"
+                    , HE.li_ $ HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy policy"
                     , HE.li_ $ HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] "Source code"
                     ]
             ]
