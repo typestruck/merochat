@@ -12,6 +12,7 @@ import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
 import Debug (spy)
 import Run as R
+import Server.Database.CompleteProfiles as CP
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
 import Server.File as SF
@@ -52,27 +53,32 @@ saveGeneratedField loggedUserId field value = do
             Name → DS.take nameMaxCharacters <$> DM.maybe ST.generateName pure value
             Headline → DS.take headlineMaxCharacters <$> DM.maybe ST.generateHeadline pure value
             Description → SS.sanitize <<< DS.take descriptionMaxCharacters <$> DM.maybe ST.generateDescription pure value
-      SPD.saveField loggedUserId (show field) finalValue
+      SPD.saveRequiredField loggedUserId f (DM.isNothing value) finalValue
       pure finalValue
+      where
+      f = case field of
+            Name → CP.Name
+            Headline → CP.Headline
+            Description → CP.Description
 
 saveAvatar ∷ Int → Maybe String → ServerEffect Unit
 saveAvatar loggedUserId base64 = do
       avatar ← case base64 of
             Nothing → pure Nothing
             Just path → Just <$> SF.saveBase64File path
-      SPD.saveField loggedUserId "avatar" avatar
+      SPD.saveField loggedUserId CP.Avatar avatar
 
 saveAge ∷ Int → Maybe DateWrapper → ServerEffect Unit
 saveAge loggedUserId birthday = do
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map DN.unwrap birthday > eighteen) $ SR.throwBadRequest tooYoungMessage
-      SPD.saveField loggedUserId "birthday" birthday
+      SPD.saveField loggedUserId CP.Birthday birthday
 
 saveGender ∷ Int → Maybe Gender → ServerEffect Unit
-saveGender loggedUserId gender = SPD.saveField loggedUserId "gender" gender
+saveGender loggedUserId gender = SPD.saveField loggedUserId CP.Gender gender
 
 saveCountry ∷ Int → Maybe Int → ServerEffect Unit
-saveCountry loggedUserId country = SPD.saveField loggedUserId "country" country
+saveCountry loggedUserId country = SPD.saveField loggedUserId CP.Country country
 
 saveLanguages ∷ Int → Maybe (Array Int) → ServerEffect Unit
 saveLanguages loggedUserId languages = SPD.saveLanguages loggedUserId <<< DA.take maxLanguages $ DM.fromMaybe [] languages
@@ -85,3 +91,4 @@ saveTags loggedUserId tags = do
                   | moreTags = maxFinalTags
                   | otherwise = maxStartingTags
       SPD.saveTags loggedUserId <<< DA.take numberTags <<< map (DS.take tagMaxCharacters) $ DM.fromMaybe [] tags
+

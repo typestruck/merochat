@@ -1,25 +1,29 @@
 module Server.Profile.Database where
 
+import Droplet.Language
+import Server.Database.Badges
+import Server.Database.BadgesUsers
+import Server.Database.CompleteProfiles
 import Server.Database.Privileges
 
 import Data.Array as DA
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import Droplet.Language
-import Prelude (Unit, bind, discard, map, void, when, (#), ($), (<<<), (<>))
+import Droplet.Driver.Internal.Query (Connection(..))
+import Prelude hiding (join)
 import Prelude as P
 import Server.Database as SD
+import Server.Database.CompleteProfiles as CP
 import Server.Database.Countries (countries)
 import Server.Database.Fields (_id, _name, k, l, lu, tu, u, b, bu)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.Tags (_tags, tags)
-import Server.Database.Badges
-import Server.Database.BadgesUsers
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, users)
-import Server.Profile.Database.Flat (FlatProfileUser)
 import Server.Effect (ServerEffect)
+import Server.Profile.Database.Flat (FlatProfileUser)
 import Shared.Unsafe as SU
 import Simple.JSON as SJ
 import Type.Proxy (Proxy(..))
@@ -50,18 +54,43 @@ presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _
 presentLanguages ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
 
-saveField ∷ ∀ t. ToValue t ⇒ Int → String → t → ServerEffect Unit
-saveField loggedUserId field value = SD.unsafeExecute ("UPDATE users SET " <> field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
+upsertCompletness ∷ Connection → Int → CP.ProfileColumn → _
+upsertCompletness connection loggedUserId field = SD.unsafeExecuteWith connection "INSERT INTO complete_profiles(completer, completed) values(@loggedUserId, @field) ON CONFLICT (completer, completed) DO NOTHING" { loggedUserId, field }
+
+removeCompletness ∷ Connection → Int → CP.ProfileColumn → _
+removeCompletness connection loggedUserId field = SD.executeWith connection $ delete # from complete_profiles # wher (_completer .=. loggedUserId .&&. _completed .=. field)
+
+saveRequiredField ∷ ∀ t. ToValue t ⇒ Int → CP.ProfileColumn → Boolean → t → ServerEffect Unit
+saveRequiredField loggedUserId field generated value = SD.withTransaction $ \connection → do
+      SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
+      if generated then
+            removeCompletness connection loggedUserId field
+      else
+            upsertCompletness connection loggedUserId field
+
+saveField ∷ ∀ t. ToValue t ⇒ Int → CP.ProfileColumn → Maybe t → ServerEffect Unit
+saveField loggedUserId field value = SD.withTransaction $ \connection → do
+      SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
+      case value of
+            Just _ → upsertCompletness connection loggedUserId field
+            Nothing → removeCompletness connection loggedUserId field
 
 saveLanguages ∷ Int → Array Int → ServerEffect Unit
 saveLanguages loggedUserId languages = SD.withTransaction $ \connection → void do
       SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. loggedUserId)
-      when (P.not $ DA.null languages) $ SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (map (loggedUserId /\ _) languages)
+      if DA.null languages then
+            removeCompletness connection loggedUserId CP.Languages
+      else do
+            upsertCompletness connection loggedUserId CP.Languages
+            SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (map (loggedUserId /\ _) languages)
 
 saveTags ∷ Int → Array String → ServerEffect Unit
 saveTags loggedUserId tags = SD.withTransaction $ \connection → void do
       SD.executeWith connection $ delete # from tags_users # wher (_creator .=. loggedUserId)
-      when (P.not $ DA.null tags) do
+      if DA.null tags then
+            removeCompletness connection loggedUserId CP.Tags
+      else do
+            upsertCompletness connection loggedUserId CP.Tags
             -- update anyway so we can have a returning for all rows
             tagIds ∷ Array { id ∷ Int } ← SD.unsafeQueryWith connection "INSERT INTO tags (name) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (tag text)) ON CONFLICT ON CONSTRAINT unique_tag DO UPDATE SET name = excluded.name RETURNING id" { jsonInput: SJ.writeJSON $ map { tag: _ } tags }
             SD.executeWith connection $ insert # into tags_users (_creator /\ _tag) # values (map ((loggedUserId /\ _) <<< _.id) tagIds)

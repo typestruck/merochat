@@ -87,12 +87,6 @@ derive instance Eq What
 
 derive instance Ord What
 
-instance Show Field where
-      show = DGRS.genericShow
-
-instance Show What where
-      show = DGRS.genericShow
-
 instance EncodeJson Field where
       encodeJson = DAEGR.genericEncodeJson
 
