@@ -13,7 +13,7 @@ import Web.Event.Internal.Types (Event)
 foreign import touchStart ∷ EffectFn1 Event Unit
 foreign import touchEnd ∷ EffectFn1 Event (Array Int)
 
-onTouchStart ∷ ∀ message. Maybe message -> NodeData message
+onTouchStart ∷ ∀ message. Maybe message → NodeData message
 onTouchStart message = HA.createRawEvent "touchstart" handler
       where
       handler event = do

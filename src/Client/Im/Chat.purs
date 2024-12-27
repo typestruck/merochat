@@ -171,7 +171,7 @@ sendMessage
                     , content: case content of
                             Text message → message
                             Image caption base64File → asMarkdownImage caption base64File
-                            Audio base64 -> asAudioMessage base64
+                            Audio base64 → asAudioMessage base64
                     }
             }
       updatedModel = model
@@ -184,7 +184,7 @@ sendMessage
 
       asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
 
-      asAudioMessage base64 = "<audio controls src='"<> base64 <> "'></audio>"
+      asAudioMessage base64 = "<audio controls src='" <> base64 <> "'></audio>"
 
 makeTurn ∷ ImUser → Contact → Maybe Turn
 makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
@@ -429,19 +429,20 @@ audioMessage ∷ Touch → ImModel → MoreMessages
 audioMessage touch model =
       model { toggleChatModal = HideChatModal } /\
             [ do
-                  when (touch.startX - touch.endX <= threshold && touch.startY - touch.endY <= threshold) $ liftEffect CIR.stop
-                  pure Nothing
+                    when (touch.startX - touch.endX <= threshold && touch.startY - touch.endY <= threshold) $ liftEffect CIR.stop
+                    pure Nothing
             ]
 
       where
       threshold = 20
 
-sendAudioMessage :: String -> ImModel -> MoreMessages
+sendAudioMessage ∷ String → ImModel → MoreMessages
 sendAudioMessage base64 model =
-      model /\ [ do
-            date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
-            pure <<< Just $ SendMessage (Audio base64) date
-      ]
+      model /\
+            [ do
+                    date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
+                    pure <<< Just $ SendMessage (Audio base64) date
+            ]
 
 --this messy ass event can be from double click, context menu or swipe
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage

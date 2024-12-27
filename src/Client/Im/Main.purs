@@ -47,6 +47,7 @@ import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Effect.Ref as ER
+import Effect.Timer as ET
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..))
 import Flame as F
@@ -138,9 +139,9 @@ update st model =
             Apply markup → CIC.applyMarkup markup model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
-            BeforeAudioMessage -> CIC.beforeAudioMessage model
-            AudioMessage touch -> CIC.audioMessage touch model
-            SendAudioMessage base64 -> CIC.sendAudioMessage base64 model
+            BeforeAudioMessage → CIC.beforeAudioMessage model
+            AudioMessage touch → CIC.audioMessage touch model
+            SendAudioMessage base64 → CIC.sendAudioMessage base64 model
             FocusCurrentSuggestion → CIC.focusCurrentSuggestion model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message et → CIC.quoteMessage message et model
@@ -282,6 +283,7 @@ finishTutorial model@{ toggleModal } = model { user { completedTutorial = true }
                   Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
                   _ → pure Nothing
       greet = do
+            EA.delay $ Milliseconds 2000.0
             void <<< CCNT.silentResponse $ request.im.greeting {}
             contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
             pure <<< Just $ DisplayNewContacts contact
