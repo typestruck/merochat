@@ -17,6 +17,8 @@ import Data.Hashable (class Hashable)
 import Data.Hashable as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
+import Data.Maybe.First (First)
 import Data.Show.Generic as DGRS
 import Data.String.Regex as DSRG
 import Data.String.Regex.Flags (noFlags)
@@ -117,6 +119,7 @@ type Im =
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
       , freeToFetchContactList ∷ Boolean
+      , suggestionsFrom ∷ SuggestionsFrom
       , freeToFetchSuggestions ∷ Boolean
       , selectedImage ∷ Maybe String
       , imageCaption ∷ Maybe String
@@ -381,12 +384,25 @@ data WebSocketPayloadClient
       | BadMessage { userId ∷ Int, temporaryMessageId ∷ Maybe Int } --either lacks privilege or forbidden html tags
       | PayloadError { origin ∷ WebSocketPayloadServer, context ∷ Maybe DatabaseError }
 
-newtype ArrayPrimaryKey = ArrayPrimaryKey (Array Int)
-
 data MessageError = UserUnavailable | InvalidMessage
+
+data SuggestionsFrom = ThisWeek | LastTwoWeeks | LastMonth | All
+
+instance EncodeQueryParam SuggestionsFrom where
+      encodeQueryParam = Just <<< show <<< DE.fromEnum
+
+instance DecodeQueryParam SuggestionsFrom where
+      decodeQueryParam query key =
+            case FO.lookup key query of
+                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
+                  Just [ value ] → DM.maybe (errorDecoding query key) Right (DI.fromString value >>= DE.toEnum)
+                  _ → errorDecoding query key
+
+derive instance Eq SuggestionsFrom
 
 derive instance Ord ReportReason
 derive instance Ord MessageStatus
+derive instance Ord SuggestionsFrom
 
 instance ReadForeign MessageStatus where
       readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
@@ -400,6 +416,10 @@ instance WriteForeign ReportReason where
 instance WriteForeign MessageStatus where
       writeImpl messageStatus = F.unsafeToForeign $ DE.fromEnum messageStatus
 
+instance Bounded SuggestionsFrom where
+      bottom = ThisWeek
+      top = All
+
 instance Bounded MessageStatus where
       bottom = Received
       top = Read
@@ -407,6 +427,20 @@ instance Bounded MessageStatus where
 instance Bounded ReportReason where
       bottom = DatingContent
       top = OtherReason
+
+instance BoundedEnum SuggestionsFrom where
+      cardinality = Cardinality 1
+      fromEnum = case _ of
+            ThisWeek → 0
+            LastTwoWeeks → 1
+            LastMonth → 2
+            All → 3
+      toEnum = case _ of
+            0 → Just ThisWeek
+            1 → Just LastTwoWeeks
+            2 → Just LastMonth
+            3 → Just All
+            _ → Nothing
 
 instance BoundedEnum MessageStatus where
       cardinality = Cardinality 1
@@ -442,6 +476,18 @@ instance BoundedEnum ReportReason where
             255 → Just OtherReason
             _ → Nothing
 
+instance Enum SuggestionsFrom where
+      succ = case _ of
+            ThisWeek → Just LastTwoWeeks
+            LastTwoWeeks → Just LastMonth
+            LastMonth → Just All
+            All → Nothing
+      pred = case _ of
+            ThisWeek → Nothing
+            LastTwoWeeks → Just ThisWeek
+            LastMonth → Just LastTwoWeeks
+            All → Just LastMonth
+
 instance Enum ReportReason where
       succ = case _ of
             DatingContent → Just Harassment
@@ -474,6 +520,9 @@ instance Enum MessageStatus where
 
 instance DecodeJson TimeoutIdWrapper where
       decodeJson = Right <<< UC.unsafeCoerce
+
+instance DecodeJson SuggestionsFrom where
+      decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
@@ -510,6 +559,9 @@ instance DecodeJson MessageStatus where
 
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
+
+instance EncodeJson SuggestionsFrom where
+      encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson AfterLogout where
       encodeJson = DAEGR.genericEncodeJson
@@ -584,17 +636,6 @@ instance Show WebSocketPayloadServer where
 instance Show MessageError where
       show = DGRS.genericShow
 
-instance EncodeQueryParam ArrayPrimaryKey where
-      encodeQueryParam (ArrayPrimaryKey ap) = Just $ show ap
-
-instance DecodeQueryParam ArrayPrimaryKey where
-      decodeQueryParam query key =
-            case FO.lookup key query of
-                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
-                  --this is terrible
-                  Just [ value ] → Right <<< ArrayPrimaryKey <<< DA.catMaybes <<< map DI.fromString $ DSRG.split (DSRU.unsafeRegex "\\D" noFlags) value
-                  _ → errorDecoding query key
-
 derive instance Eq ShowContextMenu
 derive instance Eq AfterLogout
 derive instance Eq ProfilePresentation
@@ -608,6 +649,7 @@ derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
 derive instance Generic Step _
+derive instance Generic SuggestionsFrom _
 derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
 derive instance Generic MessageContent _

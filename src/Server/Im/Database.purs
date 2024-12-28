@@ -13,6 +13,7 @@ import Data.BigInt as DB
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
@@ -38,13 +39,16 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
-import Shared.Im.Types (ArrayPrimaryKey(..), MessageStatus(..), Report, TemporaryMessageId, HistoryMessage)
+import Shared.DateTime as ST
+import Shared.Im.Types (HistoryMessage, MessageStatus(..), Report, SuggestionsFrom(..), TemporaryMessageId)
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
-userPresentationFields =
+userPresentationFields = userFields /\ (1 # as _bin)
+
+userFields =
       (u ... _id # as _id)
             /\ _avatar
             /\ _gender
@@ -77,29 +81,34 @@ usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=.
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
 
-suggest ∷ Int → Int → ServerEffect (Array FlatUser)
-suggest loggedUserId skip = SD.query $ suggestBaseQuery loggedUserId skip baseFilter
+suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array FlatUser)
+suggest loggedUserId skip =
+      case _ of
+            ThisWeek → SD.query $ suggestMainQuery loggedUserId skip thisWeekFilter
+            LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
+            LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
+            All → SD.query (suggestBaseQuery loggedUserId baseFilter # orderBy (_score /\ (l ... _date # desc)))
       where
-      baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
+      thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
+      lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
+      lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))
 
+      baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
       visibilityFilter =
             _visibility .=. Everyone .&&. _temporary .=. Checked false .||. _visibility .=. NoTemporaryUsers .&&. not (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
-
       blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))
 
 -- top level to avoid monomorphic filter
-suggestBaseQuery loggedUserId skip filter =
-      select star
-            # from
-                    ( select userPresentationFields
-                            # from (leftJoin (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
-                            # wher filter
-                            # orderBy ((_sender # desc) /\ (l ... _date # desc) /\ _score)
-                            # limit (Proxy ∷ Proxy 10)
-                            # offset skip
-                            # as u
-                    )
-            # orderBy random
+suggestBaseQuery loggedUserId filter =
+      select (userFields /\ _bin)
+            # from (leftJoin (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
+            # wher filter
+
+suggestMainQuery loggedUserId skip filter =
+      suggestBaseQuery loggedUserId filter
+            # orderBy ((_sender # desc) /\ _bin /\ (l ... _date # desc))
+            # limit (Proxy ∷ Proxy 10)
+            # offset skip
 
 presentUserContactFields ∷ String
 presentUserContactFields =
@@ -117,6 +126,7 @@ presentUserContactFields =
       , completed_tutorial "completedTutorial"
       , date_part_age ('year', birthday) age
       , name
+      , 1 as bin
       , ls.date as "lastSeen"
       , visibility "profileVisibility"
       , read_receipts "readReceipts"

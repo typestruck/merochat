@@ -34,8 +34,8 @@ contact { guards: { loggedUserId }, query: { id } } = SIA.listSingleContact logg
 history ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int, with ∷ Int } } → ServerEffect (Array HistoryMessage)
 history { guards: { loggedUserId }, query: { with, skip } } = SIA.resumeChatHistory loggedUserId with skip
 
-suggestions ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int } } → ServerEffect (Array Suggestion)
-suggestions { guards: { loggedUserId }, query: { skip } } = SIA.suggest loggedUserId skip
+suggestions ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int, sg ∷ SuggestionsFrom } } → ServerEffect (Array Suggestion)
+suggestions { guards: { loggedUserId }, query } = SIA.suggest loggedUserId query.skip query.sg
 
 block ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Ok
 block { guards: { loggedUserId }, body: { id } } = do

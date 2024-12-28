@@ -88,8 +88,8 @@ spec ∷
                                                 , response ∷ Array HistoryMessage
                                                 }
                                   , suggestions ∷
-                                          GET "/suggestions?skip=<skip>"
-                                                { query ∷ { skip ∷ Int }
+                                          GET "/suggestions?skip=<skip>&sg=<sg>"
+                                                { query ∷ { skip ∷ Int, sg ∷ SuggestionsFrom }
                                                 , response ∷ Array Suggestion
                                                 }
                                   , block ∷

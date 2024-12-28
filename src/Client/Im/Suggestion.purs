@@ -11,13 +11,14 @@ import Client.Im.WebSocket as CIW
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple)
 import Data.Tuple as DT
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
-import Data.Tuple.Nested ((/\))
 import Flame as F
 import Shared.Options.Page (suggestionsPerPage)
 import Web.Socket.WebSocket (WebSocket)
@@ -51,25 +52,27 @@ previousSuggestion model@{ suggesting } =
                         }
 
 fetchMoreSuggestions ∷ ImModel → NextMessage
-fetchMoreSuggestions model@{ contacts, suggestionsPage } =
+fetchMoreSuggestions model =
       model
             { freeToFetchSuggestions = false
             , failedRequests = []
             } /\
             [ CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions
                     { query:
-                            { skip: suggestionsPerPage * suggestionsPage
+                            { skip: suggestionsPerPage * model.suggestionsPage
+                            , sg: model.suggestionsFrom
                             }
                     }
             ]
 
 displayMoreSuggestions ∷ Array Suggestion → ImModel → MoreMessages
-displayMoreSuggestions suggestions model@{ suggestionsPage } =
+displayMoreSuggestions suggestions model =
       --if we looped through all the suggestions, retry
-      if suggestionsSize == 0 && suggestionsPage > 0 then
+      if suggestionsSize == 0 && model.suggestionsPage > 0 then
             fetchMoreSuggestions $ model
                   { suggestionsPage = 0
                   , suggesting = suggesting
+                  , suggestionsFrom = sg
                   }
       else
             F.noMessages $ model
@@ -77,11 +80,16 @@ displayMoreSuggestions suggestions model@{ suggestionsPage } =
                   , chatting = Nothing
                   , freeToFetchSuggestions = true
                   , suggestions = suggestions
-                  , suggestionsPage = if suggestionsSize == 0 then 0 else suggestionsPage + 1
+                  , suggestionsPage = if suggestionsSize == 0 || sg /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
+                  , suggestionsFrom = sg
                   }
       where
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
+      shouldSwithCategory = suggestionsSize == 0 || (DA.length $ DA.filter ((_ > 4) <<< _.bin) suggestions) / DA.length suggestions * 100 >= 60
+      sg
+            | shouldSwithCategory = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
+            | otherwise = model.suggestionsFrom
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
 blockUser webSocket id model =

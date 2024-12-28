@@ -94,6 +94,7 @@ batman =
       , karmaPosition: 342
       , gender: Just $ show Male
       , privileges: []
+      , bin: 1
       , badges: []
       , temporary: false
       , country: Just "Gotham"
@@ -109,6 +110,7 @@ socrates =
       , avatar: Just $ SP.resourcePath (Left SocratesStingWikimedia) Png
       , headline: "I know that I know nothing"
       , profileVisibility: Everyone
+      , bin: 1
       , availability: None
       , readReceipts: true
       , privileges: []
@@ -146,6 +148,7 @@ nicolasCage =
       , completedTutorial: true
       , privileges: []
       , badges: []
+      , bin: 1
       , typingStatus: true
       , temporary: false
       , joined: DateTimeWrapper epoch

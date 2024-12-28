@@ -45,6 +45,7 @@ template payload = do
                     , freeToFetchChatHistory: true
                     , suggestionsPage: 0
                     , errorMessage: ""
+                    , suggestionsFrom: ThisWeek
                     , lastTyping: DateTimeWrapper lt
                     , smallScreen: false
                     , initialScreen: true

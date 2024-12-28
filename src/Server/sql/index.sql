@@ -214,7 +214,7 @@ create table suggestions
     id integer generated always as identity primary key,
     suggested integer not null,
     score integer not null,
-    bin smallint not null default 4,
+    bin smallint not null default 6,
 
     constraint user_suggested foreign key (suggested) references users(id) on delete cascade
 );

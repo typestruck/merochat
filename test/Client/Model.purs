@@ -30,6 +30,7 @@ model =
       , freeToFetchSuggestions: true
       , typingIds: []
       , initialScreen: true
+      , suggestionsFrom : ThisWeek
       , temporaryEmail: Nothing
       , temporaryPassword: Nothing
       , suggestionsPage: 0
@@ -83,6 +84,7 @@ imUser =
       , typingStatus: true
       , onlineStatus: true
       , avatar: Nothing
+      , bin: 1
       , country: Nothing
       , availability: None
       , languages: []

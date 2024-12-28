@@ -10,7 +10,7 @@ import Type.Proxy (Proxy(..))
 type LastSeen =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
       , who ∷ Column Int (ForeignKey "id" UsersTable)
-      , date ∷ Column DateTime Default
+      , date ∷ DateTime
       )
 
 last_seen ∷ Table "last_seen" LastSeen

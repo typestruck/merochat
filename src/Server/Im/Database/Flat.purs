@@ -26,6 +26,7 @@ type FlatFields rest =
       , gender ∷ Maybe Gender
       , headline ∷ String
       , id ∷ Int
+      , bin ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int
       , completedTutorial ∷ Checked
@@ -74,6 +75,7 @@ fromFlatUser fc =
       { id: fc.id
       , name: fc.name
       , headline: fc.headline
+      , bin: fc.bin
       , profileVisibility: fc.profileVisibility
       , readReceipts: SC.coerce fc.readReceipts
       , messageTimestamps: SC.coerce fc.messageTimestamps

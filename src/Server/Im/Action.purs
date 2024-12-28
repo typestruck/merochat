@@ -45,7 +45,7 @@ im loggedUserId = do
             --happens if the user has an invalid cookie/was suspended
             Nothing → RE.throw ExpiredSession
             Just user → do
-                  suggestions ← suggest loggedUserId 0
+                  suggestions ← suggest loggedUserId 0 ThisWeek
                   contacts ← listContacts loggedUserId 0
                   pure
                         { contacts
@@ -53,8 +53,8 @@ im loggedUserId = do
                         , user: SIF.fromFlatUser user
                         }
 
-suggest ∷ Int → Int → ServerEffect (Array Suggestion)
-suggest loggedUserId skip = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip
+suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
+suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip sg
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip

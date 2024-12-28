@@ -62,6 +62,7 @@ type IU =
               , messageTimestamps ∷ Boolean
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
+              , bin ∷ Int
               , privileges ∷ Array Privilege
               )
       )

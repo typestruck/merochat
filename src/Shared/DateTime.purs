@@ -27,7 +27,7 @@ import Data.Show.Generic as DGRS
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Time as DTM
-import Data.Time.Duration (Days(..), Minutes(..))
+import Data.Time.Duration (class Duration, Days(..), Minutes(..))
 import Data.Time.Duration as DTD
 import Debug (spy)
 import Droplet.Language (class FromValue, class ToValue)
@@ -35,6 +35,7 @@ import Droplet.Language as DL
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
+import Flame.Html.Attribute (d)
 import Foreign (Foreign, ForeignError(..), F)
 import Foreign as F
 import Foreign.Object (Object)
@@ -172,6 +173,9 @@ daysDiff dt = daysInYear now - daysInYear dateTime
       offset = DTD.negateDuration $ EU.unsafePerformEffect EN.getTimezoneOffset
       now = localTime unsafeNow
       dateTime = localTime dt
+
+unsafeAdjustFromNow ∷ ∀ d. Duration d ⇒ d → DateTime
+unsafeAdjustFromNow duration = SU.fromJust $ DT.adjust duration unsafeNow
 
 localDateTimeWith ∷ (Number → String) → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
