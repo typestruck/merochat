@@ -87,7 +87,10 @@ suggest loggedUserId skip =
             ThisWeek → SD.query $ suggestMainQuery loggedUserId skip thisWeekFilter
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
-            All → SD.query (suggestBaseQuery loggedUserId baseFilter # orderBy (_score /\ (l ... _date # desc)))
+            All → SD.query
+                  ( suggestBaseQuery loggedUserId baseFilter # orderBy ((_score # desc) /\ (l ... _date # desc)) # limit (Proxy ∷ Proxy 10)
+                          # offset skip
+                  )
       where
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
