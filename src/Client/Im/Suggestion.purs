@@ -28,7 +28,7 @@ nextSuggestion model@{ suggestions, suggesting } =
       let
             next = DM.maybe 0 (_ + 1) suggesting
       in
-            if next == DA.length suggestions then
+            if next >= DA.length suggestions then
                   fetchMoreSuggestions model
             else
                   F.noMessages $ model
@@ -86,7 +86,7 @@ displayMoreSuggestions suggestions model =
       where
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
-      shouldSwithCategory = suggestionsSize == 0 || (DA.length $ DA.filter ((_ > 4) <<< _.bin) suggestions) / DA.length suggestions * 100 >= 60
+      shouldSwithCategory = suggestionsSize == 0 || model.suggestionsFrom /= OnlineOnly && (DA.length $ DA.filter ((_ > 4) <<< _.bin) suggestions) / DA.length suggestions * 100 >= 60
       sg
             | shouldSwithCategory = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
             | otherwise = model.suggestionsFrom
@@ -129,4 +129,10 @@ resumeSuggesting model@{ suggestions, suggesting } = F.noMessages $ model
       { chatting = Nothing
       , suggesting = if DA.length suggestions <= 1 then Just 0 else suggesting
       , toggleChatModal = HideChatModal
+      }
+
+toggleSuggestionsFromOnline ∷ ImModel → MoreMessages
+toggleSuggestionsFromOnline model = fetchMoreSuggestions model
+      { suggestionsFrom = if model.suggestionsFrom == OnlineOnly then ThisWeek else OnlineOnly
+      , suggestionsPage = 0
       }

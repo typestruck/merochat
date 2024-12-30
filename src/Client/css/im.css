@@ -897,7 +897,13 @@ svg.toolbar-action {
     flex-direction: row;
 }
 
-.chat-input-options label {
+.online-only-filter {
+    text-align: center;
+    font-size: 1em;
+    margin:8px 0px;
+}
+
+.online-only-filter label, .chat-input-options label {
     display: inline;
 }
 
@@ -1682,7 +1688,7 @@ select {
 .card-top-header {
     color: #C4D367;
     text-align: center;
-    margin: 15px 0px;
+    margin-top: 15px;
 }
 
 .profile-top-menu {
@@ -2855,7 +2861,11 @@ select {
     }
 
     .card-top-header {
-        margin: 40px 0px;
+        margin-top: 40px;
+    }
+
+    .online-only-filter {
+        margin:13px 0px;
     }
 
     .emoji-access {

@@ -170,6 +170,7 @@ update st model =
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → CIS.blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
+            ToggleSuggestionsFromOnline -> CIS.toggleSuggestionsFromOnline model
             --user menu
             ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
             Logout after → CIU.logout after model

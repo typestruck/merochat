@@ -282,6 +282,7 @@ data ImMessage
       | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
+      | ToggleSuggestionsFromOnline
 
       --chat
       | SetSelectedImage (Maybe String)
@@ -386,7 +387,7 @@ data WebSocketPayloadClient
 
 data MessageError = UserUnavailable | InvalidMessage
 
-data SuggestionsFrom = ThisWeek | LastTwoWeeks | LastMonth | All
+data SuggestionsFrom = ThisWeek | LastTwoWeeks | LastMonth | All | OnlineOnly
 
 instance EncodeQueryParam SuggestionsFrom where
       encodeQueryParam = Just <<< show <<< DE.fromEnum
@@ -431,15 +432,17 @@ instance Bounded ReportReason where
 instance BoundedEnum SuggestionsFrom where
       cardinality = Cardinality 1
       fromEnum = case _ of
-            ThisWeek → 0
-            LastTwoWeeks → 1
-            LastMonth → 2
-            All → 3
+            OnlineOnly -> 0
+            ThisWeek → 1
+            LastTwoWeeks → 2
+            LastMonth → 3
+            All → 4
       toEnum = case _ of
-            0 → Just ThisWeek
-            1 → Just LastTwoWeeks
-            2 → Just LastMonth
-            3 → Just All
+            0 -> Just OnlineOnly
+            1 → Just ThisWeek
+            2 → Just LastTwoWeeks
+            3 → Just LastMonth
+            4 → Just All
             _ → Nothing
 
 instance BoundedEnum MessageStatus where
@@ -478,12 +481,14 @@ instance BoundedEnum ReportReason where
 
 instance Enum SuggestionsFrom where
       succ = case _ of
+            OnlineOnly -> Just ThisWeek
             ThisWeek → Just LastTwoWeeks
             LastTwoWeeks → Just LastMonth
             LastMonth → Just All
             All → Nothing
       pred = case _ of
-            ThisWeek → Nothing
+            OnlineOnly -> Nothing
+            ThisWeek → Just OnlineOnly
             LastTwoWeeks → Just ThisWeek
             LastMonth → Just LastTwoWeeks
             All → Just LastMonth

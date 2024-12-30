@@ -373,18 +373,18 @@ withConnections userAvailability handler =
             Nothing → pure unit
 
 -- | Last seen dates are serialized every 5 minutes
--- |
--- | We don't try to be precise, e.g. users with Online availability are ignored
 persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen context = do
       allUsersAvailability ← ER.read context.allUsersAvailabilityRef
+      now <- liftEffect EN.nowDateTime
       when (not $ DH.isEmpty allUsersAvailability) do
-            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SID.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens allUsersAvailability
+            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SID.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy (lastSeens now) allUsersAvailability
             EA.launchAff_ $ EA.catchError run logError
       where
-      lastSeens id = case _ of
-            { availability: LastSeen (DateTimeWrapper date) } → Just { who: id, date: DT date }
-            _ → Nothing
+      lastSeens now id avl = case avl.availability of
+            Online → Just  { who: id, date: DT now }
+            LastSeen (DateTimeWrapper date) → Just { who: id, date: DT date }
+            _ -> Nothing
 
       logError = liftEffect <<< EC.logShow
 

@@ -302,18 +302,28 @@ signUpCall joined = HE.div (HA.class' "sign-up-call")
             n → " in " <> show n <> " days"
 
 welcome ∷ ImUser → Html ImMessage
-welcome user@{ name, profileVisibility } = HE.div (HA.class' "card-top-header")
-      [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
-      , HE.div (HA.class' "welcome-new") $
-              if not SP.hasPrivilege StartChats user then
-                    [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
-                    ]
-              else
-                    case profileVisibility of
-                          Nobody → warn "hidden"
-                          Contacts → warn "contacts only"
-                          _ → [ HE.text "Here are your newest chat suggestions" ]
+welcome user@{ name, profileVisibility } = HE.div_
+      [ HE.div (HA.class' "card-top-header")
+              [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
+              , HE.div (HA.class' "welcome-new") $
+                      if not SP.hasPrivilege StartChats user then
+                            [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
+                            ]
+                      else
+                            case profileVisibility of
+                                  Nobody → warn "hidden"
+                                  Contacts → warn "contacts only"
+                                  _ →
+                                        [ HE.text "Here are your newest chat suggestions"
+
+                                        ]
+              ]
+      , HE.div [ HA.class' "duller online-only-filter" ]
+              [ HE.input [ HA.type' "checkbox", HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
+              , HE.label [ HA.for "online-only", HA.class' "online-only-label" ] "Show only users online"
+              ]
       ]
+
       where
       warn level =
             [ HE.text $ "Your profile is set to " <> level <> ". Change your "

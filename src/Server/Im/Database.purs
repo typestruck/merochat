@@ -13,7 +13,7 @@ import Data.BigInt as DB
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Time.Duration (Days(..))
+import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
@@ -84,14 +84,14 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from user
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array FlatUser)
 suggest loggedUserId skip =
       case _ of
+            OnlineOnly -> SD.query $ suggestOnlineQuery loggedUserId skip onlineFilter
             ThisWeek → SD.query $ suggestMainQuery loggedUserId skip thisWeekFilter
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
-            All → SD.query
-                  ( suggestBaseQuery loggedUserId baseFilter # orderBy ((_score # desc) /\ (l ... _date # desc)) # limit (Proxy ∷ Proxy 10)
-                          # offset skip
-                  )
+            All → SD.query $ suggestAllQuery loggedUserId skip baseFilter
+
       where
+      onlineFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Minutes (-5.0))
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))
@@ -108,6 +108,14 @@ suggestBaseQuery loggedUserId filter =
             # wher filter
 
 suggestMainQuery loggedUserId skip filter =
+      suggestBaseQuery loggedUserId filter
+            # orderBy ((_sender # desc) /\ _bin /\ (l ... _date # desc))
+            # limit (Proxy ∷ Proxy 10)
+            # offset skip
+
+suggestAllQuery loggedUserId skip filter = suggestBaseQuery loggedUserId filter # orderBy ((_score # desc) /\ (l ... _date # desc)) # limit (Proxy ∷ Proxy 10) # offset skip
+
+suggestOnlineQuery loggedUserId skip filter =
       suggestBaseQuery loggedUserId filter
             # orderBy ((_sender # desc) /\ _bin /\ (l ... _date # desc))
             # limit (Proxy ∷ Proxy 10)
