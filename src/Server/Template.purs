@@ -35,12 +35,18 @@ defaultParameters =
       , bundled: false
       }
 
+--work around purs-backend-es bug
 externalDefaultParameters ∷ ∀ a. Parameters a
-externalDefaultParameters = defaultParameters
-      { css =
+externalDefaultParameters =
+      { title: "MeroChat - Friendly Random Chat"
+      , favicon: SP.resourcePath (Left Favicon) Ico
+      , javascript: []
+      , bundled: false
+
+      ,css:
               [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath External Css ]
               ]
-      , content =
+      , content :
               [ HE.div (HA.class' "header")
                       [ HE.a [ HA.href $ routes.landing {}, HA.class' "logo" ] $
                               HE.img
@@ -50,7 +56,7 @@ externalDefaultParameters = defaultParameters
                                     ]
                       ]
               ]
-      , footer = [ externalFooter ]
+      , footer : [ externalFooter ]
       }
 
 template ∷ ∀ a. Parameters a → Effect (Html a)
