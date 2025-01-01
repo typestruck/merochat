@@ -4,7 +4,6 @@ import Prelude
 import Server.Effect
 
 import Data.Maybe (Maybe(..))
-import Data.String as DS
 import Server.AccountValidation as SA
 import Server.Database.Users (By(..))
 import Server.Database.Users as SDU

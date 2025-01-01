@@ -89,7 +89,7 @@ aliveDelay ∷ Int
 aliveDelay = 1000 * 60 * aliveDelayMinutes
 
 aliveDelayMinutes ∷ Int
-aliveDelayMinutes = 2
+aliveDelayMinutes = 1
 
 -- | How often do we check for inactive connections
 inactiveDelay ∷ Int
@@ -372,7 +372,7 @@ withConnections userAvailability handler =
             Just ua → DF.traverse_ handler $ DH.values ua.connections
             Nothing → pure unit
 
--- | Last seen dates are serialized every 2 minutes
+-- | Last seen dates are serialized every minute
 persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen context = do
       allUsersAvailability ← ER.read context.allUsersAvailabilityRef
