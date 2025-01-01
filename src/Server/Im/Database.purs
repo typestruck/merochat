@@ -17,8 +17,7 @@ import Data.Time.Duration (Days(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
-import Effect.Class (liftEffect)
-import Effect.Console as EC
+import Debug
 import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
@@ -84,14 +83,14 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from user
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array FlatUser)
 suggest loggedUserId skip =
       case _ of
-            OnlineOnly -> SD.query $ suggestOnlineQuery loggedUserId skip onlineFilter
+            OnlineOnly → SD.query $ suggestOnlineQuery loggedUserId skip onlineFilter
             ThisWeek → SD.query $ suggestMainQuery loggedUserId skip thisWeekFilter
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
             All → SD.query $ suggestAllQuery loggedUserId skip baseFilter
 
       where
-      onlineFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Minutes (-1.0))
+      onlineFilter = baseFilter .&&. (l ... _date) .>=. (spy "min" (ST.unsafeAdjustFromNow $ Minutes (-1.0)))
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))
@@ -104,7 +103,7 @@ suggest loggedUserId skip =
 -- top level to avoid monomorphic filter
 suggestBaseQuery loggedUserId filter =
       select (userFields /\ _bin)
-            # from (leftJoin (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
+            # from (join (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
             # wher filter
 
 suggestMainQuery loggedUserId skip filter =

@@ -43,10 +43,10 @@ externalDefaultParameters =
       , javascript: []
       , bundled: false
 
-      ,css:
+      , css:
               [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath External Css ]
               ]
-      , content :
+      , content:
               [ HE.div (HA.class' "header")
                       [ HE.a [ HA.href $ routes.landing {}, HA.class' "logo" ] $
                               HE.img
@@ -56,7 +56,7 @@ externalDefaultParameters =
                                     ]
                       ]
               ]
-      , footer : [ externalFooter ]
+      , footer: [ externalFooter ]
       }
 
 template ∷ ∀ a. Parameters a → Effect (Html a)

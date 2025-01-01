@@ -432,13 +432,13 @@ instance Bounded ReportReason where
 instance BoundedEnum SuggestionsFrom where
       cardinality = Cardinality 1
       fromEnum = case _ of
-            OnlineOnly -> 0
+            OnlineOnly → 0
             ThisWeek → 1
             LastTwoWeeks → 2
             LastMonth → 3
             All → 4
       toEnum = case _ of
-            0 -> Just OnlineOnly
+            0 → Just OnlineOnly
             1 → Just ThisWeek
             2 → Just LastTwoWeeks
             3 → Just LastMonth
@@ -481,13 +481,13 @@ instance BoundedEnum ReportReason where
 
 instance Enum SuggestionsFrom where
       succ = case _ of
-            OnlineOnly -> Just ThisWeek
+            OnlineOnly → Just ThisWeek
             ThisWeek → Just LastTwoWeeks
             LastTwoWeeks → Just LastMonth
             LastMonth → Just All
             All → Nothing
       pred = case _ of
-            OnlineOnly -> Nothing
+            OnlineOnly → Nothing
             ThisWeek → Just OnlineOnly
             LastTwoWeeks → Just ThisWeek
             LastMonth → Just LastTwoWeeks

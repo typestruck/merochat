@@ -36,6 +36,7 @@ import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
+import Effect.Unsafe as EUN
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
@@ -252,7 +253,8 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
 
       getDate = DN.unwrap <<< _.date
 
-      accountAge { joined: DateTimeWrapper dt } = DN.unwrap (DT.diff SDT.unsafeNow dt ∷ Days)
+      unsafeNow = EUN.unsafePerformEffect EN.nowDateTime
+      accountAge { joined: DateTimeWrapper dt } = DN.unwrap (DT.diff unsafeNow dt ∷ Days)
 
 applyMarkup ∷ Markup → ImModel → MoreMessages
 applyMarkup markup model@{ chatting } =

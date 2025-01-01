@@ -170,7 +170,7 @@ update st model =
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → CIS.blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
-            ToggleSuggestionsFromOnline -> CIS.toggleSuggestionsFromOnline model
+            ToggleSuggestionsFromOnline → CIS.toggleSuggestionsFromOnline model
             --user menu
             ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
             Logout after → CIU.logout after model
@@ -209,16 +209,16 @@ toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
 
 displayAvailability ∷ AvailabilityStatus → ImModel → NoMessages
-displayAvailability avl model@{ contacts, suggestions } = F.noMessages $ model
-      { contacts = map updateContact contacts
-      , suggestions = map updateUser suggestions
+displayAvailability avl model = F.noMessages $ model
+      { contacts = map updateContact model.contacts
+      , suggestions = map updateUser model.suggestions
       }
       where
-      availability = DH.fromArray $ map (\{ id, status } → Tuple id status) avl
-      updateContact contact@{ user: { id } } = case DH.lookup id availability of
+      availability = DH.fromArray $ map (\t → Tuple t.id t.status) avl
+      updateContact contact = case DH.lookup contact.user.id availability of
             Just status → contact { user { availability = status } }
             Nothing → contact
-      updateUser user@{ id } = case DH.lookup id availability of
+      updateUser user = case DH.lookup user.id availability of
             Just status → user { availability = status }
             Nothing → user
 

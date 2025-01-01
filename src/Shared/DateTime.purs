@@ -130,9 +130,6 @@ unformatIsoDate value = do
             integered ← DI.fromString raw
             DE.toEnum integered
 
-unsafeNow ∷ DateTime
-unsafeNow = EU.unsafePerformEffect EN.nowDateTime
-
 --same day
 --    hh:mm
 --yesterday
@@ -167,6 +164,7 @@ agoWithTime dateTime =
 daysDiff ∷ DateTime → Int
 daysDiff dt = daysInYear now - daysInYear dateTime
       where
+      unsafeNow = EU.unsafePerformEffect EN.nowDateTime
       localTime = SU.fromJust <<< DT.adjust offset
       daysInYear dtp = DI.floor $ DN.unwrap (DT.diff dtp firstDay ∷ Days)
       firstDay = DateTime (DD.canonicalDate (DD.year $ DT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
@@ -176,6 +174,8 @@ daysDiff dt = daysInYear now - daysInYear dateTime
 
 unsafeAdjustFromNow ∷ ∀ d. Duration d ⇒ d → DateTime
 unsafeAdjustFromNow duration = SU.fromJust $ DT.adjust duration unsafeNow
+      where
+      unsafeNow = EU.unsafePerformEffect EN.nowDateTime
 
 localDateTimeWith ∷ (Number → String) → DateTime → String
 localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime

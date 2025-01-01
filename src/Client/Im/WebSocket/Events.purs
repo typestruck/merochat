@@ -96,7 +96,6 @@ handleOpen webSocketStateRef _ = do
                   ET.clearTimeout id
                   FS.send imId <<< SpecialRequest <<< CheckMissedEvents <<< Just $ DateTimeWrapper state.lastPongDate
       newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
-      pingAction true
       newPingId ← ET.setInterval pingDelay ping
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId, reconnectId = Nothing }) webSocketStateRef
       FS.send imId $ ToggleConnected true
@@ -110,9 +109,7 @@ handleOpen webSocketStateRef _ = do
       pingDelay = 1000 * 30
       ping = do
             isFocused ← CCD.documentHasFocus
-            pingAction isFocused
-
-      pingAction = FS.send imId <<< SendPing
+            FS.send imId $ SendPing isFocused
 
 -- | Handle an incoming (json encoded) message from the server
 handleMessage ∷ Ref WebSocketState → Event → Effect Unit

@@ -24,6 +24,8 @@ import Data.Time.Duration (Days(..))
 import Data.Time.Duration as DTD
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
+import Effect.Now as EN
+import Effect.Unsafe as EU
 import Foreign as F
 import Payload.Client.EncodeBody (class EncodeBody)
 import Payload.ContentType (class HasContentType, json)
@@ -280,4 +282,6 @@ temporaryAccountDuration ∷ Days
 temporaryAccountDuration = Days 3.5
 
 temporaryUserExpiration ∷ DateTimeWrapper → Days
-temporaryUserExpiration (DateTimeWrapper dt) = DDT.diff dt (SU.fromJust $ DDT.adjust (DTD.negateDuration temporaryAccountDuration) SDT.unsafeNow)
+temporaryUserExpiration (DateTimeWrapper dt) = DDT.diff dt (SU.fromJust $ DDT.adjust (DTD.negateDuration temporaryAccountDuration) unsafeNow)
+      where
+      unsafeNow = EU.unsafePerformEffect EN.nowDateTime

@@ -376,15 +376,15 @@ withConnections userAvailability handler =
 persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen context = do
       allUsersAvailability ← ER.read context.allUsersAvailabilityRef
-      now <- liftEffect EN.nowDateTime
+      now ← liftEffect EN.nowDateTime
       when (not $ DH.isEmpty allUsersAvailability) do
             let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SID.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy (lastSeens now) allUsersAvailability
             EA.launchAff_ $ EA.catchError run logError
       where
       lastSeens now id avl = case avl.availability of
-            Online → Just  { who: id, date: DT now }
+            Online → Just { who: id, date: DT now }
             LastSeen (DateTimeWrapper date) → Just { who: id, date: DT date }
-            _ -> Nothing
+            _ → Nothing
 
       logError = liftEffect <<< EC.logShow
 
