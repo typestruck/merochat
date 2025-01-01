@@ -41,8 +41,6 @@ import Shared.Resource as SR
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
-import Test.Client.Model (model)
-import Web.HTML.Event.EventTypes (online)
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
