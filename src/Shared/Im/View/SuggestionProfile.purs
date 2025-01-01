@@ -41,6 +41,8 @@ import Shared.Resource as SR
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
+import Test.Client.Model (model)
+import Web.HTML.Event.EventTypes (online)
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
@@ -66,9 +68,12 @@ suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullConta
       where
       notChatting = DM.isNothing chatting
 
-      emptySuggestions = HE.div (HA.class' { "suggestion empty retry": true, hidden: DM.isJust chatting }) $ SIVR.retryForm "Could not find new suggestions" $ SpecialRequest NextSuggestion
+      emptySuggestions = HE.div (HA.class' { "suggestion empty retry": true, hidden: DM.isJust chatting })
+            ( onlineOnlyFilter model :
+                    (SIVR.retryForm "Could not find new suggestions" $ SpecialRequest NextSuggestion)
+            )
 
-      suggestionWarning = HE.div (HA.class' { "suggestion": true, hidden: DM.isJust chatting }) $ welcome user
+      suggestionWarning = HE.div (HA.class' { "suggestion": true, hidden: DM.isJust chatting }) $ welcome model
 
 -- | Contact was deleted, made private or they blocked the logged user
 unavailable ∷ String → Html ImMessage
@@ -252,7 +257,7 @@ blockReport id =
 suggestionCards ∷ ImModel → Int → Html ImMessage
 suggestionCards model@{ user, suggestions, toggleModal } index =
       HE.div (HA.class' "suggestion-cards")
-            [ if user.temporary && isNotTutorial then welcomeTemporary user else welcome user
+            [ if user.temporary && isNotTutorial then welcomeTemporary user else welcome model
             , HE.div (HA.class' "cards") cardTrio
             ]
       where
@@ -301,16 +306,16 @@ signUpCall joined = HE.div (HA.class' "sign-up-call")
             1 → " until tomorrow"
             n → " in " <> show n <> " days"
 
-welcome ∷ ImUser → Html ImMessage
-welcome user@{ name, profileVisibility } = HE.div_
+welcome ∷ ImModel → Html ImMessage
+welcome model = HE.div_
       [ HE.div (HA.class' "card-top-header")
-              [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
+              [ HE.div (HA.class' "welcome") $ "Welcome, " <> model.user.name
               , HE.div (HA.class' "welcome-new") $
-                      if not SP.hasPrivilege StartChats user then
+                      if not SP.hasPrivilege StartChats model.user then
                             [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
                             ]
                       else
-                            case profileVisibility of
+                            case model.user.profileVisibility of
                                   Nobody → warn "hidden"
                                   Contacts → warn "contacts only"
                                   _ →
@@ -318,10 +323,7 @@ welcome user@{ name, profileVisibility } = HE.div_
 
                                         ]
               ]
-      , HE.div [ HA.class' "duller online-only-filter" ]
-              [ HE.input [ HA.type' "checkbox", HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
-              , HE.label [ HA.for "online-only", HA.class' "online-only-label" ] "Show only users online"
-              ]
+      , onlineOnlyFilter model
       ]
 
       where
@@ -329,4 +331,11 @@ welcome user@{ name, profileVisibility } = HE.div_
             [ HE.text $ "Your profile is set to " <> level <> ". Change your "
             , HE.a (HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings) " settings "
             , HE.text "to see new chat suggestions"
+            ]
+
+onlineOnlyFilter ∷ ImModel → Html ImMessage
+onlineOnlyFilter model =
+      HE.div [ HA.class' "duller online-only-filter" ]
+            [ HE.input [ HA.type' "checkbox", HA.checked (model.suggestionsFrom == OnlineOnly), HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
+            , HE.label [ HA.for "online-only", HA.class' "online-only-label" ] "Show only users online"
             ]
