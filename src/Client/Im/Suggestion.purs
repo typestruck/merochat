@@ -86,7 +86,7 @@ displayMoreSuggestions suggestions model =
       where
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
-      shouldSwithCategory = suggestionsSize == 0 || model.suggestionsFrom /= OnlineOnly && (DA.length $ DA.filter ((_ > 4) <<< _.bin) suggestions) / DA.length suggestions * 100 >= 60
+      shouldSwithCategory = model.suggestionsFrom /= OnlineOnly && (suggestionsSize == 0 || (DA.length $ DA.filter ((_ > 4) <<< _.bin) suggestions) / DA.length suggestions * 100 >= 60)
       sg
             | shouldSwithCategory = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
             | otherwise = model.suggestionsFrom
