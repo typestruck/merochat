@@ -8,12 +8,14 @@ import Data.DateTime (DateTime)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Time.Duration (Minutes(..))
 import Debug (spy)
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime as ST
 import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
@@ -42,7 +44,7 @@ type FlatFields rest =
       , onlineStatus ∷ Checked
       , name ∷ String
       , tags ∷ Maybe (Array String)
-      , lastSeen ∷ Maybe DateTime
+      , lastSeen ∷ DateTime
       | rest
       }
 
@@ -90,7 +92,7 @@ fromFlatUser fc =
       , avatar: SA.parseAvatar fc.avatar
       , tags: DM.fromMaybe [] fc.tags
       , karma: fc.karma
-      , availability: DM.maybe None (LastSeen <<< DateTimeWrapper) fc.lastSeen
+      , availability: if fc.lastSeen >= ST.unsafeAdjustFromNow (Minutes (-1.0)) then Online else LastSeen $ DateTimeWrapper fc.lastSeen
       , karmaPosition: fc.karmaPosition
       , gender: show <$> fc.gender
       , country: fc.country

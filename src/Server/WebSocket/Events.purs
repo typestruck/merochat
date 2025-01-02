@@ -167,10 +167,16 @@ handleMessage payload = do
             OutgoingMessage message → sendOutgoingMessage context.token context.loggedUserId allUsersAvailability message
             ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
             Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
+            SetOnline → setOnline context.loggedUserId
             UpdatePrivileges → sendUpdatedPrivileges context.loggedUserId allUsersAvailability
             UpdateHash → sendUpdatedHash context.loggedUserId allUsersAvailability
             UnavailableFor { id } → sendUnavailability context.loggedUserId allUsersAvailability id
             Ban { id } → sendBan allUsersAvailability id
+
+setOnline ∷ Int → WebSocketEffect
+setOnline loggedUserId = do
+      now ← liftEffect EN.nowDateTime
+      SID.upsertLastSeen $ SJS.writeJSON [ { who: loggedUserId, date: DT now } ]
 
 sendBan ∷ HashMap Int UserAvailability → Int → WebSocketEffect
 sendBan allUsersAvailability userId = do
@@ -372,6 +378,7 @@ withConnections userAvailability handler =
             Just ua → DF.traverse_ handler $ DH.values ua.connections
             Nothing → pure unit
 
+--we could save some work here by only serializing availabilities that have changed
 -- | Last seen dates are serialized every minute
 persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen context = do

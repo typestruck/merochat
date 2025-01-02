@@ -337,6 +337,7 @@ data ImMessage
 data WebSocketPayloadServer
       = UpdateHash
       | UpdatePrivileges
+      | SetOnline
       | Ping
               { isActive ∷ Boolean
               , statusFor ∷ Array Int

@@ -67,8 +67,10 @@ suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullConta
       notChatting = DM.isNothing chatting
 
       emptySuggestions = HE.div (HA.class' { "suggestion empty retry": true, hidden: DM.isJust chatting })
-            ( onlineOnlyFilter model :
-                    (SIVR.retryForm "Could not find new suggestions" $ SpecialRequest NextSuggestion)
+            ( if model.suggestionsFrom == OnlineOnly then
+                    onlineOnlyFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
+              else
+                    SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
             )
 
       suggestionWarning = HE.div (HA.class' { "suggestion": true, hidden: DM.isJust chatting }) $ welcome model

@@ -89,6 +89,8 @@ setUpWebsocket webSocketStateRef = do
 handleOpen ∷ Ref WebSocketState → Event → Effect Unit
 handleOpen webSocketStateRef _ = do
       state ← ER.read webSocketStateRef
+      --when the connection is open and the user is on the page serialize their availability
+      sendSetOnline state.webSocket
       --close event may have set up to open a new connection after this timeout
       case state.reconnectId of
             Nothing → pure unit
@@ -110,6 +112,10 @@ handleOpen webSocketStateRef _ = do
       ping = do
             isFocused ← CCD.documentHasFocus
             FS.send imId $ SendPing isFocused
+
+      sendSetOnline webSocket = do
+            isFocused ← CCD.documentHasFocus
+            when isFocused $ CIW.sendPayload webSocket SetOnline
 
 -- | Handle an incoming (json encoded) message from the server
 handleMessage ∷ Ref WebSocketState → Event → Effect Unit

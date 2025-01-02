@@ -59,7 +59,7 @@ userFields =
             /\ _temporary
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
-            /\ (select (_date # as _lastSeen) # from last_seen # wher (_who .=. u ... _id) # orderBy _who # limit (Proxy ∷ _ 1))
+            /\ (l ... _date # as _lastSeen)
             /\ (_messageTimestamps # as messageTimestamps)
             /\ (select (array_agg (l ... _name # orderBy (l ... _name)) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ _joined
@@ -75,7 +75,7 @@ userFields =
 senderRecipientFilter loggedUserId otherId = wher ((_sender .=. loggedUserId .&&. _recipient .=. otherId) .||. (_sender .=. otherId .&&. _recipient .=. loggedUserId))
 
 usersSource ∷ _
-usersSource = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)
+usersSource = join (join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)) (last_seen # as l) # on (u ... _id .=. _who)
 
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
@@ -90,7 +90,7 @@ suggest loggedUserId skip =
             All → SD.query $ suggestAllQuery loggedUserId skip baseFilter
 
       where
-      onlineFilter = baseFilter .&&. (l ... _date) .>=. (spy "min" (ST.unsafeAdjustFromNow $ Minutes (-1.0)))
+      onlineFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Minutes (-1.0))
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))
@@ -103,7 +103,7 @@ suggest loggedUserId skip =
 -- top level to avoid monomorphic filter
 suggestBaseQuery loggedUserId filter =
       select (userFields /\ _bin)
-            # from (join (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id)) (last_seen # as l) # on (u ... _id .=. _who))
+            # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
             # wher filter
 
 suggestMainQuery loggedUserId skip filter =
