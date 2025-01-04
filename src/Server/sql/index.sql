@@ -363,8 +363,9 @@ create or replace function truncate_tables()
 $body$
 begin
         truncate table users  restart identity cascade;
-        truncate table messages restart identity cascade ;
-        truncate table tags restart identity cascade ;
+        truncate table messages restart identity cascade;
+        truncate table tags restart identity cascade;
+        truncate table last_seen restart identity cascade;
 end;
   $body$
   language plpgsql;
