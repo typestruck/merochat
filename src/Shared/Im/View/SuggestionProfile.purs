@@ -11,13 +11,10 @@ import Client.Common.Privilege as CCP
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
-import Data.HashMap as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Time.Duration (Days(..))
-import Data.Tuple (Tuple(..))
-import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element (class ToNode)
@@ -44,36 +41,36 @@ import Shared.User as SUR
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
-suggestionProfile model@{ suggestions, contacts, suggesting, chatting, fullContactProfileVisible, user } =
-      if (user.profileVisibility > NoTemporaryUsers || not (SP.hasPrivilege StartChats user)) && notChatting then
+suggestionProfile model =
+      if (model.user.profileVisibility > NoTemporaryUsers || not (SP.hasPrivilege StartChats model.user)) && notChatting then
             suggestionWarning
-      else if DA.null suggestions && notChatting then
+      else if DA.null model.suggestions && notChatting then
             emptySuggestions
       else
-            case chatting, suggesting of
+            case model.chatting, model.suggesting of
                   i@(Just index), _ →
                         let
-                              contact@{ user: { name, availability } } = contacts !@ index
+                              contact = model.contacts !@ index
                         in
-                              if availability == Unavailable then
-                                    unavailable name
-                              else if fullContactProfileVisible then
+                              if contact.user.availability == Unavailable then
+                                    unavailable contact.user.name
+                              else if model.fullContactProfileVisible then
                                     fullProfile FullContactProfile i model contact.user
                               else
                                     compactProfile model contact
                   Nothing, (Just index) → suggestionCards model index
                   _, _ → emptySuggestions
       where
-      notChatting = DM.isNothing chatting
+      notChatting = DM.isNothing model.chatting
 
-      emptySuggestions = HE.div (HA.class' { "suggestion empty retry": true, hidden: DM.isJust chatting })
+      emptySuggestions = HE.div (HA.class' { "suggestion empty retry": true, hidden: DM.isJust model.chatting })
             ( if model.suggestionsFrom == OnlineOnly then
                     onlineOnlyFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
               else
                     SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
             )
 
-      suggestionWarning = HE.div (HA.class' { "suggestion": true, hidden: DM.isJust chatting }) $ welcome model
+      suggestionWarning = HE.div (HA.class' { "suggestion": true, hidden: DM.isJust model.chatting }) $ welcome model
 
 -- | Contact was deleted, made private or they blocked the logged user
 unavailable ∷ String → Html ImMessage

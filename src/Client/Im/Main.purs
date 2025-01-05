@@ -172,6 +172,7 @@ update st model =
             SpecialRequest (BlockUser id) → CIS.blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
             ToggleSuggestionsFromOnline → CIS.toggleSuggestionsFromOnline model
+            SetBugging mc → CIS.setBugging mc model
             --user menu
             ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
             Logout after → CIU.logout after model

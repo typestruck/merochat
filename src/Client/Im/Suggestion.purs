@@ -19,23 +19,31 @@ import Data.Tuple as DT
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
+import Effect.Random as ER
 import Flame as F
 import Shared.Options.Page (suggestionsPerPage)
 import Web.Socket.WebSocket (WebSocket)
 
 nextSuggestion ∷ ImModel → MoreMessages
-nextSuggestion model@{ suggestions, suggesting } =
-      let
-            next = DM.maybe 0 (_ + 1) suggesting
-      in
-            if next >= DA.length suggestions then
-                  fetchMoreSuggestions model
+nextSuggestion model =
+      if next >= DA.length model.suggestions then
+            fetchMoreSuggestions model
+      else
+            model
+                  { freeToFetchSuggestions = true
+                  , suggesting = Just next
+                  , chatting = Nothing
+                  } /\ [ bugUser ]
+      where
+      next = DM.maybe 0 (_ + 1) model.suggesting
+      bugUser = do
+            chance ← liftEffect $ ER.randomInt 0 100
+            if chance <= 2 then
+                  pure <<< Just $ SetBugging Experimenting
+            else if chance <= 5 then
+                  pure <<< Just $ SetBugging Backing
             else
-                  F.noMessages $ model
-                        { freeToFetchSuggestions = true
-                        , suggesting = Just next
-                        , chatting = Nothing
-                        }
+                  pure Nothing
 
 previousSuggestion ∷ ImModel → MoreMessages
 previousSuggestion model@{ suggesting } =
@@ -136,4 +144,9 @@ toggleSuggestionsFromOnline ∷ ImModel → MoreMessages
 toggleSuggestionsFromOnline model = fetchMoreSuggestions model
       { suggestionsFrom = if model.suggestionsFrom == OnlineOnly then ThisWeek else OnlineOnly
       , suggestionsPage = 0
+      }
+
+setBugging ∷ MeroChatCall → ImModel → NoMessages
+setBugging mc model = F.noMessages $ model
+      { bugging = Just mc
       }

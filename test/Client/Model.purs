@@ -33,6 +33,7 @@ model =
       , suggestionsFrom: ThisWeek
       , temporaryEmail: Nothing
       , editing: Nothing
+      , bugging: Nothing
       , temporaryPassword: Nothing
       , suggestionsPage: 0
       , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
