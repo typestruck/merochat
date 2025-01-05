@@ -30,8 +30,9 @@ model =
       , freeToFetchSuggestions: true
       , typingIds: []
       , initialScreen: true
-      , suggestionsFrom : ThisWeek
+      , suggestionsFrom: ThisWeek
       , temporaryEmail: Nothing
+      , bugging: Nothing
       , temporaryPassword: Nothing
       , suggestionsPage: 0
       , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime

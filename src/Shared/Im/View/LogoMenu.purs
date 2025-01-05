@@ -24,7 +24,7 @@ logoMenu fortune = HE.div (HA.class' "relative")
                               , HE.rect' [ HA.class' "strokeless", HA.x "3.81", HA.y "4.69", HA.width "7.23", HA.height "0.75" ]
                               , HE.rect' [ HA.class' "strokeless", HA.x "3.81", HA.y "6.44", HA.width "7.23", HA.height "0.75" ]
                               ]
-                      , HE.text "Contacts"
+                      , HE.text "Chats"
                       ]
               , HE.div [ HA.class' "tab-item duller", HA.onClick $ ToggleInitialScreen false ]
                       [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
