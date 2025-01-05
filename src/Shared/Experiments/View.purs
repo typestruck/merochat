@@ -22,10 +22,10 @@ view model = HE.div (HA.class' "chat-experiments") $ case model.current of
                     [ HE.label (HA.class' "bold") experiment.name
                     , HE.div (HA.class' "duller experiment-description") experiment.description
                     ]
-              , HE.fragment $ extra model experiment.code
+            , HE.fragment $ extra model experiment.code
             ]
 
-extra :: ChatExperimentModel → Experiment -> Html ChatExperimentMessage
+extra ∷ ChatExperimentModel → Experiment → Html ChatExperimentMessage
 extra model = case _ of
-      Impersonation ip -> SEI.view model
-      WordChain -> SEW.view model
+      Impersonation ip → SEI.view model
+      WordChain → SEW.view model

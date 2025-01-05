@@ -57,6 +57,7 @@ template payload = do
                     , link: Nothing
                     , linkText: Nothing
                     , selectedImage: Nothing
+                    , bugging: Nothing
                     , fullContactProfileVisible: false
                     , freeToFetchContactList: true
                     , erroredFields: []
