@@ -117,7 +117,7 @@ contactList
       welcomeMessage =
             { welcome: "Welcome!"
             , first: "Tap on either of the arrows to see "
-            , second: "your chat suggestions"
+            , second: "new users to chat to"
             }
 
       compareLastDate contact anotherContact = compare anotherContact.lastMessageDate contact.lastMessageDate
