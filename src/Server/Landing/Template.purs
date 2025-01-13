@@ -83,6 +83,49 @@ template = do
                                     ]
                             ]
                     , HE.h2_
+                            [ HE.text "How MeroChat works"
+                            ]
+                    , HE.div (HA.class' "third-points")
+                            [
+                                HE.div (HA.class' "point")
+                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works2) Png ]
+                                    , HE.br
+                                    , HE.text "Whenever you feel like chatting, MeroChat suggests"
+                                    , HE.br
+                                    , HE.text "you random users to talk to - and vice versa,"
+                                    , HE.br
+                                    , HE.text "ensuring no one gets ignored."
+                                    , HE.br
+                                    , HE.br
+                                    , HE.text "You decide what to share and who to share it with"
+                                    ]
+                                , HE.div (HA.class' "point")
+                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works1) Png ]
+                                    , HE.br
+                                    , HE.text "MeroChat is NOT a dating app. "
+                                    , HE.br
+                                    , HE.text "Strict moderation and a Karma system ensure"
+                                    , HE.br
+                                    , HE.text "users are here only to have friendly conversations."
+                                    , HE.br
+                                    , HE.br
+                                    , HE.text "Higher Karma unlocks extra features and privileges"
+                                    ]
+
+                            , HE.div (HA.class' "point")
+                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works3) Png ]
+                                    , HE.br
+                                    , HE.text "Want to take a break, or delete your account forever?"
+                                    , HE.br
+                                    , HE.text "No worries, your personal data will never be used"
+                                    , HE.br
+                                    , HE.text "for spam, harvesting or any shady dealings."
+                                    , HE.br
+                                    , HE.br
+                                    , HE.text "Reactivate your account whenever you want"
+                                    ]
+                            ]
+                , HE.h2_
                             [ HE.text "MeroChat is made with human connection and"
                             , HE.br
                             , HE.text "conversation in mind"
@@ -92,7 +135,7 @@ template = do
                                     [ HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point1) Png ]
                                             , HE.br
-                                            , HE.text "No sleazy people!"
+                                            , HE.text "Again, no sleazy people!"
                                             , HE.br
                                             , HE.text "Talk to folks who want"
                                             , HE.br
@@ -101,20 +144,20 @@ template = do
                                     , HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point4) Png ]
                                             , HE.br
-                                            , HE.text "Community driven:"
+                                            , HE.text "Real people:"
                                             , HE.br
-                                            , HE.text "features available based on"
+                                            , HE.text "Bots, AI, and spammers"
                                             , HE.br
-                                            , HE.text "how trusted a user is"
+                                            , HE.text "are banned on sight"
                                             ]
                                     ]
                             , HE.div (HA.class' "point-column")
                                     [ HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point2) Png ]
                                             , HE.br
-                                            , HE.text "Set the privacy level you"
+                                            , HE.text "Create your profile and share"
                                             , HE.br
-                                            , HE.text "feel comfortable with."
+                                            , HE.text "only as much as you feel comfortable with."
                                             , HE.br
                                             , HE.text "Safe, anonymous and ad free"
                                             ]
@@ -154,47 +197,6 @@ template = do
                                     [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point7) Png ]
                                     , HE.br
                                     , HE.text "Full of watermelons!"
-                                    ]
-                            ]
-                    , HE.h2_
-                            [ HE.text "This is how it works:"
-                            ]
-                    , HE.div (HA.class' "third-points")
-                            [ HE.div (HA.class' "point")
-                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works1) Png ]
-                                    , HE.br
-                                    , HE.text "New users randomized account needs Karma to access"
-                                    , HE.br
-                                    , HE.text "features and tools. Karma is earned by making"
-                                    , HE.br
-                                    , HE.text "great conversations, and being a good user."
-                                    , HE.br
-                                    , HE.br
-                                    , HE.text "Creeps get weeded out; interesting folks get more visibility"
-                                    ]
-                            , HE.div (HA.class' "point")
-                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works2) Png ]
-                                    , HE.br
-                                    , HE.text "Whenever you feel like chatting, MeroChat suggests"
-                                    , HE.br
-                                    , HE.text "you random users to talk to - and vice versa,"
-                                    , HE.br
-                                    , HE.text "ensuring no one gets ignored."
-                                    , HE.br
-                                    , HE.br
-                                    , HE.text "You decide what to share and who to share it with"
-                                    ]
-                            , HE.div (HA.class' "point")
-                                    [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works3) Png ]
-                                    , HE.br
-                                    , HE.text "Want to take a break, or delete your account forever?"
-                                    , HE.br
-                                    , HE.text "No worries, your personal data will never be used"
-                                    , HE.br
-                                    , HE.text "for spam, harvesting or any shady dealings."
-                                    , HE.br
-                                    , HE.br
-                                    , HE.text "Reactivate your account whenever you want"
                                     ]
                             ]
                     , HE.div (HA.class' "second-green-box")
