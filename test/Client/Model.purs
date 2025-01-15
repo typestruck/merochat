@@ -30,7 +30,7 @@ model =
       , freeToFetchSuggestions: true
       , typingIds: []
       , initialScreen: true
-      , suggestionsFrom : ThisWeek
+      , suggestionsFrom: ThisWeek
       , temporaryEmail: Nothing
       , temporaryPassword: Nothing
       , suggestionsPage: 0

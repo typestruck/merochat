@@ -86,72 +86,43 @@ template = do
                             [ HE.text "How MeroChat works"
                             ]
                     , HE.div (HA.class' "third-points")
-                            [
-                                HE.div (HA.class' "point")
+                            [ HE.div (HA.class' "point")
                                     [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works2) Png ]
                                     , HE.br
                                     , HE.text "Whenever you feel like chatting, MeroChat suggests"
                                     , HE.br
-                                    , HE.text "you random users to talk to - and vice versa,"
-                                    , HE.br
-                                    , HE.text "ensuring no one gets ignored."
+                                    , HE.text "you random users to talk to - and vice versa. "
                                     , HE.br
                                     , HE.br
-                                    , HE.text "You decide what to share and who to share it with"
+                                    , HE.text "Text only; no video or group chats"
                                     ]
-                                , HE.div (HA.class' "point")
+                            , HE.div (HA.class' "point")
                                     [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works1) Png ]
                                     , HE.br
-                                    , HE.text "MeroChat is NOT a dating app. "
+                                    , HE.text "Strict moderation and a Karma system ensure users"
                                     , HE.br
-                                    , HE.text "Strict moderation and a Karma system ensure"
-                                    , HE.br
-                                    , HE.text "users are here only to have friendly conversations."
+                                    , HE.text "are here only to have friendly conversations."
                                     , HE.br
                                     , HE.br
-                                    , HE.text "Higher Karma unlocks extra features and privileges"
+                                    , HE.text "MeroChat is NOT a dating app"
                                     ]
 
                             , HE.div (HA.class' "point")
                                     [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Works3) Png ]
                                     , HE.br
-                                    , HE.text "Want to take a break, or delete your account forever?"
+                                    , HE.text "Your personal data is never used"
                                     , HE.br
-                                    , HE.text "No worries, your personal data will never be used"
-                                    , HE.br
-                                    , HE.text "for spam, harvesting or any shady dealings."
+                                    , HE.text "for spam, AI training, or any shady dealings."
                                     , HE.br
                                     , HE.br
-                                    , HE.text "Reactivate your account whenever you want"
+                                    , HE.text "Take a break or delete your account at anytime"
                                     ]
                             ]
-                , HE.h2_
-                            [ HE.text "MeroChat is made with human connection and"
-                            , HE.br
-                            , HE.text "conversation in mind"
+                    , HE.h2_
+                            [ HE.text "A random chat for people like you"
                             ]
                     , HE.div (HA.class' "first-points")
                             [ HE.div (HA.class' "point-column")
-                                    [ HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point1) Png ]
-                                            , HE.br
-                                            , HE.text "Again, no sleazy people!"
-                                            , HE.br
-                                            , HE.text "Talk to folks who want"
-                                            , HE.br
-                                            , HE.text "to have actual conversations"
-                                            ]
-                                    , HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point4) Png ]
-                                            , HE.br
-                                            , HE.text "Real people:"
-                                            , HE.br
-                                            , HE.text "Bots, AI, and spammers"
-                                            , HE.br
-                                            , HE.text "are banned on sight"
-                                            ]
-                                    ]
-                            , HE.div (HA.class' "point-column")
                                     [ HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point2) Png ]
                                             , HE.br
@@ -173,13 +144,13 @@ template = do
                                     ]
                             , HE.div (HA.class' "point-column")
                                     [ HE.div (HA.class' "point")
-                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point3) Png ]
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point1) Png ]
                                             , HE.br
-                                            , HE.text "Feeling uninspired?"
+                                            , HE.text "No sleazy people!"
                                             , HE.br
-                                            , HE.text "Let the app create your profile,"
+                                            , HE.text "Talk to folks who want"
                                             , HE.br
-                                            , HE.text "or suggest what to say"
+                                            , HE.text "to have actual conversations"
                                             ]
                                     , HE.div (HA.class' "point")
                                             [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point6) Png ]
@@ -189,6 +160,26 @@ template = do
                                             , HE.text "Choose to take part in "
                                             , HE.br
                                             , HE.text "novel chat experiments"
+                                            ]
+                                    ]
+                            , HE.div (HA.class' "point-column")
+                                    [ HE.div (HA.class' "point")
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point4) Png ]
+                                            , HE.br
+                                            , HE.text "Real people only:"
+                                            , HE.br
+                                            , HE.text "Bots, AI, and spammers"
+                                            , HE.br
+                                            , HE.text "are banned on sight"
+                                            ]
+                                    , HE.div (HA.class' "point")
+                                            [ HE.img [ HA.class' "point-melon", HA.src $ SP.resourcePath (Left Point3) Png ]
+                                            , HE.br
+                                            , HE.text "Feeling uninspired?"
+                                            , HE.br
+                                            , HE.text "Let the app create your profile,"
+                                            , HE.br
+                                            , HE.text "or suggest what to say"
                                             ]
                                     ]
                             ]
