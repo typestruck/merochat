@@ -1,5 +1,5 @@
-import insane from 'insane';
+import sanitizeHtml from 'sanitize-html';
 
 export function sanitize(raw) {
-      return insane(raw, { allowedTags: ["br", "audio"],    allowedAttributes: { audio: ["controls", "src"] } });
+      return sanitizeHtml(raw, { allowedTags: ["br", "audio"], allowedAttributes: { audio: ["controls", "src"] } });
 };
