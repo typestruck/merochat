@@ -38,7 +38,7 @@ defaultParameters =
 --work around purs-backend-es bug
 externalDefaultParameters ∷ ∀ a. Parameters a
 externalDefaultParameters =
-      { title: "MeroChat - Friendly Random Chat"
+      { title: "MeroChat - Text only, no video or group chats, and friendly only random chat!"
       , favicon: SP.resourcePath (Left Favicon) Ico
       , javascript: []
       , bundled: false

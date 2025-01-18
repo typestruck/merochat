@@ -343,6 +343,28 @@ language plpgsql;
 
 create trigger recent_edit_boom after insert on complete_profiles for each row execute function temporarily_place_at_top();
 
+create or replace function unread_for
+(dt timestamptz) returns int as
+$$
+declare minutes int = (extract(epoch from (utc_now() - dt)) / 60);
+begin
+    if (minutes <= 10) then
+        return 0;
+    end if;
+    if (minutes > 60 and minutes <= 70) then
+        return  1;
+    end if;
+    if (minutes > 60 * 24 and minutes <= 60 * 24 + 10) then
+        return 2;
+    end if;
+    if (minutes > 60 * 24 * 30 and minutes <= 60 * 24 * 30 + 10) then
+        return 3;
+    end if;
+    return 1000;
+end;
+  $$
+  language plpgsql;
+
 create or replace function insert_history
 (sender_id int, recipient_id int) returns void as
 $$
