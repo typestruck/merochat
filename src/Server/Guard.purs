@@ -34,7 +34,7 @@ guards reading =
 checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { configuration: { tokenSecret }, pool } request = do
       cookies ← PSG.cookies request
-      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ (spy "n" (DM.lookup cookieName (spy "c" cookies)))
+      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName (spy "c" cookies)
       case maybeUserId of
             Just userId → pure $ Right userId
             _ →

@@ -41,7 +41,7 @@ createToken id = do
 
 userIdFromToken ∷ ∀ r. String → String → BaseEffect { pool ∷ Pool | r } (Maybe Int)
 userIdFromToken secret token = do
-      decoded ← map (DE.either (const Nothing) toId) <<< liftEffect <<< NSJ.decode secret $ NSJ.fromString (spy "t" token)
+      decoded ← map (DE.either (const Nothing) toId) <<< liftEffect <<< NSJ.decode secret $ NSJ.fromString token
       case decoded of
             Nothing → pure Nothing
             Just id → do
