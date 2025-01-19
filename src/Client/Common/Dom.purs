@@ -48,6 +48,8 @@ foreign import addToClassList_ ∷ EffectFn2 Element String Unit
 foreign import innerText_ ∷ EffectFn1 Element String
 foreign import pushState_ ∷ EffectFn1 String Unit
 
+foreign import isMediaTypeSupported_ ∷ EffectFn1 String Boolean
+
 foreign import createCustomEvent_ ∷ ∀ value. Fn2 String value CustomEvent
 foreign import customEventDetail_ ∷ ∀ value. Fn1 CustomEvent value
 
@@ -205,3 +207,11 @@ removeFromClassList = EU.runEffectFn2 removeFromClassList_
 
 addToClassList ∷ Element → String → Effect Unit
 addToClassList = EU.runEffectFn2 addToClassList_
+
+acceptedAudioCodec ∷ Effect String
+acceptedAudioCodec = do
+      isIt ← EU.runEffectFn1 isMediaTypeSupported_ appleShit
+      if isIt then pure appleShit else pure webm
+      where
+      appleShit = "audio/aac"
+      webm = "audio/webm"

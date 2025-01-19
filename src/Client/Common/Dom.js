@@ -94,3 +94,7 @@ export async function subscribe_(registration) {
 
       await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey });
 }
+
+export function isMediaTypeSupported_(mt) {
+      return MediaRecorder.isTypeSupported(mt);
+}
