@@ -53,9 +53,9 @@ makeCookie value =
                     { maxAge: Just 34560000.0
                     , expires: Nothing
                     , httpOnly: true
-                    , samesite:  Nothing
-                    , domain: Nothing
-                    , path: Nothing
+                    , samesite: Nothing
+                    , domain: if production then Just domain else Nothing
+                    , path: Just "/"
                     , secure: production
                     }
             }
