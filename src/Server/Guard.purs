@@ -4,11 +4,10 @@ import Prelude
 import Server.Effect
 
 import Data.Either (Either(..))
-import Data.List (List(..))
-
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DMB
+import Debug (spy)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Node.HTTP (Request)
@@ -35,7 +34,7 @@ guards reading =
 checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { configuration: { tokenSecret }, pool } request = do
       cookies ← PSG.cookies request
-      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ (spy "n" (DM.lookup cookieName (spy "c" cookies)))
       case maybeUserId of
             Just userId → pure $ Right userId
             _ →
@@ -45,7 +44,7 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
                         redirectLogin
       where
       isPost = NH.requestMethod request == "POST"
-      redirectLogin = redirect $ routes.help {}
+      redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
 
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { configuration: { tokenSecret }, pool } request = do
