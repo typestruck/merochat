@@ -4,6 +4,8 @@ import Prelude
 import Server.Effect
 
 import Data.Either (Either(..))
+import Data.List (List(..))
+
 import Data.Map as DM
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DMB
@@ -43,7 +45,7 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
                         redirectLogin
       where
       isPost = NH.requestMethod request == "POST"
-      redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
+      redirectLogin = redirect $ routes.backer {}
 
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { configuration: { tokenSecret }, pool } request = do

@@ -272,11 +272,7 @@ spec ∷
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , response ∷ String
                                   }
-                    , elsewhere ∷
-                            GET "/elsewhere"
-                                  { guards ∷ Guards ("checkAnonymous" : Nil)
-                                  , response ∷ Html
-                                  }
+
                     , banned ∷
                             GET "/banned"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
