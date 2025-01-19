@@ -45,7 +45,7 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
                         redirectLogin
       where
       isPost = NH.requestMethod request == "POST"
-      redirectLogin = redirect $ routes.backer {}
+      redirectLogin = redirect $ routes.help {}
 
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { configuration: { tokenSecret }, pool } request = do
