@@ -23,7 +23,7 @@ function st(options, handler) {
 }
 
 export function start_(constraints, options, handler) {
-    navigator.mediaDevices.getUserMedia(constraints).then(st(options, handler), e => alert(e)).catch(a => alert(a));
+    navigator.mediaDevices.getUserMedia(constraints).then(st(options, handler), e => console.log(e));
 }
 
 export function stop_() {

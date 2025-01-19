@@ -11,15 +11,15 @@ function webm(buffer) {
 //apple shit
 function mp4(buffer) {
     console.log(buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], buffer[8]);
-    return buffer[0] === 102 &&
-        buffer[1] === 116 &&
-        buffer[2] === 121 &&
-        buffer[3] === 112 &&
-        buffer[4] === 112 &&
-        (buffer[5] === 105 || buffer[5] === 77) &&
-        (buffer[6] === 115 || buffer[6] === 83) &&
-        (buffer[7] === 111 || buffer[7] === 78) &&
-        (buffer[8] === 109 || buffer[8] === 86) ? 'mp4' : '';
+    return buffer[0] === 0 &&
+        buffer[1] === 0 &&
+        buffer[2] === 0 &&
+        buffer[3] === 28 &&
+        buffer[4] === 102 &&
+        buffer[5] === 116 &&
+        buffer[6] === 121 &&
+        buffer[7] === 112 &&
+        (buffer[8] === 105 || buffer[8] === 77) ? 'mp4' : '';
 }
 
 export function realFileExtension_(buffer) {
