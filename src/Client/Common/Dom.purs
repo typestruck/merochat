@@ -213,5 +213,5 @@ acceptedAudioCodec = do
       isIt ← EU.runEffectFn1 isMediaTypeSupported_ appleShit
       if isIt then pure appleShit else pure webm
       where
-      appleShit = "audio/aac"
+      appleShit = "video/mp4;codecs=avc1"
       webm = "audio/webm"

@@ -3,7 +3,7 @@ let mediaRecorder,
     chunks = [];
 
 function st(options, handler) {
-    return function(stream) {
+    return function (stream) {
         mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorder.start();
 
@@ -23,7 +23,7 @@ function st(options, handler) {
 }
 
 export function start_(constraints, options, handler) {
-    navigator.mediaDevices.getUserMedia(constraints).then(st(options, handler), e => console.log(e));
+    navigator.mediaDevices.getUserMedia(constraints).then(st(options, handler), e => alert(e)).catch(a => alert(a));
 }
 
 export function stop_() {
