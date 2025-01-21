@@ -42,7 +42,7 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
             /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _id) # as _languages) # from (((languages # as l) `join` (languages_users # as lu)) # on (l ... _id .=. lu ... _language .&&. lu ... _speaker .=. u ... _id)) # orderBy _languages # limit (Proxy ∷ _ 1))
             /\ (select (array_agg (l ... _name # orderBy (l ... _id)) # as _tags) # from (((tags # as l) `join` (tags_users # as tu)) # on (l ... _id .=. tu ... _tag .&&. tu ... _creator .=. u ... _id)) # orderBy _tags # limit (Proxy ∷ _ 1))
-            /\ (select (array_agg _kind # as _badges) # from (((badges # as b) `join` (badges_users # as bu)) # on (b ... _id .=. bu ... _badge .&&. bu ... _receiver .=. u ... _id)) # orderBy _badges # limit (Proxy ∷ _ 1))
+            /\ (select (array_agg _description # as _badges) # from (((badges # as b) `join` (badges_users # as bu)) # on (b ... _id .=. bu ... _badge .&&. bu ... _receiver .=. u ... _id)) # orderBy _badges # limit (Proxy ∷ _ 1))
             /\ (k ... _current_karma # as _karma)
             /\ (_position # as _karmaPosition)
       source = join (users # as u) (karma_leaderboard # as k) # on (u ... _id .=. k ... _ranker)

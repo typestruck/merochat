@@ -20,6 +20,7 @@ import Simple.JSON (class ReadForeign, class WriteForeign)
 data Badge
       = Admin
       | Contributor
+      | Custom String
 
 derive instance Eq Badge
 
@@ -35,7 +36,7 @@ instance EncodeJson Badge where
 
 instance Bounded Badge where
       bottom = Admin
-      top = Contributor
+      top = Custom ""
 
 instance BoundedEnum Badge where
       cardinality = Cardinality 1
@@ -43,35 +44,45 @@ instance BoundedEnum Badge where
       fromEnum = case _ of
             Admin → 0
             Contributor → 100
+            Custom _ → 200
 
       toEnum = case _ of
             0 → Just Admin
             100 → Just Contributor
+            200 → Just $ Custom ""
             _ → Nothing
 
 instance Enum Badge where
       succ = case _ of
             Admin → Just Contributor
-            Contributor → Nothing
+            Contributor → Just $ Custom ""
+            Custom _ → Nothing
 
       pred = case _ of
             Admin → Nothing
             Contributor → Just Admin
+            Custom _ → Just Contributor
 
 instance Show Badge where
-      show = DSG.genericShow
+      show = case _ of
+            Admin → "Admin"
+            Contributor → "Contributor"
+            Custom c → c
+
+unshow :: String -> Badge
+unshow = case _ of
+            "Admin" → Admin
+            "Contributor" → Contributor
+            c → Custom c
 
 instance ReadForeign Badge where
-      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
+      readImpl f = unshow <$> F.readString f
 
 instance WriteForeign Badge where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum
-
-instance ToValue Badge where
-      toValue = F.unsafeToForeign <<< DE.fromEnum
+      writeImpl = F.unsafeToForeign <<< show
 
 instance FromValue Badge where
-      fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
+      fromValue v = map unshow (DL.fromValue v ∷ Either String String)
 
 type BadgeUser =
       { badge ∷ Badge
@@ -90,5 +101,10 @@ badgeFor b = case b of
             { badge: b
             , text: "Contributor"
             , description: "This user has contributed to MeroChat"
+            }
+      Custom c →
+            { badge: b
+            , text: c
+            , description: "Special user badge: " <> c
             }
 

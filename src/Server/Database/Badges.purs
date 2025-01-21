@@ -8,8 +8,8 @@ import Type.Proxy (Proxy(..))
 
 type Badges =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
-      , kind ∷ Badge
-      , description ∷ String
+      , kind ∷ Int
+      , description ∷ Badge
       )
 
 type BadgesTable = Table "badges" Badges
