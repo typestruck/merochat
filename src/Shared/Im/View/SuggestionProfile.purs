@@ -1,4 +1,4 @@
-module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, displayProfile, badges) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, badges) where
 
 import Debug
 import Prelude
@@ -177,9 +177,9 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
 
-displayProfile ∷ ∀ message. Maybe Int → ImUser → ImUser → Maybe message → Array (Html message)
+displayProfile ∷ Maybe Int → ImUser → ImUser → Maybe ImMessage → Array (Html ImMessage)
 displayProfile index loggedUser profileUser temporaryUserMessage =
-      [ SA.avatar [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profileUser.avatar ]
+      [ SA.avatar [ HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowAvatar index, HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profileUser.avatar ]
       , HE.h1 (HA.class' "profile-name") profileUser.name
       , HE.div (HA.class' "headline") profileUser.headline
       , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not profileUser.onlineStatus, duller: profileUser.availability /= Online } ] $ show profileUser.availability

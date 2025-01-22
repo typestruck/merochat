@@ -69,11 +69,11 @@ instance Show Badge where
             Contributor → "Contributor"
             Custom c → c
 
-unshow :: String -> Badge
+unshow ∷ String → Badge
 unshow = case _ of
-            "Admin" → Admin
-            "Contributor" → Contributor
-            c → Custom c
+      "Admin" → Admin
+      "Contributor" → Contributor
+      c → Custom c
 
 instance ReadForeign Badge where
       readImpl f = unshow <$> F.readString f

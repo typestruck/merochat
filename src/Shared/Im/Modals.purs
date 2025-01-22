@@ -3,6 +3,7 @@ module Shared.Im.View.Modals where
 import Prelude
 import Shared.Im.Types
 
+import Data.Array ((!!))
 import Data.Array as DA
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
@@ -14,8 +15,10 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
+import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
+import Shared.Im.Svg as SIV
 import Shared.Im.View.Retry as SIVR
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
@@ -45,10 +48,31 @@ modals model@{ erroredFields, toggleModal, chatting } =
                     ConfirmBlockUser id → confirmBlockUser id
                     Tutorial step → tutorial model step
                     ConfirmTerminationTemporaryUser → confirmTermination
+                    ShowAvatar index → showAvatar model index
                     _ → modalMenu model
             ]
       where
       tutorialSteps = toggleModal == Tutorial ChatSuggestions && DM.isNothing chatting || toggleModal == Tutorial Chatting
+
+showAvatar ∷ ImModel → Maybe Int → Html ImMessage
+showAvatar model index = HE.lazy Nothing largeAvatar who
+      where
+      who = case model.chatting of
+            Just c → map _.user (model.contacts !! c)
+            Nothing → case model.suggesting of
+                  Just s → model.suggestions !! s
+                  Nothing → Nothing
+      largeAvatar p =
+            HE.div (HA.class' "confirmation large") case p of
+                  Nothing → HE.createEmptyElement "div"
+                  Just profile → HE.fragment
+                        [ HE.svg [ HA.class' "close-avatar", HA.viewBox "0 0 16 16", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] SIV.closeElements
+                        , HE.h1 (HA.class' "profile-name extra-padding duller") profile.name
+                        , let
+                                avatarClasses = if DM.isNothing profile.avatar then SA.avatarColorClass index else ""
+                          in
+                                HE.div (HA.class' "large-avatar-profile") $ SA.avatar [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profile.avatar ]
+                        ]
 
 report ∷ Int → Array String → Html ImMessage
 report id erroredFields =

@@ -192,6 +192,7 @@ data ShowUserMenuModal
       | ShowSettings
       | ShowKarmaPrivileges
       | ShowHelp
+      | ShowAvatar (Maybe Int)
       | ShowBacker
       | ShowFeedback
       | ShowReport Int

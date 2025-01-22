@@ -425,11 +425,13 @@ checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts,
       enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
 
 beforeAudioMessage ∷ ImModel → MoreMessages
-beforeAudioMessage model = model /\ [ do
-      liftEffect do
-            mimeType <- CCD.acceptedAudioCodec
-            CIR.start { audio: true } { mimeType  } SendAudioMessage
-      pure Nothing ]
+beforeAudioMessage model = model /\
+      [ do
+              liftEffect do
+                    mimeType ← CCD.acceptedAudioCodec
+                    CIR.start { audio: true } { mimeType } SendAudioMessage
+              pure Nothing
+      ]
 
 audioMessage ∷ Touch → ImModel → MoreMessages
 audioMessage touch model =

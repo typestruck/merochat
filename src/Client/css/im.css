@@ -900,12 +900,15 @@ svg.toolbar-action {
 .online-only-filter {
     text-align: center;
     font-size: 1em;
-    margin:8px 0px;
+    margin: 8px 0px;
 }
 
-.online-only-filter label, .chat-input-options label {
+.online-only-filter label,
+.chat-input-options label {
     display: inline;
 }
+
+.large-avatar-profile {}
 
 .chat-input-preview,
 .chat-input {
@@ -1038,8 +1041,8 @@ svg.toolbar-action {
 
 .user-menu.in-message {
     background-color: #212120;
-    right:10px;
-    top:32px;
+    right: 10px;
+    top: 32px;
 }
 
 .incoming-message .message-context-menu.outer-user-menu {
@@ -1413,6 +1416,29 @@ select {
     flex-direction: column;
 }
 
+
+
+.extra-padding {
+    padding: 20px 0px;
+}
+
+.close-avatar {
+    align-self: flex-start;
+    padding-top: 15px;
+    padding-left: 15px;
+}
+
+
+
+.close-avatar path {
+    stroke: inherit;
+}
+
+
+.avatar-profile {
+    cursor: pointer;
+}
+
 .confirmation .error-message {
     visibility: visible;
 }
@@ -1773,6 +1799,15 @@ select {
     margin-right: -50%;
 }
 
+.confirmation.large {
+    top:30%;
+    max-height: 80%;
+    height: fit-content;
+    align-items: center;
+    padding-bottom: 20px;
+    justify-content: flex-start;
+}
+
 .profile-description-about {
     display: inline-block;
     font-weight: bold;
@@ -1785,6 +1820,13 @@ select {
 .filless {
     fill: none
 }
+
+.large-avatar-profile {
+    align-self: center;
+    display: flex;
+    justify-content: center;
+}
+
 
 .suggestion-center {
     display: flex;
@@ -1822,18 +1864,18 @@ select {
 
 .badge {
     color: #db5a5d;
-    font-weight:normal;
+    font-weight: normal;
     border: 1px solid #db5a5d;
     border-radius: 4px;
     padding: 0 6px;
     align-self: center;
     vertical-align: middle;
     display: inline-flex;
-    margin-left:13px;
+    margin-left: 13px;
 }
 
 .badge-img {
-    margin-right:5px;
+    margin-right: 5px;
     align-self: center;
 }
 
@@ -2115,11 +2157,11 @@ select {
     display: none;
 }
 
-.chat-input:placeholder-shown + .chat-right-buttons .send-button-div {
+.chat-input:placeholder-shown+.chat-right-buttons .send-button-div {
     display: none;
 }
 
-.chat-input:not(:placeholder-shown) + .chat-right-buttons .attachment-button {
+.chat-input:not(:placeholder-shown)+.chat-right-buttons .attachment-button {
     display: none;
 }
 
@@ -2737,7 +2779,6 @@ select {
 }
 
 @media (min-width:1920px) {
-
     html,
     body {
         font-size: 18px;
@@ -2764,6 +2805,24 @@ select {
     .welcome-new {
         font-size: 1.1em;
     }
+
+    .confirmation.large {
+        top: 10%;
+        bottom: 10%;
+        left: 30%;
+        padding: 0;
+        padding-bottom: 40px;
+        min-width: 70%;
+        min-height: 70%;
+        height: auto;
+        max-height: auto ;
+    }
+
+    .large-avatar-profile {
+        height: 90%;
+        width: 90%;
+    }
+
 
     .card-sides {
         margin: 46px 0;
@@ -2865,7 +2924,7 @@ select {
     }
 
     .online-only-filter {
-        margin:13px 0px;
+        margin: 13px 0px;
     }
 
     .emoji-access {
