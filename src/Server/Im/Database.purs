@@ -247,6 +247,7 @@ presentMissedMessages loggedUserId messageId dt = SD.unsafeQuery query
       , s.sender
       , s.recipient
       , s.date
+      , s.edited
       , s.content
       , s.status
       FROM messages s
