@@ -1660,10 +1660,6 @@ select {
     transform: rotate(135deg);
 }
 
-.large-avatar-profile {
-    max-height: 65%;
-    max-width: 65%;
-}
 
 .fortune svg {
     width: 13px;
@@ -2699,6 +2695,11 @@ select {
         flex-direction: column;
         align-items: center;
         font-size: 0.9em
+    }
+
+    .large-avatar-profile {
+        height: 65%;
+        width: 65%;
     }
 }
 
