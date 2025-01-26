@@ -87,6 +87,7 @@ tests = do
                           , recipient: user.user.id
                           , status: Sent
                           , id: 1
+                          , edited: false
                           , content: "test"
                           , sender: userId
                           }

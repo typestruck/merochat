@@ -105,6 +105,7 @@ fromFlatMessage fm =
       { id: fm.messageId
       , sender: fm.sender
       , recipient: fm.recipient
+      , edited: fm.edited
       , date: fm.date
       , content: fm.content
       , status: fm.status

@@ -24,7 +24,7 @@ import Shared.Markdown as SM
 
 -- | Messages in a chat history
 chatHistory ∷ ImModel → Maybe Contact → Html ImMessage
-chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, toggleModal, toggleContextMenu, failedRequests, freeToFetchChatHistory } contact =
+chatHistory model@{ user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, toggleModal, toggleContextMenu, failedRequests, freeToFetchChatHistory } contact =
       HE.div
             [ HA.id $ show MessageHistory
             , HA.class' { "message-history": true, hidden: DM.isNothing contact }
@@ -63,7 +63,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
             in
                   index >= length - 2
 
-      chatHistoryEntry chatPartner previousSender { id, status, date, sender, content } =
+      chatHistoryEntry chatPartner previousSender { id, status, date, sender, content, edited } =
             let
                   incomingMessage = sender /= loggedUserId
                   noTimestamps = not messageTimestamps || not chatPartner.messageTimestamps
@@ -80,7 +80,7 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                         , HA.onDblclick' (QuoteMessage content <<< Right <<< Just)
                         ]
                         [ HE.div
-                                [ HA.class' "message-content", HA.id $ "m" <> show id, CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage content <<< Left) ] -- id is used to scroll into view
+                                [ HA.class' { "message-content": true, "editing-message": Just id == model.editing }, HA.id $ "m" <> show id, CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage content <<< Left) ] -- id is used to scroll into view
                                 [ HE.div [ HA.class' "message-content-in" ]
                                         [ HE.div' [ HA.innerHtml $ SM.parse content ]
                                         , HE.div (HA.class' "message-context-options")
@@ -88,8 +88,10 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                                         [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                                 [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                                 ]
-                                                        , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && bottomMessage id } ] $
-                                                                HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage content (Right Nothing)) ] "Reply"
+                                                        , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && bottomMessage id } ]
+                                                                [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage content (Right Nothing)) ] "Reply"
+                                                                , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": status < Received }, HA.onClick $ EditMessage content id ] "Edit"
+                                                                ]
                                                         ]
                                                 ]
                                         ]
@@ -100,7 +102,8 @@ chatHistory { user: { id: loggedUserId, messageTimestamps, joined, temporary, re
                                                 , "message-status": true
                                                 }
                                         )
-                                        [ HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
+                                        [ HE.span (HA.class' { hidden: not edited }) "Edited - "
+                                        , HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
                                         , HE.span (HA.class' { hidden: incomingMessage || noTimestamps || noReadReceipts && status /= Errored }) " - "
                                         , HE.span (HA.class' { hidden: incomingMessage || noReadReceipts && status /= Errored }) $ show status
                                         ]

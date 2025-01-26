@@ -44,6 +44,7 @@ resumeChat userId model =
                   , toggleChatModal = HideChatModal
                   , initialScreen = false
                   , selectedImage = Nothing
+                  , editing = Nothing
                   , failedRequests = []
                   } /\
                   ( smallScreenEffect <>

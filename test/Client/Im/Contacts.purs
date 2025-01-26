@@ -116,6 +116,7 @@ tests = do
                       , status: Received
                       , sender: 32
                       , recipient: imUser.id
+                      , edited: false
                       , content: "1"
                       , date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
                       }
@@ -124,12 +125,14 @@ tests = do
                       , sender: imUser.id
                       , recipient: 32
                       , content: "2"
+                      , edited: false
                       , date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
                       }
                     , { id: 3
                       , status: Received
                       , sender: 32
                       , recipient: imUser.id
+                      , edited: false
                       , content: "3"
                       , date: EU.unsafePerformEffect $ map DateTimeWrapper EN.nowDateTime
                       }

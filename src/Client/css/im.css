@@ -1711,6 +1711,10 @@ select {
     align-items: center;
 }
 
+.editing-message {
+    background-color: #469bc5 !important;
+}
+
 .card-top-header {
     color: #C4D367;
     text-align: center;
@@ -1800,7 +1804,7 @@ select {
 }
 
 .confirmation.large {
-    top:30%;
+    top: 30%;
     max-height: 80%;
     height: fit-content;
     align-items: center;
@@ -2779,6 +2783,7 @@ select {
 }
 
 @media (min-width:1920px) {
+
     html,
     body {
         font-size: 18px;
@@ -2815,7 +2820,7 @@ select {
         min-width: 70%;
         min-height: 70%;
         height: auto;
-        max-height: auto ;
+        max-height: auto;
     }
 
     .large-avatar-profile {

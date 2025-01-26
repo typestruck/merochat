@@ -38,7 +38,7 @@ import Server.WebSocket (WebSocketConnection)
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Types as SET
-import Shared.Im.Types (ClientMessagePayload, Contact, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), ImModel)
+import Shared.Im.Types (ClientMessagePayload, Contact, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), ImModel, EditedMessagePayload)
 import Shared.Json as SJ
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
 import Shared.Profile.Types as SPT
@@ -169,6 +169,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       ServerChangedStatus cs → receiveStatusChange cs model
       ServerReceivedMessage rm → receiveAcknowledgement rm model
       NewIncomingMessage ni → receiveIncomingMessage webSocket isFocused ni model
+      NewEditedMessage ni → receiveEditedMessage webSocket isFocused ni model
       ContactTyping tp → receiveTyping tp model
       CurrentPrivileges kp → receivePrivileges kp model
       CurrentHash newHash → receiveHash newHash model
@@ -223,6 +224,29 @@ receiveIncomingMessage webSocket isFocused payload model =
                         CICN.setMessageStatus webSocket (SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts) Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
       where
       unsuggestedModel = unsuggest payload.recipientId model
+
+      userId
+            | payload.recipientId == model.user.id = payload.senderId
+            | otherwise = payload.recipientId
+
+      withExtraMessage e (m /\ ms) = m /\ e : ms
+
+receiveEditedMessage ∷ WebSocket → Boolean → EditedMessagePayload → ImModel → NextMessage
+receiveEditedMessage webSocket isFocused payload model =
+      if DA.elem userId model.blockedUsers then
+            F.noMessages model
+      else if model.user.id == payload.senderId then
+            updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
+      else if isFocused && DM.isJust model.chatting && (updatedModel.contacts !@ (SU.fromJust updatedModel.chatting)).user.id == userId then
+            CICN.setMessageStatus webSocket (SU.fromJust model.chatting) Read updatedModel
+      else
+            CICN.setMessageStatus webSocket (SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts) Delivered updatedModel
+      where
+      updateContent history
+            | history.id == payload.id = history { content = payload.content, edited = true }
+            | otherwise = history
+
+      updatedModel = model { contacts = updateHistory model.contacts userId updateContent }
 
       userId
             | payload.recipientId == model.user.id = payload.senderId
@@ -350,6 +374,7 @@ fromIncomingMessage payload model = case updatedContacts of
                           , sender: payload.senderId
                           , recipient: payload.recipientId
                           , id: payload.id
+                          , edited: false
                           , content: payload.content
                           , date: payload.date
                           }

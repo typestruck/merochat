@@ -94,6 +94,21 @@ processMessage loggedUserId userId content = do
       else
             pure $ Left UserUnavailable
 
+editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError String)
+editMessage loggedUserId userId messageId content = do
+      isVisible ← SID.isRecipientVisible loggedUserId userId
+      canEdit ← if isVisible then SID.canEditMessage loggedUserId messageId else pure false
+      if canEdit then do
+            privileges ← markdownPrivileges loggedUserId
+            sanitized ← processMessageContent content privileges
+            if DS.null sanitized then
+                  pure $ Left InvalidMessage
+            else do
+                  id ← SID.updateMessage messageId sanitized
+                  pure $ Right sanitized
+      else
+            pure $ Left UserUnavailable
+
 markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Privilege)
 markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SID.markdownPrivileges loggedUserId
 

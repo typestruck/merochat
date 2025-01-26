@@ -32,6 +32,7 @@ model =
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , temporaryEmail: Nothing
+      , editing: Nothing
       , temporaryPassword: Nothing
       , suggestionsPage: 0
       , lastTyping: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
@@ -120,6 +121,7 @@ historyMessage ∷ HistoryMessage
 historyMessage =
       { id: 1
       , sender: imUserId
+      , edited: false
       , recipient: contactId
       , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , content: "test"

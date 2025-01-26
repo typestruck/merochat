@@ -29,7 +29,7 @@ import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition,
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.LastSeen (_who, last_seen)
-import Server.Database.Messages (_content, _status, messages)
+import Server.Database.Messages (_content, _status, messages, _edited)
 import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Tags (_tags, tags)
@@ -161,6 +161,7 @@ presentMessageFields =
       , s.sender
       , s.recipient
       , s.date
+      , s.edited
       , s.content
       , s.status """
 
@@ -269,10 +270,20 @@ isRecipientVisible loggedUserId userId =
                                         (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date))
                           )
 
+canEditMessage ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
+canEditMessage loggedUserId messageId =
+      map DM.isJust <<< SD.single $
+            select (1 # as c)
+                  # from messages
+                  # wher (_id .=. messageId .&&. _sender .=. loggedUserId)
+
 insertMessage ∷ ∀ r. Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient content = SD.withTransaction $ \connection → do
       void $ SD.singleWith connection $ select (insert_history (loggedUserId /\ recipient) # as u)
       _.id <<< SU.fromJust <$> (SD.singleWith connection $ insert # into messages (_sender /\ _recipient /\ _content) # values (loggedUserId /\ recipient /\ content) # returning _id)
+
+updateMessage ∷ ∀ r. Int → String → BaseEffect { pool ∷ Pool | r } Unit
+updateMessage messageId content = void <<< SD.execute $ update messages # set ((_content .=. content) /\ (_edited .=. Checked true)) # wher (_id .=. messageId)
 
 insertKarma ∷ ∀ r. Int → Int → Tuple Int Int → BaseEffect { pool ∷ Pool | r } Unit
 insertKarma loggedUserId userId (Tuple senderKarma recipientKarma)

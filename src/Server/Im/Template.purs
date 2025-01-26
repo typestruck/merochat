@@ -53,6 +53,7 @@ template payload = do
                     , temporaryPassword: Nothing
                     , enableNotificationsVisible: false
                     , messageEnter: true
+                    , editing: Nothing
                     , imageCaption: Nothing
                     , link: Nothing
                     , linkText: Nothing

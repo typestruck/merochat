@@ -66,6 +66,12 @@ type ClientMessagePayload = BasicMessage
       , date ∷ DateTimeWrapper
       )
 
+type EditedMessagePayload = BasicMessage
+      ( content ∷ String
+      , recipientId ∷ Int
+      , senderId ∷ Int
+      )
+
 type BaseContact fields =
       { -- except for the last few messages, chat history is loaded when clicking on a contact for the first time
         shouldFetchChatHistory ∷ Boolean
@@ -85,6 +91,7 @@ type HM r =
       ( sender ∷ Int
       , recipient ∷ Int
       , date ∷ DateTimeWrapper
+      , edited ∷ Boolean
       , content ∷ String
       , status ∷ MessageStatus
       | r
@@ -143,6 +150,7 @@ type Im =
       , suggesting ∷ Maybe Int
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
+      , editing ∷ Maybe Int
       --used to signal that the page should be reloaded
       , hash ∷ String
       --visibility switches
@@ -292,6 +300,7 @@ data ImMessage
       | ToggleMessageEnter
       | FocusInput ElementId
       | QuoteMessage String (Either Touch (Maybe Event))
+      | EditMessage String Int
       | FocusCurrentSuggestion
       | EnterBeforeSendMessage Event
       | ForceBeforeSendMessage
@@ -345,6 +354,7 @@ data WebSocketPayloadServer
               }
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord
+      | EditedMessage EditedRecord
       | ChangeStatus
               { status ∷ MessageStatus
               , ids ∷ Array (Tuple Int (Array Int))
@@ -361,6 +371,8 @@ type OutgoingRecord =
             , turn ∷ Maybe Turn
             )
 
+type EditedRecord = { id ∷ Int, userId ∷ Int, content ∷ MessageContent }
+
 type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
 
 data FullWebSocketPayloadClient
@@ -372,6 +384,7 @@ data WebSocketPayloadClient
       = CurrentHash String
       | CurrentPrivileges { karma ∷ Int, privileges ∷ Array Privilege }
       | NewIncomingMessage ClientMessagePayload
+      | NewEditedMessage EditedMessagePayload
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
               { previousId ∷ Int

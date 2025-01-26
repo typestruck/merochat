@@ -43,6 +43,7 @@ tests = do
                                                               , id: messageId
                                                               , recipient: recipientId
                                                               , sender: anotherImUserId
+                                                              , edited: false
                                                               , content
                                                               }
                                                             ]
@@ -130,6 +131,7 @@ tests = do
                                 , id: newMessageID
                                 , content
                                 , sender: model.user.id
+                                , edited: false
                                 , recipient: contact.user.id
                                 , date
                                 }
@@ -158,6 +160,7 @@ tests = do
                                 , content
                                 , sender: contact.user.id
                                 , recipient: model.user.id
+                                , edited: false
                                 , date
                                 }
                         ) $ getHistory contacts

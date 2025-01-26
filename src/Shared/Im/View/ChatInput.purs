@@ -138,7 +138,7 @@ chatBarInput
                       , HE.textarea' $
                               (if elementId == ChatInput then [ HA.onKeydown (CheckTyping <<< DT.snd) ] else [])
                                     <>
-                                          [ HA.class' "chat-input"
+                                          [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
                                           , HA.id $ show elementId
                                           , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Reconnecting..."
                                           , SK.keyDownOn "Enter" enterBeforeSendMessageCheck

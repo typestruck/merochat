@@ -145,6 +145,7 @@ update st model =
             FocusCurrentSuggestion → CIC.focusCurrentSuggestion model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message et → CIC.quoteMessage message et model
+            EditMessage message id → CIC.editMessage message id model
             CheckTyping text → CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
             NoTyping id → F.noMessages $ CIC.updateTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }

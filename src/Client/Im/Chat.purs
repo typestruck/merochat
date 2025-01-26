@@ -6,7 +6,7 @@ import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
-import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
@@ -48,6 +48,7 @@ import Shared.Markdown as SM
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
+import Test.Client.Model (model)
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 import Web.DOM.Element as WDE
@@ -58,6 +59,7 @@ import Web.HTML.Event.DataTransfer as WHEDT
 import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLElement as WHHEL
+import Web.HTML.HTMLMetaElement (content)
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
 
@@ -134,7 +136,7 @@ beforeSendMessage
 sendMessage ∷ WebSocket → MessageContent → DateTimeWrapper → ImModel → NoMessages
 sendMessage
       webSocket
-      content
+      contentMessage
       date
       model@
             { user
@@ -148,12 +150,21 @@ sendMessage
               WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
               CCD.setValue input ""
               resizeTextarea input
-              CIW.sendPayload webSocket $ OutgoingMessage
-                    { id: newTemporaryId
-                    , userId: recipientId
-                    , content
-                    , turn
-                    }
+              CIW.sendPayload webSocket $
+                    case model.editing of
+                          Nothing →
+                                OutgoingMessage
+                                      { id: newTemporaryId
+                                      , userId: recipientId
+                                      , content: contentMessage
+                                      , turn
+                                      }
+                          Just messageId →
+                                EditedMessage
+                                      { id: messageId
+                                      , userId: recipientId
+                                      , content: contentMessage
+                                      }
               pure Nothing
       ]
       where
@@ -161,24 +172,41 @@ sendMessage
       recipient@{ user: { id: recipientId }, history } = contacts !@ index
       newTemporaryId = temporaryId + 1
 
+      content =
+            case contentMessage of
+                  Text message → message
+                  Image caption base64File → asMarkdownImage caption base64File
+                  Audio base64 → asAudioMessage base64
+
+      updateEdited messageId history
+            | history.id == messageId =
+                    history
+                          { content = content
+                          , status = Sent
+                          }
+            | otherwise = history
+
       updatedContact = recipient
             { lastMessageDate = date
-            , history = DA.snoc history $
-                    { id: newTemporaryId
-                    , status: Sent
-                    , sender: user.id
-                    , recipient: recipientId
-                    , date
-                    , content: case content of
-                            Text message → message
-                            Image caption base64File → asMarkdownImage caption base64File
-                            Audio base64 → asAudioMessage base64
-                    }
+            , history =
+                    case model.editing of
+                          Nothing →
+                                DA.snoc history $
+                                      { id: newTemporaryId
+                                      , status: Sent
+                                      , sender: user.id
+                                      , edited: false
+                                      , recipient: recipientId
+                                      , date
+                                      , content
+                                      }
+                          Just messageId → map (updateEdited messageId) history
             }
       updatedModel = model
             { temporaryId = newTemporaryId
             , imageCaption = Nothing
             , selectedImage = Nothing
+            , editing = Nothing
             , contacts = SU.fromJust $ DA.updateAt index updatedContact contacts
             }
       turn = makeTurn user updatedContact
@@ -500,3 +528,14 @@ updateTyping userId status model@{ contacts } = model { contacts = upd <$> conta
       upd contact@{ user: { id } }
             | id == userId = contact { typing = status }
             | otherwise = contact
+
+editMessage ∷ String → Int → ImModel → NoMessages
+editMessage message id model =
+      model
+            { editing = Just id
+            , toggleContextMenu = HideContextMenu
+            } /\ [ setIt *> pure Nothing ]
+      where
+      setIt = liftEffect do
+            input ← chatInput model.chatting
+            CCD.setValue input message

@@ -47,6 +47,7 @@ create table messages
     recipient integer not null,
     date timestamptz not null default (utc_now()),
     content text not null,
+    edited boolean not null default false,
     status smallint not null default 1,
     visualized timestamptz,
 
