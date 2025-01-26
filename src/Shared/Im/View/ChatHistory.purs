@@ -90,7 +90,7 @@ chatHistory model@{ user: { id: loggedUserId, messageTimestamps, joined, tempora
                                                                 ]
                                                         , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && bottomMessage id } ]
                                                                 [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage content (Right Nothing)) ] "Reply"
-                                                                , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": status < Received }, HA.onClick $ EditMessage content id ] "Edit"
+                                                                , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": sender /= model.user.id || status < Received }, HA.onClick $ EditMessage content id ] "Edit"
                                                                 ]
                                                         ]
                                                 ]
