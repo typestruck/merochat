@@ -908,7 +908,6 @@ svg.toolbar-action {
     display: inline;
 }
 
-.large-avatar-profile {}
 
 .chat-input-preview,
 .chat-input {
@@ -2824,8 +2823,8 @@ select {
     }
 
     .large-avatar-profile {
-        height: 90%;
-        width: 90%;
+        height: 85%;
+        width: 85%;
     }
 
 
