@@ -1660,6 +1660,11 @@ select {
     transform: rotate(135deg);
 }
 
+.large-avatar-profile {
+    max-height: 65%;
+    max-width: 65%;
+}
+
 .fortune svg {
     width: 13px;
     height: 13px;
@@ -1829,7 +1834,6 @@ select {
     display: flex;
     justify-content: center;
 }
-
 
 .suggestion-center {
     display: flex;
@@ -2826,7 +2830,6 @@ select {
         height: 85%;
         width: 85%;
     }
-
 
     .card-sides {
         margin: 46px 0;
