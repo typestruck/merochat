@@ -1,6 +1,7 @@
 //assume only one recording at a time
 let mediaRecorder,
-    chunks = [];
+    chunks = [],
+    lock;
 
 function st(options, handler) {
     return function (stream) {
@@ -18,12 +19,19 @@ function st(options, handler) {
                 chunks = [];
             };
             reader.readAsDataURL(new Blob(chunks, { type: mediaRecorder.mimeType }));
+
+            if (lock != undefined)
+                lock.release().then(() => {
+                    lock = undefined
+                });
         }
     };
 }
 
 export function start_(constraints, options, handler) {
-    navigator.mediaDevices.getUserMedia(constraints).then(st(options, handler), e => console.log(e));
+    navigator.wakeLock.request('screen').then(l => {
+      lock = l;
+    }).finally(() => navigator.mediaDevices.getUserMedia(constraints).then(st(options, handler), e => console.log(e)));
 }
 
 export function stop_() {

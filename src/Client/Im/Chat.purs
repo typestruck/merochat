@@ -538,4 +538,4 @@ editMessage message id model =
       where
       setIt = liftEffect do
             input ← chatInput model.chatting
-            CCD.setValue input message
+            CCD.setValue input (spy "msg" message)
