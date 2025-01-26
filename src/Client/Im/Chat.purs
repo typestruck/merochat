@@ -40,7 +40,6 @@ import Effect.Unsafe as EUN
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
-
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown (Token(..))
@@ -74,12 +73,12 @@ enterBeforeSendMessage event model@{ messageEnter } =
             pure Nothing
 
 getMessage ∷ ImModel → Aff (Maybe ImMessage)
-getMessage model@{ selectedImage, imageCaption, chatting } = do
-      input ← liftEffect $ chatInput chatting
+getMessage model = do
+      input ← liftEffect $ chatInput model.chatting
       value ← liftEffect $ CCD.value input
-      pure <<< Just <<< BeforeSendMessage $ DM.maybe (Text value) toImage selectedImage
+      pure <<< Just <<< BeforeSendMessage $ DM.maybe (Text value) toImage model.selectedImage
       where
-      toImage base64File = Image (DM.fromMaybe "" imageCaption) base64File
+      toImage base64File = Image (DM.fromMaybe "" model.imageCaption) base64File
 
 --send message/image button
 forceBeforeSendMessage ∷ ImModel → MoreMessages
@@ -182,6 +181,7 @@ sendMessage
                     history
                           { content = content
                           , status = Sent
+                          , edited = true
                           }
             | otherwise = history
 
