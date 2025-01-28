@@ -21,7 +21,7 @@ base ∷ Int
 base = 1000
 
 maxImageSize ∷ Int
-maxImageSize = base * 1024
+maxImageSize = base * 3024
 
 maxImageSizeKB ∷ String
 maxImageSizeKB = show base <> " KB"
