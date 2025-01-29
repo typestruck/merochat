@@ -8,6 +8,7 @@ import Shared.Im.Types
 import Shared.User
 
 import Client.Common.Privilege as CCP
+import Data.Argonaut ((.!=))
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -34,6 +35,7 @@ import Shared.Markdown as SM
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Resource (Media(..), ResourceType(..))
+import Shared.Resource as SPT
 import Shared.Resource as SR
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -133,7 +135,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
             CenterCard → HE.div [ HA.class' "suggestion-center" ] -- only center card suggestion can be chatted to
-                  [ HE.div [ HA.class' "suggestion new" ] $ loading : currentSuggestionMenu : profile
+                  [ HE.div [ HA.class' "suggestion new" ] $ if model.bugging == Just Backing then backingTime else (loading : currentSuggestionMenu : profile)
                   , HE.div [ HA.class' "suggestion-input" ] $ SIVC.chatBarInput ChatInputSuggestion model
                   ]
             card → HE.div [ HA.class' "suggestion new", HA.onClick <<< SpecialRequest $ if card == PreviousCard then PreviousSuggestion else NextSuggestion ] profile
@@ -173,6 +175,43 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             ]
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
+
+      backingTime =
+            [ HE.div (HA.class' "backing-suggestion-call")
+                    [ HE.img [ HA.class' "point-melon", HA.src $ SPT.resourcePath (Left Point7) Png ]
+                    , HE.h2 (HA.class' "backing-suggestion-call-enjoyer") "Enjoying MeroChat??"
+                    , HE.text "Donate today! MeroChat depends on people like you to exist"
+                    , HE.br
+                    , HE.text "Your money will pay for server costs, marketing and development time"
+                    , HE.br
+                    , HE.div (HA.class' "donate-options")
+                            [ HE.i_ "PayPal"
+                            , HE.form [ HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_blank" ]
+                                    [ HE.input [ HA.type' "hidden", HA.name "business", HA.value "RAH62A4TZZD7L" ]
+                                    , HE.input [ HA.type' "hidden", HA.name "currency_code", HA.value "USD" ]
+                                    , HE.input [ HA.type' "image", HA.src "https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif", HA.name "submit", HA.title "PayPal - The safer, easier way to pay online!", HA.alt "Donate with PayPal button" ]
+                                    , HE.img [ HA.alt "", HA.src "https://www.paypal.com/en_US/i/scr/pixel.gif", HA.width "1", HA.height "1" ]
+                                    ]
+                            , HE.i_ "Liberapay"
+                            , HE.script' [ HA.src "https://liberapay.com/merochat/widgets/button.js", HA.type' "text/javascript" ]
+                            , HE.a [ HA.href "https://liberapay.com/merochat/donate", HA.target "_blank" ] $ HE.img [ HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg" ]
+
+                            , HE.i_ "Patreon"
+                            , HE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button" ]
+                                    [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
+                                            [ HE.g_
+                                                    [ HE.circle' [ HA.cx "362.589996", HA.cy "204.589996", HA.r "204.589996" ]
+                                                    , HE.rect' [ HA.height "545.799988", HA.width "100", HA.x "0", HA.y "0" ]
+                                                    ]
+                                            ]
+                                    , HE.text "Subscribe"
+                                    ]
+
+                            ]
+                        , arrow $ SpecialRequest PreviousSuggestion
+                        , arrow $ SpecialRequest NextSuggestion
+                    ]
+            ]
 
 displayProfile ∷ Maybe Int → ImUser → ImUser → Maybe ImMessage → Array (Html ImMessage)
 displayProfile index loggedUser profileUser temporaryUserMessage =

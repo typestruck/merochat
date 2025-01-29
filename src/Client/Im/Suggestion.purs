@@ -14,8 +14,7 @@ import Data.Either (Either(..))
 import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Tuple (Tuple)
-import Data.Tuple as DT
+
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
@@ -38,9 +37,10 @@ nextSuggestion model =
       next = DM.maybe 0 (_ + 1) model.suggesting
       bugUser = do
             chance ← liftEffect $ ER.randomInt 0 100
-            if chance <= 2 then
+           {- if chance <= 2 then
                   pure <<< Just $ SetBugging Experimenting
-            else if chance <= 5 then
+            else -}
+            if chance <= 10 then
                   pure <<< Just $ SetBugging Backing
             else
                   pure Nothing
@@ -149,4 +149,9 @@ toggleSuggestionsFromOnline model = fetchMoreSuggestions model
 setBugging ∷ MeroChatCall → ImModel → NoMessages
 setBugging mc model = F.noMessages $ model
       { bugging = Just mc
+      --offset index to account for non profile suggestion
+      , suggesting = case  model.suggesting of
+            Just s | s > 0 -> Just $ s - 1
+            Just s -> Just s
+            Nothing -> Nothing
       }

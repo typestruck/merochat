@@ -419,6 +419,7 @@ instance DecodeQueryParam SuggestionsFrom where
                   _ → errorDecoding query key
 
 derive instance Eq SuggestionsFrom
+derive instance Eq MeroChatCall
 
 derive instance Ord ReportReason
 derive instance Ord MessageStatus
