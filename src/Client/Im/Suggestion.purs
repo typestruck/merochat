@@ -14,9 +14,9 @@ import Data.Either (Either(..))
 import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
+import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Flame as F
@@ -32,18 +32,10 @@ nextSuggestion model =
                   { freeToFetchSuggestions = true
                   , suggesting = Just next
                   , chatting = Nothing
+                  , bugging = Nothing
                   } /\ [ bugUser ]
       where
       next = DM.maybe 0 (_ + 1) model.suggesting
-      bugUser = do
-            chance ← liftEffect $ ER.randomInt 0 100
-           {- if chance <= 2 then
-                  pure <<< Just $ SetBugging Experimenting
-            else -}
-            if chance <= 10 then
-                  pure <<< Just $ SetBugging Backing
-            else
-                  pure Nothing
 
 previousSuggestion ∷ ImModel → MoreMessages
 previousSuggestion model@{ suggesting } =
@@ -53,17 +45,30 @@ previousSuggestion model@{ suggesting } =
             if previous < 0 then
                   fetchMoreSuggestions model
             else
-                  F.noMessages $ model
+                  model
                         { freeToFetchSuggestions = true
                         , suggesting = Just previous
                         , chatting = Nothing
-                        }
+                        , bugging = Nothing
+                        } /\ [ bugUser ]
+
+bugUser :: Aff (Maybe ImMessage)
+bugUser = do
+      chance ← liftEffect $ ER.randomInt 0 100
+      {- if chance <= 2 then
+            pure <<< Just $ SetBugging Experimenting
+      else -}
+      if chance <= 10 then
+            pure <<< Just $ SetBugging Backing
+      else
+            pure Nothing
 
 fetchMoreSuggestions ∷ ImModel → NextMessage
 fetchMoreSuggestions model =
       model
             { freeToFetchSuggestions = false
             , failedRequests = []
+            , bugging = Nothing
             } /\
             [ CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions
                     { query:
@@ -150,8 +155,8 @@ setBugging ∷ MeroChatCall → ImModel → NoMessages
 setBugging mc model = F.noMessages $ model
       { bugging = Just mc
       --offset index to account for non profile suggestion
-      , suggesting = case  model.suggesting of
-            Just s | s > 0 -> Just $ s - 1
-            Just s -> Just s
-            Nothing -> Nothing
+      , suggesting = case model.suggesting of
+              Just s | s > 0 → Just $ s - 1
+              Just s → Just s
+              Nothing → Nothing
       }
