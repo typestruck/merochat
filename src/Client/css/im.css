@@ -1212,6 +1212,22 @@ input:not(type=button):focus {
     justify-content: center;
 }
 
+.donate-options {
+    display: flex;
+    padding-top: 40px;
+    justify-content: center;
+}
+
+.donate-options i {
+    padding-right: 6px;
+    padding-left: 15px;
+    vertical-align: super;
+}
+
+.donate-options form {
+    display: inline;
+}
+
 .chat-right-buttons {
     position: absolute;
     top: 2px;
@@ -1222,6 +1238,16 @@ input:not(type=button):focus {
     z-index: 5;
     background: #2d2d2d;
 }
+
+.backing-suggestion-call {
+    text-align: center;
+    padding-top: 20px;
+}
+
+.backing-suggestion-call-enjoyer {
+    color: #db5a5d
+}
+
 
 .chatting-contact {
     background: #373737;
@@ -1427,10 +1453,23 @@ select {
     padding-left: 15px;
 }
 
-
-
 .close-avatar path {
     stroke: inherit;
+}
+
+
+.backing-suggestion-call .svg-patreon {
+    vertical-align: middle;
+    width: 15px;
+    height: 15px;
+
+}
+
+.backing-suggestion-call .patreon-button {
+    border-radius: 10px;
+    border-radius: 15px;
+    padding: 5px 10px;
+
 }
 
 
@@ -2351,6 +2390,21 @@ select {
         margin-right: 25px;
     }
 
+    .donate-options {
+        flex-direction: column;
+    }
+
+    .donate-options i{
+        padding: 0;
+        padding-top: 15px;
+        padding-bottom: 5px;
+    }
+
+    .donate-options .patreon-button {
+        width: fit-content;
+        align-self: center;
+    }
+
     .suggestions-button {
         display: block;
         cursor: pointer;
@@ -2364,12 +2418,14 @@ select {
 
     #profile-edition-form,
     .suggestion.new,
+    .backing-suggestion-call,
     .suggestion.old {
         padding: 10px 15px;
     }
 
     .suggestion-cards,
     .cards,
+    .backing-suggestion-call,
     .card,
     .card-center {
         max-width: 100%;

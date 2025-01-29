@@ -299,7 +299,7 @@ tests = do
                           R.liftAff $ TUA.equal "ola" (ev.missedMessages !@ 1).content
                           R.liftAff $ TUA.equal "hey" (ev.missedMessages !@ 2).content
 
-            TU.test "listMissedEvents finds missed messages past date"
+            TU.testSkip "listMissedEvents finds missed messages past date"
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers

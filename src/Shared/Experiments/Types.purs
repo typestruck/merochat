@@ -2,109 +2,109 @@ module Shared.Experiments.Types where
 
 import Prelude
 
-import Data.Argonaut.Decode (class DecodeJson)
+import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
-import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
-import Data.Either (Either(..))
+import Data.Either (Either)
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
+import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Show.Generic as DGRS
-import Droplet.Language (class FromValue)
+import Droplet.Language (class FromValue, class ToValue)
+import Droplet.Language as DL
+import Foreign as F
 import Shared.Privilege (Privilege)
+import Shared.Unsafe as SU
 import Shared.User (IU)
+import Simple.JSON (class ReadForeign, class WriteForeign)
 
-type ImpersonationProfile = Record IU
-
-type BaseChatExperiment fields =
+type ChatExperiment =
       { id ∷ Int
       , name ∷ String
       , description ∷ String
-      | fields
+      , code ∷ Experiment
       }
-
-type ChatExperiment = BaseChatExperiment (code ∷ ExperimentData)
 
 type ChatExperimentUser = { privileges ∷ Array Privilege }
 
 data ChatExperimentMessage
       = QuitExperiment
-      | JoinExperiment ExperimentData
-      | ToggleSection ChatExperimentSection
-      | ConfirmImpersonation (Maybe ImpersonationProfile)
+      | JoinExperiment ChatExperiment
+      | ConfirmExperiment (Maybe Experiment)
       | RedirectKarma
+      | ToggleSection ImpersonationSection
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
-data ChatExperimentSection
+type ChatExperimentModel =
+      { experiments ∷ Array ChatExperiment
+      , confirming ∷ Maybe Experiment
+      , current ∷ Maybe Experiment
+      , user ∷ ChatExperimentUser
+      , section ∷ ImpersonationSection
+      }
+
+data Experiment = Impersonation (Maybe ImpersonationProfile) | WordChain
+
+type ImpersonationProfile = Record IU
+
+data ImpersonationSection
       = HideSections
       | Characters
       | HistoricalFigures
       | Celebrities
 
-type ChatExperimentModel =
-      { experiments ∷ Array ChatExperiment
-      , section ∷ ChatExperimentSection
-      , current ∷ Maybe ExperimentData
-      , impersonation ∷ Maybe ImpersonationProfile
-      , user ∷ ChatExperimentUser
-      }
+derive instance Eq Experiment
 
---refactor: this type is being used in a very bonkers way, pls fix his shit
-data ExperimentData = Impersonation (Maybe ImpersonationProfile)
+derive instance Eq ImpersonationSection
 
-data ExperimentPayload = ImpersonationPayload
-      { id ∷ Int
-      , sender ∷ Boolean
-      }
+derive instance Ord Experiment
 
-derive instance Generic ChatExperimentSection _
-derive instance Generic ExperimentData _
-derive instance Generic ExperimentPayload _
-
-derive instance Eq ChatExperimentSection
-derive instance Eq ExperimentData
-
-instance EncodeJson ExperimentPayload where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance EncodeJson ExperimentData where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance EncodeJson ChatExperimentSection where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance DecodeJson ExperimentData where
-      decodeJson = DADGR.genericDecodeJson
-
-instance DecodeJson ExperimentPayload where
-      decodeJson = DADGR.genericDecodeJson
-
-instance DecodeJson ChatExperimentSection where
-      decodeJson = DADGR.genericDecodeJson
-
-derive instance Ord ExperimentData
-
-instance Bounded ExperimentData where
+instance Bounded Experiment where
       bottom = Impersonation Nothing
-      top = Impersonation Nothing
+      top = WordChain
 
-instance BoundedEnum ExperimentData where
+instance BoundedEnum Experiment where
       cardinality = Cardinality 1
       fromEnum = case _ of
             Impersonation _ → 0
+            WordChain → 10
       toEnum = case _ of
-            0 → Just $ Impersonation Nothing
+            0 → Just (Impersonation Nothing)
+            10 → Just WordChain
             _ → Nothing
 
-instance Enum ExperimentData where
+instance Enum Experiment where
       succ = case _ of
-            Impersonation _ → Nothing
+            Impersonation _ → Just WordChain
+            WordChain → Nothing
       pred = case _ of
-            Impersonation _JsonBoolean → Nothing
+            Impersonation _ → Nothing
+            WordChain → Just (Impersonation Nothing)
 
-instance Show ExperimentPayload where
-      show = DGRS.genericShow
+derive instance Generic Experiment _
 
-instance FromValue ExperimentData where
-      fromValue = Right <<< const (Impersonation Nothing)
+instance DecodeJson Experiment where
+      decodeJson = DADGR.genericDecodeJson
+
+instance EncodeJson Experiment where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance ReadForeign Experiment where
+      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
+
+instance WriteForeign Experiment where
+      writeImpl = F.unsafeToForeign <<< DE.fromEnum
+
+instance ToValue Experiment where
+      toValue = F.unsafeToForeign <<< DE.fromEnum
+
+instance FromValue Experiment where
+      fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
+
+derive instance Generic ImpersonationSection _
+
+instance EncodeJson ImpersonationSection where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance DecodeJson ImpersonationSection where
+      decodeJson = DADGR.genericDecodeJson
