@@ -20,6 +20,8 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Random as ER
 import Flame as F
+import Safe.Coerce as SC
+import Shared.DateTime as SD
 import Shared.Options.Page (suggestionsPerPage)
 import Web.Socket.WebSocket (WebSocket)
 
@@ -33,7 +35,7 @@ nextSuggestion model =
                   , suggesting = Just next
                   , chatting = Nothing
                   , bugging = Nothing
-                  } /\ [ bugUser ]
+                  } /\ [ bugUser model ]
       where
       next = DM.maybe 0 (_ + 1) model.suggesting
 
@@ -50,15 +52,16 @@ previousSuggestion model@{ suggesting } =
                         , suggesting = Just previous
                         , chatting = Nothing
                         , bugging = Nothing
-                        } /\ [ bugUser ]
+                        } /\ [ bugUser model]
 
-bugUser :: Aff (Maybe ImMessage)
-bugUser = do
+bugUser :: ImModel -> Aff (Maybe ImMessage)
+bugUser model = do
+
       chance ← liftEffect $ ER.randomInt 0 100
       {- if chance <= 2 then
             pure <<< Just $ SetBugging Experimenting
       else -}
-      if chance <= 10 then
+      if chance <= 10 && SD.daysDiff (SC.coerce model.user.joined) > 3 then
             pure <<< Just $ SetBugging Backing
       else
             pure Nothing
