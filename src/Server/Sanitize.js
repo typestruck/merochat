@@ -81,10 +81,25 @@ function sanitizeHtml(html, options, _recursing) {
       ];
       let allowedAttributesMap;
       let allowedAttributesGlobMap;
+      if (options.allowedAttributes) {
+        allowedAttributesMap = {};
+        allowedAttributesGlobMap = {};
+        each(options.allowedAttributes, function(attributes, tag) {
+          allowedAttributesMap[tag] = [];
+          const globRegex = [];
+          attributes.forEach(function(obj) {
+            if (typeof obj === 'string' && obj.indexOf('*') >= 0) {
+              globRegex.push(escapeStringRegexp(obj).replace(/\\\*/g, '.*'));
+            } else {
+              allowedAttributesMap[tag].push(obj);
+            }
+          });
+          if (globRegex.length) {
+            allowedAttributesGlobMap[tag] = new RegExp('^(' + globRegex.join('|') + ')$');
+          }
+        });
+      }
 
-      const allowedClassesMap = {};
-      const allowedClassesGlobMap = {};
-      const allowedClassesRegexMap = {};
       const transformTagsMap = {};
       let depth;
       let stack;
@@ -216,7 +231,7 @@ function sanitizeHtml(html, options, _recursing) {
                         });
                   }
                   if (options.selfClosing.includes(name)) {
-                        result += ' />';
+                        result += ' />';  // Be XHTML-compliant
                   } else {
                         result += '>';
                         if (frame.innerText && !hasText && !options.textFilter) {
