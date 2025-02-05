@@ -319,7 +319,6 @@ updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       fromContact { user } = fromUser user
       fromUser { id } = id
 
-
 report ∷ Int → WebSocket → ImModel → MoreMessages
 report userId webSocket model@{ reportReason, reportComment } = case reportReason of
       Just rs →

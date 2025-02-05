@@ -208,8 +208,8 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                                     ]
 
                             ]
-                        , arrow $ SpecialRequest PreviousSuggestion
-                        , arrow $ SpecialRequest NextSuggestion
+                    , arrow $ SpecialRequest PreviousSuggestion
+                    , arrow $ SpecialRequest NextSuggestion
                     ]
             ]
 
