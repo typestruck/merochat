@@ -169,7 +169,7 @@ update st model =
             ToggleContactProfile → CIS.toggleContactProfile model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
-            SpecialRequest (BlockUser id) → CIS.blockUser webSocket id model
+            SpecialRequest (BlockUser id) → blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
             ToggleSuggestionsFromOnline → CIS.toggleSuggestionsFromOnline model
             SetBugging mc → CIS.setBugging mc model
@@ -291,10 +291,39 @@ finishTutorial model@{ toggleModal } = model { user { completedTutorial = true }
             contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
             pure <<< Just $ DisplayNewContacts contact
 
+blockUser ∷ WebSocket → Int → ImModel → NextMessage
+blockUser webSocket id model =
+      updateAfterBlock id model /\
+            [ do
+                    result ← CCN.defaultResponse $ request.im.block { body: { id } }
+                    case result of
+                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser id, errorMessage: Nothing }
+                          _ → do
+                                liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
+                                pure Nothing
+            ]
+
+updateAfterBlock ∷ Int → ImModel → ImModel
+updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
+      model
+            { contacts = DA.filter ((blocked /= _) <<< fromContact) contacts
+            , suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
+            , blockedUsers = blocked : blockedUsers
+            , chatting = Nothing
+            , failedRequests = []
+            , initialScreen = true
+            , toggleModal = HideUserMenuModal
+            , toggleContextMenu = HideContextMenu
+            }
+      where
+      fromContact { user } = fromUser user
+      fromUser { id } = id
+
+
 report ∷ Int → WebSocket → ImModel → MoreMessages
 report userId webSocket model@{ reportReason, reportComment } = case reportReason of
       Just rs →
-            CIS.updateAfterBlock userId
+            updateAfterBlock userId
                   ( model
                           { reportReason = Nothing
                           , reportComment = Nothing

@@ -1,30 +1,25 @@
 module Client.Im.Suggestion where
 
 import Prelude
-import Shared.Experiments.Types
-import Shared.Im.Types
+import Shared.Im.Types (ImMessage(..), ImModel, MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
-import Client.Im.WebSocket as CIW
-import Data.Array ((:))
 import Data.Array as DA
-import Data.Either (Either(..))
 import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
+import Effect.Class as EC
 import Effect.Random as ER
 import Flame as F
 import Safe.Coerce as SC
 import Shared.DateTime as SD
 import Shared.Options.Page (suggestionsPerPage)
-import Web.Socket.WebSocket (WebSocket)
 
+-- | Display next suggestion card
 nextSuggestion ∷ ImModel → MoreMessages
 nextSuggestion model =
       if next >= DA.length model.suggestions then
@@ -39,37 +34,36 @@ nextSuggestion model =
       where
       next = DM.maybe 0 (_ + 1) model.suggesting
 
+-- | Display previous suggestion card
 previousSuggestion ∷ ImModel → MoreMessages
-previousSuggestion model@{ suggesting } =
-      let
-            previous = DM.maybe 0 (_ - 1) suggesting
-      in
-            if previous < 0 then
-                  fetchMoreSuggestions model
-            else
-                  model
-                        { freeToFetchSuggestions = true
-                        , suggesting = Just previous
-                        , chatting = Nothing
-                        , bugging = Nothing
-                        } /\ [ bugUser model]
+previousSuggestion model =
+      if previous < 0 then
+            fetchMoreSuggestions model
+      else
+            model
+                  { freeToFetchSuggestions = true
+                  , suggesting = Just previous
+                  , chatting = Nothing
+                  , bugging = Nothing
+                  } /\ [ bugUser model ]
+      where
+      previous = DM.maybe 0 (_ - 1) model.suggesting
 
-bugUser :: ImModel -> Aff (Maybe ImMessage)
+-- | When moving suggestion cards, diplay a special card n% of the time
+bugUser ∷ ImModel → Aff (Maybe ImMessage)
 bugUser model = do
-
-      chance ← liftEffect $ ER.randomInt 0 100
-      {- if chance <= 2 then
-            pure <<< Just $ SetBugging Experimenting
-      else -}
+      chance ← EC.liftEffect $ ER.randomInt 0 100
+      --bug user only if account is older than 3 days
       if chance <= 10 && SD.daysDiff (SC.coerce model.user.joined) > 3 then
             pure <<< Just $ SetBugging Backing
       else
             pure Nothing
 
+-- | Fetch next page of suggestions
 fetchMoreSuggestions ∷ ImModel → NextMessage
 fetchMoreSuggestions model =
       model
-            { freeToFetchSuggestions = false
+            { freeToFetchSuggestions = false --ui uses this flag to show a loading icon and prevent repeated requests
             , failedRequests = []
             , bugging = Nothing
             } /\
@@ -81,81 +75,60 @@ fetchMoreSuggestions model =
                     }
             ]
 
+-- | Show these suggesions to the user
+-- |
+-- | Suggestions are picked according to `SuggestionsFrom`. If 60% of the suggestions are low quality users, switch to next option in `SuggestionsFrom``
 displayMoreSuggestions ∷ Array Suggestion → ImModel → MoreMessages
 displayMoreSuggestions suggestions model =
-      --if we looped through all the suggestions, retry
       if suggestionsSize == 0 && model.suggestionsPage > 0 then
             fetchMoreSuggestions $ model
                   { suggestionsPage = 0
                   , suggesting = suggesting
-                  , suggestionsFrom = sg
+                  , suggestionsFrom = suggestionsFrom
                   }
       else
-            F.noMessages $ model
+            F.noMessages model
                   { suggesting = suggesting
                   , chatting = Nothing
                   , freeToFetchSuggestions = true
                   , suggestions = suggestions
-                  , suggestionsPage = if suggestionsSize == 0 || sg /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
-                  , suggestionsFrom = sg
+                  , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
+                  , suggestionsFrom = suggestionsFrom
                   }
       where
       suggestionsSize = DA.length suggestions
       suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
-      shouldSwithCategory = model.suggestionsFrom /= OnlineOnly && (suggestionsSize == 0 || (DA.length $ DA.filter ((_ > 4) <<< _.bin) suggestions) / DA.length suggestions * 100 >= 60)
-      sg
-            | shouldSwithCategory = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
+
+      lowQualityUsersBin = 5
+      lowQualityUsersIn = DA.length <<< DA.filter ((_ >= lowQualityUsersBin) <<< _.bin)
+      suggestionsFrom
+            | model.suggestionsFrom /= OnlineOnly && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
             | otherwise = model.suggestionsFrom
 
-blockUser ∷ WebSocket → Int → ImModel → NextMessage
-blockUser webSocket id model =
-      updateAfterBlock id model /\
-            [ do
-                    result ← CCN.defaultResponse $ request.im.block { body: { id } }
-                    case result of
-                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser id, errorMessage: Nothing }
-                          _ → do
-                                liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
-                                pure Nothing
-            ]
-
-updateAfterBlock ∷ Int → ImModel → ImModel
-updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
-      model
-            { contacts = DA.filter ((blocked /= _) <<< fromContact) contacts
-            , suggestions = DA.filter ((blocked /= _) <<< fromUser) suggestions
-            , blockedUsers = blocked : blockedUsers
-            , chatting = Nothing
-            , failedRequests = []
-            , initialScreen = true
-            , toggleModal = HideUserMenuModal
-            , toggleContextMenu = HideContextMenu
-            }
-      where
-      fromContact { user } = fromUser user
-      fromUser { id } = id
-
+-- | Show or hide full user profile
 toggleContactProfile ∷ ImModel → NoMessages
-toggleContactProfile model@{ fullContactProfileVisible } = F.noMessages $ model
-      { fullContactProfileVisible = not fullContactProfileVisible
+toggleContactProfile model = F.noMessages model
+      { fullContactProfileVisible = not model.fullContactProfileVisible
       }
 
+-- | Show suggestion cards again
 resumeSuggesting ∷ ImModel → NoMessages
-resumeSuggesting model@{ suggestions, suggesting } = F.noMessages $ model
+resumeSuggesting model = F.noMessages model
       { chatting = Nothing
-      , suggesting = if DA.length suggestions <= 1 then Just 0 else suggesting
       , toggleChatModal = HideChatModal
       , editing = Nothing
       }
 
+-- | Switch to on or from online only suggestions
 toggleSuggestionsFromOnline ∷ ImModel → MoreMessages
 toggleSuggestionsFromOnline model = fetchMoreSuggestions model
       { suggestionsFrom = if model.suggestionsFrom == OnlineOnly then ThisWeek else OnlineOnly
       , suggestionsPage = 0
       }
 
+-- | Display special card instead of suggestion
 setBugging ∷ MeroChatCall → ImModel → NoMessages
-setBugging mc model = F.noMessages $ model
+setBugging mc model = F.noMessages model
       { bugging = Just mc
       --offset index to account for non profile suggestion
       , suggesting = case model.suggesting of
