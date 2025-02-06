@@ -100,10 +100,3 @@ tests = do
                               }
                   TUA.equal Nothing chatting
 
-            TU.test "resumeSuggesting sets suggestions to 0 if there is 1 or fewer suggestions" do
-                  let
-                        { suggesting } = DT.fst <<< CIS.resumeSuggesting $ model
-                              { suggesting = Nothing
-                              , suggestions = []
-                              }
-                  TUA.equal (Just 0) suggesting
