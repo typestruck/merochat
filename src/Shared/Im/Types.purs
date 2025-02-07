@@ -311,14 +311,13 @@ data ImMessage
       | ResizeChatInput Event
       | BeforeSendMessage MessageContent
       | SendMessage MessageContent DateTimeWrapper
-      | SetMessageContent (Maybe Int) String
       | Apply Markup
       | SetEmoji Event
       | BeforeAudioMessage
       | AudioMessage Touch
       | SendAudioMessage String
       | InsertLink
-      | CheckTyping String
+      | SetTyping String
       | NoTyping Int
       | TypingId TimeoutId
 

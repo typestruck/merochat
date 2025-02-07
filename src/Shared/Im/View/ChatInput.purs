@@ -4,12 +4,12 @@ import Prelude
 import Shared.Availability
 import Shared.Im.Types
 
+import Client.Common.Dom as CCD
 import Client.Common.Privilege as CCP
 import Client.Im.Swipe as CIT
 import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
-import Data.HashMap as HS
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
@@ -136,7 +136,7 @@ chatBarInput
               , HE.div [ HA.class' { "chat-input-area": true, side: not messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
-                              (if elementId == ChatInput then [ HA.onKeydown (CheckTyping <<< DT.snd) ] else [])
+                              (if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
                                     <>
                                           [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
                                           , HA.id $ show elementId
@@ -167,7 +167,7 @@ chatBarInput
             pure $ accessor entry
 
       enterBeforeSendMessageCheck ∷ Event → Maybe ImMessage
-      enterBeforeSendMessageCheck event = if isWebSocketConnected then Just $ EnterBeforeSendMessage event else Nothing
+      enterBeforeSendMessageCheck event = if isWebSocketConnected && model.messageEnter then Just $ EnterBeforeSendMessage event else Nothing
 
 bold ∷ Html ImMessage
 bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
@@ -294,9 +294,16 @@ previewButton = HE.svg [ HA.class' "svg-20 hidden", HA.onClick $ ToggleChatModal
       ]
 
 emojiModal ∷ ImModel → Html ImMessage
-emojiModal { toggleChatModal } = HE.div [ HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", HA.onClick' SetEmoji ] $ map toEmojiCategory SIE.byCategory
+emojiModal { toggleChatModal } = HE.div [ HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", emojiClickEvent SetEmoji ] $ map toEmojiCategory SIE.byCategory
       where
       toEmojiCategory (Tuple name pairs) = HE.div_
             [ HE.div (HA.class' "duller") name
             , HE.div_ $ map (HE.span_ <<< _.s) pairs
             ]
+
+emojiClickEvent :: (Event -> ImMessage) -> NodeData ImMessage
+emojiClickEvent message = HA.createRawEvent "click" handler
+      where
+      handler event
+            | CCD.tagNameFromTarget event == "SPAN" = pure <<< Just $ message event
+            | otherwise = pure Nothing

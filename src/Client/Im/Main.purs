@@ -126,7 +126,7 @@ update ∷ _ → ListUpdate ImModel ImMessage
 update st model =
       case _ of
             --chat
-            InsertLink → CIC.insertLink model
+            InsertLink → CIC.setLink model
             ToggleChatModal modal → CIC.toggleModal modal model
             DropFile event → CIC.catchFile st.fileReader event model
             EnterBeforeSendMessage event → CIC.enterBeforeSendMessage event model
@@ -134,9 +134,8 @@ update st model =
             ResizeChatInput event → CIC.resizeChatInput event model
             BeforeSendMessage content → CIC.beforeSendMessage content model
             SendMessage content date → CIC.sendMessage webSocket content date model
-            SetMessageContent cursor content → CIC.setMessage cursor content model
             SetSelectedImage maybeBase64 → CIC.setSelectedImage maybeBase64 model
-            Apply markup → CIC.applyMarkup markup model
+            Apply markup → CIC.setMarkup markup model
             SetEmoji event → CIC.setEmoji event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
             BeforeAudioMessage → CIC.beforeAudioMessage model
@@ -146,8 +145,8 @@ update st model =
             FocusInput elementId → focusInput elementId model
             QuoteMessage message et → CIC.quoteMessage message et model
             EditMessage message id → CIC.editMessage message id model
-            CheckTyping text → CIC.checkTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
-            NoTyping id → F.noMessages $ CIC.updateTyping id false model
+            SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
+            NoTyping id → F.noMessages $ CIC.toggleTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
             --contacts
             ResumeChat userId → CICN.resumeChat userId model
