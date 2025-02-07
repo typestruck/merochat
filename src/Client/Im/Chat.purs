@@ -1,8 +1,7 @@
 module Client.Im.Chat where
 
 import Prelude
-import Shared.Experiments.Types
-import Shared.Im.Types
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, ImUser, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
@@ -26,7 +25,7 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Symbol as TDS
-import Data.Time.Duration (Days, Milliseconds(..), Minutes)
+import Data.Time.Duration (Milliseconds(..), Minutes)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
@@ -35,7 +34,6 @@ import Effect.Class as EC
 import Effect.Now as EN
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Effect.Unsafe as EUN
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
