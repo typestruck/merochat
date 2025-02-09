@@ -9,6 +9,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Experiments.Impersonation as SEI
 import Shared.Experiments.WordChain as SEW
+import Shared.Experiments.Doppelganger as SED
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
 view model = HE.div (HA.class' "chat-experiments") $ case model.current of
@@ -29,3 +30,4 @@ extra ∷ ChatExperimentModel → Experiment → Html ChatExperimentMessage
 extra model = case _ of
       Impersonation ip → SEI.view model
       WordChain → SEW.view model
+      Doppelganger -> SED.view model

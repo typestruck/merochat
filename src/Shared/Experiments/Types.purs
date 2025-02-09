@@ -43,7 +43,7 @@ type ChatExperimentModel =
       , section ∷ ImpersonationSection
       }
 
-data Experiment = Impersonation (Maybe ImpersonationProfile) | WordChain
+data Experiment = Impersonation (Maybe ImpersonationProfile) | WordChain | Doppelganger
 
 type ImpersonationProfile = Record IU
 
@@ -61,25 +61,29 @@ derive instance Ord Experiment
 
 instance Bounded Experiment where
       bottom = Impersonation Nothing
-      top = WordChain
+      top = Doppelganger
 
 instance BoundedEnum Experiment where
       cardinality = Cardinality 1
       fromEnum = case _ of
             Impersonation _ → 0
             WordChain → 10
+            Doppelganger -> 20
       toEnum = case _ of
             0 → Just (Impersonation Nothing)
             10 → Just WordChain
+            20 -> Just Doppelganger
             _ → Nothing
 
 instance Enum Experiment where
       succ = case _ of
             Impersonation _ → Just WordChain
-            WordChain → Nothing
+            WordChain → Just Doppelganger
+            Doppelganger -> Nothing
       pred = case _ of
             Impersonation _ → Nothing
             WordChain → Just (Impersonation Nothing)
+            Doppelganger -> Just WordChain
 
 derive instance Generic Experiment _
 

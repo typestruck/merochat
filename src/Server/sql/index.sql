@@ -329,6 +329,26 @@ create table complete_profiles
     constraint unique_completer_completed_profile unique(completer, completed)
 );
 
+create table doppelganger_questions(
+    id smallint primary key,
+    question text not null
+);
+
+create table doppelganger_choices(
+    id integer generated always as identity primary key,
+    choice text not null,
+    question integer not null,
+    constraint choice_quesiton foreign key (question) references doppelganger_questions(id) on delete cascade
+);
+
+create table doppelganger_answers(
+    id integer generated always as identity primary key,
+    taker integer not null,
+    choice integer not null,
+    constraint choice_answer foreign key (choice) references doppelganger_choices(id) on delete cascade,
+    constraint user_answer foreign key (taker) references users(id) on delete cascade
+);
+
 -- when users first edit new field in their profile, place them higher in the suggestions list if have filled 3 or more profile fields
 create or replace function temporarily_place_at_top() returns trigger as
 $$
@@ -724,7 +744,8 @@ values
 
 insert into experiments (code, name, description) values
     (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it'),
-    (10, 'Word chain', 'Play Word Chain with other users');
+    (10, 'Word chain', 'Play Word Chain with other users'),
+    (20, 'Doppelganger', 'Answer 9 questions and find out if anyone matches you');
 
 insert into stock_text (contents, text_type) values
     ('I stayed up all night wondering where the sun went, then it dawned on me', 0),
@@ -939,3 +960,70 @@ insert into privileges (feature, name, description, quantity) values
 insert into badges (kind, description) values
     (0, 'Admin' ),
     (100, 'Contributor');
+
+insert into doppelganger_questions (id, question) values
+    (1, 'Which number feels more random to you?'),
+    (2, 'If you had to invent a new drink, what would it be?'),
+    (3, 'What is your least favorite sport?'),
+    (4, 'What sounds more scary to you?'),
+    (5, 'Which fictional place would you rather live in?'),
+    (6, 'Which historical place would you rather live in?'),
+    (7, 'If you were a magician somewhere cards are outlawed which one of these would you use instead?'),
+    (8, 'Why didn''t you ask me which laptop I bought?'),
+    (9, 'Which saying do you relate the most?');
+
+insert into doppelganger_choices (question, choice) values
+    (1, '37'),
+    (1, '26'),
+    (2, 'A soft drink'),
+    (2, 'An alcoholic beverage'),
+    (2, 'A new kind of tea'),
+    (3, 'Table tennis'),
+    (3, 'Football'),
+    (3, 'Chess'),
+    (3, 'Dodgeball'),
+    (4, 'Spiders'),
+    (4, 'Public speaking'),
+    (4, 'A giant licking the top of my head'),
+    (4, 'Happy birthday songs'),
+    (4, 'Missing a connecting flight'),
+    (5, 'Narnia'),
+    (5, 'Middle earth'),
+    (5, 'My last day dream'),
+    (5, 'Vulcan'),
+    (5, 'Candy kingdom'),
+    (5, 'Wonderland'),
+    (6, 'Ancient Rome'),
+    (6, 'Ancient Mesopotamia'),
+    (6, 'Fifth century France'),
+    (6, 'Africa when modern humans evolved'),
+    (6, 'Feudal Japan'),
+    (6, 'Warring states China'),
+    (6, '2000 BC Polynesia'),
+    (7, 'Tarot'),
+    (7, 'Uno'),
+    (7, 'I would use cards anyway'),
+    (7, '52 rabbits'),
+    (7, 'Trump cards'),
+    (7, 'Pokemon cards'),
+    (7, 'Yu-Gi-Oh cards'),
+    (7, 'Nothing. Magic is ruined'),
+    (8, 'What is a laptop?'),
+    (8, 'I did'),
+    (8, 'It is probably a Mac'),
+    (8, 'I was busy solving world peace'),
+    (8, 'It was me who bought the laptop!'),
+    (8, 'Why does anyone do anything?'),
+    (8, 'There are more things in Heaven and Earth, Horatio, than are dreamt of in your laptop'),
+    (8, 'Because you are returning it'),
+    (8, 'I thought it was a rhetorical question'),
+    (9, 'Super easy, barely an inconvenience'),
+    (9, 'Welp, that didn''t work'),
+    (9, 'Yesterday you said tomorrow'),
+    (9, 'I have approximate knowledge of many things'),
+    (9, '...until I took an arrow to the knee'),
+    (9, 'I am walking here! I am walking here!'),
+    (9, 'I have no mouth and I must scream'),
+    (9, 'The state calls its own violence law but that of the individual crime'),
+    (9, 'Be the change that you wish to see in the world'),
+    (9, '19th February, I saw the thing I wish I had never seen');
