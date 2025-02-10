@@ -257,7 +257,7 @@ receiveEditedMessage webSocket isFocused payload model =
 
 -- | Set typing status and a timeout to clear it
 receiveTyping ∷ { id ∷ Int } → ImModel → MoreMessages
-receiveTyping received model = CIC.updateTyping received.id true model /\
+receiveTyping received model = CIC.toggleTyping received.id true model /\
       [ liftEffect do
               DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
               newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping received.id

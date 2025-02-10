@@ -1,8 +1,7 @@
 module Client.Im.Chat where
 
 import Prelude
-import Shared.Experiments.Types
-import Shared.Im.Types
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, ImUser, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
@@ -11,7 +10,7 @@ import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime)
@@ -22,25 +21,23 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
-
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
 import Data.Symbol as TDS
-import Data.Time.Duration (Days, Milliseconds(..), Minutes)
+import Data.Time.Duration (Milliseconds(..), Minutes)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
+import Effect.Class as EC
 import Effect.Now as EN
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
-import Effect.Unsafe as EUN
 import Flame as F
 import Node.URL as NU
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown (Token(..))
@@ -57,166 +54,163 @@ import Web.File.FileReader (FileReader)
 import Web.HTML.Event.DataTransfer as WHEDT
 import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHE
-import Web.HTML.HTMLElement as WHHEL
-import Web.HTML.HTMLMetaElement (content)
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
 
 foreign import resizeTextarea_ ∷ EffectFn1 Element Unit
 
--- this event is filtered to run only on Enter keydown
-enterBeforeSendMessage ∷ Event → ImModel → NoMessages
-enterBeforeSendMessage event model@{ messageEnter } =
-      model /\ if messageEnter then [ prevent, getMessage model ] else []
+resizeTextarea ∷ Element → Effect Unit
+resizeTextarea = EU.runEffectFn1 resizeTextarea_
+
+-- | The chatting textarea grows / shrink as text is inputed
+resizeChatInput ∷ Event → ImModel → NoMessages
+resizeChatInput event model = model /\ [ resize ]
       where
-      prevent = liftEffect do
+      resize = do
+            EC.liftEffect <<< resizeTextarea <<< SU.fromJust $ do
+                  target ← WEE.target event
+                  WDE.fromEventTarget target
+            pure Nothing
+
+-- | Send a message on enter
+enterBeforeSendMessage ∷ Event → ImModel → NoMessages
+enterBeforeSendMessage event model =
+      model /\ [ prevent, messageContent model ]
+      where
+      prevent = EC.liftEffect do
             WEE.preventDefault event
             pure Nothing
 
-getMessage ∷ ImModel → Aff (Maybe ImMessage)
-getMessage model = do
-      input ← liftEffect $ chatInput model.chatting
-      value ← liftEffect $ CCD.value input
+-- | Is the message to be sent an audio, text or image?
+messageContent ∷ ImModel → Aff (Maybe ImMessage)
+messageContent model = do
+      input ← EC.liftEffect $ chatInput model.chatting
+      value ← EC.liftEffect $ CCD.value input
       pure <<< Just <<< BeforeSendMessage $ DM.maybe (Text value) toImage model.selectedImage
       where
       toImage base64File = Image (DM.fromMaybe "" model.imageCaption) base64File
 
---send message/image button
+-- | Send a message on button click
 forceBeforeSendMessage ∷ ImModel → MoreMessages
 forceBeforeSendMessage model =
       model /\
-            [ getMessage model
+            [ messageContent model
             ]
 
+-- | Raise the `SendMessage` event and fetch chat history if messaging a suggestion user
 beforeSendMessage ∷ MessageContent → ImModel → MoreMessages
-beforeSendMessage
-      content
-      model@
-            { chatting
-            , user: { id }
-            , contacts
-            , suggesting
-            , suggestions
-            } = case content of
-      t@(Text message)
-            | isEmpty message → F.noMessages model
-            | otherwise → updatedModel /\ nextEffects t
+beforeSendMessage content model = case content of
+      txt@(Text message)
+            | DS.null $ DS.trim message → F.noMessages model
+            | otherwise → updatedModel /\ nextEffects txt
       image → updatedModel /\ nextEffects image
 
       where
-      isEmpty = DS.null <<< DS.trim
-
-      Tuple shouldFetchHistory updatedModel = case chatting, suggesting of
+      --the user messaged could be in the contacts and suggestions
+      -- in either case, check if the chat history has not already been fetched
+      shouldFetchHistory /\ updatedModel = case model.chatting, model.suggesting of
             Nothing, (Just index) →
-                  --an existing contact might be in the suggestions
                   let
-                        user = suggestions !@ index
-                        maybeIndex = DA.findIndex (\cnt → cnt.user.id == user.id) contacts
-                        updatedContacts = if DM.isJust maybeIndex then contacts else DA.cons (SIC.defaultContact id user) contacts
+                        user = model.suggestions !@ index
+                        maybeIndex = DA.findIndex ((_ == user.id) <<< _.id <<< _.user) model.contacts
+                        updatedContacts
+                              | DM.isJust maybeIndex = model.contacts
+                              | otherwise = SIC.defaultContact model.user.id user : model.contacts
                         updatedChatting = maybeIndex <|> Just 0
-                        shouldFetchHistory = _.shouldFetchChatHistory $ SU.fromJust do
-                              index ← updatedChatting
-                              updatedContacts !! index
                   in
-                        Tuple shouldFetchHistory model
+                        Tuple (updatedContacts !@ SU.fromJust updatedChatting).shouldFetchChatHistory model
                               { chatting = updatedChatting
                               , contacts = updatedContacts
-                              , suggestions = SU.fromJust $ DA.deleteAt index suggestions
+                              , suggestions = SU.fromJust $ DA.deleteAt index model.suggestions
                               }
             _, _ → Tuple false model
 
-      nextEffects c = [ fetchHistory, nextSendMessage c ]
+      nextEffects ct = [ fetchHistory, nextSendMessage ct ]
 
       fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory shouldFetchHistory
-      nextSendMessage input = do
-            date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
-            pure <<< Just $ SendMessage input date
+      nextSendMessage ct = do
+            date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
+            pure <<< Just $ SendMessage ct date
 
+-- | Send a message via web socket
 sendMessage ∷ WebSocket → MessageContent → DateTimeWrapper → ImModel → NoMessages
-sendMessage
-      webSocket
-      contentMessage
-      date
-      model@
-            { user
-            , chatting
-            , temporaryId
-            , contacts
-            } = updatedModel /\
-      [ liftEffect do
-              CIS.scrollLastMessage
-              input ← chatInput chatting
-              WHHEL.focus <<< SU.fromJust $ WHHEL.fromElement input
-              CCD.setValue input ""
-              resizeTextarea input
-              CIW.sendPayload webSocket $
-                    case model.editing of
-                          Nothing →
-                                OutgoingMessage
-                                      { id: newTemporaryId
-                                      , userId: recipientId
-                                      , content: contentMessage
-                                      , turn
-                                      }
-                          Just messageId →
-                                EditedMessage
-                                      { id: messageId
-                                      , userId: recipientId
-                                      , content: contentMessage
-                                      }
-              pure Nothing
-      ]
+sendMessage webSocket contentMessage date model =
+      model
+            { temporaryId = newTemporaryId
+            , imageCaption = Nothing
+            , selectedImage = Nothing
+            , editing = Nothing
+            , contacts = SU.fromJust $ DA.updateAt chatting updatedContact model.contacts
+            } /\ [ actuallySendMessage ]
       where
-      index = SU.fromJust chatting
-      recipient@{ user: { id: recipientId }, history } = contacts !@ index
-      newTemporaryId = temporaryId + 1
+      -- temporary ids are used to find messages while the server has not yet returned their db id
+      newTemporaryId = model.temporaryId + 1
+      chatting = SU.fromJust model.chatting
+      recipient = model.contacts !@ chatting
 
-      content =
+      actuallySendMessage = EC.liftEffect do
+            CIS.scrollLastMessage
+            input ← chatInput model.chatting
+            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
+            CCD.setValue input ""
+            resizeTextarea input
+            CIW.sendPayload webSocket $
+                  case model.editing of
+                        Nothing →
+                              OutgoingMessage
+                                    { id: newTemporaryId
+                                    , userId: recipient.user.id
+                                    , content: contentMessage
+                                    , turn: makeTurn model.user updatedContact
+                                    }
+                        Just messageId →
+                              EditedMessage
+                                    { id: messageId
+                                    , userId: recipient.user.id
+                                    , content: contentMessage
+                                    }
+            pure Nothing
+
+      markdown =
             case contentMessage of
-                  Text message → message
+                  Text txt → txt
                   Image caption base64File → asMarkdownImage caption base64File
                   Audio base64 → asAudioMessage base64
-
-      updateEdited messageId history
-            | history.id == messageId =
-                    history
-                          { content = content
-                          , status = Sent
-                          , edited = true
-                          }
-            | otherwise = history
 
       updatedContact = recipient
             { lastMessageDate = date
             , history =
                     case model.editing of
                           Nothing →
-                                DA.snoc history $
+                                DA.snoc recipient.history $
                                       { id: newTemporaryId
                                       , status: Sent
-                                      , sender: user.id
+                                      , sender: model.user.id
                                       , edited: false
-                                      , recipient: recipientId
+                                      , recipient: recipient.user.id
+                                      , content: markdown
                                       , date
-                                      , content
                                       }
-                          Just messageId → map (updateEdited messageId) history
+                          Just messageId → map (updateEdited messageId) recipient.history
             }
-      updatedModel = model
-            { temporaryId = newTemporaryId
-            , imageCaption = Nothing
-            , selectedImage = Nothing
-            , editing = Nothing
-            , contacts = SU.fromJust $ DA.updateAt index updatedContact contacts
-            }
-      turn = makeTurn user updatedContact
+
+      updateEdited messageId history
+            | history.id == messageId =
+                    history
+                          { content = markdown
+                          , status = Sent
+                          , edited = true
+                          }
+            | otherwise = history
 
       asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
-
       asAudioMessage base64 = "<audio controls src='" <> base64 <> "'></audio>"
 
+-- | A "turn" is how much karma is accrued between messages
+-- |
+-- | See `Wheel.purs`
 makeTurn ∷ ImUser → Contact → Maybe Turn
-makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
+makeTurn user contact =
       case grouped of
             [ senderMessages, recipientMessages, _ ] → --turn but we can't calculate reply bonus
                   let
@@ -236,7 +230,7 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
                                       , replyDelay: Nothing
                                       , accountAge: accountAge contact.user
                                       }
-                              , chatAge
+                              , chatAge: contact.chatAge
                               }
             [ previousRecipientMessages, senderMessages, recipientMessages, _ ] →
                   let
@@ -263,35 +257,34 @@ makeTurn user@{ id } contact@{ chatStarter, chatAge, history } =
                                       , accountAge: accountAge contact.user
                                       }
 
-                              , chatAge
+                              , chatAge: contact.chatAge
                               }
             _ → Nothing --not a turn
       where
       grouped
-            | chatStarter == id && isNewTurn = DA.takeEnd 4 $ DA.groupBy sameSender history
+            | contact.chatStarter == user.id && isNewTurn = DA.takeEnd 4 $ DA.groupBy sameSender contact.history
             | otherwise = []
+
       isNewTurn = DM.fromMaybe false do
-            last ← DA.last history
-            beforeLast ← history !! (DA.length history - 2)
-            pure $ last.sender == id && beforeLast.recipient == id
+            last ← DA.last contact.history
+            beforeLast ← contact.history !! (DA.length contact.history - 2)
+            pure $ last.sender == user.id && beforeLast.recipient == user.id
+
       sameSender entry anotherEntry = entry.sender == anotherEntry.sender
 
       characters = DI.toNumber <<< DA.foldl countCharacters 0 <<< DAN.toArray
-      countCharacters total { content } = total + DSC.length content
+      countCharacters total entry = total + DSC.length entry.content
 
       getDate = DN.unwrap <<< _.date
+      accountAge { joined: DateTimeWrapper dt } = DI.toNumber $ ST.daysDiff dt
 
-      unsafeNow = EUN.unsafePerformEffect EN.nowDateTime
-      accountAge { joined: DateTimeWrapper dt } = DN.unwrap (DT.diff unsafeNow dt ∷ Days)
-
-applyMarkup ∷ Markup → ImModel → MoreMessages
-applyMarkup markup model@{ chatting } =
-      model /\
-            [ liftEffect (Just <$> apply)
-            ]
+-- | Insert markdown text
+setMarkup ∷ Markup → ImModel → MoreMessages
+setMarkup markup model =
+      model /\ [ setIt ]
       where
-      apply = do
-            input ← chatInput chatting
+      setIt = EC.liftEffect do
+            input ← chatInput model.chatting
             value ← CCD.value input
             let
                   textarea = SU.fromJust $ WHHTA.fromElement input
@@ -310,43 +303,50 @@ applyMarkup markup model@{ chatting } =
                   selected = DS.take (end - start) $ DS.drop start value
                   afterSelection = DS.drop end value
                   newValue = beforeSelection <> before <> selected <> after <> afterSelection
-            pure $ SetMessageContent (Just $ end + beforeSize) newValue
+            setTextAt input (end + beforeSize) newValue
+            pure Nothing
 
       plusNewLine value t
             | DS.null value = t
             | otherwise = "\n" <> t
 
+-- | Return the current textarea used to type messages
 chatInput ∷ Maybe Int → Effect Element
 chatInput chatting
       | DM.isNothing chatting = CCD.unsafeGetElementById ChatInputSuggestion -- suggestion card input cannot be cached
       | otherwise = CCD.unsafeGetElementById ChatInput
 
-setMessage ∷ Maybe Int → String → ImModel → NextMessage
-setMessage cursor markdown model@{ chatting } =
-      model /\
-            [ liftEffect do
-                    case cursor of
-                          Just position → do
-                                input ← chatInput chatting
-                                let textarea = SU.fromJust $ WHHTA.fromElement input
-                                WHHEL.focus $ WHHTA.toHTMLElement textarea
-                                WHHTA.setValue markdown textarea
-                                WHHTA.setSelectionEnd position textarea
-                                resizeTextarea input
-                          Nothing → pure unit
-                    pure Nothing
-            ]
+-- | Find the cursor on the chatting textarea and set text at is position
+setAtCursor ∷ Element → String → Effect (Maybe ImMessage)
+setAtCursor input text = do
+      let textarea = SU.fromJust $ WHHTA.fromElement input
+      end ← WHHTA.selectionEnd textarea
+      value ← WHHTA.value textarea
+      let { before, after } = DS.splitAt end value
+      setTextAt input (end + DS.length text + 1) $ before <> text <> after
+      pure Nothing
 
+-- | Set text on the chatting textarea at the given cursor position
+setTextAt ∷ Element → Int → String → Effect Unit
+setTextAt input position markdown = do
+      let textarea = SU.fromJust $ WHHTA.fromElement input
+      WHHE.focus $ WHHTA.toHTMLElement textarea
+      WHHTA.setValue markdown textarea
+      WHHTA.setSelectionEnd position textarea
+      resizeTextarea input
+
+-- | Handle drag and drop
 catchFile ∷ FileReader → Event → ImModel → NoMessages
-catchFile fileReader event model = model /\
-      [ liftEffect do
-              CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
-              CCD.preventStop event
-              pure Nothing
-      ]
+catchFile fileReader event model = model /\ [ catchIt ]
+      where
+      catchIt = EC.liftEffect do
+            CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
+            CCD.preventStop event
+            pure Nothing
 
+-- | Handle file input selection
 setSelectedImage ∷ Maybe String → ImModel → NextMessage
-setSelectedImage maybeBase64 model@{ smallScreen } =
+setSelectedImage maybeBase64 model =
       model
             { toggleChatModal = ShowSelectedImage
             , selectedImage = maybeBase64
@@ -355,12 +355,72 @@ setSelectedImage maybeBase64 model@{ smallScreen } =
                           [ TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage") ]
                     else
                           []
-            } /\ (if smallScreen then [] else [ pure <<< Just $ FocusInput ImageFormCaption ])
+            } /\ (if model.smallScreen then [] else [ pure <<< Just $ FocusInput ImageFormCaption ])
       where
       isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
+-- | Insert an emoji into the chatting textarea
+setEmoji ∷ Event → ImModel → NextMessage
+setEmoji event model = model /\ [ setIt, hideModal ]
+      where
+      setIt = EC.liftEffect do
+            emoji ← CCD.innerTextFromTarget event
+            input ← chatInput model.chatting
+            setAtCursor input emoji
+      hideModal = pure <<< Just $ ToggleChatModal HideChatModal
+
+-- | Insert a markdown link into the chatting textarea
+setLink ∷ ImModel → MoreMessages
+setLink model =
+      case model.link of
+            Nothing → F.noMessages model
+                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ _ "link") ]
+                  }
+            Just url →
+                  model
+                        { erroredFields = []
+                        } /\
+                        [ hide
+                        , setIt $ if (NU.parse $ DS.trim url).protocol == null then "http://" <> url else url
+                        ]
+      where
+      markdown url = "[" <> DM.fromMaybe url model.linkText <> "](" <> url <> ")"
+      hide = pure <<< Just $ ToggleChatModal HideChatModal
+      setIt text = EC.liftEffect do
+            input ← chatInput model.chatting
+            setAtCursor input $ markdown text
+
+-- | Send "is typing" notification
+sendTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
+sendTyping text now webSocket model =
+      if DS.length text > minimumLength && enoughTime model.lastTyping then
+            model { lastTyping = DateTimeWrapper now } /\ [ setIt ]
+      else
+            F.noMessages model
+      where
+      minimumLength = 7
+      enoughTime (DateTimeWrapper dt) = let (Milliseconds ms) = DT.diff now dt in ms >= 800.0
+
+      setIt = do
+            EC.liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (model.contacts !@ SU.fromJust model.chatting).user.id }
+            pure Nothing
+
+-- | Show or hide typing status
+toggleTyping ∷ Int → Boolean → ImModel → ImModel
+toggleTyping userId status model = model { contacts = upd <$> model.contacts }
+      where
+      upd contact
+            | contact.user.id == userId = contact { typing = status }
+            | otherwise = contact
+
+toggleMessageEnter ∷ ImModel → NoMessages
+toggleMessageEnter model = F.noMessages model
+      { messageEnter = not model.messageEnter
+      }
+
+-- | Show or hide chat modals
 toggleModal ∷ ShowChatModal → ImModel → MoreMessages
-toggleModal toggle model@{ chatting } =
+toggleModal toggle model =
       model
             { toggleChatModal = toggle
             , link = Nothing
@@ -372,162 +432,92 @@ toggleModal toggle model@{ chatting } =
             ShowPreview → [ setPreview ]
             _ → []
       where
-      pickImage = liftEffect do
+      pickImage = EC.liftEffect do
             fileInput ← CCD.unsafeGetElementById ImageFileInput
             CCF.triggerFileSelect fileInput
             pure Nothing
 
-      setPreview = liftEffect do
+      setPreview = EC.liftEffect do
             preview ← CCD.unsafeGetElementById ChatInputPreview
-            input ← chatInput chatting
+            input ← chatInput model.chatting
             message ← CCD.value input
             CCD.setInnerHTML preview $ SM.parse message
             pure Nothing
 
-setEmoji ∷ Event → ImModel → NextMessage
-setEmoji event model@{ chatting } =
-      model /\
-            if CCD.tagNameFromTarget event == "SPAN" then
-                  [ liftEffect do
-                          emoji ← CCD.innerTextFromTarget event
-                          input ← chatInput chatting
-                          setAtCursor input emoji
-                  , pure <<< Just $ ToggleChatModal HideChatModal
-                  ]
-            else
-                  []
-
-insertLink ∷ ImModel → MoreMessages
-insertLink model@{ linkText, link, chatting } =
-      case link of
-            Nothing → F.noMessages $ model
-                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ _ "link") ]
-                  }
-            Just url →
-                  let
-                        { protocol } = NU.parse $ DS.trim url
-                  in
-                        model
-                              { erroredFields = []
-                              } /\
-                              [ pure <<< Just $ ToggleChatModal HideChatModal
-                              , insert $ if protocol == null then "http://" <> url else url
-                              ]
-      where
-      markdown url = "[" <> DM.fromMaybe url linkText <> "](" <> url <> ")"
-      insert text = liftEffect do
-            input ← chatInput chatting
-            setAtCursor input $ markdown text
-
-setAtCursor ∷ Element → String → Effect (Maybe ImMessage)
-setAtCursor input text = do
-      let textarea = SU.fromJust $ WHHTA.fromElement input
-      end ← WHHTA.selectionEnd textarea
-      value ← WHHTA.value textarea
-      let { before, after } = DS.splitAt end value
-      pure <<< Just <<< SetMessageContent (Just $ end + DS.length text + 1) $ before <> text <> after
-
-resizeTextarea ∷ Element → Effect Unit
-resizeTextarea = EU.runEffectFn1 resizeTextarea_
-
-resizeChatInput ∷ Event → ImModel → NoMessages
-resizeChatInput event model = model /\ [ resize *> pure Nothing ]
-      where
-      resize = liftEffect <<< resizeTextarea <<< SU.fromJust $ do
-            target ← WEE.target event
-            WDE.fromEventTarget target
-
-toggleMessageEnter ∷ ImModel → NoMessages
-toggleMessageEnter model@{ messageEnter } = F.noMessages $ model
-      { messageEnter = not messageEnter
-      }
-
-checkTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
-checkTyping text now webSocket model@{ lastTyping: DateTimeWrapper lt, contacts, chatting } =
-      if DS.length text > minimumLength && enoughTime lt then
-            model { lastTyping = DateTimeWrapper now } /\ [ liftEffect (CIW.sendPayload webSocket $ Typing { id: (SU.fromJust (chatting >>= (contacts !! _))).user.id }) *> pure Nothing ]
-      else
-            F.noMessages model
-      where
-      minimumLength = 7
-      enoughTime dt = let (Milliseconds milliseconds) = DT.diff now dt in milliseconds >= 800.0
-
+-- | Record an audio message
 beforeAudioMessage ∷ ImModel → MoreMessages
-beforeAudioMessage model = model /\
-      [ do
-              liftEffect do
-                    mimeType ← CCD.acceptedAudioCodec
-                    CIR.start { audio: true } { mimeType } SendAudioMessage
-              pure Nothing
-      ]
+beforeAudioMessage model = model /\ [ record ]
+      where
+      record = EC.liftEffect do
+            mimeType ← CCD.acceptedAudioCodec
+            CIR.start { audio: true } { mimeType } SendAudioMessage
+            pure Nothing
 
+-- | Finish recording an audio message
 audioMessage ∷ Touch → ImModel → MoreMessages
 audioMessage touch model =
       model { toggleChatModal = HideChatModal } /\
-            [ do
-                    when (touch.startX - touch.endX <= threshold && touch.startY - touch.endY <= threshold) $ liftEffect CIR.stop
-                    pure Nothing
+            [ finish
             ]
 
       where
       threshold = 20
+      finish = do
+            when (touch.startX - touch.endX <= threshold && touch.startY - touch.endY <= threshold) $ EC.liftEffect CIR.stop
+            pure Nothing
 
 sendAudioMessage ∷ String → ImModel → MoreMessages
 sendAudioMessage base64 model =
-      model /\
-            [ do
-                    date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
-                    pure <<< Just $ SendMessage (Audio base64) date
-            ]
+      model /\ [ sendIt ]
+      where
+      sendIt = do
+            date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
+            pure <<< Just $ SendMessage (Audio base64) date
 
---this messy ass event can be from double click, context menu or swipe
+-- | Messages can be quote from context menu, double click on desktop and swipe on mobile
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage
-quoteMessage contents event model@{ chatting, smallScreen } =
-      case event of
+quoteMessage contents touchEvent model =
+      case touchEvent of
             Right Nothing →
-                  model { toggleContextMenu = HideContextMenu } /\ [ liftEffect quoteIt ]
-            Right (Just evt) →
-                  model /\
-                        if smallScreen then []
-                        else
-                              [ liftEffect do
-                                      classes ← WDE.className <<< SU.fromJust $ do
-                                            target ← WEE.target evt
-                                            WDE.fromEventTarget target
-                                      if DS.contains (Pattern "message") classes then
-                                            quoteIt
-                                      else
-                                            pure Nothing
-                              ]
-            Left { startX, endX, startY, endY } → model /\ [ if startX < endX && endX - startX >= threshold && startY - endY < threshold then liftEffect quoteIt else pure Nothing ]
+                  model { toggleContextMenu = HideContextMenu } /\ [ quoteIt ]
+            Right (Just event) →
+                  model /\ [ fromDoubleClick event ]
+            Left touch →
+                  model /\ [ fromSwipe touch ]
       where
       threshold = 40
-      quoteIt = do
-            input ← chatInput chatting
-            let markup = sanitized <> "\n\n"
-            value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
-            setAtCursor input $ if DS.null value then markup else "\n" <> markup
       sanitized = case DA.find notSpaceQuote $ SM.lexer contents of
             Nothing → "> *quote*"
             Just (Token token) → "> " <> token.raw
-
       notSpaceQuote (Token token) = token."type" /= "space" && token."type" /= "blockquote"
 
-focusCurrentSuggestion ∷ ImModel → NoMessages
-focusCurrentSuggestion model@{ chatting } = model /\
-      [ do
-              liftEffect do
-                    input ← chatInput chatting
-                    WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
-              pure Nothing
-      ]
+      fromDoubleClick event = do
+            classes ← EC.liftEffect <<< WDE.className <<< SU.fromJust $ do
+                  target ← WEE.target event
+                  WDE.fromEventTarget target
+            if DS.contains (Pattern "message") classes then
+                  quoteIt
+            else
+                  pure Nothing
 
-updateTyping ∷ Int → Boolean → ImModel → ImModel
-updateTyping userId status model@{ contacts } = model { contacts = upd <$> contacts }
+      fromSwipe touch
+            | touch.startX < touch.endX && touch.endX - touch.startX >= threshold && touch.startY - touch.endY < threshold = quoteIt
+            | otherwise = pure Nothing
+
+      quoteIt = EC.liftEffect do
+            input ← chatInput model.chatting
+            let markup = sanitized <> "\n\n"
+            value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
+            setAtCursor input $ if DS.null value then markup else "\n" <> markup
+
+-- | Focus suggestions card when the desktop left suggestions banner is clicked
+focusCurrentSuggestion ∷ ImModel → NoMessages
+focusCurrentSuggestion model = model /\ [ focus ]
       where
-      upd contact@{ user: { id } }
-            | id == userId = contact { typing = status }
-            | otherwise = contact
+      focus = EC.liftEffect do
+            input ← chatInput model.chatting
+            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
+            pure Nothing
 
 editMessage ∷ String → Int → ImModel → NoMessages
 editMessage message id model =
@@ -536,6 +526,6 @@ editMessage message id model =
             , toggleContextMenu = HideContextMenu
             } /\ [ setIt *> pure Nothing ]
       where
-      setIt = liftEffect do
+      setIt = EC.liftEffect do
             input ← chatInput model.chatting
-            CCD.setValue input (spy "msg" message)
+            CCD.setValue input message
