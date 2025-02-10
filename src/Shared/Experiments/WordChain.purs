@@ -10,5 +10,5 @@ import Shared.Experiments.Types (ChatExperimentMessage, ChatExperimentModel)
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
 view model = HE.div (HA.class' "word-chain duller")
       [ --HE.button (HA.class' "green-button") "Play!"
-      HE.text "Currently unavailable"
+        HE.text "Currently unavailable"
       ]
