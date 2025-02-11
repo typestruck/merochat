@@ -38,7 +38,7 @@ import Server.WebSocket (WebSocketConnection)
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Types as SET
-import Shared.Im.Types (ClientMessagePayload, Contact, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), ImModel, EditedMessagePayload)
+import Shared.Im.Types (ClientMessagePayload, Contact, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), DeletedMessagePayload)
 import Shared.Json as SJ
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
 import Shared.Privilege (Privilege)
@@ -171,6 +171,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       ServerReceivedMessage rm → receiveAcknowledgement rm model
       NewIncomingMessage ni → receiveIncomingMessage webSocket isFocused ni model
       NewEditedMessage ni → receiveEditedMessage webSocket isFocused ni model
+      NewDeletedMessage nd → receiveDeletedMessage nd model
       ContactTyping tp → receiveTyping tp model
       CurrentPrivileges kp → receivePrivileges kp model
       CurrentHash newHash → receiveHash newHash model
@@ -200,6 +201,16 @@ receiveAcknowledgement received model = F.noMessages model
       updateIdStatus history
             | history.id == received.previousId = history { id = received.id, status = Received }
             | otherwise = history
+
+-- | Remove a message from contact's history
+receiveDeletedMessage ∷ DeletedMessagePayload → ImModel → NoMessages
+receiveDeletedMessage deleted model = F.noMessages model
+      { contacts = rm <$> model.contacts
+      }
+      where
+      rm contact
+            | contact.user.id == deleted.userId = contact { history = DA.filter ((deleted.id /= _) <<< _.id) contact.history }
+            | otherwise = contact
 
 -- | A new message from others users or sent by the logged user with another connection
 receiveIncomingMessage ∷ WebSocket → Boolean → ClientMessagePayload → ImModel → NextMessage

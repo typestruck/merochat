@@ -13,16 +13,11 @@ import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Hashable (class Hashable)
-import Data.Hashable as HS
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Maybe.First (First)
 import Data.Show.Generic as DGRS
-import Data.String.Regex as DSRG
-import Data.String.Regex.Flags (noFlags)
-import Data.String.Regex.Unsafe as DSRU
 import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
@@ -33,7 +28,7 @@ import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Experiments.Types (Experiment)
+
 import Shared.Privilege (Privilege)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
@@ -70,6 +65,10 @@ type EditedMessagePayload = BasicMessage
       ( content ∷ String
       , recipientId ∷ Int
       , senderId ∷ Int
+      )
+
+type DeletedMessagePayload = BasicMessage
+      ( userId ∷ Int
       )
 
 type BaseContact fields =
@@ -305,6 +304,7 @@ data ImMessage
       | FocusInput ElementId
       | QuoteMessage String (Either Touch (Maybe Event))
       | EditMessage String Int
+      | DeleteMessage Int
       | FocusCurrentSuggestion
       | EnterBeforeSendMessage Event
       | ForceBeforeSendMessage
@@ -358,6 +358,7 @@ data WebSocketPayloadServer
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord
       | EditedMessage EditedRecord
+      | DeletedMessage DeletedRecord
       | ChangeStatus
               { status ∷ MessageStatus
               , ids ∷ Array (Tuple Int (Array Int))
@@ -376,6 +377,8 @@ type OutgoingRecord =
 
 type EditedRecord = { id ∷ Int, userId ∷ Int, content ∷ MessageContent }
 
+type DeletedRecord = { id ∷ Int, userId ∷ Int }
+
 type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
 
 data FullWebSocketPayloadClient
@@ -388,6 +391,7 @@ data WebSocketPayloadClient
       | CurrentPrivileges { karma ∷ Int, privileges ∷ Array Privilege }
       | NewIncomingMessage ClientMessagePayload
       | NewEditedMessage EditedMessagePayload
+      | NewDeletedMessage DeletedMessagePayload
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
               { previousId ∷ Int
