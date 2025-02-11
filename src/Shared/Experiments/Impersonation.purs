@@ -92,7 +92,7 @@ view model = HE.div (HA.class' "impersonation")
       profiles s = HE.div (HA.class' { hidden: model.section /= s }) <<< DA.mapWithIndex toProfile
       toProfile index p = HE.div [ HA.class' "contact", HA.onClick <<< ConfirmExperiment <<< Just <<< Impersonation $ Just p ]
             [ HE.div (HA.class' "avatar-contact-list-div")
-                    [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (Just index), HA.src $ SU.fromJust p.avatar ]
+                    [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' $ "avatar-contact-list" <> SA.avatarColorClass index, HA.src $ SU.fromJust p.avatar ]
                     ]
             , HE.div [ HA.class' "contact-profile", HA.title $ "Start Impersonation as " <> p.name ]
                     [ HE.span (HA.class' "contact-name") p.name

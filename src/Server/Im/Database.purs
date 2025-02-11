@@ -278,11 +278,11 @@ canEditMessage loggedUserId messageId =
                   # from messages
                   # wher (_id .=. messageId .&&. _sender .=. loggedUserId)
 
-deleteMessage ∷ ∀ r. Int → Int → Int -> BaseEffect { pool ∷ Pool | r } Unit
+deleteMessage ∷ ∀ r. Int → Int → Int → BaseEffect { pool ∷ Pool | r } Unit
 deleteMessage loggedUserId userId messageId = SD.execute $
-            delete
-                  # from messages
-                  # wher (_id .=. messageId .&&. _sender .=. loggedUserId .&&. _recipient .=. userId)
+      delete
+            # from messages
+            # wher (_id .=. messageId .&&. _sender .=. loggedUserId .&&. _recipient .=. userId)
 
 insertMessage ∷ ∀ r. Int → Int → String → BaseEffect { pool ∷ Pool | r } Int
 insertMessage loggedUserId recipient content = SD.withTransaction $ \connection → do

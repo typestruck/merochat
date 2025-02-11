@@ -30,4 +30,4 @@ extra ∷ ChatExperimentModel → Experiment → Html ChatExperimentMessage
 extra model = case _ of
       Impersonation ip → SEI.view model
       WordChain → SEW.view model
-      Doppelganger -> SED.view model
+      Doppelganger → SED.view model

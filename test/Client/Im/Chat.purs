@@ -29,7 +29,7 @@ tests = do
                         model' = model
                               { suggestions = suggestion : modelSuggestions
                               , chatting = Nothing
-                              , suggesting = Just 0
+                              , suggesting = 0
                               }
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just suggestion
@@ -39,7 +39,7 @@ tests = do
                         model' = model
                               { suggestions = [ contact.user ]
                               , chatting = Nothing
-                              , suggesting = Just 0
+                              , suggesting = 0
                               , contacts = [ contact ]
                               }
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
@@ -50,7 +50,7 @@ tests = do
                         model' = model
                               { suggestions = [ contact.user ]
                               , chatting = Nothing
-                              , suggesting = Just 0
+                              , suggesting = 0
                               , contacts = [ SIC.defaultContact 789 contact.user { id = 8 }, contact ]
                               }
                         { chatting } = DT.fst $ CIC.beforeSendMessage content model'
@@ -61,7 +61,7 @@ tests = do
                         model' = model
                               { suggestions = suggestion : modelSuggestions
                               , chatting = Nothing
-                              , suggesting = Just 0
+                              , suggesting = 0
                               }
                         { chatting } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (Just 0) chatting

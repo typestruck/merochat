@@ -68,22 +68,22 @@ instance BoundedEnum Experiment where
       fromEnum = case _ of
             Impersonation _ → 0
             WordChain → 10
-            Doppelganger -> 20
+            Doppelganger → 20
       toEnum = case _ of
             0 → Just (Impersonation Nothing)
             10 → Just WordChain
-            20 -> Just Doppelganger
+            20 → Just Doppelganger
             _ → Nothing
 
 instance Enum Experiment where
       succ = case _ of
             Impersonation _ → Just WordChain
             WordChain → Just Doppelganger
-            Doppelganger -> Nothing
+            Doppelganger → Nothing
       pred = case _ of
             Impersonation _ → Nothing
             WordChain → Just (Impersonation Nothing)
-            Doppelganger -> Just WordChain
+            Doppelganger → Just WordChain
 
 derive instance Generic Experiment _
 

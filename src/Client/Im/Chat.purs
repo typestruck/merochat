@@ -109,10 +109,10 @@ beforeSendMessage content model = case content of
       where
       --the user messaged could be in the contacts and suggestions
       -- in either case, check if the chat history has not already been fetched
-      shouldFetchHistory /\ updatedModel = case model.chatting, model.suggesting of
-            Nothing, (Just index) →
+      shouldFetchHistory /\ updatedModel = case model.chatting of
+            Nothing →
                   let
-                        user = model.suggestions !@ index
+                        user = model.suggestions !@ model.suggesting
                         maybeIndex = DA.findIndex ((_ == user.id) <<< _.id <<< _.user) model.contacts
                         updatedContacts
                               | DM.isJust maybeIndex = model.contacts
@@ -122,11 +122,11 @@ beforeSendMessage content model = case content of
                         Tuple (updatedContacts !@ SU.fromJust updatedChatting).shouldFetchChatHistory model
                               { chatting = updatedChatting
                               , contacts = updatedContacts
-                              , suggestions = SU.fromJust $ DA.deleteAt index model.suggestions
+                              , suggestions = SU.fromJust $ DA.deleteAt model.suggesting model.suggestions
                               }
-            _, _ → Tuple false model
+            _ → Tuple false model
 
-      nextEffects ct = [ fetchHistory, nextSendMessage ct ]
+      nextEffects ct = [ nextSendMessage ct, fetchHistory ]
 
       fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory shouldFetchHistory
       nextSendMessage ct = do
@@ -529,9 +529,9 @@ editMessage message id model =
       where
       setIt = EC.liftEffect do
             input ← chatInput model.chatting
-            CCD.setValue input (spy "msg" message)
+            CCD.setValue (spy "inp" input) message
 
-deleteMessage ∷ Int → WebSocket -> ImModel → NoMessages
+deleteMessage ∷ Int → WebSocket → ImModel → NoMessages
 deleteMessage id webSocket model =
       model
             { toggleContextMenu = HideContextMenu
@@ -540,6 +540,6 @@ deleteMessage id webSocket model =
       chatting = SU.fromJust model.chatting
 
       deleteIt = do
-            EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId : (model.contacts !@ chatting).user.id }
+            EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId: (model.contacts !@ chatting).user.id }
             pure Nothing
 

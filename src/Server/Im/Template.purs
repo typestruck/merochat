@@ -23,9 +23,6 @@ import Shared.Resource as SP
 
 template ∷ Payload → Effect String
 template payload = do
-      let
-            unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
-            suggestionsCount = DA.length payload.suggestions
       lt ← EN.nowDateTime
       F.preMount (QuerySelector $ show SE.Im)
             { view: \model → ST.templateWith $ defaultParameters
@@ -41,7 +38,7 @@ template payload = do
                     , temporaryId: 0
                     , typingIds: []
                     , modalsLoaded: []
-                    , suggesting: if suggestionsCount == 0 then Nothing else if suggestionsCount == 1 then Just 0 else Just 1
+                    , suggesting: if suggestionsCount == 1 then 0 else 1
                     , freeToFetchChatHistory: true
                     , suggestionsPage: 1
                     , errorMessage: ""
@@ -80,6 +77,9 @@ template payload = do
                     }
             }
       where
+      unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
+      suggestionsCount = DA.length payload.suggestions
+
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
             , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Im Js ]

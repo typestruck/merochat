@@ -146,7 +146,7 @@ type Im =
       --the current logged in user
       , user ∷ ImUser
       --indexes
-      , suggesting ∷ Maybe Int
+      , suggesting ∷ Int
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
       , editing ∷ Maybe Int
@@ -202,7 +202,7 @@ data ShowUserMenuModal
       | ShowSettings
       | ShowKarmaPrivileges
       | ShowHelp
-      | ShowAvatar (Maybe Int)
+      | ShowAvatar Int
       | ShowBacker
       | ShowFeedback
       | ShowReport Int

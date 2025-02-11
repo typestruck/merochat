@@ -15,29 +15,21 @@ import Test.Unit.Assert as TUA
 tests ∷ TestSuite
 tests = do
       TU.suite "im suggestion update" do
-            TU.test "nextSuggestion sets suggesting to zero if Nothing" do
-                  let
-                        { suggesting } = DT.fst <<< CIS.nextSuggestion $ model
-                              { suggestions = [ imUser ]
-                              , suggesting = Nothing
-                              }
-                  TUA.equal (Just 0) suggesting
-
             TU.test "nextSuggestion bumps suggesting" do
                   let
                         { suggesting } = DT.fst <<< CIS.nextSuggestion $ model
                               { suggestions = [ imUser, imUser ]
-                              , suggesting = Just 0
+                              , suggesting = 0
                               }
-                  TUA.equal (Just 1) suggesting
+                  TUA.equal 1 suggesting
 
             TU.test "nextSuggestion does not go over suggestions length" do
                   let
                         { suggesting } = DT.fst <<< CIS.nextSuggestion $ model
                               { suggestions = [ imUser, imUser, imUser ]
-                              , suggesting = Just 2
+                              , suggesting = 2
                               }
-                  TUA.equal (Just 2) suggesting
+                  TUA.equal 2 suggesting
 
             TU.test "nextSuggestion clears chatting" do
                   let
@@ -51,17 +43,17 @@ tests = do
                   let
                         { suggesting } = DT.fst <<< CIS.previousSuggestion $ model
                               { suggestions = [ imUser, imUser ]
-                              , suggesting = Just 1
+                              , suggesting = 1
                               }
-                  TUA.equal (Just 0) suggesting
+                  TUA.equal 0 suggesting
 
             TU.test "previousSuggestion does not go bellow zero" do
                   let
                         { suggesting } = DT.fst <<< CIS.previousSuggestion $ model
                               { suggestions = [ imUser, imUser, imUser ]
-                              , suggesting = Just 0
+                              , suggesting = 0
                               }
-                  TUA.equal (Just 0) suggesting
+                  TUA.equal 0 suggesting
 
             TU.test "displayMoreSuggestions clears chatting" do
                   let
@@ -74,10 +66,10 @@ tests = do
             TU.test "displayMoreSuggestions sets suggesting to 0 if there is 1 or fewer new suggestions" do
                   let
                         { suggesting } = DT.fst <<< CIS.displayMoreSuggestions [ imUser ] $ model
-                              { suggesting = Nothing
+                              { suggesting = 0
                               , suggestions = []
                               }
-                  TUA.equal (Just 0) suggesting
+                  TUA.equal 0 suggesting
 
             TU.test "blockUser removes user from suggestions" do
                   let

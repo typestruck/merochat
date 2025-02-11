@@ -20,15 +20,13 @@ import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 
 checkFetchHistory ∷ ImModel → MoreMessages
-checkFetchHistory model@{ freeToFetchChatHistory }
-      | freeToFetchChatHistory = model /\ [ Just <<< SpecialRequest <<< FetchHistory <$> getScrollTop ]
+checkFetchHistory model =
+      model /\ if model.freeToFetchChatHistory then [ Just <<< SpecialRequest <<< FetchHistory <$> getScrollTop ] else []
 
-              where
-              getScrollTop = liftEffect do
-                    element ← CCD.unsafeGetElementById MessageHistory
-                    (_ < 1.0) <$> WDE.scrollTop element
-
-      | otherwise = F.noMessages model
+      where
+      getScrollTop = liftEffect do
+            element ← CCD.unsafeGetElementById MessageHistory
+            (_ < 1.0) <$> WDE.scrollTop element
 
 --to avoid issues with older missed unread messages just get the whole chat history on first load
 fetchHistory ∷ Boolean → ImModel → MoreMessages

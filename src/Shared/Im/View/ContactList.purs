@@ -62,13 +62,12 @@ contactList
 
       displayContactListEntry index { history, user, typing } =
             let
-                  justIndex = Just index
                   contact = user
                   numberUnreadMessages = countUnread history
                   lastHistoryEntry = SU.fromJust $ DA.last history
                   isContextMenuVisible = toggleContextMenu == ShowContactContextMenu user.id
                   avatarClasses
-                        | DM.isNothing contact.avatar = "avatar-contact-list" <> SA.avatarColorClass justIndex
+                        | DM.isNothing contact.avatar = "avatar-contact-list" <> SA.avatarColorClass index
                         | otherwise = "avatar-contact-list"
 
             in
@@ -77,7 +76,7 @@ contactList
                         , HA.onClick $ ResumeChat user.id
                         ]
                         [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
-                                [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient justIndex contact.avatar ]
+                                [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index contact.avatar ]
                                 , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.availability /= Online || not contact.onlineStatus || not onlineStatus } ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]

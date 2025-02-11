@@ -54,14 +54,12 @@ modals model@{ erroredFields, toggleModal, chatting } =
       where
       tutorialSteps = toggleModal == Tutorial ChatSuggestions && DM.isNothing chatting || toggleModal == Tutorial Chatting
 
-showAvatar ∷ ImModel → Maybe Int → Html ImMessage
+showAvatar ∷ ImModel → Int → Html ImMessage
 showAvatar model index = HE.lazy Nothing largeAvatar who
       where
       who = case model.chatting of
             Just c → map _.user (model.contacts !! c)
-            Nothing → case model.suggesting of
-                  Just s → model.suggestions !! s
-                  Nothing → Nothing
+            Nothing → model.suggestions !! model.suggesting
       largeAvatar p =
             HE.div (HA.class' "confirmation large") case p of
                   Nothing → HE.createEmptyElement "div"

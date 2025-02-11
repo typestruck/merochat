@@ -49,19 +49,18 @@ suggestionProfile model =
       else if DA.null model.suggestions && notChatting then
             emptySuggestions
       else
-            case model.chatting, model.suggesting of
-                  i@(Just index), _ →
+            case model.chatting of
+                  Just index →
                         let
                               contact = model.contacts !@ index
                         in
                               if contact.user.availability == Unavailable then
                                     unavailable contact.user.name
                               else if model.fullContactProfileVisible then
-                                    fullProfile FullContactProfile i model contact.user
+                                    fullProfile FullContactProfile index model contact.user
                               else
                                     compactProfile model contact
-                  Nothing, (Just index) → suggestionCards model index
-                  _, _ → emptySuggestions
+                  Nothing → suggestionCards model model.suggesting
       where
       notChatting = DM.isNothing model.chatting
 
@@ -93,7 +92,7 @@ compactProfile model contact =
       HE.div (HA.class' { "profile-contact": true, highlighted: model.toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient model.chatting contact.user.avatar ] <> showProfileAction
+                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient (DM.fromMaybe 0 model.chatting) contact.user.avatar ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
                             [ HE.div (HA.class' "contact-name-badge") $ HE.h1 (HA.class' "contact-name") contact.user.name : badges contact.user.badges
                             , typingNotice
@@ -112,7 +111,7 @@ compactProfile model contact =
       showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
       avatarClasses
-            | DM.isNothing contact.user.avatar = "avatar-profile " <> SA.avatarColorClass model.chatting
+            | DM.isNothing contact.user.avatar = "avatar-profile " <> SA.avatarColorClass (DM.fromMaybe 0 model.chatting)
             | otherwise = "avatar-profile"
 
       isTyping = (model.contacts !@ SU.fromJust model.chatting).typing
@@ -130,7 +129,7 @@ compactProfile model contact =
             ]
 
 -- | Suggestion cards/full screen profile view
-fullProfile ∷ ProfilePresentation → Maybe Int → ImModel → ImUser → Html ImMessage
+fullProfile ∷ ProfilePresentation → Int → ImModel → ImUser → Html ImMessage
 fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions, toggleModal } user@{ id } =
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
@@ -213,7 +212,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                     ]
             ]
 
-displayProfile ∷ Maybe Int → ImUser → ImUser → Maybe ImMessage → Array (Html ImMessage)
+displayProfile ∷ Int → ImUser → ImUser → Maybe ImMessage → Array (Html ImMessage)
 displayProfile index loggedUser profileUser temporaryUserMessage =
       [ SA.avatar [ HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowAvatar index, HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profileUser.avatar ]
       , HE.h1 (HA.class' "profile-name") profileUser.name
@@ -315,7 +314,7 @@ suggestionCards model@{ user, suggestions, toggleModal } index =
                         | isCenter = [ HA.class' { "card card-center": true, highlighted: toggleModal == Tutorial ChatSuggestions } ]
                         | otherwise = [ HA.class' "card card-sides faded" ]
             in
-                  HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) (Just suggesting) model profile
+                  HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) suggesting model profile
 
       isNotTutorial = case toggleModal of
             Tutorial _ → false

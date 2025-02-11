@@ -90,11 +90,11 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
       leaderboardEntry index { position, avatar, name, karma } =
             let
                   avatarClasses
-                        | DM.isNothing avatar = "avatar-leaderboard" <> SA.avatarColorClass (Just index)
+                        | DM.isNothing avatar = "avatar-leaderboard" <> SA.avatarColorClass index
                         | otherwise = "avatar-leaderboard"
             in
                   HE.div (HA.class' $ "board-position" <> if position == userPosition then " user" else "")
-                        [ HE.div (HA.class' "avatar-leaderboard-div") $ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient (Just index) avatar ]
+                        [ HE.div (HA.class' "avatar-leaderboard-div") $ HE.img [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index avatar ]
                         , HE.div (HA.class' "name-karma")
                                 [ HE.div_
                                         [ HE.div (HA.class' "name") name

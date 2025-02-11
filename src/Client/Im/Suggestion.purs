@@ -27,12 +27,12 @@ nextSuggestion model =
       else
             model
                   { freeToFetchSuggestions = true
-                  , suggesting = Just next
+                  , suggesting = next
                   , chatting = Nothing
                   , bugging = Nothing
                   } /\ [ bugUser model ]
       where
-      next = DM.maybe 0 (_ + 1) model.suggesting
+      next = model.suggesting + 1
 
 -- | Display previous suggestion card
 previousSuggestion ∷ ImModel → MoreMessages
@@ -42,12 +42,12 @@ previousSuggestion model =
       else
             model
                   { freeToFetchSuggestions = true
-                  , suggesting = Just previous
+                  , suggesting = previous
                   , chatting = Nothing
                   , bugging = Nothing
                   } /\ [ bugUser model ]
       where
-      previous = DM.maybe 0 (_ - 1) model.suggesting
+      previous = model.suggesting - 1
 
 -- | When moving suggestion cards, diplay a special card n% of the time
 bugUser ∷ ImModel → Aff (Maybe ImMessage)
@@ -97,7 +97,7 @@ displayMoreSuggestions suggestions model =
                   }
       where
       suggestionsSize = DA.length suggestions
-      suggesting = Just $ if suggestionsSize <= 1 then 0 else 1
+      suggesting = if suggestionsSize <= 1 then 0 else 1
 
       lowQualityUsersBin = 5
       lowQualityUsersIn = DA.length <<< DA.filter ((_ >= lowQualityUsersBin) <<< _.bin)
@@ -131,8 +131,5 @@ setBugging ∷ MeroChatCall → ImModel → NoMessages
 setBugging mc model = F.noMessages model
       { bugging = Just mc
       --offset index to account for non profile suggestion
-      , suggesting = case model.suggesting of
-              Just s | s > 0 → Just $ s - 1
-              Just s → Just s
-              Nothing → Nothing
+      , suggesting = if model.suggesting > 0 then model.suggesting - 1 else model.suggesting
       }

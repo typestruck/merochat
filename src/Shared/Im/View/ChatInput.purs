@@ -105,10 +105,8 @@ chatBarInput
       model@
             { chatting
             , contacts
-            , suggesting
             , isWebSocketConnected
             , messageEnter
-            , suggestions
             , toggleChatModal
             } = HE.fragment
       [ emojiModal model
@@ -118,7 +116,7 @@ chatBarInput
                       ]
               , HE.div' [ HA.id $ show ChatInputPreview, HA.class' "chat-input-preview message-content" ]
               ]
-      , HE.div [ HA.class' { hidden: not available || toggleChatModal == ShowPreview || DM.isNothing chatting && DM.isNothing suggesting } ]
+      , HE.div [ HA.class' { hidden: not available || toggleChatModal == ShowPreview || DM.isNothing chatting && DA.null model.suggestions } ]
               [ HE.div [ HA.class' "chat-input-options" ]
                       [ bold
                       , italic
@@ -155,7 +153,7 @@ chatBarInput
       ]
       where
       available = DM.fromMaybe true $ getContact ((_ /= Unavailable) <<< _.availability <<< _.user)
-      recipientName = DM.fromMaybe "" $ getContact (_.name <<< _.user) <|> getProperty suggesting suggestions _.name
+      recipientName = DM.fromMaybe "" $ getContact (_.name <<< _.user) <|> getProperty (Just model.suggesting) model.suggestions _.name
 
       getContact ∷ ∀ a. (Contact → a) → Maybe a
       getContact = getProperty chatting contacts
@@ -301,7 +299,7 @@ emojiModal { toggleChatModal } = HE.div [ HA.class' { "emoji-wrapper": true, hid
             , HE.div_ $ map (HE.span_ <<< _.s) pairs
             ]
 
-emojiClickEvent :: (Event -> ImMessage) -> NodeData ImMessage
+emojiClickEvent ∷ (Event → ImMessage) → NodeData ImMessage
 emojiClickEvent message = HA.createRawEvent "click" handler
       where
       handler event

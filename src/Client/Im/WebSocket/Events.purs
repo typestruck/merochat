@@ -358,7 +358,7 @@ unsuggest userId model = model
             i ← unsuggestedIndex
             DA.deleteAt i model.suggestions
       updatedSuggesting
-            | unsuggestedIndex /= Nothing && unsuggestedIndex < model.suggesting = (max 0 <<< (_ - 1)) <$> model.suggesting
+            | unsuggestedIndex /= Nothing && unsuggestedIndex < Just model.suggesting = max 0 (model.suggesting - 1)
             | otherwise = model.suggesting
 
 -- | Updated contacts if user is already there

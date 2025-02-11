@@ -41,14 +41,14 @@ avatarPath index = SP.resourcePath (Left name) Png
 avatarForSender ∷ Maybe String → String
 avatarForSender = DM.fromMaybe defaultAvatar
 
-avatarForRecipient ∷ Maybe Int → Maybe String → String
-avatarForRecipient index = DM.fromMaybe (avatarPath <<< avatarIndex $ SU.fromJust index)
+avatarForRecipient ∷ Int → Maybe String → String
+avatarForRecipient index = DM.fromMaybe <<< avatarPath $ avatarIndex index
 
 avatarIndex ∷ Int → Int
 avatarIndex index = mod index differentAvatarImages + 1
 
-avatarColorClass ∷ Maybe Int → String
-avatarColorClass index = className <> show (mod (SU.fromJust index) totalColorClasses + 1)
+avatarColorClass ∷ Int → String
+avatarColorClass index = className <> show (mod index totalColorClasses + 1)
       where
       className = " avatar-color-"
       totalColorClasses = 4
