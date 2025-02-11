@@ -52,7 +52,7 @@ import Server.WebSocket as SW
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Shared.Im.Types (AfterLogout(..), FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..), EditedRecord)
+import Shared.Im.Types (AfterLogout(..), EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..), DeletedRecord)
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
@@ -166,6 +166,7 @@ handleMessage payload = do
             Ping ping → sendPong context.token context.loggedUserId context.allUsersAvailabilityRef ping
             OutgoingMessage message → sendOutgoingMessage context.token context.loggedUserId allUsersAvailability message
             EditedMessage message → sendEditedMessage context.token context.loggedUserId allUsersAvailability message
+            DeletedMessage message → unsendMessage context.token context.loggedUserId allUsersAvailability message
             ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
             Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
             SetOnline → setOnline context.loggedUserId
@@ -341,14 +342,14 @@ sendEditedMessage token loggedUserId allUsersAvailability edited = do
       case processed of
             Right content → do
                   let receipientUserAvailability = DH.lookup edited.userId allUsersAvailability
-                  withConnections receipientUserAvailability (sendRecipient edited.id content)
+                  withConnections receipientUserAvailability (sendRecipient content)
 
                   let loggedUserConnections = (SU.fromJust loggedUserAvailability).connections
                   let senderConnection = DH.values $ DH.filterKeys (token == _) loggedUserConnections
-                  DF.traverse_ (acknowledgeMessage edited.id) senderConnection
+                  DF.traverse_ acknowledgeMessage senderConnection
 
                   let otherConnections = DH.values $ DH.filterKeys (token /= _) loggedUserConnections
-                  DF.traverse_ (sendRecipient edited.id content) otherConnections
+                  DF.traverse_ (sendRecipient content) otherConnections
             Left UserUnavailable →
                   sendLoggedUser <<< Content $ ContactUnavailable
                         { userId: edited.userId
@@ -360,9 +361,9 @@ sendEditedMessage token loggedUserId allUsersAvailability edited = do
                         , temporaryMessageId: Just edited.id
                         }
       where
-      sendRecipient messageId content connection =
+      sendRecipient content connection =
             sendWebSocketMessage connection <<< Content $ NewEditedMessage
-                  { id: messageId
+                  { id: edited.id
                   , senderId: loggedUserId
                   , recipientId: edited.userId
                   , content
@@ -370,14 +371,36 @@ sendEditedMessage token loggedUserId allUsersAvailability edited = do
 
       loggedUserAvailability = DH.lookup loggedUserId allUsersAvailability
 
-      acknowledgeMessage messageId connection = sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
-            { previousId: messageId
-            , id: messageId
+      acknowledgeMessage connection = sendWebSocketMessage connection <<< Content $ ServerReceivedMessage
+            { previousId: edited.id
+            , id: edited.id
             , userId: edited.userId
             }
 
       sendLoggedUser payload = do
             withConnections loggedUserAvailability $ \connection → sendWebSocketMessage connection payload
+
+unsendMessage ∷ String → Int → HashMap Int UserAvailability → DeletedRecord → WebSocketEffect
+unsendMessage token loggedUserId allUsersAvailability deleted = do
+      SIA.unsendMessage loggedUserId deleted.userId deleted.id
+
+      let receipientUserAvailability = DH.lookup deleted.userId allUsersAvailability
+      withConnections receipientUserAvailability (send loggedUserId)
+
+      let loggedUserConnections = (SU.fromJust loggedUserAvailability).connections
+      let senderConnection = DH.values $ DH.filterKeys (token == _) loggedUserConnections
+      DF.traverse_ (send deleted.userId) senderConnection
+
+      let otherConnections = DH.values $ DH.filterKeys (token /= _) loggedUserConnections
+      DF.traverse_ (send deleted.userId) otherConnections
+      where
+      send userId connection =
+            sendWebSocketMessage connection <<< Content $ NewDeletedMessage
+                  { id: deleted.id
+                  , userId
+                  }
+
+      loggedUserAvailability = DH.lookup loggedUserId allUsersAvailability
 
 makeUserAvailabity ∷ HashMap String WebSocketConnection → Either String String → Boolean → DateTime → Availability → UserAvailability
 makeUserAvailabity connections token isActive lastSeen previousAvailability =

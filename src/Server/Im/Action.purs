@@ -109,6 +109,9 @@ editMessage loggedUserId userId messageId content = do
       else
             pure $ Left UserUnavailable
 
+unsendMessage ∷ ∀ r. Int → Int → Int → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } Unit
+unsendMessage loggedUserId userId messageId = SID.deleteMessage loggedUserId userId messageId
+
 markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Privilege)
 markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SID.markdownPrivileges loggedUserId
 

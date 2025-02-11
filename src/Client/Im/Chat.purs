@@ -1,7 +1,6 @@
 module Client.Im.Chat where
 
 import Prelude
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, ImUser, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
@@ -28,6 +27,7 @@ import Data.Symbol as TDS
 import Data.Time.Duration (Milliseconds(..), Minutes)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
@@ -40,6 +40,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, ImUser, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Resource (maxImageSize)
@@ -528,4 +529,17 @@ editMessage message id model =
       where
       setIt = EC.liftEffect do
             input ← chatInput model.chatting
-            CCD.setValue input message
+            CCD.setValue input (spy "msg" message)
+
+deleteMessage ∷ Int → WebSocket -> ImModel → NoMessages
+deleteMessage id webSocket model =
+      model
+            { toggleContextMenu = HideContextMenu
+            } /\ [ deleteIt ]
+      where
+      chatting = SU.fromJust model.chatting
+
+      deleteIt = do
+            EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId : (model.contacts !@ chatting).user.id }
+            pure Nothing
+
