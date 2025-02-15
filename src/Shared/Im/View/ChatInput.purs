@@ -103,20 +103,19 @@ chatBarInput ∷ ElementId → ImModel → Html ImMessage
 chatBarInput
       elementId
       model@
-            { chatting
-            , contacts
+            { contacts
             , isWebSocketConnected
             , messageEnter
             , toggleChatModal
             } = HE.fragment
       [ emojiModal model
-      , HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview })
-              [ HE.div [ HA.class' "chat-input-options" ]
-                      [ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
-                      ]
-              , HE.div' [ HA.id $ show ChatInputPreview, HA.class' "chat-input-preview message-content" ]
-              ]
-      , HE.div [ HA.class' { hidden: not available || toggleChatModal == ShowPreview || DM.isNothing chatting && DA.null model.suggestions } ]
+      -- , HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview })
+      --         [ HE.div [ HA.class' "chat-input-options" ]
+      --                 [ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
+      --                 ]
+      --         , HE.div' [ HA.id $ show ChatInputPreview, HA.class' "chat-input-preview message-content" ]
+      --         ]
+      , HE.div [ HA.class' { hidden: not available {- || toggleChatModal == ShowPreview -} || DM.isNothing model.chatting && DA.null model.suggestions } ]
               [ HE.div [ HA.class' "chat-input-options" ]
                       [ bold
                       , italic
@@ -125,7 +124,7 @@ chatBarInput
                       , unorderedList
                       , orderedList
                       , linkButton toggleChatModal
-                      , previewButton
+              --        , previewButton
                       , HE.div (HA.class' "send-enter")
                               [ HE.input [ HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter" ]
                               , HE.label (HA.for "message-enter") "Send message on enter"
@@ -152,17 +151,8 @@ chatBarInput
               ]
       ]
       where
-      available = DM.fromMaybe true $ getContact ((_ /= Unavailable) <<< _.availability <<< _.user)
-      recipientName = DM.fromMaybe "" $ getContact (_.name <<< _.user) <|> getProperty (Just model.suggesting) model.suggestions _.name
-
-      getContact ∷ ∀ a. (Contact → a) → Maybe a
-      getContact = getProperty chatting contacts
-
-      getProperty ∷ ∀ a b. Maybe Int → Array b → (b → a) → Maybe a
-      getProperty index list accessor = do
-            i ← index
-            entry ← list !! i
-            pure $ accessor entry
+      available = DM.maybe true ((_ /= Unavailable) <<< _.availability <<< _.user) model.chatting
+      recipientName = DM.fromMaybe "" (map (_.name <<< _.user) model.chatting <|> map _.name (model.suggestions !! model.suggesting))
 
       enterBeforeSendMessageCheck ∷ Event → Maybe ImMessage
       enterBeforeSendMessageCheck event = if isWebSocketConnected && model.messageEnter then Just $ EnterBeforeSendMessage event else Nothing

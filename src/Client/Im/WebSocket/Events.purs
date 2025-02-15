@@ -227,13 +227,13 @@ receiveIncomingMessage webSocket isFocused payload model =
                         updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
                   Right
                         updatedModel@
-                              { chatting: Just index
-                              } | isFocused && (updatedModel.contacts !@ index).user.id == userId →
+                              { chatting: Just ct
+                              } | isFocused && ct.user.id == userId →
                         --new message from the user being chatted with
-                        CICN.setMessageStatus webSocket index Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
+                        CICN.setMessageStatus webSocket (Right ct) Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
                   Right updatedModel →
                         --new message when away/other usesr
-                        CICN.setMessageStatus webSocket (SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts) Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
+                        CICN.setMessageStatus webSocket (Left userId) Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
       where
       unsuggestedModel = unsuggest payload.recipientId model
 
@@ -249,10 +249,10 @@ receiveEditedMessage webSocket isFocused payload model =
             F.noMessages model
       else if model.user.id == payload.senderId then
             updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
-      else if isFocused && DM.isJust model.chatting && (updatedModel.contacts !@ (SU.fromJust updatedModel.chatting)).user.id == userId then
-            CICN.setMessageStatus webSocket (SU.fromJust model.chatting) Read updatedModel
       else
-            CICN.setMessageStatus webSocket (SU.fromJust $ DA.findIndex (findContact userId) updatedModel.contacts) Delivered updatedModel
+            case model.chatting of
+                  Just chatting | chatting.user.id == userId → CICN.setMessageStatus webSocket (Right chatting) (if isFocused then Read else Delivered) updatedModel
+                  _ → CICN.setMessageStatus webSocket (Left userId) Delivered updatedModel
       where
       updateContent history
             | history.id == payload.id = history { content = payload.content, edited = true }

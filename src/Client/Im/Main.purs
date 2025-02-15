@@ -160,9 +160,9 @@ update st model =
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
             ResumeMissedEvents missed → CICN.resumeMissedEvents missed model
             --history
-            CheckFetchHistory → CIH.checkFetchHistory model
-            SpecialRequest (FetchHistory shouldFetch) → CIH.fetchHistory shouldFetch model
-            DisplayHistory overwrite history → CIH.displayHistory overwrite history model
+            CheckFetchHistory userId → CIH.checkFetchHistory userId model
+            SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
+            DisplayHistory userId overwrite history → CIH.displayHistory userId overwrite history model
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model

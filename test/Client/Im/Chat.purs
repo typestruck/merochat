@@ -11,7 +11,6 @@ import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Im.Contact as SIC
 import Shared.Im.Types (MessageContent(..), MessageStatus(..))
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
@@ -45,27 +44,6 @@ tests = do
                         { contacts } = DT.fst $ CIC.beforeSendMessage content model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just contact.user
 
-            TU.test "beforeSendMessage sets chatting to existing contact index" do
-                  let
-                        model' = model
-                              { suggestions = [ contact.user ]
-                              , chatting = Nothing
-                              , suggesting = 0
-                              , contacts = [ SIC.defaultContact 789 contact.user { id = 8 }, contact ]
-                              }
-                        { chatting } = DT.fst $ CIC.beforeSendMessage content model'
-                  TUA.equal (Just 1) chatting
-
-            TU.test "beforeSendMessage sets chatting to 0" do
-                  let
-                        model' = model
-                              { suggestions = suggestion : modelSuggestions
-                              , chatting = Nothing
-                              , suggesting = 0
-                              }
-                        { chatting } = DT.fst $ CIC.beforeSendMessage content model'
-                  TUA.equal (Just 0) chatting
-
             TU.test "sendMessage bumps temporary id" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let m@{ temporaryId } = DT.fst $ CIC.sendMessage webSocket content date model
@@ -77,10 +55,8 @@ tests = do
             TU.test "sendMessage adds message to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { user: { id: userId }, contacts, chatting } = DT.fst $ CIC.sendMessage webSocket content date model
-                        user = SN.fromJust do
-                              index ← chatting
-                              contacts !! index
+                        { user: { id: userId }, chatting } = DT.fst $ CIC.sendMessage webSocket content date model
+                        user = SN.fromJust chatting
 
                   TUA.equal
                         [ { date: (user.history !@ 0).date
@@ -97,13 +73,11 @@ tests = do
             TU.test "sendMessage adds markdown image to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { contacts, chatting } = DT.fst <<< CIC.sendMessage webSocket (Image caption image) date $ model
+                        {  chatting } = DT.fst <<< CIC.sendMessage webSocket (Image caption image) date $ model
                               { selectedImage = Just image
                               , imageCaption = Just caption
                               }
-                        entry = SN.fromJust do
-                              index ← chatting
-                              contacts !! index
+                        entry = SN.fromJust chatting
 
                   TUA.equal ("![" <> caption <> "](" <> image <> ")") (entry.history !@ 0).content
 

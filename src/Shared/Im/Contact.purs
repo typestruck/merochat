@@ -20,8 +20,3 @@ defaultContact id chatted =
       , chatAge: 0.0
       , typing: false
       }
-
-chattingWith ∷ Array Contact → Maybe Int → Contact
-chattingWith contacts chatting = SU.fromJust do
-      index ← chatting
-      contacts !! index

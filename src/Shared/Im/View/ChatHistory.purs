@@ -23,28 +23,27 @@ import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 
 -- | Messages in a chat history
-chatHistory ∷ ImModel → Maybe Contact → Html ImMessage
-chatHistory model@{ user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, toggleModal, toggleContextMenu, failedRequests, freeToFetchChatHistory } contact =
+chatHistory ∷ ImModel → Html ImMessage
+chatHistory model@{ user: { id: loggedUserId, messageTimestamps, joined, temporary, readReceipts }, toggleModal, toggleContextMenu, failedRequests, freeToFetchChatHistory } =
       HE.div
-            [ HA.id $ show MessageHistory
-            , HA.class' { "message-history": true, hidden: DM.isNothing contact }
-            , HA.onScroll CheckFetchHistory
-            ]
+            ([ HA.id $ show MessageHistory
+            , HA.class' { "message-history": true, hidden: DM.isNothing model.chatting }
+            ] <> DM.maybe [] (DA.singleton <<< HA.onScroll <<< CheckFetchHistory <<< _.id <<< _.user) model.chatting )
             chatHistoryWindow
       where
       chatHistoryWindow =
-            case contact of
-                  Nothing → [ retryOrWarning ]
-                  Just profile@{ shouldFetchChatHistory, user: { availability } } →
-                        if availability == Unavailable then []
+            case model.chatting of
+                  Nothing → [HE.createEmptyElement "div"]
+                  Just chatting →
+                        if chatting.user.availability == Unavailable then []
                         else
                               let
-                                    entries = retryOrWarning : temporaryChatWarning <> displayChatHistory profile
+                                    entries = retryOrWarning chatting.user.id : temporaryChatWarning <> displayChatHistory chatting
                               in
-                                    if shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries
+                                    if chatting.shouldFetchChatHistory || not freeToFetchChatHistory then HE.div' (HA.class' "loading") : entries
                                     else entries
 
-      retryOrWarning = SIVR.retry "Failed to load chat history" (FetchHistory true) failedRequests
+      retryOrWarning id = SIVR.retry "Failed to load chat history" (FetchHistory id true) failedRequests
 
       temporaryChatWarning = if temporary && isNotTutorial then [ SIVP.signUpCall joined ] else []
 
@@ -57,9 +56,9 @@ chatHistory model@{ user: { id: loggedUserId, messageTimestamps, joined, tempora
       bottomMessage id =
             let
                   index = DM.fromMaybe (-100) do
-                        history ← _.history <$> contact
+                        history ← _.history <$> model.chatting
                         DA.findIndex (\c → c.id == id) history
-                  length = DA.length $ DM.fromMaybe [] (_.history <$> contact)
+                  length = DA.length $ DM.fromMaybe [] (_.history <$> model.chatting)
             in
                   index >= length - 2
 

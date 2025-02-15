@@ -31,8 +31,7 @@ import Shared.User (ProfileVisibility(..))
 contactList ∷ Boolean → ImModel → Html ImMessage
 contactList
       isClientRender
-      { failedRequests
-      , chatting
+      model@{ failedRequests
       , toggleContextMenu
       , contacts
       , toggleModal
@@ -56,7 +55,7 @@ contactList
                           entries =
                                 DA.mapWithIndex displayContactListEntry
                                       <<< DA.sortBy compareLastDate
-                                      $ DA.filter (not <<< DA.null <<< _.history) contacts --refactor: might want to look into this: before sending a message, we need to run an effect; in this meanwhile history is empty
+                                      <<< DA.filter (not <<< DA.null <<< _.history) $ DM.maybe contacts (_ : contacts) model.chatting
                     in
                           if temporary then SIVP.signUpCall joined : entries else entries
 
@@ -125,10 +124,7 @@ contactList
 
       unread total { status, sender } = total + DE.fromEnum (sender /= loggedUserId && status < Read)
 
-      chattingId = do
-            index ← chatting
-            { user: { id } } ← contacts !! index
-            pure id
+      chattingId = model.chatting >>= (pure  <<< _.id <<< _.user)
 
       -- | Displayed if loading contact from an incoming message fails
       retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." (CheckMissedEvents Nothing) failedRequests

@@ -7,10 +7,11 @@ import Client.Im.Suggestion as CIS
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Test.Client.Model (contact, imUser, model, webSocket)
+import Test.Client.Model (anotherImUser, contact, imUser, model, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA
+import Unsafe.Coerce as SU
 
 tests ∷ TestSuite
 tests = do
@@ -34,7 +35,7 @@ tests = do
             TU.test "nextSuggestion clears chatting" do
                   let
                         { chatting } = DT.fst <<< CIS.nextSuggestion $ model
-                              { chatting = Just 2
+                              { chatting = Just (SU.unsafeCoerce anotherImUser)
                               , suggestions = [ imUser, imUser ]
                               }
                   TUA.equal Nothing chatting
@@ -58,7 +59,7 @@ tests = do
             TU.test "displayMoreSuggestions clears chatting" do
                   let
                         { chatting } = DT.fst <<< CIS.displayMoreSuggestions [] $ model
-                              { chatting = Just 2
+                              { chatting = Just (SU.unsafeCoerce anotherImUser)
                               , suggestions = [ imUser, imUser ]
                               }
                   TUA.equal Nothing chatting

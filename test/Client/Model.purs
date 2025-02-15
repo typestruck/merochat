@@ -66,7 +66,7 @@ model =
       , freeToFetchChatHistory: true
       , contacts: [ contact ]
       , isWebSocketConnected: true
-      , chatting: Just 0
+      , chatting: Nothing
       }
 
 imUserId ∷ Int

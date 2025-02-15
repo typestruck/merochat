@@ -35,7 +35,7 @@ view isClientRender model = HE.div "im"
               [ HE.div [ HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: not $ DS.null model.errorMessage } ] model.errorMessage
               , SIVNM.unreadNotification model
               , SIVP.suggestionProfile model
-              , SIVH.chatHistory model $ map (model.contacts !@ _) model.chatting
+              , SIVH.chatHistory model
               , SIVC.chat model
               ]
       ]

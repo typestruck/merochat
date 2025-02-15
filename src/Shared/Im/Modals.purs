@@ -58,7 +58,7 @@ showAvatar ∷ ImModel → Int → Html ImMessage
 showAvatar model index = HE.lazy Nothing largeAvatar who
       where
       who = case model.chatting of
-            Just c → map _.user (model.contacts !! c)
+            Just c → Just c.user
             Nothing → model.suggestions !! model.suggesting
       largeAvatar p =
             HE.div (HA.class' "confirmation large") case p of

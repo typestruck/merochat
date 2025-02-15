@@ -8,7 +8,6 @@ import Shared.Im.Types
 import Shared.User
 
 import Client.Common.Privilege as CCP
-import Data.Argonaut ((.!=))
 import Data.Array ((!!), (..), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -37,8 +36,6 @@ import Shared.Privilege as SP
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SPT
 import Shared.Resource as SR
-import Shared.Unsafe ((!@))
-import Shared.Unsafe as SU
 import Shared.User as SUR
 
 -- | Displays either the current chat or a list of chat suggestions
@@ -50,16 +47,13 @@ suggestionProfile model =
             emptySuggestions
       else
             case model.chatting of
-                  Just index →
-                        let
-                              contact = model.contacts !@ index
-                        in
-                              if contact.user.availability == Unavailable then
-                                    unavailable contact.user.name
-                              else if model.fullContactProfileVisible then
-                                    fullProfile FullContactProfile index model contact.user
-                              else
-                                    compactProfile model contact
+                  Just chatting →
+                        if chatting.user.availability == Unavailable then
+                              unavailable chatting.user.name
+                        else if model.fullContactProfileVisible then
+                              fullProfile FullContactProfile 0 model chatting.user
+                        else
+                              compactProfile model chatting
                   Nothing → suggestionCards model model.suggesting
       where
       notChatting = DM.isNothing model.chatting
@@ -92,7 +86,7 @@ compactProfile model contact =
       HE.div (HA.class' { "profile-contact": true, highlighted: model.toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient (DM.fromMaybe 0 model.chatting) contact.user.avatar ] <> showProfileAction
+                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient 0 contact.user.avatar ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
                             [ HE.div (HA.class' "contact-name-badge") $ HE.h1 (HA.class' "contact-name") contact.user.name : badges contact.user.badges
                             , typingNotice
@@ -111,16 +105,14 @@ compactProfile model contact =
       showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
       avatarClasses
-            | DM.isNothing contact.user.avatar = "avatar-profile " <> SA.avatarColorClass (DM.fromMaybe 0 model.chatting)
+            | DM.isNothing contact.user.avatar = "avatar-profile " <> SA.avatarColorClass 0
             | otherwise = "avatar-profile"
 
-      isTyping = (model.contacts !@ SU.fromJust model.chatting).typing
-
-      typingNotice = HE.div (HA.class' { "duller typing": true, hidden: not isTyping || not model.user.typingStatus || not contact.user.typingStatus }) "Typing..."
+      typingNotice = HE.div (HA.class' { "duller typing": true, hidden: not contact.typing || not model.user.typingStatus || not contact.user.typingStatus }) "Typing..."
 
       availableStatus =
             HE.div
-                  [ HA.class' { hidden: isTyping && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus, duller: contact.user.availability /= Online } ]
+                  [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus, duller: contact.user.availability /= Online } ]
                   $ show contact.user.availability
 
       profileIcon = HE.svg [ HA.class' "show-profile-icon", HA.viewBox "0 0 16 16" ]

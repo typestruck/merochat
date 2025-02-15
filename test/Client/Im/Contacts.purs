@@ -28,15 +28,15 @@ tests = do
                               { chatting = Nothing
                               , contacts = [ contact { user = imUser }, anotherContact ]
                               }
-                  TUA.equal (Just 1) chatting
+                  TUA.equal (Just anotherContact) chatting
 
                   let { chatting } = DT.fst $ CICN.resumeChat imUserId m
-                  TUA.equal (Just 0) chatting
+                  TUA.equal (Just contact { user = imUser }) chatting
 
             TU.test "setReadStatus sets received messages as read" do
                   let
                         { contacts } = DT.fst <<< CICN.setReadStatus webSocket $ model
-                              { chatting = Just 1
+                              { chatting = Just anotherContact
                               , contacts = [ contact, anotherContact ]
                               }
                   TUA.equal [ Tuple 1 Read, Tuple 2 Received, Tuple 3 Read ] <<< map (\({ id, status }) → Tuple id status) $ (contacts !@ 1).history
@@ -45,7 +45,7 @@ tests = do
                   let
                         { contacts } = DT.fst <<< CICN.setDeliveredStatus webSocket $ model
                               { user { id = 4 }
-                              , chatting = Just 1
+                              , chatting = Just anotherContact
                               , contacts =
                                       [ contact
                                               { history =

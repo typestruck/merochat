@@ -145,9 +145,8 @@ type Im =
       , typingIds ∷ Array TimeoutIdWrapper -- TimeoutId constructor is private
       --the current logged in user
       , user ∷ ImUser
-      --indexes
       , suggesting ∷ Int
-      , chatting ∷ Maybe Int
+      , chatting ∷ Maybe Contact
       , smallScreen ∷ Boolean
       , editing ∷ Maybe Int
       , bugging ∷ Maybe MeroChatCall
@@ -254,7 +253,7 @@ type RequestFailure =
       }
 
 data RetryableRequest
-      = FetchHistory Boolean
+      = FetchHistory Int Boolean
       | FetchContacts Boolean
       | CheckMissedEvents (Maybe DateTimeWrapper)
       | ToggleModal ShowUserMenuModal
@@ -271,8 +270,8 @@ type Touch = { startX ∷ Int, endX ∷ Int, startY ∷ Int, endY ∷ Int }
 data ImMessage
       =
         --history
-        CheckFetchHistory
-      | DisplayHistory Boolean (Array HistoryMessage)
+        CheckFetchHistory Int
+      | DisplayHistory Int Boolean (Array HistoryMessage)
 
       --user menu
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
