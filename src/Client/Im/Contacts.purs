@@ -78,10 +78,7 @@ setMessageStatus webSocket userId newStatus model =
       model
             { contacts = updatedContacts
             } /\
-            [ setIt
-                    userId
-                    (messageIdsUpdated <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts)
-                    updatedContacts
+            [ setIt userId (messageIdsUpdated <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts)
             ]
 
       where
@@ -94,16 +91,16 @@ setMessageStatus webSocket userId newStatus model =
             | needsUpdate entry = entry { status = newStatus }
             | otherwise = entry
 
-      updateContact userId contact
-            | contact.user.id == userId = contact { history = map updateStatus contact.history }
+      updateContact ui contact
+            | contact.user.id == ui = contact { history = map updateStatus contact.history }
             | otherwise = contact
 
-      setIt userId messages contacts = liftEffect do
+      setIt ui messages = liftEffect do
             CIW.sendPayload webSocket $ ChangeStatus
                   { status: newStatus
-                  , ids: [ Tuple userId messages ]
+                  , ids: [ Tuple ui messages ]
                   }
-            CIUN.updateTabCount userId contacts
+            CIUN.updateTabCount model.user.id updatedContacts
             pure Nothing
 
 -- | Update message status to unread upon openning the site or receveing from new contacts

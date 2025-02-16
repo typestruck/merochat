@@ -77,7 +77,7 @@ tests = do
             TU.test "sendMessage adds markdown image to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { chatting } = DT.fst <<< CIC.sendMessage 3 true (Image caption image) date webSocket $ model
+                        { chatting } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) true (Image caption image) date webSocket $ model
                               { selectedImage = Just image
                               , imageCaption = Just caption
                               }
@@ -88,7 +88,7 @@ tests = do
             TU.test "sendMessage resets input fields" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage 3 true content date webSocket $ model
+                        { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) true content date webSocket $ model
                               { selectedImage = Just image
                               , imageCaption = Just caption
                               }
