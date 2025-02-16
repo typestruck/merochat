@@ -16,9 +16,8 @@ import Shared.Avatar as SA
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
-import Shared.Im.Types (Contact, HM, ImUser, HistoryMessage)
+import Shared.Im.Types (Contact, HM, User, HistoryMessage)
 import Shared.Privilege (Privilege)
-import Shared.Unsafe as SU
 
 type FlatFields rest =
       { age ∷ Maybe Number
@@ -72,7 +71,7 @@ fromFlatContact fc =
       , typing: false
       }
 
-fromFlatUser ∷ ∀ r. FlatFields r → ImUser
+fromFlatUser ∷ ∀ r. FlatFields r → User
 fromFlatUser fc =
       { id: fc.id
       , name: fc.name

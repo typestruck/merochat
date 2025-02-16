@@ -11,6 +11,7 @@ import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
+import Control.Alt ((<|>))
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -36,79 +37,56 @@ import Web.Socket.WebSocket (WebSocket)
 -- | When a contact is selected from the list, update `chatting` accordingly
 resumeChat ∷ Int → ImModel → MoreMessages
 resumeChat userId model =
-      if updatedChatting == model.chatting then
+      if model.chatting == Just userId then
             F.noMessages model
       else
             model
-                  { chatting = updatedChatting
+                  { chatting = Just userId
                   , fullContactProfileVisible = false
                   , toggleChatModal = HideChatModal
                   , initialScreen = false
                   , selectedImage = Nothing
                   , editing = Nothing
-                  , contacts = updatedContacts
                   , failedRequests = []
                   } /\
                   ( smallScreenEffect <>
-                          [ updateReadCountEffect
-                          , CIS.scrollLastMessageAff
-                          , fetchHistoryEffect
-                          ]
+                          case SIC.findContact userId model.contacts of
+                                Nothing → []
+                                Just chatting →
+                                      [ updateReadCountEffect chatting.user.id
+                                      , CIS.scrollLastMessageAff
+                                      , fetchHistoryEffect chatting
+                                      ]
                   )
       where
-      updatedChatting = DA.find ((userId == _) <<< _.id <<< _.user) model.contacts
-      updatedContacts =
-            let
-                  uc = DA.filter ((userId /= _) <<< _.id <<< _.user) model.contacts
-            in
-                  case model.chatting of
-                        Nothing → uc
-                        Just oldChatting → oldChatting : uc
-
-      updateReadCountEffect = pure $ Just SetReadStatus
-      fetchHistoryEffect = let contact = SU.fromJust updatedChatting in pure <<< Just <<< SpecialRequest $ FetchHistory contact.user.id contact.shouldFetchChatHistory
+      updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
+      fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
       smallScreenEffect
-            | model.smallScreen = [ pure Nothing ]
+            | model.smallScreen = []
             | otherwise = [ pure <<< Just $ FocusInput ChatInput ]
 
 -- | When coming back to the site mark messages as read if a chat is open
-setReadStatus ∷ WebSocket → ImModel → MoreMessages
-setReadStatus webSocket model =
-      case model.chatting of
-            Just chatting → setMessageStatus webSocket (Right chatting) Read model
+setReadStatus ∷ Maybe Int → WebSocket → ImModel → MoreMessages
+setReadStatus userId webSocket model =
+      case userId <|> model.chatting of
+            Just chatting → setMessageStatus webSocket chatting Read model
             Nothing → F.noMessages model
 
 -- | Update status of messages with the given contact
-setMessageStatus ∷ WebSocket → Either Int Contact → MessageStatus → ImModel → MoreMessages
-setMessageStatus webSocket who newStatus model =
-      case who of
-            Right chatting →
-                  let
-                        updatedChatting = chatting { history = map updateStatus chatting.history }
-                  in
-                        model
-                              { chatting = Just updatedChatting
-                              } /\
-                              [ setIt
-                                      chatting.user.id
-                                      (messageIdsUpdated chatting.history)
-                                      (updatedChatting : model.contacts)
-                              ]
-
-            Left userId →
-                  let
-                        updatedContacts = map (updateContact userId) model.contacts
-                  in
-                        model
-                              { contacts = updatedContacts
-                              } /\
-                              [ setIt
-                                      userId
-                                      (messageIdsUpdated <<< DM.maybe [] _.history $ DA.find ((userId == _) <<< _.id <<< _.user) model.contacts)
-                                      (DM.maybe updatedContacts (_ : updatedContacts) model.chatting)
-                              ]
+setMessageStatus ∷ WebSocket → Int → MessageStatus → ImModel → MoreMessages
+setMessageStatus webSocket userId newStatus model =
+      model
+            { contacts = updatedContacts
+            } /\
+            [ setIt
+                    userId
+                    (messageIdsUpdated <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts)
+                    updatedContacts
+            ]
 
       where
+      updatedContacts = map (updateContact userId) model.contacts
+
       needsUpdate entry = entry.status >= Sent && entry.status < newStatus && entry.recipient == model.user.id
       messageIdsUpdated history = map _.id $ DA.filter needsUpdate history
 
@@ -235,24 +213,20 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
 
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =
-      updatedModel /\
-            [ do
-                    result ← CCN.defaultResponse $ request.im.delete { body: { userId, messageId: SU.fromJust lastMessageId } }
-                    case result of
-                          Left _ → pure <<< Just $ RequestFailed { request: DeleteChat userId, errorMessage: Nothing }
-                          _ → pure Nothing
-            ]
+      case lastMessageId of
+            Just id →
+                  model
+                        { toggleModal = HideUserMenuModal
+                        , toggleChatModal = HideChatModal
+                        , contacts = DA.filter ((userId /= _) <<< _.id <<< _.user) model.contacts
+                        , chatting = if model.chatting == Just userId then Nothing else model.chatting
+                        } /\ [ deleteIt id ]
+            Nothing → F.noMessages model
       where
-      updatedModel = model
-            { toggleModal = HideUserMenuModal
-            , toggleChatModal = HideChatModal
-            , contacts = DA.filter ((userId /= _) <<< _.id <<< _.user) model.contacts
-            , chatting =
-                    case model.chatting of
-                          Just chatting | chatting.user.id == userId → Nothing
-                          c → c
-            }
+      lastMessageId = SIC.findContact userId model.contacts >>= (map _.id <<< DA.last <<< _.history)
 
-      lastMessageId = case model.chatting of
-            Just chatting | chatting.user.id == userId → _.id <$> DA.last chatting.history
-            _ →  DA.find ((userId == _) <<< _.id <<< _.user) model.contacts >>= (map _.id <<< DA.last <<< _.history)
+      deleteIt id = do
+            result ← CCN.defaultResponse $ request.im.delete { body: { userId, messageId: id } }
+            case result of
+                  Left _ → pure <<< Just $ RequestFailed { request: DeleteChat userId, errorMessage: Nothing }
+                  _ → pure Nothing

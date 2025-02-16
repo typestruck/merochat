@@ -13,10 +13,10 @@ import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
+import Data.HashMap (HashMap)
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Maybe.First (First)
 import Data.Show.Generic as DGRS
 import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
@@ -28,7 +28,6 @@ import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper(..))
-
 import Shared.Privilege (Privilege)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
@@ -39,7 +38,7 @@ import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
-type ImUser = Record IU
+type User = Record IU
 
 type Report =
       { reason ∷ ReportReason
@@ -47,7 +46,7 @@ type Report =
       , userId ∷ Int
       }
 
-type Suggestion = ImUser
+type Suggestion = User
 
 type BasicMessage fields =
       { id ∷ Int
@@ -81,7 +80,7 @@ type BaseContact fields =
       }
 
 type Contact = BaseContact
-      ( user ∷ ImUser
+      ( user ∷ User
       , typing ∷ Boolean
       , history ∷ Array HistoryMessage
       )
@@ -144,9 +143,9 @@ type Im =
       , lastTyping ∷ DateTimeWrapper
       , typingIds ∷ Array TimeoutIdWrapper -- TimeoutId constructor is private
       --the current logged in user
-      , user ∷ ImUser
+      , user ∷ User
       , suggesting ∷ Int
-      , chatting ∷ Maybe Contact
+      , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
       , editing ∷ Maybe Int
       , bugging ∷ Maybe MeroChatCall
@@ -263,7 +262,13 @@ data RetryableRequest
       | ReportUser Int
       | DeleteChat Int
 
-data ReportReason = DatingContent | Harassment | HateSpeech | Spam | Minor | OtherReason
+data ReportReason
+      = DatingContent
+      | Harassment
+      | HateSpeech
+      | Spam
+      | Minor
+      | OtherReason
 
 type Touch = { startX ∷ Int, endX ∷ Int, startY ∷ Int, endY ∷ Int }
 
@@ -271,7 +276,7 @@ data ImMessage
       =
         --history
         CheckFetchHistory Int
-      | DisplayHistory Int Boolean (Array HistoryMessage)
+      | DisplayHistory Int (Array HistoryMessage)
 
       --user menu
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
@@ -281,7 +286,7 @@ data ImMessage
 
       --contact
       | ResumeChat Int
-      | SetReadStatus
+      | SetReadStatus (Maybe Int)
       | CheckFetchContacts
       | SetDeliveredStatus
       | DisplayContacts (Array Contact)
@@ -305,10 +310,9 @@ data ImMessage
       | EditMessage String Int
       | DeleteMessage Int
       | FocusCurrentSuggestion
-      | EnterBeforeSendMessage Event
-      | ForceBeforeSendMessage
+      | EnterSendMessage Event
+      | ForceSendMessage
       | ResizeChatInput Event
-      | BeforeSendMessage MessageContent
       | SendMessage MessageContent DateTimeWrapper
       | Apply Markup
       | SetEmoji Event

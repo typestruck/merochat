@@ -11,7 +11,6 @@ import Server.Settings.Action as SSA
 import Server.Settings.Database as SSD
 import Server.Settings.Template as SST
 import Shared.Settings.Types (PrivacySettings)
-import Shared.User (ProfileVisibility)
 
 settings ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
 settings { guards: { loggedUserId } } = do

@@ -20,6 +20,7 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.View.Retry as SIVR
 import Shared.Im.View.SuggestionProfile as SIVP
@@ -31,12 +32,13 @@ import Shared.User (ProfileVisibility(..))
 contactList ∷ Boolean → ImModel → Html ImMessage
 contactList
       isClientRender
-      model@{ failedRequests
-      , toggleContextMenu
-      , contacts
-      , toggleModal
-      , user: { joined, temporary, id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus }
-      } =
+      model@
+            { failedRequests
+            , toggleContextMenu
+            , contacts
+            , toggleModal
+            , user: { joined, temporary, id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus }
+            } =
       case profileVisibility of
             Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]
             _ →
@@ -55,43 +57,42 @@ contactList
                           entries =
                                 DA.mapWithIndex displayContactListEntry
                                       <<< DA.sortBy compareLastDate
-                                      <<< DA.filter (not <<< DA.null <<< _.history) $ DM.maybe contacts (_ : contacts) model.chatting
+                                      $ DA.filter (not <<< DA.null <<< _.history) contacts
                     in
                           if temporary then SIVP.signUpCall joined : entries else entries
 
-      displayContactListEntry index { history, user, typing } =
+      displayContactListEntry index contact =
             let
-                  contact = user
-                  numberUnreadMessages = countUnread history
-                  lastHistoryEntry = SU.fromJust $ DA.last history
-                  isContextMenuVisible = toggleContextMenu == ShowContactContextMenu user.id
+                  numberUnreadMessages = countUnread contact.history
+                  lastHistoryEntry = SU.fromJust $ DA.last contact.history
+                  isContextMenuVisible = toggleContextMenu == ShowContactContextMenu contact.user.id
                   avatarClasses
-                        | DM.isNothing contact.avatar = "avatar-contact-list" <> SA.avatarColorClass index
+                        | DM.isNothing contact.user.avatar = "avatar-contact-list" <> SA.avatarColorClass index
                         | otherwise = "avatar-contact-list"
 
             in
                   HE.div
-                        [ HA.class' { contact: true, "chatting-contact": chattingId == Just user.id }
-                        , HA.onClick $ ResumeChat user.id
+                        [ HA.class' { contact: true, "chatting-contact": chattingId == Just contact.user.id }
+                        , HA.onClick $ ResumeChat contact.user.id
                         ]
-                        [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.onlineStatus && onlineStatus then show contact.availability else "" ]
-                                [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index contact.avatar ]
-                                , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.availability /= Online || not contact.onlineStatus || not onlineStatus } ]
+                        [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && onlineStatus then show contact.user.availability else "" ]
+                                [ HE.img [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index contact.user.avatar ]
+                                , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not onlineStatus } ]
                                 ]
                         , HE.div [ HA.class' "contact-profile" ]
-                                [ HE.span (HA.class' "contact-name") contact.name
-                                , HE.div' [ HA.class' { "contact-list-last-message": true, hidden: typing && typingStatus && user.typingStatus }, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
-                                , HE.div [ HA.class' { "contact-list-last-message typing": true, hidden: not typing || not typingStatus || not user.typingStatus } ] $ HE.p_ "Typing..."
+                                [ HE.span (HA.class' "contact-name") contact.user.name
+                                , HE.div' [ HA.class' { "contact-list-last-message": true, hidden: contact.typing && typingStatus && contact.user.typingStatus }, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
+                                , HE.div [ HA.class' { "contact-list-last-message typing": true, hidden: not contact.typing || not typingStatus || not contact.user.typingStatus } ] $ HE.p_ "Typing..."
                                 ]
                         , HE.div (HA.class' "contact-options")
-                                [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not contact.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
+                                [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not contact.user.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
                                 , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
-                                , HE.div (HA.class' { "message-status-contact": true, duller: true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == user.id || not contact.readReceipts || not readReceipts || isContextMenuVisible }) $ show lastHistoryEntry.status
-                                , HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowContactContextMenu user.id ]
+                                , HE.div (HA.class' { "message-status-contact": true, duller: true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not readReceipts || isContextMenuVisible }) $ show lastHistoryEntry.status
+                                , HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowContactContextMenu contact.user.id ]
                                         [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                 [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                 ]
-                                        , HE.div [ HA.class' { "user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat user.id ] $
+                                        , HE.div [ HA.class' { "user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat contact.user.id ] $
                                                 HE.div [ HA.class' "user-menu-item menu-item-heading" ] "Delete chat"
                                         ]
                                 ]
@@ -121,10 +122,9 @@ contactList
       compareLastDate contact anotherContact = compare anotherContact.lastMessageDate contact.lastMessageDate
 
       countUnread = DF.foldl unread 0
+      unread total ss = total + DE.fromEnum (ss.sender /= loggedUserId && ss.status < Read)
 
-      unread total { status, sender } = total + DE.fromEnum (sender /= loggedUserId && status < Read)
-
-      chattingId = model.chatting >>= (pure  <<< _.id <<< _.user)
+      chattingId = (_.id <<< _.user) <$> SIC.maybeFindContact model.chatting model.contacts
 
       -- | Displayed if loading contact from an incoming message fails
       retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." (CheckMissedEvents Nothing) failedRequests

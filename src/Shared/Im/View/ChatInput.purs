@@ -20,6 +20,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SIC
 import Shared.Im.Emoji as SIE
 import Shared.Im.Svg as SIS
 import Shared.Keydown as SK
@@ -75,7 +76,7 @@ imageModal { selectedImage, erroredFields, user } =
                           , HE.input [ HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
                           , HE.div (HA.class' "image-buttons")
                                   [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
-                                  , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick ForceBeforeSendMessage, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
+                                  , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick ForceSendMessage, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
                                   ]
                           ]
                   ]
@@ -103,8 +104,7 @@ chatBarInput ∷ ElementId → ImModel → Html ImMessage
 chatBarInput
       elementId
       model@
-            { contacts
-            , isWebSocketConnected
+            { isWebSocketConnected
             , messageEnter
             , toggleChatModal
             } = HE.fragment
@@ -115,7 +115,7 @@ chatBarInput
       --                 ]
       --         , HE.div' [ HA.id $ show ChatInputPreview, HA.class' "chat-input-preview message-content" ]
       --         ]
-      , HE.div [ HA.class' { hidden: not available {- || toggleChatModal == ShowPreview -} || DM.isNothing model.chatting && DA.null model.suggestions } ]
+      , HE.div [ HA.class' { hidden: not available {- || toggleChatModal == ShowPreview -}  || DM.isNothing model.chatting && DA.null model.suggestions } ]
               [ HE.div [ HA.class' "chat-input-options" ]
                       [ bold
                       , italic
@@ -124,7 +124,7 @@ chatBarInput
                       , unorderedList
                       , orderedList
                       , linkButton toggleChatModal
-              --        , previewButton
+                      --        , previewButton
                       , HE.div (HA.class' "send-enter")
                               [ HE.input [ HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter" ]
                               , HE.label (HA.for "message-enter") "Send message on enter"
@@ -151,11 +151,11 @@ chatBarInput
               ]
       ]
       where
-      available = DM.maybe true ((_ /= Unavailable) <<< _.availability <<< _.user) model.chatting
-      recipientName = DM.fromMaybe "" (map (_.name <<< _.user) model.chatting <|> map _.name (model.suggestions !! model.suggesting))
+      chatting = SIC.maybeFindContact model.chatting model.contacts
+      available = DM.maybe true ((_ /= Unavailable) <<< _.availability <<< _.user) chatting
+      recipientName = DM.fromMaybe "" (map (_.name <<< _.user) chatting <|> map _.name (model.suggestions !! model.suggesting))
 
-      enterBeforeSendMessageCheck ∷ Event → Maybe ImMessage
-      enterBeforeSendMessageCheck event = if isWebSocketConnected && model.messageEnter then Just $ EnterBeforeSendMessage event else Nothing
+      enterBeforeSendMessageCheck event = if isWebSocketConnected && model.messageEnter then Just $ EnterSendMessage event else Nothing
 
 bold ∷ Html ImMessage
 bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
@@ -262,7 +262,7 @@ audioButton actions = HE.svg (actions <> [ HA.class' "attachment-button audio-bu
 sendButton ∷ Boolean → ImModel → Html ImMessage
 sendButton messageEnter model =
       HE.div
-            (if model.isWebSocketConnected then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick ForceBeforeSendMessage ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
+            (if model.isWebSocketConnected then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick ForceSendMessage ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
 
 sendButtonElements ∷ String → Array (Html ImMessage)
 sendButtonElements title =

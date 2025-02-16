@@ -95,7 +95,7 @@ main = do
                       FSD.onClick' ToggleUserContextMenu
                     ,
                       --focus event has to be on the window as chrome is a whiny baby about document
-                      FSW.onFocus SetReadStatus
+                      FSW.onFocus $ SetReadStatus Nothing
                     ]
             , init: [] -- we use subscription instead of init events
             , update: update { fileReader, webSocketRef }
@@ -129,11 +129,10 @@ update st model =
             InsertLink → CIC.setLink model
             ToggleChatModal modal → CIC.toggleModal modal model
             DropFile event → CIC.catchFile st.fileReader event model
-            EnterBeforeSendMessage event → CIC.enterBeforeSendMessage event model
-            ForceBeforeSendMessage → CIC.forceBeforeSendMessage model
             ResizeChatInput event → CIC.resizeChatInput event model
-            BeforeSendMessage content → CIC.beforeSendMessage content model
-            SendMessage content date → CIC.sendMessage webSocket content date model
+            EnterSendMessage event → CIC.enterSendMessage event model
+            ForceSendMessage → CIC.forceSendMessage model
+            SendMessage content dt → CIC.prepareSendMessage content dt webSocket model
             SetSelectedImage maybeBase64 → CIC.setSelectedImage maybeBase64 model
             Apply markup → CIC.setMarkup markup model
             SetEmoji event → CIC.setEmoji event model
@@ -152,7 +151,7 @@ update st model =
             --contacts
             ResumeChat userId → CICN.resumeChat userId model
             SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
-            SetReadStatus → CICN.setReadStatus webSocket model
+            SetReadStatus userId → CICN.setReadStatus userId webSocket model
             CheckFetchContacts → CICN.checkFetchContacts model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
@@ -162,7 +161,7 @@ update st model =
             --history
             CheckFetchHistory userId → CIH.checkFetchHistory userId model
             SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
-            DisplayHistory userId overwrite history → CIH.displayHistory userId overwrite history model
+            DisplayHistory userId history → CIH.displayHistory userId history model
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model

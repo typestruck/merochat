@@ -1,16 +1,15 @@
 module Shared.Im.Contact where
 
 import Prelude
-import Shared.Im.Types (Contact, ImUser)
 
-import Data.Array ((!!))
-import Data.Maybe (Maybe)
+import Data.Array as DA
+import Data.Maybe (Maybe(..))
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Unsafe as SU
+import Shared.Im.Types (Contact, User)
 
-defaultContact ∷ Int → ImUser → Contact
+defaultContact ∷ Int → User → Contact
 defaultContact id chatted =
       { shouldFetchChatHistory: false
       , user: chatted
@@ -20,3 +19,13 @@ defaultContact id chatted =
       , chatAge: 0.0
       , typing: false
       }
+
+findContact ∷ Int → Array Contact → Maybe Contact
+findContact userId contacts = DA.find f contacts
+      where
+      f contact = contact.user.id == userId
+
+maybeFindContact ∷ Maybe Int → Array Contact → Maybe Contact
+maybeFindContact ui contacts = case ui of
+      Nothing → Nothing
+      Just userId → findContact userId contacts

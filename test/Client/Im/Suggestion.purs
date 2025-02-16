@@ -5,7 +5,6 @@ import Prelude
 import Client.Im.Main as CIM
 import Client.Im.Suggestion as CIS
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Test.Client.Model (anotherImUser, contact, imUser, model, webSocket)
 import Test.Unit (TestSuite)

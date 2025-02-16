@@ -19,8 +19,8 @@ tests = do
       TU.suite "im history update" do
             TU.test "displayHistory sets freeToFetchChatHistory" do
                   let
-                        { freeToFetchChatHistory } = DT.fst <<< CIH.displayHistory contact.user.id true [ historyMessage ] $ model
-                              { chatting = Just contact
+                        { freeToFetchChatHistory } = DT.fst <<< CIH.displayHistory contact.user.id [ historyMessage ] $ model
+                              { chatting = Just contact.user.id
                               , contacts = [ contact ]
                               , freeToFetchChatHistory = false
                               }
@@ -28,8 +28,8 @@ tests = do
 
             TU.test "displayHistory unsets shouldFetchChatHistory" do
                   let
-                        { contacts } = DT.fst <<< CIH.displayHistory contact.user.id true [ historyMessage ] $ model
-                              { chatting = Just contact
+                        { contacts } = DT.fst <<< CIH.displayHistory contact.user.id [ historyMessage ] $ model
+                              { chatting = Just contact.user.id
                               , contacts =
                                       [ contact
                                               { shouldFetchChatHistory = true

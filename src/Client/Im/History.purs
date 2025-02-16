@@ -17,6 +17,7 @@ import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Flame as F
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SIC
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 
@@ -33,7 +34,7 @@ checkFetchHistory userId model =
 fetchHistory ∷ Int → Boolean → ImModel → MoreMessages
 fetchHistory userId shouldFetch model
       | shouldFetch =
-              case model.chatting <|> DA.find ((userId == _) <<< _.id <<< _.user) model.contacts of
+              case SIC.findContact userId model.contacts of
                     Nothing → F.noMessages model
                     Just contact →
                           model
@@ -41,13 +42,13 @@ fetchHistory userId shouldFetch model
                                 } /\
                                 [ CCN.retryableResponse
                                         (FetchHistory contact.user.id true)
-                                        (DisplayHistory contact.user.id (spy "overwritting" contact.shouldFetchChatHistory))
+                                        (DisplayHistory contact.user.id)
                                         (request.im.history { query: { with: contact.user.id, skip: if contact.shouldFetchChatHistory then 0 else DA.length contact.history } })
                                 ]
       | otherwise = F.noMessages model
 
-displayHistory ∷ Int → Boolean → Array HistoryMessage → ImModel → NoMessages
-displayHistory userId overwrite history model =
+displayHistory ∷ Int → Array HistoryMessage → ImModel → NoMessages
+displayHistory userId history model =
       updatedModel /\
             if shouldFetchChatHistory then
                   [ liftEffect CIS.scrollLastMessage *> pure Nothing ]
@@ -56,26 +57,22 @@ displayHistory userId overwrite history model =
             else
                   []
       where
-      shouldFetchChatHistory = case model.chatting of
-            Nothing → DM.maybe false (_.shouldFetchChatHistory) $ DA.find ((userId == _) <<< _.id <<< _.user) model.contacts
-            Just chatting → chatting.shouldFetchChatHistory
+      shouldFetchChatHistory = DM.maybe false _.shouldFetchChatHistory $ SIC.findContact userId model.contacts
 
       updateContact contact
             | contact.user.id == userId = updateHistory contact
             | otherwise = contact
+
+      --when the chat history is first loaded (either by selecting hte contact or sending a message from suggesitons)
+      -- avoid overwritting the whole conversation or duplicating unread messages
+      dedup entry anotherEntry = entry.id == anotherEntry.id
       updateHistory contact = contact
             { shouldFetchChatHistory = false
-            , history = if overwrite then history else (history <> contact.history) --see fetchHistory
+            , history = if shouldFetchChatHistory then DA.nubByEq dedup (history <> contact.history) else history <> contact.history --see fetchHistory
             }
 
-      updatedModel = case model.chatting of
-            Nothing → model
-                  { freeToFetchChatHistory = true
-                  , contacts = map updateContact model.contacts
-                  }
-
-            Just chatting → model
-                  { freeToFetchChatHistory = true
-                  , chatting =  Just $ updateHistory chatting
-                  }
+      updatedModel = model
+            { freeToFetchChatHistory = true
+            , contacts = map updateContact model.contacts
+            }
 

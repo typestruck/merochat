@@ -1,18 +1,20 @@
 module Test.Client.Model where
 
 import Prelude
+import Shared.Availability
 import Shared.DateTime
 import Shared.Im.Types
 import Shared.User
 
 import Data.HashMap (HashMap)
+import Data.HashMap as HM
 import Data.HashMap as HS
 import Data.HashSet as DHS
-import Shared.Availability
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
+import Safe.Coerce as SC
 import Shared.Element (ElementId)
 import Shared.Im.Contact as SIC
 import Unsafe.Coerce as UC
@@ -72,7 +74,7 @@ model =
 imUserId ∷ Int
 imUserId = 23
 
-imUser ∷ ImUser
+imUser ∷ User
 imUser =
       { karmaPosition: 1
       , age: Nothing
@@ -104,13 +106,13 @@ anotherImUserId ∷ Int
 anotherImUserId = 90
 
 contactId ∷ Int
-contactId = anotherImUserId
+contactId = 90
 
-anotherImUser ∷ ImUser
+anotherImUser ∷ User
 anotherImUser = imUser { id = anotherImUserId }
 
 contact ∷ Contact
-contact = SIC.defaultContact imUserId anotherImUser
+contact = SIC.defaultContact (SC.coerce imUserId) anotherImUser
 
 suggestionID ∷ Int
 suggestionID = 300

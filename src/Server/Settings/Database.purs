@@ -12,8 +12,8 @@ import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Types (Checked(..))
-import Server.Settings.Database.Flat as SSDF
 import Server.Effect (ServerEffect, BaseEffect)
+import Server.Settings.Database.Flat as SSDF
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility)

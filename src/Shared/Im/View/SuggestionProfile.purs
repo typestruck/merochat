@@ -25,6 +25,7 @@ import Shared.Badge (Badge)
 import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
@@ -46,7 +47,7 @@ suggestionProfile model =
       else if DA.null model.suggestions && notChatting then
             emptySuggestions
       else
-            case model.chatting of
+            case SIC.maybeFindContact model.chatting model.contacts of
                   Just chatting →
                         if chatting.user.availability == Unavailable then
                               unavailable chatting.user.name
@@ -121,7 +122,7 @@ compactProfile model contact =
             ]
 
 -- | Suggestion cards/full screen profile view
-fullProfile ∷ ProfilePresentation → Int → ImModel → ImUser → Html ImMessage
+fullProfile ∷ ProfilePresentation → Int → ImModel → User → Html ImMessage
 fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions, toggleModal } user@{ id } =
       case presentation of
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
@@ -204,7 +205,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
                     ]
             ]
 
-displayProfile ∷ Int → ImUser → ImUser → Maybe ImMessage → Array (Html ImMessage)
+displayProfile ∷ Int → User → User → Maybe ImMessage → Array (Html ImMessage)
 displayProfile index loggedUser profileUser temporaryUserMessage =
       [ SA.avatar [ HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowAvatar index, HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profileUser.avatar ]
       , HE.h1 (HA.class' "profile-name") profileUser.name
@@ -314,7 +315,7 @@ suggestionCards model@{ user, suggestions, toggleModal } index =
 
       dummyCard suggesting = HE.div [ HA.class' "card card-sides faded", HA.onClick <<< SpecialRequest $ if suggesting < index then PreviousSuggestion else NextSuggestion ] $ HE.div' [ HA.class' "suggestion new invisible" ]
 
-welcomeTemporary ∷ ImUser → Html ImMessage
+welcomeTemporary ∷ User → Html ImMessage
 welcomeTemporary { name, joined } =
       HE.div (HA.class' "card-top-header")
             [ HE.div (HA.class' "welcome") $ "Welcome, " <> name

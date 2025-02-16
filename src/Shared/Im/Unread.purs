@@ -4,8 +4,6 @@ import Prelude
 
 import Data.Either (Either(..))
 import Data.Foldable as DF
-import Data.String (Pattern(..), Replacement(..))
-import Data.String as DS
 import Shared.Im.Types (Contact, MessageStatus(..))
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP

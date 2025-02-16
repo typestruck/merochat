@@ -40,7 +40,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, ImUser, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, User, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Resource (maxImageSize)
@@ -57,7 +57,9 @@ import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
+
 foreign import resizeTextarea_ ∷ EffectFn1 Element Unit
+
 resizeTextarea ∷ Element → Effect Unit
 resizeTextarea = EU.runEffectFn1 resizeTextarea_
 
@@ -72,38 +74,36 @@ resizeChatInput event model = model /\ [ resize ]
             pure Nothing
 
 -- | Send a message on enter
-enterBeforeSendMessage ∷ Event → ImModel → NoMessages
-enterBeforeSendMessage event model =
+enterSendMessage ∷ Event → ImModel → NoMessages
+enterSendMessage event model =
       model /\ [ prevent, messageContent model ]
       where
       prevent = EC.liftEffect do
             WEE.preventDefault event
             pure Nothing
 
+-- | Send a message on button click
+forceSendMessage ∷ ImModel → MoreMessages
+forceSendMessage model =
+      model /\
+            [ messageContent model
+            ]
+
 -- | Is the message to be sent an audio, text or image?
 messageContent ∷ ImModel → Aff (Maybe ImMessage)
 messageContent model = do
       input ← EC.liftEffect $ chatInput model.chatting
       value ← EC.liftEffect $ CCD.value input
-      pure <<< Just <<< BeforeSendMessage $ DM.maybe (Text value) toImage model.selectedImage
+      date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
+      pure <<< Just $ SendMessage (DM.maybe (Text value) toImage model.selectedImage) date
       where
       toImage base64File = Image (DM.fromMaybe "" model.imageCaption) base64File
 
--- | Send a message on button click
-forceBeforeSendMessage ∷ ImModel → MoreMessages
-forceBeforeSendMessage model =
-      model /\
-            [ messageContent model
-            ]
-
--- | Raise the `SendMessage` event and fetch chat history if messaging a suggestion user
-beforeSendMessage ∷ MessageContent → ImModel → MoreMessages
-beforeSendMessage content model = case content of
-      txt@(Text message)
-            | DS.null $ DS.trim message → F.noMessages model
-            | otherwise → updatedModel /\ nextEffects txt
-      image → updatedModel /\ nextEffects image
-
+-- | Prepare and send a message via web socket
+prepareSendMessage ∷ MessageContent → DateTimeWrapper → WebSocket → ImModel → MoreMessages
+prepareSendMessage content dt webSocket model = case content of
+      Text message | DS.null $ DS.trim message → F.noMessages model
+      _ → sendMessage (SU.fromJust updatedModel.chatting) shouldFetchHistory content dt webSocket updatedModel
       where
       --the user messaged could be in both the contacts and suggestions
       -- in either case, check if the chat history has not already been fetched
@@ -111,40 +111,38 @@ beforeSendMessage content model = case content of
             Nothing →
                   let
                         user = model.suggestions !@ model.suggesting
-                        updatedChatting = DM.fromMaybe (SIC.defaultContact model.user.id user) $ DA.find ((_ == user.id) <<< _.id <<< _.user) model.contacts
                   in
-                        Tuple updatedChatting.shouldFetchChatHistory model
-                              { chatting = Just updatedChatting
-                              , contacts = DA.filter ((_ /= user.id) <<< _.id <<< _.user) model.contacts
-                              , suggestions = DA.filter ((user.id /= _) <<< _.id) model.suggestions
-                              }
+                        case SIC.findContact user.id model.contacts of
+                              Nothing →
+                                    Tuple true model
+                                          { chatting = Just user.id
+                                          , contacts = SIC.defaultContact model.user.id user : model.contacts
+                                          , suggestions = DA.filter ((user.id /= _) <<< _.id) model.suggestions
+                                          }
+                              Just contact →
+                                    Tuple contact.shouldFetchChatHistory model
+                                          { chatting = Just contact.user.id
+                                          , suggestions = DA.filter ((user.id /= _) <<< _.id) model.suggestions
+                                          }
             _ → Tuple false model
 
-      nextEffects ct = [ nextSendMessage ct, fetchHistory ]
-
-      fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory ((SU.fromJust $ updatedModel.chatting).user.id) shouldFetchHistory
-      nextSendMessage ct = do
-            date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
-            pure <<< Just $ SendMessage ct date
-
--- | Send a message via web socket
-sendMessage ∷ WebSocket → MessageContent → DateTimeWrapper → ImModel → NoMessages
-sendMessage webSocket contentMessage date model =
+sendMessage ∷ Int → Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
+sendMessage userId shouldFetchHistory contentMessage date webSocket model =
       model
             { temporaryId = newTemporaryId
+            , contacts = map updateContact model.contacts
             , imageCaption = Nothing
             , selectedImage = Nothing
             , editing = Nothing
-            , chatting = Just updatedChatting
-            } /\ [ actuallySendMessage ]
+            } /\ [ actuallySendMessage, fetchHistory ]
       where
       -- temporary ids are used to find messages while the server has not yet returned their db id
       newTemporaryId = model.temporaryId + 1
-      chatting = SU.fromJust model.chatting
 
+      fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory userId shouldFetchHistory
       actuallySendMessage = EC.liftEffect do
             CIS.scrollLastMessage
-            input ← chatInput model.chatting
+            input ← chatInput (Just userId)
             WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
             CCD.setValue input ""
             resizeTextarea input
@@ -153,41 +151,44 @@ sendMessage webSocket contentMessage date model =
                         Nothing →
                               OutgoingMessage
                                     { id: newTemporaryId
-                                    , userId: updatedChatting.user.id
+                                    , userId
                                     , content: contentMessage
-                                    , turn: makeTurn model.user updatedChatting
+                                    , turn: makeTurn model.user <<< SU.fromJust $ SIC.findContact userId model.contacts
                                     }
                         Just messageId →
                               EditedMessage
                                     { id: messageId
-                                    , userId: updatedChatting.user.id
+                                    , userId
                                     , content: contentMessage
                                     }
             pure Nothing
 
+      asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
+      asAudioMessage base64 = "<audio controls src='" <> base64 <> "'></audio>"
       markdown =
             case contentMessage of
                   Text txt → txt
                   Image caption base64File → asMarkdownImage caption base64File
                   Audio base64 → asAudioMessage base64
-
-      updatedChatting = chatting
-            { lastMessageDate = date
-            , history =
-                    case model.editing of
-                          Nothing →
-                                DA.snoc chatting.history $
-                                      { id: newTemporaryId
-                                      , status: Sent
-                                      , sender: model.user.id
-                                      , edited: false
-                                      , recipient: chatting.user.id
-                                      , content: markdown
-                                      , date
-                                      }
-                          Just messageId → map (updateEdited messageId) chatting.history
-            }
-
+      updateContact contact
+            | contact.user.id == userId =
+                    contact
+                          { lastMessageDate = date
+                          , history =
+                                  case model.editing of
+                                        Nothing →
+                                              DA.snoc contact.history
+                                                    { id: newTemporaryId
+                                                    , status: Sent
+                                                    , sender: model.user.id
+                                                    , edited: false
+                                                    , recipient: userId
+                                                    , content: markdown
+                                                    , date
+                                                    }
+                                        Just messageId → map (updateEdited messageId) contact.history
+                          }
+            | otherwise = contact
       updateEdited messageId history
             | history.id == messageId =
                     history
@@ -197,13 +198,10 @@ sendMessage webSocket contentMessage date model =
                           }
             | otherwise = history
 
-      asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
-      asAudioMessage base64 = "<audio controls src='" <> base64 <> "'></audio>"
-
 -- | A "turn" is how much karma is accrued between messages
 -- |
 -- | See `Wheel.purs`
-makeTurn ∷ ImUser → Contact → Maybe Turn
+makeTurn ∷ User → Contact → Maybe Turn
 makeTurn user contact =
       case grouped of
             [ senderMessages, recipientMessages, _ ] → --turn but we can't calculate reply bonus
@@ -305,7 +303,7 @@ setMarkup markup model =
             | otherwise = "\n" <> t
 
 -- | Return the current textarea used to type messages
-chatInput ∷ Maybe Contact → Effect Element
+chatInput ∷ Maybe Int → Effect Element
 chatInput chatting
       | DM.isNothing chatting = CCD.unsafeGetElementById ChatInputSuggestion -- suggestion card input cannot be cached
       | otherwise = CCD.unsafeGetElementById ChatInput
@@ -396,7 +394,7 @@ sendTyping text now webSocket model =
       enoughTime (DateTimeWrapper dt) = let (Milliseconds ms) = DT.diff now dt in ms >= 800.0
 
       setIt = do
-            EC.liftEffect <<< CIW.sendPayload webSocket $ Typing { id: (SU.fromJust model.chatting).user.id }
+            EC.liftEffect <<< CIW.sendPayload webSocket $ Typing { id: SU.fromJust model.chatting }
             pure Nothing
 
 -- | Show or hide typing status
@@ -530,9 +528,7 @@ deleteMessage id webSocket model =
             { toggleContextMenu = HideContextMenu
             } /\ [ deleteIt ]
       where
-      chatting = SU.fromJust model.chatting
-
       deleteIt = do
-            EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId: (SU.fromJust model.chatting).user.id }
+            EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId: SU.fromJust model.chatting }
             pure Nothing
 

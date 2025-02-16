@@ -54,7 +54,6 @@ data ImpersonationSection
       | Celebrities
 
 derive instance Eq Experiment
-
 derive instance Eq ImpersonationSection
 
 derive instance Ord Experiment

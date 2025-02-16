@@ -179,7 +179,7 @@ tests = do
                                             }
                                     ) $ model
                                     { contacts = [ contact ]
-                                    , chatting = Just contact
+                                    , chatting = Just contact.user.id
                                     , suggesting = 0
                                     }
                   TUA.equal [ Tuple newMessageID Read ] $ map (\({ id, status }) → Tuple id status) (contacts !@ 0).history
@@ -198,7 +198,7 @@ tests = do
                                             }
                                     ) $ model
                                     { contacts = [ contact ]
-                                    , chatting = Just contact
+                                    , chatting = Just contact.user.id
                                     , suggesting = 0
                                     }
                   TUA.equal [ Tuple newMessageID Delivered ] $ map (\({ id, status }) → Tuple id status) (contacts !@ 0).history

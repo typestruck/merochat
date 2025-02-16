@@ -17,6 +17,7 @@ import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SIC
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIV
 import Shared.Im.View.Retry as SIVR
@@ -58,7 +59,7 @@ showAvatar ∷ ImModel → Int → Html ImMessage
 showAvatar model index = HE.lazy Nothing largeAvatar who
       where
       who = case model.chatting of
-            Just c → Just c.user
+            Just userId → _.user <$> SIC.findContact userId model.contacts
             Nothing → model.suggestions !! model.suggesting
       largeAvatar p =
             HE.div (HA.class' "confirmation large") case p of

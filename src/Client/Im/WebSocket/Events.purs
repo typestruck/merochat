@@ -38,6 +38,7 @@ import Server.WebSocket (WebSocketConnection)
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Experiments.Types as SET
+import Shared.Im.Contact as SIC
 import Shared.Im.Types (ClientMessagePayload, Contact, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), DeletedMessagePayload)
 import Shared.Json as SJ
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
@@ -212,7 +213,7 @@ receiveDeletedMessage deleted model = F.noMessages model
             | contact.user.id == deleted.userId = contact { history = DA.filter ((deleted.id /= _) <<< _.id) contact.history }
             | otherwise = contact
 
--- | A new message from others users or sent by the logged user with another connection
+-- | A new message from others users or sent by the logged user from another connection
 receiveIncomingMessage ∷ WebSocket → Boolean → ClientMessagePayload → ImModel → NextMessage
 receiveIncomingMessage webSocket isFocused payload model =
       if DA.elem userId model.blockedUsers then
@@ -226,14 +227,12 @@ receiveIncomingMessage webSocket isFocused payload model =
                         --syncing message sent from other connections
                         updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
                   Right
-                        updatedModel@
-                              { chatting: Just ct
-                              } | isFocused && ct.user.id == userId →
+                        updatedModel | isFocused && ((_.id <<< _.user) <$> SIC.maybeFindContact updatedModel.chatting updatedModel.contacts) == Just userId →
                         --new message from the user being chatted with
-                        CICN.setMessageStatus webSocket (Right ct) Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
+                        CICN.setMessageStatus webSocket userId Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
                   Right updatedModel →
                         --new message when away/other usesr
-                        CICN.setMessageStatus webSocket (Left userId) Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
+                        CICN.setMessageStatus webSocket userId Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
       where
       unsuggestedModel = unsuggest payload.recipientId model
 
@@ -250,9 +249,7 @@ receiveEditedMessage webSocket isFocused payload model =
       else if model.user.id == payload.senderId then
             updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
       else
-            case model.chatting of
-                  Just chatting | chatting.user.id == userId → CICN.setMessageStatus webSocket (Right chatting) (if isFocused then Read else Delivered) updatedModel
-                  _ → CICN.setMessageStatus webSocket (Left userId) Delivered updatedModel
+            CICN.setMessageStatus webSocket userId (if isFocused && model.chatting == Just userId then Read else Delivered) updatedModel
       where
       updateContent history
             | history.id == payload.id = history { content = payload.content, edited = true }
@@ -263,8 +260,6 @@ receiveEditedMessage webSocket isFocused payload model =
       userId
             | payload.recipientId == model.user.id = payload.senderId
             | otherwise = payload.recipientId
-
-      withExtraMessage e (m /\ ms) = m /\ e : ms
 
 -- | Set typing status and a timeout to clear it
 receiveTyping ∷ { id ∷ Int } → ImModel → MoreMessages
@@ -363,37 +358,32 @@ unsuggest userId model = model
 
 -- | Updated contacts if user is already there
 fromIncomingMessage ∷ ClientMessagePayload → ImModel → Either Int ImModel
-fromIncomingMessage payload model = case updatedContacts of
-      Just contacts →
+fromIncomingMessage payload model =
+      if DA.any ((userId == _) <<< _.id <<< _.user) model.contacts then
             Right model
-                  { contacts = contacts
+                  { contacts = map updateContact model.contacts
                   }
-      Nothing → Left userId
+      else
+            Left userId
       where
       userId
             | payload.senderId == model.user.id = payload.recipientId
             | otherwise = payload.senderId
 
-      updatedContacts = do
-            index ← DA.findIndex (findContact userId) model.contacts
-            DA.modifyAt index addHistory model.contacts
-
-      addHistory contact =
-            contact
-                  { lastMessageDate = payload.date
-                  , history = DA.snoc contact.history $
-                          { status: Received
-                          , sender: payload.senderId
-                          , recipient: payload.recipientId
-                          , id: payload.id
-                          , edited: false
-                          , content: payload.content
-                          , date: payload.date
-                          }
-                  }
-
-findContact ∷ Int → Contact → Boolean
-findContact userId cnt = userId == cnt.user.id
+      updateContact contact
+            | contact.user.id == userId = contact
+                    { lastMessageDate = payload.date
+                    , history = DA.snoc contact.history $
+                            { status: Received
+                            , sender: payload.senderId
+                            , recipient: payload.recipientId
+                            , id: payload.id
+                            , edited: false
+                            , content: payload.content
+                            , date: payload.date
+                            }
+                    }
+            | otherwise = contact
 
 updateHistory ∷ Array Contact → Int → (HistoryMessage → HistoryMessage) → Array Contact
 updateHistory contacts userId updater = updateIt <$> contacts
