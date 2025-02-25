@@ -67,24 +67,28 @@ template = do
                             [ HE.div (HA.class' "blurb")
                                     [ HE.text "Feeling chatty? In search of new friends? Bored?"
                                     , HE.br
-                                    , HE.text " MeroChat connects you with random people who"
+                                    , HE.text "MeroChat connects you with random people who"
                                     , HE.br
-                                    , HE.text "are here just for chatting. 1 on 1, text only,"
+                                    , HE.text "are here only for chatting. Text only, no group"
                                     , HE.br
-                                    , HE.text "old school random chat!"
+                                    , HE.text "or video chat!"
                                     ]
                             , HE.div (HA.class' "sign-up-form")
                                     [ HE.input [ HA.type' "text", HA.placeholder "Email" ]
                                     , HE.input [ HA.type' "text", HA.placeholder "Password" ]
-                                    , HE.input [ HA.type' "button", HA.value "Create account" ]
-                                    , HE.a_ "Continue as guest"
+                                    , HE.input [ HA.class' "shadow", HA.type' "button", HA.value "Create account" ]
+                                    , HE.a_ "Continue as guest →"
                                     ]
                             ]
                     , HE.div (HA.class' "features")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Safe and friendly"
-                                            , HE.span_ "Strict moderation + a Karma system = no weirdos, just nice chats. (Not a dating app, btw!)"
+                                            , HE.text "Strict moderation and a"
+                                            , HE.br
+                                            , HE.text "Karma system = friendly chats."
+                                            , HE.br
+                                            , HE.text "MeroChat is not a dating app!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
                                             [ SLS.feature1
@@ -93,7 +97,11 @@ template = do
                             , HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Privacy first"
-                                            , HE.span_ "No spam, no AI training, no selling your soul. Delete or take a break anytime."
+                                            , HE.text "No ads or data harvesting."
+                                            , HE.br
+                                            , HE.text "Take a break or delete"
+                                            , HE.br
+                                            , HE.text "your account anytime!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
                                             [ SLS.feature2
@@ -102,29 +110,36 @@ template = do
                             ]
                     , HE.div (HA.class' "features")
                             [ HE.div (HA.class' "feature-blurb")
-                                    [ HE.div (HA.class' "feature-blurb-left")
-                                            [ HE.h1_ "Anonymously you"
-                                            , HE.span_ "Share as much (or as little) as you want. No ads, no pressure."
-                                            ]
-                                    , HE.div (HA.class' "feature-blurb-right")
+                                    [ HE.div (HA.class' "feature-blurb-right")
                                             [ SLS.feature3
+                                            ]
+                                    , HE.div (HA.class' "feature-blurb-left")
+                                            [ HE.h1_ "Anonymously you"
+                                            , HE.span_ "Share as much (or as little)"
+                                            , HE.br
+                                            , HE.text "as you want. Your data beloings to you!"
                                             ]
                                     ]
                             , HE.div (HA.class' "feature-blurb")
-                                    [ HE.div (HA.class' "feature-blurb-left")
-                                            [ HE.h1_ "Human only"
-                                            , HE.span_ "No bots, AI or spammers"
-                                            ]
-                                    , HE.div (HA.class' "feature-blurb-right")
+                                    [ HE.div (HA.class' "feature-blurb-right")
                                             [ SLS.feature4
                                             ]
+                                    , HE.div (HA.class' "feature-blurb-left")
+                                            [ HE.h1_ "Human only"
+                                            , HE.span_ "No bots, AI or spammers."
+                                            , HE.br
+                                            , HE.span_ "MeroChat is stricly for human beings!"
+                                            ]
+
                                     ]
                             ]
                     , HE.div (HA.class' "features")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Smart matching"
-                                            , HE.span_ "Our ultra-fancy algorithms pair you with people in an interesting way."
+                                            , HE.span_ "Ultra-fancy algorithms pair you with"
+                                            , HE.br
+                                            , HE.span_ "interesting people!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
                                             [ SLS.feature5
@@ -132,8 +147,10 @@ template = do
                                     ]
                             , HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-left")
-                                            [ HE.h1_ "Text only but"
-                                            , HE.span_ "Send images, audio, and try experimental chat features."
+                                            [ HE.h1_ "Privileged features"
+                                            , HE.span_ "Images, audio, and experimental"
+                                            , HE.br
+                                            , HE.span_ "features for trusted users!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
                                             [ SLS.feature6
@@ -143,18 +160,30 @@ template = do
                     , HE.div (HA.class' "sign-up-again")
                             [ HE.div (HA.class' "logo-name")
                                     [ SLS.invertedLogo
-                                    , HE.h1_ "MeroChat"
-                                    , HE.span_ "Friendly Random Chat"
+                                    , HE.div (HA.class' "tagline-name")
+                                            [ HE.h1 (HA.class' "name-again") "MeroChat"
+                                            , HE.span (HA.class' "subtagline-again") "Friendly Random Chat"
+                                            ]
                                     ]
-                            , HE.a_ "Try it out"
+                            , HE.a (HA.class' "try-it shadow") "Try it out"
                             ]
                     , HE.div (HA.class' "features-again")
-                            [ HE.div_
-                                    [ SLS.feature7
-                                    ]
-                            , HE.div_
-                                    [ HE.h1_ "MeroChat lets you chat, connect, and maybe even make a real friend — without the dreaded “ASL?” interrogation or accidental stalkers."
-                                    , HE.span_ "No Big Tech snooping here! We don’t track, spy, or sell your secrets. Also, not a dating site — so forget the duck-face selfies and let’s talk about the real important stuff… like the dancing plagues of the 16th century. 💃🕺"
+                            [ HE.div (HA.class' "feature-blurb")
+                                    [ HE.div (HA.class' "feature-blurb-right")
+                                            [ SLS.feature7
+                                            ]
+                                    , HE.div (HA.class' "feature-blurb-left")
+                                            [ HE.span (HA.class' "green-call") "MeroChat lets you chat, connect and make real friends "
+                                            , HE.br
+                                            , HE.span (HA.class' "green-call") "— without the dreaded “ASL” questions or creeps"
+                                            , HE.div (HA.class' "after-green-call")
+                                                    [ HE.text "Free software, no ties to Big Tech, and we never track, spy or use your personal data."
+                                                    , HE.br
+                                                    , HE.text " Also, not a dating site! Why upload duck-face selfies when you could talk about dancing plagues"
+                                                    ,HE.br
+                                                    , HE.text "of the 16th century?"
+                                                    ]
+                                            ]
                                     ]
                             ]
                     , HE.div (HA.class' "footer")

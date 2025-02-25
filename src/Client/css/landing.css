@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap');
-
 .landing {
       position: relative;
       display: grid;
@@ -10,30 +8,30 @@
       color: var(--dark-text-color);
 }
 
-/* . {
-      width: 100%;
-      max-width: 1000px;
-} */
-
 svg {
       stroke: none;
       cursor: initial;
 }
 
+.header {
+      margin-right: 90px;
+}
+
 .menu-merochat {
       display: flex;
       flex-direction: column;
-      margin-left:40px
+      margin-left: 40px
 }
 
 .menu {
       display: flex;
+      align-items: center;
       align-self: flex-end;
+
 }
 
 .menu a {
-      font-weight: 600;
-      margin-left:20px;
+      margin-left: 20px;
       color: var(--dark-text-color);
 }
 
@@ -49,22 +47,27 @@ svg {
 }
 
 .theme-switcher {
-      margin-left:20px
+      margin-left: 20px
 }
 
 .merochat {
-      margin-top:auto;
+      margin-top: auto;
 }
 
 h1 {
       font-family: var(--heading-font);
 }
 
-.name {
+.name,
+.name-again {
       font-size: 4em;
-      color: var(--merochat-red);
-      margin:0;
+
+      margin: 0;
       padding: 0;
+}
+
+.name {
+      color: var(--merochat-red);
 }
 
 .tagline {
@@ -76,9 +79,13 @@ h1 {
 }
 
 .subtagline {
-      padding-top:10px;
+      padding-top: 10px;
       font-weight: 600;
-      font-size:0.8em;
+      font-size: 0.8em;
+}
+
+.shadow {
+      box-shadow: 0px 8px 6px rgba(0, 0, 0, 0.2);
 }
 
 .sign-up {
@@ -86,7 +93,7 @@ h1 {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 30px 0px;
+      padding: 80px 0px;
       width: 100%;
 }
 
@@ -94,4 +101,135 @@ h1 {
       padding-left: 50px;
       display: flex;
       flex-direction: column;
+      padding-right: 90px;
+}
+
+.sign-up-form input {
+      font-family: var(--dark-text-color);
+      padding: 10px;
+      width: 500px;
+      border-radius: 10px;
+      border: 1px solid var(--merochat-red);
+      margin: 8px 0;
+}
+
+.sign-up-form input[type=text] {
+      color: var(--merochat-red);
+      background-color: var(--baby-powder);
+}
+
+.sign-up-form input[type=button] {
+      color: var(--baby-powder);
+      background-color: var(--merochat-red);
+      font-weight: bold;
+      outline: 0;
+      padding: 10px 0;
+      width: 100%;
+}
+
+.sign-up-form a {
+      color: var(--merochat-red);
+      align-self: flex-end;
+      font-weight: bold;
+}
+
+.features {
+      margin-top: 50px;
+}
+
+.features,
+.features-again {
+      display: flex;
+}
+
+.features svg {
+      height: 250px;
+      width: 250px;
+}
+
+.features h1 {
+      color: #4BC9AC
+}
+
+.feature-blurb {
+      display: flex;
+      align-items: center;
+}
+
+.feature-blurb:first-child {
+      margin-right: 100px;
+}
+
+.feature-blurb-left {
+      margin: 0 20px;
+}
+
+.sign-up-again {
+      margin: 80px 0;
+      padding: 50px 0;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      align-items: center;
+      background-color: var(--merochat-red);
+      color: var(--baby-powder);
+}
+
+.sign-up-again svg {
+      width: 150px;
+}
+
+.try-it {
+      background-color: var(--baby-powder);
+      color: var(--merochat-red);
+      border-radius: 10px;
+      padding: 7px 150px;
+      margin-top: 15px;
+      margin-left: 180px;
+      font-weight: bold;
+      display: inline-block;
+}
+
+.logo-name {
+      display: flex;
+}
+
+.subtagline-again {
+      font-size: 1.2em;
+}
+
+.tagline-name {
+      margin-left: 20px;
+}
+
+.green-call {
+      color: #42858C;
+      font-weight: bold;
+      font-size: 1.2em;
+}
+
+.after-green-call {
+      margin-top: 20px;
+}
+
+.features-again svg {
+      height: 400px;
+      width: 400px;
+}
+
+.features-again {
+      margin-top: 20px;
+}
+
+.footer {
+      margin-top: 50px;
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+}
+
+.footer a {
+      padding: 0 20px;
+      font-weight: bold;
+      color: var(--dark-text-color);
 }
