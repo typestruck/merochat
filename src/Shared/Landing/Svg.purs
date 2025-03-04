@@ -28,7 +28,7 @@ invertedLogo = HE.svg [ HA.viewBox "0 0 135 121", HA.fill "none" ]
       ]
 
 logo ∷ ∀ m. Html m
-logo = HE.svg [ HA.width "447", HA.height "400", HA.viewBox "0 0 447 400", HA.fill "none" ]
+logo = HE.svg [ HA.viewBox "0 0 447 400", HA.fill "none" ]
       [ HE.path' [ HA.d "M399.192 254.65L446.697 340.658L334.909 326.102", HA.fill "#DB5A5D" ]
       , HE.path'
               [ HA.d "M130.765 229.722C130.765 240.563 121.958 249.341 111.117 249.341C100.312 249.341 91.4977 240.563 91.4977 229.722C91.4977 218.873 100.312 210.095 111.117 210.095C121.958 210.095 130.765 218.873 130.765 229.722Z", HA.fill "#DB5A5D" ]

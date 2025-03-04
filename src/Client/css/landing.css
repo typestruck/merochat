@@ -156,7 +156,7 @@ h1 {
       align-items: center;
 }
 
-.feature-blurb:first-child {
+.features .feature-blurb:first-child {
       margin-right: 100px;
 }
 
@@ -232,4 +232,65 @@ h1 {
       padding: 0 20px;
       font-weight: bold;
       color: var(--dark-text-color);
+}
+
+.big-logo svg {
+      width: 447px;
+      height: 400px;
+}
+
+@media (max-width:1279px) {
+      .big-logo {
+            padding: 20px;
+            align-self: center;
+      }
+      .big-logo svg {
+            width: 147px;
+            height: 100px;
+      }
+
+      .header {
+            text-align: center;
+            padding: 0 20px;
+            flex-direction: column;
+            margin-right: 0;
+      }
+
+      .menu {
+            align-self: center;
+      }
+
+      .menu a {
+            margin: 0;
+            margin-right: 10px;
+      }
+
+      .merochat {
+            margin-top: 20px;
+      }
+
+      .menu-merochat {
+            margin-left: 0;
+      }
+
+      .sign-up {
+            margin:20px 0;
+            padding: 20px;
+            flex-direction: column;
+            width: auto;
+      }
+
+      .sign-up-form {
+            padding: 20px 0;
+            align-self: baseline;
+            width: 100%;
+      }
+
+      .sign-up-form input {
+            width: 90%;
+      }
+
+      .sign-up-form input[type=button] {
+            width: 97%;
+      }
 }

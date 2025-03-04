@@ -49,7 +49,7 @@ template = do
                                     [ HE.div (HA.class' "menu")
                                             [ HE.a_ "Home"
                                             , HE.a_ "FAQ"
-                                            , HE.a_ "Support us"
+                                            , HE.a_ "Donate"
                                             , HE.a [ HA.class' "login-link" ] "Login"
                                             , HE.div (HA.class' "theme-switcher")
                                                     [ SLS.sun
@@ -190,7 +190,7 @@ template = do
                             [ HE.a_ "Terms and conditions"
                             , HE.a_ "Privacy policy"
                             , HE.a_ "Source code"
-                            , HE.a_ "Support us"
+                            , HE.a_ "Donate"
                             ]
                     ]
             ]
