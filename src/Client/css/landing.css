@@ -280,6 +280,15 @@ h1 {
             width: auto;
       }
 
+      .features, .feature-blurb, .feature-blurb-left, .feature-blurb-right {
+            text-align: center;
+            flex-direction: column;
+      }
+
+      .features .feature-blurb:first-child {
+            margin-right: 0;
+      }
+
       .sign-up-form {
             padding: 20px 0;
             align-self: baseline;
@@ -292,5 +301,30 @@ h1 {
 
       .sign-up-form input[type=button] {
             width: 97%;
+      }
+
+      .feature-blurb .feature-blurb-right {
+            order: 0;
+      }
+
+      .feature-blurb .feature-blurb-left {
+            order: 1;
+      }
+
+      .footer {
+            flex-direction: column;
+            align-items: center;
+      }
+
+      .features {
+            margin-top: 0;
+      }
+
+      .features h1 {
+            margin-top: 0;
+      }
+
+      .feature-blurb {
+            margin-bottom: 40px;
       }
 }
