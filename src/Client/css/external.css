@@ -24,10 +24,6 @@ body {
       color: rgb(238, 238, 238, 0.8);
 }
 
-.form-up label {
-      color: #b5b7b6;
-}
-
 .header {
       display: flex;
       justify-content: center;
@@ -52,25 +48,6 @@ a:hover, input[type=button]:hover {
       justify-self: center;
       padding: 30px 30px 70px;
       margin-bottom: 100px;
-}
-
-.form-up input {
-      height: 60px;
-      display: block;
-      padding: 20px;
-      border: 1px solid #b5b7b6;
-      margin-top: 10px;
-}
-
-.form-up input[type=button], .form-up input[type=submit] {
-      font-weight: bolder;
-      border: none;
-      line-height: 1;
-      border-radius: 5px;
-      outline: none;
-      background: #db5a5d;
-      color: white;
-      width: 100%;
 }
 
 h2 {
@@ -115,11 +92,6 @@ h1, h2 {
       display: block;
 }
 
-.form-up input[type=button], .form-up input[type=submit] {
-      font-size: 1em;
-      line-height: 0;
-}
-
 footer {
       font-size:0.9em;
 }
@@ -135,21 +107,12 @@ footer {
             width: 120px;
             margin: 0 10px;
       }
-      .form-up {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-      }
+
       .green-area {
             padding: 20px 0px 70px;
             width: 100%;
       }
-      .form-up input {
-            width: 100%;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            height: 20px;
-      }
+
       h2 {
             font-size: 1.3em;
       }
@@ -164,10 +127,7 @@ footer {
             width: 320px;
             margin: 0 10px;
       }
-      .form-up input {
-            width: 430px;
-            height: 30px;
-      }
+
 }
 
 @media (min-width:1920px) {
@@ -175,7 +135,5 @@ footer {
             font-size: 2em;
             line-height: 0;
       }
-      .form-up input {
-            width: 570px;
-      }
+
 }

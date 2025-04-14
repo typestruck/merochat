@@ -107,6 +107,7 @@ h1 {
 .sign-up-form input {
       font-family: var(--dark-text-color);
       padding: 10px;
+      font-size: 1em;
       width: 500px;
       border-radius: 10px;
       border: 1px solid var(--merochat-red);
@@ -244,6 +245,7 @@ h1 {
             padding: 20px;
             align-self: center;
       }
+
       .big-logo svg {
             width: 147px;
             height: 100px;
@@ -251,7 +253,7 @@ h1 {
 
       .header {
             text-align: center;
-            padding: 0 20px;
+            padding: 0;
             flex-direction: column;
             margin-right: 0;
       }
@@ -274,13 +276,16 @@ h1 {
       }
 
       .sign-up {
-            margin:20px 0;
+            margin: 20px 0;
             padding: 20px;
             flex-direction: column;
             width: auto;
       }
 
-      .features, .feature-blurb, .feature-blurb-left, .feature-blurb-right {
+      .features,
+      .feature-blurb,
+      .feature-blurb-left,
+      .feature-blurb-right {
             text-align: center;
             flex-direction: column;
       }
@@ -293,6 +298,27 @@ h1 {
             padding: 20px 0;
             align-self: baseline;
             width: 100%;
+      }
+
+      .sign-up-again svg {
+            width: 100px;
+      }
+
+      .name-again {
+            font-size: 2em;
+      }
+
+      .try-it {
+            padding: 7px 50px;
+            margin-left: 80px
+      }
+
+      .feature-blurb-left {
+            padding: 0 20px;
+      }
+
+      .blurb {
+            text-align: center;
       }
 
       .sign-up-form input {
@@ -326,5 +352,10 @@ h1 {
 
       .feature-blurb {
             margin-bottom: 40px;
+      }
+
+      .features-again svg {
+            width: 350px;
+            height: 350px;
       }
 }

@@ -2,19 +2,16 @@ module Server.Landing.Template where
 
 import Prelude
 
-import Data.Either (Either(..))
-import Data.String as DS
 import Effect (Effect)
 import Environment (production)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
-import Server.Template (defaultParameters, externalFooter)
+import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
 import Shared.Landing.Svg as SLS
-import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
-import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
+import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routes)
 
@@ -41,16 +38,16 @@ template = do
       content =
             [ HE.div (HA.class' "landing")
                     [ HE.div (HA.class' "header")
-                            [ HE.div (HA.class' "big-logo")
+                            [ HE.div [ HA.id "header", HA.class' "big-logo" ]
                                     [ SLS.logo
 
                                     ]
                             , HE.div (HA.class' "menu-merochat")
                                     [ HE.div (HA.class' "menu")
-                                            [ HE.a_ "Home"
-                                            , HE.a_ "FAQ"
-                                            , HE.a_ "Donate"
-                                            , HE.a [ HA.class' "login-link" ] "Login"
+                                            [ HE.a (HA.href $ routes.landing {}) "Home"
+                                            , HE.a (HA.href $ routes.help {} <> "#faq") "FAQ"
+                                            , HE.a (HA.href $ routes.backer {}) "Donate"
+                                            , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] "Login"
                                             , HE.div (HA.class' "theme-switcher")
                                                     [ SLS.sun
                                                     , SLS.moon
@@ -59,23 +56,25 @@ template = do
                                     , HE.div (HA.class' "merochat")
                                             [ HE.h1 (HA.class' "name") "MeroChat"
                                             , HE.div (HA.class' "tagline") "Random chat without the sleaze"
-                                            , HE.div (HA.class' "subtagline") "(Friendly only!)"
+                                            , HE.div (HA.class' "subtagline") "(Not a dating app!)"
                                             ]
                                     ]
                             ]
-                    , HE.div (HA.class' "sign-up")
+                    , HE.div [ HA.class' "sign-up" ]
                             [ HE.div (HA.class' "blurb")
                                     [ HE.text "Feeling chatty? In search of new friends? Bored?"
                                     , HE.br
                                     , HE.text "MeroChat connects you with random people who"
                                     , HE.br
-                                    , HE.text "are here only for chatting. Text only, no group"
+                                    , HE.text "are here only for chatting. Text only, no groups"
                                     , HE.br
                                     , HE.text "or video chat!"
                                     ]
-                            , HE.div (HA.class' "sign-up-form")
-                                    [ HE.input [ HA.type' "text", HA.placeholder "Email" ]
-                                    , HE.input [ HA.type' "text", HA.placeholder "Password" ]
+                            , HE.div (HA.class' "sign-up-form form-up")
+                                    [ HE.div' [ HA.id $ show CaptchaRegularUser, HA.class' "hidden" ]
+                                    , HE.input [ HA.id $ show EmailInput, HA.type' "text", HA.placeholder "Email" ]
+                                    , HE.input [ HA.id $ show PasswordInput, HA.type' "text", HA.placeholder "Password" ]
+                                    , HE.div' [ HA.id $ show CaptchaTemporaryUser, HA.class' "hidden" ]
                                     , HE.input [ HA.class' "shadow", HA.type' "button", HA.value "Create account" ]
                                     , HE.a_ "Continue as guest →"
                                     ]
@@ -101,7 +100,7 @@ template = do
                                             , HE.br
                                             , HE.text "Take a break or delete"
                                             , HE.br
-                                            , HE.text "your account anytime!"
+                                            , HE.text "your account any time!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
                                             [ SLS.feature2
@@ -117,7 +116,7 @@ template = do
                                             [ HE.h1_ "Anonymously you"
                                             , HE.span_ "Share as much (or as little)"
                                             , HE.br
-                                            , HE.text "as you want. Your data beloings to you!"
+                                            , HE.text "as you want. Your data belongs to you!"
                                             ]
                                     ]
                             , HE.div (HA.class' "feature-blurb")
@@ -165,7 +164,7 @@ template = do
                                             , HE.span (HA.class' "subtagline-again") "Friendly Random Chat"
                                             ]
                                     ]
-                            , HE.a (HA.class' "try-it shadow") "Try it out"
+                            , HE.a [ HA.class' "try-it shadow", HA.href "#header" ] "Try it out"
                             ]
                     , HE.div (HA.class' "features-again")
                             [ HE.div (HA.class' "feature-blurb")
@@ -180,17 +179,17 @@ template = do
                                                     [ HE.text "Free software, no ties to Big Tech, and we never track, spy or use your personal data."
                                                     , HE.br
                                                     , HE.text " Also, not a dating site! Why upload duck-face selfies when you could talk about dancing plagues"
-                                                    ,HE.br
+                                                    , HE.br
                                                     , HE.text "of the 16th century?"
                                                     ]
                                             ]
                                     ]
                             ]
                     , HE.div (HA.class' "footer")
-                            [ HE.a_ "Terms and conditions"
-                            , HE.a_ "Privacy policy"
-                            , HE.a_ "Source code"
-                            , HE.a_ "Donate"
+                            [ HE.a (HA.href $ routes.help {} <> "#privacy") "Terms and conditions"
+                            , HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy policy"
+                            , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] "Source code"
+                            , HE.a (HA.href $ routes.backer {}) "Donate"
                             ]
                     ]
             ]
