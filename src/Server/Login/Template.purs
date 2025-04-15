@@ -9,6 +9,7 @@ import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.Element (ElementId(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
@@ -27,17 +28,15 @@ template = do
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]
             ]
       content =
-            [ HE.div (HA.class' "green-area green-box")
-                    [ HE.h2 (HA.class' "ext-heading") "Login"
-                    , HE.div (HA.class' "form-up")
-                            [ HE.div [ HA.id "email-input", HA.class' "input" ]
-                                    [ HE.label_ "Email"
-                                    , HE.input [ HA.type' "text", HA.maxlength emailMaxCharacters, HA.id "email" ]
+            [ HE.div (HA.class' "pastel-area green-box")
+                    [ HE.div_ "Login to MeroChat!"
+                    , HE.div (HA.class' "sign-up-form form-up")
+                            [ HE.div [ HA.id $ show EmailDiv, HA.class' "input" ]
+                                    [ HE.input [ HA.placeholder "Email", HA.type' "text", HA.maxlength emailMaxCharacters, HA.id $ show EmailInput ]
                                     , HE.span (HA.class' "error-message") "Please enter a valid email"
                                     ]
-                            , HE.div [ HA.id "password-input", HA.class' "input" ]
-                                    [ HE.label_ "Password"
-                                    , HE.input [ HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id "password" ]
+                            , HE.div [ HA.id $ show PasswordDiv, HA.class' "input" ]
+                                    [ HE.input [HA.placeholder "Password", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id $ show PasswordInput ]
                                     , HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                     ]
                             , HE.div [ HA.class' "input" ]

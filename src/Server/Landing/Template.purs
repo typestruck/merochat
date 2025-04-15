@@ -7,18 +7,17 @@ import Environment (production)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
-import Server.Template (defaultParameters)
+import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.External.Svg as SES
 import Shared.Element (ElementId(..))
-import Shared.Landing.Svg as SLS
 import Shared.Options.Profile (passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
-import Shared.Routes (routes)
 
 template ∷ Effect String
 template = do
-      contents ← ST.template defaultParameters
+      contents ← ST.template externalDefaultParameters
             { content = content
             , javascript = javascript
             , css = css
@@ -29,8 +28,7 @@ template = do
       css
             | production = [ HE.style [ HA.type' "text/css" ] "<% style.css %>" ] --used to inline stylesheets for production
             | otherwise =
-                    [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath External Css ]
-                    , HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Landing Css ]
+                    [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Landing Css ]
                     ]
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Landing Js ]
@@ -38,30 +36,7 @@ template = do
             ]
       content =
             [ HE.div (HA.class' "landing")
-                    [ HE.div (HA.class' "header")
-                            [ HE.div [ HA.id "header", HA.class' "big-logo" ]
-                                    [ SLS.logo
-
-                                    ]
-                            , HE.div (HA.class' "menu-merochat")
-                                    [ HE.div (HA.class' "menu")
-                                            [ HE.a (HA.href $ routes.landing {}) "Home"
-                                            , HE.a (HA.href $ routes.help {} <> "#faq") "FAQ"
-                                            , HE.a (HA.href $ routes.backer {}) "Donate"
-                                            , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] "Login"
-                                            , HE.div (HA.class' "theme-switcher")
-                                                    [ SLS.sun
-                                                    , SLS.moon
-                                                    ]
-                                            ]
-                                    , HE.div (HA.class' "merochat")
-                                            [ HE.h1 (HA.class' "name") "MeroChat"
-                                            , HE.div (HA.class' "tagline") "Random chat without the sleaze"
-                                            , HE.div (HA.class' "subtagline") "(Not a dating app!)"
-                                            ]
-                                    ]
-                            ]
-                    , HE.div [ HA.class' "sign-up" ]
+                    [ HE.div [ HA.class' "pastel-area" ]
                             [ HE.div (HA.class' "blurb")
                                     [ HE.text "Feeling chatty? In search of new friends? Bored?"
                                     , HE.br
@@ -98,7 +73,7 @@ template = do
                                             , HE.text "MeroChat is not a dating app!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SLS.feature1
+                                            [ SES.feature1
                                             ]
                                     ]
                             , HE.div (HA.class' "feature-blurb")
@@ -111,14 +86,14 @@ template = do
                                             , HE.text "your account any time!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SLS.feature2
+                                            [ SES.feature2
                                             ]
                                     ]
                             ]
                     , HE.div (HA.class' "features")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-right")
-                                            [ SLS.feature3
+                                            [ SES.feature3
                                             ]
                                     , HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Anonymously you"
@@ -129,7 +104,7 @@ template = do
                                     ]
                             , HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-right")
-                                            [ SLS.feature4
+                                            [ SES.feature4
                                             ]
                                     , HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Human only"
@@ -149,7 +124,7 @@ template = do
                                             , HE.span_ "interesting people!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SLS.feature5
+                                            [ SES.feature5
                                             ]
                                     ]
                             , HE.div (HA.class' "feature-blurb")
@@ -160,13 +135,13 @@ template = do
                                             , HE.span_ "features for trusted users!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SLS.feature6
+                                            [ SES.feature6
                                             ]
                                     ]
                             ]
                     , HE.div (HA.class' "sign-up-again")
                             [ HE.div (HA.class' "logo-name")
-                                    [ SLS.invertedLogo
+                                    [ SES.invertedLogo
                                     , HE.div (HA.class' "tagline-name")
                                             [ HE.h1 (HA.class' "name-again") "MeroChat"
                                             , HE.span (HA.class' "subtagline-again") "Friendly Random Chat"
@@ -177,7 +152,7 @@ template = do
                     , HE.div (HA.class' "features-again")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-right")
-                                            [ SLS.feature7
+                                            [ SES.feature7
                                             ]
                                     , HE.div (HA.class' "feature-blurb-left")
                                             [ HE.span (HA.class' "green-call") "MeroChat lets you chat, connect and make real friends "
@@ -193,11 +168,6 @@ template = do
                                             ]
                                     ]
                             ]
-                    , HE.div (HA.class' "footer")
-                            [ HE.a (HA.href $ routes.help {} <> "#privacy") "Terms and conditions"
-                            , HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy policy"
-                            , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] "Source code"
-                            , HE.a (HA.href $ routes.backer {}) "Donate"
-                            ]
+
                     ]
             ]

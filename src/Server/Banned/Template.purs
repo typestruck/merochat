@@ -18,7 +18,7 @@ template = do
       FRS.render contents
       where
       content =
-            [ HE.div (HA.class' "green-area green-box")
+            [ HE.div (HA.class' "pastel-area")
                     [ HE.h2 (HA.class' "ext-heading") "Temporarily banned"
                     , HE.p_ "You have been temporarily banned from MeroChat. Remember, MeroChat is not"
                     , HE.div_

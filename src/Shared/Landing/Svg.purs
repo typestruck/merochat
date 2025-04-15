@@ -1,4 +1,4 @@
-module Shared.Landing.Svg where
+module Shared.External.Svg where
 
 import Flame (Html)
 import Flame.Html.Attribute as HA

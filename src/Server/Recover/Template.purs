@@ -27,7 +27,7 @@ template token = do
             , HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
       content =
-            [ HE.div (HA.class' "green-area green-box")
+            [ HE.div (HA.class' "pastel-area green-box")
                     [ case token of
                             Nothing →
                                   HE.fragment
