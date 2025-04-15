@@ -11,6 +11,7 @@ import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
 import Shared.Landing.Svg as SLS
+import Shared.Options.Profile (passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routes)
@@ -72,11 +73,18 @@ template = do
                                     ]
                             , HE.div (HA.class' "sign-up-form form-up")
                                     [ HE.div' [ HA.id $ show CaptchaRegularUser, HA.class' "hidden" ]
-                                    , HE.input [ HA.id $ show EmailInput, HA.type' "text", HA.placeholder "Email" ]
-                                    , HE.input [ HA.id $ show PasswordInput, HA.type' "text", HA.placeholder "Password" ]
+                                    , HE.div (HA.id $ show EmailDiv)
+                                            [ HE.input [ HA.id $ show EmailInput, HA.type' "text", HA.autocomplete "new-email", HA.placeholder "Email" ]
+                                            , HE.div (HA.class' "error-message") "Please enter a valid email"
+                                            ]
+                                    , HE.div (HA.id $ show PasswordDiv)
+                                            [ HE.input [ HA.id $ show PasswordInput, HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.placeholder "Password" ]
+                                            , HE.div (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
+                                            ]
                                     , HE.div' [ HA.id $ show CaptchaTemporaryUser, HA.class' "hidden" ]
                                     , HE.input [ HA.class' "shadow", HA.type' "button", HA.value "Create account" ]
-                                    , HE.a_ "Continue as guest →"
+                                    , HE.a (HA.id $ show TemporaryUserSignUp) "Or continue as a guest →"
+                                    , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]
                             ]
                     , HE.div (HA.class' "features")

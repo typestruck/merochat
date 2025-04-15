@@ -3,9 +3,7 @@
       display: grid;
       grid-template-columns: 100%;
       justify-items: center;
-      background-color: var(--baby-powder);
       min-height: 100%;
-      color: var(--dark-text-color);
 }
 
 svg {
@@ -15,6 +13,9 @@ svg {
 
 .header {
       margin-right: 90px;
+      display: flex;
+      justify-content: center;
+      padding: 30px 0;
 }
 
 .menu-merochat {
@@ -114,7 +115,7 @@ h1 {
       margin: 8px 0;
 }
 
-.sign-up-form input[type=text] {
+.sign-up-form input[type=text], .sign-up-form input[type=password] {
       color: var(--merochat-red);
       background-color: var(--baby-powder);
 }
@@ -141,6 +142,10 @@ h1 {
 .features,
 .features-again {
       display: flex;
+}
+
+#temporary-user-sign-up {
+      margin-top: 10px;
 }
 
 .features svg {

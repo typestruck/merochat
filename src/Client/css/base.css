@@ -15,11 +15,12 @@ html {
 }
 
 body {
+    background-color: var(--baby-powder);
+    color: var(--dark-text-color);
     margin: 0;
     min-height: 100%;
     font-family: var(--text-font);
     font-size: 18px;
-    background: #262626;
     line-height: 1.51857143;
     display: grid;
     grid-template-rows: 1fr auto;
@@ -27,4 +28,21 @@ body {
 
 .hidden {
     display: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+a, input[type="button"] {
+    cursor: pointer;
+}
+
+.error-message {
+    display: none;
+    font-style: italic;
+}
+
+.input.error + .error-message {
+    display: block;
 }
