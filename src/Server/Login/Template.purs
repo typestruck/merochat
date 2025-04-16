@@ -28,7 +28,8 @@ template = do
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]
             ]
       content =
-            [ HE.div (HA.class' "pastel-area green-box")
+            [ HE.div (HA.class' "pastel-area column")
+
                     [ HE.div_ "Login to MeroChat!"
                     , HE.div (HA.class' "sign-up-form form-up")
                             [ HE.div [ HA.id $ show EmailDiv, HA.class' "input" ]
@@ -36,20 +37,18 @@ template = do
                                     , HE.span (HA.class' "error-message") "Please enter a valid email"
                                     ]
                             , HE.div [ HA.id $ show PasswordDiv, HA.class' "input" ]
-                                    [ HE.input [HA.placeholder "Password", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id $ show PasswordInput ]
+                                    [ HE.input [ HA.placeholder "Password", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id $ show PasswordInput ]
                                     , HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                     ]
                             , HE.div [ HA.class' "input" ]
                                     [ HE.input [ HA.type' "button", HA.value "Log in" ]
                                     , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]
+                            , HE.div (HA.class' "forgot-sign-up")
+                                    [ HE.a [ HA.href $ routes.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] "Forgot your password?"
+                                    , HE.span [ HA.class' "or" ] "or"
+                                    , HE.a [ HA.href $ routes.landing {}, HA.class' "question-link" ] "Don't have an account?"
+                                    ]
                             ]
-                    , HE.a [ HA.href $ routes.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] "Forgot your password?"
-                    , HE.div [ HA.class' "question-or" ]
-                            [ HE.hr' $ HA.class' "hr-or"
-                            , HE.text "or"
-                            , HE.hr' $ HA.class' "hr-or"
-                            ]
-                    , HE.a [ HA.href $ routes.landing {}, HA.class' "question-link" ] "Don't have an account?"
                     ]
             ]

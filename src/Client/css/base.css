@@ -108,28 +108,28 @@ svg {
 
 .name,
 .name-again {
-      font-size: 4em;
+    font-size: 4em;
 
-      margin: 0;
-      padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .name {
-      color: var(--merochat-red);
+    color: var(--merochat-red);
 }
 
 .tagline {
-      background-color: var(--merochat-red);
-      padding: 0px 15px;
-      border-radius: 2px;
-      color: var(--baby-powder);
-      font-size: 1.5em;
+    background-color: var(--merochat-red);
+    padding: 0px 15px;
+    border-radius: 2px;
+    color: var(--baby-powder);
+    font-size: 1.5em;
 }
 
 .subtagline {
-      padding-top: 10px;
-      font-weight: 600;
-      font-size: 0.8em;
+    padding-top: 10px;
+    font-weight: 600;
+    font-size: 0.8em;
 }
 
 .footer {
@@ -141,8 +141,15 @@ svg {
 
 .footer a {
     padding: 0 20px;
+}
+
+.forgot-sign-up .or {
+    padding: 0 20px;
+}
+
+.footer a, .forgot-sign-up a {
     font-weight: bold;
-    color: var(--dark-text-color);
+    color: var(--dark-text-color) !important;
 }
 
 .pastel-area {
@@ -152,6 +159,10 @@ svg {
     justify-content: center;
     padding: 80px 0px;
     width: 100%;
+}
+
+.forgot-sign-up {
+    margin-top: 30px;
 }
 
 .sign-up-form {
