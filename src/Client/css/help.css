@@ -53,9 +53,14 @@ ul li {
 
 ul li a {
     font-family: var(--heading-font);
-
     color: var(--dark-text-color);
 }
+
+ul li a {
+    font-family: verdana, 'sans-serif';
+    color: rgb(238, 238, 238);
+}
+
 
 .help p a:hover, .help ul li a, .internalHelp p a:hover,
 .internalHelp ul li a {

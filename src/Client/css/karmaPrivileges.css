@@ -16,6 +16,11 @@
 
 }
 
+.name {
+    font-size: 1em;
+    color: rgb(238, 238, 238)
+}
+
 .privilege-name-description {
     display: flex;
     flex-direction: column;
@@ -120,9 +125,9 @@
         margin-left: 0;
     }
 
-        .margin-m .center {
-            text-align: left;
-        }
+    .margin-m .center {
+        text-align: left;
+    }
 
     .name-karma,
     .privilege-description {

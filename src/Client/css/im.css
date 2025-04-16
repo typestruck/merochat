@@ -7,6 +7,87 @@ body {
     color: rgb(238, 238, 238)
 }
 
+strong {
+    font-weight: bold;
+}
+
+svg {
+    stroke: rgb(238, 238, 238);
+    fill: rgb(238, 238, 238);
+    cursor: pointer;
+}
+
+
+.request-error-message {
+    visibility: visible;
+    margin-top: 5px;
+    display: inline-block;
+    color: red;
+}
+
+.input {
+    margin-bottom: 10px;
+}
+
+.input.error {
+    border-color: red;
+}
+
+.input.error input {
+    color: red
+}
+
+.success-message {
+    display: none;
+}
+
+
+.error-message {
+    color: red;
+    visibility: hidden;
+}
+
+.input.error .error-message {
+    visibility: visible;
+}
+
+.error-message.request-error-message {
+    visibility: visible;
+}
+
+@media (max-width:1279px) {
+    .error-message {
+        display: none;
+    }
+    .input.error .error-message {
+        display: inline-block;
+    }
+    .form-up {
+        width: 90%;
+    }
+    .form-up label {
+        align-self: start;
+    }
+    .input {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        width: 90%;
+    }
+    .request-error-message {
+        text-align: center;
+        display: inline-block;
+    }
+}
+
+input, textarea {
+    border-radius: 3px;
+    color: rgb(238, 238, 238);
+    background: transparent;
+    font-family: Verdana, sans-serif;
+    font-size: inherit;
+}
+
 /*avoid annoying ass input zoom on ios safari*/
 @supports (-webkit-overflow-scrolling: touch) {
     body {
@@ -2198,6 +2279,11 @@ select {
 .audio-button {
     display: none;
 }
+
+label {
+    display: block;
+}
+
 
 .chat-input:placeholder-shown+.chat-right-buttons .send-button-div {
     display: none;
