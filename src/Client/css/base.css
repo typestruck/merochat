@@ -2,8 +2,8 @@
 :root {
     --baby-powder: #FBFEFB;
     --dark-text-color: #1B1F3B;
-    --heading-font: "Alef", serif;
-    --text-font: "Inter", sans-serif;
+    --heading-font: Alef, serif;
+    --text-font: Inter, sans-serif;
     --merochat-red: #DB5A5D;
 }
 
