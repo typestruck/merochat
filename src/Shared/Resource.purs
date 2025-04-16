@@ -51,7 +51,6 @@ data Bundle
       | Experiments
       | Backer
       | Base
-      | External
       | Help
       | Im
       | InternalHelp
@@ -130,7 +129,6 @@ resourceName = case _ of
       Right Experiments → "experiments"
       Right Backer → "backer"
       Right Base → "base"
-      Right External → "external"
       Right Help → "help"
       Right Im → "im"
       Right InternalHelp → "internalHelp"
@@ -197,7 +195,6 @@ replacement bundle tp
                     Experiments → reps ".[experiments-js-contenthash]" ".[experiments-css-contenthash]"
                     Backer → reps ".[backer-js-contenthash]" ".[backer-css-contenthash]"
                     Base → reps ".[base-js-contenthash]" ".[base-css-contenthash]"
-                    External → reps ".[external-js-contenthash]" ".[external-css-contenthash]"
                     Help → reps ".[help-js-contenthash]" ".[help-css-contenthash]"
                     Im → reps ".[im-js-contenthash]" ".[im-css-contenthash]"
                     Feedback → reps ".[feedback-js-contenthash]" ".[feedback-css-contenthash]"

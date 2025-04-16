@@ -34,7 +34,7 @@ Lazy loaded pages also have their own `Main` module (e.g. `Client.Profile.Main`)
 
 * All pages are server side rendered and only hydrated on client side
 
-* Besides base and external.css, each entry point has it own css file (e.g., im.css, settings.css, etc)
+* Besides base, each entry point has it own css file (e.g., im.css, settings.css, etc)
 
 ### Server Side
 

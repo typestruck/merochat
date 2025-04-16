@@ -11,16 +11,15 @@
 }
 
 .internal-help h1, .help h1 {
-    font-family: verdana, sans-serif;
+    font-family: var(--heading-font);
     font-size: 1.7em;
     margin-bottom: 50px;
 }
 
 .internal-help h2,
 .help h2 {
-    font-family: Verdana, sans-serif;
+    font-family: var(--heading-font);
     text-align: left;
-    color: rgb(238, 238, 238);
     font-size: 1em;
     margin: 5px 0px;
     margin-top: 30px;
@@ -52,14 +51,28 @@ ul li {
     padding: 7px 0;
 }
 
+ul li a {
+    font-family: var(--heading-font);
+    color: var(--dark-text-color);
+}
+
+ul li a {
+    font-family: verdana, 'sans-serif';
+    color: rgb(238, 238, 238);
+}
+
+
 .help p a:hover, .help ul li a, .internalHelp p a:hover,
 .internalHelp ul li a {
-    color: rgb(238, 238, 238);
     font-weight: bold;
 }
 
 .help ul li a:hover, .internalHelp ul li a:hover {
-    color: hsl(145, 80%, 28%);
+    color: var(--merochat-red);
+}
+
+ul li {
+    list-style-type: none;
 }
 
 .external-help {
@@ -70,6 +83,8 @@ ul li {
 
 .external-help .modal-menu .entry {
     margin: 5px 0;
+    font-family: var(--heading-font);
+
     padding: 10px;
     cursor: pointer;
     font-weight: bold;
@@ -78,7 +93,8 @@ ul li {
 .external-help .modal-menu .entry.selected {
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
-    background: #373737;
+    background: var(--merochat-red);
+    color:var(--baby-powder);
 }
 
 .external-help .modal-menu {

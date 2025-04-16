@@ -19,7 +19,7 @@ template = do
       FRS.render contents
       where
       content =
-            [ HE.div (HA.class' "green-area green-box")
+            [ HE.div (HA.class' "pastel-area green-box")
                     [ HE.h2 (HA.class' "ext-heading") "Logged in from another device"
                     , HE.a (HA.href $ routes.login.get {}) "Click here to login again"
                     ]

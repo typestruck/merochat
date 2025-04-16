@@ -46,7 +46,6 @@ export default {
             recover: './loader/development/recover.bundle.js',
             emoji: './output/Shared.Im.Emoji/index.js',
             base: './src/Client/css/base.css',
-            external: './src/Client/css/external.css',
             backer: './src/Client/css/backer.css'
       },
 

@@ -12,7 +12,7 @@ export default {
     mode: 'production',
     entry: {
         landing: './loader/production/landing.bundle.js',
-        style: ['./src/Client/css/base.css', './src/Client/css/external.css', './src/Client/css/landing.css']
+        style: ['./src/Client/css/base.css', './src/Client/css/landing.css']
     },
     output: {
         path: path.resolve('.', 'file/bundle'),

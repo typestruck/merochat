@@ -1,175 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Alef:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@500&display=swap');
+
+:root {
+    --baby-powder: #FBFEFB;
+    --dark-text-color: #1B1F3B;
+    --heading-font: "Alef", serif;
+    --text-font: "Inter", sans-serif;
+    --merochat-red: #DB5A5D;
+}
+
 html {
     height: 100%;
     box-sizing: border-box;
 }
 
 body {
+    background-color: var(--baby-powder);
+    color: var(--dark-text-color);
     margin: 0;
     min-height: 100%;
-    font-family: Verdana, sans-serif;
+    font-family: var(--text-font);
     font-size: 18px;
-    background: #262626;
     line-height: 1.51857143;
     display: grid;
-    grid-template-rows: 1fr auto;
-}
-
-label {
-    display: block
-}
-
-h1, h2 {
-    font-weight: bold;
-}
-
-h3, h4 {
-    color: white;
-    font-weight: bold
-}
-
-img {
-    max-width: 100%;
-}
-
-a {
-    color: hsl(145, 80%, 28%);
-    text-decoration: none;
-    cursor: pointer;
-}
-
-input {
-    border-radius: 3px;
-}
-
-input[type="submit"], input[type="button"] {
-    cursor: pointer;
-    font-weight: bold;
-}
-
-input, textarea {
-    border-radius: 3px;
-    color: rgb(238, 238, 238);
-    background: transparent;
-    font-family: Verdana, sans-serif;
-    font-size: inherit;
-}
-
-ul li {
-    display: inline;
 }
 
 .hidden {
     display: none;
 }
 
-.smaller {
-    font-size: smaller;
+a {
+    text-decoration: none;
 }
 
-strong {
-    font-weight: bold;
-}
-
-svg {
-    stroke: rgb(238, 238, 238);
-    fill: rgb(238, 238, 238);
+a,
+input[type="button"] {
     cursor: pointer;
 }
 
-.footer {
-    text-align: center;
-    padding: 10px;
-}
-
-.footer-menu li {
-    margin: 0 30px;
-}
-
-@media (max-width:1199px) {
-    .footer-menu {
-        margin-left: 0px;
-        padding-left: 0;
-    }
-}
-
-.footer-menu a {
-    font-family: Verdana, sans-serif;
-    color: #b5b7b6;
-    font-weight: normal !important;
-}
-
-select {
-    font: inherit
-}
-
-select option {
-    background-color: #262626;
-    color: rgb(238, 238, 238)
-}
-
-.success-message {
-    display: none;
-}
-
-.success .success-message {
-    display: block;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
-.request-error-message {
-    visibility: visible;
-    margin-top: 5px;
-    display: inline-block;
-    color: red;
-}
-
-.input {
-    margin-bottom: 10px;
-}
-
-.input.error {
-    border-color: red;
-}
-
-.input.error input {
-    color: red
-}
-
 .error-message {
-    color: red;
-    visibility: hidden;
+    display: none;
+    font-style: italic;
 }
 
-.input.error .error-message {
-    visibility: visible;
+.input.error+.error-message {
+    display: block;
 }
 
-.error-message.request-error-message {
-    visibility: visible;
+.header {
+    margin-right: 90px;
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
 }
+
+.menu-merochat {
+    display: flex;
+    flex-direction: column;
+    margin-left: 40px;
+    max-height: 402px;
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    align-self: flex-end;
+
+}
+
+.menu a {
+    margin-left: 20px;
+    color: var(--dark-text-color);
+}
+
+.login-link {
+    background-color: var(--merochat-red);
+    border-radius: 10px;
+    padding: 5px 10px;
+    color: var(--baby-powder) !important;
+}
+
+.menu a:hover {
+    color: var(--merochat-red);
+}
+
+.theme-switcher {
+    margin-left: 20px
+}
+
+.merochat {
+    margin-top: auto;
+}
+
+h1 {
+    font-family: var(--heading-font);
+}
+
+svg {
+    stroke: none;
+    cursor: initial;
+}
+
+.big-logo svg {
+    width: 447px;
+    height: 400px;
+}
+
+.name,
+.name-again {
+    font-size: 4em;
+
+    margin: 0;
+    padding: 0;
+}
+
+.name {
+    color: var(--merochat-red);
+}
+
+.tagline {
+    background-color: var(--merochat-red);
+    padding: 0px 15px;
+    border-radius: 2px;
+    color: var(--baby-powder);
+    font-size: 1.5em;
+}
+
+.subtagline {
+    padding-top: 10px;
+    font-weight: 600;
+    font-size: 0.8em;
+}
+
+.footer {
+    margin-top: 50px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-self: center;
+}
+
+.footer a {
+    padding: 0 20px;
+}
+
+.forgot-sign-up .or {
+    padding: 0 20px;
+}
+
+.footer a, .forgot-sign-up a {
+    font-weight: bold;
+    color: var(--dark-text-color) !important;
+}
+
+.pastel-area {
+    background-color: #EFE5DC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0px;
+    width: 100%;
+}
+
+.forgot-sign-up {
+    margin-top: 30px;
+}
+
+.sign-up-form {
+    padding-left: 50px;
+    display: flex;
+    flex-direction: column;
+    padding-right: 90px;
+}
+
+.sign-up-form input {
+    font-family: var(--dark-text-color);
+    padding: 10px;
+    font-size: 1em;
+    width: 500px;
+    border-radius: 10px;
+    border: 1px solid var(--merochat-red);
+    margin: 8px 0;
+}
+
+.sign-up-form input[type=text],
+.sign-up-form input[type=password] {
+    color: var(--merochat-red);
+    background-color: var(--baby-powder);
+}
+
+.sign-up-form input[type=button] {
+    color: var(--baby-powder);
+    background-color: var(--merochat-red);
+    font-weight: bold;
+    outline: 0;
+    padding: 10px 0;
+    width: 100%;
+}
+
+.sign-up-form a {
+    color: var(--merochat-red);
+    align-self: flex-end;
+    font-weight: bold;
+}
+
 
 @media (max-width:1279px) {
-    .error-message {
-        display: none;
+    .big-logo {
+        padding: 20px;
+        align-self: center;
     }
-    .input.error .error-message {
-        display: inline-block;
+
+    .big-logo svg {
+        width: 147px;
+        height: 100px;
     }
-    .form-up {
-        width: 90%;
-    }
-    .form-up label {
-        align-self: start;
-    }
-    .input {
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-        width: 90%;
-    }
-    .request-error-message {
+
+    .header {
         text-align: center;
-        display: inline-block;
+        padding: 0;
+        flex-direction: column;
+        margin-right: 0;
+    }
+
+    .menu {
+        align-self: center;
+    }
+
+    .menu a {
+        margin: 0;
+        margin-right: 10px;
+    }
+
+
+    .merochat {
+        margin-top: 20px;
+    }
+
+    .menu-merochat {
+        margin-left: 0;
     }
 }

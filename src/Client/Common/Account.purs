@@ -43,32 +43,32 @@ validateEmailPassword = do
 
 validateEmail ∷ Effect (Maybe String)
 validateEmail = do
-      maybeEmailDiv ← CCD.getElementById EmailInput
+      maybeEmailDiv ← CCD.getElementById EmailDiv
       case maybeEmailDiv of
             Nothing → pure Nothing
-            Just emailDiv → do
-                  emailElement ← CCD.unsafeGetElementById EmailDiv
+            Just _ → do
+                  emailElement ← CCD.unsafeGetElementById EmailInput
                   email ← CCD.value emailElement
-                  WDE.setClassName "input" emailDiv
+                  WDE.setClassName "input" emailElement
 
                   if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then do
-                        WDE.setClassName "input error" emailDiv
+                        WDE.setClassName "input error" emailElement
                         pure Nothing
                   else
                         pure $ Just email
 
 validatePassword ∷ Effect (Maybe String)
 validatePassword = do
-      maybePasswordDiv ← CCD.getElementById PasswordInput
+      maybePasswordDiv ← CCD.getElementById PasswordDiv
       case maybePasswordDiv of
             Nothing → pure Nothing
-            Just passwordDiv → do
-                  passwordElement ← CCD.unsafeGetElementById PasswordDiv
+            Just _ → do
+                  passwordElement ← CCD.unsafeGetElementById PasswordInput
                   password ← CCD.value passwordElement
-                  WDE.setClassName "input" passwordDiv
+                  WDE.setClassName "input" passwordElement
 
                   if DS.length password < passwordMinCharacters then do
-                        WDE.setClassName "input error" passwordDiv
+                        WDE.setClassName "input error" passwordElement
                         pure Nothing
                   else
                         pure $ Just password
@@ -92,8 +92,8 @@ registerEvents ∷ Effect Unit → Effect Unit
 registerEvents callback = do
       formDiv ← CCD.unsafeQuerySelector formSelector
       button ← CCD.unsafeQuerySelector buttonSelector
-      emailElement ← CCD.getElementById EmailDiv
-      passwordElement ← CCD.getElementById PasswordDiv
+      emailElement ← CCD.getElementById EmailInput
+      passwordElement ← CCD.getElementById PasswordInput
       confirmPasswordElement ← CCD.getElementById ConfirmPassword
       listenIfExists emailElement validateEmail
       listenIfExists passwordElement validatePassword

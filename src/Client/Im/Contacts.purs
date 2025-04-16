@@ -12,7 +12,7 @@ import Client.Im.Notification as CIUN
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
-import Data.Array ((!!), (:))
+import Data.Array ( (:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.HashMap as DH
@@ -24,11 +24,9 @@ import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
 import Flame as F
-import Server.Im.Database (changeStatus)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), MissedEvents, RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..))
-import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.HTML.HTMLElement as WHH
@@ -165,6 +163,19 @@ displayContacts newContacts model = updateDisplayContacts newContacts [] model
 displayNewContacts ∷ Array Contact → ImModel → MoreMessages
 displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → cnt.user.id) newContacts) model
 
+updateDisplayContacts ∷ Array Contact → Array Int → ImModel → MoreMessages
+updateDisplayContacts newContacts userIds model@{ contacts } =
+      CIU.notifyUnreadChats
+            ( model
+                    { contacts = contacts <> onlyNew
+                    , freeToFetchContactList = true
+                    }
+            )
+            userIds
+      where
+      existingContactIds = DS.fromFoldable $ map (\cnt → cnt.user.id) contacts
+      onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
+
 -- | Messages sent or received while the web socket connection was down
 resumeMissedEvents ∷ MissedEvents → ImModel → MoreMessages
 resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNewMessages # thenPerform fetchNew
@@ -194,19 +205,6 @@ resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNew
       thenPerform e (m /\ ms) = m /\ (ms <> e)
       fetchNew =
             map (\id → CCNT.retryableResponse (CheckMissedEvents Nothing) DisplayNewContacts $ request.im.contact { query: { id } }) newContacts
-
-updateDisplayContacts ∷ Array Contact → Array Int → ImModel → MoreMessages
-updateDisplayContacts newContacts userIds model@{ contacts } =
-      CIU.notifyUnreadChats
-            ( model
-                    { contacts = contacts <> onlyNew
-                    , freeToFetchContactList = true
-                    }
-            )
-            userIds
-      where
-      existingContactIds = DS.fromFoldable $ map (\cnt → cnt.user.id) contacts
-      onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =
