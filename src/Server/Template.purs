@@ -94,6 +94,9 @@ templateWith parameters =
                       , HE.meta [ HA.name "description", HA.content "Chat to new people who also just want to chat. MeroChat is a text based chat site for having actual conversations" ]
                       , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href parameters.favicon ]
                       , HE.link [ HA.rel "manifest", HA.href parameters.favicon, HA.href "/file/default/manifest.json" ]
+                      , HE.link [ HA.rel "preconnect", HA.href "https://fonts.googleapis.com" ]
+                      , HE.link [ HA.rel "preconnect", HA.href "https://fonts.gstatic.com", HA.createAttribute "crossorigin" "" ]
+                      , HE.link [ HA.href "https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Inter:ital,opsz@0,14..32;1,14..32&display=swap", HA.rel "stylesheet" ]
                       , HE.title parameters.title
                       ] <> styleSheets
                     )

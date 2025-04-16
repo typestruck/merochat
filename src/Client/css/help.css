@@ -56,7 +56,7 @@ ul li a {
     color: var(--dark-text-color);
 }
 
-ul li a {
+.internal-help ul li a {
     font-family: verdana, 'sans-serif';
     color: rgb(238, 238, 238);
 }
