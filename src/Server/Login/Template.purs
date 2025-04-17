@@ -30,8 +30,8 @@ template = do
       content =
             [ HE.div (HA.class' "pastel-area column")
 
-                    [ HE.div_ "Login to MeroChat!"
-                    , HE.div (HA.class' "sign-up-form form-up")
+                    [
+                     HE.div (HA.class' "sign-up-form form-up")
                             [ HE.div [ HA.id $ show EmailDiv, HA.class' "input" ]
                                     [ HE.input [ HA.placeholder "Email", HA.type' "text", HA.maxlength emailMaxCharacters, HA.id $ show EmailInput ]
                                     , HE.span (HA.class' "error-message") "Please enter a valid email"
