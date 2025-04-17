@@ -154,6 +154,7 @@ input, textarea {
     display: flex;
     padding: 10px;
     cursor: pointer;
+    background-color: #212120;
 }
 
 .notification-message {
@@ -2439,6 +2440,7 @@ label {
         justify-content: space-around;
         padding: 5px;
         padding-top: 10px;
+        background-color: #212120;
         cursor: pointer;
     }
 
