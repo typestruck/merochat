@@ -1170,6 +1170,7 @@ svg.toolbar-action {
 
 .message p img {
     width: max-content;
+    max-width: 100%;
     margin: 10px 0;
 }
 
