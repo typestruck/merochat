@@ -118,16 +118,13 @@ svg {
 .tagline {
     background-color: var(--merochat-red);
     padding: 0px 15px;
+    margin-bottom: 20px;
     border-radius: 2px;
+    font-family: var(--heading-font);
     color: var(--baby-powder);
     font-size: 1.5em;
 }
 
-.subtagline {
-    padding-top: 10px;
-    font-weight: 600;
-    font-size: 0.8em;
-}
 
 .footer {
     margin-top: 50px;

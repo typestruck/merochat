@@ -38,13 +38,14 @@ template = do
             [ HE.div (HA.class' "landing")
                     [ HE.div [ HA.class' "pastel-area" ]
                             [ HE.div (HA.class' "blurb")
-                                    [ HE.text "Feeling chatty? In search of new friends? Bored?"
+                                    [ HE.strong_ "Feeling chatty? In search of new friends? Bored?"
                                     , HE.br
-                                    , HE.text "MeroChat connects you with random people who"
+                                    , HE.strong_ "MeroChat"
+                                    , HE.text  " is the space to connect with people who"
                                     , HE.br
-                                    , HE.text "are here only for chatting. Text only, no groups"
+                                    , HE.text "are also looking for ", HE.strong_ "quality chats"
                                     , HE.br
-                                    , HE.text "or video chat!"
+                                    , HE.text " Text only, no groups or video and", HE.strong_ " strictly platonic"
                                     ]
                             , HE.div (HA.class' "sign-up-form form-up")
                                     [ HE.div' [ HA.id $ show CaptchaRegularUser, HA.class' "hidden" ]
