@@ -53,7 +53,7 @@ ul li {
 
 ul li a {
     font-family: var(--heading-font);
-    color: var(--dark-text-color);
+    color: var(--text-color);
 }
 
 .internal-help ul li a {
@@ -94,7 +94,7 @@ ul li {
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
     background: var(--merochat-red);
-    color:var(--baby-powder);
+    color:var(--background-color);
 }
 
 .external-help .modal-menu {

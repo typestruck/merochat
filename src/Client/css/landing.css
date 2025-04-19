@@ -1,3 +1,7 @@
+:root {
+      --other-heading-color: #42858C;
+}
+
 .landing {
       position: relative;
       display: grid;
@@ -9,7 +13,6 @@
 .shadow {
       box-shadow: 0px 8px 6px rgba(0, 0, 0, 0.2);
 }
-
 
 .features {
       margin-top: 50px;
@@ -54,7 +57,7 @@
       width: 100%;
       align-items: center;
       background-color: var(--merochat-red);
-      color: var(--baby-powder);
+      color: var(--background-color);
 }
 
 .sign-up-again svg {
@@ -62,10 +65,10 @@
 }
 
 .try-it {
-      background-color: var(--baby-powder);
+      background-color: var(--light-color);
       color: var(--merochat-red);
       border-radius: 10px;
-      padding: 7px 150px;
+      padding: 7px 180px;
       margin-top: 15px;
       margin-left: 180px;
       font-weight: bold;
@@ -85,7 +88,7 @@
 }
 
 .green-call {
-      color: #42858C;
+      color: var(--other-heading-color);
       font-weight: bold;
       font-size: 1.2em;
 }
@@ -103,11 +106,7 @@
       margin-top: 20px;
 }
 
-
-
 @media (max-width:1279px) {
-
-
       .features,
       .feature-blurb,
       .feature-blurb-left,
@@ -119,8 +118,6 @@
       .features .feature-blurb:first-child {
             margin-right: 0;
       }
-
-
 
       .sign-up-again svg {
             width: 100px;
@@ -143,8 +140,6 @@
             text-align: center;
       }
 
-
-
       .feature-blurb .feature-blurb-right {
             order: 0;
       }
@@ -152,8 +147,6 @@
       .feature-blurb .feature-blurb-left {
             order: 1;
       }
-
-
 
       .features {
             margin-top: 0;

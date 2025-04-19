@@ -145,7 +145,7 @@ template = do
                                     [ SES.invertedLogo
                                     , HE.div (HA.class' "tagline-name")
                                             [ HE.h1 (HA.class' "name-again") "MeroChat"
-                                            , HE.span (HA.class' "subtagline-again") "Friendly Random Chat"
+                                            , HE.span (HA.class' "subtagline-again") "The friendliest place to chat on the internet"
                                             ]
                                     ]
                             , HE.a [ HA.class' "try-it shadow", HA.href "#header" ] "Try it out"

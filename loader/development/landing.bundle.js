@@ -1,8 +1,2 @@
-import * as Landing from '../../output/Client.Landing.Main/index.js'
+import '../../file/default/landing.js';
 
-//needed for recaptcha
-window.initCaptchas = function () {
-      Landing.initCaptchas();
-};
-
-Landing.main();
