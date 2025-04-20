@@ -1,4 +1,5 @@
 import * as Recover from '../../output/Client.Recover.Main/index.js'
+import '../../file/default/theme-switcher.js';
 
 window.Recover = Recover;
 //needed for recaptcha
