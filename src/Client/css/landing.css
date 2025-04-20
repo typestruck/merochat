@@ -94,7 +94,7 @@
 }
 
 .after-green-call {
-      margin-top: 20px;
+      margin-top: 30px;
 }
 
 .features-again svg {
@@ -163,5 +163,14 @@
       .features-again svg {
             width: 350px;
             height: 350px;
+      }
+}
+
+@media (min-width:1300px) {
+      .skew-left {
+            margin-left: -150px;
+      }
+      .skew-right {
+            margin-right: -200px;
       }
 }

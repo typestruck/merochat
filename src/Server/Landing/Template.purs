@@ -9,8 +9,8 @@ import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
-import Shared.External.Svg as SES
 import Shared.Element (ElementId(..))
+import Shared.External.Svg as SES
 import Shared.Options.Profile (passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
@@ -41,11 +41,13 @@ template = do
                                     [ HE.strong_ "Feeling chatty? In search of new friends? Bored?"
                                     , HE.br
                                     , HE.strong_ "MeroChat"
-                                    , HE.text  " is the space to connect with people who"
+                                    , HE.text " is the space to connect with people who"
                                     , HE.br
-                                    , HE.text "are also looking for ", HE.strong_ "quality chats"
+                                    , HE.text "are also looking for "
+                                    , HE.strong_ "quality chats"
                                     , HE.br
-                                    , HE.text " Text only, no groups or video and", HE.strong_ " strictly platonic"
+                                    , HE.text " Text only, no groups or video, and"
+                                    , HE.strong_ " strictly platonic"
                                     ]
                             , HE.div (HA.class' "sign-up-form form-up")
                                     [ HE.div' [ HA.id $ show CaptchaRegularUser, HA.class' "hidden" ]
@@ -63,7 +65,7 @@ template = do
                                     , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]
                             ]
-                    , HE.div (HA.class' "features")
+                    , HE.div (HA.class' "features skew-left")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Safe and friendly"
@@ -91,7 +93,7 @@ template = do
                                             ]
                                     ]
                             ]
-                    , HE.div (HA.class' "features")
+                    , HE.div (HA.class' "features skew-right")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-right")
                                             [ SES.feature3
@@ -111,7 +113,7 @@ template = do
                                             [ HE.h1_ "Human only"
                                             , HE.span_ "No bots, AI or spammers."
                                             , HE.br
-                                            , HE.span_ "MeroChat is stricly for human beings!"
+                                            , HE.span_ "MeroChat is solely for human beings!"
                                             ]
 
                                     ]
@@ -120,9 +122,9 @@ template = do
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Smart matching"
-                                            , HE.span_ "Ultra-fancy algorithms pair you with"
+                                            , HE.span_ "Ultra-fancy algorithms pair you"
                                             , HE.br
-                                            , HE.span_ "interesting people!"
+                                            , HE.span_ "with interesting people!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
                                             [ SES.feature5
@@ -148,7 +150,7 @@ template = do
                                             , HE.span (HA.class' "subtagline-again") "The friendliest place to chat on the internet"
                                             ]
                                     ]
-                            , HE.a [ HA.class' "try-it shadow", HA.href "#header" ] "Try it out"
+                            , HE.a [ HA.class' "try-it shadow", HA.href "#header" ] "Try it now!"
                             ]
                     , HE.div (HA.class' "features-again")
                             [ HE.div (HA.class' "feature-blurb")
@@ -160,13 +162,33 @@ template = do
                                             , HE.br
                                             , HE.span (HA.class' "green-call") "— without the dreaded “ASL” questions or creeps"
                                             , HE.div (HA.class' "after-green-call")
-                                                    [ HE.text "Free software, no ties to Big Tech, and we never track, spy or use your personal data."
-                                                    , HE.br
-                                                    , HE.text " Also, not a dating site! Why upload duck-face selfies when you could talk about dancing plagues"
-                                                    , HE.br
-                                                    , HE.text "of the 16th century?"
-                                                    , HE.br
-                                                    , HE.text "MeroChat is a safe space for everyone, and we take that seriously."
+                                                    [ HE.p_
+                                                            [ HE.text "Our formula is a little different. Whereas other chat apps are completly anonymous,"
+                                                            , HE.br
+                                                            , HE.text "video based, or geared towards instantaneousness, MeroChat offers you a more grounded experience"
+                                                            ]
+                                                    , HE.p_
+                                                            [ HE.text "We want to encourage substantial (or at least fun!) conversations, and for that reason your profile"
+                                                            , HE.br
+                                                            , HE.text " on MeroChat can be personalized with as much info as you want. Conversation starters! A bit of personality."
+                                                            , HE.br
+                                                            , HE.text "Blank screens with a text box are no fun"
+                                                            ]
+                                                    , HE.p_
+                                                            [ HE.text "While we can't exactly predict who you will click with, hopefully it is everyone."
+                                                            , HE.br
+                                                            , HE.text "Chat suggestions can be skipped, but not filtered by gender, age, location, etc. Text based communication"
+                                                            , HE.br
+                                                            , HE.text "is better for quality since it allows users to reply at their own time, without the possible nastiness of video calls"
+                                                            ]
+                                                    , HE.p_
+                                                            [ HE.text "Speaking of which, MeroChat is for friendly conversation only. To ensure that, besides traditional moderation, "
+                                                            , HE.br
+                                                            , HE.text "we have a Karma system. The idea is pretty simple: the more the community trusts you, the more features you"
+                                                            , HE.br
+                                                            ,HE.text "can use on the app. The likelier a feature is to be abused (say, image sharing) the more Karma you need to unlock it"
+                                                            ]
+                                                , HE.p_ [HE.text "Finally, MeroChat is completly free! It exists for the fun of it, not to sell ads, train AI, or be a startup. Give it a try :)"]
                                                     ]
                                             ]
                                     ]
