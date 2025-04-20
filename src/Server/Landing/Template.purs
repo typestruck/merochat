@@ -165,6 +165,8 @@ template = do
                                                     , HE.text " Also, not a dating site! Why upload duck-face selfies when you could talk about dancing plagues"
                                                     , HE.br
                                                     , HE.text "of the 16th century?"
+                                                    , HE.br
+                                                    , HE.text "MeroChat is a safe space for everyone, and we take that seriously."
                                                     ]
                                             ]
                                     ]
