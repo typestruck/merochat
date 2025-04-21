@@ -107,6 +107,7 @@
 }
 
 @media (max-width:1279px) {
+
       .features,
       .feature-blurb,
       .feature-blurb-left,
@@ -123,17 +124,26 @@
             width: 100px;
       }
 
+      .sign-up-again {
+            margin:40px 0;
+      }
+
       .name-again {
             font-size: 2em;
       }
 
       .try-it {
             padding: 7px 50px;
-            margin-left: 80px
+            margin-left: -11px
       }
 
       .feature-blurb-left {
             padding: 0 20px;
+      }
+
+      .features-again svg {
+            width: 250px;
+            height: 250px;
       }
 
       .blurb {
@@ -160,9 +170,13 @@
             margin-bottom: 40px;
       }
 
-      .features-again svg {
-            width: 350px;
-            height: 350px;
+      h1 {
+            font-size: 1.5em;
+      }
+
+      .features svg {
+            width: 200px;
+            height: 200px;
       }
 }
 
@@ -170,6 +184,7 @@
       .skew-left {
             margin-left: -150px;
       }
+
       .skew-right {
             margin-right: -200px;
       }

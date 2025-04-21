@@ -216,12 +216,19 @@ svg {
 
 @media (max-width:1279px) {
     .pastel-area {
-        margin: 20px 0;
+        margin: 40px 0;
         padding: 20px;
         flex-direction: column;
         width: auto;
     }
 
+    .name {
+        font-size: 3.3em;
+    }
+
+    .tagline {
+        font-size: 1.2em;
+    }
 
     .forgot-sign-up .or {
         display: block;
