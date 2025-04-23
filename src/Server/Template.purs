@@ -6,6 +6,7 @@ import Prelude
 import Data.Either (Either(..))
 import Data.String as DS
 import Effect (Effect)
+import Environment (production)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -69,6 +70,8 @@ externalDefaultParameters =
                                       ]
                               ]
                       ]
+              , if production then HE.script [ HA.type' "text/javascript" ] "666 theme-switcher.js 666" --used to inline theme switcher
+                else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
               ]
       , content: []
       , footer:

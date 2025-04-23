@@ -6,7 +6,7 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import ReplaceHashPlugin from './ReplaceHashPlugin.js';
-import InlineStylePlugin from './InlineStylePlugin.js';
+import InlineResourcePlugin from './InlineResourcePlugin.js';
 
 export default {
     mode: 'production',
@@ -26,7 +26,8 @@ export default {
             'process.env.PRODUCTION': true
         }),
         new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
-        new InlineStylePlugin({ files: [{styleFile: 'file/bundle/style.css', htmlFile: 'output-es/Server.Landing.Template/index.js'} ]})
+        new InlineResourcePlugin({ files: [{resourceFile: 'file/bundle/style.css', htmlFile: 'output-es/Server.Landing.Template/index.js'} ]}),
+        new InlineResourcePlugin({ files: [{resourceFile: 'file/default/theme-switcher.js', htmlFile: 'output-es/Server.Landing.Template/index.js'} ]})
     ],
     module: {
         rules: [
