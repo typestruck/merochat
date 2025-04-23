@@ -21,7 +21,7 @@ function inline(options) {
             resourceName = entry.resourceFile.split('/').pop(),
             resourceContents = readFileSync(resolve(entry.resourceFile), 'utf8').replaceAll('"', "'");
 
-      htmlContents = htmlContents.replace(`666 ${resourceName} 666`, `${resourceContents}`);
+      htmlContents = htmlContents.replace(`"666 ${resourceName} 666"`, `\`${resourceContents}\``);
 
       writeFileSync(htmlPath, htmlContents);
     }
