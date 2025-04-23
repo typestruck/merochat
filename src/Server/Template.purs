@@ -70,7 +70,7 @@ externalDefaultParameters =
                                       ]
                               ]
                       ]
-              , if production then HE.script [ HA.type' "text/javascript" ] "666 theme-switcher.js 666" --used to inline theme switcher
+              , if production then HE.script [ HA.type' "text/javascript" ] "`666 theme-switcher.js 666`" --used to inline theme switcher
                 else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
               ]
       , content: []
