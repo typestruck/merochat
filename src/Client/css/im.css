@@ -483,8 +483,27 @@ blockquote {
     display: flex;
 }
 
+a {
+    color: var(--text-color);
+}
+
 .contact-profile {
     padding: 5px 10px 5px 10px;
+}
+
+.settings-name .contact-name {
+    font-weight: bold;
+}
+
+.contact-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-ruler {
+    width: 95%;
+    opacity: 0.8;
+    color: var(--light-color);
 }
 
 .contact-name {
@@ -512,6 +531,8 @@ blockquote {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
+    display: flex;
+    flex-direction: column;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
