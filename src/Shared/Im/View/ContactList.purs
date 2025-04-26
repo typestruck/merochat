@@ -77,7 +77,7 @@ contactList
                                 , HE.div [ HA.class' "contact-profile" ]
                                         [ HE.div (HA.class' "contact-online-wrapper")
                                                 [ HE.span (HA.class' "contact-name") contact.user.name
-                                                , HE.div' [ HA.class' { "online-indicator": true, hidden: false {- contact.user.availability /= Online || not contact.user.onlineStatus || not onlineStatus -} } ]
+                                                , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not onlineStatus } ]
                                                 ]
                                         , HE.div' [ HA.class' { "contact-list-last-message duller": true, hidden: contact.typing && typingStatus && contact.user.typingStatus }, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
                                         , HE.div [ HA.class' { "contact-list-last-message duller typing": true, hidden: not contact.typing || not typingStatus || not contact.user.typingStatus } ] $ HE.p_ "Typing..."
