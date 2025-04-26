@@ -189,8 +189,7 @@ textarea {
     scrollbar-width: thin;
     overflow-y: hidden;
     display: flex;
-    z-index: 2;
-    position: relative;
+    z-index: 5;
     box-shadow: 8px 40px 6px rgba(0, 0, 0, 0.2);
     flex-direction: column;
 }
@@ -511,7 +510,7 @@ a {
 
 .contact-ruler {
     width: 95%;
-    opacity: 0.6;
+    opacity: 0.5;
     margin-bottom: 0;
     margin-top: 0;
     color: var(--light-color);
@@ -3007,7 +3006,7 @@ label {
     }
 
     .contact {
-        padding: 10px;
+        padding: 15px 10px;
     }
 
     .message-history> :last-child {
