@@ -9,6 +9,11 @@ body {
     height: 100%;
 }
 
+strong {
+    font-weight: bold;
+}
+
+
 svg {
     stroke: rgb(238, 238, 238);
     fill: rgb(238, 238, 238);
@@ -428,6 +433,7 @@ blockquote {
 
 .settings {
     position: relative;
+    border-top-right-radius: 40px;
     align-items: center;
     background-color: var(--merochat-red);
     padding: 5px 10px;
@@ -1284,10 +1290,6 @@ input:not(type=button):focus {
     justify-content: space-around;
 }
 
-.duller {
-    color: rgb(238, 238, 238, 0.8)
-}
-
 .user-menu {
     display: none;
     background: var(--im-second-background-color);
@@ -1334,6 +1336,10 @@ input:not(type=button):focus {
     font-size: 1em;
 }
 
+.settings .outer-user-menu {
+    margin-left: auto;
+}
+
 .outer-user-menu {
     position: relative;
 }
@@ -1366,7 +1372,8 @@ input:not(type=button):focus {
 }
 
 .unread-messages .unread-number {
-    background: #262626;
+    background: var(--merochat-red);
+    color: var(--light-color);
     padding: 5px 10px;
     border-radius: 100%;
 }
@@ -1567,6 +1574,10 @@ select {
     overflow-y: scroll;
     scrollbar-width: thin;
     word-wrap: anywhere
+}
+
+.duller {
+    opacity: 0.8;
 }
 
 .emojis .duller {
@@ -2208,23 +2219,6 @@ select {
     padding-right: 8px;
 }
 
-.svg-feedback {
-    width: 35px;
-    height: 35px;
-
-    margin-left: auto;
-}
-
-.svg-experiment,
-.svg-feedback {
-    margin-bottom: 5px;
-    margin-right: 20px;
-}
-
-.svg-experiment {
-    width: 15px;
-    height: 15px;
-}
 
 .suggestion.old~.message-history {
     display: none;
@@ -2427,19 +2421,6 @@ label {
         padding: 10px
     }
 
-    .svg-feedback,
-    .svg-experiment {
-        order: 2;
-        fill: rgb(195, 211, 101);
-
-    }
-
-    .svg-experiment {
-        width: 18px;
-        height: 18px;
-        margin-right: 25px;
-    }
-
     .donate-options {
         flex-direction: column;
     }
@@ -2458,6 +2439,7 @@ label {
     .suggestions-button {
         display: block;
         cursor: pointer;
+        margin-left: auto;
         order: 3;
     }
 
@@ -2803,6 +2785,10 @@ label {
     .large-avatar-profile {
         height: 65%;
         width: 65%;
+    }
+
+    .settings {
+        border-top-right-radius: 0;
     }
 }
 

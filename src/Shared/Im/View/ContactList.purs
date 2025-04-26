@@ -9,11 +9,10 @@ import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
-import Data.HashMap as DH
+
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
+
 import Data.Newtype as DN
-import Data.Tuple (Tuple(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
