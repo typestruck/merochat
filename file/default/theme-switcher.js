@@ -24,5 +24,7 @@ else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)')
 else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
     switchTheme(dark);
 
-document.querySelector('#light-theme-switch').addEventListener('click', () => switchTheme(light, true));
-document.querySelector('#dark-theme-switch').addEventListener('click', () => switchTheme(dark, true));
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector('#light-theme-switch').addEventListener('click', () => switchTheme(light, true));
+    document.querySelector('#dark-theme-switch').addEventListener('click', () => switchTheme(dark, true));
+});

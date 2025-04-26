@@ -27,7 +27,8 @@ export default {
         }),
         new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
         new InlineResourcePlugin({ files: [{resourceFile: 'file/bundle/style.css', htmlFile: 'output-es/Server.Landing.Template/index.js'} ]}),
-        new InlineResourcePlugin({ files: [{resourceFile: 'file/default/theme-switcher.js', htmlFile: 'output-es/Server.Template/index.js'} ]})
+        new InlineResourcePlugin({ files: [{resourceFile: 'file/default/theme-switcher.js', htmlFile: 'output-es/Server.Template/index.js'} ]}),
+        new InlineResourcePlugin({ files: [{resourceFile: 'file/default/theme-switcher.js', htmlFile: 'output-es/Server.Im.Template/index.js'} ]}),
     ],
     module: {
         rules: [

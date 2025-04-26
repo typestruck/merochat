@@ -2479,6 +2479,11 @@ label {
         overflow: hidden;
     }
 
+    .contact-list {
+        background-color: var(--background-color);
+        color:var(--text-color);
+    }
+
     .profile-edition-name,
     .profile-name,
     .profile-asl {
@@ -2881,7 +2886,6 @@ label {
 }
 
 @media (min-width:1920px) {
-
     html,
     body {
         font-size: 18px;

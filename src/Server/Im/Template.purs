@@ -7,6 +7,7 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
+import Environment (production)
 import Flame (QuerySelector(..))
 import Flame as F
 import Flame.Html.Attribute as HA
@@ -28,6 +29,10 @@ template payload = do
             { view: \model → ST.templateWith $ defaultParameters
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
+                    , header =
+                            [ if production then HE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
+                              else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
+                            ]
                     , content = [ SIV.view false model ]
                     , javascript = javascript
                     , css = css
@@ -81,9 +86,11 @@ template payload = do
       suggestionsCount = DA.length payload.suggestions
 
       javascript =
-            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
+            [ if production then HE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
+              else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
+
+            , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
             , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Im Js ]
-            , HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
             ]
       css =
             [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Im Css ]
