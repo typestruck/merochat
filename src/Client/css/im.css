@@ -2696,7 +2696,12 @@ label {
     }
 
     .settings .outer-user-menu {
+        order:1;
         margin-left: unset;
+    }
+
+    .settings-name {
+        order:2;
     }
 
     .cards {
