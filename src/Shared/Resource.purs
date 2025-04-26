@@ -9,6 +9,7 @@ import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Set (Set)
 import Data.Set as DS
+import Droplet.Language (In)
 import Environment (production)
 
 allowedMediaTypes ∷ HashMap String String
@@ -63,7 +64,8 @@ data Bundle
       | Settings
 
 data Media
-      = Logo3Small
+      =
+      InvertedLogo
       | LogoSmall
       | Logo
       | Favicon
@@ -132,7 +134,7 @@ resourceName = case _ of
       Right Profile → "profile"
       Right Recover → "recover"
       Right Settings → "settings"
-      Left Logo3Small → "logo-3-small"
+      Left InvertedLogo → "inverted-logo"
       Left LogoSmall → "logo-small"
       Left Logo → "logo"
       Left Favicon → "favicon"

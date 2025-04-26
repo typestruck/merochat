@@ -8,6 +8,8 @@ function switchTheme(theme, fromEvent = false) {
     document.documentElement.style.setProperty('--external-accent', theme === light ? '#EFE5DC' : '#274958');
     document.documentElement.style.setProperty('--other-heading-color', theme === light ? '#42858C' : '#64FCD9');
 
+    document.documentElement.style.setProperty('--im-background-color', theme === light ? '#DB5A5D' : '#393E41');
+
     //if the user choose the theme instead of coming from the system preference, save it
     if (fromEvent)
         localStorage.setItem(key, theme);

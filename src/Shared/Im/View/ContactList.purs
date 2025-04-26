@@ -55,13 +55,13 @@ contactList
             | otherwise =
                     let
                           entries =
-                                DA.mapWithIndex displayContactListEntry
+                                map displayContactListEntry
                                       <<< DA.sortBy compareLastDate
                                       $ DA.filter (not <<< DA.null <<< _.history) contacts
                     in
                           if temporary then SIVP.signUpCall joined : entries else entries
 
-      displayContactListEntry index contact =
+      displayContactListEntry contact =
             let
                   numberUnreadMessages = countUnread contact.history
                   lastHistoryEntry = SU.fromJust $ DA.last contact.history

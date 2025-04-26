@@ -10,7 +10,8 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
-import Shared.External.Svg as SES
+import Server.Landing.Svg as SLS
+import Shared.Svg as SS
 import Shared.Options.Profile (passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
@@ -76,7 +77,7 @@ template = do
                                             , HE.text "MeroChat is not a dating app!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SES.feature1
+                                            [ SLS.feature1
                                             ]
                                     ]
                             , HE.div (HA.class' "feature-blurb")
@@ -89,14 +90,14 @@ template = do
                                             , HE.text "your account any time!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SES.feature2
+                                            [ SLS.feature2
                                             ]
                                     ]
                             ]
                     , HE.div (HA.class' "features skew-right")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-right")
-                                            [ SES.feature3
+                                            [ SLS.feature3
                                             ]
                                     , HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Anonymously you"
@@ -107,7 +108,7 @@ template = do
                                     ]
                             , HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-right")
-                                            [ SES.feature4
+                                            [ SLS.feature4
                                             ]
                                     , HE.div (HA.class' "feature-blurb-left")
                                             [ HE.h1_ "Human only"
@@ -127,7 +128,7 @@ template = do
                                             , HE.span_ "with interesting people!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SES.feature5
+                                            [ SLS.feature5
                                             ]
                                     ]
                             , HE.div (HA.class' "feature-blurb")
@@ -138,13 +139,13 @@ template = do
                                             , HE.span_ "features for trusted users!"
                                             ]
                                     , HE.div (HA.class' "feature-blurb-right")
-                                            [ SES.feature6
+                                            [ SLS.feature6
                                             ]
                                     ]
                             ]
                     , HE.div (HA.class' "sign-up-again")
                             [ HE.div (HA.class' "logo-name")
-                                    [ SES.invertedLogo
+                                    [ SLS.invertedLogo
                                     , HE.div (HA.class' "tagline-name")
                                             [ HE.h1 (HA.class' "name-again") "MeroChat"
                                             , HE.span (HA.class' "subtagline-again") "The friendliest place to chat on the internet"
@@ -155,7 +156,7 @@ template = do
                     , HE.div (HA.class' "features-again")
                             [ HE.div (HA.class' "feature-blurb")
                                     [ HE.div (HA.class' "feature-blurb-right")
-                                            [ SES.feature7
+                                            [ SLS.feature7
                                             ]
                                     , HE.div (HA.class' "feature-blurb-left")
                                             [ HE.span (HA.class' "green-call") "MeroChat lets you chat, connect and make real friends "

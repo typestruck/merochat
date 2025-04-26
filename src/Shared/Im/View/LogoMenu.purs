@@ -49,7 +49,7 @@ logoMenu fortune = HE.div (HA.class' "relative")
               ]
       , HE.div [ HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true ] $
               HE.img
-                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left Logo3Small) Png, "180w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
+                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left InvertedLogo) Svg, "180w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
                     , HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px"
                     , HA.src $ SP.resourcePath (Left Logo) Png
                     ]

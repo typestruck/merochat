@@ -4,13 +4,12 @@ module Server.Template where
 import Prelude
 
 import Data.Either (Either(..))
-import Data.String as DS
 import Effect (Effect)
 import Environment (production)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.External.Svg as SLS
+import Shared.Svg as SS
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routes)
@@ -50,7 +49,7 @@ externalDefaultParameters =
       , header:
               [ HE.div (HA.class' "header")
                       [ HE.div [ HA.id "header", HA.class' "big-logo" ]
-                              [ SLS.logo
+                              [ SS.logo
 
                               ]
                       , HE.div (HA.class' "menu-merochat")
@@ -60,8 +59,8 @@ externalDefaultParameters =
                                       , HE.a (HA.href $ routes.backer {}) "Donate"
                                       , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] "Login"
                                       , HE.div (HA.class' "theme-switcher")
-                                              [ SLS.sun
-                                              , SLS.moon
+                                              [ SS.sun
+                                              , SS.moon
                                               ]
                                       ]
                               , HE.div (HA.class' "merochat")

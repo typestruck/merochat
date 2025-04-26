@@ -408,5 +408,4 @@ toggleConnectedWebSocket isConnected model =
                   [ pure $ Just SetDeliveredStatus ] -- when the site is first loaded, signal that messages have been delivered
       where
       lostConnectionMessage =
-            "Connection lost. Reconnecting...\n\
-            \You won't be able to send messages until connection is restored"
+            "Reconnecting..."

@@ -1,4 +1,4 @@
-#im {
+:root {
     --im-background-color: #DB5A5D;
     --im-second-background-color: #972123;
     --im-right-background-color: #EFE5DC;
@@ -425,6 +425,7 @@ blockquote {
 .settings {
     position: relative;
     align-items: center;
+    background-color: var(--merochat-red);
     padding: 5px 10px;
     border-bottom: 1px solid var(--light-color);
 }
@@ -2053,7 +2054,7 @@ select {
 }
 
 .avatar-settings {
-    background-color: var(--im-background-color);
+    background-color: var(--merochat-red);
     cursor: pointer;
 }
 
@@ -2074,6 +2075,15 @@ select {
 
 .online-status {
     margin-bottom: 7px;
+}
+
+#light-theme-switch path {
+    stroke: var(--light-color);
+}
+
+#light-theme-switch circle,
+#dark-theme-switch path {
+    fill: var(--light-color);
 }
 
 .profile-karma {

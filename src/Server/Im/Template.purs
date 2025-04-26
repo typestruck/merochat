@@ -83,6 +83,7 @@ template payload = do
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
             , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Im Js ]
+            , HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
             ]
       css =
             [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Im Css ]

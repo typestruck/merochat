@@ -7,6 +7,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
 
+
 arrow ∷ Array (NodeData ImMessage) → Html ImMessage
 arrow attrs = HE.svg (HA.viewBox "0 0 16 16" : attrs)
       [ HE.line' [ HA.stroke "#cedf6d", HA.strokeWidth "1.5px", HA.x1 "15.98", HA.y1 "8", HA.x2 "1.61", HA.y2 "8" ]
