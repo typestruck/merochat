@@ -86,10 +86,7 @@ template payload = do
       suggestionsCount = DA.length payload.suggestions
 
       javascript =
-            [ if production then HE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
-              else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
-
-            , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
+            [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
             , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Im Js ]
             ]
       css =
