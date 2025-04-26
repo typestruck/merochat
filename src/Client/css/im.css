@@ -80,7 +80,7 @@ svg {
 input,
 textarea {
     border-radius: 3px;
-    color: rgb(238, 238, 238);
+    color:var(--text-color);
     background: transparent;
     font-family: Verdana, sans-serif;
     font-size: inherit;
@@ -636,7 +636,7 @@ blockquote {
 }
 
 .suggestion.old {
-    background: #373737;
+    background: var(--background-color);
     padding: 5px 0px 43px 0px;
     min-height: 100%;
 }
@@ -646,9 +646,10 @@ blockquote {
 }
 
 .profile-contact {
-    background: #373737;
+    background: var(--im-second-background-color);
     display: flex;
     flex-direction: column;
+    color:var(--light-color);
     padding: 10px 20px;
     cursor: pointer;
 }
@@ -691,45 +692,20 @@ blockquote {
 
 .message-content {
     padding: 0 15px;
+    color:var(--text-color);
     position: relative;
-    background: #1b3a28;
     border-radius: 5px;
 }
 
-.message-content::before {
-    content: "\00a0";
-    display: block;
-    height: 14px;
-    position: absolute;
-    width: 17px;
-    top: 0px;
-}
-
-.same-bubble-message .message-content::before {
-    display: none;
-}
-
 .incoming-message .message-content {
-    background-color: #373737;
+    background-color: var(--merochat-red);
     margin-left: 20px;
+    color:var(--light-color)
 }
 
 .outgoing-message .message-content {
-    background-color: #1b3a28;
     margin-right: 20px;
-}
-
-.incoming-message .message-content::before {
-    background-color: #373737;
-    top: 0px;
-    left: -6px;
-    transform: rotate(52deg) skew(-36deg);
-}
-
-.outgoing-message .message-content::before {
-    background-color: #1b3a28;
-    right: -5px;
-    transform: rotate(0deg) skew(-35deg);
+    border: 1px solid black;
 }
 
 .message-history {
@@ -1295,7 +1271,6 @@ input:not(type=button):focus {
     color: #db5a5d
 }
 
-
 .chatting-contact {
     background: var(--im-second-background-color);
 }
@@ -1572,7 +1547,7 @@ select {
 }
 
 .emoji-wrapper {
-    background-color: #2d2d2d;
+    background-color: var(--background-color);
     border-radius: 3px;
     color: inherit;
     border-radius: 3px;
@@ -1682,13 +1657,15 @@ select {
     flex-direction: column;
     justify-content: center;
     position: absolute;
-    background: #2d2d2d;
+    background: var(--background-color);
 }
 
 .emoji-access {
     width: 21px;
     height: 21px;
     padding: 0 8px;
+    stroke:var(--text-color);
+    fill:var(--text-color);
     stroke-width: 5;
 }
 
@@ -1831,8 +1808,12 @@ select {
 }
 
 .suggestion-arrow svg {
-    background: #2d2d2d;
+
     border-radius: 100%;
+}
+
+.suggestion-arrow svg circle{
+    fill: var(--merochat-red);
 }
 
 .suggestion-arrow:last-child {
@@ -2603,14 +2584,6 @@ label {
         margin-right: 10px;
     }
 
-    .message-content::before {
-        height: 10px;
-        width: 11px;
-    }
-
-    .incoming-message .message-content::before {
-        transform: rotate(55deg) skew(-35deg);
-    }
 
     .modal-placeholder {
         height: 100%;

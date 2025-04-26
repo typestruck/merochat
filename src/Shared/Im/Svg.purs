@@ -10,7 +10,7 @@ import Flame.Types (NodeData)
 
 arrow ∷ Array (NodeData ImMessage) → Html ImMessage
 arrow attrs = HE.svg (HA.viewBox "0 0 16 16" : attrs)
-      [ HE.line' [ HA.stroke "#cedf6d", HA.strokeWidth "1.5px", HA.x1 "15.98", HA.y1 "8", HA.x2 "1.61", HA.y2 "8" ]
+      [ HE.line' [  HA.strokeWidth "1.5px", HA.x1 "15.98", HA.y1 "8", HA.x2 "1.61", HA.y2 "8" ]
       , HE.polygon' [ HA.points "6.43 2.05 7.42 3.12 2.17 8 7.42 12.88 6.43 13.95 0.03 8 6.43 2.05" ]
       ]
 
@@ -32,12 +32,12 @@ closeElements =
 
 backArrow ∷ Html ImMessage
 backArrow = HE.svg [ HA.class' "svg-55", HA.viewBox "0 0 16 16" ]
-      [ HE.circle' [ HA.class' "strokeless", HA.cx "8", HA.cy "8", HA.r "8", HA.fill "#1B2921" ]
+      [ HE.circle' [ HA.class' "strokeless", HA.cx "8", HA.cy "8", HA.r "8"]
       , HE.polygon' [ HA.class' "fillless strokeless", HA.points "4.88 7.99 9.37 3.5 10.29 4.42 6.73 7.99 10.32 11.58 9.39 12.5 5.81 8.91 5.8 8.91 4.88 7.99" ]
       ]
 
 nextArrow ∷ Html ImMessage
 nextArrow = HE.svg [ HA.class' "svg-55", HA.viewBox "0 0 16 16" ]
-      [ HE.circle' [ HA.class' "strokeless", HA.cx "8", HA.cy "8", HA.r "8", HA.fill "#1B2921" ]
+      [ HE.circle' [ HA.class' "strokeless", HA.cx "8", HA.cy "8", HA.r "8" ]
       , HE.polygon' [ HA.class' "fillless strokeless", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
       ]

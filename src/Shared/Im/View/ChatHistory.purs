@@ -86,8 +86,7 @@ chatHistory model =
                                         ]
                                 , HE.div
                                         ( HA.class'
-                                                { duller: status /= Errored
-                                                , "error-message": status == Errored
+                                                { "error-message": status == Errored
                                                 , "message-status": true
                                                 }
                                         )

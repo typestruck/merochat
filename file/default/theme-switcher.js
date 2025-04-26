@@ -9,6 +9,8 @@ function switchTheme(theme, fromEvent = false) {
     document.documentElement.style.setProperty('--other-heading-color', theme === light ? '#42858C' : '#64FCD9');
 
     document.documentElement.style.setProperty('--im-background-color', theme === light ? '#DB5A5D' : '#393E41');
+    document.documentElement.style.setProperty('--im-second-background-color', theme === light ? '#972123' : '#26292C');
+    document.documentElement.style.setProperty('--im-right-background-color', theme === light ? '#EFE5DC' : '#393E41');
 
     //if the user choose the theme instead of coming from the system preference, save it
     if (fromEvent)
