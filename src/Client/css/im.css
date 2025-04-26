@@ -124,7 +124,7 @@ textarea {
     border-radius: 100%;
     background-color: hsl(145, 80%, 28%);
     min-width: 10px;
-    margin-left: 6px;
+    margin-left: 9px;
     height: 10px;
 }
 
@@ -478,7 +478,6 @@ blockquote {
 
 .settings-name {
     padding: 5px 15px;
-    display: flex !important;
     flex-direction: column;
 }
 
@@ -544,6 +543,10 @@ a {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.settings-name {
+    display: flex;
 }
 
 .contact-list-last-message blockquote {
@@ -2696,12 +2699,8 @@ label {
     }
 
     .settings .outer-user-menu {
-        order:1;
-        margin-left: unset;
-    }
 
-    .settings-name {
-        order:2;
+        margin-left: unset;
     }
 
     .cards {
