@@ -67,10 +67,7 @@ showAvatar model index = HE.lazy Nothing largeAvatar who
                   Just profile → HE.fragment
                         [ HE.svg [ HA.class' "close-avatar", HA.viewBox "0 0 16 16", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] SIV.closeElements
                         , HE.h1 (HA.class' "profile-name extra-padding duller") profile.name
-                        , let
-                                avatarClasses = if DM.isNothing profile.avatar then SA.avatarColorClass index else ""
-                          in
-                                HE.div (HA.class' "large-avatar-profile") $ SA.avatar [ HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profile.avatar ]
+                        , HE.div (HA.class' "large-avatar-profile") $ SA.avatar [ HA.src $ SA.fromAvatar profile.avatar ]
                         ]
 
 report ∷ Int → Array String → Html ImMessage

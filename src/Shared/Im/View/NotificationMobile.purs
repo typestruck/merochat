@@ -21,5 +21,5 @@ unreadNotification { smallScreen, contacts, user: { id } } = HE.div [ HA.onClick
             in
                   if DA.length all > 5 then DA.snoc (DA.take 5 all) $ HE.text "..." else all
       unread index { history, user: { avatar } }
-            | DF.any (\{ status, sender } → status < Read && sender /= id) history = Just $ HE.img [ HA.class' $ "avatar-notification-mobile" <> SA.avatarColorClass index, HA.src $ SA.avatarForRecipient index avatar ]
+            | DF.any (\{ status, sender } → status < Read && sender /= id) history = Just $ HE.img [ HA.class' $ "avatar-notification-mobile", HA.src $ SA.fromAvatar avatar ]
             | otherwise = Nothing

@@ -86,12 +86,12 @@ userMenu model@{ toggleContextMenu, toggleModal, user: { temporary } } =
 
 header ∷ ImModel → Html ImMessage
 header model@{ user: { karma, karmaPosition } } = HE.fragment
-      [ HE.img [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.avatarForSender avatar ]
+      [ HE.img [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.fromAvatar avatar ]
       , HE.div [ HA.class' "settings-name" ]
               [ HE.strong_ name
               , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]
                       [ HE.span [ HA.class' "karma-number" ] $ SI.thousands karma
-                      , HE.span [ HA.class' "karma-text" ] " karma "
+                      , HE.text" karma "
                       , HE.span_ $ "(#" <> show karmaPosition <> ")"
                       ]
               ]

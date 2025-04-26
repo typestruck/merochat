@@ -41,7 +41,7 @@ bundleFolder = "bundle/"
 defaultFolder ∷ String
 defaultFolder = "default/"
 
-data ResourceType = Css | Js | Png | Ico | Ignore
+data ResourceType = Css | Js | Png | Ico | Ignore | Svg
 
 derive instance Eq ResourceType
 
@@ -89,14 +89,7 @@ data Media
       | Works1
       | Works2
       | Works3
-      | Avatar1
-      | Avatar2
-      | Avatar3
-      | Avatar4
-      | Avatar5
-      | Avatar6
-      | Avatar7
-      | Avatar8
+      | Avatar
       | NicolasCageHiclipart
       | SocratesStingWikimedia
       | BatmanNounProjectAnushaNarvekar
@@ -165,14 +158,7 @@ resourceName = case _ of
       Left Works1 → "works1"
       Left Works2 → "works2"
       Left Works3 → "works3"
-      Left Avatar1 → "avatar-1"
-      Left Avatar2 → "avatar-2"
-      Left Avatar3 → "avatar-3"
-      Left Avatar4 → "avatar-4"
-      Left Avatar5 → "avatar-5"
-      Left Avatar6 → "avatar-6"
-      Left Avatar7 → "avatar-7"
-      Left Avatar8 → "avatar-8"
+      Left Avatar → "avatar"
       Left NicolasCageHiclipart → "nicolas_cage_hiclipart"
       Left SocratesStingWikimedia → "socrates_Sting_wikimedia"
       Left BatmanNounProjectAnushaNarvekar → "batman_noun_project_Anusha_Narvekar"
@@ -183,6 +169,7 @@ resourceType = case _ of
       Js → ".bundle.js"
       Css → ".css"
       Png → ".png"
+      Svg → ".svg"
       Ico → ".ico"
       Ignore → ""
 

@@ -87,7 +87,7 @@ compactProfile model contact =
       HE.div (HA.class' { "profile-contact": true, highlighted: model.toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' avatarClasses, HA.src $ SA.avatarForRecipient 0 contact.user.avatar ] <> showProfileAction
+                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' "avatar-profile", HA.src $ SA.fromAvatar contact.user.avatar ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
                             [ HE.div (HA.class' "contact-name-badge") $ HE.h1 (HA.class' "contact-name") contact.user.name : badges contact.user.badges
                             , typingNotice
@@ -105,15 +105,11 @@ compactProfile model contact =
       where
       showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
-      avatarClasses
-            | DM.isNothing contact.user.avatar = "avatar-profile " <> SA.avatarColorClass 0
-            | otherwise = "avatar-profile"
-
-      typingNotice = HE.div (HA.class' { "duller typing": true, hidden: not contact.typing || not model.user.typingStatus || not contact.user.typingStatus }) "Typing..."
+      typingNotice = HE.div (HA.class' { "typing": true, hidden: not contact.typing || not model.user.typingStatus || not contact.user.typingStatus }) "Typing..."
 
       availableStatus =
             HE.div
-                  [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus, duller: contact.user.availability /= Online } ]
+                  [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus} ]
                   $ show contact.user.availability
 
       profileIcon = HE.svg [ HA.class' "show-profile-icon", HA.viewBox "0 0 16 16" ]
@@ -207,10 +203,10 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
 displayProfile ∷ Int → User → User → Maybe ImMessage → Array (Html ImMessage)
 displayProfile index loggedUser profileUser temporaryUserMessage =
-      [ SA.avatar [ HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowAvatar index, HA.class' avatarClasses, HA.src $ SA.avatarForRecipient index profileUser.avatar ]
+      [ SA.avatar [ HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowAvatar index, HA.class' "avatar-profile", HA.src $ SA.fromAvatar profileUser.avatar ]
       , HE.h1 (HA.class' "profile-name") profileUser.name
       , HE.div (HA.class' "headline") profileUser.headline
-      , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not profileUser.onlineStatus, duller: profileUser.availability /= Online } ] $ show profileUser.availability
+      , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not profileUser.onlineStatus } ] $ show profileUser.availability
       , HE.div (HA.class' "profile-karma")
               $
                     case temporaryUserMessage of
@@ -220,7 +216,7 @@ displayProfile index loggedUser profileUser temporaryUserMessage =
                                 , HE.svg [ HA.class' "svg-explain-temporary-user", HA.viewBox "0 0 752 752" ]
                                         [ HE.path' [ HA.d "m376 162.89c-117.53 0-213.11 95.582-213.11 213.11 0 117.53 95.582 213.11 213.11 213.11 117.53 0 213.11-95.582 213.11-213.11 0-117.53-95.582-213.11-213.11-213.11zm0 28.414c102.18 0 184.7 82.523 184.7 184.7 0 102.18-82.523 184.7-184.7 184.7-102.17 0-184.7-82.523-184.7-184.7 0-102.17 82.523-184.7 184.7-184.7zm0 66.301c-39.062 0-71.035 31.973-71.035 71.039-0.054688 3.8008 1.418 7.4688 4.0898 10.176 2.668 2.707 6.3125 4.2344 10.117 4.2344s7.4492-1.5273 10.117-4.2344c2.6719-2.707 4.1445-6.375 4.0898-10.176 0-23.711 18.914-42.625 42.621-42.625 23.711 0 42.625 18.914 42.625 42.625 0 14.742-5.9453 24.809-15.688 35.074-9.7461 10.266-23.262 19.555-35.816 29.598-3.3711 2.6992-5.3281 6.7812-5.3281 11.102v18.941c-0.054688 3.8047 1.4219 7.4688 4.0898 10.176 2.6719 2.7109 6.3164 4.2344 10.117 4.2344 3.8047 0 7.4492-1.5234 10.121-4.2344 2.668-2.707 4.1406-6.3711 4.0859-10.176v-11.988c10.352-7.9023 22.508-16.594 33.449-28.117 12.75-13.438 23.383-31.559 23.383-54.609 0-39.066-31.973-71.039-71.039-71.039zm0 198.91c-10.461 0-18.941 8.4805-18.941 18.941s8.4805 18.945 18.941 18.945c10.465 0 18.945-8.4844 18.945-18.945s-8.4805-18.941-18.945-18.941z" ]
                                         ]
-                                , HE.div (HA.class' "explain-temporary-user duller")
+                                , HE.div (HA.class' "explain-temporary-userf")
                                         [ HE.p_ "Quick-sign up means users that just got started on MeroChat and have yet to finish creating their account"
                                         , HE.p_
                                                 [ HE.text "You can opt to not be seen (or messaged by) quick-sign up users on the "
@@ -232,7 +228,7 @@ displayProfile index loggedUser profileUser temporaryUserMessage =
                           _ →
                                 [ HE.div_ $
                                         [ HE.span [ HA.class' "span-info" ] $ SI.thousands profileUser.karma
-                                        , HE.span [ HA.class' "duller" ] " karma"
+                                        , HE.span_ " karma"
                                         , HE.span_ $ " (#" <> show profileUser.karmaPosition <> ")"
                                         ] <> map spanWith (badges profileUser.badges)
                                 ]
@@ -259,10 +255,6 @@ displayProfile index loggedUser profileUser temporaryUserMessage =
               [ HE.div' [ HA.class' "description-message", HA.innerHtml $ SM.parse profileUser.description ] ]
       ]
       where
-      avatarClasses
-            | DM.isNothing profileUser.avatar = "avatar-profile " <> SA.avatarColorClass index
-            | otherwise = "avatar-profile"
-
       toSpan = DM.maybe (HE.createEmptyElement "span") spanWith
 
       spanWith ∷ ∀ b m. ToNode b m Html ⇒ b → Html m
@@ -363,7 +355,7 @@ welcome model = HE.div_
 
 onlineOnlyFilter ∷ ImModel → Html ImMessage
 onlineOnlyFilter model =
-      HE.div [ HA.class' "duller online-only-filter" ]
+      HE.div [ HA.class' "online-only-filter" ]
             [ HE.input [ HA.type' "checkbox", HA.checked (model.suggestionsFrom == OnlineOnly), HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
             , HE.label [ HA.for "online-only", HA.class' "online-only-label" ] "Show only users online"
             ]

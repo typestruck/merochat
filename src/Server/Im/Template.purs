@@ -92,7 +92,5 @@ template payload = do
                         width:20px;
                         height:20px;
                     }
-                    .suggestion.new {
-                        background: url(https://static.mero.chat/file/default/suggestions.png);
-                  }"""
+                    """
             ]

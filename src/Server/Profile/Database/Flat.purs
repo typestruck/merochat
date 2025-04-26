@@ -33,7 +33,7 @@ type FlatProfileUser =
 
 fromFlatProfileUser ∷ FlatProfileUser → ProfileUser
 fromFlatProfileUser fu =
-      { avatar: SA.parseAvatar fu.avatar
+      { avatar: fu.avatar
       , age: DateWrapper <$> fu.birthday
       , country: fu.country
       , description: fu.description

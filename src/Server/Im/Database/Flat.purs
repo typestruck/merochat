@@ -88,7 +88,7 @@ fromFlatUser fc =
       , badges: DM.fromMaybe [] fc.badges
       , temporary: SC.coerce fc.temporary
       , joined: DateTimeWrapper fc.joined
-      , avatar: SA.parseAvatar fc.avatar
+      , avatar: fc.avatar
       , tags: DM.fromMaybe [] fc.tags
       , karma: fc.karma
       , availability: if fc.lastSeen >= ST.unsafeAdjustFromNow (Minutes (-1.0)) then Online else LastSeen $ DateTimeWrapper fc.lastSeen

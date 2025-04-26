@@ -27,13 +27,13 @@ suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
                     Just { avatar, name } | not $ DA.null contacts → HE.div (HA.class' "side-suggestions-container")
                           [ HE.div [ HA.class' "side-suggestion" ]
                                   [ HE.div [ HA.class' "avatar-contact-list-div faded", HA.onClick $ SpecialRequest PreviousSuggestion, HA.title "Move to this chat suggestion" ]
-                                          [ SA.avatar [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (suggesting - 1), HA.src $ SA.avatarForRecipient (suggesting - 1) $ getAvatar (suggesting - 1) ]
+                                          [ SA.avatar [ HA.class' $ "avatar-contact-list", HA.src $ SA.fromAvatar $ getAvatar (suggesting - 1) ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less-z", HA.onClick FocusCurrentSuggestion, HA.title "Move to this chat suggestion" ]
-                                          [ SA.avatar [ HA.class' $ avatarClasses avatar, HA.src $ SA.avatarForRecipient suggesting avatar ]
+                                          [ SA.avatar [ HA.class' "avatar-contact-list", HA.src $ SA.fromAvatar avatar ]
                                           ]
                                   , HE.div [ HA.class' "avatar-contact-list-div margin-less faded", HA.onClick $ SpecialRequest NextSuggestion, HA.title "Move to this chat suggestion" ]
-                                          [ SA.avatar [ HA.class' $ "avatar-contact-list" <> SA.avatarColorClass (suggesting + 1), HA.src $ SA.avatarForRecipient (suggesting + 1) $ getAvatar (suggesting + 1) ]
+                                          [ SA.avatar [ HA.class' $ "avatar-contact-list", HA.src $ SA.fromAvatar  $ getAvatar (suggesting + 1) ]
                                           ]
                                   , HE.div [ HA.class' "contact-profile", HA.title "Your chat suggestions" ]
                                           [ HE.span (HA.class' "contact-name") name
@@ -48,7 +48,3 @@ suggestionCall { contacts, suggesting, chatting, suggestions, toggleModal }
               getAvatar index = do
                     user ← suggestions !! index
                     user.avatar
-
-              avatarClasses avatar
-                    | DM.isNothing avatar = "avatar-contact-list " <> SA.avatarColorClass suggesting
-                    | otherwise = "avatar-contact-list"

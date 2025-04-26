@@ -55,7 +55,7 @@ view model = HE.div (show ProfileEditionForm)
               , HE.h3 (HA.class' { "registration-message": true, hidden: not model.registrationMessage }) "Your account has been created!"
               , HE.div (HA.class' "avatar-edition")
                       [ HE.div (HA.onClick SelectAvatar)
-                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.avatarForSender model.user.avatar ]
+                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ SA.fromAvatar model.user.avatar ]
                               , pen
                               ]
                       , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick resetAvatar ] $

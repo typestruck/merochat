@@ -1,14 +1,8 @@
-body {
-    margin: 0;
-    font-family: Verdana, sans-serif;
-    font-size: 14.5px;
-    line-height: 1.41857143;
-    height: 100%;
-    color: rgb(238, 238, 238)
-}
-
-strong {
-    font-weight: bold;
+#im {
+    --im-background-color: #DB5A5D;
+    --im-second-background-color: #972123;
+    --im-right-background-color: #EFE5DC;
+    --im-text-color: #FBFEFB;
 }
 
 svg {
@@ -16,7 +10,6 @@ svg {
     fill: rgb(238, 238, 238);
     cursor: pointer;
 }
-
 
 .request-error-message {
     visibility: visible;
@@ -41,7 +34,6 @@ svg {
     display: none;
 }
 
-
 .error-message {
     color: red;
     visibility: hidden;
@@ -59,28 +51,34 @@ svg {
     .error-message {
         display: none;
     }
+
     .input.error .error-message {
         display: inline-block;
     }
+
     .form-up {
         width: 90%;
     }
+
     .form-up label {
         align-self: start;
     }
+
     .input {
         display: flex;
         align-items: center;
         flex-direction: column;
         width: 90%;
     }
+
     .request-error-message {
         text-align: center;
         display: inline-block;
     }
 }
 
-input, textarea {
+input,
+textarea {
     border-radius: 3px;
     color: rgb(238, 238, 238);
     background: transparent;
@@ -179,6 +177,8 @@ input, textarea {
 }
 
 .contact-box {
+    background-color: var(--im-background-color);
+    color: var(--im-text-color);
     scrollbar-width: thin;
     overflow-y: hidden;
     display: flex;
@@ -194,7 +194,7 @@ input, textarea {
     height: 100%;
     display: flex;
     flex-direction: column;
-    background: #262626;
+    background: var(--im-right-background-color);
     position: relative;
 }
 
@@ -217,8 +217,6 @@ input, textarea {
     display: flex;
     flex-direction: column;
 }
-
-
 
 #user-context-menu rect {
     display: none;
@@ -246,10 +244,6 @@ input, textarea {
     padding-left: 0;
 }
 
-.side-suggestions-container {
-    background: #2d2d2d;
-}
-
 .profile-contact.highlighted,
 .side-suggestions-container.highlighted,
 .settings.highlighted {
@@ -265,12 +259,11 @@ input, textarea {
 .side-suggestion {
     display: flex;
     justify-content: center;
-    background: #213027;
     font-weight: bold;
     padding: 5px 10px;
     align-items: center;
-    border-bottom: 1px solid #4E4E4E;
-    border-top: 1px solid #4E4E4E;
+    border-bottom: 1px solid var(--light-color);
+
 }
 
 .mobile-notification {
@@ -354,14 +347,14 @@ input, textarea {
     width: 25px;
     height: 25px;
     stroke: none;
-    fill: #b9c658;
+    fill: var(--im-text-color);
     margin-right: 15px;
 }
 
 .back-side-suggestion {
     padding: 19px 6px;
     cursor: pointer;
-    color: #b9c658
+    color: var(--im-text-color)
 }
 
 .back-suggestions {
@@ -430,11 +423,10 @@ blockquote {
 }
 
 .settings {
-    background-color: #212120;
     position: relative;
     align-items: center;
     padding: 5px 10px;
-    border-bottom: #161616
+    border-bottom: 1px solid var(--light-color);
 }
 
 .contact {
@@ -496,15 +488,10 @@ blockquote {
     font-weight: bold;
 }
 
-.karma-text {
-    color: rgb(238, 238, 238, 0.8)
-}
-
 .contact-list-last-message {
     font-size: 1.1em;
     overflow-y: hidden;
     max-height: 27px;
-    color: rgb(238, 238, 238, 0.8)
 }
 
 .contact-name,
@@ -651,10 +638,6 @@ blockquote {
     background: #373737;
     padding: 5px 0px 43px 0px;
     min-height: 100%;
-}
-
-.suggestion.new .duller {
-    color: rgb(238, 238, 238);
 }
 
 .suggestion.new .span-info {
@@ -898,7 +881,6 @@ img.emoji {
 }
 
 .contact-list {
-    background-color: #2d2d2d;
     overflow-y: auto;
     flex-grow: 1;
     padding-top: 5px;
@@ -911,7 +893,7 @@ img.emoji {
 }
 
 .logo-contact-list {
-    background-color: #2d2d2d;
+
     padding: 10px;
     text-align: center;
 }
@@ -946,9 +928,8 @@ svg.toolbar-action {
 }
 
 .chat-input-options {
-    background: #262626;
     border: 1px solid #b5b7b7;
-    color: rgb(238, 238, 238, 0.8);
+    color: var(--text-color);
     border-bottom: none;
     padding: 5px;
     display: flex;
@@ -957,8 +938,8 @@ svg.toolbar-action {
 
 .svg-duller,
 .chat-input-options svg {
-    fill: rgb(238, 238, 238, 0.8);
-    stroke: rgb(238, 238, 238, 0.8);
+    fill: var(--text-color);
+    stroke: var(--text-color);
 }
 
 .chat-input-options button {
@@ -990,18 +971,16 @@ svg.toolbar-action {
     display: inline;
 }
 
-
 .chat-input-preview,
 .chat-input {
     border-radius: 5px;
     max-height: 150px;
     border-top-right-radius: 0;
     border-top-left-radius: 0;
-    background: #2d2d2d;
+    background: var(--background-color);
     height: 22px;
     padding: 10px 35px;
-    border: 1px solid #b5b7b7;
-    border-top: none;
+    border: 1px solid var(--text-color);
 }
 
 .chat-input-preview p {
@@ -1225,22 +1204,6 @@ input:not(type=button):focus {
     display: block;
 }
 
-.avatar-color-1 {
-    background-color: #469bc5;
-}
-
-.avatar-color-2 {
-    background-color: #b9c658;
-}
-
-.avatar-color-3 {
-    background-color: #c44a7b;
-}
-
-.avatar-color-4 {
-    background-color: #dac334;
-}
-
 .profile-basics {
     width: 45em;
 }
@@ -1333,7 +1296,7 @@ input:not(type=button):focus {
 
 
 .chatting-contact {
-    background: #373737;
+    background: var(--im-second-background-color);
 }
 
 .ss {
@@ -1347,7 +1310,7 @@ input:not(type=button):focus {
 
 .user-menu {
     display: none;
-    background: #262626;
+    background: var(--im-second-background-color);
     padding: 20px 15px;
     border-radius: 3px;
     z-index: 3;
@@ -1813,14 +1776,15 @@ select {
 }
 
 .retry-button {
-    color: rgb(238, 238, 238);
     cursor: pointer;
     padding: 5px 15px;
 }
 
 .retry-button svg {
     vertical-align: middle;
-    margin-left: 5px
+    margin-left: 5px;
+    stroke:red;
+    fill:red;
 }
 
 .retry-modal .retry:not(.invisible)~.loading {
@@ -1838,7 +1802,7 @@ select {
 }
 
 .card-top-header {
-    color: #C4D367;
+    color: var(--text-color);
     text-align: center;
     margin-top: 15px;
 }
@@ -1895,7 +1859,7 @@ select {
 .card-center {
     border: none;
     z-index: 2;
-    background: #262626;
+    background: var(--background-color);
 }
 
 .card-center.highlighted .suggestion-arrow svg,
@@ -2046,6 +2010,7 @@ select {
 
 .suggestion.new {
     padding-top: 11px;
+    background-color: var(--background-color);
 }
 
 .card-sides .suggestion.new {
@@ -2088,6 +2053,7 @@ select {
 }
 
 .avatar-settings {
+    background-color: var(--im-background-color);
     cursor: pointer;
 }
 
@@ -2483,7 +2449,7 @@ label {
         flex-direction: column;
     }
 
-    .donate-options i{
+    .donate-options i {
         padding: 0;
         padding-top: 15px;
         padding-bottom: 5px;
