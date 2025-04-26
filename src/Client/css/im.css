@@ -123,11 +123,9 @@ textarea {
 .online-indicator {
     border-radius: 100%;
     background-color: hsl(145, 80%, 28%);
-    min-width: 17px;
-    height: 17px;
-    margin-left: -9px;
-    margin-top: 12px;
-    align-self: flex-start;
+    min-width: 10px;
+    margin-left: 6px;
+    height: 10px;
 }
 
 .profile-description ol,
@@ -481,6 +479,8 @@ blockquote {
 
 .settings-name {
     padding: 5px 15px;
+    display: flex !important;
+    flex-direction: column;
 }
 
 .contact-name-badge {
@@ -504,9 +504,16 @@ a {
     flex-direction: column;
 }
 
+.contact-online-wrapper {
+    display: flex;
+    align-items: center;
+}
+
 .contact-ruler {
     width: 95%;
     opacity: 0.6;
+    margin-bottom: 0;
+    margin-top: 0;
     color: var(--light-color);
 }
 
@@ -535,8 +542,6 @@ a {
     white-space: nowrap;
     display: inline-block;
     margin: 0;
-    display: flex;
-    flex-direction: column;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2299,13 +2304,6 @@ label {
         min-width: 100%;
     }
 
-    .online-indicator {
-        min-width: 13px;
-        height: 13px;
-        margin-left: -8px;
-        margin-top: 0px;
-    }
-
     .contact-box {
         min-width: 0;
         order: 1;
@@ -2831,9 +2829,6 @@ label {
     }
 
     .online-indicator {
-        min-width: 13px;
-        height: 13px;
-        margin-left: -10px;
         margin-top: 3px;
     }
 

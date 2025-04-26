@@ -73,15 +73,17 @@ contactList
                                 ]
                                 [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && onlineStatus then show contact.user.availability else "" ]
                                         [ HE.img [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ SA.fromAvatar contact.user.avatar ]
-                                        , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not onlineStatus } ]
                                         ]
                                 , HE.div [ HA.class' "contact-profile" ]
-                                        [ HE.span (HA.class' "contact-name") contact.user.name
+                                        [ HE.div (HA.class' "contact-online-wrapper")
+                                                [ HE.span (HA.class' "contact-name") contact.user.name
+                                                , HE.div' [ HA.class' { "online-indicator": true, hidden: false {- contact.user.availability /= Online || not contact.user.onlineStatus || not onlineStatus -} } ]
+                                                ]
                                         , HE.div' [ HA.class' { "contact-list-last-message duller": true, hidden: contact.typing && typingStatus && contact.user.typingStatus }, HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
                                         , HE.div [ HA.class' { "contact-list-last-message duller typing": true, hidden: not contact.typing || not typingStatus || not contact.user.typingStatus } ] $ HE.p_ "Typing..."
                                         ]
                                 , HE.div (HA.class' "contact-options")
-                                        [ HE.span (HA.class' { duller : true, invisible: not isClientRender || not messageTimestamps || not contact.user.messageTimestamps  }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
+                                        [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not contact.user.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
                                         , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
                                         , HE.div (HA.class' { "message-status-contact duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not readReceipts || isContextMenuVisible }) $ show lastHistoryEntry.status
                                         , HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowContactContextMenu contact.user.id ]
