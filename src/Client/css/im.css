@@ -5,6 +5,10 @@
     --im-text-color: #FBFEFB;
 }
 
+body {
+    height: 100%;
+}
+
 svg {
     stroke: rgb(238, 238, 238);
     fill: rgb(238, 238, 238);
@@ -80,7 +84,7 @@ svg {
 input,
 textarea {
     border-radius: 3px;
-    color:var(--text-color);
+    color: var(--text-color);
     background: transparent;
     font-family: Verdana, sans-serif;
     font-size: inherit;
@@ -649,7 +653,7 @@ blockquote {
     background: var(--im-second-background-color);
     display: flex;
     flex-direction: column;
-    color:var(--light-color);
+    color: var(--light-color);
     padding: 10px 20px;
     cursor: pointer;
 }
@@ -692,7 +696,7 @@ blockquote {
 
 .message-content {
     padding: 0 15px;
-    color:var(--text-color);
+    color: var(--text-color);
     position: relative;
     border-radius: 5px;
 }
@@ -700,7 +704,7 @@ blockquote {
 .incoming-message .message-content {
     background-color: var(--merochat-red);
     margin-left: 20px;
-    color:var(--light-color)
+    color: var(--light-color)
 }
 
 .outgoing-message .message-content {
@@ -1664,8 +1668,8 @@ select {
     width: 21px;
     height: 21px;
     padding: 0 8px;
-    stroke:var(--text-color);
-    fill:var(--text-color);
+    stroke: var(--text-color);
+    fill: var(--text-color);
     stroke-width: 5;
 }
 
@@ -1761,8 +1765,8 @@ select {
 .retry-button svg {
     vertical-align: middle;
     margin-left: 5px;
-    stroke:red;
-    fill:red;
+    stroke: red;
+    fill: red;
 }
 
 .retry-modal .retry:not(.invisible)~.loading {
@@ -1812,7 +1816,7 @@ select {
     border-radius: 100%;
 }
 
-.suggestion-arrow svg circle{
+.suggestion-arrow svg circle {
     fill: var(--merochat-red);
 }
 
@@ -2481,7 +2485,7 @@ label {
 
     .contact-list {
         background-color: var(--background-color);
-        color:var(--text-color);
+        color: var(--text-color);
     }
 
     .profile-edition-name,
@@ -2886,6 +2890,7 @@ label {
 }
 
 @media (min-width:1920px) {
+
     html,
     body {
         font-size: 18px;
