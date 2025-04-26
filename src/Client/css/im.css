@@ -191,6 +191,9 @@ textarea {
     scrollbar-width: thin;
     overflow-y: hidden;
     display: flex;
+    z-index: 2;
+    position: relative;
+    box-shadow: 8px 40px 6px rgba(0, 0, 0, 0.2);
     flex-direction: column;
 }
 
@@ -438,6 +441,7 @@ blockquote {
     background-color: var(--merochat-red);
     padding: 5px 10px;
     border-bottom: 1px solid var(--light-color);
+    box-shadow: 0px 8px 6px rgba(0, 0, 0, 0.2);
 }
 
 .contact {
@@ -502,7 +506,7 @@ a {
 
 .contact-ruler {
     width: 95%;
-    opacity: 0.8;
+    opacity: 0.6;
     color: var(--light-color);
 }
 
