@@ -526,8 +526,8 @@ a {
 }
 
 .contact-list {
-    background-color:var(--im-right-background-color);
-    color:var(--text-color)
+    background-color: var(--im-right-background-color);
+    color: var(--text-color)
 }
 
 .contact-name,
@@ -1825,7 +1825,7 @@ select {
 }
 
 #online-only {
-    margin:0;
+    margin: 0;
     margin-right: 5px;
 }
 
@@ -2502,6 +2502,18 @@ label {
     .backing-suggestion-call,
     .suggestion.old {
         padding: 10px 15px;
+    }
+
+    .card-top-welcome-filter {
+        width: 100%;
+    }
+
+    .online-only-filter {
+        align-self: center;
+    }
+
+    .suggestion-cards {
+        margin-left: 0;
     }
 
     .suggestion-cards,
