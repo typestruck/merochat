@@ -327,9 +327,9 @@ signUpCall joined = HE.div (HA.class' "sign-up-call")
             n → " in " <> show n <> " days"
 
 welcome ∷ ImModel → Html ImMessage
-welcome model = HE.div_
+welcome model = HE.div (HA.class' "card-top-welcome-filter")
       [ HE.div (HA.class' "card-top-header")
-              [ HE.div (HA.class' "welcome") $ "Welcome, " <> model.user.name
+              [ HE.div (HA.class' "welcome") $ "Welcome, " <> model.user.name <> "!"
               , HE.div (HA.class' "welcome-new") $
                       if not SP.hasPrivilege StartChats model.user then
                             [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)

@@ -1824,10 +1824,34 @@ select {
     background-color: #469bc5 !important;
 }
 
+#online-only {
+    margin:0;
+    margin-right: 5px;
+}
+
+.card-top-welcome-filter {
+    display: flex;
+
+    align-items: flex-start;
+
+    align-self: flex-start;
+    flex-direction: column;
+}
+
+.suggestion-cards {
+    margin-left: 50px;
+}
+
+
 .card-top-header {
     color: var(--text-color);
     text-align: center;
-    margin-top: 15px;
+    display: flex;
+    align-items: baseline;
+}
+
+.welcome-new {
+    padding-left: 20px;
 }
 
 .profile-top-menu {
@@ -2220,7 +2244,9 @@ select {
 }
 
 .welcome {
-    font-size: 1.5em;
+    font-size: 1.4em;
+    font-family: var(--heading-font);
+    font-weight: bold;
 }
 
 .suggestion-arrow:last-child {
@@ -2925,10 +2951,6 @@ label {
         min-height: 64px;
     }
 
-    .welcome-new {
-        font-size: 1.1em;
-    }
-
     .confirmation.large {
         top: 10%;
         bottom: 10%;
@@ -3042,11 +3064,11 @@ label {
     }
 
     .card-top-header {
-        margin-top: 40px;
+        margin-top: 20px;
     }
 
     .online-only-filter {
-        margin: 13px 0px;
+        margin-top: 5px
     }
 
     .emoji-access {
