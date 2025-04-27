@@ -2808,6 +2808,10 @@ label {
     .settings {
         border-top-right-radius: 0;
     }
+
+    body {
+        font-size: 100%;
+    }
 }
 
 @media (min-width:1280px) and (max-width:1919px) {
@@ -3058,10 +3062,6 @@ label {
     .chat-input,
     .suggestion-input .side .chat-input {
         padding: 10px 45px;
-    }
-
-    body {
-        font-size: 100%;
     }
 }
 
