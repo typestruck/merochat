@@ -525,6 +525,11 @@ a {
     max-height: 27px;
 }
 
+.contact-list {
+    background-color:var(--im-right-background-color);
+    color:var(--text-color)
+}
+
 .contact-name,
 .contact-list-last-message>*,
 .chat-input::placeholder,
@@ -1307,6 +1312,7 @@ input:not(type=button):focus {
 
 .chatting-contact {
     background: var(--im-second-background-color);
+    color: var(--light-color);
 }
 
 .ss {
