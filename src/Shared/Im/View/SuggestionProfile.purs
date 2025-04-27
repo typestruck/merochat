@@ -97,7 +97,7 @@ compactProfile model contact =
                             <<< HE.div [ HA.class' "outer-user-menu" ]
                             <<< SIA.contextMenu
                             $ show CompactProfileContextMenu
-                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] $ blockReport contact.user.id
+                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] $ profileContextMenu contact.user.id true
                     ]
             , HE.div (HA.class' "show-profile-icon-div" : showProfileAction) profileIcon
 
@@ -109,7 +109,7 @@ compactProfile model contact =
 
       availableStatus =
             HE.div
-                  [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus} ]
+                  [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus } ]
                   $ show contact.user.availability
 
       profileIcon = HE.svg [ HA.class' "show-profile-icon", HA.viewBox "0 0 16 16" ]
@@ -133,7 +133,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             , HE.div [ HA.class' "outer-user-menu" ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
-            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu } ] $ blockReport id
+            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu id true
             ]
 
       profile =
@@ -159,7 +159,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
       currentSuggestionMenu = HE.div [ HA.class' "profile-context outer-user-menu" ]
             [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
             , SIA.contextMenu $ show SuggestionContextMenu
-            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu } ] <<< blockReport $ id
+            , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu } ] $ profileContextMenu id false
             ]
 
       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
@@ -267,9 +267,10 @@ badges source = map (it <<< SB.badgeFor) source
       where
       it bf = HE.div [ HA.class' "badge", HA.title bf.description ] [ HE.img $ [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.span [ HA.class' "badge-text" ] bf.text ]
 
-blockReport ∷ Int → Array (Html ImMessage)
-blockReport id =
-      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser id ] "Block"
+profileContextMenu ∷ Int → Boolean → Array (Html ImMessage)
+profileContextMenu id delete =
+      [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat id ] "Delete chat"
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser id ] "Block"
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
       ]
 

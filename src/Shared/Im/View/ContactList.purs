@@ -33,7 +33,6 @@ contactList
       isClientRender
       model@
             { failedRequests
-            , toggleContextMenu
             , contacts
             , toggleModal
             , user: { joined, temporary, id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus }
@@ -64,7 +63,6 @@ contactList
             let
                   numberUnreadMessages = countUnread contact.history
                   lastHistoryEntry = SU.fromJust $ DA.last contact.history
-                  isContextMenuVisible = toggleContextMenu == ShowContactContextMenu contact.user.id
             in
                   HE.div (HA.class' "contact-wrapper")
                         [ HE.div
@@ -85,14 +83,7 @@ contactList
                                 , HE.div (HA.class' "contact-options")
                                         [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not contact.user.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
                                         , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
-                                        , HE.div (HA.class' { "message-status-contact duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not readReceipts || isContextMenuVisible }) $ show lastHistoryEntry.status
-                                        , HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowContactContextMenu contact.user.id ]
-                                                [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
-                                                        [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
-                                                        ]
-                                                , HE.div [ HA.class' { "user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat contact.user.id ] $
-                                                        HE.div [ HA.class' "user-menu-item menu-item-heading" ] "Delete chat"
-                                                ]
+                                        , HE.div (HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not readReceipts  }) $ show lastHistoryEntry.status
                                         ]
 
                                 ]

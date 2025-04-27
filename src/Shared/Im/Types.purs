@@ -186,7 +186,6 @@ data ShowContextMenu
       | ShowSuggestionContextMenu
       | ShowCompactProfileContextMenu
       | ShowFullProfileContextMenu
-      | ShowContactContextMenu Int
       | ShowMessageContextMenu Int
 
 data ShowUserMenuModal

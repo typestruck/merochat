@@ -439,11 +439,6 @@ blockquote {
     padding: 5px 10px
 }
 
-.contact:hover .unread-messages,
-.contact:hover .message-status-contact {
-    display: none;
-}
-
 .message-context-menu {
     display: none;
 }
@@ -509,6 +504,7 @@ a {
 
 .contact-name {
     font-size: 1.1em;
+    font-family: var(--text-font);
 }
 
 .settings-name {
@@ -1831,9 +1827,7 @@ select {
 
 .card-top-welcome-filter {
     display: flex;
-
     align-items: flex-start;
-
     align-self: flex-start;
     flex-direction: column;
 }
