@@ -14,10 +14,8 @@ import Shared.Im.View.LogoMenu as SIVL
 import Shared.Im.View.Modals as SIVM
 import Shared.Im.View.Notification as SIVN
 import Shared.Im.View.NotificationMobile as SIVNM
-import Shared.Im.View.SuggestionCall as SIVS
 import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Im.View.UserMenu as SIVU
-import Shared.Unsafe ((!@))
 
 view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model = HE.div "im"
@@ -26,7 +24,6 @@ view isClientRender model = HE.div "im"
               , HE.div (HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: model.smallScreen && not (DS.null model.errorMessage) }) model.errorMessage
               , SIVN.reloadPage model.imUpdated
               , SIVN.prompt model.enableNotificationsVisible
-              , SIVS.suggestionCall model
               , SIVCN.contactList isClientRender model
               , SIVL.logoMenu model.fortune
               , SIVM.modals model

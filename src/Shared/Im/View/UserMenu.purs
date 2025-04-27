@@ -4,29 +4,27 @@ import Prelude
 import Shared.Experiments.Types
 import Shared.Im.Types
 
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Flame (Html)
-import Shared.Intl as SI
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
-import Shared.Svg as SS
 import Shared.Im.Svg as SIS
+import Shared.Intl as SI
+import Shared.Svg as SS
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model@{ toggleContextMenu, toggleModal, user: { temporary } } =
       HE.div (HA.class' { settings: true, highlighted: toggleModal == Tutorial OptionsMenu })
             [ header model
-            , HE.div [ HA.class' "outer-user-menu", HA.title "Your options" ]
-                    [ HE.svg [ HA.id $ show UserContextMenu, HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 16 16" ]
-                            ( SIS.contextMenuElements <>
-                                    [ HE.rect' [ HA.class' "strokeless", HA.x "0.03", HA.y "7", HA.width "15.93", HA.height "2" ]
-                                    , HE.rect' [ HA.class' "strokeless", HA.x "0.03", HA.y "2.5", HA.width "15.93", HA.height "2" ]
-                                    , HE.rect' [ HA.class' "strokeless", HA.x "0.03", HA.y "11.5", HA.width "15.93", HA.height "2" ]
-                                    ]
-                            )
+            , HE.div [ HA.class' "outer-user-menu" ]
+                    [ HE.svg [ HA.class' "svg-32 suggestions-home", HA.viewBox "0 0 24 24", HA.onClick ResumeSuggesting ]
+                            [ HE.path' [ HA.fillRule "evenodd", HA.clipRule "evenodd", HA.d "M5.27446 10.1262C5 10.7229 5 11.4018 5 12.7595V16.9999C5 18.8856 5 19.8284 5.58579 20.4142C6.11733 20.9457 6.94285 20.9949 8.5 20.9995V16C8.5 14.8954 9.39543 14 10.5 14H13.5C14.6046 14 15.5 14.8954 15.5 16V20.9995C17.0572 20.9949 17.8827 20.9457 18.4142 20.4142C19 19.8284 19 18.8856 19 16.9999V12.7595C19 11.4018 19 10.7229 18.7255 10.1262C18.4511 9.52943 17.9356 9.08763 16.9047 8.20401L15.9047 7.34687C14.0414 5.74974 13.1098 4.95117 12 4.95117C10.8902 4.95117 9.95857 5.74974 8.09525 7.34687L7.09525 8.20401C6.06437 9.08763 5.54892 9.52943 5.27446 10.1262ZM13.5 20.9999V16H10.5V20.9999H13.5Z" ]
+                            ]
+                    , HE.svg [ HA.id $ show UserContextMenu, HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 24 24" ]
+                            [ HE.path' [ HA.d "M19.6515 19.4054C20.2043 19.2902 20.5336 18.7117 20.2589 18.2183C19.6533 17.1307 18.6993 16.1749 17.4788 15.4465C15.907 14.5085 13.9812 14 12 14C10.0188 14 8.09292 14.5085 6.52112 15.4465C5.30069 16.1749 4.34666 17.1307 3.74108 18.2183C3.46638 18.7117 3.79562 19.2902 4.34843 19.4054C9.39524 20.4572 14.6047 20.4572 19.6515 19.4054Z" ]
+                            , HE.circle' [ HA.cx "12", HA.cy "8", HA.r "5" ]
+                            ]
                     , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowUserContextMenu } ]
                             [ HE.div (HA.class' "user-menu-item")
                                     [ SS.sun

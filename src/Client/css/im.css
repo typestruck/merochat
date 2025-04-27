@@ -494,6 +494,10 @@ a {
     align-items: center;
 }
 
+.suggestions-home {
+    margin-right: 10px;
+}
+
 .contact-ruler {
     width: 95%;
     opacity: 0.5;
@@ -2308,6 +2312,10 @@ label {
         overflow-x: hidden
     }
 
+    .suggestions-home {
+        display: none;
+    }
+
     .audio-button {
         display: block;
     }
@@ -2791,14 +2799,6 @@ label {
     .emojis {
         padding: 5px;
         height: 300px;
-    }
-
-    #user-context-menu circle {
-        display: none;
-    }
-
-    #user-context-menu rect {
-        display: block;
     }
 
     .svg-user-menu-context {
