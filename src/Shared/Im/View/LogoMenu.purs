@@ -3,18 +3,27 @@ module Shared.Im.View.LogoMenu where
 import Prelude
 import Shared.Im.Types
 
+import Data.Array ((!!))
+import Data.Array as DA
 import Data.Either (Either(..))
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Server.Database.Fields (c)
+import Shared.Avatar as SA
+import Shared.Badge (Badge)
+import Shared.Badge as SB
+import Shared.Intl as SI
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
+import Shared.Resource as SR
+import Web.HTML.Event.EventTypes (online)
 
-logoMenu ∷ Maybe String → Html ImMessage
-logoMenu fortune = HE.div (HA.class' "relative")
+logoMenu ∷ ImModel → Html ImMessage
+logoMenu model = HE.div (HA.class' "relative")
       [ HE.div (HA.class' "tabs")
               [ HE.div (HA.class' "tab-item duller")
                       [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16" ]
@@ -38,19 +47,81 @@ logoMenu fortune = HE.div (HA.class' "relative")
                       , HE.text "Suggestions"
                       ]
               ]
-      , HE.div (HA.class' { fortune: true, hidden: DM.isNothing fortune })
+      , HE.div (HA.class' { fortune: true, hidden: DM.isNothing model.fortune })
               [ HE.div (HA.class' "fortune-deets")
-                      [ HE.text $ DM.fromMaybe "" fortune
+                      [ HE.text $ DM.fromMaybe "" model.fortune
                       ]
               , HE.svg [ HA.viewBox "0 0 512 512", HA.onClick (ToggleFortune false) ]
                       [ HE.title "Close"
                       , HE.polygon' $ HA.points "438.627 118.627 393.373 73.373 256 210.746 118.627 73.373 73.373 118.627 210.746 256 73.373 393.373 118.627 438.627 256 301.254 393.373 438.627 438.627 393.373 301.254 256 438.627 118.627"
                       ]
               ]
-      , HE.div [ HA.class' "logo-contact-list", HA.onDblclick $ ToggleFortune true ] $
-              HE.img
-                    [ HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left InvertedLogo) Svg, "180w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
-                    , HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px"
-                    , HA.src $ SP.resourcePath (Left Logo) Png
-                    ]
+      , HE.div [ HA.class' "logo-contact-list" ]
+              [ miniSuggestions model
+              , HE.img
+                      [ HA.onDblclick $ ToggleFortune true
+                      , HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left InvertedLogo) Svg, "180w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
+                      , HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px"
+                      , HA.src $ SP.resourcePath (Left Logo) Png
+                      ]
+              ]
       ]
+
+miniSuggestions ∷ ImModel → Html ImMessage
+miniSuggestions model = HE.div (HA.class' "mini-suggestions")
+      case model.suggestions !! model.suggesting of
+            Nothing → [ HE.text "No suggestions to show" ]
+            Just suggestion →
+                  [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 24 24" ]
+                          [ HE.path' [ HA.d "M18 12L12 18L6 12", HA.strokeWidth "2" ]
+                          , HE.path' [ HA.d "M18 6L12 12L6 6", HA.strokeWidth "2" ]
+                          ]
+
+                  , HE.div (HA.class' "see-all-suggestions")
+                          [ HE.strong (HA.class' "mini-chat-label") "Chat suggestions"
+                          , HE.strong [ HA.onClick ResumeSuggesting, HA.class' "see-all" ] "See all →"
+                          ]
+                  , HE.div (HA.class' "mini-suggestion-cards")
+                          [ HE.div (HA.class' "mini-avatar-info")
+                                  [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "mini-suggestion-avatar" ]
+                                  , HE.div (HA.class' "mini-suggestion-info")
+                                          ( [ HE.div_
+                                                    [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
+                                                    , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
+                                                    ]
+                                            ] <> genderAge suggestion
+                                                  <> onlineStatus suggestion
+                                          )
+                                  ]
+                          , HE.div (HA.class' "mini-name-options")
+                                  [ HE.strong_ suggestion.name
+                                  , HE.div [ HA.class' "mini-options" ]
+                                          [ HE.svg [ HA.class' "svg-32 svg-mini-chat", HA.viewBox "0 0 24 24" ]
+                                                  [ HE.path' [ HA.d "M4.32698 6.63803L5.21799 7.09202L4.32698 6.63803ZM4.7682 20.2318L4.06109 19.5247H4.06109L4.7682 20.2318ZM18.362 16.673L18.816 17.564L18.816 17.564L18.362 16.673ZM19.673 15.362L20.564 15.816L20.564 15.816L19.673 15.362ZM19.673 6.63803L20.564 6.18404L20.564 6.18404L19.673 6.63803ZM18.362 5.32698L18.816 4.43597L18.816 4.43597L18.362 5.32698ZM5.63803 5.32698L6.09202 6.21799L5.63803 5.32698ZM7.70711 17.2929L7 16.5858L7.70711 17.2929ZM5 9.8C5 8.94342 5.00078 8.36113 5.03755 7.91104C5.07337 7.47262 5.1383 7.24842 5.21799 7.09202L3.43597 6.18404C3.18868 6.66937 3.09012 7.18608 3.04419 7.74817C2.99922 8.2986 3 8.97642 3 9.8H5ZM5 12V9.8H3V12H5ZM3 12V17H5V12H3ZM3 17V19.9136H5V17H3ZM3 19.9136C3 21.2054 4.56185 21.8524 5.4753 20.9389L4.06109 19.5247C4.40757 19.1782 5 19.4236 5 19.9136H3ZM5.4753 20.9389L8.41421 18L7 16.5858L4.06109 19.5247L5.4753 20.9389ZM15.2 16H8.41421V18H15.2V16ZM17.908 15.782C17.7516 15.8617 17.5274 15.9266 17.089 15.9624C16.6389 15.9992 16.0566 16 15.2 16V18C16.0236 18 16.7014 18.0008 17.2518 17.9558C17.8139 17.9099 18.3306 17.8113 18.816 17.564L17.908 15.782ZM18.782 14.908C18.5903 15.2843 18.2843 15.5903 17.908 15.782L18.816 17.564C19.5686 17.1805 20.1805 16.5686 20.564 15.816L18.782 14.908ZM19 12.2C19 13.0566 18.9992 13.6389 18.9624 14.089C18.9266 14.5274 18.8617 14.7516 18.782 14.908L20.564 15.816C20.8113 15.3306 20.9099 14.8139 20.9558 14.2518C21.0008 13.7014 21 13.0236 21 12.2H19ZM19 9.8V12.2H21V9.8H19ZM18.782 7.09202C18.8617 7.24842 18.9266 7.47262 18.9624 7.91104C18.9992 8.36113 19 8.94342 19 9.8H21C21 8.97642 21.0008 8.2986 20.9558 7.74817C20.9099 7.18608 20.8113 6.66937 20.564 6.18404L18.782 7.09202ZM17.908 6.21799C18.2843 6.40973 18.5903 6.71569 18.782 7.09202L20.564 6.18404C20.1805 5.43139 19.5686 4.81947 18.816 4.43597L17.908 6.21799ZM15.2 6C16.0566 6 16.6389 6.00078 17.089 6.03755C17.5274 6.07337 17.7516 6.1383 17.908 6.21799L18.816 4.43597C18.3306 4.18868 17.8139 4.09012 17.2518 4.04419C16.7014 3.99922 16.0236 4 15.2 4V6ZM8.8 6H15.2V4H8.8V6ZM6.09202 6.21799C6.24842 6.1383 6.47262 6.07337 6.91104 6.03755C7.36113 6.00078 7.94342 6 8.8 6V4C7.97642 4 7.2986 3.99922 6.74817 4.04419C6.18608 4.09012 5.66937 4.18868 5.18404 4.43597L6.09202 6.21799ZM5.21799 7.09202C5.40973 6.71569 5.71569 6.40973 6.09202 6.21799L5.18404 4.43597C4.43139 4.81947 3.81947 5.43139 3.43597 6.18404L5.21799 7.09202ZM8.41421 18V16C7.88378 16 7.37507 16.2107 7 16.5858L8.41421 18Z" ]
+                                                  , HE.path' [ HA.d "M8 9L16 9", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
+                                                  , HE.path' [ HA.d "M8 13L13 13", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
+                                                  ]
+                                          ]
+                                  ]
+                          , HE.div (HA.class' "mini-headline-tags")
+                                  ( [ HE.div (HA.class' "mini-headline") suggestion.headline
+                                    , HE.hr' (HA.class' "tag-ruler")
+
+                                    ] <> map (HE.span (HA.class' "tag")) suggestion.tags
+                                  )
+                          ]
+                  , HE.div (HA.class' "suggestion-carrousel")
+                          [ HE.span_ "Name"
+                          , HE.span_ "Name"
+                          , HE.span_ "Name"
+                          ]
+                  ]
+      where
+      genderAge suggestion =
+            case DM.maybe [] (DA.singleton <<< HE.span_) suggestion.gender <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show) suggestion.age of
+                  [ g, a ] → [ HE.div_ [ g, HE.span (HA.class' "duller") ", ", a ] ]
+                  ga → ga
+
+      onlineStatus suggestion
+            | not model.user.onlineStatus || not suggestion.onlineStatus = []
+            | otherwise = [ HE.span_ $ show suggestion.availability ]

@@ -903,15 +903,56 @@ img.emoji {
     scrollbar-width: thin;
 }
 
+.mini-suggestions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mini-suggestion-info {
+    font-size: 0.9em;
+    padding-left: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-name-options {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
 .contact-list.highlighted {
     z-index: 8;
     position: relative;
 }
 
 .logo-contact-list {
-
     padding: 10px;
-    text-align: center;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.see-all-suggestions {
+    display: flex;
+    width: 100%;
+    font-family: var(--heading-font);
+    margin:10px 0;
+    justify-content: space-between;
+}
+
+.mini-chat-label {
+    margin-left: 10px;
+}
+
+.see-all {
+    cursor: pointer;
+    margin-right: 10px;
 }
 
 .emoji-icon-list {
@@ -1061,6 +1102,10 @@ svg.toolbar-action {
 
 .profile-contact .tag {
     border: 1px solid #b5b7b7
+}
+
+.mini-headline-tags .tag {
+    border: 1px solid var(--light-color)
 }
 
 .suggestion .tag,
@@ -1768,7 +1813,6 @@ select {
     transform: rotate(135deg);
 }
 
-
 .fortune svg {
     width: 13px;
     height: 13px;
@@ -2000,12 +2044,18 @@ select {
     padding-top: 20px;
 }
 
+.tag-ruler {
+    color:var(--light-color);
+    margin:15px 0;
+    display: block;
+}
+
 .badge {
-    color: #db5a5d;
+    color: var(--merochat-red);
     font-weight: normal;
-    border: 1px solid #db5a5d;
-    border-radius: 4px;
-    padding: 0 6px;
+    border: 1px solid var(--merochat-red);
+    border-radius: 15px;
+    padding: 0px 6px;
     align-self: center;
     vertical-align: middle;
     display: inline-flex;
@@ -2015,6 +2065,16 @@ select {
 .badge-img {
     margin-right: 5px;
     align-self: center;
+}
+
+.mini-avatar-info {
+    display: flex;
+}
+
+.mini-online-headline {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .suggestion.old .about-description {
@@ -2093,6 +2153,18 @@ select {
 .svg-other {
     width: 17px;
     height: 17px;
+}
+
+.mini-headline {
+    font-style: italic;
+    margin-top: 3px;
+
+}
+
+.svg-mini-chat {
+    stroke: var(--merochat-red);
+    fill:var(--merochat-red)
+
 }
 
 .suggestions-button,
@@ -2259,6 +2331,22 @@ select {
 .avatar-profile-edition {
     width: 68px;
     height: 69px;
+}
+
+
+
+.mini-suggestion-cards {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--light-color);
+    border-radius: 15px;
+    padding: 10px 20px;
+}
+
+.mini-suggestion-avatar {
+    width: 82px;
+    height: 82px;
+    border-radius: 100%;
 }
 
 .image-form-controls {

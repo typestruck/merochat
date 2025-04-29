@@ -25,7 +25,7 @@ view isClientRender model = HE.div "im"
               , SIVN.reloadPage model.imUpdated
               , SIVN.prompt model.enableNotificationsVisible
               , SIVCN.contactList isClientRender model
-              , SIVL.logoMenu model.fortune
+              , SIVL.logoMenu model
               , SIVM.modals model
               ]
       , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not model.initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]

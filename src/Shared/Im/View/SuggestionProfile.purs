@@ -228,8 +228,8 @@ displayProfile index loggedUser profileUser temporaryUserMessage =
                           _ →
                                 [ HE.div_ $
                                         [ HE.span [ HA.class' "span-info" ] $ SI.thousands profileUser.karma
-                                        , HE.span_ " karma"
-                                        , HE.span_ $ " (#" <> show profileUser.karmaPosition <> ")"
+                                        , HE.span_ " karma "
+                                        , HE.span_ $ "#" <> show profileUser.karmaPosition
                                         ] <> map spanWith (badges profileUser.badges)
                                 ]
       , HE.div (HA.class' "profile-asl")
