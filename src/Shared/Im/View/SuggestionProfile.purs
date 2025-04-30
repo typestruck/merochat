@@ -1,4 +1,4 @@
-module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, badges) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, badges, profileContextMenu) where
 
 import Debug
 import Prelude

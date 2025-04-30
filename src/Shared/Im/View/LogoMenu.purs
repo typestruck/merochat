@@ -16,6 +16,9 @@ import Server.Database.Fields (c)
 import Shared.Avatar as SA
 import Shared.Badge (Badge)
 import Shared.Badge as SB
+import Shared.Element (ElementId(..))
+import Shared.Im.Svg as SIA
+import Shared.Im.View.SuggestionProfile as SISP
 import Shared.Intl as SI
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
@@ -101,7 +104,11 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                                   , HE.path' [ HA.d "M8 9L16 9", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
                                                   , HE.path' [ HA.d "M8 13L13 13", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
                                                   ]
-                                          ]
+                                                , HE.div [ HA.class' "outer-user-menu" ]
+                                                [  SIA.contextMenu $ show MiniSuggestionContextMenu
+                                                        , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowMiniSuggestionContextMenu } ] $ SISP.profileContextMenu suggestion.id true
+                                                ]
+                                        ]
                                   ]
                           , HE.div (HA.class' "mini-headline-tags")
                                   ( [ HE.div (HA.class' "mini-headline") suggestion.headline

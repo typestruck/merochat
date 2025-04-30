@@ -11,6 +11,7 @@ data ElementId
       | CompactProfileContextMenu
       | FullProfileContextMenu
       | ImageFileInput
+      | MiniSuggestionContextMenu
       | ChatInputSuggestion
       | ChatInput
       | ContactList
@@ -63,6 +64,7 @@ instance Show ElementId where
             ContactList → "contact-list"
             LinkFormUrl → "link-form-url"
             ProfileEditionForm → "profile-edition-form"
+            MiniSuggestionContextMenu -> "mini-suggestion-context-menu"
             ChatInput → "chat-input"
             ScreenshotInput → "screenshot-input"
             ChatInputSuggestion → "chat-input-suggestion"

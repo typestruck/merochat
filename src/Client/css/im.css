@@ -2130,6 +2130,10 @@ select {
     padding-right: 5px;
 }
 
+.mini-options {
+    display: flex;
+}
+
 .svg-32 {
     width: 25px;
     height: 25px;
@@ -2158,13 +2162,12 @@ select {
 .mini-headline {
     font-style: italic;
     margin-top: 3px;
-
 }
 
 .svg-mini-chat {
     stroke: var(--merochat-red);
-    fill:var(--merochat-red)
-
+    fill:var(--merochat-red);
+    margin-right: 5px;
 }
 
 .suggestions-button,
