@@ -352,8 +352,8 @@ toggleAskNotification model@{ enableNotificationsVisible } = F.noMessages $ mode
       }
 
 toggleUserContextMenu ∷ Event → ImModel → MoreMessages
-toggleUserContextMenu event model@{ toggleContextMenu }
-      | toggleContextMenu /= HideContextMenu =
+toggleUserContextMenu event model
+      | model.toggleContextMenu /= HideContextMenu =
               F.noMessages $ model { toggleContextMenu = HideContextMenu }
       | otherwise =
               model /\
@@ -377,6 +377,7 @@ toggleUserContextMenu event model@{ toggleContextMenu }
                     | elementId == show SuggestionContextMenu || parentId == show SuggestionContextMenu = ShowSuggestionContextMenu
                     | elementId == show CompactProfileContextMenu || parentId == show CompactProfileContextMenu = ShowCompactProfileContextMenu
                     | elementId == show FullProfileContextMenu || parentId == show FullProfileContextMenu = ShowFullProfileContextMenu
+                    | elementId == show MiniSuggestionContextMenu || parentId == show MiniSuggestionContextMenu = ShowMiniSuggestionContextMenu
                     | otherwise = HideContextMenu
 
 focusInput ∷ ElementId → ImModel → NextMessage

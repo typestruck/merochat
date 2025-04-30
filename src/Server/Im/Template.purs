@@ -66,7 +66,8 @@ template payload = do
                     , erroredFields: []
                     , fortune: Nothing
                     , toggleContextMenu: HideContextMenu
-                    , toggleModal: if payload.user.completedTutorial then HideUserMenuModal else Tutorial Welcome
+                    , toggleModal:  HideUserMenuModal
+                    -- , toggleModal: if payload.user.completedTutorial then HideUserMenuModal else Tutorial Welcome
                     , toggleChatModal: HideChatModal
                     , blockedUsers: []
                     , reportReason: Nothing

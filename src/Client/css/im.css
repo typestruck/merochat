@@ -1104,6 +1104,10 @@ svg.toolbar-action {
     border: 1px solid #b5b7b7
 }
 
+.mini-headline-tags {
+    cursor: pointer;
+}
+
 .mini-headline-tags .tag {
     border: 1px solid var(--light-color)
 }
@@ -1170,7 +1174,11 @@ svg.toolbar-action {
     background-color: #373737 !important;
 }
 
-.user-menu.in-message.menu-up {
+.user-menu.in-message.menu-up{
+    top: -92px;
+}
+
+.user-menu.mini.menu-up {
     top: -92px;
 }
 
@@ -2069,6 +2077,7 @@ select {
 
 .mini-avatar-info {
     display: flex;
+    cursor: pointer;
 }
 
 .mini-online-headline {
