@@ -1114,6 +1114,7 @@ svg.toolbar-action {
 
 .mini-headline-tags {
     cursor: pointer;
+    overflow-y: hidden;
 }
 
 .mini-headline-tags .tag {
@@ -2396,7 +2397,7 @@ select {
     width: calc(100% - 50px);
     border: 1px solid var(--light-color);
     border-radius: 15px;
-    min-height: 260px;
+    height: 270px;
     padding: 10px 20px;
 }
 
