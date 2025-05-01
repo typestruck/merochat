@@ -50,6 +50,7 @@ template payload = do
                     , suggestionsFrom: ThisWeek
                     , lastTyping: DateTimeWrapper lt
                     , smallScreen: false
+                    , showMiniChatInput: false
                     , initialScreen: true
                     , temporaryEmail: Nothing
                     , temporaryPassword: Nothing

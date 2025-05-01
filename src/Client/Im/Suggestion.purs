@@ -28,7 +28,7 @@ nextSuggestion model =
             model
                   { freeToFetchSuggestions = true
                   , suggesting = next
-                  , chatting = Nothing
+                  , showMiniChatInput = false
                   , bugging = Nothing
                   } /\ [ bugUser model ]
       where
@@ -43,7 +43,7 @@ previousSuggestion model =
             model
                   { freeToFetchSuggestions = true
                   , suggesting = previous
-                  , chatting = Nothing
+                  , showMiniChatInput = false
                   , bugging = Nothing
                   } /\ [ bugUser model ]
       where
@@ -66,6 +66,7 @@ fetchMoreSuggestions model =
             { freeToFetchSuggestions = false --ui uses this flag to show a loading icon and prevent repeated requests
             , failedRequests = []
             , bugging = Nothing
+            , showMiniChatInput = false
             } /\
             [ CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions
                     { query:
@@ -89,7 +90,6 @@ displayMoreSuggestions suggestions model =
       else
             F.noMessages model
                   { suggesting = suggesting
-                  , chatting = Nothing
                   , freeToFetchSuggestions = true
                   , suggestions = suggestions
                   , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1

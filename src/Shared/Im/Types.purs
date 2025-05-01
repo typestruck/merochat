@@ -147,6 +147,7 @@ type Im =
       , suggesting ∷ Int
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
+      , showMiniChatInput ∷ Boolean
       , editing ∷ Maybe Int
       , bugging ∷ Maybe MeroChatCall
       --used to signal that the page should be reloaded
@@ -303,19 +304,19 @@ data ImMessage
       --chat
       | SetSelectedImage (Maybe String)
       | ToggleContactProfile
+      | ToggleMiniChatInput
       | DropFile Event
       | ToggleMessageEnter
       | FocusInput ElementId
       | QuoteMessage String (Either Touch (Maybe Event))
       | EditMessage String Int
       | DeleteMessage Int
-      | FocusCurrentSuggestion
-      | EnterSendMessage Event
-      | ForceSendMessage
+      | EnterSendMessage ElementId Event
+      | ForceSendMessage ElementId
       | ResizeChatInput Event
-      | SendMessage MessageContent DateTimeWrapper
+      | SendMessage ElementId MessageContent DateTimeWrapper
       | Apply Markup
-      | SetEmoji Event
+      | SetEmoji ElementId Event
       | BeforeAudioMessage
       | AudioMessage Touch
       | SendAudioMessage String

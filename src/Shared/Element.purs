@@ -21,6 +21,7 @@ data ElementId
       | FeedbackForm
       | ConfirmPasswordInput
       | Im
+      | MiniChatInputSuggestion
       | LinkFormUrl
       | MessageHistory
       | Favicon
@@ -68,6 +69,7 @@ instance Show ElementId where
             ChatInput → "chat-input"
             ScreenshotInput → "screenshot-input"
             ChatInputSuggestion → "chat-input-suggestion"
+            MiniChatInputSuggestion → "mini-chat-input-suggestion"
             ImageFormCaption → "image-form-caption"
             FeedbackForm → "feedback-form"
             MessageHistory → "message-history"

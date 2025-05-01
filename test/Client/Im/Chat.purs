@@ -11,6 +11,7 @@ import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (MessageContent(..), MessageStatus(..))
 import Shared.Resource (maxImageSize)
@@ -33,7 +34,7 @@ tests = do
                               , chatting = Nothing
                               , suggesting = 0
                               }
-                        { contacts } = DT.fst $ CIC.prepareSendMessage content date webSocket model'
+                        { contacts } = DT.fst $ CIC.prepareSendMessage ChatInput content date webSocket model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just suggestion
 
             TU.test "prepareSendMessage does not add new contact from suggestion if it already is on the list" do
@@ -45,7 +46,7 @@ tests = do
                               , suggesting = 0
                               , contacts = [ contact ]
                               }
-                        { contacts } = DT.fst $ CIC.prepareSendMessage content date webSocket model'
+                        { contacts } = DT.fst $ CIC.prepareSendMessage ChatInput content date webSocket model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just contact.user
 
             TU.test "sendMessage bumps temporary id" do

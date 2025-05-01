@@ -60,8 +60,8 @@ linkModal { toggleChatModal, linkText, link, user, erroredFields } =
                   , HE.div (HA.class' "buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
                   ]
 
-imageModal ∷ ImModel → Html ImMessage
-imageModal { selectedImage, erroredFields, user } =
+imageModal ∷   ImModel → Html ImMessage
+imageModal  { selectedImage, erroredFields, user } =
       HE.div [ HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage } ]
             if SP.hasPrivilege SendImages user then
                   [ HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
@@ -76,7 +76,7 @@ imageModal { selectedImage, erroredFields, user } =
                           , HE.input [ HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
                           , HE.div (HA.class' "image-buttons")
                                   [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
-                                  , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick ForceSendMessage, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
+                                  , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
                                   ]
                           ]
                   ]
@@ -108,7 +108,7 @@ chatBarInput
             , messageEnter
             , toggleChatModal
             } = HE.fragment
-      [ emojiModal model
+      [ emojiModal elementId model
       -- , HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview })
       --         [ HE.div [ HA.class' "chat-input-options" ]
       --                 [ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
@@ -145,7 +145,7 @@ chatBarInput
                       , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
                               , audioButton [ HA.onClick $ ToggleChatModal ShowAudioPrompt ]
-                              , sendButton messageEnter model
+                              , sendButton elementId messageEnter model
                               ]
                       ]
               ]
@@ -155,7 +155,7 @@ chatBarInput
       available = DM.maybe true ((_ /= Unavailable) <<< _.availability <<< _.user) chatting
       recipientName = DM.fromMaybe "" (map (_.name <<< _.user) chatting <|> map _.name (model.suggestions !! model.suggesting))
 
-      enterBeforeSendMessageCheck event = if isWebSocketConnected && model.messageEnter then Just $ EnterSendMessage event else Nothing
+      enterBeforeSendMessageCheck event = if isWebSocketConnected && model.messageEnter then Just $ EnterSendMessage elementId event else Nothing
 
 bold ∷ Html ImMessage
 bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
@@ -259,10 +259,10 @@ audioButton actions = HE.svg (actions <> [ HA.class' "attachment-button audio-bu
               ]
       ]
 
-sendButton ∷ Boolean → ImModel → Html ImMessage
-sendButton messageEnter model =
+sendButton ∷ ElementId -> Boolean → ImModel → Html ImMessage
+sendButton elementId messageEnter model =
       HE.div
-            (if model.isWebSocketConnected then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick ForceSendMessage ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
+            (if model.isWebSocketConnected then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick $ ForceSendMessage elementId ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
 
 sendButtonElements ∷ String → Array (Html ImMessage)
 sendButtonElements title =
@@ -281,8 +281,8 @@ previewButton = HE.svg [ HA.class' "svg-20 hidden", HA.onClick $ ToggleChatModal
       , HE.path' [ HA.class' "strokeless", HA.d "M15.09,13.55h0l-.54-.48L13,11.66a3.34,3.34,0,0,0-2.73-5.27A3.35,3.35,0,0,0,7.11,8.58a3.51,3.51,0,0,0-.19,1.15,3.35,3.35,0,0,0,3.34,3.35,3.31,3.31,0,0,0,2.2-.85l1.48,1.33.55.5.83.75a.42.42,0,0,0,.28.1.43.43,0,0,0,.28-.11h0a.36.36,0,0,0,0-.53Zm-4.83-1.22a2.6,2.6,0,0,1-2.59-2.6,3,3,0,0,1,.14-.89A2.69,2.69,0,0,1,9,7.48a2.53,2.53,0,0,1,1.28-.34,2.6,2.6,0,0,1,0,5.19Z" ]
       ]
 
-emojiModal ∷ ImModel → Html ImMessage
-emojiModal { toggleChatModal } = HE.div [ HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", emojiClickEvent SetEmoji ] $ map toEmojiCategory SIE.byCategory
+emojiModal ∷ ElementId -> ImModel → Html ImMessage
+emojiModal elementId { toggleChatModal } = HE.div [ HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory SIE.byCategory
       where
       toEmojiCategory (Tuple name pairs) = HE.div_
             [ HE.div (HA.class' "duller") name

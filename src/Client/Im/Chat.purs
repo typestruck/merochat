@@ -73,41 +73,48 @@ resizeChatInput event model = model /\ [ resize ]
             pure Nothing
 
 -- | Send a message on enter
-enterSendMessage ∷ Event → ImModel → NoMessages
-enterSendMessage event model =
-      model /\ [ prevent, messageContent model ]
+enterSendMessage ∷ ElementId → Event → ImModel → NoMessages
+enterSendMessage elementId event model =
+      model /\ [ prevent, messageContent elementId model ]
       where
       prevent = EC.liftEffect do
             WEE.preventDefault event
             pure Nothing
 
 -- | Send a message on button click
-forceSendMessage ∷ ImModel → MoreMessages
-forceSendMessage model =
+forceSendMessage ∷ ElementId → ImModel → MoreMessages
+forceSendMessage elementId model =
       model /\
-            [ messageContent model
+            [ messageContent elementId model
             ]
 
 -- | Is the message to be sent an audio, text or image?
-messageContent ∷ ImModel → Aff (Maybe ImMessage)
-messageContent model = do
-      input ← EC.liftEffect $ chatInput model.chatting
+messageContent ∷ ElementId → ImModel → Aff (Maybe ImMessage)
+messageContent elementId model = do
+      input ← EC.liftEffect $ CCD.unsafeGetElementById elementId
       value ← EC.liftEffect $ CCD.value input
       date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
-      pure <<< Just $ SendMessage (DM.maybe (Text value) toImage model.selectedImage) date
+      cleanUp input
+      pure <<< Just $ SendMessage elementId (DM.maybe (Text value) toImage model.selectedImage) date
       where
       toImage base64File = Image (DM.fromMaybe "" model.imageCaption) base64File
 
+      cleanUp input = EC.liftEffect do
+            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
+            CCD.setValue input ""
+            resizeTextarea input
+
 -- | Prepare and send a message via web socket
-prepareSendMessage ∷ MessageContent → DateTimeWrapper → WebSocket → ImModel → MoreMessages
-prepareSendMessage content dt webSocket model = case content of
+prepareSendMessage ∷ ElementId → MessageContent → DateTimeWrapper → WebSocket → ImModel → MoreMessages
+prepareSendMessage elementId content dt webSocket model = case content of
       Text message | DS.null $ DS.trim message → F.noMessages model
       _ → sendMessage (SU.fromJust updatedModel.chatting) shouldFetchHistory content dt webSocket updatedModel
       where
       --the user messaged could be in both the contacts and suggestions
       -- in either case, check if the chat history has not already been fetched
-      shouldFetchHistory /\ updatedModel = case model.chatting of
-            Nothing →
+      shouldFetchHistory /\ updatedModel = case elementId of
+            ChatInput → Tuple false model
+            _ →
                   let
                         user = model.suggestions !@ model.suggesting
                   in
@@ -123,7 +130,6 @@ prepareSendMessage content dt webSocket model = case content of
                                           { chatting = Just contact.user.id
                                           , suggestions = DA.filter ((user.id /= _) <<< _.id) model.suggestions
                                           }
-            _ → Tuple false model
 
 sendMessage ∷ Int → Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
 sendMessage userId shouldFetchHistory contentMessage date webSocket model =
@@ -132,6 +138,7 @@ sendMessage userId shouldFetchHistory contentMessage date webSocket model =
             , contacts = map updateContact model.contacts
             , imageCaption = Nothing
             , selectedImage = Nothing
+            , showMiniChatInput = false
             , editing = Nothing
             } /\ [ actuallySendMessage, fetchHistory ]
       where
@@ -141,10 +148,6 @@ sendMessage userId shouldFetchHistory contentMessage date webSocket model =
       fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory userId shouldFetchHistory
       actuallySendMessage = EC.liftEffect do
             CIS.scrollLastMessage
-            input ← chatInput (Just userId)
-            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
-            CCD.setValue input ""
-            resizeTextarea input
             CIW.sendPayload webSocket $
                   case model.editing of
                         Nothing →
@@ -275,7 +278,7 @@ setMarkup markup model =
       model /\ [ setIt ]
       where
       setIt = EC.liftEffect do
-            input ← chatInput model.chatting
+            input ← CCD.unsafeGetElementById ChatInput
             value ← CCD.value input
             let
                   textarea = SU.fromJust $ WHHTA.fromElement input
@@ -300,12 +303,6 @@ setMarkup markup model =
       plusNewLine value t
             | DS.null value = t
             | otherwise = "\n" <> t
-
--- | Return the current textarea used to type messages
-chatInput ∷ Maybe Int → Effect Element
-chatInput chatting
-      | DM.isNothing chatting = CCD.unsafeGetElementById ChatInputSuggestion -- suggestion card input cannot be cached
-      | otherwise = CCD.unsafeGetElementById ChatInput
 
 -- | Find the cursor on the chatting textarea and set text at is position
 setAtCursor ∷ Element → String → Effect (Maybe ImMessage)
@@ -351,12 +348,12 @@ setSelectedImage maybeBase64 model =
       isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
 -- | Insert an emoji into the chatting textarea
-setEmoji ∷ Event → ImModel → NextMessage
-setEmoji event model = model /\ [ setIt, hideModal ]
+setEmoji ∷ ElementId -> Event → ImModel → NextMessage
+setEmoji elementId event model = model /\ [ setIt, hideModal ]
       where
       setIt = EC.liftEffect do
             emoji ← CCD.innerTextFromTarget event
-            input ← chatInput model.chatting
+            input ← CCD.unsafeGetElementById elementId
             setAtCursor input emoji
       hideModal = pure <<< Just $ ToggleChatModal HideChatModal
 
@@ -378,7 +375,7 @@ setLink model =
       markdown url = "[" <> DM.fromMaybe url model.linkText <> "](" <> url <> ")"
       hide = pure <<< Just $ ToggleChatModal HideChatModal
       setIt text = EC.liftEffect do
-            input ← chatInput model.chatting
+            input ← CCD.unsafeGetElementById ChatInput
             setAtCursor input $ markdown text
 
 -- | Send "is typing" notification
@@ -409,6 +406,11 @@ toggleMessageEnter model = F.noMessages model
       { messageEnter = not model.messageEnter
       }
 
+toggleMiniChatInput ∷ ImModel → NoMessages
+toggleMiniChatInput model = F.noMessages model
+      { showMiniChatInput = not model.showMiniChatInput
+      }
+
 -- | Show or hide chat modals
 toggleModal ∷ ShowChatModal → ImModel → MoreMessages
 toggleModal toggle model =
@@ -430,7 +432,7 @@ toggleModal toggle model =
 
       setPreview = EC.liftEffect do
             preview ← CCD.unsafeGetElementById ChatInputPreview
-            input ← chatInput model.chatting
+            input ← CCD.unsafeGetElementById ChatInput
             message ← CCD.value input
             CCD.setInnerHTML preview $ SM.parse message
             pure Nothing
@@ -463,7 +465,7 @@ sendAudioMessage base64 model =
       where
       sendIt = do
             date ← EC.liftEffect $ map DateTimeWrapper EN.nowDateTime
-            pure <<< Just $ SendMessage (Audio base64) date
+            pure <<< Just $ SendMessage ChatInput (Audio base64) date
 
 -- | Messages can be quote from context menu, double click on desktop and swipe on mobile
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage
@@ -496,19 +498,10 @@ quoteMessage contents touchEvent model =
             | otherwise = pure Nothing
 
       quoteIt = EC.liftEffect do
-            input ← chatInput model.chatting
+            input ← CCD.unsafeGetElementById ChatInput
             let markup = sanitized <> "\n\n"
             value ← WHHTA.value <<< SU.fromJust $ WHHTA.fromElement input
             setAtCursor input $ if DS.null value then markup else "\n" <> markup
-
--- | Focus suggestions card when the desktop left suggestions banner is clicked
-focusCurrentSuggestion ∷ ImModel → NoMessages
-focusCurrentSuggestion model = model /\ [ focus ]
-      where
-      focus = EC.liftEffect do
-            input ← chatInput model.chatting
-            WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
-            pure Nothing
 
 editMessage ∷ String → Int → ImModel → NoMessages
 editMessage message id model =
@@ -518,8 +511,8 @@ editMessage message id model =
             } /\ [ setIt *> pure Nothing ]
       where
       setIt = EC.liftEffect do
-            input ← chatInput model.chatting
-            CCD.setValue (spy "inp" input) message
+            input ← CCD.unsafeGetElementById ChatInput
+            CCD.setValue input message
 
 deleteMessage ∷ Int → WebSocket → ImModel → NoMessages
 deleteMessage id webSocket model =

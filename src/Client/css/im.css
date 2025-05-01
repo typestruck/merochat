@@ -908,6 +908,7 @@ img.emoji {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 20px;
 }
 
 .mini-suggestion-info {
@@ -923,6 +924,7 @@ img.emoji {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
+
 }
 
 .contact-list.highlighted {
@@ -930,9 +932,18 @@ img.emoji {
     position: relative;
 }
 
-.logo-contact-list {
-    padding: 10px;
+.see-all-home {
+    display: flex;
+    align-items: center;
+}
 
+.see-all-home svg {
+    margin-top: -5px;
+}
+
+.logo-contact-list {
+    box-shadow: 0px -6px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -942,7 +953,7 @@ img.emoji {
     display: flex;
     width: 100%;
     font-family: var(--heading-font);
-    margin:10px 0;
+    margin: 10px 0;
     justify-content: space-between;
 }
 
@@ -950,9 +961,8 @@ img.emoji {
     margin-left: 10px;
 }
 
-.see-all {
-    cursor: pointer;
-    margin-right: 10px;
+.see-all-home .suggestions-home {
+    margin-right: 5px;
 }
 
 .emoji-icon-list {
@@ -1051,8 +1061,6 @@ svg.toolbar-action {
 }
 
 .chat-input:focus {
-    border: 1px solid #b5b7b7;
-    border-top: none;
     outline: none;
 }
 
@@ -1164,6 +1172,7 @@ svg.toolbar-action {
     background: #373737;
 }
 
+
 .user-menu.in-message {
     background-color: #212120;
     right: 10px;
@@ -1174,7 +1183,7 @@ svg.toolbar-action {
     background-color: #373737 !important;
 }
 
-.user-menu.in-message.menu-up{
+.user-menu.in-message.menu-up {
     top: -92px;
 }
 
@@ -1916,6 +1925,7 @@ select {
     position: absolute;
 }
 
+
 .show-profile-icon-div {
     display: flex;
     justify-content: center;
@@ -1927,11 +1937,14 @@ select {
 }
 
 .suggestion-arrow svg {
-
     border-radius: 100%;
 }
 
 .suggestion-arrow svg circle {
+    fill: var(--light-color);
+}
+
+.suggestion-arrow svg polygon {
     fill: var(--merochat-red);
 }
 
@@ -2053,8 +2066,8 @@ select {
 }
 
 .tag-ruler {
-    color:var(--light-color);
-    margin:15px 0;
+    color: var(--light-color);
+    margin: 15px 0;
     display: block;
 }
 
@@ -2075,9 +2088,25 @@ select {
     align-self: center;
 }
 
+.mini-avatar-info-arrows {
+    align-items: center;
+    display: flex;
+}
+
+.mini-suggestion-cards .chat-input-options, .mini-suggestion-cards .attachment-button, .mini-suggestion-cards .emoji-access-div {
+    display: none;
+}
+
+.mini-suggestion-cards .chat-input {
+    padding: 5px;
+    border-radius:5px;
+    margin-top: 10px;
+}
+
 .mini-avatar-info {
     display: flex;
     cursor: pointer;
+    margin-left: auto;
 }
 
 .mini-online-headline {
@@ -2175,7 +2204,7 @@ select {
 
 .svg-mini-chat {
     stroke: var(--merochat-red);
-    fill:var(--merochat-red);
+    fill: var(--merochat-red);
     margin-right: 5px;
 }
 
@@ -2188,6 +2217,22 @@ select {
 .avatar-settings {
     background-color: var(--merochat-red);
     cursor: pointer;
+}
+
+.mini-avatar-info-arrows .svg-55 {
+    width: 32px;
+    height: 32px;
+}
+
+.mini-avatar-info-arrows .suggestion-arrow {
+    margin:0;
+    position: unset;
+    margin-left: -33px
+}
+
+.mini-avatar-info-arrows .suggestion-arrow:last-child {
+    margin-left: auto;
+    margin-right: -33px;
 }
 
 .svg-55 {
@@ -2345,13 +2390,13 @@ select {
     height: 69px;
 }
 
-
-
 .mini-suggestion-cards {
     display: flex;
     flex-direction: column;
+    width: calc(100% - 50px);
     border: 1px solid var(--light-color);
     border-radius: 15px;
+    min-height: 260px;
     padding: 10px 20px;
 }
 

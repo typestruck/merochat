@@ -130,17 +130,17 @@ update st model =
             ToggleChatModal modal → CIC.toggleModal modal model
             DropFile event → CIC.catchFile st.fileReader event model
             ResizeChatInput event → CIC.resizeChatInput event model
-            EnterSendMessage event → CIC.enterSendMessage event model
-            ForceSendMessage → CIC.forceSendMessage model
-            SendMessage content dt → CIC.prepareSendMessage content dt webSocket model
+            EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
+            ForceSendMessage elementId → CIC.forceSendMessage elementId model
+            SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model
             SetSelectedImage maybeBase64 → CIC.setSelectedImage maybeBase64 model
             Apply markup → CIC.setMarkup markup model
-            SetEmoji event → CIC.setEmoji event model
+            SetEmoji elementId event → CIC.setEmoji elementId event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
             BeforeAudioMessage → CIC.beforeAudioMessage model
             AudioMessage touch → CIC.audioMessage touch model
+            ToggleMiniChatInput → CIC.toggleMiniChatInput model
             SendAudioMessage base64 → CIC.sendAudioMessage base64 model
-            FocusCurrentSuggestion → CIC.focusCurrentSuggestion model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message et → CIC.quoteMessage message et model
             EditMessage message id → CIC.editMessage message id model

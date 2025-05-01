@@ -33,6 +33,7 @@ model =
       , typingIds: []
       , initialScreen: true
       , suggestionsFrom: ThisWeek
+      , showMiniChatInput: false
       , temporaryEmail: Nothing
       , editing: Nothing
       , bugging: Nothing
