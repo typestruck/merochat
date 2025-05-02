@@ -13,13 +13,20 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 
 unreadNotification ∷ ImModel → Html ImMessage
-unreadNotification { smallScreen, contacts, user: { id } } = HE.div [ HA.onClick $ ToggleInitialScreen true, HA.title "Back to contact list", HA.class' { "mobile-notification": true, hidden: not smallScreen || DA.null avatars } ] $ HE.span (HA.class' "notification-header") "New messages from  " : avatars
+unreadNotification model
+      | model.smallScreen =
+            HE.div [ HA.onClick $ ToggleInitialScreen true, HA.title "Back to contact list", HA.class' { "mobile-notification": true, hidden: DA.null avatars } ] $ HE.span (HA.class' "notification-header") "New messages from  " : avatars
+
       where
-      avatars =
-            let
-                  all = DA.catMaybes $ DA.mapWithIndex unread contacts
-            in
-                  if DA.length all > 5 then DA.snoc (DA.take 5 all) $ HE.text "..." else all
-      unread index { history, user: { avatar } }
-            | DF.any (\{ status, sender } → status < Read && sender /= id) history = Just $ HE.img [ HA.class' $ "avatar-notification-mobile", HA.src $ SA.fromAvatar avatar ]
-            | otherwise = Nothing
+      unreadChats = map markup $ DA.filter unread model.contacts
+      unread entry = DF.any (\m → m.status < Read && m.sender /= model.user.id && Just m.sender /= model.chatting ) entry.history
+      markup entry = HE.img [ HA.class' $ "avatar-notification-mobile", HA.src $ SA.fromAvatar entry.user.avatar ]
+
+      avatars
+            | DA.length unreadChats > 5 = DA.snoc (DA.take 5 unreadChats) $ HE.text "..."
+            | otherwise = unreadChats
+
+      | otherwise = emptyDiv
+
+emptyDiv :: Html ImMessage
+emptyDiv = HE.createEmptyElement "div"
