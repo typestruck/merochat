@@ -111,6 +111,11 @@ toggleContactProfile model = F.noMessages model
       { fullContactProfileVisible = not model.fullContactProfileVisible
       }
 
+toggleCollapsedMiniSuggestions ∷ ImModel → NoMessages
+toggleCollapsedMiniSuggestions model = F.noMessages model
+      { showCollapsedMiniSuggestions = not model.showCollapsedMiniSuggestions
+      }
+
 -- | Show suggestion cards again
 resumeSuggesting ∷ ImModel → NoMessages
 resumeSuggesting model = F.noMessages model

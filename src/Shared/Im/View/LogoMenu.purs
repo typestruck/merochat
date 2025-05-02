@@ -22,6 +22,7 @@ import Shared.Im.View.SuggestionProfile as SISP
 import Shared.Intl as SI
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
+import Web.HTML.Event.EventTypes (online)
 
 logoMenu ∷ ImModel → Html ImMessage
 logoMenu model = HE.div (HA.class' "relative")
@@ -71,23 +72,17 @@ logoMenu model = HE.div (HA.class' "relative")
 miniSuggestions ∷ ImModel → Html ImMessage
 miniSuggestions model = HE.div (HA.class' "mini-suggestions")
       case model.suggestions !! model.suggesting of
-            Just suggestion | not model.smallScreen && DM.isJust model.chatting  →
-                  [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 24 24" ]
+            Just suggestion | not model.smallScreen && DM.isJust model.chatting && not model.showCollapsedMiniSuggestions →
+                  [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
                           [ HE.path' [ HA.d "M18 12L12 18L6 12", HA.strokeWidth "2" ]
                           , HE.path' [ HA.d "M18 6L12 12L6 6", HA.strokeWidth "2" ]
                           ]
 
-                  , HE.div (HA.class' "see-all-suggestions")
-                          [ HE.strong (HA.class' "mini-chat-label") "Chat suggestions"
-                          , HE.div [ HA.class' "see-all-home", HA.onClick ResumeSuggesting, HA.title "See all suggestions" ]
-                                  [ SIS.home
-                                  ]
-                          ]
+                  , seeAllSuggestions
                   , HE.div (HA.class' "mini-suggestion-cards")
                           [ HE.div (HA.class' "mini-avatar-info-arrows")
-                                  [
-                                        arrow backArrow $ SpecialRequest PreviousSuggestion
-                                        , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick ResumeSuggesting ]
+                                  [ arrow backArrow $ SpecialRequest PreviousSuggestion
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick ResumeSuggesting ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div (HA.class' "mini-suggestion-info")
                                                   ( [ HE.div_
@@ -98,7 +93,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                                           <> onlineStatus suggestion
                                                   )
                                           ]
-                                          , arrow nextArrow $ SpecialRequest NextSuggestion
+                                  , arrow nextArrow $ SpecialRequest NextSuggestion
                                   ]
                           , HE.div (HA.class' "mini-name-options")
                                   [ HE.strong_ suggestion.name
@@ -119,7 +114,28 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                     , HE.hr' (HA.class' "tag-ruler")
                                     ] <> map (HE.span (HA.class' "tag")) suggestion.tags
                                   )
-                         , HE.div [ HA.class' {"suggestion-input": true, hidden: not model.showMiniChatInput} ] $ SIVC.chatBarInput MiniChatInputSuggestion model
+                          , HE.div [ HA.class' { "suggestion-input": true, hidden: not model.showMiniChatInput } ] $ SIVC.chatBarInput MiniChatInputSuggestion model
+                          ]
+                  ]
+            Just suggestion | model.showCollapsedMiniSuggestions && not model.smallScreen && DM.isJust model.chatting →
+                  [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
+                          [ HE.path' [ HA.d "M18 18L12 12L6 18", HA.stroke "#EFE5DC", HA.strokeWidth "2" ]
+                          , HE.path' [ HA.d "M18 12L12 6L6 12", HA.stroke "#EFE5DC", HA.strokeWidth "2" ]
+                          ]
+                  , seeAllSuggestions
+                  , HE.div (HA.class' "mini-suggestion-cards collapsed")
+                          [ HE.div (HA.class' "mini-avatar-info-arrows")
+                                  [ arrow backArrow $ SpecialRequest PreviousSuggestion
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick ToggleCollapsedMiniSuggestions ]
+                                          [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "mini-suggestion-avatar" ]
+                                          , HE.div (HA.class' "mini-suggestion-info")
+                                                  ( [ HE.strong (HA.class' "collapsed-name") suggestion.name
+
+                                                    ] <> onlineStatus suggestion
+                                                  )
+                                          ]
+                                          , arrow nextArrow $ SpecialRequest NextSuggestion
+                                  ]
                           ]
                   ]
             _ → []
@@ -134,3 +150,11 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
       onlineStatus suggestion
             | not model.user.onlineStatus || not suggestion.onlineStatus = []
             | otherwise = [ HE.span_ $ show suggestion.availability ]
+
+seeAllSuggestions ∷ Html ImMessage
+seeAllSuggestions = HE.div (HA.class' "see-all-suggestions")
+      [ HE.strong (HA.class' "mini-chat-label") "Chat suggestions"
+      , HE.div [ HA.class' "see-all-home", HA.onClick ResumeSuggesting, HA.title "See all suggestions" ]
+              [ SIS.home
+              ]
+      ]

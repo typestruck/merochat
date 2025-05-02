@@ -148,6 +148,7 @@ type Im =
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
       , showMiniChatInput ∷ Boolean
+      , showCollapsedMiniSuggestions :: Boolean
       , editing ∷ Maybe Int
       , bugging ∷ Maybe MeroChatCall
       --used to signal that the page should be reloaded
@@ -344,6 +345,7 @@ data ImMessage
       | SetField (ImModel → ImModel)
       | TerminateTemporaryUser
       | ToggleFortune Boolean
+      | ToggleCollapsedMiniSuggestions
       | DisplayFortune String
       | RequestFailed RequestFailure
       | SetPrivacySettings PrivacySettings

@@ -53,6 +53,7 @@ template payload = do
                     , showMiniChatInput: false
                     , initialScreen: true
                     , temporaryEmail: Nothing
+                    , showCollapsedMiniSuggestions: false
                     , temporaryPassword: Nothing
                     , enableNotificationsVisible: false
                     , messageEnter: true

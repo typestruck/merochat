@@ -2236,6 +2236,10 @@ select {
     margin-right: -33px;
 }
 
+.collapsed-name {
+    font-size: 1.1em;
+}
+
 .svg-55 {
     width: 38px;
     height: 38px;
@@ -2399,6 +2403,10 @@ select {
     border-radius: 15px;
     height: 270px;
     padding: 10px 20px;
+}
+
+.mini-suggestion-cards.collapsed {
+    height: 80px;
 }
 
 .mini-suggestion-avatar {
