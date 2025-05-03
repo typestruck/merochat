@@ -3079,6 +3079,10 @@ label {
         height: 18px;
     }
 
+    .mini-suggestion-cards {
+        height: 200px;
+    }
+
     .chat-input-preview,
     .chat-input,
     .suggestion-input .side .chat-input {

@@ -86,10 +86,10 @@ newtype DT = DT DateTime
 
 -- | How often should availability be serialized
 aliveDelay ∷ Int
-aliveDelay = 1000 * 60 * aliveDelayMinutes
+aliveDelay = DI.round $ 1000.0 * 60.0 * aliveDelayMinutes
 
-aliveDelayMinutes ∷ Int
-aliveDelayMinutes = 1
+aliveDelayMinutes ∷ Number
+aliveDelayMinutes = 0.5
 
 -- | How often do we check for inactive connections
 inactiveDelay ∷ Int

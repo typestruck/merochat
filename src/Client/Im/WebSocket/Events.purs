@@ -110,7 +110,7 @@ handleOpen webSocketStateRef _ = do
       privilegeDelay = 1000 * 60 * 60
       pollPrivileges webSocket = CIW.sendPayload webSocket UpdatePrivileges
 
-      pingDelay = 1000 * 30
+      pingDelay = 1000 * 10
       ping = do
             isFocused ← CCD.documentHasFocus
             FS.send imId $ SendPing isFocused
