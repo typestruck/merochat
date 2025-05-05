@@ -1,5 +1,6 @@
 let constant = 20,
-    initialHeight;
+    initialHeight,
+    oldScrollHeight;
 
 export function resizeTextarea_(textarea) {
     if (initialHeight === undefined)
@@ -7,6 +8,10 @@ export function resizeTextarea_(textarea) {
 
     if (textarea.value === '')
         textarea.style.height = initialHeight + "px";
+    else if (textarea.scrollHeight != oldScrollHeight) {
+        textarea.style.height = (textarea.scrollHeight - constant) + "px";
+    }
 
-    textarea.style.height = (textarea.scrollHeight - constant) + "px";
+    oldScrollHeight = textarea.scrollHeight;
 }
+

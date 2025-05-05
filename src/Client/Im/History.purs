@@ -63,7 +63,7 @@ displayHistory userId history model =
             | contact.user.id == userId = updateHistory contact
             | otherwise = contact
 
-      --when the chat history is first loaded (either by selecting hte contact or sending a message from suggesitons)
+      --when the chat history is first loaded (either by selecting the contact or sending a message from suggesitons)
       -- avoid overwritting the whole conversation or duplicating unread messages
       dedup entry anotherEntry = entry.id == anotherEntry.id
       updateHistory contact = contact
