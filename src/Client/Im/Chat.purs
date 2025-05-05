@@ -494,7 +494,7 @@ quoteMessage contents touchEvent model =
                   pure Nothing
 
       fromSwipe touch
-            | touch.startX < touch.endX && touch.endX - touch.startX >= threshold && touch.startY - touch.endY < threshold = quoteIt
+            | touch.startX < touch.endX && touch.endX - touch.startX >= threshold && touch.startY - touch.endY < threshold && touch.endX - touch.startX > touch.startY - touch.endY = quoteIt
             | otherwise = pure Nothing
 
       quoteIt = EC.liftEffect do
