@@ -190,7 +190,7 @@ receiveStatusChange received model =
       updatedContacts = updateHistory model.contacts received.userId updateStatus
 
       updateStatus history
-            | DA.elem history.id received.ids = history { status = received.status }
+            | DA.elem history.id received.ids && history.status < received.status = history { status = received.status }
             | otherwise = history
 
 -- | Move status from 'sending' to 'sent' and update message id
