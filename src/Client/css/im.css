@@ -1,5 +1,5 @@
 :root {
-    --im-background-color: #DB5A5D;
+    --im-background-color: #EFE5DC;
     --im-second-background-color: #972123;
     --im-right-background-color: #EFE5DC;
     --im-text-color: #FBFEFB;
@@ -461,6 +461,10 @@ blockquote {
     position: absolute;
     z-index: 2;
     background: #1b3a28;
+}
+
+.mini-suggestions .outer-user-menu svg {
+    fill:var(--text-color);
 }
 
 .settings-name {
@@ -939,11 +943,14 @@ img.emoji {
 
 .see-all-home svg {
     margin-top: -5px;
+    fill:var(--text-color);
+    stroke: var(--text-color) ;
 }
 
 .logo-contact-list {
     box-shadow: 0px -6px 6px rgba(0, 0, 0, 0.2);
     padding: 10px;
+    color: var(--text-color);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1118,7 +1125,7 @@ svg.toolbar-action {
 }
 
 .mini-headline-tags .tag {
-    border: 1px solid var(--light-color)
+    border: 1px solid var(--text-color)
 }
 
 .suggestion .tag,
@@ -2399,7 +2406,7 @@ select {
     display: flex;
     flex-direction: column;
     width: calc(100% - 50px);
-    border: 1px solid var(--light-color);
+    border: 1px solid var(--text-color);
     border-radius: 15px;
     height: 270px;
     padding: 10px 20px;
