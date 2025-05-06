@@ -166,7 +166,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
 
       backingTime =
             [ HE.div (HA.class' "backing-suggestion-call")
-                    [ HE.img [ HA.class' "point-melon", HA.src $ SPT.resourcePath (Left Point7) Png ]
+                    [ HE.img [ HA.class' "point-melon", HA.src $ SPT.resourcePath (Left Loading) Png ]
                     , HE.h2 (HA.class' "backing-suggestion-call-enjoyer") "Enjoying MeroChat??"
                     , HE.text "Donate today! MeroChat depends on people like you to exist"
                     , HE.br

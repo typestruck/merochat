@@ -81,16 +81,6 @@ data Media
       | Favicon10
       | Favicon10Plus
       | Loading
-      | Point1
-      | Point2
-      | Point3
-      | Point4
-      | Point5
-      | Point6
-      | Point7
-      | Works1
-      | Works2
-      | Works3
       | Avatar
       | NicolasCageHiclipart
       | SocratesStingWikimedia
@@ -150,16 +140,6 @@ resourceName = case _ of
       Left Favicon10 → "favicon-10"
       Left Favicon10Plus → "favicon-10-plus"
       Left Loading → "loading"
-      Left Point1 → "point1"
-      Left Point2 → "point2"
-      Left Point3 → "point3"
-      Left Point4 → "point4"
-      Left Point5 → "point5"
-      Left Point6 → "point6"
-      Left Point7 → "point7"
-      Left Works1 → "works1"
-      Left Works2 → "works2"
-      Left Works3 → "works3"
       Left Avatar → "avatar"
       Left NicolasCageHiclipart → "nicolas_cage_hiclipart"
       Left SocratesStingWikimedia → "socrates_Sting_wikimedia"
