@@ -473,6 +473,10 @@ blockquote {
     flex-direction: column;
 }
 
+.same-background {
+    background-color: var(--im-second-background-color);
+}
+
 .contact-name-badge {
     display: flex;
 }
@@ -951,6 +955,7 @@ img.emoji {
 .logo-contact-list {
     box-shadow: 0px -6px 6px rgba(0, 0, 0, 0.2);
     padding: 10px;
+    background-color: var(--im-background-color);
     color: var(--text-color);
     display: flex;
     flex-direction: column;

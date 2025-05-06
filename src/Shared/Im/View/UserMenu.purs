@@ -14,8 +14,8 @@ import Shared.Intl as SI
 import Shared.Svg as SS
 
 userMenu ∷ ImModel → Html ImMessage
-userMenu model@{ toggleContextMenu, toggleModal, user: { temporary } } =
-      HE.div (HA.class' { settings: true, highlighted: toggleModal == Tutorial OptionsMenu })
+userMenu model =
+      HE.div (HA.class' { settings: true, highlighted: model.toggleModal == Tutorial OptionsMenu})
             [ header model
             , HE.div [ HA.class' "outer-user-menu" ]
                     [ SIS.home
@@ -23,7 +23,7 @@ userMenu model@{ toggleContextMenu, toggleModal, user: { temporary } } =
                             [ HE.path' [ HA.d "M19.6515 19.4054C20.2043 19.2902 20.5336 18.7117 20.2589 18.2183C19.6533 17.1307 18.6993 16.1749 17.4788 15.4465C15.907 14.5085 13.9812 14 12 14C10.0188 14 8.09292 14.5085 6.52112 15.4465C5.30069 16.1749 4.34666 17.1307 3.74108 18.2183C3.46638 18.7117 3.79562 19.2902 4.34843 19.4054C9.39524 20.4572 14.6047 20.4572 19.6515 19.4054Z" ]
                             , HE.circle' [ HA.cx "12", HA.cy "8", HA.r "5" ]
                             ]
-                    , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowUserContextMenu } ]
+                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowUserContextMenu } ]
                             [ HE.div (HA.class' "user-menu-item")
                                     [ SS.sun
                                     , SS.moon
@@ -57,7 +57,7 @@ userMenu model@{ toggleContextMenu, toggleModal, user: { temporary } } =
                                     [ HE.div (HA.class' "menu-item-heading") "Send feedback"
                                     , HE.span_ "Report issues, or leave a question"
                                     ]
-                            , if temporary then
+                            , if model.user.temporary then
                                     HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmTerminationTemporaryUser ] "Delete my data"
                               else
                                     HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmLogout ] "Logout"
