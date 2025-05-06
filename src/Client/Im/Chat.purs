@@ -19,6 +19,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.Nullable (null)
+import Data.Ord as DO
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
@@ -348,7 +349,7 @@ setSelectedImage maybeBase64 model =
       isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
 
 -- | Insert an emoji into the chatting textarea
-setEmoji ∷ ElementId -> Event → ImModel → NextMessage
+setEmoji ∷ ElementId → Event → ImModel → NextMessage
 setEmoji elementId event model = model /\ [ setIt, hideModal ]
       where
       setIt = EC.liftEffect do
@@ -494,7 +495,7 @@ quoteMessage contents touchEvent model =
                   pure Nothing
 
       fromSwipe touch
-            | touch.startX < touch.endX && touch.endX - touch.startX >= threshold && touch.startY - touch.endY < threshold && touch.endX - touch.startX > touch.startY - touch.endY = quoteIt
+            | touch.startX < touch.endX && touch.endX - touch.startX >= threshold && DO.abs (touch.startY - touch.endY) < threshold = quoteIt
             | otherwise = pure Nothing
 
       quoteIt = EC.liftEffect do

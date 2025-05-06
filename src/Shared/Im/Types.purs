@@ -148,7 +148,7 @@ type Im =
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
       , showMiniChatInput ∷ Boolean
-      , showCollapsedMiniSuggestions :: Boolean
+      , showCollapsedMiniSuggestions ∷ Boolean
       , editing ∷ Maybe Int
       , bugging ∷ Maybe MeroChatCall
       --used to signal that the page should be reloaded

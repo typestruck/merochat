@@ -23,7 +23,8 @@ defaultAvatar = SP.resourcePath (Left Avatar) Svg
 
 fromAvatar ∷ Maybe String → String
 fromAvatar av = DM.fromMaybe defaultAvatar $ map uploaded av
-      where uploaded a = SP.resourcePath (Left $ Upload a) Ignore
+      where
+      uploaded a = SP.resourcePath (Left $ Upload a) Ignore
 
 async ∷ ∀ message. NodeData message
 async = HA.createAttribute "async" ""

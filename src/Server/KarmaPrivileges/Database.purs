@@ -25,7 +25,7 @@ userPosition loggedUserId = _.position <<< SU.fromJust <$> (SD.single $ select _
 
 --refactor: add greatest to droplet
 fetchInBetween10 ∷ Int → ServerEffect (Array LeaderboardUser)
-fetchInBetween10 position =  SD.unsafeQuery "select u.name, u.avatar, position, current_karma karma from karma_leaderboard k join users u on k.ranker = u.id where position between greatest(1, @position - 5) and @position + 5 order by position" { position }
+fetchInBetween10 position = SD.unsafeQuery "select u.name, u.avatar, position, current_karma karma from karma_leaderboard k join users u on k.ranker = u.id where position between greatest(1, @position - 5) and @position + 5 order by position" { position }
 
 fetchPrivileges ∷ Int → ServerEffect (Array PrivilegeUser)
 fetchPrivileges loggedUserId = SD.unsafeQuery "SELECT name, description, quantity, current_karma >= quantity AS got FROM privileges LEFT JOIN karma_leaderboard ON ranker = @loggedUserId ORDER BY quantity desc"

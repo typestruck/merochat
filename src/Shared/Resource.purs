@@ -64,8 +64,7 @@ data Bundle
       | Settings
 
 data Media
-      =
-      InvertedLogo
+      = InvertedLogo
       | LogoSmall
       | Logo
       | Favicon

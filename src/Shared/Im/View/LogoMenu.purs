@@ -132,7 +132,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                                     ] <> onlineStatus suggestion
                                                   )
                                           ]
-                                          , arrow nextArrow $ SpecialRequest NextSuggestion
+                                  , arrow nextArrow $ SpecialRequest NextSuggestion
                                   ]
                           ]
                   ]

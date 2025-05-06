@@ -83,7 +83,7 @@ contactList
                                 , HE.div (HA.class' "contact-options")
                                         [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not messageTimestamps || not contact.user.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
                                         , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
-                                        , HE.div (HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not readReceipts  }) $ show lastHistoryEntry.status
+                                        , HE.div (HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not readReceipts }) $ show lastHistoryEntry.status
                                         ]
 
                                 ]

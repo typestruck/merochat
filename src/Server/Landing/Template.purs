@@ -187,9 +187,9 @@ template = do
                                                             , HE.br
                                                             , HE.text "we have a Karma system. The idea is pretty simple: the more the community trusts you, the more features you"
                                                             , HE.br
-                                                            ,HE.text "can use on the app. The likelier a feature is to be abused (say, image sharing) the more Karma you need to unlock it"
+                                                            , HE.text "can use on the app. The likelier a feature is to be abused (say, image sharing) the more Karma you need to unlock it"
                                                             ]
-                                                , HE.p_ [HE.text "Finally, MeroChat is completly free! It exists for the fun of it, not to sell ads, train AI, or be a startup. Give it a try :)"]
+                                                    , HE.p_ [ HE.text "Finally, MeroChat is completly free! It exists for the fun of it, not to sell ads, train AI, or be a startup. Give it a try :)" ]
                                                     ]
                                             ]
                                     ]

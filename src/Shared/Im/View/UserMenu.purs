@@ -15,7 +15,7 @@ import Shared.Svg as SS
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model =
-      HE.div (HA.class' { settings: true, highlighted: model.toggleModal == Tutorial OptionsMenu})
+      HE.div (HA.class' { settings: true, highlighted: model.toggleModal == Tutorial OptionsMenu })
             [ header model
             , HE.div [ HA.class' "outer-user-menu" ]
                     [ SIS.home

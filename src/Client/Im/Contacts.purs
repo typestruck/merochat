@@ -12,7 +12,7 @@ import Client.Im.Notification as CIUN
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
-import Data.Array ( (:))
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.HashMap as DH

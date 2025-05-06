@@ -20,7 +20,7 @@ import Shared.Im.View.UserMenu as SIVU
 
 view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model = HE.div "im"
-      [ HE.div (HA.class' { "contact-box": true, "same-background" : DM.isJust model.chatting, "current-mobile-screen": model.initialScreen })
+      [ HE.div (HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen })
               [ SIVU.userMenu model
               , HE.div (HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: model.smallScreen && not (DS.null model.errorMessage) }) model.errorMessage
               , SIVN.reloadPage model.imUpdated

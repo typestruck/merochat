@@ -166,7 +166,7 @@ update st model =
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model
             ToggleContactProfile → CIS.toggleContactProfile model
-            ToggleCollapsedMiniSuggestions -> CIS.toggleCollapsedMiniSuggestions model
+            ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → blockUser webSocket id model
