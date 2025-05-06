@@ -1480,8 +1480,8 @@ input:not(type=button):focus {
 .unread-messages .unread-number {
     background: var(--merochat-red);
     color: var(--light-color);
-    padding: 5px 10px;
-    border-radius: 100%;
+    padding: 0px 7px;
+    border-radius: 70%;
 }
 
 .green-button {
