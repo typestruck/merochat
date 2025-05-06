@@ -71,7 +71,7 @@ miniSuggestions ∷ ImModel → Html ImMessage
 miniSuggestions model = HE.div (HA.class' "mini-suggestions")
       case model.suggestions !! model.suggesting of
             Just suggestion | not model.smallScreen && DM.isJust model.chatting && not model.showCollapsedMiniSuggestions →
-                  [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
+                  [ HE.svg [ HA.class' "svg-32 svg-text-color", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
                           [ HE.path' [ HA.d "M18 12L12 18L6 12", HA.strokeWidth "2" ]
                           , HE.path' [ HA.d "M18 6L12 12L6 6", HA.strokeWidth "2" ]
                           ]

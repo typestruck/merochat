@@ -463,8 +463,9 @@ blockquote {
     background: #1b3a28;
 }
 
-.mini-suggestions .outer-user-menu svg {
+.mini-suggestions .outer-user-menu svg, .svg-text-color {
     fill:var(--text-color);
+    stroke: none;
 }
 
 .settings-name {
