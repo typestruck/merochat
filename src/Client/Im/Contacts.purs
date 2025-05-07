@@ -137,7 +137,7 @@ checkFetchContacts model
       | model.freeToFetchContactList = model /\ [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
 
               where
-              lenience = if model.smallScreen then 2.0 else 0.0
+              lenience = 42.0
               getScrollBottom = liftEffect do
                     element ← CCD.unsafeGetElementById ContactList
                     top ← WDE.scrollTop element
