@@ -748,7 +748,7 @@ a {
 }
 
 .incoming-message .message-content {
-    background-color: var(--merochat-red);
+    background-color: var(--im-second-background-color);
     margin-left: 20px;
     color: var(--light-color)
 }
