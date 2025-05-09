@@ -373,6 +373,7 @@ textarea {
 .avatar-contact-list,
 .avatar-settings {
     width: 54px;
+    object-fit: cover;
     height: 54px;
     border-radius: 100%;
 }
@@ -386,6 +387,7 @@ textarea {
 .avatar-profile,
 .avatar-profile-edition {
     border-radius: 100%;
+    object-fit: cover;
 }
 
 .profile-contact .avatar-profile {
@@ -1614,6 +1616,7 @@ select {
 
 .avatar-profile {
     cursor: pointer;
+    object-fit: cover;
 }
 
 .confirmation .error-message {
