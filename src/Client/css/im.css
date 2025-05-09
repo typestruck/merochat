@@ -413,11 +413,13 @@ blockquote {
 .outgoing-message blockquote {
     border-left: 5px solid black;
     background: var(--im-second-background-color);
+    color: var(--light-color);
 }
 
 .incoming-message blockquote {
     border-left: 5px solid black;
     background: var(--im-background-color);
+    color: var(--text-color);
 }
 
 .settings,
