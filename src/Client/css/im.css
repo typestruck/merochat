@@ -1020,7 +1020,6 @@ svg.toolbar-action {
     align-items: center;
 }
 
-.svg-duller,
 .chat-input-options svg {
     fill: var(--text-color);
     stroke: var(--text-color);
@@ -2622,8 +2621,17 @@ label {
         justify-content: space-around;
         padding: 5px;
         padding-top: 10px;
-        background-color: #212120;
+        background-color: var(--im-background-color);
         cursor: pointer;
+    }
+
+    .tab-item {
+        color: var(--text-color);
+    }
+
+    .tab-item svg {
+        fill:var(--text-color);
+        stroke:var(--text-color)
     }
 
     .avatar-settings {
