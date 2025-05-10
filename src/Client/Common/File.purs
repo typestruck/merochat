@@ -4,8 +4,9 @@ import Prelude
 
 import Client.Common.Dom as CCD
 import Data.Maybe (Maybe(..))
-import Debug (spy)
 import Effect (Effect)
+import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried as EU
 import Flame (AppId)
 import Flame.Subscription as FS
 import Foreign as F
@@ -13,6 +14,7 @@ import Shared.Options.MountPoint (MountPoint)
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.Event.EventTarget as WET
+import Web.File.File (File)
 import Web.File.File as WFF
 import Web.File.FileList (FileList)
 import Web.File.FileList as WFL
@@ -22,17 +24,26 @@ import Web.HTML.Event.EventTypes (change, load)
 import Web.HTML.HTMLElement as WHH
 import Web.HTML.HTMLInputElement as WHI
 
+foreign import resizeAndSendFile_ :: EffectFn2 File (String -> Effect Unit) Unit
+
+resizeAndSendFile :: File -> (String -> Effect Unit) -> Effect Unit
+resizeAndSendFile = EU.runEffectFn2 resizeAndSendFile_
+
 triggerFileSelect ∷ Element → Effect Unit
 triggerFileSelect = WHH.click <<< SU.fromJust <<< WHH.fromElement
 
 setUpFileChange ∷ ∀ message. (String → message) → Element → AppId MountPoint message → Effect Unit
 setUpFileChange message input appId = do
-      fileReader ← WFR.fileReader
-      setUpBase64Reader fileReader message appId
       CCD.addEventListener input change $ \_ → do
             let htmlInput = SU.fromJust $ WHI.fromElement input
             maybeFileList ← WHI.files htmlInput
-            readBase64 fileReader maybeFileList
+            case maybeFileList >>= WFL.item 0 of
+                  Nothing -> pure unit
+                  Just file -> resizeAndSendFile file (FS.send appId <<< message)
+
+
+
+
 
 setUpBase64Reader ∷ ∀ message. FileReader → (String → message) → AppId MountPoint message → Effect Unit
 setUpBase64Reader fileReader message appId = do

@@ -9,7 +9,6 @@ import Data.HashMap (HashMap)
 import Data.HashMap as DH
 import Data.Set (Set)
 import Data.Set as DS
-import Droplet.Language (In)
 import Environment (production)
 
 allowedMediaTypes ∷ HashMap String String
@@ -18,14 +17,14 @@ allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:
 allowedExtensions ∷ Set String
 allowedExtensions = DS.fromFoldable [ ".png", ".jpg", ".tiff", ".bmp", ".gif", ".webm", ".mp4" ]
 
-base ∷ Int
-base = 1000
+kb ∷ Int
+kb = 1024
 
 maxImageSize ∷ Int
-maxImageSize = base * 3024
+maxImageSize = kb * 1000
 
 maxImageSizeKB ∷ String
-maxImageSizeKB = show base <> " KB"
+maxImageSizeKB = show kb <> " KB"
 
 onlineBasePath ∷ String
 onlineBasePath = "https://static.mero.chat/file/"
