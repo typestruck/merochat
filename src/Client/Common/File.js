@@ -1,5 +1,5 @@
 let maxWidth = 50 * parseFloat(getComputedStyle(document.querySelector('body')).fontSize),
-    quality = 0.7;
+    quality = 0.8;
 
 export async function resizeAndSendFile_(file, cb) {
     let bitmap = await window.createImageBitmap(file),
@@ -20,11 +20,9 @@ function calculateSize(bitmap) {
         height = bitmap.height;
 
     if (width > maxWidth) {
-        if (width > height)
-            height = Math.round((height * maxWidth) / width);
-
+        height = Math.round((height * maxWidth) / width);
         width = maxWidth;
     }
-
+    console.log(height, width);
     return [width, height];
 }
