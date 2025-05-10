@@ -2050,6 +2050,10 @@ select {
     justify-content: center;
 }
 
+.large-avatar-profile {
+    max-width: 100%;
+}
+
 .suggestion-center {
     display: flex;
     border-radius: 15px;
