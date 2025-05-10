@@ -26,7 +26,7 @@ import Shared.Resource as SP
 logoMenu ∷ ImModel → Html ImMessage
 logoMenu model = HE.div (HA.class' "relative")
       [ HE.div (HA.class' "tabs")
-              [ HE.div (HA.class' "tab-item duller")
+              [ HE.div (HA.class' "tab-item")
                       [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16" ]
                               [ HE.path' [ HA.class' "strokeless", HA.d "M2.29,11.1l.45-.55H13.19a1.1,1.1,0,0,0,1-1.18V1.1A1,1,0,0,0,13.27,0H.94A1,1,0,0,0,0,1.11v9.28H0v3.5l1.4-1.7.06-.08.73-.89Zm-.95-.43-.11.13L1,11.1v-10s0,0,0,0H13.22s0,0,0,0V9.37a.42.42,0,0,1,0,.11H2.32l0,0-.1.12L2,9.83Z" ]
                               , HE.path' [ HA.class' "strokeless", HA.d "M16,12.74V4.11a1,1,0,0,0-1-1h-.52v1H15s0,0,0,0v9.3l-.26-.28-.82-.91L13.74,12l-.13-.14H2.86l-.86,1H13.17l.57.63.81.9L16,16V12.74Z" ]
@@ -36,7 +36,7 @@ logoMenu model = HE.div (HA.class' "relative")
                               ]
                       , HE.text "Chats"
                       ]
-              , HE.div [ HA.class' "tab-item duller", HA.onClick $ ToggleInitialScreen false ]
+              , HE.div [ HA.class' "tab-item", HA.onClick $ ToggleInitialScreen false ]
                       [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                               [ HE.path' [ HA.class' "strokeless", HA.d "M2.29,11.1l.45-.55H13.19a1.1,1.1,0,0,0,1-1.18V1.1A1,1,0,0,0,13.27,0H.94A1,1,0,0,0,0,1.11v9.28H0v3.5l1.39-1.7.06-.08.73-.89Zm-.95-.43-.11.13L1,11.1v-10s0,0,0,0H13.22s0,0,0,0V9.37a.42.42,0,0,1,0,.11H2.32l0,0-.1.12L2,9.83Z" ]
                               , HE.path' [ HA.class' "strokeless", HA.d "M16,12.74V4.11a1,1,0,0,0-1-1h-.52v1H15s0,0,0,0v9.3l-.26-.28-.82-.91L13.74,12l-.13-.14H2.86l-.86,1H13.17l.57.63.81.9L16,16V12.74Z" ]
