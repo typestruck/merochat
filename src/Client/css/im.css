@@ -1722,7 +1722,6 @@ select {
 .image-form {
     padding: 40px;
     max-height: 100vh;
-    background-color: var(--im-background-color);
     align-items: center;
 }
 
