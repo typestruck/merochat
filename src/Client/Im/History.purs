@@ -24,10 +24,10 @@ import Web.DOM.Element as WDE
 checkFetchHistory ∷ Int → ImModel → MoreMessages
 checkFetchHistory userId model =
       model /\
-            if model.freeToFetchChatHistory then [ Just <<< SpecialRequest <<< (FetchHistory userId) <$> getScrollTop ] else []
+            if model.freeToFetchChatHistory then [ Just <<< SpecialRequest <<< (FetchHistory userId) <$> getScrollTop MessageHistory] else []
       where
-      getScrollTop = liftEffect do
-            element ← CCD.unsafeGetElementById MessageHistory
+      getScrollTop elementId = liftEffect do
+            element ← CCD.unsafeGetElementById elementId
             (_ < 1.0) <$> WDE.scrollTop element
 
 --to avoid issues with older missed unread messages just get the whole chat history on first load

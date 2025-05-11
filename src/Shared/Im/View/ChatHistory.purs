@@ -14,6 +14,7 @@ import Data.Newtype as DN
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Flame.Types (NodeData)
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
@@ -30,7 +31,7 @@ chatHistory model =
                   HE.div
                         [ HA.id $ show MessageHistory
                         , HA.class' "message-history"
-                        , HA.onScroll $ CheckFetchHistory chatting.user.id
+                        , onScrollEnd $ CheckFetchHistory chatting.user.id
                         ] $
                         if chatting.user.availability == Unavailable then []
                         else
@@ -99,3 +100,6 @@ chatHistory model =
                         ]
 
       isBottomMessage history id = (SU.fromJust $ DA.findIndex ((_ == id) <<< _.id) history) >= DA.length history - 2
+
+onScrollEnd :: ImMessage -> NodeData ImMessage
+onScrollEnd = HA.createEvent "scroll"

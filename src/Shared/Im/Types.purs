@@ -82,6 +82,7 @@ type BaseContact fields =
 type Contact = BaseContact
       ( user ∷ User
       , typing ∷ Boolean
+      , scrollChatDown :: Boolean
       , history ∷ Array HistoryMessage
       )
 

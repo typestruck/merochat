@@ -223,22 +223,26 @@ receiveIncomingMessage webSocket isFocused payload model =
                   Left id →
                         --new message from an user that is not currently in the contacts
                         unsuggestedModel /\ [ CCNT.retryableResponse (CheckMissedEvents Nothing) DisplayNewContacts $ request.im.contact { query: { id } } ]
-                  Right updatedModel | model.user.id == payload.senderId →
-                        --syncing message sent from other connections
-                        updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
-                  Right
-                        updatedModel | isFocused && ((_.id <<< _.user) <$> SIC.maybeFindContact updatedModel.chatting updatedModel.contacts) == Just userId →
-                        --new message from the user being chatted with
-                        CICN.setMessageStatus webSocket userId Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
                   Right updatedModel →
-                        --new message when away/other usesr
-                        CICN.setMessageStatus webSocket userId Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
+                        if model.user.id == payload.senderId then
+                              --syncing message sent from other connections
+                              updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
+                        else if isFocused && shouldScrollDown (SIC.maybeFindContact updatedModel.chatting updatedModel.contacts) then
+                              --new message from the user being chatted with
+                              CICN.setMessageStatus webSocket userId Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
+                        else
+                              --new message when away/other usesr
+                              CICN.setMessageStatus webSocket userId Delivered updatedModel # withExtraMessage (CIUC.notify' updatedModel [ userId ])
       where
       unsuggestedModel = unsuggest payload.recipientId model
 
       userId
             | payload.recipientId == model.user.id = payload.senderId
             | otherwise = payload.recipientId
+
+      shouldScrollDown = case _ of
+            Nothing → false
+            Just contact → contact.user.id == userId && contact.scrollChatDown
 
       withExtraMessage e (m /\ ms) = m /\ e : ms
 
