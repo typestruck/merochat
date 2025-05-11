@@ -43,6 +43,7 @@ import Shared.Im.Contact as SIC
 import Shared.Im.Types (Contact, ImMessage(..), ImModel, User, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
+import Shared.Options.MountPoint (imId)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -325,11 +326,11 @@ setTextAt input position markdown = do
       resizeTextarea input
 
 -- | Handle drag and drop
-catchFile ∷ FileReader → Event → ImModel → NoMessages
-catchFile fileReader event model = model /\ [ catchIt ]
+catchFile ∷ Event → ImModel → NoMessages
+catchFile event model = model /\ [ catchIt ]
       where
       catchIt = EC.liftEffect do
-            CCF.readBase64 fileReader <<< WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event
+            CCF.resizeAndSendFirstFile (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imId (SetSelectedImage <<< Just)
             CCD.preventStop event
             pure Nothing
 

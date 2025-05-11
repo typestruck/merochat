@@ -74,7 +74,6 @@ import Web.DOM.Node as WDN
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
-import Web.File.FileReader as WFR
 import Web.HTML as WH
 import Web.HTML.Event.PopStateEvent.EventTypes (popstate)
 import Web.HTML.HTMLElement as WHHE
@@ -84,7 +83,6 @@ import Web.Socket.WebSocket (WebSocket)
 main ∷ Effect Unit
 main = do
       webSocketRef ← CIWE.startWebSocket
-      fileReader ← WFR.fileReader
 
       --im is server side rendered
       F.resumeMount (QuerySelector $ "#" <> show Im) imId
@@ -98,7 +96,7 @@ main = do
                       FSW.onFocus $ SetReadStatus Nothing
                     ]
             , init: [] -- we use subscription instead of init events
-            , update: update { fileReader, webSocketRef }
+            , update: update { webSocketRef }
             }
 
       smallScreen ← CISS.checkSmallScreen
@@ -111,9 +109,6 @@ main = do
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
       historyChange smallScreen
-
-      --for drag and drop
-      CCF.setUpBase64Reader fileReader (SetSelectedImage <<< Just) imId
 
       --image upload
       input ← CCD.unsafeGetElementById ImageFileInput
@@ -128,7 +123,7 @@ update st model =
             --chat
             InsertLink → CIC.setLink model
             ToggleChatModal modal → CIC.toggleModal modal model
-            DropFile event → CIC.catchFile st.fileReader event model
+            DropFile event → CIC.catchFile event model
             ResizeChatInput event → CIC.resizeChatInput event model
             EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
             ForceSendMessage elementId → CIC.forceSendMessage elementId model

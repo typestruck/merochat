@@ -151,7 +151,7 @@ textarea {
     display: flex;
     padding: 10px;
     cursor: pointer;
-    background-color: #212120;
+    background-color: var(--im-second-background-color);
 }
 
 .notification-message {
@@ -1722,6 +1722,7 @@ select {
 .image-form {
     padding: 40px;
     max-height: 100vh;
+    background-color: var(--im-background-color);
     align-items: center;
 }
 
