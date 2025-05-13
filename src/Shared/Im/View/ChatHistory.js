@@ -24,7 +24,5 @@ export function runScrollEvent_(event, noMessage, scrollDownMessage, doNotScroll
         }
     }
 
-    console.log(event.target.scrollTop, event.target.scrollHeight - event.target.offsetHeight, message, userHasScrolled);
-
     return message;
 }
