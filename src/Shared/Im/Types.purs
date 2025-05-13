@@ -82,7 +82,7 @@ type BaseContact fields =
 type Contact = BaseContact
       ( user ∷ User
       , typing ∷ Boolean
-      , scrollChatDown :: Boolean
+      , scrollChatDown ∷ Boolean
       , history ∷ Array HistoryMessage
       )
 
@@ -278,8 +278,7 @@ type Touch = { startX ∷ Int, endX ∷ Int, startY ∷ Int, endY ∷ Int }
 data ImMessage
       =
         --history
-        CheckFetchHistory Int
-      | DisplayHistory Int (Array HistoryMessage)
+        DisplayHistory Int (Array HistoryMessage)
 
       --user menu
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
@@ -333,6 +332,7 @@ data ImMessage
       | ReloadPage
       | FinishTutorial
       | ToggleUserContextMenu Event
+      | ToggleScrollChatDown Boolean Int
       | SpecialRequest RetryableRequest
       | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean

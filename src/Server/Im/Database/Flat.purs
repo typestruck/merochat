@@ -67,7 +67,7 @@ fromFlatContact fc =
       , chatStarter: fc.chatStarter
       , lastMessageDate: DateTimeWrapper fc.lastMessageDate
       , history: []
-      , scrollChatDown : true
+      , scrollChatDown: true
       , user: fromFlatUser fc
       , typing: false
       }

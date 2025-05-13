@@ -126,7 +126,7 @@ let overrides =
           //  { version = "94e5373f97b074832a8155af71b44fe1aa8d79a0" }
           , flame =
              upstream.flame
-          //  { version = "e7e9dbba16b8f5ea7d41abd98fc4f40d546855b4" }
+          //  { version = "v1.4.0" }
           , unordered-collections =
              upstream.unordered-collections
           //  { version = "0192d2c9d0759895b7492cc00651631eb9abc5b5" }

@@ -11,6 +11,9 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
+import Effect (Effect)
+import Effect.Uncurried (EffectFn5)
+import Effect.Uncurried as EU
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -22,6 +25,31 @@ import Shared.Im.View.Retry as SIVR
 import Shared.Im.View.SuggestionProfile as SIVP
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
+import Web.Event.Internal.Types (Event)
+
+data ScrollAction = ResetScrollDown | SetScrollDown | Fetch | None
+
+--safari does not support scrollEnd because it is a shitty browser
+foreign import scrollEventName ∷ String
+foreign import runScrollEvent_ ∷ EffectFn5 Event ScrollAction ScrollAction ScrollAction ScrollAction ScrollAction
+
+--see foreign file
+runScrollEvent ∷ Event → ScrollAction → ScrollAction → ScrollAction → ScrollAction → Effect ScrollAction
+runScrollEvent = EU.runEffectFn5 runScrollEvent_
+
+--what we are trying to accomplish here is (using scrollend when possible) twofold:
+-- determine weather or not to scroll down to incoming messages
+-- check if older chat history should be fetched
+onScrollEvent ∷ Int → NodeData ImMessage
+onScrollEvent userId = HA.createRawEvent scrollEventName handler
+      where
+      handler event = do
+            what ← runScrollEvent event None SetScrollDown ResetScrollDown Fetch
+            pure $ case what of
+                  None → Nothing
+                  SetScrollDown → Just $ ToggleScrollChatDown true userId
+                  ResetScrollDown → Just $ ToggleScrollChatDown false userId
+                  Fetch → Just <<< SpecialRequest $ FetchHistory userId true
 
 -- | Messages in a chat history
 chatHistory ∷ ImModel → Html ImMessage
@@ -31,7 +59,7 @@ chatHistory model =
                   HE.div
                         [ HA.id $ show MessageHistory
                         , HA.class' "message-history"
-                        , onScrollEnd $ CheckFetchHistory chatting.user.id
+                        , onScrollEvent chatting.user.id
                         ] $
                         if chatting.user.availability == Unavailable then []
                         else
@@ -101,5 +129,3 @@ chatHistory model =
 
       isBottomMessage history id = (SU.fromJust $ DA.findIndex ((_ == id) <<< _.id) history) >= DA.length history - 2
 
-onScrollEnd :: ImMessage -> NodeData ImMessage
-onScrollEnd = HA.createEvent "scroll"

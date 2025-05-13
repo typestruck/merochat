@@ -57,6 +57,7 @@ import Flame.Subscription.Window as FSW
 import Safe.Coerce as SC
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SCN
 import Shared.Im.View as SIV
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
@@ -154,7 +155,6 @@ update st model =
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
             ResumeMissedEvents missed → CICN.resumeMissedEvents missed model
             --history
-            CheckFetchHistory userId → CIH.checkFetchHistory userId model
             SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
             DisplayHistory userId history → CIH.displayHistory userId history model
             --suggestion
@@ -191,6 +191,7 @@ update st model =
             SpecialRequest (CheckMissedEvents dt) → checkMissedEvents dt model
             SetField setter → F.noMessages $ setter model
             ToggleFortune isVisible → toggleFortune isVisible model
+            ToggleScrollChatDown scroll userId → toggleScrollChatDown scroll userId model
             DisplayFortune sequence → displayFortune sequence model
             RequestFailed failure → addFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
@@ -405,6 +406,17 @@ toggleFortune isVisible model
       | otherwise = F.noMessages $ model
               { fortune = Nothing
               }
+
+toggleScrollChatDown ∷ Boolean → Int → ImModel → MoreMessages
+toggleScrollChatDown scroll userId model =
+      --avoid unnecessary ui updates since this event could be high frequence (scroll)
+      case SCN.findContact userId model.contacts of
+            Just contact | contact.scrollChatDown /= scroll → F.noMessages model { contacts = map upd model.contacts }
+            _ → F.noMessages model
+      where
+      upd contact
+            | contact.user.id == userId = contact { scrollChatDown = scroll }
+            | otherwise = contact
 
 displayFortune ∷ String → ImModel → NoMessages
 displayFortune sequence model = F.noMessages $ model

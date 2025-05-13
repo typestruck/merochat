@@ -19,9 +19,9 @@ import Web.HTML.Event.EventTypes (change)
 import Web.HTML.HTMLElement as WHH
 import Web.HTML.HTMLInputElement as WHI
 
-foreign import resizeAndSendFile_ :: EffectFn2 File (String -> Effect Unit) Unit
+foreign import resizeAndSendFile_ ∷ EffectFn2 File (String → Effect Unit) Unit
 
-resizeAndSendFile :: File -> (String -> Effect Unit) -> Effect Unit
+resizeAndSendFile ∷ File → (String → Effect Unit) → Effect Unit
 resizeAndSendFile = EU.runEffectFn2 resizeAndSendFile_
 
 triggerFileSelect ∷ Element → Effect Unit
@@ -34,8 +34,8 @@ setUpFileChange message input appId = do
             maybeFileList ← WHI.files htmlInput
             resizeAndSendFirstFile maybeFileList appId message
 
-resizeAndSendFirstFile :: forall message. Maybe FileList ->  AppId MountPoint message -> (String -> message) -> Effect Unit
+resizeAndSendFirstFile ∷ ∀ message. Maybe FileList → AppId MountPoint message → (String → message) → Effect Unit
 resizeAndSendFirstFile maybeFileList appId message =
       case maybeFileList >>= WFL.item 0 of
-            Nothing -> pure unit
-            Just file -> resizeAndSendFile file (FS.send appId <<< message)
+            Nothing → pure unit
+            Just file → resizeAndSendFile file (FS.send appId <<< message)
