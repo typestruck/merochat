@@ -69,7 +69,7 @@ imageModal { selectedImage, erroredFields, user } =
                           , HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
                           ]
                   , HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed })
-                          [ HE.img <<< HA.src $ DM.fromMaybe "" selectedImage
+                          [ HE.img <<< HA.src $ DM.maybe "" _.base64 selectedImage
                           ]
                   , HE.div (HA.class' "image-form-controls")
                           [ HE.label_ "Caption"

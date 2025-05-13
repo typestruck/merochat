@@ -12,7 +12,7 @@ export async function resizeAndSendFile_(file, cb) {
     let ctx = canvas.getContext("2d");
 
     ctx.drawImage(bitmap, 0, 0, newWidth, newHeight);
-    cb(canvas.toDataURL(file.type, quality))();
+    cb(newWidth)(newHeight)(canvas.toDataURL(file.type, quality))();
 }
 
 function calculateSize(bitmap) {
@@ -23,6 +23,6 @@ function calculateSize(bitmap) {
         height = Math.round((height * maxWidth) / width);
         width = maxWidth;
     }
-    console.log(height, width);
+
     return [width, height];
 }

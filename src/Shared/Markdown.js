@@ -13,8 +13,9 @@ function defaultOptions() {
 
                         return `<a href="${href}" title="${title || ""}" target="blank">${text}</a>`;
                   },
-                  image(src, title, text) {
-                        var tag = `<img src="${src}" alt="${title || ""}" />`
+                  image(whSrc, title, text) {
+                        let result = /\[(.+)\,(.+)\](.+)/.exec(whSrc),
+                              tag = `<img width="${result[1]}" height="${result[2]}" src="${result[3]}" alt="${title || ""}" />`
 
                         if (text)
                               tag += `<br/>${text}`;
@@ -38,7 +39,7 @@ function restrictedOptions() {
                         return `<a title="${title || ""}">${text}</a>`;
                   },
                   image(_, __, title) {
-                        var tag = '<i>Image file';
+                        let tag = '<i>Image file';
                         if (title)
                               tag = `${tag}: ${title}`;
 

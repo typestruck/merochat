@@ -113,7 +113,7 @@ main = do
 
       --image upload
       input ← CCD.unsafeGetElementById ImageFileInput
-      CCF.setUpFileChange (SetSelectedImage <<< Just) input imId
+      CCF.setUpFileChange (\width height base64 -> SetSelectedImage $ Just {width, height, base64}) input imId
 
       --harass temporary users on their last day to make an account
       FS.send imId CheckUserExpiration
@@ -129,7 +129,7 @@ update st model =
             EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
             ForceSendMessage elementId → CIC.forceSendMessage elementId model
             SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model
-            SetSelectedImage maybeBase64 → CIC.setSelectedImage maybeBase64 model
+            SetSelectedImage selected → CIC.setSelectedImage selected model
             Apply markup → CIC.setMarkup markup model
             SetEmoji elementId event → CIC.setEmoji elementId event model
             ToggleMessageEnter → CIC.toggleMessageEnter model

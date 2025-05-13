@@ -127,7 +127,7 @@ type Im =
       , freeToFetchContactList ∷ Boolean
       , suggestionsFrom ∷ SuggestionsFrom
       , freeToFetchSuggestions ∷ Boolean
-      , selectedImage ∷ Maybe String
+      , selectedImage ∷ SelectedImage
       , imageCaption ∷ Maybe String
       , messageEnter ∷ Boolean
       , link ∷ Maybe String
@@ -174,6 +174,12 @@ newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 data AfterLogout
       = LoginPage
       | Banned
+
+type SelectedImage = Maybe {
+      width :: Int,
+      height :: Int,
+      base64 :: String
+}
 
 data ShowChatModal
       = HideChatModal
@@ -237,7 +243,7 @@ data ProfilePresentation
       | NextCard
 
 data MessageContent
-      = Image String String
+      = Image String Int Int String
       | Text String
       | Audio String
 
@@ -303,7 +309,7 @@ data ImMessage
       | SetBugging MeroChatCall
 
       --chat
-      | SetSelectedImage (Maybe String)
+      | SetSelectedImage SelectedImage
       | ToggleContactProfile
       | ToggleMiniChatInput
       | DropFile Event

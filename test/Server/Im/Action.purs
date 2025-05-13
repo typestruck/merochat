@@ -420,7 +420,7 @@ tests = do
             TU.test "processMessage accepts files"
                   $ TS.serverActionCatch (TS.catch invalidImageMessage)
                   $ do
-                          message ← SIA.processMessageContent (Image "hey" "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") $ DST.singleton SendImages
+                          message ← SIA.processMessageContent (Image "hey" 2 2 "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") $ DST.singleton SendImages
                           R.liftAff <<< TUA.assert "returns file" $ DSR.test (DSRU.unsafeRegex "!\\[hey\\]((.*)/upload/(.*).gif)" noFlags) message
 
             TU.test "processMessage sanitizes input"
@@ -434,7 +434,7 @@ tests = do
                   $ TS.serverActionCatch (TS.catch imageTooBigMessage)
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SIA.processMessage userId anotherUserId <<< Image "hey" $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
+                          SIA.processMessage userId anotherUserId <<< Image "hey" 2 2 $ "data:image/png;base64," <> (DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a")
 
             TU.test "processMessage rejects links if user lacks privilege"
                   $ TS.serverAction
@@ -445,7 +445,7 @@ tests = do
             TU.test "processMessage rejects images if user lacks privilege"
                   $ TS.serverAction
                   $ do
-                          message ← SIA.processMessageContent (Image "hey" "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") DST.empty
+                          message ← SIA.processMessageContent (Image "hey" 2 2 "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") DST.empty
                           R.liftAff $ TUA.equal "" message
 
             TU.test "processMessage fails if recipient visibility is nobody"

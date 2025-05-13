@@ -78,8 +78,8 @@ tests = do
             TU.test "sendMessage adds markdown image to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { chatting } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) true (Image caption image) date webSocket $ model
-                              { selectedImage = Just image
+                        { chatting } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) true (Image caption 2 2 image) date webSocket $ model
+                              { selectedImage = Just { base64: image, width : 2, height : 2 }
                               , imageCaption = Just caption
                               }
                         entry = SU.fromJust $ SIC.maybeFindContact chatting model.contacts
@@ -90,7 +90,7 @@ tests = do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
                         { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) true content date webSocket $ model
-                              { selectedImage = Just image
+                              { selectedImage = Just { base64: image, width : 2, height : 2 }
                               , imageCaption = Just caption
                               }
                   TUA.equal Nothing selectedImage
@@ -153,16 +153,16 @@ tests = do
 
             TU.test "setSelectedImage sets file" do
                   let
-                        { selectedImage, erroredFields } = DT.fst <<< CIC.setSelectedImage (Just image) $ model
+                        { selectedImage, erroredFields } = DT.fst <<< CIC.setSelectedImage (Just { base64: image, width : 2, height : 2 }) $ model
                               { erroredFields = []
                               , selectedImage = Nothing
                               }
-                  TUA.equal (Just image) selectedImage
+                  TUA.equal (Just { base64: image, width : 2, height : 2 }) selectedImage
                   TUA.equal [] erroredFields
 
             TU.test "setSelectedImage validates files too long" do
                   let
-                        { erroredFields } = DT.fst <<< CIC.setSelectedImage (Just <<< DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a") $ model
+                        { erroredFields } = DT.fst <<< CIC.setSelectedImage (Just { base64:  DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a", width : 2, height : 2 }) $ model
                               { erroredFields = []
                               }
                   TUA.equal [ "selectedImage" ] erroredFields

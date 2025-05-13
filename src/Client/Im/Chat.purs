@@ -40,7 +40,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, User, Markup(..), MessageContent(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowContextMenu(..), Touch, Turn, WebSocketPayloadServer(..))
+import Shared.Im.Types
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Options.MountPoint (imId)
@@ -52,7 +52,6 @@ import Web.DOM (Element)
 import Web.DOM.Element as WDE
 import Web.Event.Event (Event)
 import Web.Event.Event as WEE
-import Web.File.FileReader (FileReader)
 import Web.HTML.Event.DataTransfer as WHEDT
 import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHE
@@ -99,7 +98,7 @@ messageContent elementId model = do
       cleanUp input
       pure <<< Just $ SendMessage elementId (DM.maybe (Text value) toImage model.selectedImage) date
       where
-      toImage base64File = Image (DM.fromMaybe "" model.imageCaption) base64File
+      toImage selected = Image (DM.fromMaybe "" model.imageCaption) selected.width selected.height selected.base64
 
       cleanUp input = EC.liftEffect do
             WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
@@ -167,12 +166,12 @@ sendMessage userId shouldFetchHistory contentMessage date webSocket model =
                                     }
             pure Nothing
 
-      asMarkdownImage caption base64 = "![" <> caption <> "](" <> base64 <> ")"
+      asMarkdownImage caption width height base64 = "![" <> caption <> "]([" <> show width <> "," <> show height <> "]" <> base64 <> ")"
       asAudioMessage base64 = "<audio controls src='" <> base64 <> "'></audio>"
       markdown =
             case contentMessage of
                   Text txt → txt
-                  Image caption base64File → asMarkdownImage caption base64File
+                  Image caption width height base64File → asMarkdownImage caption width height base64File
                   Audio base64 → asAudioMessage base64
       updateContact contact
             | contact.user.id == userId =
@@ -330,18 +329,18 @@ catchFile ∷ Event → ImModel → NoMessages
 catchFile event model = model /\ [ catchIt ]
       where
       catchIt = EC.liftEffect do
-            CCF.resizeAndSendFirstFile (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imId (SetSelectedImage <<< Just)
+            CCF.resizeAndSendFirstFile (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imId (\width height base64 -> SetSelectedImage $ Just {width, height, base64})
             CCD.preventStop event
             pure Nothing
 
 -- | Handle file input selection
-setSelectedImage ∷ Maybe String → ImModel → NextMessage
-setSelectedImage maybeBase64 model =
+setSelectedImage ∷ SelectedImage → ImModel → NextMessage
+setSelectedImage selected model =
       model
             { toggleChatModal = ShowSelectedImage
-            , selectedImage = maybeBase64
+            , selectedImage = selected
             , erroredFields =
-                    if isTooLarge $ DM.fromMaybe "" maybeBase64 then
+                    if isTooLarge $ DM.maybe "" _.base64 selected then
                           [ TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage") ]
                     else
                           []

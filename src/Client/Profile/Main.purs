@@ -26,4 +26,4 @@ main = do
             }
       --avatar changes
       input ← CPU.getFileInput
-      CCF.setUpFileChange (Save <<< Avatar <<< Just) input profileId
+      CCF.setUpFileChange (\ _ _ b -> Save <<< Avatar $ Just b) input profileId

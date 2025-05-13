@@ -120,9 +120,9 @@ processMessageContent ∷ ∀ r. MessageContent → Set Privilege → BaseEffect
 processMessageContent content privileges = do
       message ← case content of
             Text m | allowed m → pure m
-            Image caption base64 | DST.member SendImages privileges → do
+            Image caption width height base64 | DST.member SendImages privileges → do
                   name ← SF.saveBase64File base64
-                  pure $ "![" <> caption <> "](" <> SP.resourcePath (Left $ Upload name) Ignore <> ")"
+                  pure $ "![" <> caption <> "]([" <> show width <> "," <> show height <> "]" <> SP.resourcePath (Left $ Upload name) Ignore <> ")"
             Audio base64 | DST.member SendAudios privileges → do
                   name ← SF.saveBase64File base64
                   pure $ "<audio controls src='" <> SP.resourcePath (Left $ Upload name) Ignore <> "'></audio>"
