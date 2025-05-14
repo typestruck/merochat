@@ -36,4 +36,5 @@ export function start_(constraints, options, handler) {
 
 export function stop_() {
     mediaRecorder.stop();
+    mediaRecorder = null;
 }

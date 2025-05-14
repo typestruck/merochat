@@ -3113,6 +3113,10 @@ label {
         height: 200px;
     }
 
+    .settings .outer-user-menu {
+        min-width: 60px;
+    }
+
     .chat-input-preview,
     .chat-input,
     .suggestion-input .side .chat-input {
@@ -3284,6 +3288,10 @@ label {
     .chat-input,
     .suggestion-input .side .chat-input {
         padding: 10px 45px;
+    }
+
+    .settings .outer-user-menu {
+        min-width: 60px;
     }
 }
 
