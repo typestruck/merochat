@@ -468,8 +468,9 @@ blockquote {
     background: #1b3a28;
 }
 
-.mini-suggestions .outer-user-menu svg, .svg-text-color {
-    fill:var(--text-color);
+.mini-suggestions .outer-user-menu svg,
+.svg-text-color {
+    fill: var(--text-color);
     stroke: none;
 }
 
@@ -953,8 +954,8 @@ img.emoji {
 
 .see-all-home svg {
     margin-top: -5px;
-    fill:var(--text-color);
-    stroke: var(--text-color) ;
+    fill: var(--text-color);
+    stroke: var(--text-color);
 }
 
 .logo-contact-list {
@@ -1120,17 +1121,28 @@ svg.toolbar-action {
     width: max-content;
     display: inline-block;
     margin: 0 5px;
-    margin-bottom: 10px;
     padding: 0px 10px;
     border-radius: 20px;
 }
 
-.profile-contact .tag {
-    border: 1px solid #b5b7b7
+.tag {
+    border: 1px solid var(--text-color);
 }
 
 .mini-headline-tags {
     cursor: pointer;
+    overflow-y: hidden;
+}
+
+.card-about-description {
+    font-weight: bold;
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.card-description {
+    display: flex;
+    flex-direction: column;
     overflow-y: hidden;
 }
 
@@ -1141,8 +1153,7 @@ svg.toolbar-action {
 .suggestion .tag,
 .list-tags,
 .card .tag {
-    background: #a6b572;
-    color: #1b3a28;
+    color: var(--text-color);
 }
 
 .hidden .editor-toolbar {
@@ -1894,8 +1905,16 @@ select {
     display: none;
 }
 
+.cards {
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+}
+
 .suggestion-cards {
     display: flex;
+    height: 100%;
+    margin: 0px 50px;
     flex-direction: column;
     align-items: center;
 }
@@ -1915,11 +1934,6 @@ select {
     align-self: flex-start;
     flex-direction: column;
 }
-
-.suggestion-cards {
-    margin-left: 50px;
-}
-
 
 .card-top-header {
     color: var(--text-color);
@@ -1976,17 +1990,17 @@ select {
 }
 
 .cards {
-    overflow: hidden;
     display: flex;
-    flex-direction: row-reverse;
-    flex-grow: 1;
-    justify-content: center;
+    padding: 20px 0px;
 }
 
 .card {
-    border: 2px solid #4E4E4E;
-    position: relative;
-    border-radius: 15px;
+    border: 1px solid var(--text-color);
+    margin-bottom: 20px;
+    width: 45%;
+    height: 67%;
+    padding: 20px;
+    border-radius: 35px;
 }
 
 .card-center {
@@ -2116,13 +2130,15 @@ select {
     display: flex;
 }
 
-.mini-suggestion-cards .chat-input-options, .mini-suggestion-cards .attachment-button, .mini-suggestion-cards .emoji-access-div {
+.mini-suggestion-cards .chat-input-options,
+.mini-suggestion-cards .attachment-button,
+.mini-suggestion-cards .emoji-access-div {
     display: none;
 }
 
 .mini-suggestion-cards .chat-input {
     padding: 5px;
-    border-radius:5px;
+    border-radius: 5px;
     margin-top: 10px;
 }
 
@@ -2248,7 +2264,7 @@ select {
 }
 
 .mini-avatar-info-arrows .suggestion-arrow {
-    margin:0;
+    margin: 0;
     position: unset;
     margin-left: -33px
 }
@@ -2411,10 +2427,21 @@ select {
     display: none;
 }
 
+.card-name {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+
+.suggestion-avatar {
+    width: 102px;
+    height: 102px;
+    border-radius: 100%;
+}
+
 .avatar-profile,
 .avatar-profile-edition {
     width: 68px;
-    height: 69px;
+    height: 68px;
 }
 
 .mini-suggestion-cards {
@@ -2631,8 +2658,8 @@ label {
     }
 
     .tab-item svg {
-        fill:var(--text-color);
-        stroke:var(--text-color)
+        fill: var(--text-color);
+        stroke: var(--text-color)
     }
 
     .avatar-settings {

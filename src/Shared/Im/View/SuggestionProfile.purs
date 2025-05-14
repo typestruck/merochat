@@ -55,7 +55,7 @@ suggestionProfile model =
                               fullProfile FullContactProfile 0 model chatting.user
                         else
                               compactProfile model chatting
-                  Nothing → suggestionCards model model.suggesting
+                  Nothing → suggestionCards model
       where
       notChatting = DM.isNothing model.chatting
 
@@ -275,38 +275,60 @@ profileContextMenu id delete =
       ]
 
 -- | Suggestions are shown as a (three) card list
-suggestionCards ∷ ImModel → Int → Html ImMessage
-suggestionCards model@{ user, suggestions, toggleModal } index =
+suggestionCards ∷ ImModel → Html ImMessage
+suggestionCards model =
       HE.div (HA.class' "suggestion-cards")
-            [ if user.temporary && isNotTutorial then welcomeTemporary user else welcome model
-            , HE.div (HA.class' "cards") cardTrio
+            [ if model.user.temporary then welcomeTemporary model.user else welcome model
+            , HE.div (HA.class' "cards") $ map card model.suggestions
             ]
       where
-      cardTrio =
-            let
-                  available = DA.catMaybes <<< map (\i → map (card i) $ suggestions !! i) $ (index - 1) .. (index + 1)
-            in
-                  case DA.length available of
-                        1 → dummyCard (index - 1) : DA.snoc available (dummyCard (index + 1))
-                        2 | index == 0 → dummyCard (index - 1) : available
-                        2 | index > 0 → DA.snoc available $ dummyCard (index + 1)
-                        _ → available
+      card suggestion =
+            HE.div (HA.class' "card")
+                          [ HE.div (HA.class' "avatar-info")
+                                  [
+                                   HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile" ]
+                                          [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
+                                          , HE.div (HA.class' "mini-suggestion-info")
+                                                  ( [ HE.div_
+                                                            [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
+                                                            , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
+                                                            ]
+                                                    ] <> genderAge suggestion
+                                                    <> from suggestion
+                                                          <> onlineStatus suggestion
+                                                  )
+                                          ]
 
-      card suggesting profile =
-            let
-                  isCenter = suggesting == index
-                  isPrevious = suggesting < index
-                  attrs
-                        | isCenter = [ HA.class' { "card card-center": true, highlighted: toggleModal == Tutorial ChatSuggestions } ]
-                        | otherwise = [ HA.class' "card card-sides faded" ]
-            in
-                  HE.div attrs $ fullProfile (if isCenter then CenterCard else if isPrevious then PreviousCard else NextCard) suggesting model profile
+                                  ]
+                          , HE.div (HA.class' "mini-name-options")
+                                  [ HE.strong (HA.class' "card-name") suggestion.name
+                                  , HE.div [ HA.class' "mini-options" ]
+                                          [ HE.div [ HA.class' "outer-user-menu" ]
+                                                  [ SIA.contextMenu $ show MiniSuggestionContextMenu
+                                                  ]
+                                          ]
+                                  ]
+                          , HE.div_
+                                  ( [ HE.div (HA.class' "mini-headline") suggestion.headline
+                                    , HE.hr' (HA.class' "tag-ruler")
+                                    ] <> map (HE.span (HA.class' "tag")) suggestion.tags <>  [HE.hr' (HA.class' "tag-ruler")]
+                                  )
+                          , HE.div [ HA.class' "card-description" ] [
+                              HE.span (HA.class' "card-about-description") "About"
+                              , HE.text suggestion.description
+                              ]
+                          ]
 
-      isNotTutorial = case toggleModal of
-            Tutorial _ → false
-            _ → true
+      genderAge suggestion =
+            case DM.maybe [] (DA.singleton <<< HE.span_) suggestion.gender <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show) suggestion.age of
+                  [ g, a ] → [ HE.div_ [ g, HE.span (HA.class' "duller") ", ", a ] ]
+                  ga → ga
 
-      dummyCard suggesting = HE.div [ HA.class' "card card-sides faded", HA.onClick <<< SpecialRequest $ if suggesting < index then PreviousSuggestion else NextSuggestion ] $ HE.div' [ HA.class' "suggestion new invisible" ]
+      onlineStatus suggestion
+            | not model.user.onlineStatus || not suggestion.onlineStatus = []
+            | otherwise = [ HE.span_ $ show suggestion.availability ]
+
+      from suggestion = DM.maybe [] (DA.singleton <<< HE.span_) suggestion.country
 
 welcomeTemporary ∷ User → Html ImMessage
 welcomeTemporary { name, joined } =
