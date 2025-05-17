@@ -24,8 +24,6 @@ function st(options, handler) {
                 lock.release().then(() => {
                     lock = undefined
                 });
-
-            mediaRecorder = null;
         }
     };
 }
