@@ -395,8 +395,18 @@ textarea {
     height: 54px;
 }
 
-.suggestion.avatar-profile {
-    background: #469bc5;
+.load-more-suggestions {
+    margin-bottom: 50px;
+
+}
+
+.load-more-suggestions input {
+    padding: 20px;
+    font-weight: bold;
+    background-color: var(--merochat-red);
+    color: var(--light-color);
+    border-radius: 20px;
+    border: none;
 }
 
 .hidden {
@@ -594,15 +604,6 @@ a {
     align-items: center;
 }
 
-.suggestion.new {
-    border-radius: 15px;
-    flex-grow: 1;
-}
-
-.suggestion.new~.message-history {
-    display: none;
-}
-
 .svg-back-card,
 .svg-back-profile {
     stroke: none;
@@ -687,16 +688,6 @@ a {
 #full-profile-context-menu,
 .svg-back-profile {
     padding: 10px;
-}
-
-.suggestion.old {
-    background: var(--background-color);
-    padding: 5px 0px 43px 0px;
-    min-height: 100%;
-}
-
-.suggestion.new .span-info {
-    font-weight: bold;
 }
 
 .profile-contact {
@@ -1829,12 +1820,6 @@ select {
 }
 
 
-.card-center .suggestion.new .loading {
-    position: absolute;
-    top: 50%;
-    margin-top: -50px;
-}
-
 .fortune {
     background: #262626;
     position: absolute;
@@ -2000,6 +1985,8 @@ select {
     width: 45%;
     height: 67%;
     position: relative;
+    display: flex;
+    flex-direction: column;
     padding: 20px;
     border-radius: 35px;
 }
@@ -2076,6 +2063,34 @@ select {
     display: block;
 }
 
+.see-profile-chat {
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    right: 20px;
+    left: 20px;
+    z-index: 3;
+}
+
+.see-profile-button {
+    width: 48%;
+    border-radius: 20px;
+    height: 40px;
+}
+
+.see-profile {
+    color: var(--merochat-red);
+    border: 1px solid var(--merochat-red);
+    background-color: var(--im-right-background-color);
+}
+
+.see-chat {
+    color: var(--light-color);
+    background-color: var(--merochat-red);
+    border: 0;
+}
+
 .badge {
     color: var(--merochat-red);
     font-weight: normal;
@@ -2126,23 +2141,8 @@ select {
     overflow-y: auto;
 }
 
-.suggestion-center .suggestion.new .about-description {
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 0 5px;
-    scrollbar-width: thin;
-}
-
 .description-message {
     padding: 0 5px;
-}
-
-.suggestion-center .suggestion.new {
-    overflow: auto;
-}
-
-.suggestion.old .suggestion-arrow {
-    display: none;
 }
 
 .margin-less,
@@ -2160,15 +2160,6 @@ select {
 
 .profile-context {
     align-self: flex-end;
-}
-
-.suggestion.new {
-    padding-top: 11px;
-    background-color: var(--background-color);
-}
-
-.card-sides .suggestion.new {
-    padding-top: 26px;
 }
 
 #suggestion-context-menu {
@@ -2680,7 +2671,6 @@ label {
     }
 
     #profile-edition-form,
-    .suggestion.new,
     .backing-suggestion-call,
     .suggestion.old {
         padding: 10px 15px;
@@ -2717,23 +2707,6 @@ label {
     .profile-name,
     .profile-asl {
         text-align: center;
-    }
-
-    .suggestion-center .suggestion.new .about-description {
-        padding: 0;
-        overflow: unset;
-    }
-
-    .suggestion-center {
-        height: 100%;
-        overflow-y: hidden;
-        border: none;
-        scrollbar-width: thin;
-    }
-
-    .suggestion.new {
-        overflow-y: auto;
-        flex-grow: 1;
     }
 
     .svg-back-card {
@@ -3049,22 +3022,6 @@ label {
         margin-top: 3px;
     }
 
-    .card-sides {
-        margin: 10px 0;
-        width: calc(100vw * 0.6398243045387994);
-        height: calc(100vh * 0.81640625);
-    }
-
-    .card-center,
-    .suggestion-center {
-        width: calc(100vw * 0.55344070278184475);
-        height: calc(100vh * 0.8450520833333334);
-    }
-
-    .suggestion-center .suggestion.new {
-        height: 596px;
-    }
-
     .profile-asl {
         margin-bottom: 16px;
     }
@@ -3171,15 +3128,6 @@ label {
     .profile-description-about,
     .about {
         margin-top: 25px;
-    }
-
-    .suggestion-center {
-        width: 1040px;
-        height: calc(100vh * 0.7944444444444444);
-    }
-
-    .suggestion-center .suggestion.new {
-        height: calc(100vh * 0.6462962962962962);
     }
 
     .avatar-profile,
