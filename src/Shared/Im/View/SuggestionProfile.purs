@@ -280,44 +280,50 @@ suggestionCards model =
       HE.div (HA.class' "suggestion-cards")
             [ if model.user.temporary then welcomeTemporary model.user else welcome model
             , HE.div (HA.class' "cards") $ map card model.suggestions
+            , HE.div (HA.class' { "load-more-suggestions": true, hidden: DA.length model.suggestions > 2 || DA.null model.suggestions })
+                    [ HE.input [ HA.type' "button", HA.value "Load more suggestions" ]
+                    ]
             ]
       where
       card suggestion =
             HE.div (HA.class' "card")
-                          [ HE.div (HA.class' "avatar-info")
-                                  [
-                                   HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile" ]
-                                          [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
-                                          , HE.div (HA.class' "mini-suggestion-info")
-                                                  ( [ HE.div_
-                                                            [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
-                                                            , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
-                                                            ]
-                                                    ] <> genderAge suggestion
-                                                    <> from suggestion
-                                                          <> onlineStatus suggestion
-                                                  )
-                                          ]
+                  [ HE.div (HA.class' "avatar-info")
+                          [ HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile" ]
+                                  [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
+                                  , HE.div (HA.class' "mini-suggestion-info")
+                                          ( [ HE.div_
+                                                    [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
+                                                    , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
+                                                    ]
+                                            ] <> genderAge suggestion
+                                                  <> from suggestion
+                                                  <> onlineStatus suggestion
+                                          )
+                                  ]
 
-                                  ]
-                          , HE.div (HA.class' "mini-name-options")
-                                  [ HE.strong (HA.class' "card-name") suggestion.name
-                                  , HE.div [ HA.class' "mini-options" ]
-                                          [ HE.div [ HA.class' "outer-user-menu" ]
-                                                  [ SIA.contextMenu $ show MiniSuggestionContextMenu
-                                                  ]
+                          ]
+                  , HE.div (HA.class' "mini-name-options")
+                          [ HE.strong (HA.class' "card-name") suggestion.name
+                          , HE.div [ HA.class' "mini-options" ]
+                                  [ HE.div [ HA.class' "outer-user-menu" ]
+                                          [ SIA.contextMenu $ show MiniSuggestionContextMenu
                                           ]
                                   ]
-                          , HE.div_
-                                  ( [ HE.div (HA.class' "mini-headline") suggestion.headline
-                                    , HE.hr' (HA.class' "tag-ruler")
-                                    ] <> map (HE.span (HA.class' "tag")) suggestion.tags <>  [HE.hr' (HA.class' "tag-ruler")]
-                                  )
-                          , HE.div [ HA.class' "card-description" ] [
-                              HE.span (HA.class' "card-about-description") "About"
-                              , HE.text suggestion.description
-                              ]
                           ]
+                  , HE.div_
+                          ( [ HE.div (HA.class' "mini-headline") suggestion.headline
+                            , HE.hr' (HA.class' "tag-ruler")
+                            ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
+                          )
+                  , HE.div [ HA.class' "card-description" ]
+                          [ HE.span (HA.class' "card-about-description") "About"
+                          , HE.text suggestion.description
+                          ]
+                  , HE.div (HA.class' "see-profile-chat")
+                          [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See profile" ]
+                          , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat" ]
+                          ]
+                  ]
 
       genderAge suggestion =
             case DM.maybe [] (DA.singleton <<< HE.span_) suggestion.gender <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show) suggestion.age of
