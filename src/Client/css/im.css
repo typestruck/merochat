@@ -400,6 +400,7 @@ textarea {
 }
 
 .hidden {
+    content-visibility: hidden;
     display: none !important;
 }
 

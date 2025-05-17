@@ -24,6 +24,8 @@ function st(options, handler) {
                 lock.release().then(() => {
                     lock = undefined
                 });
+
+            mediaRecorder = null;
         }
     };
 }
@@ -36,5 +38,4 @@ export function start_(constraints, options, handler) {
 
 export function stop_() {
     mediaRecorder.stop();
-    mediaRecorder = null;
 }
