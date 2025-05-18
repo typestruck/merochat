@@ -329,7 +329,7 @@ catchFile ∷ Event → ImModel → NoMessages
 catchFile event model = model /\ [ catchIt ]
       where
       catchIt = EC.liftEffect do
-            CCF.resizeAndSendFirstFile (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imId (\width height base64 -> SetSelectedImage $ Just {width, height, base64})
+            CCF.resizeAndSendFirstFile (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imId (\width height base64 → SetSelectedImage $ Just { width, height, base64 })
             CCD.preventStop event
             pure Nothing
 

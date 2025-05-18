@@ -199,6 +199,5 @@ WHERE  (   sender = @loggedUserId
            AND date >= @dt)
       AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = s.recipient AND blocked = s.sender OR blocker = s.sender AND blocked = s.recipient)"""
 
-
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)

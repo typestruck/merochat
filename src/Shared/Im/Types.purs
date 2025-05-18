@@ -175,11 +175,11 @@ data AfterLogout
       = LoginPage
       | Banned
 
-type SelectedImage = Maybe {
-      width :: Int,
-      height :: Int,
-      base64 :: String
-}
+type SelectedImage = Maybe
+      { width ∷ Int
+      , height ∷ Int
+      , base64 ∷ String
+      }
 
 data ShowChatModal
       = HideChatModal

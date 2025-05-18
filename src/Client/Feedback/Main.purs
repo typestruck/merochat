@@ -22,4 +22,4 @@ main = do
             }
       --file changes
       input ← CFU.getFileInput
-      CCF.setUpFileChange (\_ _ b -> SetScreenshot b) input feedbackId
+      CCF.setUpFileChange (\_ _ b → SetScreenshot b) input feedbackId

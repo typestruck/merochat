@@ -113,7 +113,7 @@ main = do
 
       --image upload
       input ← CCD.unsafeGetElementById ImageFileInput
-      CCF.setUpFileChange (\width height base64 -> SetSelectedImage $ Just {width, height, base64}) input imId
+      CCF.setUpFileChange (\width height base64 → SetSelectedImage $ Just { width, height, base64 }) input imId
 
       --harass temporary users on their last day to make an account
       FS.send imId CheckUserExpiration

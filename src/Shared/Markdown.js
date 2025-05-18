@@ -1,5 +1,7 @@
 import { marked } from 'marked';
 
+let maxWidth = typeof document == "undefined" ? undefined : parseFloat(getComputedStyle(document.querySelector('#contact-list')).width) - 20;
+
 export function lexer(value) {
       return marked.lexer(value);
 }
@@ -15,7 +17,8 @@ function defaultOptions() {
                   },
                   image(whSrc, title, text) {
                         let result = /\[(.+)\,(.+)\](.+)/.exec(whSrc),
-                              tag = `<img width="${result[1]}" height="${result[2]}" src="${result[3]}" alt="${title || ""}" />`
+                              [width, height] = widthHeight(result[1], result[2]),
+                              tag = `<img width="${width}" height="${height}" src="${result[3]}" alt="${title || ""}" />`
 
                         if (text)
                               tag += `<br/>${text}`;
@@ -30,6 +33,19 @@ function defaultOptions() {
                   }
             }
       });
+}
+
+function widthHeight(w, h) {
+      if (maxWidth === undefined)
+            return [w, h];
+
+      let width = parseInt(w),
+            height = parseInt(h);
+
+      if (width > maxWidth)
+            return [maxWidth, Math.round((height * maxWidth) / width)];
+
+      return [width, height];
 }
 
 function restrictedOptions() {
