@@ -13,6 +13,10 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Nullable as DN
 import Data.Set (Set)
+import Server.Im.Database.Execute as SIDE
+import Server.Im.Database.Suggest as SIDS
+import Server.Im.Database.Permission as SIDPP
+import Server.Im.Database.Present as SIDP
 import Data.Set as DST
 import Data.String as DS
 import Data.Tuple (Tuple(..))
@@ -25,7 +29,6 @@ import Server.AccountValidation as SA
 import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Email as SE
 import Server.File as SF
-import Server.Im.Database as SID
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
 import Server.Im.Types (Payload)
@@ -40,7 +43,7 @@ import Shared.ResponseError (ResponseError(..))
 
 im ∷ Int → ServerEffect Payload
 im loggedUserId = do
-      maybeUser ← SID.presentUser loggedUserId
+      maybeUser ← SIDP.presentUser loggedUserId
       case maybeUser of
             --happens if the user has an invalid cookie/was suspended
             Nothing → RE.throw ExpiredSession
@@ -54,20 +57,20 @@ im loggedUserId = do
                         }
 
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
-suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SID.suggest loggedUserId skip sg
+suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip sg
 
 listContacts ∷ Int → Int → ServerEffect (Array Contact)
-listContacts loggedUserId skip = presentContacts <$> SID.presentContacts loggedUserId skip
+listContacts loggedUserId skip = presentContacts <$> SIDP.presentContacts loggedUserId skip
 
 listSingleContact ∷ Int → Int → ServerEffect (Array Contact)
-listSingleContact loggedUserId userId = presentContacts <$> SID.presentSingleContact loggedUserId userId 0
+listSingleContact loggedUserId userId = presentContacts <$> SIDP.presentSingleContact loggedUserId userId 0
 
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
-resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SID.presentSingleContact loggedUserId userId skip
+resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SIDP.presentSingleContact loggedUserId userId skip
 
 listMissedEvents ∷ Int → Maybe Int → DateTime → ServerEffect MissedEvents
 listMissedEvents loggedUserId messageId dt = do
-      messages ← SID.presentMissedMessages loggedUserId messageId dt
+      messages ← SIDP.presentMissedMessages loggedUserId messageId dt
       pure
             { missedMessages: messages
             }
@@ -82,38 +85,38 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
 
 processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Tuple Int String))
 processMessage loggedUserId userId content = do
-      isVisible ← SID.isRecipientVisible loggedUserId userId
+      isVisible ← SIDE.isRecipientVisible loggedUserId userId
       if isVisible then do
             privileges ← markdownPrivileges loggedUserId
             sanitized ← processMessageContent content privileges
             if DS.null sanitized then
                   pure $ Left InvalidMessage
             else do
-                  id ← SID.insertMessage loggedUserId userId sanitized
+                  id ← SIDE.insertMessage loggedUserId userId sanitized
                   pure <<< Right $ Tuple id sanitized
       else
             pure $ Left UserUnavailable
 
 editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError String)
 editMessage loggedUserId userId messageId content = do
-      isVisible ← SID.isRecipientVisible loggedUserId userId
-      canEdit ← if isVisible then SID.canEditMessage loggedUserId messageId else pure false
+      isVisible ← SIDE.isRecipientVisible loggedUserId userId
+      canEdit ← if isVisible then SIDPP.canEditMessage loggedUserId messageId else pure false
       if canEdit then do
             privileges ← markdownPrivileges loggedUserId
             sanitized ← processMessageContent content privileges
             if DS.null sanitized then
                   pure $ Left InvalidMessage
             else do
-                  id ← SID.updateMessage messageId sanitized
+                  id ← SIDE.updateMessage messageId sanitized
                   pure $ Right sanitized
       else
             pure $ Left UserUnavailable
 
 unsendMessage ∷ ∀ r. Int → Int → Int → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } Unit
-unsendMessage loggedUserId userId messageId = SID.deleteMessage loggedUserId userId messageId
+unsendMessage loggedUserId userId messageId = SIDE.deleteMessage loggedUserId userId messageId
 
 markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Privilege)
-markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SID.markdownPrivileges loggedUserId
+markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SIDPP.markdownPrivileges loggedUserId
 
 -- | Sanitizes markdown and handle image uploads
 processMessageContent ∷ ∀ r. MessageContent → Set Privilege → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } String
@@ -139,32 +142,32 @@ processMessageContent content privileges = do
       isLink canSendLinks (Token child) = child."type" == "image" || not canSendLinks && ((child."type" == "link" || child."type" == "reflink") && child.raw /= child.text)
 
 processKarma ∷ ∀ r. Int → Int → Turn → BaseEffect { pool ∷ Pool | r } Unit
-processKarma loggedUserId userId turn = SID.insertKarma loggedUserId userId $ SW.karmaFrom turn
+processKarma loggedUserId userId turn = SIDE.insertKarma loggedUserId userId $ SW.karmaFrom turn
 
 blockUser ∷ Int → Int → ServerEffect Unit
-blockUser loggedUserId userId = SID.insertBlock loggedUserId userId
+blockUser loggedUserId userId = SIDE.insertBlock loggedUserId userId
 
 deleteChat ∷ Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit
 deleteChat loggedUserId ids@{ userId } = do
-      entry ← SID.chatHistoryEntry loggedUserId userId
+      entry ← SIDE.chatHistoryEntry loggedUserId userId
       case entry of
             Nothing → pure unit
-            Just { sender } → SID.markAsDeleted (sender == loggedUserId) loggedUserId ids
+            Just { sender } → SIDE.markAsDeleted (sender == loggedUserId) loggedUserId ids
 
 reportUser ∷ Int → Report → ServerEffect Unit
 reportUser loggedUserId report@{ reason, userId } = do
-      SID.insertReport loggedUserId report
+      SIDE.insertReport loggedUserId report
       SE.sendEmail "contact@mero.chat" ("[REPORT] " <> show reason) $ "select * from reports where reported = " <> show userId <> ";"
 
 finishTutorial ∷ Int → ServerEffect Unit
-finishTutorial loggedUserId = SID.updateTutorialCompleted loggedUserId
+finishTutorial loggedUserId = SIDE.updateTutorialCompleted loggedUserId
 
 --makeshift action so new users have more attention
 greet ∷ Int → ServerEffect Unit
 greet loggedUserId =
       if production then do
             starter ← ST.generateConversationStarter
-            void $ SID.insertMessage sender loggedUserId starter
+            void $ SIDE.insertMessage sender loggedUserId starter
       else
             pure unit
       where
@@ -175,4 +178,4 @@ registerUser loggedUserId rawEmail password = do
       email ← SA.validateEmail rawEmail
       hash ← SA.validatePassword password
       SA.validateExistingEmail email
-      SID.registerUser loggedUserId email hash
+      SIDE.registerUser loggedUserId email hash

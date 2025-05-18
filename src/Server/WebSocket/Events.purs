@@ -44,7 +44,8 @@ import Server.Database.Users as SBU
 import Server.Effect (BaseEffect, BaseReader, Configuration)
 import Server.Effect as SE
 import Server.Im.Action as SIA
-import Server.Im.Database as SID
+import Server.Im.Database.Execute as SIDE
+import Server.Im.Database.Permission as SIDP
 import Server.Settings.Action as SSA
 import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
@@ -178,7 +179,7 @@ handleMessage payload = do
 setOnline ∷ Int → WebSocketEffect
 setOnline loggedUserId = do
       now ← liftEffect EN.nowDateTime
-      SID.upsertLastSeen $ SJS.writeJSON [ { who: loggedUserId, date: DT now } ]
+      SIDE.upsertLastSeen $ SJS.writeJSON [ { who: loggedUserId, date: DT now } ]
 
 sendBan ∷ HashMap Int UserAvailability → Int → WebSocketEffect
 sendBan allUsersAvailability userId = do
@@ -239,7 +240,7 @@ sendPong token loggedUserId allUsersAvailabilityRef ping = do
             case DAN.fromArray nones of
                   Nothing → pure $ Tuple users []
                   Just missing → do
-                        lastSeens ← DH.fromArrayBy _.who _.date <$> SID.queryLastSeen missing
+                        lastSeens ← DH.fromArrayBy _.who _.date <$> SIDP.queryLastSeen missing
                         let
                               records = map
                                     ( \r →
@@ -267,7 +268,7 @@ sendUnavailability loggedUserId allUsersAvailability userId = do
 
 sendStatusChange ∷ String → Int → HashMap Int UserAvailability → { ids ∷ Array (Tuple Int (Array Int)), status ∷ MessageStatus } → WebSocketEffect
 sendStatusChange token loggedUserId allUsersAvailability changes = do
-      SID.changeStatus loggedUserId changes.status $ DA.concatMap DT.snd changes.ids
+      SIDE.changeStatus loggedUserId changes.status $ DA.concatMap DT.snd changes.ids
       DF.traverse_ sendReceipients changes.ids
       DF.traverse_ sendLoggedUser changes.ids
       where
@@ -453,7 +454,7 @@ persistLastSeen context = do
       allUsersAvailability ← ER.read context.allUsersAvailabilityRef
       now ← liftEffect EN.nowDateTime
       when (not $ DH.isEmpty allUsersAvailability) do
-            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SID.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy (lastSeens now) allUsersAvailability
+            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SIDE.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy (lastSeens now) allUsersAvailability
             EA.launchAff_ $ EA.catchError run logError
       where
       lastSeens now id avl = case avl.availability of

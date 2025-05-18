@@ -50,6 +50,15 @@ b = Proxy
 bu ∷ Proxy "bu"
 bu = Proxy
 
+h ∷ Proxy "h"
+h = Proxy
+
+s ∷ Proxy "s"
+s = Proxy
+
+t ∷ Proxy "t"
+t = Proxy
+
 profileVisibility ∷ Proxy "profileVisibility"
 profileVisibility = Proxy
 
@@ -67,3 +76,9 @@ messageTimestamps = Proxy
 
 completedTutorial ∷ Proxy "completedTutorial"
 completedTutorial = Proxy
+
+_chatStarter ∷ Proxy "chatStarter"
+_chatStarter = Proxy
+
+_lastSeen ∷ Proxy "lastSeen"
+_lastSeen = Proxy

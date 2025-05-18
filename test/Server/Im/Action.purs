@@ -31,7 +31,10 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_temporary, users)
 import Server.File (imageTooBigMessage, invalidImageMessage)
 import Server.Im.Action as SIA
-import Server.Im.Database as SID
+import Server.Im.Database.Suggest as SID
+import Server.Im.Database.Execute as SID
+import Server.Im.Database.Permission as SID
+import Server.Im.Database.Present as SID
 import Server.Landing.Database as SLD
 import Server.Settings.Action as SSA
 import Shared.Privilege (Privilege(..))
