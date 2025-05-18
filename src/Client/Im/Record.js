@@ -30,7 +30,7 @@ function st(options, handler) {
 
 export function start_(constraints, options, handler) {
     navigator.wakeLock.request('screen').then(l => {
-      lock = l;
+        lock = l;
     }).finally(() => navigator.mediaDevices.getUserMedia(constraints).then(st(options, handler), e => console.log(e)));
 }
 
