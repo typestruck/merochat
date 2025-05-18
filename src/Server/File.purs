@@ -40,8 +40,8 @@ saveBase64File ∷ ∀ r. String → BaseEffect { configuration ∷ Configuratio
 saveBase64File input =
       case DS.split (Pattern ",") input of
             [ mediaType, base64 ] → do
-                  case DH.lookup (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" mediaType) allowedMediaTypes of
-                        Nothing → invalidImage
+                  case DH.lookup (spy "aaa" (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" mediaType)) allowedMediaTypes of
+                        Nothing → spy "iv" invalidImage
                         Just _ → do
                               buffer ← R.liftEffect $ NB.fromString base64 Base64
                               bufferSize ← R.liftEffect $ NB.size buffer
