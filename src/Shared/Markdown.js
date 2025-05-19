@@ -1,6 +1,9 @@
 import { marked } from 'marked';
 
-let maxWidth = typeof document == "undefined" ? undefined : parseFloat(getComputedStyle(document.querySelector('#contact-list')).width) - 20;
+let maxWidth = typeof document == "undefined" ? undefined :
+      (window.matchMedia('(max-width:1279px)').matches ?
+            parseFloat(getComputedStyle(document.querySelector('#contact-list')).width) - 20 :
+            50 * 18);
 
 export function lexer(value) {
       return marked.lexer(value);

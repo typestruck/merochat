@@ -1,6 +1,6 @@
 let maxWidth = window.matchMedia('(max-width:1279px)').matches ?
     parseFloat(getComputedStyle(document.querySelector('#contact-list')).width) - 20 :
-    50 * parseFloat(getComputedStyle(document.querySelector('body')).fontSize),
+    50 * 18,
     quality = 0.9;
 
 export async function resizeAndSendFile_(file, cb) {
