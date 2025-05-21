@@ -22,9 +22,9 @@ import Web.DOM (Element)
 import Web.Socket.WebSocket (WebSocket)
 
 run ∷ ∀ m. m → Aff (m → m) → Aff m
-run model f = do
+run m f = do
       f' ← f
-      pure $ f' model
+      pure $ f' m
 
 model ∷ ImModel
 model =
@@ -33,6 +33,7 @@ model =
       , typingIds: []
       , initialScreen: true
       , suggestionsFrom: ThisWeek
+      , showSuggestionChatInput: Nothing
       , showCollapsedMiniSuggestions: false
       , showMiniChatInput: false
       , temporaryEmail: Nothing

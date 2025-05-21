@@ -160,6 +160,7 @@ type Im =
       , fullContactProfileVisible ∷ Boolean
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
+      , showSuggestionChatInput :: Maybe Int
       , toggleContextMenu ∷ ShowContextMenu
       , toggleModal ∷ ShowUserMenuModal --refactor: toggleModal and toggleChatModal should be merged
       , toggleChatModal ∷ ShowChatModal
