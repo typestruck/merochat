@@ -124,7 +124,7 @@ fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions
             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
             CenterCard → HE.div [ HA.class' "suggestion-center" ] -- only center card suggestion can be chatted to
                   [ HE.div [ HA.class' "suggestion new" ] $ if model.bugging == Just Backing then backingTime else (loading : currentSuggestionMenu : profile)
-                  , HE.div [ HA.class' "suggestion-input" ] $ SIVC.chatBarInput ChatInputSuggestion model
+                  , HE.div [ HA.class' "suggestion-input" ] $ SIVC.chatBarInput ChatInputContact model
                   ]
             card → HE.div [ HA.class' "suggestion new", HA.onClick <<< SpecialRequest $ if card == PreviousCard then PreviousSuggestion else NextSuggestion ] profile
       where
@@ -319,10 +319,13 @@ suggestionCards model =
                           [ HE.span (HA.class' "card-about-description") "About"
                           , HE.text suggestion.description
                           ]
-                  , HE.div (HA.class' "see-profile-chat")
-                          [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See profile" ]
-                          , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat" ]
-                          ]
+                  , case model.showSuggestionChatInput of
+                          Just id | suggestion.id == id →
+                                HE.div [ HA.class' "see-profile-chat" ] $ SIVC.chatBarInput ChatInputSuggestion model
+                          _ → HE.div (HA.class' "see-profile-chat")
+                                [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See profile" ]
+                                , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat" ]
+                                ]
                   ]
 
       genderAge suggestion =

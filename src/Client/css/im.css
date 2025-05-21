@@ -401,11 +401,11 @@ textarea {
 }
 
 .load-more-suggestions input {
-    padding: 20px;
+    padding: 15px;
     font-weight: bold;
     background-color: var(--merochat-red);
     color: var(--light-color);
-    border-radius: 20px;
+    border-radius: 15px;
     border: none;
 }
 

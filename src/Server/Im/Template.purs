@@ -48,6 +48,7 @@ template payload = do
                     , suggestionsPage: 1
                     , errorMessage: ""
                     , suggestionsFrom: ThisWeek
+                    , showSuggestionChatInput: Nothing
                     , lastTyping: DateTimeWrapper lt
                     , smallScreen: false
                     , showMiniChatInput: false
