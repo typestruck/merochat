@@ -307,15 +307,9 @@ suggestionCards model =
                           ]
                   , HE.div (HA.class' "mini-name-options")
                           [ HE.strong (HA.class' "card-name") suggestion.name
-                          , HE.div [ HA.class' "mini-options" ]
-                                  [ HE.div [ HA.class' "outer-user-menu" ]
-                                          [ SIA.contextMenu $ show SuggestionContextMenu
-                                          , HE.div [ HA.class' { "user-menu menu-up": true, visible: model.toggleContextMenu == ShowSuggestionContextMenu } ] $ profileContextMenu suggestion.id false
-                                          ]
-                                  ]
                           ]
                   , HE.div_
-                          ( [ HE.div (HA.class' "mini-headline") suggestion.headline
+                          ( [ HE.div (HA.class' "card-headline") suggestion.headline
                             , HE.hr' (HA.class' "tag-ruler")
                             ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
                           )
