@@ -275,17 +275,20 @@ profileContextMenu id delete =
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
       ]
 
--- | Suggestions are shown as a (three) card list
+-- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
 suggestionCards model =
       HE.div (HA.class' "suggestion-cards")
             [ if model.user.temporary then welcomeTemporary model.user else welcome model
-            , HE.div [HA.class' "cards", SIS.onScrollEvent $ SpecialRequest NextSuggestion] $ map card model.suggestions
-            , HE.div (HA.class' { "load-more-suggestions": true, hidden: DA.length model.suggestions > 2 || DA.null model.suggestions })
-                    [ HE.input [ HA.type' "button", HA.value "Load more suggestions", HA.onClick $ SpecialRequest NextSuggestion ]
-                    ]
+            , HE.div [ HA.class' "cards" ] $ map card model.suggestions <> moreCards
             ]
       where
+      moreCards =
+            [ HE.div (HA.class' "card card-load-more" : if model.freeToFetchSuggestions then [ HA.onClick FetchMoreSuggestions ] else [])
+                    [ HE.i_ "Load more suggestions"
+                    , nextArrow
+                    ]
+            ]
       card suggestion =
             HE.div (HA.class' "card")
                   [ HE.div (HA.class' "avatar-info")
@@ -318,7 +321,7 @@ suggestionCards model =
                           )
                   , HE.div [ HA.class' "card-description" ]
                           [ HE.span (HA.class' "card-about-description") "About"
-                          , HE.div' [  HA.innerHtml $ SM.parse suggestion.description ]
+                          , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
                           ]
                   , case model.showSuggestionChatInput of
                           Just id | suggestion.id == id →

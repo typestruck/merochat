@@ -37,11 +37,10 @@ contactList
             , user: { joined, temporary, id: loggedUserId, readReceipts, typingStatus, profileVisibility, messageTimestamps, onlineStatus }
             } =
       case profileVisibility of
-            Nobody → HE.div' [ HA.id $ show ContactList, HA.class' "contact-list" ]
+            Nobody → HE.div' [ HA.class' "contact-list" ]
             _ →
                   HE.div
-                        [ HA.id $ show ContactList
-                        , SIS.onScrollEvent CheckFetchContacts
+                        [ SIS.onScrollEvent CheckFetchContacts
                         , HA.class' { "contact-list": true, highlighted: toggleModal == Tutorial ChatList }
                         ]
                         $ retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts

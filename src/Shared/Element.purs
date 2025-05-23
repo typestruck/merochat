@@ -15,7 +15,6 @@ data ElementId
       | ChatInputContact
       | ChatInputSuggestion
       | ChatInput
-      | ContactList
       | ProfileEditionForm
       | ImageFormCaption
       | PasswordDiv
@@ -25,6 +24,7 @@ data ElementId
       | MiniChatInputSuggestion
       | LinkFormUrl
       | MessageHistory
+      | Cards
       | Favicon
       | ProfileEditionRoot
       | ChatInputPreview
@@ -63,7 +63,6 @@ instance Show ElementId where
             FullProfileContextMenu → "full-profile-context-menu"
             ImageFileInput → "image-file-input"
             ConfirmAccountTerminationForm → "confirm-account-termination-form"
-            ContactList → "contact-list"
             LinkFormUrl → "link-form-url"
             ProfileEditionForm → "profile-edition-form"
             MiniSuggestionContextMenu → "mini-suggestion-context-menu"
@@ -74,6 +73,7 @@ instance Show ElementId where
             MiniChatInputSuggestion → "mini-chat-input-suggestion"
             ImageFormCaption → "image-form-caption"
             FeedbackForm → "feedback-form"
+            Cards -> "cards"
             MessageHistory → "message-history"
             Favicon → "favicon"
             FeedbackRoot → "feedback-root"

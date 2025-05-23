@@ -149,7 +149,7 @@ update st model =
             ResumeChat userId → CICN.resumeChat userId model
             SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
             SetReadStatus userId → CICN.setReadStatus userId webSocket model
-            CheckFetchContacts → CICN.checkFetchContacts model
+            CheckFetchContacts event → CICN.checkFetchContacts event model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model

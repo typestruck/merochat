@@ -1,7 +1,6 @@
 module Client.Im.Suggestion where
 
 import Prelude
-import Shared.Im.Types (ImMessage(..), ImModel, MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
 
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
@@ -17,6 +16,7 @@ import Effect.Random as ER
 import Flame as F
 import Safe.Coerce as SC
 import Shared.DateTime as SD
+import Shared.Im.Types (ImMessage(..), ImModel, MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
 import Shared.Options.Page (suggestionsPerPage)
 
 -- | Display next suggestion card
@@ -106,7 +106,7 @@ displayMoreSuggestions suggestions model =
             | otherwise = model.suggestionsFrom
 
 -- | Show or hide full user profile
-toggleSuggestionChatInput ∷ Int -> ImModel → NoMessages
+toggleSuggestionChatInput ∷ Int → ImModel → NoMessages
 toggleSuggestionChatInput id model = F.noMessages model
       { showSuggestionChatInput = Just id
       }
