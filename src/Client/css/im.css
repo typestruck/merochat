@@ -2196,9 +2196,14 @@ select {
     height: 17px;
 }
 
+
+.card-headline,
+.mini-headline {
+    margin-top: 3px;
+}
+
 .mini-headline {
     font-style: italic;
-    margin-top: 3px;
 }
 
 .svg-mini-chat {
@@ -2388,7 +2393,7 @@ select {
 }
 
 .card-name {
-    font-size: 1.2em;
+    font-size: 1.3em;
     margin-bottom: 5px;
 }
 
