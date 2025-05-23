@@ -1,5 +1,3 @@
-export let scrollEventName = (typeof window !== "undefined" && !("onscrollend" in window)) ? "scroll" : "scrollend";
-
 let userHasScrolled = false;
 
 export function runScrollEvent_(event, noMessage, scrollDownMessage, doNotScrollDownMessage, fetchHistoryMessage) {

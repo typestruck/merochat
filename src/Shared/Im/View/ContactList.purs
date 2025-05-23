@@ -5,7 +5,7 @@ import Shared.Availability
 import Shared.Experiments.Types
 import Shared.Im.Types
 
-import Data.Array ((!!), (:))
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
@@ -14,11 +14,11 @@ import Data.Newtype as DN
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Flame.Types (NodeData)
 import Shared.Avatar as SA
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
+import Shared.Im.Scroll as SIS
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.View.Retry as SIVR
 import Shared.Im.View.SuggestionProfile as SIVP
@@ -41,7 +41,7 @@ contactList
             _ →
                   HE.div
                         [ HA.id $ show ContactList
-                        , onScrollEnd CheckFetchContacts
+                        , SIS.onScrollEvent CheckFetchContacts
                         , HA.class' { "contact-list": true, highlighted: toggleModal == Tutorial ChatList }
                         ]
                         $ retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts
@@ -122,6 +122,3 @@ contactList
 
       -- | Displayed if loading contact list fails
       retryLoadingContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) failedRequests
-
-onScrollEnd ∷ ImMessage → NodeData ImMessage
-onScrollEnd = HA.createEvent "scrollend"

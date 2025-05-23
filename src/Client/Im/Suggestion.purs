@@ -106,6 +106,11 @@ displayMoreSuggestions suggestions model =
             | otherwise = model.suggestionsFrom
 
 -- | Show or hide full user profile
+toggleSuggestionChatInput ∷ Int -> ImModel → NoMessages
+toggleSuggestionChatInput id model = F.noMessages model
+      { showSuggestionChatInput = Just id
+      }
+
 toggleContactProfile ∷ ImModel → NoMessages
 toggleContactProfile model = F.noMessages model
       { fullContactProfileVisible = not model.fullContactProfileVisible
@@ -121,6 +126,7 @@ resumeSuggesting ∷ ImModel → NoMessages
 resumeSuggesting model = F.noMessages model
       { chatting = Nothing
       , toggleChatModal = HideChatModal
+      , showSuggestionChatInput = Nothing
       , editing = Nothing
       }
 
