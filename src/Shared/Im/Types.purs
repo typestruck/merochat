@@ -296,7 +296,7 @@ data ImMessage
       --contact
       | ResumeChat Int
       | SetReadStatus (Maybe Int)
-      | CheckFetchContacts
+      | CheckFetchContacts Event
       | SetDeliveredStatus
       | DisplayContacts (Array Contact)
       | DisplayNewContacts (Array Contact)

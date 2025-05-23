@@ -23,12 +23,14 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
+import Effect.Class as EC
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), MissedEvents, RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..))
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
+import Web.Event.Internal.Types (Event)
 import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
@@ -132,19 +134,9 @@ setDeliveredStatus webSocket model@{ contacts, user: { id: loggedUserId } } =
                   [] → running
                   hs → Tuple userId (map _.id hs) : running
 
-checkFetchContacts ∷ ImModel → MoreMessages
-checkFetchContacts model
-      | model.freeToFetchContactList = model /\ [ Just <<< SpecialRequest <<< FetchContacts <$> getScrollBottom ]
-
-              where
-              lenience = 42.0
-              getScrollBottom = liftEffect do
-                    element ← CCD.unsafeGetElementById ContactList
-                    top ← WDE.scrollTop element
-                    height ← WDE.scrollHeight element
-                    offset ← WHH.offsetHeight <<< SU.fromJust $ WHH.fromElement element
-                    pure $ top + lenience >= height - offset
-
+checkFetchContacts ∷ Event -> ImModel → MoreMessages
+checkFetchContacts event model
+      | model.freeToFetchContactList = model /\ [ Just <<< SpecialRequest <<< FetchContacts <$> EC.liftEffect (CIS.isScrolledDown event) ]
       | otherwise = F.noMessages model
 
 fetchContacts ∷ Boolean → ImModel → MoreMessages

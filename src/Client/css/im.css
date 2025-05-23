@@ -395,19 +395,6 @@ textarea {
     height: 54px;
 }
 
-.load-more-suggestions {
-    margin-bottom: 50px;
-
-}
-
-.load-more-suggestions input {
-    padding: 15px;
-    font-weight: bold;
-    background-color: var(--merochat-red);
-    color: var(--light-color);
-    border-radius: 15px;
-    border: none;
-}
 
 .hidden {
     content-visibility: hidden;
@@ -1895,6 +1882,8 @@ select {
     justify-content: space-between;
     width: 100%;
     height: 100%;
+    overflow-y: scroll;
+    flex-wrap: wrap;
 }
 
 .suggestion-cards {
@@ -1959,11 +1948,21 @@ select {
     border-radius: 100%;
 }
 
-.suggestion-arrow svg circle {
+.card.card-load-more {
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.card.card-load-more i {
+    margin-bottom: 10px;
+}
+
+.light-circle {
     fill: var(--light-color);
 }
 
-.suggestion-arrow svg polygon {
+.red-polygon {
     fill: var(--merochat-red);
 }
 
@@ -1982,7 +1981,7 @@ select {
 
 .card {
     border: 1px solid var(--text-color);
-    margin-bottom: 20px;
+    margin-bottom: 40px;
     width: 45%;
     height: 67%;
     position: relative;
