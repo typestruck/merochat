@@ -307,6 +307,7 @@ data ImMessage
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
       | ToggleSuggestionsFromOnline
+      | ToggleSuggestionChatInput Int
       | SetBugging MeroChatCall
 
       --chat

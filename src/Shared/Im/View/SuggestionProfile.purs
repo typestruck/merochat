@@ -26,6 +26,7 @@ import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
+import Shared.Im.Scroll as SIS
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
@@ -279,9 +280,9 @@ suggestionCards ∷ ImModel → Html ImMessage
 suggestionCards model =
       HE.div (HA.class' "suggestion-cards")
             [ if model.user.temporary then welcomeTemporary model.user else welcome model
-            , HE.div (HA.class' "cards") $ map card model.suggestions
+            , HE.div [HA.class' "cards", SIS.onScrollEvent $ SpecialRequest NextSuggestion] $ map card model.suggestions
             , HE.div (HA.class' { "load-more-suggestions": true, hidden: DA.length model.suggestions > 2 || DA.null model.suggestions })
-                    [ HE.input [ HA.type' "button", HA.value "Load more suggestions" ]
+                    [ HE.input [ HA.type' "button", HA.value "Load more suggestions", HA.onClick $ SpecialRequest NextSuggestion ]
                     ]
             ]
       where
@@ -300,13 +301,13 @@ suggestionCards model =
                                                   <> onlineStatus suggestion
                                           )
                                   ]
-
                           ]
                   , HE.div (HA.class' "mini-name-options")
                           [ HE.strong (HA.class' "card-name") suggestion.name
                           , HE.div [ HA.class' "mini-options" ]
                                   [ HE.div [ HA.class' "outer-user-menu" ]
-                                          [ SIA.contextMenu $ show MiniSuggestionContextMenu
+                                          [ SIA.contextMenu $ show SuggestionContextMenu
+                                          , HE.div [ HA.class' { "user-menu menu-up": true, visible: model.toggleContextMenu == ShowSuggestionContextMenu } ] $ profileContextMenu suggestion.id false
                                           ]
                                   ]
                           ]
@@ -317,14 +318,18 @@ suggestionCards model =
                           )
                   , HE.div [ HA.class' "card-description" ]
                           [ HE.span (HA.class' "card-about-description") "About"
-                          , HE.text suggestion.description
+                          , HE.div' [  HA.innerHtml $ SM.parse suggestion.description ]
                           ]
                   , case model.showSuggestionChatInput of
                           Just id | suggestion.id == id →
-                                HE.div [ HA.class' "see-profile-chat" ] $ SIVC.chatBarInput ChatInputSuggestion model
+                                HE.div [ HA.class' "see-profile-chat" ]
+                                      [ HE.div (HA.class' "suggestion-input")
+                                              [ SIVC.chatBarInput ChatInputSuggestion model
+                                              ]
+                                      ]
                           _ → HE.div (HA.class' "see-profile-chat")
                                 [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See profile" ]
-                                , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat" ]
+                                , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
                                 ]
                   ]
 

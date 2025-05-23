@@ -475,7 +475,7 @@ blockquote {
 .message-content-in .message-context-menu.outer-user-menu {
     position: absolute;
     z-index: 2;
-    background: #1b3a28;
+    background-color: var(--im-second-background-color);
 }
 
 .mini-suggestions .outer-user-menu svg,
@@ -1134,6 +1134,7 @@ svg.toolbar-action {
 .card-description {
     display: flex;
     flex-direction: column;
+    cursor: pointer;
     overflow-y: hidden;
 }
 
@@ -1200,7 +1201,7 @@ svg.toolbar-action {
 }
 
 .incoming-message .message-context-menu.outer-user-menu {
-    background-color: #373737 !important;
+    background-color: var(--im-second-background-color);
 }
 
 .user-menu.in-message.menu-up {
@@ -2035,6 +2036,7 @@ select {
 .suggestion-input {
     display: flex;
     flex-direction: column;
+    width: 100%;
     justify-content: flex-end;
 }
 
