@@ -5,6 +5,7 @@ import Shared.Im.Types
 
 import Data.Array ((!!))
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -43,24 +44,25 @@ modals model@{ erroredFields, toggleModal, chatting } =
             , lazyLoad KarmaPrivileges
             , lazyLoad Feedback
             , case toggleModal of
+--                    ShowSuggestionCard ->
                     ShowReport id → report id erroredFields
                     ConfirmLogout → confirmLogout
                     ConfirmDeleteChat id → confirmDeleteChat id
                     ConfirmBlockUser id → confirmBlockUser id
                     Tutorial step → tutorial model step
                     ConfirmTerminationTemporaryUser → confirmTermination
-                    ShowAvatar index → showAvatar model index
+                    ShowAvatar eid → showAvatar eid model
                     _ → modalMenu model
             ]
       where
       tutorialSteps = toggleModal == Tutorial ChatSuggestions && DM.isNothing chatting || toggleModal == Tutorial Chatting
 
-showAvatar ∷ ImModel → Int → Html ImMessage
-showAvatar model index = HE.lazy Nothing largeAvatar who
+showAvatar ∷ Either Int Int -> ImModel → Html ImMessage
+showAvatar eid model = HE.lazy Nothing largeAvatar who
       where
-      who = case model.chatting of
-            Just userId → _.user <$> SIC.findContact userId model.contacts
-            Nothing → model.suggestions !! model.suggesting
+      who = case eid of
+            Right contactId → _.user <$> SIC.findContact contactId model.contacts
+            Left suggestionId → DA.find ((suggestionId == _) <<< _.id) model.suggestions
       largeAvatar p =
             HE.div (HA.class' "confirmation large") case p of
                   Nothing → HE.createEmptyElement "div"

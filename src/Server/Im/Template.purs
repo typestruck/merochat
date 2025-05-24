@@ -43,7 +43,9 @@ template payload = do
                     , temporaryId: 0
                     , typingIds: []
                     , modalsLoaded: []
-                    , suggesting: if suggestionsCount == 1 then 0 else 1
+                    , suggesting: if DA.null payload.suggestions
+                                  then Nothing
+                                  else  map _.id $ DA.head payload.suggestions
                     , freeToFetchChatHistory: true
                     , suggestionsPage: 1
                     , errorMessage: ""
@@ -87,7 +89,6 @@ template payload = do
             }
       where
       unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
-      suggestionsCount = DA.length payload.suggestions
 
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]

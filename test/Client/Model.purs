@@ -67,7 +67,7 @@ model =
       , user: imUser
       , suggestions: [ suggestion ]
       , temporaryId: 0
-      , suggesting: 0
+      , suggesting: Just 0
       , freeToFetchChatHistory: true
       , contacts: [ contact ]
       , isWebSocketConnected: true

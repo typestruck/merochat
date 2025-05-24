@@ -2591,6 +2591,7 @@ label {
     .tutorial,
     .message-context-options {
         display: none;
+        content-visibility: hidden;
     }
 
     .modal-part {
