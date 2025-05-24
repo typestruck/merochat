@@ -5,6 +5,7 @@ import Prelude
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Data.Array ((!!))
 import Data.Array as DA
 import Data.Enum as DE
 import Data.Maybe (Maybe(..))
@@ -16,13 +17,14 @@ import Effect.Random as ER
 import Flame as F
 import Safe.Coerce as SC
 import Shared.DateTime as SD
-import Shared.Im.Types (ImMessage(..), ImModel, MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
+import Shared.Im.Types (ImMessage(..), MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..), ImModel)
 import Shared.Options.Page (suggestionsPerPage)
+import Test.Client.Model (model)
 
 -- | Display next suggestion card
 nextSuggestion ∷ ImModel → MoreMessages
 nextSuggestion model =
-      if next >= DA.length model.suggestions then
+      if DM.isNothing next then
             fetchMoreSuggestions model
       else
             model
@@ -32,12 +34,12 @@ nextSuggestion model =
                   , bugging = Nothing
                   } /\ [ bugUser model ]
       where
-      next = model.suggesting + 1
+      next = moveSuggestion model 1
 
 -- | Display previous suggestion card
 previousSuggestion ∷ ImModel → MoreMessages
 previousSuggestion model =
-      if previous < 0 then
+      if DM.isNothing previous then
             fetchMoreSuggestions model
       else
             model
@@ -47,7 +49,14 @@ previousSuggestion model =
                   , bugging = Nothing
                   } /\ [ bugUser model ]
       where
-      previous = model.suggesting - 1
+      previous = moveSuggestion model (-1)
+
+moveSuggestion :: ImModel → Int → Maybe Int
+moveSuggestion model by = do
+            currentId ← model.suggesting
+            index <- DA.findIndex ((_ == currentId) <<< _.id) model.suggestions
+            suggestion <- model.suggestions !! (index + by)
+            Just $ suggestion.id
 
 -- | When moving suggestion cards, diplay a special card n% of the time
 bugUser ∷ ImModel → Aff (Maybe ImMessage)
@@ -84,20 +93,17 @@ displayMoreSuggestions suggestions model =
       if suggestionsSize == 0 && model.suggestionsPage > 0 then
             fetchMoreSuggestions $ model
                   { suggestionsPage = 0
-                  , suggesting = suggesting
                   , suggestionsFrom = suggestionsFrom
                   }
       else
             F.noMessages model
-                  { suggesting = suggesting
-                  , freeToFetchSuggestions = true
+                  { freeToFetchSuggestions = true
                   , suggestions = suggestions
                   , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
                   , suggestionsFrom = suggestionsFrom
                   }
       where
       suggestionsSize = DA.length suggestions
-      suggesting = if suggestionsSize <= 1 then 0 else 1
 
       lowQualityUsersBin = 5
       lowQualityUsersIn = DA.length <<< DA.filter ((_ >= lowQualityUsersBin) <<< _.bin)
@@ -141,6 +147,4 @@ toggleSuggestionsFromOnline model = fetchMoreSuggestions model
 setBugging ∷ MeroChatCall → ImModel → NoMessages
 setBugging mc model = F.noMessages model
       { bugging = Just mc
-      --offset index to account for non profile suggestion
-      , suggesting = if model.suggesting > 0 then model.suggesting - 1 else model.suggesting
       }

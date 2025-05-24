@@ -145,7 +145,7 @@ type Im =
       , typingIds ∷ Array TimeoutIdWrapper -- TimeoutId constructor is private
       --the current logged in user
       , user ∷ User
-      , suggesting ∷ Int
+      , suggesting ∷ Maybe Int
       , chatting ∷ Maybe Int
       , smallScreen ∷ Boolean
       , showMiniChatInput ∷ Boolean
@@ -209,8 +209,9 @@ data ShowUserMenuModal
       | ShowProfile
       | ShowSettings
       | ShowKarmaPrivileges
+      | ShowSuggestionCard
       | ShowHelp
-      | ShowAvatar Int
+      | ShowAvatar (Either Int Int)
       | ShowBacker
       | ShowFeedback
       | ShowReport Int

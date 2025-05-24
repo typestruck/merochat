@@ -7,9 +7,9 @@ import Shared.Im.Types
 import Client.Common.Dom as CCD
 import Client.Common.Privilege as CCP
 import Client.Im.Swipe as CIT
-import Control.Alt ((<|>))
-import Data.Array ((!!), (:))
+import Data.Array ((:))
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
@@ -32,12 +32,12 @@ import Type.Proxy (Proxy(..))
 import Web.Event.Event (Event)
 
 chat ∷ ImModel → Html ImMessage
-chat model@{ chatting } =
-      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing chatting }, SK.keyDownOn "Escape" (const $ Just $ ToggleChatModal HideChatModal) ]
+chat model =
+      HE.div [ HA.class' { "send-box": true, hidden: DM.isNothing model.chatting } ]
             [ linkModal model
             , imageModal model
             , audioModal model
-            , chatBarInput ChatInput model
+            , chatBarInput (Right $ DM.fromMaybe 0 model.chatting ) ChatInput model --the element should be present even if not chatting
             ]
 
 --REFACTOR: replace proxy usage with just SetField (all the fields are known!)
@@ -100,22 +100,10 @@ audioModal model =
                   , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
                   ]
 
-chatBarInput ∷ ElementId → ImModel → Html ImMessage
-chatBarInput
-      elementId
-      model@
-            { isWebSocketConnected
-            , messageEnter
-            , toggleChatModal
-            } = HE.fragment
+chatBarInput ∷ Either Int Int -> ElementId → ImModel → Html ImMessage
+chatBarInput eid elementId model = HE.fragment
       [ emojiModal elementId model
-      -- , HE.div (HA.class' { hidden: toggleChatModal /= ShowPreview })
-      --         [ HE.div [ HA.class' "chat-input-options" ]
-      --                 [ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "svg-32", HA.viewBox "0 0 16 16" ] $ HE.title "Exit preview" : SIS.closeElements
-      --                 ]
-      --         , HE.div' [ HA.id $ show ChatInputPreview, HA.class' "chat-input-preview message-content" ]
-      --         ]
-      , HE.div [ HA.class' { hidden: not available {- || toggleChatModal == ShowPreview -}  || DM.isNothing model.chatting && DA.null model.suggestions || DM.isJust model.bugging } ]
+      , HE.div [ HA.class' { hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions || DM.isJust model.bugging } ]
               [ HE.div [ HA.class' "chat-input-options" ]
                       [ bold
                       , italic
@@ -123,21 +111,20 @@ chatBarInput
                       , heading
                       , unorderedList
                       , orderedList
-                      , linkButton toggleChatModal
-                      --        , previewButton
+                      , linkButton model.toggleChatModal
                       , HE.div (HA.class' "send-enter")
-                              [ HE.input [ HA.type' "checkbox", HA.autocomplete "off", HA.checked messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter" ]
+                              [ HE.input [ HA.type' "checkbox", HA.autocomplete "off", HA.checked model.messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter" ]
                               , HE.label (HA.for "message-enter") "Send message on enter"
                               ]
                       ]
-              , HE.div [ HA.class' { "chat-input-area": true, side: not messageEnter } ]
+              , HE.div [ HA.class' { "chat-input-area": true, side: not model.messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
                               (if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
                                     <>
                                           [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
                                           , HA.id $ show elementId
-                                          , HA.placeholder $ if isWebSocketConnected then "Type here to message " <> recipientName else "Reconnecting..."
+                                          , HA.placeholder $ if model.isWebSocketConnected then "Type here to message " <> recipientName else "Reconnecting..."
                                           , SK.keyDownOn "Enter" enterBeforeSendMessageCheck
                                           , HA.onInput' ResizeChatInput
                                           , HA.autocomplete "off"
@@ -145,7 +132,7 @@ chatBarInput
                       , HE.div (HA.class' "chat-right-buttons")
                               [ imageButton
                               , audioButton [ HA.onClick $ ToggleChatModal ShowAudioPrompt ]
-                              , sendButton elementId messageEnter model
+                              , sendButton elementId model.messageEnter model
                               ]
                       ]
               ]
@@ -153,9 +140,11 @@ chatBarInput
       where
       chatting = SIC.maybeFindContact model.chatting model.contacts
       available = DM.maybe true ((_ /= Unavailable) <<< _.availability <<< _.user) chatting
-      recipientName = DM.fromMaybe "" (map (_.name <<< _.user) chatting <|> map _.name (model.suggestions !! model.suggesting))
+      recipientName = DM.fromMaybe "" $ case eid of
+            Left suggestionId -> map _.name $ DA.find ((suggestionId == _) <<< _.id) model.suggestions
+            _ ->  map (_.name <<< _.user) chatting
 
-      enterBeforeSendMessageCheck event = if isWebSocketConnected && model.messageEnter then Just $ EnterSendMessage elementId event else Nothing
+      enterBeforeSendMessageCheck event = if model.isWebSocketConnected && model.messageEnter then Just $ EnterSendMessage elementId event else Nothing
 
 bold ∷ Html ImMessage
 bold = HE.svg [ HA.class' "svg-20", HA.onClick (Apply Bold), HA.viewBox "0 0 300 300" ]
@@ -282,12 +271,14 @@ previewButton = HE.svg [ HA.class' "svg-20 hidden", HA.onClick $ ToggleChatModal
       ]
 
 emojiModal ∷ ElementId → ImModel → Html ImMessage
-emojiModal elementId { toggleChatModal } = HE.div [ HA.class' { "emoji-wrapper": true, hidden: toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory SIE.byCategory
-      where
-      toEmojiCategory (Tuple name pairs) = HE.div_
-            [ HE.div (HA.class' "duller") name
-            , HE.div_ $ map (HE.span_ <<< _.s) pairs
-            ]
+emojiModal elementId model
+      | model.smallScreen = HE.div' [ HA.class' "emoji-wrapper" ]
+      | otherwise = HE.div [ HA.class' { "emoji-wrapper": true, hidden: model.toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory SIE.byCategory
+              where
+              toEmojiCategory (Tuple name pairs) = HE.div_
+                    [ HE.div (HA.class' "duller") name
+                    , HE.div_ $ map (HE.span_ <<< _.s) pairs
+                    ]
 
 emojiClickEvent ∷ (Event → ImMessage) → NodeData ImMessage
 emojiClickEvent message = HA.createRawEvent "click" handler

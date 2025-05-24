@@ -69,7 +69,7 @@ logoMenu model = HE.div (HA.class' "relative")
 
 miniSuggestions ∷ ImModel → Html ImMessage
 miniSuggestions model = HE.div (HA.class' "mini-suggestions")
-      case model.suggestions !! model.suggesting of
+      case model.suggesting >>= (model.suggestions !! _) of
             Just suggestion | not model.smallScreen && DM.isJust model.chatting && not model.showCollapsedMiniSuggestions →
                   [ HE.svg [ HA.class' "svg-32 svg-text-color", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
                           [ HE.path' [ HA.d "M18 12L12 18L6 12", HA.strokeWidth "2" ]
@@ -112,7 +112,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                     , HE.hr' (HA.class' "tag-ruler")
                                     ] <> map (HE.span (HA.class' "tag")) suggestion.tags
                                   )
-                          , HE.div [ HA.class' { "suggestion-input": true, hidden: not model.showMiniChatInput } ] $ SIVC.chatBarInput MiniChatInputSuggestion model
+                          , HE.div [ HA.class' { "suggestion-input": true, hidden: not model.showMiniChatInput } ] $ SIVC.chatBarInput (Left suggestion.id) MiniChatInputSuggestion model
                           ]
                   ]
             Just suggestion | model.showCollapsedMiniSuggestions && not model.smallScreen && DM.isJust model.chatting →
