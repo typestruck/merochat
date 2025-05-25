@@ -22,10 +22,12 @@ import Shared.Im.Contact as SIC
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIV
 import Shared.Im.View.Retry as SIVR
+import Shared.Im.View.SuggestionProfile as CISP
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Setter as SS
+import Shared.Unsafe as SU
 import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 
@@ -44,7 +46,7 @@ modals model@{ erroredFields, toggleModal, chatting } =
             , lazyLoad KarmaPrivileges
             , lazyLoad Feedback
             , case toggleModal of
---                    ShowSuggestionCard ->
+                    ShowSuggestionCard suggestionId → CISP.individualSuggestion (SU.fromJust $ DA.find ((suggestionId == _) <<< _.id) model.suggestions) model
                     ShowReport id → report id erroredFields
                     ConfirmLogout → confirmLogout
                     ConfirmDeleteChat id → confirmDeleteChat id
@@ -57,7 +59,7 @@ modals model@{ erroredFields, toggleModal, chatting } =
       where
       tutorialSteps = toggleModal == Tutorial ChatSuggestions && DM.isNothing chatting || toggleModal == Tutorial Chatting
 
-showAvatar ∷ Either Int Int -> ImModel → Html ImMessage
+showAvatar ∷ Either Int Int → ImModel → Html ImMessage
 showAvatar eid model = HE.lazy Nothing largeAvatar who
       where
       who = case eid of

@@ -117,7 +117,7 @@ prepareSendMessage elementId content dt webSocket model = case content of
             ChatInput → Tuple false model
             _ →
                   let
-                        user = model.suggestions !@ model.suggesting
+                        user = SU.fromJust (model.suggesting >>= (\suggestionId → DA.find ((suggestionId == _) <<< _.id) model.suggestions))
                   in
                         case SIC.findContact user.id model.contacts of
                               Nothing →

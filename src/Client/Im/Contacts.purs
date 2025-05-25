@@ -134,7 +134,7 @@ setDeliveredStatus webSocket model@{ contacts, user: { id: loggedUserId } } =
                   [] → running
                   hs → Tuple userId (map _.id hs) : running
 
-checkFetchContacts ∷ Event -> ImModel → MoreMessages
+checkFetchContacts ∷ Event → ImModel → MoreMessages
 checkFetchContacts event model
       | model.freeToFetchContactList = model /\ [ Just <<< SpecialRequest <<< FetchContacts <$> EC.liftEffect (CIS.isScrolledDown event) ]
       | otherwise = F.noMessages model

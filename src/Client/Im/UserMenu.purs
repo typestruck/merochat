@@ -36,7 +36,7 @@ logout after model = model /\ [ out ]
             pure Nothing
 
 toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
-toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
+toggleModal mToggle model =
       case mToggle of
             ShowProfile → showTab request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
             ShowSettings → showTab request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
@@ -45,7 +45,11 @@ toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
             ShowExperiments → showTab request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
             ShowBacker → showTab request.internalBacker ShowBacker Nothing BackerRoot
             ShowFeedback → showTab request.feedback.get ShowFeedback (Just Feedback) FeedbackRoot
-            modal → F.noMessages $ model
+            ShowSuggestionCard id → F.noMessages model
+                  { toggleModal = ShowSuggestionCard id
+                  , suggesting = Just id
+                  }
+            modal → F.noMessages model
                   { toggleModal = modal
                   , erroredFields = []
                   , toggleContextMenu = HideContextMenu
@@ -56,13 +60,13 @@ toggleModal mToggle model@{ modalsLoaded, user: { completedTutorial } } =
                   { toggleModal = toggle
                   , toggleContextMenu = HideContextMenu
                   , failedRequests = []
-                  , modalsLoaded = toggle : modalsLoaded
+                  , modalsLoaded = toggle : model.modalsLoaded
                   } /\
-                  if toggle /= ShowKarmaPrivileges && DA.elem toggle modalsLoaded then []
+                  if toggle /= ShowKarmaPrivileges && DA.elem toggle model.modalsLoaded then []
                   else
                         [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents resource root) (req {})
                         -- during the tutorial the user may click on the user menu instead of "finish tutorial"
-                        , if completedTutorial then pure Nothing else pure $ Just FinishTutorial
+                        --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]
 
 setModalContents ∷ Maybe Bundle → ElementId → String → ImModel → NextMessage

@@ -43,9 +43,9 @@ template payload = do
                     , temporaryId: 0
                     , typingIds: []
                     , modalsLoaded: []
-                    , suggesting: if DA.null payload.suggestions
-                                  then Nothing
-                                  else  map _.id $ DA.head payload.suggestions
+                    , suggesting:
+                            if DA.null payload.suggestions then Nothing
+                            else map _.id $ DA.head payload.suggestions
                     , freeToFetchChatHistory: true
                     , suggestionsPage: 1
                     , errorMessage: ""

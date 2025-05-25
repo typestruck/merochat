@@ -102,6 +102,15 @@ textarea {
     word-break: break-word;
 }
 
+.big-card {
+    background-color: var(--im-right-background-color);
+    height: 80%;
+    width: 950px;
+    padding: 40px;
+    position: relative;
+    border-radius: 40px;
+}
+
 .profile-description ul,
 .description-message ul,
 .message ul {
@@ -805,7 +814,7 @@ a {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(55, 55, 55, 0.65);
+    background: rgba(15, 18, 19, 0.75);
     z-index: 6;
 }
 

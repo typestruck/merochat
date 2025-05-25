@@ -19,17 +19,17 @@ tests = do
                   let
                         { suggesting } = DT.fst <<< CIS.nextSuggestion $ model
                               { suggestions = [ imUser, imUser ]
-                              , suggesting = 0
+                              , suggesting = Just 0
                               }
-                  TUA.equal 1 suggesting
+                  TUA.equal (Just 1) suggesting
 
             TU.test "nextSuggestion does not go over suggestions length" do
                   let
                         { suggesting } = DT.fst <<< CIS.nextSuggestion $ model
                               { suggestions = [ imUser, imUser, imUser ]
-                              , suggesting = 2
+                              , suggesting = Just 2
                               }
-                  TUA.equal 2 suggesting
+                  TUA.equal (Just 2) suggesting
 
             TU.test "nextSuggestion clears chatting" do
                   let
@@ -43,17 +43,17 @@ tests = do
                   let
                         { suggesting } = DT.fst <<< CIS.previousSuggestion $ model
                               { suggestions = [ imUser, imUser ]
-                              , suggesting = 1
+                              , suggesting = Just 1
                               }
-                  TUA.equal 0 suggesting
+                  TUA.equal (Just 0) suggesting
 
             TU.test "previousSuggestion does not go bellow zero" do
                   let
                         { suggesting } = DT.fst <<< CIS.previousSuggestion $ model
                               { suggestions = [ imUser, imUser, imUser ]
-                              , suggesting = 0
+                              , suggesting = Just 0
                               }
-                  TUA.equal 0 suggesting
+                  TUA.equal (Just 0) suggesting
 
             TU.test "displayMoreSuggestions clears chatting" do
                   let
@@ -66,10 +66,10 @@ tests = do
             TU.test "displayMoreSuggestions sets suggesting to 0 if there is 1 or fewer new suggestions" do
                   let
                         { suggesting } = DT.fst <<< CIS.displayMoreSuggestions [ imUser ] $ model
-                              { suggesting = 0
+                              { suggesting = Just 0
                               , suggestions = []
                               }
-                  TUA.equal 0 suggesting
+                  TUA.equal (Just 0) suggesting
 
             TU.test "blockUser removes user from suggestions" do
                   let

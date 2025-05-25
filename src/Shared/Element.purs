@@ -73,7 +73,7 @@ instance Show ElementId where
             MiniChatInputSuggestion → "mini-chat-input-suggestion"
             ImageFormCaption → "image-form-caption"
             FeedbackForm → "feedback-form"
-            Cards -> "cards"
+            Cards → "cards"
             MessageHistory → "message-history"
             Favicon → "favicon"
             FeedbackRoot → "feedback-root"

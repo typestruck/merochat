@@ -160,7 +160,7 @@ type Im =
       , fullContactProfileVisible ∷ Boolean
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
-      , showSuggestionChatInput :: Maybe Int
+      , showSuggestionChatInput ∷ Maybe Int
       , toggleContextMenu ∷ ShowContextMenu
       , toggleModal ∷ ShowUserMenuModal --refactor: toggleModal and toggleChatModal should be merged
       , toggleChatModal ∷ ShowChatModal
@@ -209,7 +209,7 @@ data ShowUserMenuModal
       | ShowProfile
       | ShowSettings
       | ShowKarmaPrivileges
-      | ShowSuggestionCard
+      | ShowSuggestionCard Int
       | ShowHelp
       | ShowAvatar (Either Int Int)
       | ShowBacker

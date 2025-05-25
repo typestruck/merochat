@@ -51,12 +51,12 @@ previousSuggestion model =
       where
       previous = moveSuggestion model (-1)
 
-moveSuggestion :: ImModel → Int → Maybe Int
+moveSuggestion ∷ ImModel → Int → Maybe Int
 moveSuggestion model by = do
-            currentId ← model.suggesting
-            index <- DA.findIndex ((_ == currentId) <<< _.id) model.suggestions
-            suggestion <- model.suggestions !! (index + by)
-            Just $ suggestion.id
+      currentId ← model.suggesting
+      index ← DA.findIndex ((_ == currentId) <<< _.id) model.suggestions
+      suggestion ← model.suggestions !! (index + by)
+      Just $ suggestion.id
 
 -- | When moving suggestion cards, diplay a special card n% of the time
 bugUser ∷ ImModel → Aff (Maybe ImMessage)

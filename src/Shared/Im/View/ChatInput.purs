@@ -37,7 +37,7 @@ chat model =
             [ linkModal model
             , imageModal model
             , audioModal model
-            , chatBarInput (Right $ DM.fromMaybe 0 model.chatting ) ChatInput model --the element should be present even if not chatting
+            , chatBarInput (Right $ DM.fromMaybe 0 model.chatting) ChatInput model --the element should be present even if not chatting
             ]
 
 --REFACTOR: replace proxy usage with just SetField (all the fields are known!)
@@ -100,7 +100,7 @@ audioModal model =
                   , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
                   ]
 
-chatBarInput ∷ Either Int Int -> ElementId → ImModel → Html ImMessage
+chatBarInput ∷ Either Int Int → ElementId → ImModel → Html ImMessage
 chatBarInput eid elementId model = HE.fragment
       [ emojiModal elementId model
       , HE.div [ HA.class' { hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions || DM.isJust model.bugging } ]
@@ -141,8 +141,8 @@ chatBarInput eid elementId model = HE.fragment
       chatting = SIC.maybeFindContact model.chatting model.contacts
       available = DM.maybe true ((_ /= Unavailable) <<< _.availability <<< _.user) chatting
       recipientName = DM.fromMaybe "" $ case eid of
-            Left suggestionId -> map _.name $ DA.find ((suggestionId == _) <<< _.id) model.suggestions
-            _ ->  map (_.name <<< _.user) chatting
+            Left suggestionId → map _.name $ DA.find ((suggestionId == _) <<< _.id) model.suggestions
+            _ → map (_.name <<< _.user) chatting
 
       enterBeforeSendMessageCheck event = if model.isWebSocketConnected && model.messageEnter then Just $ EnterSendMessage elementId event else Nothing
 

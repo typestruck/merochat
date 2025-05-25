@@ -10,5 +10,5 @@ import Web.Event.Internal.Types (Event)
 --safari does not support scrollEnd because it is a shitty browser
 foreign import scrollEventName ∷ String
 
-onScrollEvent :: (Event -> ImMessage) -> NodeData ImMessage
+onScrollEvent ∷ (Event → ImMessage) → NodeData ImMessage
 onScrollEvent = HA.createEventMessage scrollEventName

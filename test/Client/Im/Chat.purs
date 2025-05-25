@@ -32,7 +32,7 @@ tests = do
                         model' = model
                               { suggestions = suggestion : modelSuggestions
                               , chatting = Nothing
-                              , suggesting = 0
+                              , suggesting = Just  0
                               }
                         { contacts } = DT.fst $ CIC.prepareSendMessage ChatInput content date webSocket model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just suggestion
@@ -43,7 +43,7 @@ tests = do
                         model' = model
                               { suggestions = [ contact.user ]
                               , chatting = Nothing
-                              , suggesting = 0
+                              , suggesting = Just 0
                               , contacts = [ contact ]
                               }
                         { contacts } = DT.fst $ CIC.prepareSendMessage ChatInput content date webSocket model'

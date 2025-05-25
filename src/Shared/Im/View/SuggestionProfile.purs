@@ -1,4 +1,4 @@
-module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, badges, profileContextMenu) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, badges, profileContextMenu, individualSuggestion) where
 
 import Debug
 import Prelude
@@ -8,7 +8,7 @@ import Shared.Im.Types
 import Shared.User
 
 import Client.Common.Privilege as CCP
-import Data.Array ((!!), (..), (:))
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Int as DI
@@ -17,7 +17,6 @@ import Data.Maybe as DM
 import Data.Time.Duration (Days(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
-import Flame.Html.Element (class ToNode)
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Avatar as SA
@@ -26,7 +25,6 @@ import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Scroll as SIS
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
@@ -35,8 +33,7 @@ import Shared.Intl as SI
 import Shared.Markdown as SM
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
-import Shared.Resource (Media(..), ResourceType(..))
-import Shared.Resource as SPT
+import Shared.Resource (ResourceType(..))
 import Shared.Resource as SR
 import Shared.User as SUR
 
@@ -275,6 +272,49 @@ profileContextMenu id delete =
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
       ]
 
+individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
+individualSuggestion suggestion model = HE.div (HA.class' "big-card")
+      [ HE.div (HA.class' "avatar-info")
+              [ HE.div [ HA.class' "mini-avatar-info" ]
+                      [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
+                      , HE.div (HA.class' "mini-suggestion-info")
+                              ( HE.div_
+                                      [ HE.strong (HA.class' "card-name") suggestion.name
+                                      ]
+                                      : onlineStatus model.user suggestion
+                              )
+                      , HE.div (HA.class' "mini-suggestion-info")
+                              ( [ HE.div_
+                                        [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
+                                        , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
+                                        ]
+                                ] <> genderAge suggestion
+                                      <> from suggestion
+                              )
+                      ]
+              ]
+      , HE.div_
+              ( [ HE.div (HA.class' "card-headline") suggestion.headline
+                , HE.hr' (HA.class' "tag-ruler")
+                ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
+              )
+      , HE.div [ HA.class' "card-description", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
+              [ HE.span (HA.class' "card-about-description") "About"
+              , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+              ]
+      , case model.showSuggestionChatInput of
+              Just id | suggestion.id == id →
+                    HE.div [ HA.class' "see-profile-chat" ]
+                          [ HE.div (HA.class' "suggestion-input")
+                                  [ SIVC.chatBarInput (Left id) ChatInputSuggestion model
+                                  ]
+                          ]
+              _ → HE.div (HA.class' "see-profile-chat")
+                    [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See profile" ]
+                    , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
+                    ]
+      ]
+
 -- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
 suggestionCards model =
@@ -292,7 +332,7 @@ suggestionCards model =
       card suggestion =
             HE.div (HA.class' "card")
                   [ HE.div (HA.class' "avatar-info")
-                          [ HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile" ]
+                          [ HE.div [ HA.class' "mini-avatar-info", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id, HA.title "See full profile" ]
                                   [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
                                   , HE.div (HA.class' "mini-suggestion-info")
                                           ( [ HE.div_
@@ -301,7 +341,7 @@ suggestionCards model =
                                                     ]
                                             ] <> genderAge suggestion
                                                   <> from suggestion
-                                                  <> onlineStatus suggestion
+                                                  <> onlineStatus model.user suggestion
                                           )
                                   ]
                           ]
@@ -313,7 +353,7 @@ suggestionCards model =
                             , HE.hr' (HA.class' "tag-ruler")
                             ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
                           )
-                  , HE.div [ HA.class' "card-description" ]
+                  , HE.div [ HA.class' "card-description", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
                           [ HE.span (HA.class' "card-about-description") "About"
                           , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
                           ]
@@ -325,21 +365,22 @@ suggestionCards model =
                                               ]
                                       ]
                           _ → HE.div (HA.class' "see-profile-chat")
-                                [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See profile" ]
+                                [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
                                 , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
                                 ]
                   ]
 
-      genderAge suggestion =
-            case DM.maybe [] (DA.singleton <<< HE.span_) suggestion.gender <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show) suggestion.age of
-                  [ g, a ] → [ HE.div_ [ g, HE.span (HA.class' "duller") ", ", a ] ]
-                  ga → ga
+genderAge ∷ Suggestion → Array (Html ImMessage)
+genderAge suggestion =
+      case DM.maybe [] (DA.singleton <<< HE.span_) suggestion.gender <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show) suggestion.age of
+            [ g, a ] → [ HE.div_ [ g, HE.span (HA.class' "duller") ", ", a ] ]
+            ga → ga
 
-      onlineStatus suggestion
-            | not model.user.onlineStatus || not suggestion.onlineStatus = []
-            | otherwise = [ HE.span_ $ show suggestion.availability ]
+onlineStatus user suggestion
+      | not user.onlineStatus || not suggestion.onlineStatus = []
+      | otherwise = [ HE.span_ $ show suggestion.availability ]
 
-      from suggestion = DM.maybe [] (DA.singleton <<< HE.span_) suggestion.country
+from suggestion = DM.maybe [] (DA.singleton <<< HE.span_) suggestion.country
 
 welcomeTemporary ∷ User → Html ImMessage
 welcomeTemporary { name, joined } =
@@ -393,3 +434,4 @@ onlineOnlyFilter model =
             [ HE.input [ HA.type' "checkbox", HA.checked (model.suggestionsFrom == OnlineOnly), HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
             , HE.label [ HA.for "online-only", HA.class' "online-only-label" ] "Show only users online"
             ]
+
