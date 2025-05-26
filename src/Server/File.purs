@@ -40,22 +40,22 @@ saveBase64File ∷ ∀ r. String → BaseEffect { configuration ∷ Configuratio
 saveBase64File input =
       case DS.split (Pattern ",") input of
             [ mediaType, base64 ] → do
-                  case DH.lookup (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" (spy "iv 6" mediaType)) allowedMediaTypes of
-                        Nothing → spy "iv" invalidImage
+                  case DH.lookup (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" mediaType) allowedMediaTypes of
+                        Nothing → invalidImage
                         Just _ → do
                               buffer ← R.liftEffect $ NB.fromString base64 Base64
                               bufferSize ← R.liftEffect $ NB.size buffer
                               if bufferSize > maxImageSize then
-                                    SR.throwBadRequest (spy "iv 4" imageTooBigMessage)
+                                    SR.throwBadRequest imageTooBigMessage
                               else do
                                     extension ← map ("." <> _) <<< R.liftAff $ realFileExtension buffer
-                                    if DST.member (spy "iv 5" extension) allowedExtensions then do
+                                    if DST.member extension allowedExtensions then do
                                           uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
                                           let fileName = uuid <> extension
                                           R.liftAff $ NFA.writeFile (localBasePath <> uploadFolder <> fileName) buffer
                                           pure fileName
                                     else
-                                          spy "iv 2" invalidImage
-            _ → spy "iv 3" invalidImage
+                                          invalidImage
+            _ → invalidImage
       where
       invalidImage = SR.throwBadRequest invalidImageMessage
