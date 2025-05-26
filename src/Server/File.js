@@ -23,7 +23,7 @@ function mp4(buffer) {
     return buffer[0] === 0 &&
         buffer[1] === 0 &&
         buffer[2] === 0 &&
-        buffer[3] === 28 &&
+        buffer[3] === 32 &&
         buffer[4] === 102 &&
         buffer[5] === 116 &&
         buffer[6] === 121 &&
