@@ -111,7 +111,7 @@ textarea {
     border-radius: 40px;
 }
 
-.profile-description ul,
+.contact-full-profile .profile-description ul,
 .description-message ul,
 .message ul {
     list-style-type: disc;
@@ -914,7 +914,8 @@ img.emoji {
     margin-bottom: 20px;
 }
 
-.mini-suggestion-info, .big-suggestion-info {
+.mini-suggestion-info,
+.big-suggestion-info {
     padding-left: 20px;
     justify-content: center;
     align-items: flex-start;
@@ -1131,7 +1132,8 @@ svg.toolbar-action {
     font-size: 0.9em;
 }
 
-.big-card-description, .card-description {
+.big-card-description,
+.card-description {
     display: flex;
     flex-direction: column;
 }
@@ -1352,7 +1354,8 @@ input:not(type=button):focus {
     height: 22px;
 }
 
-.card .attachment-button , .big-card .attachment-button {
+.card .attachment-button,
+.big-card .attachment-button {
     display: none;
 }
 
@@ -1745,7 +1748,8 @@ select {
     max-height: 500px;
 }
 
-.card .link-button, .big-card .link-button {
+.card .link-button,
+.big-card .link-button {
     display: none;
 }
 
@@ -1960,11 +1964,11 @@ select {
 }
 
 .big-card .suggestion-arrow {
-    margin-left:-67px
+    margin-left: -67px
 }
 
 .big-card .suggestion-arrow:last-child {
-    margin-left:-21px
+    margin-left: -21px
 }
 
 .show-profile-icon-div {
@@ -2117,15 +2121,20 @@ select {
 }
 
 .badge {
-    color: var(--merochat-red);
     font-weight: normal;
-    border: 1px solid var(--merochat-red);
+    border: 1px solid var(--light-color);
     border-radius: 15px;
     padding: 0px 6px;
-    align-self: center;
     vertical-align: middle;
     display: inline-flex;
+}
+
+.profile-contact .badge {
     margin-left: 13px;
+}
+
+.big-card .badge {
+    margin-bottom: 5px;
 }
 
 .badge-img {
@@ -2167,7 +2176,7 @@ select {
     align-items: flex-start;
 }
 
-.suggestion.old .about-description {
+.contact-full-profile .about-description {
     overflow-y: auto;
 }
 
@@ -2388,10 +2397,6 @@ select {
     border-radius: 4px;
 }
 
-.suggestion.old.imper {
-    background-color: inherit;
-}
-
 .exit-impersonation {
     display: flex;
     flex-direction: column;
@@ -2412,7 +2417,8 @@ select {
     display: none;
 }
 
-.big-card-name, .card-name {
+.big-card-name,
+.card-name {
     font-size: 1.3em;
     margin-bottom: 5px;
 }
@@ -2476,8 +2482,21 @@ select {
     padding-right: 8px;
 }
 
+.contact-full-profile {
+    background: var(--im-second-background-color);
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;;
+}
 
-.suggestion.old~.message-history {
+.full-card-headline-tags,
+.contact-full-profile .avatar-info,
+.contact-full-profile .card-description {
+    width: 950px;
+}
+
+.contact-full-profile~.message-history {
     display: none;
 }
 

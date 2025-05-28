@@ -103,7 +103,7 @@ audioModal model =
 chatBarInput ∷ Either Int Int → ElementId → ImModel → Html ImMessage
 chatBarInput eid elementId model = HE.fragment
       [ emojiModal elementId model
-      , HE.div [ HA.class' { hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions || DM.isJust model.bugging } ]
+      , HE.div [ HA.class' { hidden: not available || DM.isNothing model.chatting && DA.null model.suggestions } ]
               [ HE.div [ HA.class' "chat-input-options" ]
                       [ bold
                       , italic

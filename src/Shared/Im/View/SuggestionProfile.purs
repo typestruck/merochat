@@ -33,7 +33,7 @@ import Shared.Intl as SI
 import Shared.Markdown as SM
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
-import Shared.Resource (ResourceType(..))
+import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 import Shared.User as SUR
 
@@ -49,10 +49,10 @@ suggestionProfile model =
                   Just chatting →
                         if chatting.user.availability == Unavailable then
                               unavailable chatting.user.name
-                        -- else if model.fullContactProfileVisible then
-                        --       fullProfile FullContactProfile 0 model chatting.user
+                        else if model.fullContactProfileVisible then
+                              fullProfile chatting.user model
                         else
-                              compactProfile model chatting
+                              compactProfile chatting model
                   Nothing → suggestionCards model
       where
       notChatting = DM.isNothing model.chatting
@@ -80,8 +80,8 @@ unavailable name =
             ]
 
 -- | Compact profile view shown by default
-compactProfile ∷ ImModel → Contact → Html ImMessage
-compactProfile model contact =
+compactProfile ∷ Contact → ImModel → Html ImMessage
+compactProfile contact model =
       HE.div (HA.class' { "profile-contact": true, highlighted: model.toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
@@ -115,140 +115,85 @@ compactProfile model contact =
             , HE.polygon' [ HA.class' "strokeless", HA.points "8.01 16 16.01 6 0.01 6 8.01 16" ]
             ]
 
--- -- | Suggestion cards/full screen profile view
--- fullProfile ∷ ProfilePresentation → Int → ImModel → User → Html ImMessage
--- fullProfile presentation index model@{ toggleContextMenu, freeToFetchSuggestions, toggleModal } user@{ id } =
---       case presentation of
---             FullContactProfile → HE.div [ HA.class' "suggestion old" ] $ fullProfileMenu : profile
---             CenterCard → HE.div [ HA.class' "suggestion-center" ] -- only center card suggestion can be chatted to
---                   [ HE.div [ HA.class' "suggestion new" ] $ if model.bugging == Just Backing then backingTime else (loading : currentSuggestionMenu : profile)
---                   , HE.div [ HA.class' "suggestion-input" ] $ SIVC.chatBarInput ChatInputContact model
---                   ]
---             card → HE.div [ HA.class' "suggestion new", HA.onClick <<< SpecialRequest $ if card == PreviousCard then PreviousSuggestion else NextSuggestion ] profile
---       where
---       fullProfileMenu = HE.div (HA.class' "profile-top-menu")
---             [ SIA.arrow [ HA.class' { "svg-back-profile": true, highlighted: toggleModal == Tutorial Chatting }, HA.onClick ToggleContactProfile ]
---             , HE.div [ HA.class' "outer-user-menu" ]
---                     $ SIA.contextMenu
---                     $ show FullProfileContextMenu
---             , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu id true
---             ]
+-- | Full screen profile view
+fullProfile ∷ User → ImModel → Html ImMessage
+fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMenu : profile
+      where
+      profileMenu = HE.div (HA.class' "profile-top-menu")
+            [ SIA.arrow [ HA.class' { "svg-back-profile": true, highlighted: model.toggleModal == Tutorial Chatting }, HA.onClick ToggleContactProfile ]
+            , HE.div [ HA.class' "outer-user-menu" ]
+                    $ SIA.contextMenu
+                    $ show FullProfileContextMenu
+            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user.id true
+            ]
 
---       profile =
---             displayProfile index
---                   model.user
---                   user
---                   (Just <<< SpecialRequest $ ToggleModal ShowSettings)
---                   <>
---                         [ arrow $ SpecialRequest PreviousSuggestion
---                         , arrow $ SpecialRequest NextSuggestion
---                         ]
+      profile =
+            [ HE.div (HA.class' "avatar-info")
+                    [ HE.div [ HA.class' "big-avatar-info" ]
+                            [ HE.img [ HA.src $ SA.fromAvatar user.avatar, HA.class' "big-suggestion-avatar" ]
+                            , HE.div (HA.class' "big-suggestion-info")
+                                    ( HE.strong (HA.class' "big-card-name") user.name
+                                            : badges user.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user user ]
+                                    )
+                            , HE.div (HA.class' "big-suggestion-info auto-left")
+                                    ( [ HE.div_ $
+                                              if user.temporary then
+                                                    temporary
+                                              else
+                                                    [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands user.karma
+                                                    , HE.span (HA.class' "duller") $ " karma • #" <> show user.karmaPosition
+                                                    ]
+                                      ]
+                                            <> genderAge user
+                                            <> from user
+                                            <> speaks user
+                                    )
+                            ]
+                    ]
+            , HE.div (HA.class' "full-card-headline-tags")
+                    ( [ HE.div (HA.class' "card-headline") user.headline
+                      , HE.hr' (HA.class' "tag-ruler")
+                      ] <> map (HE.span (HA.class' "tag")) user.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
+                    )
+            , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
+                    [ HE.span (HA.class' "card-about-description") "About"
+                    , HE.div' [ HA.innerHtml $ SM.parse user.description ]
+                    ]
+            ]
 
---       currentSuggestionMenu = HE.div [ HA.class' "profile-context outer-user-menu" ]
---             [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
---             , SIA.contextMenu $ show SuggestionContextMenu
---             , HE.div [ HA.class' { "user-menu": true, visible: toggleContextMenu == ShowSuggestionContextMenu } ] $ profileContextMenu id false
---             ]
+backingTime ∷ Html ImMessage
+backingTime =
+      HE.div (HA.class' "backing-suggestion-call")
+            [ HE.img [ HA.class' "point-melon", HA.src $ SR.resourcePath (Left Loading) Png ]
+            , HE.h2 (HA.class' "backing-suggestion-call-enjoyer") "Enjoying MeroChat??"
+            , HE.text "Donate today! MeroChat depends on people like you to exist"
+            , HE.br
+            , HE.text "Your money will pay for server costs, marketing and development time"
+            , HE.br
+            , HE.div (HA.class' "donate-options")
+                    [ HE.i_ "PayPal"
+                    , HE.form [ HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_blank" ]
+                            [ HE.input [ HA.type' "hidden", HA.name "business", HA.value "RAH62A4TZZD7L" ]
+                            , HE.input [ HA.type' "hidden", HA.name "currency_code", HA.value "USD" ]
+                            , HE.input [ HA.type' "image", HA.src "https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif", HA.name "submit", HA.title "PayPal - The safer, easier way to pay online!", HA.alt "Donate with PayPal button" ]
+                            , HE.img [ HA.alt "", HA.src "https://www.paypal.com/en_US/i/scr/pixel.gif", HA.width "1", HA.height "1" ]
+                            ]
+                    , HE.i_ "Liberapay"
+                    , HE.script' [ HA.src "https://liberapay.com/merochat/widgets/button.js", HA.type' "text/javascript" ]
+                    , HE.a [ HA.href "https://liberapay.com/merochat/donate", HA.target "_blank" ] $ HE.img [ HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg" ]
 
---       loading = HE.div' $ HA.class' { loading: true, hidden: freeToFetchSuggestions }
-
---       backingTime =
---             [ HE.div (HA.class' "backing-suggestion-call")
---                     [ HE.img [ HA.class' "point-melon", HA.src $ SPT.resourcePath (Left Loading) Png ]
---                     , HE.h2 (HA.class' "backing-suggestion-call-enjoyer") "Enjoying MeroChat??"
---                     , HE.text "Donate today! MeroChat depends on people like you to exist"
---                     , HE.br
---                     , HE.text "Your money will pay for server costs, marketing and development time"
---                     , HE.br
---                     , HE.div (HA.class' "donate-options")
---                             [ HE.i_ "PayPal"
---                             , HE.form [ HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_blank" ]
---                                     [ HE.input [ HA.type' "hidden", HA.name "business", HA.value "RAH62A4TZZD7L" ]
---                                     , HE.input [ HA.type' "hidden", HA.name "currency_code", HA.value "USD" ]
---                                     , HE.input [ HA.type' "image", HA.src "https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif", HA.name "submit", HA.title "PayPal - The safer, easier way to pay online!", HA.alt "Donate with PayPal button" ]
---                                     , HE.img [ HA.alt "", HA.src "https://www.paypal.com/en_US/i/scr/pixel.gif", HA.width "1", HA.height "1" ]
---                                     ]
---                             , HE.i_ "Liberapay"
---                             , HE.script' [ HA.src "https://liberapay.com/merochat/widgets/button.js", HA.type' "text/javascript" ]
---                             , HE.a [ HA.href "https://liberapay.com/merochat/donate", HA.target "_blank" ] $ HE.img [ HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg" ]
-
---                             , HE.i_ "Patreon"
---                             , HE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button" ]
---                                     [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
---                                             [ HE.g_
---                                                     [ HE.circle' [ HA.cx "362.589996", HA.cy "204.589996", HA.r "204.589996" ]
---                                                     , HE.rect' [ HA.height "545.799988", HA.width "100", HA.x "0", HA.y "0" ]
---                                                     ]
---                                             ]
---                                     , HE.text "Subscribe"
---                                     ]
-
---                             ]
---                     , arrow $ SpecialRequest PreviousSuggestion
---                     , arrow $ SpecialRequest NextSuggestion
---                     ]
---             ]
-
--- displayProfile ∷ Int → User → User → Maybe ImMessage → Array (Html ImMessage)
--- displayProfile index loggedUser profileUser temporaryUserMessage =
---       [ SA.avatar [ HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowAvatar index, HA.class' "avatar-profile", HA.src $ SA.fromAvatar profileUser.avatar ]
---       , HE.h1 (HA.class' "profile-name") profileUser.name
---       , HE.div (HA.class' "headline") profileUser.headline
---       , HE.div [ HA.class' { "online-status": true, hidden: not loggedUser.onlineStatus || not profileUser.onlineStatus } ] $ show profileUser.availability
---       , HE.div (HA.class' "profile-karma")
---               $
---                     case temporaryUserMessage of
---                           Just msg | profileUser.temporary →
---                                 [ HE.span [ HA.class' "quick-sign-up" ] "Quick-sign up user"
---                                 -- from https://thenounproject.com/icon/question-646495/
---                                 , HE.svg [ HA.class' "svg-explain-temporary-user", HA.viewBox "0 0 752 752" ]
---                                         [ HE.path' [ HA.d "m376 162.89c-117.53 0-213.11 95.582-213.11 213.11 0 117.53 95.582 213.11 213.11 213.11 117.53 0 213.11-95.582 213.11-213.11 0-117.53-95.582-213.11-213.11-213.11zm0 28.414c102.18 0 184.7 82.523 184.7 184.7 0 102.18-82.523 184.7-184.7 184.7-102.17 0-184.7-82.523-184.7-184.7 0-102.17 82.523-184.7 184.7-184.7zm0 66.301c-39.062 0-71.035 31.973-71.035 71.039-0.054688 3.8008 1.418 7.4688 4.0898 10.176 2.668 2.707 6.3125 4.2344 10.117 4.2344s7.4492-1.5273 10.117-4.2344c2.6719-2.707 4.1445-6.375 4.0898-10.176 0-23.711 18.914-42.625 42.621-42.625 23.711 0 42.625 18.914 42.625 42.625 0 14.742-5.9453 24.809-15.688 35.074-9.7461 10.266-23.262 19.555-35.816 29.598-3.3711 2.6992-5.3281 6.7812-5.3281 11.102v18.941c-0.054688 3.8047 1.4219 7.4688 4.0898 10.176 2.6719 2.7109 6.3164 4.2344 10.117 4.2344 3.8047 0 7.4492-1.5234 10.121-4.2344 2.668-2.707 4.1406-6.3711 4.0859-10.176v-11.988c10.352-7.9023 22.508-16.594 33.449-28.117 12.75-13.438 23.383-31.559 23.383-54.609 0-39.066-31.973-71.039-71.039-71.039zm0 198.91c-10.461 0-18.941 8.4805-18.941 18.941s8.4805 18.945 18.941 18.945c10.465 0 18.945-8.4844 18.945-18.945s-8.4805-18.941-18.945-18.941z" ]
---                                         ]
---                                 , HE.div (HA.class' "explain-temporary-user")
---                                         [ HE.p_ "Quick-sign up means users that just got started on MeroChat and have yet to finish creating their account"
---                                         , HE.p_
---                                                 [ HE.text "You can opt to not be seen (or messaged by) quick-sign up users on the "
---                                                 , HE.a (HA.onClick msg) " settings"
---                                                 , HE.text " page"
---                                                 ]
---                                         ]
---                                 ]
---                           _ →
---                                 [ HE.div_ $
---                                         [ HE.span [ HA.class' "span-info" ] $ SI.thousands profileUser.karma
---                                         , HE.span_ " karma "
---                                         , HE.span_ $ "#" <> show profileUser.karmaPosition
---                                         ] <> map spanWith (badges profileUser.badges)
---                                 ]
---       , HE.div (HA.class' "profile-asl")
---               [ HE.div_
---                       [ toSpan $ map show profileUser.age
---                       , duller (DM.isNothing profileUser.age || DM.isNothing profileUser.gender) ", "
---                       , toSpan profileUser.gender
---                       ]
---               , HE.div_
---                       [ duller (DM.isNothing profileUser.country) "from "
---                       , toSpan profileUser.country
---                       ]
---               , HE.div_
---                       ( [ duller (DA.null profileUser.languages) "speaks "
---                         ] <> (DA.intercalate [ duller false ", " ] $ map (DA.singleton <<< spanWith) profileUser.languages)
---                       )
---               ]
---       , HE.div (HA.class' "tags-description")
---               [ HE.div (HA.class' "profile-tags") $ map (HE.span (HA.class' "tag")) profileUser.tags
---               , HE.span (HA.class' "duller profile-description-about") "About"
---               ]
---       , HE.div (HA.class' "about-description")
---               [ HE.div' [ HA.class' "description-message", HA.innerHtml $ SM.parse profileUser.description ] ]
---       ]
---       where
---       toSpan = DM.maybe (HE.createEmptyElement "span") spanWith
-
---       spanWith ∷ ∀ b m. ToNode b m Html ⇒ b → Html m
---       spanWith = HE.span (HA.class' "span-info")
-
---       duller hidden t = HE.span (HA.class' { "duller": true, "hidden": hidden }) t
+                    , HE.i_ "Patreon"
+                    , HE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button" ]
+                            [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
+                                    [ HE.g_
+                                            [ HE.circle' [ HA.cx "362.589996", HA.cy "204.589996", HA.r "204.589996" ]
+                                            , HE.rect' [ HA.height "545.799988", HA.width "100", HA.x "0", HA.y "0" ]
+                                            ]
+                                    ]
+                            , HE.text "Subscribe"
+                            ]
+                    ]
+            ]
 
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
 individualSuggestion suggestion model = HE.div (HA.class' "big-card")
@@ -257,16 +202,21 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card")
                       [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "big-suggestion-avatar" ]
                       , HE.div (HA.class' "big-suggestion-info")
                               ( HE.strong (HA.class' "big-card-name") suggestion.name
-                                      : [ HE.div (HA.class' "duller") $ onlineStatus model.user suggestion ]
+                                      : badges suggestion.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user suggestion ]
                               )
                       , HE.div (HA.class' "big-suggestion-info auto-left")
-                              ( [ HE.div_
-                                        [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
-                                        , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
-                                        ]
-                                ] <> genderAge suggestion
+                              ( [ HE.div_ $
+                                        if suggestion.temporary then
+                                              temporary
+                                        else
+                                              [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
+                                              , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
+                                              ]
+                                ]
+                                      <> genderAge suggestion
                                       <> from suggestion
                                       <> speaks suggestion
+
                               )
                       , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideUserMenuModal ]
                               [ closeX
@@ -279,7 +229,7 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card")
                 ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
               )
       , arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
-      , HE.div [ HA.class' "card-description", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
+      , HE.div [ HA.class' "card-description" ]
               [ HE.span (HA.class' "card-about-description") "About"
               , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
               ]
@@ -362,6 +312,22 @@ onlineStatus ∷ User → Suggestion → Array (Html ImMessage)
 onlineStatus user suggestion
       | not user.onlineStatus || not suggestion.onlineStatus = []
       | otherwise = [ HE.span_ $ show suggestion.availability ]
+
+temporary =
+      [ HE.span [ HA.class' "quick-sign-up" ] "Quick-sign up user"
+      -- from https://thenounproject.com/icon/question-646495/
+      , HE.svg [ HA.class' "svg-explain-temporary-user", HA.viewBox "0 0 752 752" ]
+              [ HE.path' [ HA.d "m376 162.89c-117.53 0-213.11 95.582-213.11 213.11 0 117.53 95.582 213.11 213.11 213.11 117.53 0 213.11-95.582 213.11-213.11 0-117.53-95.582-213.11-213.11-213.11zm0 28.414c102.18 0 184.7 82.523 184.7 184.7 0 102.18-82.523 184.7-184.7 184.7-102.17 0-184.7-82.523-184.7-184.7 0-102.17 82.523-184.7 184.7-184.7zm0 66.301c-39.062 0-71.035 31.973-71.035 71.039-0.054688 3.8008 1.418 7.4688 4.0898 10.176 2.668 2.707 6.3125 4.2344 10.117 4.2344s7.4492-1.5273 10.117-4.2344c2.6719-2.707 4.1445-6.375 4.0898-10.176 0-23.711 18.914-42.625 42.621-42.625 23.711 0 42.625 18.914 42.625 42.625 0 14.742-5.9453 24.809-15.688 35.074-9.7461 10.266-23.262 19.555-35.816 29.598-3.3711 2.6992-5.3281 6.7812-5.3281 11.102v18.941c-0.054688 3.8047 1.4219 7.4688 4.0898 10.176 2.6719 2.7109 6.3164 4.2344 10.117 4.2344 3.8047 0 7.4492-1.5234 10.121-4.2344 2.668-2.707 4.1406-6.3711 4.0859-10.176v-11.988c10.352-7.9023 22.508-16.594 33.449-28.117 12.75-13.438 23.383-31.559 23.383-54.609 0-39.066-31.973-71.039-71.039-71.039zm0 198.91c-10.461 0-18.941 8.4805-18.941 18.941s8.4805 18.945 18.941 18.945c10.465 0 18.945-8.4844 18.945-18.945s-8.4805-18.941-18.945-18.941z" ]
+              ]
+      , HE.div (HA.class' "explain-temporary-user")
+              [ HE.p_ "Quick-sign up means users that just got started on MeroChat and have yet to finish creating their account"
+              , HE.p_
+                      [ HE.text "You can opt to not be seen (or messaged by) quick-sign up users on the "
+                      , HE.a (HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings) " settings"
+                      , HE.text " page"
+                      ]
+              ]
+      ]
 
 from ∷ Suggestion → Array (Html ImMessage)
 from suggestion = DM.maybe [] (\c → [ HE.div_ [ HE.span (HA.class' "duller") "from ", HE.span_ c ] ]) suggestion.country

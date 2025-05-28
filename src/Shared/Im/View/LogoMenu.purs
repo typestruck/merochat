@@ -69,7 +69,7 @@ logoMenu model = HE.div (HA.class' "relative")
 
 miniSuggestions ∷ ImModel → Html ImMessage
 miniSuggestions model = HE.div (HA.class' "mini-suggestions")
-      case model.suggesting >>= (model.suggestions !! _) of
+      case model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions) of
             Just suggestion | not model.smallScreen && DM.isJust model.chatting && not model.showCollapsedMiniSuggestions →
                   [ HE.svg [ HA.class' "svg-32 svg-text-color", HA.viewBox "0 0 24 24", HA.onClick ToggleCollapsedMiniSuggestions ]
                           [ HE.path' [ HA.d "M18 12L12 18L6 12", HA.strokeWidth "2" ]

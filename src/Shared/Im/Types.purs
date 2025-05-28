@@ -238,12 +238,6 @@ type Turn =
       , chatAge ∷ Number -- Days
       }
 
-data ProfilePresentation
-      = FullContactProfile
-      | CenterCard
-      | PreviousCard
-      | NextCard
-
 data MessageContent
       = Image String Int Int String
       | Text String
@@ -688,7 +682,6 @@ instance Show MessageError where
 
 derive instance Eq ShowContextMenu
 derive instance Eq AfterLogout
-derive instance Eq ProfilePresentation
 derive instance Eq MessageError
 derive instance Eq RetryableRequest
 derive instance Eq ShowChatModal
