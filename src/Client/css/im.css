@@ -2575,7 +2575,6 @@ label {
 
     .wall-text {
         max-width: 90%;
-
     }
 
     #temporary-user-sign-up-form div {
@@ -2634,7 +2633,6 @@ label {
         width: 20em;
     }
 
-    .card-sides,
     .card-top-header,
     .side-suggestions-container,
     .logo-contact-list,
@@ -2668,17 +2666,17 @@ label {
         justify-content: space-around;
         padding: 5px;
         padding-top: 10px;
-        background-color: var(--im-background-color);
+        background-color: var(--im-second-background-color);
         cursor: pointer;
     }
 
     .tab-item {
-        color: var(--text-color);
+        color: var(--light-color);
     }
 
     .tab-item svg {
-        fill: var(--text-color);
-        stroke: var(--text-color)
+        fill: var(--light-color);
+        stroke: var(--light-color)
     }
 
     .avatar-settings {
@@ -2748,18 +2746,7 @@ label {
         margin-left: 0;
     }
 
-    .suggestion-cards,
-    .cards,
-    .backing-suggestion-call,
-    .card,
-    .card-center {
-        max-width: 100%;
-        flex-grow: 1;
-        overflow: hidden;
-    }
-
     .contact-list {
-        background-color: var(--background-color);
         color: var(--text-color);
     }
 
@@ -3062,6 +3049,15 @@ label {
 
     body {
         font-size: 100%;
+    }
+
+    .cards {
+        flex-direction: column;
+    }
+
+    .card {
+        border-radius: 0;
+        width: 100%;
     }
 }
 
