@@ -138,6 +138,7 @@ sendMessage userId shouldFetchHistory contentMessage date webSocket model =
             { temporaryId = newTemporaryId
             , contacts = map updateContact model.contacts
             , imageCaption = Nothing
+            , toggleModal = HideUserMenuModal
             , selectedImage = Nothing
             , showMiniChatInput = false
             , editing = Nothing

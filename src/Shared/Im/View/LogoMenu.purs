@@ -79,7 +79,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                   , seeAllSuggestions
                   , HE.div (HA.class' "mini-suggestion-cards")
                           [ HE.div (HA.class' "mini-avatar-info-arrows")
-                                  [ arrow backArrow $ SpecialRequest PreviousSuggestion
+                                  [ SISP.arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
                                   , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick ResumeSuggesting ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div (HA.class' "mini-suggestion-info")
@@ -91,7 +91,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                                           <> onlineStatus suggestion
                                                   )
                                           ]
-                                  , arrow nextArrow $ SpecialRequest NextSuggestion
+                                  , SISP.arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
                                   ]
                           , HE.div (HA.class' "mini-name-options")
                                   [ HE.strong_ suggestion.name
@@ -123,7 +123,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                   , seeAllSuggestions
                   , HE.div (HA.class' "mini-suggestion-cards collapsed")
                           [ HE.div (HA.class' "mini-avatar-info-arrows")
-                                  [ arrow backArrow $ SpecialRequest PreviousSuggestion
+                                  [ SISP.arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
                                   , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick ToggleCollapsedMiniSuggestions ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div (HA.class' "mini-suggestion-info")
@@ -132,14 +132,12 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                                     ] <> onlineStatus suggestion
                                                   )
                                           ]
-                                  , arrow nextArrow $ SpecialRequest NextSuggestion
+                                  , SISP.arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
                                   ]
                           ]
                   ]
             _ → []
       where
-      arrow svg message = HE.div (HA.class' "suggestion-arrow" : if model.freeToFetchSuggestions then [ HA.onClick message ] else []) svg
-
       genderAge suggestion =
             case DM.maybe [] (DA.singleton <<< HE.span_) suggestion.gender <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show) suggestion.age of
                   [ g, a ] → [ HE.div_ [ g, HE.span (HA.class' "duller") ", ", a ] ]

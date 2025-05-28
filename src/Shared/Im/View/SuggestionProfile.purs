@@ -1,4 +1,4 @@
-module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, badges, profileContextMenu, individualSuggestion) where
+module Shared.Im.View.SuggestionProfile (suggestionProfile, signUpCall, badges, profileContextMenu, individualSuggestion, arrow) where
 
 import Debug
 import Prelude
@@ -25,7 +25,7 @@ import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Svg (backArrow, nextArrow)
+import Shared.Im.Svg (backArrow, nextArrow, closeX)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Retry as SIVR
@@ -144,16 +144,6 @@ compactProfile model contact =
 --                         , arrow $ SpecialRequest NextSuggestion
 --                         ]
 
---       arrow message = HE.div (HA.class' "suggestion-arrow" : clickMessage)
---             [ case message of
---                     SpecialRequest PreviousSuggestion → backArrow
---                     _ → nextArrow
---             ]
---             where
---             clickMessage
---                   | freeToFetchSuggestions = [ HA.onClick message ]
---                   | otherwise = []
-
 --       currentSuggestionMenu = HE.div [ HA.class' "profile-context outer-user-menu" ]
 --             [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
 --             , SIA.contextMenu $ show SuggestionContextMenu
@@ -260,37 +250,27 @@ compactProfile model contact =
 
 --       duller hidden t = HE.span (HA.class' { "duller": true, "hidden": hidden }) t
 
-badges ∷ ∀ message. Array Badge → Array (Html message)
-badges source = map (it <<< SB.badgeFor) source
-      where
-      it bf = HE.div [ HA.class' "badge", HA.title bf.description ] [ HE.img $ [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.span [ HA.class' "badge-text" ] bf.text ]
-
-profileContextMenu ∷ Int → Boolean → Array (Html ImMessage)
-profileContextMenu id delete =
-      [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat id ] "Delete chat"
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser id ] "Block"
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
-      ]
-
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
 individualSuggestion suggestion model = HE.div (HA.class' "big-card")
       [ HE.div (HA.class' "avatar-info")
-              [ HE.div [ HA.class' "mini-avatar-info" ]
-                      [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
-                      , HE.div (HA.class' "mini-suggestion-info")
-                              ( HE.div_
-                                      [ HE.strong (HA.class' "card-name") suggestion.name
-                                      ]
-                                      : onlineStatus model.user suggestion
+              [ HE.div [ HA.class' "big-avatar-info" ]
+                      [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "big-suggestion-avatar" ]
+                      , HE.div (HA.class' "big-suggestion-info")
+                              ( HE.strong (HA.class' "big-card-name") suggestion.name
+                                      : [ HE.div (HA.class' "duller") $ onlineStatus model.user suggestion ]
                               )
-                      , HE.div (HA.class' "mini-suggestion-info")
+                      , HE.div (HA.class' "big-suggestion-info auto-left")
                               ( [ HE.div_
                                         [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
                                         , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
                                         ]
                                 ] <> genderAge suggestion
                                       <> from suggestion
+                                      <> speaks suggestion
                               )
+                      , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideUserMenuModal ]
+                              [ closeX
+                              ]
                       ]
               ]
       , HE.div_
@@ -298,21 +278,17 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card")
                 , HE.hr' (HA.class' "tag-ruler")
                 ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
               )
+      , arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
       , HE.div [ HA.class' "card-description", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
               [ HE.span (HA.class' "card-about-description") "About"
               , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
               ]
-      , case model.showSuggestionChatInput of
-              Just id | suggestion.id == id →
-                    HE.div [ HA.class' "see-profile-chat" ]
-                          [ HE.div (HA.class' "suggestion-input")
-                                  [ SIVC.chatBarInput (Left id) ChatInputSuggestion model
-                                  ]
-                          ]
-              _ → HE.div (HA.class' "see-profile-chat")
-                    [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See profile" ]
-                    , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
-                    ]
+
+      , HE.div (HA.class' "see-profile-chat suggestion-input")
+              [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model
+              ]
+
+      , arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
       ]
 
 -- | Suggestions are shown as a card list
@@ -370,17 +346,42 @@ suggestionCards model =
                                 ]
                   ]
 
+arrow ∷ Html ImMessage → Boolean → ImMessage → Html ImMessage
+arrow svg freeTo message = HE.div (HA.class' "suggestion-arrow" : if freeTo then [ HA.onClick message ] else []) svg
+
 genderAge ∷ Suggestion → Array (Html ImMessage)
 genderAge suggestion =
       case DM.maybe [] (DA.singleton <<< HE.span_) suggestion.gender <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show) suggestion.age of
-            [ g, a ] → [ HE.div_ [ g, HE.span (HA.class' "duller") ", ", a ] ]
+            [ g, a ] → [ HE.div_ [ g, separator, a ] ]
             ga → ga
 
+separator ∷ Html ImMessage
+separator = HE.span (HA.class' "duller") " • "
+
+onlineStatus ∷ User → Suggestion → Array (Html ImMessage)
 onlineStatus user suggestion
       | not user.onlineStatus || not suggestion.onlineStatus = []
       | otherwise = [ HE.span_ $ show suggestion.availability ]
 
-from suggestion = DM.maybe [] (DA.singleton <<< HE.span_) suggestion.country
+from ∷ Suggestion → Array (Html ImMessage)
+from suggestion = DM.maybe [] (\c → [ HE.div_ [ HE.span (HA.class' "duller") "from ", HE.span_ c ] ]) suggestion.country
+
+speaks ∷ Suggestion → Array (Html ImMessage)
+speaks suggestion
+      | DA.null suggestion.languages = []
+      | otherwise = [ HE.div_ $ HE.span (HA.class' "duller") "speaks " : (DA.intersperse separator $ map HE.span_ suggestion.languages) ]
+
+badges ∷ ∀ message. Array Badge → Array (Html message)
+badges source = map (it <<< SB.badgeFor) source
+      where
+      it bf = HE.div [ HA.class' "badge", HA.title bf.description ] [ HE.img $ [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.span [ HA.class' "badge-text" ] bf.text ]
+
+profileContextMenu ∷ Int → Boolean → Array (Html ImMessage)
+profileContextMenu id delete =
+      [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat id ] "Delete chat"
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser id ] "Block"
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
+      ]
 
 welcomeTemporary ∷ User → Html ImMessage
 welcomeTemporary { name, joined } =

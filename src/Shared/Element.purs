@@ -24,6 +24,7 @@ data ElementId
       | MiniChatInputSuggestion
       | LinkFormUrl
       | MessageHistory
+      | ChatInputBigSuggestion
       | Cards
       | Favicon
       | ProfileEditionRoot
@@ -73,6 +74,7 @@ instance Show ElementId where
             MiniChatInputSuggestion → "mini-chat-input-suggestion"
             ImageFormCaption → "image-form-caption"
             FeedbackForm → "feedback-form"
+            ChatInputBigSuggestion → "chat-input-big-suggestion"
             Cards → "cards"
             MessageHistory → "message-history"
             Favicon → "favicon"

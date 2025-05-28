@@ -180,6 +180,7 @@ textarea {
 #im {
     display: grid;
     grid-template-columns: 25% 75%;
+    height: 100vh;
     overflow-y: auto;
     scrollbar-width: thin;
 }
@@ -913,13 +914,16 @@ img.emoji {
     margin-bottom: 20px;
 }
 
-.mini-suggestion-info {
-    font-size: 0.9em;
+.mini-suggestion-info, .big-suggestion-info {
     padding-left: 20px;
     justify-content: center;
     align-items: flex-start;
     display: flex;
     flex-direction: column;
+}
+
+.mini-suggestion-info {
+    font-size: 0.9em;
 }
 
 .mini-name-options {
@@ -1127,20 +1131,27 @@ svg.toolbar-action {
     font-size: 0.9em;
 }
 
-.card-description {
+.big-card-description, .card-description {
     display: flex;
     flex-direction: column;
-    cursor: pointer;
+}
+
+.big-card-description {
+    overflow-y: scroll;
+}
+
+.card-description {
     overflow-y: hidden;
+    cursor: pointer;
 }
 
 .mini-headline-tags .tag {
     border: 1px solid var(--text-color)
 }
 
-.suggestion .tag,
+
 .list-tags,
-.card .tag {
+.tag {
     color: var(--text-color);
 }
 
@@ -1341,7 +1352,7 @@ input:not(type=button):focus {
     height: 22px;
 }
 
-.card .attachment-button {
+.card .attachment-button , .big-card .attachment-button {
     display: none;
 }
 
@@ -1734,8 +1745,7 @@ select {
     max-height: 500px;
 }
 
-.card .link-button,
-.card .preview {
+.card .link-button, .big-card .link-button {
     display: none;
 }
 
@@ -1891,7 +1901,7 @@ select {
     justify-content: space-between;
     width: 100%;
     height: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
     flex-wrap: wrap;
 }
 
@@ -1938,19 +1948,28 @@ select {
     top: 0
 }
 
-.suggestion-arrow {
-    position: absolute;
+.see-profile-chat.suggestion-input {
+    width: auto;
 }
 
+.suggestion-arrow {
+    position: absolute;
+    top: 50%;
+    margin-top: -50px;
+    padding: 0;
+}
+
+.big-card .suggestion-arrow {
+    margin-left:-67px
+}
+
+.big-card .suggestion-arrow:last-child {
+    margin-left:-21px
+}
 
 .show-profile-icon-div {
     display: flex;
     justify-content: center;
-}
-
-.suggestion-arrow {
-    top: 50%;
-    padding: 0;
 }
 
 .suggestion-arrow svg {
@@ -1977,10 +1996,6 @@ select {
 
 .suggestion-arrow:last-child {
     left: 100%;
-}
-
-.card-sides .suggestion-arrow {
-    display: none;
 }
 
 .cards {
@@ -2133,6 +2148,11 @@ select {
     padding: 5px;
     border-radius: 5px;
     margin-top: 10px;
+}
+
+.big-avatar-info {
+    display: flex;
+    margin-bottom: 25px;
 }
 
 .mini-avatar-info {
@@ -2294,11 +2314,6 @@ select {
     margin-top: 16px;
 }
 
-.suggestion-arrow {
-    margin-top: -38px;
-    left: 10px;
-}
-
 .imp {
     color: #db5a5d
 }
@@ -2393,22 +2408,33 @@ select {
     font-weight: bold;
 }
 
-.suggestion-arrow:last-child {
-    margin-left: -48px;
-}
-
 .svg-back-card {
     display: none;
 }
 
-.card-name {
+.big-card-name, .card-name {
     font-size: 1.3em;
     margin-bottom: 5px;
+}
+
+.big-card-name {
+    font-size: 1.55em;
+}
+
+.auto-left {
+    margin-left: auto;
+    margin-right: 70px;
 }
 
 .suggestion-avatar {
     width: 102px;
     height: 102px;
+    border-radius: 100%;
+}
+
+.big-suggestion-avatar {
+    width: 132px;
+    height: 132px;
     border-radius: 100%;
 }
 
@@ -2471,7 +2497,6 @@ select {
 label {
     display: block;
 }
-
 
 .chat-input:placeholder-shown+.chat-right-buttons .send-button-div {
     display: none;
@@ -3174,15 +3199,6 @@ label {
     .svg-55 {
         width: 50px;
         height: 50px
-    }
-
-    .suggestion-arrow {
-        margin-top: -50px;
-        left: 10px;
-    }
-
-    .suggestion-arrow:last-child {
-        margin-left: -60px;
     }
 
     .description-message,

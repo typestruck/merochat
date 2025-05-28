@@ -35,8 +35,8 @@ lazyLoad ∷ Bundle → Html ImMessage
 lazyLoad resource = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAttribute "as" "style", HA.href $ SP.bundlePath resource Css, HA.createAttribute "onload" "this.onload=null;this.rel='stylesheet'" ]
 
 modals ∷ ImModel → Html ImMessage
-modals model@{ erroredFields, toggleModal, chatting } =
-      HE.div (HA.class' { "modal-placeholder-overlay": true, "hidden": toggleModal == HideUserMenuModal, "contacts-only": tutorialSteps })
+modals model =
+      HE.div (HA.class' { "modal-placeholder-overlay": true, "hidden": model.toggleModal == HideUserMenuModal, "contacts-only": tutorialSteps })
             [ lazyLoad Help
             , lazyLoad Profile
             , lazyLoad Settings
@@ -45,9 +45,9 @@ modals model@{ erroredFields, toggleModal, chatting } =
             , lazyLoad Experiments
             , lazyLoad KarmaPrivileges
             , lazyLoad Feedback
-            , case toggleModal of
-                    ShowSuggestionCard suggestionId → CISP.individualSuggestion (SU.fromJust $ DA.find ((suggestionId == _) <<< _.id) model.suggestions) model
-                    ShowReport id → report id erroredFields
+            , case model.toggleModal of
+                    ShowSuggestionCard _ → CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model
+                    ShowReport id → report id model.erroredFields
                     ConfirmLogout → confirmLogout
                     ConfirmDeleteChat id → confirmDeleteChat id
                     ConfirmBlockUser id → confirmBlockUser id
@@ -57,7 +57,7 @@ modals model@{ erroredFields, toggleModal, chatting } =
                     _ → modalMenu model
             ]
       where
-      tutorialSteps = toggleModal == Tutorial ChatSuggestions && DM.isNothing chatting || toggleModal == Tutorial Chatting
+      tutorialSteps = model.toggleModal == Tutorial ChatSuggestions && DM.isNothing model.chatting || model.toggleModal == Tutorial Chatting
 
 showAvatar ∷ Either Int Int → ImModel → Html ImMessage
 showAvatar eid model = HE.lazy Nothing largeAvatar who

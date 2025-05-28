@@ -1,8 +1,9 @@
 module Shared.Im.Svg where
 
+import Shared.Im.Types
+
 import Data.Array ((:))
 import Flame (Html)
-import Shared.Im.Types
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
@@ -44,4 +45,10 @@ nextArrow ∷ Html ImMessage
 nextArrow = HE.svg [ HA.class' "svg-55", HA.viewBox "0 0 16 16" ]
       [ HE.circle' [ HA.class' "strokeless light-circle", HA.cx "8", HA.cy "8", HA.r "8" ]
       , HE.polygon' [ HA.class' "fillless strokeless red-polygon", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
+      ]
+
+closeX ∷ Html ImMessage
+closeX = HE.svg [ HA.class' "svg-55", HA.viewBox "0 0 48 48", HA.fill "none" ]
+      [ HE.path' [ HA.d "M36 12L12 36", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
+      , HE.path' [ HA.d "M12 12L36 36", HA.strokeWidth "2", HA.strokeLinecap "round", HA.strokeLinejoin "round" ]
       ]
