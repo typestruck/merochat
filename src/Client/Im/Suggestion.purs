@@ -120,6 +120,7 @@ displayMoreSuggestions suggestions model =
 toggleSuggestionChatInput ∷ Int → ImModel → NoMessages
 toggleSuggestionChatInput id model = F.noMessages model
       { showSuggestionChatInput = Just id
+      , suggesting = Just id
       }
 
 toggleContactProfile ∷ ImModel → NoMessages
