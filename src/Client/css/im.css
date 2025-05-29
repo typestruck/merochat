@@ -1151,12 +1151,6 @@ svg.toolbar-action {
     border: 1px solid var(--text-color)
 }
 
-
-.list-tags,
-.tag {
-    color: var(--text-color);
-}
-
 .hidden .editor-toolbar {
     display: hidden;
 }
@@ -2957,13 +2951,25 @@ label {
         height: auto;
         margin-bottom:0;
         padding: 40px 20px;
+    }
 
+    .card:nth-child(odd) {
+        background: var(--im-second-background-color);
+        color: var(--light-color);
+    }
+
+    .card:nth-child(odd) .tag {
+        border-color: var(--light-color);
     }
 
     .card-description {
         overflow-y: visible;
     }
-
+    .card.card-load-more {
+        border-bottom: none;
+        background: var(--im-background-color);
+        color:var(--text-color)
+    }
     .see-profile-chat {
         position: static;
         justify-content: center;
