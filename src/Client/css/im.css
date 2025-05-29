@@ -2334,6 +2334,7 @@ select {
 
 .svg-explain-temporary-user {
     width: 35px;
+    vertical-align: middle;
     height: 35px;
 }
 
@@ -2341,11 +2342,12 @@ select {
     display: none;
     position: absolute;
     z-index: 9;
-    top: 30px;
+    top: 140px;
     padding: 20px;
     padding-bottom: 0;
     width: 35em;
-    background: #262626
+    background: var(--im-background-color);
+    right:100px
 }
 
 .svg-explain-temporary-user:hover~.explain-temporary-user {
@@ -2520,6 +2522,10 @@ label {
 
 .chat-input:not(:placeholder-shown)+.chat-right-buttons .attachment-button {
     display: none;
+}
+
+.contact-full-profile .user-menu {
+    background-color: var(--im-background-color);
 }
 
 /* dry this shite  */
