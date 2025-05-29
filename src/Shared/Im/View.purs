@@ -30,7 +30,7 @@ view isClientRender model = HE.div "im"
               , SIVL.logoMenu model
               , SIVM.modals model
               ]
-      , HE.div [ HA.id $ show SuggestionBox, HA.class' { "suggestion-box": true, "current-mobile-screen": not model.initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]
+      , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not model.initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]
               [ HE.div [ HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: not $ DS.null model.errorMessage } ] model.errorMessage
               , SIVNM.unreadNotification model
               , SIVP.suggestionProfile model

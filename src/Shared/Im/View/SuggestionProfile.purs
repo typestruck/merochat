@@ -249,7 +249,7 @@ suggestionCards ∷ ImModel → Html ImMessage
 suggestionCards model =
       HE.div (HA.class' "suggestion-cards")
             [ if model.user.temporary then welcomeTemporary model.user else welcome model
-            , HE.div [ HA.class' "cards" ] $ map card model.suggestions <> moreCards
+            , HE.div [ HA.class' "cards", HA.id $ show Cards ] $ map card model.suggestions <> moreCards
             ]
       where
       moreCards =

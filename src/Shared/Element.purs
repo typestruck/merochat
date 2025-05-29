@@ -45,7 +45,6 @@ data ElementId
       | ConfirmPassword
       | FeedbackRoot
       | ScreenshotInput
-      | SuggestionBox
       | FaqLink
       | CaptchaRegularUser
       | TemporaryUserSignUp
@@ -65,10 +64,10 @@ instance Show ElementId where
             FullProfileContextMenu → "full-profile-context-menu"
             ImageFileInput → "image-file-input"
             ConfirmAccountTerminationForm → "confirm-account-termination-form"
-            SuggestionBox → "suggestion-box"
             LinkFormUrl → "link-form-url"
             ProfileEditionForm → "profile-edition-form"
             MiniSuggestionContextMenu → "mini-suggestion-context-menu"
+            Cards → "cards"
             ChatInput → "chat-input"
             ScreenshotInput → "screenshot-input"
             ChatInputSuggestion → "chat-input-suggestion"
@@ -77,7 +76,6 @@ instance Show ElementId where
             ImageFormCaption → "image-form-caption"
             FeedbackForm → "feedback-form"
             ChatInputBigSuggestion → "chat-input-big-suggestion"
-            Cards → "cards"
             MessageHistory → "message-history"
             Favicon → "favicon"
             FeedbackRoot → "feedback-root"

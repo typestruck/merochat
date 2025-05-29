@@ -2096,6 +2096,7 @@ select {
     justify-content: space-between;
     right: 20px;
     left: 20px;
+    padding-top: 10px;
     background: var(--im-background-color);
     z-index: 3;
 }

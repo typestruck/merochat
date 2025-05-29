@@ -21,6 +21,7 @@ import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Types (ImMessage(..), MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..), ImModel)
 import Shared.Options.Page (suggestionsPerPage)
+import Web.DOM.Element as WDE
 
 -- | Display next suggestion card
 nextSuggestion ∷ ImModel → MoreMessages
@@ -113,7 +114,7 @@ displayMoreSuggestions suggestions model =
             | otherwise = model.suggestionsFrom
 
       scrollToTop = do
-            EC.liftEffect (CCD.unsafeGetElementById SuggestionBox >>= CCD.scrollIntoView)
+            EC.liftEffect (CCD.unsafeGetElementById Cards >>= WDE.setScrollTop 0.0)
             pure Nothing
 
 -- | Show or hide full user profile
