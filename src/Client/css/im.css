@@ -2974,6 +2974,10 @@ label {
         color: var(--light-color);
     }
 
+    .card:nth-child(odd) .see-profile-chat {
+        background: var(--im-second-background-color);
+    }
+
     .card:nth-child(odd) .tag {
         border-color: var(--light-color);
     }

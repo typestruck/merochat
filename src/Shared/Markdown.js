@@ -2,7 +2,7 @@ import { marked } from 'marked';
 
 let maxWidth = typeof document == "undefined" ? undefined :
       (window.matchMedia('(max-width:1279px)').matches ?
-            parseFloat(getComputedStyle(document.querySelector('#contact-list')).width) - 20 :
+            parseFloat(getComputedStyle(document.querySelector('#im')).width) - 20 :
             50 * 16);
 
 export function lexer(value) {
