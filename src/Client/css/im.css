@@ -191,8 +191,8 @@ textarea {
     background-color: var(--im-background-color);
     color: var(--im-text-color);
     scrollbar-width: thin;
-    overflow-y: hidden;
     display: flex;
+    min-height: 100%;
     z-index: 5;
     box-shadow: 8px 40px 6px rgba(0, 0, 0, 0.2);
     flex-direction: column;
@@ -551,7 +551,8 @@ a {
 
 .contact-list {
     background-color: var(--im-right-background-color);
-    color: var(--text-color)
+    color: var(--text-color);
+    overflow-y: hidden;
 }
 
 .contact-name,
@@ -2095,6 +2096,7 @@ select {
     justify-content: space-between;
     right: 20px;
     left: 20px;
+    background: var(--im-background-color);
     z-index: 3;
 }
 
@@ -3173,6 +3175,10 @@ label {
         min-width: 60px;
     }
 
+    .card {
+        width:43%;
+    }
+
     .chat-input-preview,
     .chat-input,
     .suggestion-input .side .chat-input {
@@ -3181,7 +3187,6 @@ label {
 }
 
 @media (min-width:1920px) {
-
     html,
     body {
         font-size: 18px;
