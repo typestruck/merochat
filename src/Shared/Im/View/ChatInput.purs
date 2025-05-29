@@ -209,23 +209,10 @@ linkButton toggle = HE.svg [ HA.class' "svg-20 link-button", HA.onClick <<< Togg
       ]
 
 emojiButton ∷ ImModel → Html ImMessage
-emojiButton { toggleChatModal, smallScreen }
-      | toggleChatModal == ShowEmojis =
-              HE.div (HA.class' "emoji-access-div") $ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "emoji-access", HA.viewBox "0 0 16 16" ] $
-                    if smallScreen then
-                          [ HE.path' [ HA.class' "strokeless", HA.d "M14.9,2.24H1.1A1.11,1.11,0,0,0,0,3.35v9.18a1.1,1.1,0,0,0,1.1,1.1H14.9a1.1,1.1,0,0,0,1.1-1.1V3.35A1.11,1.11,0,0,0,14.9,2.24ZM15,12.53a.11.11,0,0,1-.1.1H1.1a.11.11,0,0,1-.1-.1V3.35a.11.11,0,0,1,.1-.11H14.9a.11.11,0,0,1,.1.11Z" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "2.75", HA.y "4.53", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "2.75", HA.y "7.3", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "5.82", HA.y "4.53", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "5.82", HA.y "7.3", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "8.9", HA.y "4.53", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "8.9", HA.y "7.3", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "11.98", HA.y "4.53", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "11.98", HA.y "7.3", HA.width "1.28", HA.height "1.28" ]
-                          , HE.rect' [ HA.class' "strokeless", HA.x "4.49", HA.y "10.18", HA.width "7.02", HA.height "1.28" ]
-                          ]
-                    else
-                          HE.title "Close emojis" : SIS.closeElements
+emojiButton model
+      | model.smallScreen = HE.div' (HA.class' "emoji-access-div hidden")
+      | model.toggleChatModal == ShowEmojis =
+              HE.div (HA.class' "emoji-access-div") $ HE.svg [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "emoji-access", HA.viewBox "0 0 16 16" ] $ HE.title "Close emojis" : SIS.closeElements
       | otherwise =
               HE.div (HA.class' "emoji-access-div") $ HE.svg [ HA.onClick $ ToggleChatModal ShowEmojis, HA.class' "emoji-access", HA.viewBox "0 0 16 16" ]
                     [ HE.title "Emojis"
@@ -272,7 +259,7 @@ previewButton = HE.svg [ HA.class' "svg-20 hidden", HA.onClick $ ToggleChatModal
 
 emojiModal ∷ ElementId → ImModel → Html ImMessage
 emojiModal elementId model
-      | model.smallScreen = HE.div' [ HA.class' "emoji-wrapper" ]
+      | model.smallScreen = HE.div' [ HA.class' "emoji-wrapper hidden" ]
       | otherwise = HE.div [ HA.class' { "emoji-wrapper": true, hidden: model.toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory SIE.byCategory
               where
               toEmojiCategory (Tuple name pairs) = HE.div_

@@ -96,6 +96,8 @@ textarea {
 
 .profile-description p,
 .description-message p,
+.card-description p,
+.card-description li,
 .profile-description li,
 .description-message li {
     hyphens: auto;
@@ -2569,6 +2571,11 @@ label {
         align-items: flex-start;
     }
 
+    .back-filter {
+        display: flex;
+        width: 100%;
+    }
+
     .wall-text {
         max-width: 90%;
     }
@@ -2737,6 +2744,7 @@ label {
 
     .online-only-filter {
         align-self: center;
+        flex-grow: 2;
     }
 
     .suggestion-cards {
@@ -2782,7 +2790,6 @@ label {
     .chat-input,
     .chat-input:focus {
         border-radius: 3px;
-        border-top: 1px solid #b5b7b7;
     }
 
     .suggestion-input .chat-input {
@@ -2923,6 +2930,7 @@ label {
 
     .profile-tags,
     .about-description,
+    .card-description,
     .tags-description {
         max-width: 100%;
     }
@@ -2976,8 +2984,17 @@ label {
     }
 
     .chat-input {
-        padding-left: 39px;
+        padding-left: 10px;
         padding-right: 72px;
+    }
+
+    .contact-full-profile {
+        align-items: unset;
+        padding: 20px;
+    }
+
+    .avatar-info, .full-card-headline-tags, .card-description {
+        width: auto;
     }
 
     .suggestion-input .chat-input {

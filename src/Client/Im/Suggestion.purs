@@ -2,6 +2,7 @@ module Client.Im.Suggestion where
 
 import Prelude
 
+import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
@@ -17,6 +18,7 @@ import Effect.Random as ER
 import Flame as F
 import Safe.Coerce as SC
 import Shared.DateTime as SD
+import Shared.Element (ElementId(..))
 import Shared.Im.Types (ImMessage(..), MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..), ImModel)
 import Shared.Options.Page (suggestionsPerPage)
 import Test.Client.Model (model)
@@ -96,12 +98,12 @@ displayMoreSuggestions suggestions model =
                   , suggestionsFrom = suggestionsFrom
                   }
       else
-            F.noMessages model
+            model
                   { freeToFetchSuggestions = true
                   , suggestions = suggestions
                   , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
                   , suggestionsFrom = suggestionsFrom
-                  }
+                  } /\ [ scrollToTop ]
       where
       suggestionsSize = DA.length suggestions
 
@@ -110,6 +112,10 @@ displayMoreSuggestions suggestions model =
       suggestionsFrom
             | model.suggestionsFrom /= OnlineOnly && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
             | otherwise = model.suggestionsFrom
+
+      scrollToTop = do
+            EC.liftEffect (CCD.unsafeGetElementById SuggestionBox >>= CCD.scrollIntoView)
+            pure Nothing
 
 -- | Show or hide full user profile
 toggleSuggestionChatInput ∷ Int → ImModel → NoMessages

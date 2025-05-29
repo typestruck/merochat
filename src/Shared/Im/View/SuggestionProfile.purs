@@ -36,6 +36,7 @@ import Shared.Privilege as SP
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 import Shared.User as SUR
+import Web.HTML.HTMLElement (hidden)
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
@@ -385,7 +386,10 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
 
                                         ]
               ]
-      , onlineOnlyFilter model
+      , HE.div (HA.class' "back-filter")
+              [ SIA.arrow [ HA.class' { "svg-back-profile": true, hidden: not model.smallScreen }, HA.onClick $ ToggleInitialScreen true ]
+              , onlineOnlyFilter model
+              ]
       ]
 
       where
