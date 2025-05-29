@@ -21,7 +21,6 @@ import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Types (ImMessage(..), MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..), ImModel)
 import Shared.Options.Page (suggestionsPerPage)
-import Test.Client.Model (model)
 
 -- | Display next suggestion card
 nextSuggestion ∷ ImModel → MoreMessages
