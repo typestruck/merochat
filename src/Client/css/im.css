@@ -2487,7 +2487,8 @@ select {
     min-height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;;
+    align-items: center;
+    ;
 }
 
 .full-card-headline-tags,
@@ -2530,7 +2531,8 @@ label {
 @media (max-width:1279px) {
     #im {
         display: flex;
-        overflow-x: hidden
+        overflow-x: hidden;
+        height: unset;
     }
 
     .suggestions-home {
@@ -2638,6 +2640,7 @@ label {
     .logo-contact-list,
     .fortune,
     .avatar-settings,
+    .see-profile-button.see-profile,
     .settings-name,
     .tutorial,
     .message-context-options {
@@ -2743,7 +2746,7 @@ label {
     }
 
     .suggestion-cards {
-        margin-left: 0;
+        margin: 0;
     }
 
     .contact-list {
@@ -2837,7 +2840,6 @@ label {
     .outgoing-message .message-content {
         margin-right: 10px;
     }
-
 
     .modal-placeholder {
         height: 100%;
@@ -2943,6 +2945,28 @@ label {
 
     .cards {
         min-width: 100%;
+        flex-direction: column;
+        flex-wrap: nowrap;
+    }
+
+    .card {
+        border-radius: 0;
+        border: none;
+        border-bottom:1px solid var(--text-color);
+        width: auto;
+        height: auto;
+        margin-bottom:0;
+        padding: 40px 20px;
+
+    }
+
+    .card-description {
+        overflow-y: visible;
+    }
+
+    .see-profile-chat {
+        position: static;
+        justify-content: center;
     }
 
     .chat-input {
@@ -3051,17 +3075,11 @@ label {
         font-size: 100%;
     }
 
-    .cards {
-        flex-direction: column;
-    }
 
-    .card {
-        border-radius: 0;
-        width: 100%;
-    }
 }
 
 @media (min-width:1280px) and (max-width:1919px) {
+
     .back-side-suggestion {
         padding: 14px 6px;
     }
