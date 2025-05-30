@@ -98,8 +98,6 @@ compactProfile contact model =
                             $ show CompactProfileContextMenu
                     , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] $ profileContextMenu contact.user.id true
                     ]
-            , HE.div (HA.class' "show-profile-icon-div" : showProfileAction) profileIcon
-
             ]
       where
       showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
@@ -110,11 +108,6 @@ compactProfile contact model =
             HE.div
                   [ HA.class' { hidden: contact.typing && model.user.typingStatus && contact.user.typingStatus || not model.user.onlineStatus || not contact.user.onlineStatus } ]
                   $ show contact.user.availability
-
-      profileIcon = HE.svg [ HA.class' "show-profile-icon", HA.viewBox "0 0 16 16" ]
-            [ HE.rect' [ HA.x "0.01", HA.y "2", HA.width "16", HA.height "2" ]
-            , HE.polygon' [ HA.class' "strokeless", HA.points "8.01 16 16.01 6 0.01 6 8.01 16" ]
-            ]
 
 -- | Full screen profile view
 fullProfile ∷ User → ImModel → Html ImMessage

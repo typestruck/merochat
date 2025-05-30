@@ -1,5 +1,6 @@
 module Shared.Im.Svg where
 
+import Prelude
 import Shared.Im.Types
 
 import Data.Array ((:))
