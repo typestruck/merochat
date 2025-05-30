@@ -53,6 +53,7 @@ previousSuggestion model =
       where
       previous = moveSuggestion model (-1)
 
+-- | Set suggesting to the following user id
 moveSuggestion ∷ ImModel → Int → Maybe Int
 moveSuggestion model by = do
       currentId ← model.suggesting

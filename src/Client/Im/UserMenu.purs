@@ -47,6 +47,7 @@ toggleModal mToggle model =
             ShowFeedback → showTab request.feedback.get ShowFeedback (Just Feedback) FeedbackRoot
             ShowSuggestionCard id → F.noMessages model
                   { toggleModal = ShowSuggestionCard id
+                  , showCollapsedMiniSuggestions = true
                   , suggesting = Just id
                   }
             modal → F.noMessages model

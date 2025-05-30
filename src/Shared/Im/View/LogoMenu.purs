@@ -9,6 +9,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -80,7 +81,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                   , HE.div (HA.class' "mini-suggestion-cards")
                           [ HE.div (HA.class' "mini-avatar-info-arrows")
                                   [ SISP.arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
-                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick ResumeSuggesting ]
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div (HA.class' "mini-suggestion-info")
                                                   ( [ HE.div_
@@ -107,7 +108,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                                   ]
                                           ]
                                   ]
-                          , HE.div [ HA.class' "mini-headline-tags", HA.title "See full profile", HA.onClick ResumeSuggesting ]
+                          , HE.div [ HA.class' "mini-headline-tags", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
                                   ( [ HE.div (HA.class' "mini-headline") suggestion.headline
                                     , HE.hr' (HA.class' "tag-ruler")
                                     ] <> map (HE.span (HA.class' "tag")) suggestion.tags
@@ -124,7 +125,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                   , HE.div (HA.class' "mini-suggestion-cards collapsed")
                           [ HE.div (HA.class' "mini-avatar-info-arrows")
                                   [ SISP.arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
-                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick ToggleCollapsedMiniSuggestions ]
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div (HA.class' "mini-suggestion-info")
                                                   ( [ HE.strong (HA.class' "collapsed-name") suggestion.name

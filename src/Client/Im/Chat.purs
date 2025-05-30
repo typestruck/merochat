@@ -1,12 +1,14 @@
 module Client.Im.Chat where
 
 import Prelude
+import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
+import Client.Im.Suggestion as SIS
 import Client.Im.WebSocket as CIW
 import Data.Array ((!!), (:))
 import Data.Array as DA
@@ -40,7 +42,6 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Options.MountPoint (imId)
@@ -130,6 +131,7 @@ prepareSendMessage elementId content dt webSocket model = case content of
                                     Tuple contact.shouldFetchChatHistory model
                                           { chatting = Just contact.user.id
                                           , suggestions = DA.filter ((user.id /= _) <<< _.id) model.suggestions
+                                          , suggesting = SIS.moveSuggestion model 1 --move it along so mini suggestions dont disappear
                                           }
 
 sendMessage ∷ Int → Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
