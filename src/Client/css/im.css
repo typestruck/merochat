@@ -1427,7 +1427,7 @@ input:not(type=button):focus {
 .user-menu-item {
     cursor: pointer;
     padding: 10px 0;
-    width: max-content;
+    width: 100%;
 }
 
 .profile-contact-top .user-menu {

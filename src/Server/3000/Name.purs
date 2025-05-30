@@ -32,24 +32,6 @@ simpleName remainingChars = do
             , Tuple (Right Noun) 100
             ]
 
--- | A "complex name" is a string containing [<adjective>] <noun> [who | that] [<adverb>] <verb> [<adjective>] [<noun>] [<other>]
-complexName ∷ Int → Effect String
-complexName remainingChars = do
-      whoChance ← shouldHappen 70
-      let
-            classesChances =
-                  [ Tuple (Right Adjective) 20
-                  , Tuple (Right Noun) 100
-                  , Tuple (Left $ if whoChance then "who" else "that") 100
-                  , Tuple (Right Adverb) 20
-                  , Tuple (Right Verb) 100
-                  , Tuple (Right Adjective) 10
-                  , Tuple (Right PluralNoun) 30
-                  , Tuple (Right Other) 5
-                  ]
-      names ← makeName remainingChars classesChances
-      pure $ DS.joinWith " " names
-
 makeName ∷ Int → Array (Tuple (Either String GrammaticalClass) Int) → Effect (Array String)
 makeName remainingChars classesChances = do
       classes ← filterByChance classesChances
