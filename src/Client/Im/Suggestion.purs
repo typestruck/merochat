@@ -93,13 +93,14 @@ fetchMoreSuggestions model =
 displayMoreSuggestions ∷ Array Suggestion → ImModel → MoreMessages
 displayMoreSuggestions suggestions model =
       if suggestionsSize == 0 && model.suggestionsPage > 0 then
-            fetchMoreSuggestions $ model
+            fetchMoreSuggestions model
                   { suggestionsPage = 0
                   , suggestionsFrom = suggestionsFrom
                   }
       else
             model
                   { freeToFetchSuggestions = true
+                  , suggesting = _.id <$> DA.head suggestions
                   , suggestions = suggestions
                   , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
                   , suggestionsFrom = suggestionsFrom

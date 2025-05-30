@@ -1115,7 +1115,7 @@ svg.toolbar-action {
 .tag {
     width: max-content;
     display: inline-block;
-    margin: 0 5px;
+    margin:5px;
     padding: 0px 10px;
     border-radius: 20px;
 }
