@@ -31,10 +31,7 @@ export function value_(element) {
 }
 
 export function setValue_(element, value) {
-      if (element.value)
-            element.value = value;
-      else
-            element.innerText = value;
+      element.value = value;
 }
 
 export function toggleDisabled_(element) {
