@@ -13,6 +13,11 @@ html {
     box-sizing: border-box;
 }
 
+.request-error-message.error-message:not(empty){
+    display: block;
+    text-align: center;
+}
+
 body {
     background-color: var(--background-color);
     color: var(--text-color);
