@@ -633,6 +633,7 @@ a {
 
 .card-top-header .sign-up-call {
     font-weight: bold;
+    padding: 10px;
 }
 
 .warning-temporary,
@@ -2516,10 +2517,6 @@ select {
 
 label {
     display: block;
-}
-
-.chat-input:placeholder-shown+.chat-right-buttons .send-button-div {
-    display: none;
 }
 
 .chat-input:not(:placeholder-shown)+.chat-right-buttons .attachment-button {
