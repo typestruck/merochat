@@ -1135,19 +1135,18 @@ svg.toolbar-action {
     font-size: 0.9em;
 }
 
-.big-card-description,
 .card-description {
     display: flex;
     flex-direction: column;
 }
 
-.big-card-description {
-    overflow-y: scroll;
-}
-
 .card-description {
     overflow-y: hidden;
     cursor: pointer;
+}
+
+.contact-full-profile  .card-description {
+    overflow-y: auto;
 }
 
 .mini-headline-tags .tag {
@@ -2485,11 +2484,11 @@ select {
 
 .contact-full-profile {
     background: var(--im-second-background-color);
+    color: var(--light-color);
     min-height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    ;
 }
 
 .full-card-headline-tags,
