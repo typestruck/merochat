@@ -3110,6 +3110,10 @@ label {
         flex-wrap: wrap;
     }
 
+    .avatar-info {
+        width: 100%;
+    }
+
     .auto-left {
         margin-right: 0px;
     }
