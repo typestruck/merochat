@@ -1116,7 +1116,7 @@ svg.toolbar-action {
 .tag {
     width: max-content;
     display: inline-block;
-    margin:5px;
+    margin: 5px;
     padding: 0px 10px;
     border-radius: 20px;
 }
@@ -1137,16 +1137,11 @@ svg.toolbar-action {
 }
 
 .card-description {
-    display: flex;
-    flex-direction: column;
-}
-
-.card-description {
     overflow-y: hidden;
     cursor: pointer;
 }
 
-.contact-full-profile  .card-description {
+.contact-full-profile .card-description {
     overflow-y: auto;
 }
 
@@ -2350,7 +2345,7 @@ select {
     padding-bottom: 0;
     width: 35em;
     background: var(--im-background-color);
-    right:100px
+    right: 100px
 }
 
 .svg-explain-temporary-user:hover~.explain-temporary-user {
@@ -2959,10 +2954,10 @@ label {
     .card {
         border-radius: 0;
         border: none;
-        border-bottom:1px solid var(--text-color);
+        border-bottom: 1px solid var(--text-color);
         width: auto;
         height: auto;
-        margin-bottom:0;
+        margin-bottom: 0;
         padding: 40px 20px;
     }
 
@@ -2982,11 +2977,13 @@ label {
     .card-description {
         overflow-y: visible;
     }
+
     .card.card-load-more {
         border-bottom: none;
         background: var(--im-background-color);
-        color:var(--text-color)
+        color: var(--text-color)
     }
+
     .see-profile-chat {
         position: static;
         justify-content: center;
@@ -3002,7 +2999,9 @@ label {
         padding: 20px;
     }
 
-    .avatar-info, .full-card-headline-tags, .card-description {
+    .avatar-info,
+    .full-card-headline-tags,
+    .card-description {
         width: auto;
     }
 
@@ -3107,6 +3106,13 @@ label {
         font-size: 100%;
     }
 
+    .big-avatar-info {
+        flex-wrap: wrap;
+    }
+
+    .auto-left {
+        margin-right: 0px;
+    }
 
 }
 
@@ -3177,7 +3183,7 @@ label {
     }
 
     .card {
-        width:43%;
+        width: 43%;
     }
 
     .chat-input-preview,
@@ -3188,6 +3194,7 @@ label {
 }
 
 @media (min-width:1920px) {
+
     html,
     body {
         font-size: 18px;
