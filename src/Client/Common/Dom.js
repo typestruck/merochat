@@ -67,7 +67,7 @@ export function addToClassList_(element, c) {
 }
 
 export function register_(navigator, file) {
-      navigator.register(file);
+      navigator.serviceWorker.register(file);
 }
 
 export async function ready_(navigator) {
@@ -75,7 +75,7 @@ export async function ready_(navigator) {
 }
 
 export async function getSubscription_(registration) {
-      return await registration.pushManager.getSubscription()
+      return await registration.pushManager.getSubscription();
 }
 
 export async function subscribe_(registration) {
