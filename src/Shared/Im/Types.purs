@@ -184,7 +184,6 @@ data ShowChatModal
       = HideChatModal
       | ShowSelectedImage
       | ShowAudioPrompt
-      | ShowPreview
       | ShowEmojis
 
 data ShowContextMenu

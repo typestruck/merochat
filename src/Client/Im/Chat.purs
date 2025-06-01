@@ -366,7 +366,7 @@ toggleMiniChatInput model = F.noMessages model
 toggleModal ∷ ShowChatModal → ImModel → MoreMessages
 toggleModal toggle model =
       model
-            { toggleChatModal = toggle
+            { toggleChatModal = if model.toggleChatModal == toggle then HideChatModal else toggle
             , selectedImage = Nothing
             } /\ case toggle of
             ShowSelectedImage → [ pickImage ]

@@ -3035,6 +3035,8 @@ label {
     }
 
     .audio-form {
+        background-color: var(--background-color);
+        color:var(--text-color);
         text-align: center;
         align-items: center;
         -webkit-user-select: none;
