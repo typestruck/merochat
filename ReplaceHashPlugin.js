@@ -23,7 +23,7 @@ function replace(options, assets) {
         let splitted = key.split('.'),
             extension = splitted.pop();
 
-        if (extension != 'js' && extension != 'css')
+        if (extension != 'js')
             continue;
 
         hash.set(`[${splitted[0]}-${extension}-contenthash]`, splitted[1]);
@@ -35,7 +35,7 @@ function replace(options, assets) {
         if (typeof entry === 'string')
             fileName = entry;
         else {
-            fileName = `${entry.dir}/${readdirSync(resolve(entry.dir)).find(f => f.startsWith(entry.prefix))}`;
+            fileName = `${entry.dir}/${readdirSync(resolve(entry.dir)).find(f => f.startsWith(entry.prefix) && f.endsWith('.js'))}`;
         }
 
         replaceInFile(fileName, hash);
