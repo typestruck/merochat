@@ -6,26 +6,26 @@
   "short_name": "MeroChat",
   "display": "standalone",
   "background_color": "#213027",
-  "description": "Platonic only, karma based, 1v1 random chat",
+  "description": "Text based, friendly only, 1v1 random chat",
   "icons": [
     {
       "src": "/file/default/loading.png",
-      "sizes": "46x46",
+      "sizes": "44x44",
       "type": "image/png"
     },
     {
       "src": "/file/default/logo.png",
-      "sizes": "46x46",
+      "sizes": "250x250",
       "type": "image/png"
     },
     {
       "src": "/file/default/logo-3-small.png",
-      "sizes": "33x33",
+      "sizes": "180x180",
       "type": "image/png"
     },
     {
       "src": "/file/default/logo-small.png",
-      "sizes": "39x39",
+      "sizes": "210x210",
       "type": "image/png"
     }
   ]

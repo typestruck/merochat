@@ -3031,6 +3031,7 @@ label {
     .modal-form .audio-button {
         width: 56px;
         height: 56px;
+        fill: var(--text-color);
         margin-top: 10px;
     }
 
