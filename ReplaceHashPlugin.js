@@ -23,7 +23,7 @@ function replace(options, assets) {
         let splitted = key.split('.'),
             extension = splitted.pop();
 
-        if (extension != 'js')
+        if (extension != 'js' && extension != 'css')
             continue;
 
         hash.set(`[${splitted[0]}-${extension}-contenthash]`, splitted[1]);
