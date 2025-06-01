@@ -1046,6 +1046,7 @@ svg.toolbar-action {
     height: 22px;
     border: 1px solid var(--text-color);
     padding: 10px 20px;
+    padding-bottom: 13px;
     width: 100%;
     resize: none;
     cursor: text;
@@ -2114,8 +2115,6 @@ select {
 }
 
 .mini-suggestion-cards .chat-input {
-    padding: 5px;
-    border-radius: 5px;
     margin-top: 10px;
 }
 
