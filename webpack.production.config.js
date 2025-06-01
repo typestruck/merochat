@@ -55,6 +55,7 @@ export default {
             'process.env.PRODUCTION': true
         }),
         new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
+        new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'im' }, 'output-es/Shared.Resource/index.js'] })
     ],
     module: {
         rules: [

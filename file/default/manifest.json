@@ -15,17 +15,7 @@
     },
     {
       "src": "/file/default/logo.png",
-      "sizes": "250x250",
-      "type": "image/png"
-    },
-    {
-      "src": "/file/default/logo-3-small.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "/file/default/logo-small.png",
-      "sizes": "210x210",
+      "sizes": "250x46",
       "type": "image/png"
     }
   ]

@@ -287,6 +287,10 @@ spec ∷
                                                 , response ∷ Ok
                                                 }
                                   }
+                    , sw ∷
+                            GET "/sw.js"
+                                  { response ∷ File
+                                  }
                     , developmentFiles ∷
                             GET "/file/<..path>"
                                   { params ∷ { path ∷ List String }

@@ -115,4 +115,4 @@ templateWith parameters =
               else
                     [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Common Js ]
                     ]
-            ) <> [ HE.script [ HA.type' "text/javascript" ] "if (`serviceWorker` in navigator) navigator.serviceWorker.register(`/file/default/sw.js`);" ] <> parameters.javascript
+            ) <> parameters.javascript

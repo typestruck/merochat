@@ -107,7 +107,8 @@ handlers reading =
               }
       , internalBacker: runJson reading SIBH.internalBacker
       , experiments: runJson reading SEH.experiments
-      , developmentFiles: developmentFiles
+      , sw
+      , developmentFiles
       , admin:
               { ban: runJson reading SHA.ban
               }
@@ -137,6 +138,10 @@ runJson reading handler =
                   BadRequest { reason } → PSR.badRequest reason
                   InternalError { reason } → PSR.internalError reason
                   ExpiredSession → PSR.unauthorized ""
+
+-- we need to hardcode this becuse service workers scope to their path
+sw ∷ _ → Aff File
+sw _ = PSH.file "file/default/sw.js" {}
 
 developmentFiles ∷ { params ∷ { path ∷ List String } } → Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}

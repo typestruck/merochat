@@ -105,7 +105,7 @@ main = do
 
       when smallScreen CISS.sendSmallScreen
       when (pwa || not smallScreen) CIN.checkNotifications
-      when pwa (CIP.registerServiceWorker >>= CIP.subscribePush)
+      when pwa CIP.registerServiceWorker
 
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
