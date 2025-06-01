@@ -3110,12 +3110,21 @@ label {
         flex-wrap: wrap;
     }
 
-    .avatar-info {
+    .contact-full-profile .avatar-info {
         width: 100%;
+    }
+
+    .big-suggestion-info {
+        padding-left: 0;
+    }
+
+    .big-suggestion-avatar {
+        margin-bottom: 10px;
     }
 
     .auto-left {
         margin-right: 0px;
+        margin-left: 0;
     }
 
 }
