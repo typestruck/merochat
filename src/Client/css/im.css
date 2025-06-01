@@ -1141,8 +1141,13 @@ svg.toolbar-action {
     cursor: pointer;
 }
 
-.contact-full-profile .card-description {
+.contact-full-profile .card-description, .big-card .card-description {
     overflow-y: auto;
+    cursor: unset;
+}
+
+.big-card .card-description {
+    max-height: 60%;
 }
 
 .mini-headline-tags .tag {
@@ -3120,13 +3125,13 @@ label {
 
     .big-suggestion-avatar {
         margin-bottom: 10px;
+        margin-right: 10px;
     }
 
     .auto-left {
         margin-right: 0px;
         margin-left: 0;
     }
-
 }
 
 @media (min-width:1280px) and (max-width:1919px) {
