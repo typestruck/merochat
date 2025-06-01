@@ -2114,6 +2114,14 @@ select {
     display: none;
 }
 
+.settings .user-menu-item {
+    width: max-content;
+}
+
+.chat-right-buttons svg {
+    fill: var(--text-color);
+}
+
 .mini-suggestion-cards .chat-input {
     margin-top: 10px;
 }
