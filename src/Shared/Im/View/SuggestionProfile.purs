@@ -114,11 +114,12 @@ fullProfile ∷ User → ImModel → Html ImMessage
 fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMenu : profile
       where
       profileMenu = HE.div (HA.class' "profile-top-menu")
-            [ SIA.arrow [ HA.class' { "svg-back-profile": true, highlighted: model.toggleModal == Tutorial Chatting }, HA.onClick ToggleContactProfile ]
+            [ SIA.arrow [ HA.class' "svg-back-profile" , HA.onClick ToggleContactProfile ]
             , HE.div [ HA.class' "outer-user-menu" ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
             , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user.id true
+            , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick ToggleContactProfile ]
             ]
 
       profile =

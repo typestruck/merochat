@@ -607,9 +607,9 @@ a {
 .svg-back-card,
 .svg-back-profile {
     stroke: none;
-    width: 20px;
-    height: 20px;
-    fill: #b9c658;
+    width: 25px;
+    height: 25px;
+    fill: var(--light-color);
 }
 
 .notification-header {
@@ -754,6 +754,10 @@ a {
     border: 1px solid black;
 }
 
+.profile-top-menu .svg-back-profile {
+    display: none;
+}
+
 .message-history {
     display: flex;
     flex-grow: 1;
@@ -761,6 +765,7 @@ a {
     flex-flow: column;
     overflow-y: auto;
     padding: 10px;
+    padding-bottom: 0px;
 }
 
 .message-history> :first-child {
@@ -1906,7 +1911,7 @@ select {
 .profile-top-menu {
     display: flex;
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end;
     position: sticky;
     top: 0
 }
@@ -2504,7 +2509,11 @@ label {
         height: unset;
     }
 
-    .suggestions-home {
+    .profile-top-menu {
+        justify-content: space-between;
+    }
+
+    .svg-close-profile, .suggestions-home {
         display: none;
     }
 
@@ -3076,6 +3085,11 @@ label {
         margin-right: 0px;
         margin-left: 0;
     }
+
+    .profile-top-menu .svg-back-profile {
+        display: block;
+    }
+
 }
 
 @media (min-width:1280px) and (max-width:1919px) {
