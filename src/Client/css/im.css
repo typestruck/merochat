@@ -1881,6 +1881,10 @@ select {
     align-items: center;
 }
 
+.contact-full-profile .tag {
+    border-color: var(--light-color);
+}
+
 .editing-message {
     background-color: var(--background-color) !important;
 }
