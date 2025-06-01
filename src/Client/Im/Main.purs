@@ -122,7 +122,6 @@ update ∷ _ → ListUpdate ImModel ImMessage
 update st model =
       case _ of
             --chat
-            InsertLink → CIC.setLink model
             ToggleChatModal modal → CIC.toggleModal modal model
             DropFile event → CIC.catchFile event model
             ResizeChatInput event → CIC.resizeChatInput event model
@@ -130,7 +129,6 @@ update st model =
             ForceSendMessage elementId → CIC.forceSendMessage elementId model
             SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model
             SetSelectedImage selected → CIC.setSelectedImage selected model
-            Apply markup → CIC.setMarkup markup model
             SetEmoji elementId event → CIC.setEmoji elementId event model
             ToggleMessageEnter → CIC.toggleMessageEnter model
             BeforeAudioMessage → CIC.beforeAudioMessage model

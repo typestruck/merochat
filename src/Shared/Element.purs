@@ -28,7 +28,6 @@ data ElementId
       | Cards
       | Favicon
       | ProfileEditionRoot
-      | ChatInputPreview
       | SettingsEditionRoot
       | ExperimentsRoot
       | HelpRoot
@@ -96,7 +95,6 @@ instance Show ElementId where
             BackerRoot → "backer-root"
             TemporaryUserSignUp → "temporary-user-sign-up"
             TemporaryUserSignUpForm → "temporary-user-sign-up-form"
-            ChatInputPreview → "chat-input-preview"
             ProfileEditionRoot → "profile-edition-root"
             SettingsEditionRoot → "settings-edition-root"
             HelpRoot → "help-root"

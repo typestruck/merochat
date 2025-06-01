@@ -54,12 +54,10 @@ model =
       , imageCaption: Nothing
       , fullContactProfileVisible: false
       , fortune: Nothing
-      , link: Nothing
       , erroredFields: []
       , hasTriedToConnectYet: false
       , selectedImage: Nothing
       , messageEnter: true
-      , linkText: Nothing
       , blockedUsers: []
       , toggleModal: HideUserMenuModal
       , toggleChatModal: HideChatModal

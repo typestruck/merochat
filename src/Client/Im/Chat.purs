@@ -276,38 +276,6 @@ makeTurn user contact =
       getDate = DN.unwrap <<< _.date
       accountAge { joined: DateTimeWrapper dt } = DI.toNumber $ ST.daysDiff dt
 
--- | Insert markdown text
-setMarkup ∷ Markup → ImModel → MoreMessages
-setMarkup markup model =
-      model /\ [ setIt ]
-      where
-      setIt = EC.liftEffect do
-            input ← CCD.unsafeGetElementById ChatInput
-            value ← CCD.value input
-            let
-                  textarea = SU.fromJust $ WHHTA.fromElement input
-                  Tuple before after = case markup of
-                        Bold → Tuple "**" "**"
-                        Italic → Tuple "*" "*"
-                        Strike → Tuple "~" "~"
-                        Heading → Tuple (plusNewLine value "## ") ""
-                        OrderedList → Tuple (plusNewLine value "1. ") ""
-                        UnorderedList → Tuple (plusNewLine value "- ") ""
-            start ← WHHTA.selectionStart textarea
-            end ← WHHTA.selectionEnd textarea
-            let
-                  beforeSize = DS.length before
-                  beforeSelection = DS.take start value
-                  selected = DS.take (end - start) $ DS.drop start value
-                  afterSelection = DS.drop end value
-                  newValue = beforeSelection <> before <> selected <> after <> afterSelection
-            setTextAt input (end + beforeSize) newValue
-            pure Nothing
-
-      plusNewLine value t
-            | DS.null value = t
-            | otherwise = "\n" <> t
-
 -- | Find the cursor on the chatting textarea and set text at is position
 setAtCursor ∷ Element → String → Effect (Maybe ImMessage)
 setAtCursor input text = do
@@ -361,27 +329,6 @@ setEmoji elementId event model = model /\ [ setIt, hideModal ]
             setAtCursor input emoji
       hideModal = pure <<< Just $ ToggleChatModal HideChatModal
 
--- | Insert a markdown link into the chatting textarea
-setLink ∷ ImModel → MoreMessages
-setLink model =
-      case model.link of
-            Nothing → F.noMessages model
-                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ _ "link") ]
-                  }
-            Just url →
-                  model
-                        { erroredFields = []
-                        } /\
-                        [ hide
-                        , setIt $ if (NU.parse $ DS.trim url).protocol == null then "http://" <> url else url
-                        ]
-      where
-      markdown url = "[" <> DM.fromMaybe url model.linkText <> "](" <> url <> ")"
-      hide = pure <<< Just $ ToggleChatModal HideChatModal
-      setIt text = EC.liftEffect do
-            input ← CCD.unsafeGetElementById ChatInput
-            setAtCursor input $ markdown text
-
 -- | Send "is typing" notification
 sendTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
 sendTyping text now webSocket model =
@@ -420,25 +367,14 @@ toggleModal ∷ ShowChatModal → ImModel → MoreMessages
 toggleModal toggle model =
       model
             { toggleChatModal = toggle
-            , link = Nothing
             , selectedImage = Nothing
-            , linkText = Nothing
             } /\ case toggle of
             ShowSelectedImage → [ pickImage ]
-            ShowLinkForm → [ pure <<< Just $ FocusInput LinkFormUrl ]
-            ShowPreview → [ setPreview ]
             _ → []
       where
       pickImage = EC.liftEffect do
             fileInput ← CCD.unsafeGetElementById ImageFileInput
             CCF.triggerFileSelect fileInput
-            pure Nothing
-
-      setPreview = EC.liftEffect do
-            preview ← CCD.unsafeGetElementById ChatInputPreview
-            input ← CCD.unsafeGetElementById ChatInput
-            message ← CCD.value input
-            CCD.setInnerHTML preview $ SM.parse message
             pure Nothing
 
 -- | Record an audio message

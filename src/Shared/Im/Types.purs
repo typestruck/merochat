@@ -130,9 +130,7 @@ type Im =
       , selectedImage ∷ SelectedImage
       , imageCaption ∷ Maybe String
       , messageEnter ∷ Boolean
-      , link ∷ Maybe String
       , suggestionsPage ∷ Int
-      , linkText ∷ Maybe String
       , isWebSocketConnected ∷ Boolean
       , erroredFields ∷ Array String
       , fortune ∷ Maybe String
@@ -188,7 +186,6 @@ data ShowChatModal
       | ShowAudioPrompt
       | ShowPreview
       | ShowEmojis
-      | ShowLinkForm
 
 data ShowContextMenu
       = HideContextMenu
@@ -242,14 +239,6 @@ data MessageContent
       = Image String Int Int String
       | Text String
       | Audio String
-
-data Markup
-      = Bold
-      | Italic
-      | Strike
-      | Heading
-      | OrderedList
-      | UnorderedList
 
 type RequestFailure =
       { request ∷ RetryableRequest
@@ -319,12 +308,10 @@ data ImMessage
       | ForceSendMessage ElementId
       | ResizeChatInput Event
       | SendMessage ElementId MessageContent DateTimeWrapper
-      | Apply Markup
       | SetEmoji ElementId Event
       | BeforeAudioMessage
       | AudioMessage Touch
       | SendAudioMessage String
-      | InsertLink
       | SetTyping String
       | NoTyping Int
       | TypingId TimeoutId

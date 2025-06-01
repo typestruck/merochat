@@ -215,7 +215,7 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card")
                       , HE.div [ HA.class' "outer-user-menu" ] $ SIA.contextMenu $ show FullProfileContextMenu
                       , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion.id false
                       , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideUserMenuModal ]
-                              [ closeX
+                              [ SIA.closeX []
                               ]
                       ]
               ]

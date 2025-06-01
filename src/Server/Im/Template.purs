@@ -62,8 +62,6 @@ template payload = do
                     , messageEnter: true
                     , editing: Nothing
                     , imageCaption: Nothing
-                    , link: Nothing
-                    , linkText: Nothing
                     , selectedImage: Nothing
                     , bugging: Nothing
                     , fullContactProfileVisible: false

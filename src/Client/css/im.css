@@ -1010,12 +1010,11 @@ svg.toolbar-action {
 }
 
 .chat-input-options {
-    border: 1px solid #b5b7b7;
     color: var(--text-color);
     border-bottom: none;
     padding: 5px;
     display: flex;
-    align-items: center;
+    padding-right: 0;
 }
 
 .chat-input-options svg {
@@ -1052,21 +1051,14 @@ svg.toolbar-action {
     display: inline;
 }
 
-.chat-input-preview,
 .chat-input {
-    border-radius: 5px;
+    border-radius: 20px;
     max-height: 150px;
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
     background: var(--background-color);
     height: 22px;
-    padding: 10px 35px;
     border: 1px solid var(--text-color);
 }
 
-.chat-input-preview p {
-    margin-top: 0;
-}
 
 .chat-input {
     width: 100%;
@@ -1786,9 +1778,9 @@ select {
 
 .emoji-access-div {
     z-index: 2;
-    left: 2px;
-    top: 2px;
-    bottom: 2px;
+    left: 6px;
+    top: 7px;
+    bottom: 7px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1806,11 +1798,7 @@ select {
 }
 
 .send-enter {
-    display: flex;
-    flex-grow: 1;
-    justify-content: flex-end;
-    padding-right: 13px;
-    align-items: center;
+    margin-left: auto;
     font-size: 0.9em
 }
 
@@ -3204,10 +3192,9 @@ label {
         width: 43%;
     }
 
-    .chat-input-preview,
     .chat-input,
     .suggestion-input .side .chat-input {
-        padding: 10px 38px;
+        padding: 10px 43px;
     }
 }
 
@@ -3353,10 +3340,9 @@ label {
         padding-right: 90px;
     }
 
-    .chat-input-preview,
     .chat-input,
     .suggestion-input .side .chat-input {
-        padding: 10px 45px;
+        padding: 10px 50px;
     }
 
     .settings .outer-user-menu {

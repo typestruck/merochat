@@ -1,4 +1,4 @@
-let constant = 20,
+let constant = 21,
     initialHeight,
     oldScrollHeight;
 
