@@ -1,36 +1,30 @@
 
 export function register_(navigator, file) {
     navigator.serviceWorker.register(file, {
-          scope: '/',
+        scope: '/',
     });
 }
 
 export function ready_(navigator, cb) {
     navigator.serviceWorker.ready.then(r => {
-          cb(r)();
+        cb(r)();
     }).catch(e => {
-          console.error(e);
+        console.error(e);
     });
 }
 
 export function getSubscription_(registration, cb) {
     registration.pushManager.getSubscription().then(s => {
-          cb(s)();
+        cb(s)();
     });
 }
 
 export async function subscribe_(registration) {
-    let base64String = '[VAPID-PUBLIC-KEY-contenthash]',
-          padding = '='.repeat((4 - base64String.length % 4) % 4),
-          base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/'),
-          rawData = window.atob(base64),
-          vapidPublicKey = new Uint8Array(rawData.length);
-
-    for (let i = 0; i < rawData.length; ++i) {
-          vapidPublicKey[i] = rawData.charCodeAt(i);
-    }
-
-    let sub = registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey });
+    let vp = '[VAPID-PUBLIC-KEY-contenthash]',
+        padding = '=',
+        base64 = (vp + padding).replace(/\-/g, '+').replace(/_/g, '/'),
+        vapidPublicKey = Uint8Array.fromBase64(base64)
+        sub = registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey });
 
     return sub;
 }
