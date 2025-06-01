@@ -22,7 +22,7 @@ export function getSubscription_(registration, cb) {
 export async function subscribe_(registration) {
     let vp = '[VAPID-PUBLIC-KEY-contenthash]',
         padding = '=',
-        base64 = (vp + padding).replace(/\-/g, '+').replace(/_/g, '/'),
+        base64 = vp.replace(/\-/g, '+').replace(/_/g, '/') + padding,
         rawData = window.atob(base64),
         vapidPublicKey = new Uint8Array(rawData.length);
 
