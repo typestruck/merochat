@@ -474,7 +474,11 @@ blockquote {
 .message-content-in .message-context-menu.outer-user-menu {
     position: absolute;
     z-index: 2;
-    background-color: var(--im-second-background-color);
+}
+
+.outgoing-message .message-context-menu.outer-user-menu svg {
+    fill:var(--text-color);
+    stroke:var(--text-color);
 }
 
 .mini-suggestions .outer-user-menu svg,
@@ -1185,13 +1189,13 @@ svg.toolbar-action {
 
 
 .user-menu.in-message {
-    background-color: #212120;
+    background-color: var(--background-color);
     right: 10px;
     top: 32px;
 }
 
 .incoming-message .message-context-menu.outer-user-menu {
-    background-color: var(--im-second-background-color);
+    color:var(--text-color);
 }
 
 .user-menu.in-message.menu-up {
@@ -1393,7 +1397,7 @@ input:not(type=button):focus {
     display: none;
     background: var(--im-second-background-color);
     padding: 20px 15px;
-    border-radius: 3px;
+    border-radius: 10px;
     z-index: 3;
     position: absolute;
     right: 16px;
@@ -1411,9 +1415,10 @@ input:not(type=button):focus {
 }
 
 .profile-contact-top .user-menu {
-    background: #373737;
+    background: var(--background-color);
     top: 62px;
     z-index: 6;
+    color: var(--text-color);
 }
 
 .logout {
@@ -1423,11 +1428,6 @@ input:not(type=button):focus {
 
 .bold {
     font-weight: bold;
-}
-
-.menu-item-heading {
-    font-size: 1.1em;
-    color: rgb(238, 238, 238);
 }
 
 .image-buttons button,
@@ -2497,7 +2497,7 @@ label {
 }
 
 .contact-full-profile .user-menu {
-    background-color: var(--im-background-color);
+    background-color: var(--background-color);
 }
 
 /* dry this shite  */
