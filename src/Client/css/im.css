@@ -1882,7 +1882,7 @@ select {
 }
 
 .editing-message {
-    background-color: #469bc5 !important;
+    background-color: var(--background-color) !important;
 }
 
 #online-only {
