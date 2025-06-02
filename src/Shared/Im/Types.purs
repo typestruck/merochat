@@ -331,6 +331,7 @@ data ImMessage
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)
       | CheckUserExpiration
+      | StartPwa
       | ToggleConnected Boolean
       | SetField (ImModel → ImModel)
       | TerminateTemporaryUser

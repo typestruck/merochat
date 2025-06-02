@@ -40,6 +40,7 @@ import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
 import Server.Unsubscribe.Handler as SUH
 import Shared.Resource (localBasePath)
+import Server.Ok (Ok, ok)
 import Shared.ResponseError (ResponseError(..))
 import Shared.Routes (routes)
 
@@ -109,6 +110,7 @@ handlers reading =
       , experiments: runJson reading SEH.experiments
       , sw
       , developmentFiles
+      , topic
       , admin:
               { ban: runJson reading SHA.ban
               }
@@ -139,9 +141,13 @@ runJson reading handler =
                   InternalError { reason } → PSR.internalError reason
                   ExpiredSession → PSR.unauthorized ""
 
--- we need to hardcode this becuse service workers scope to their path
+--we need to hardcode this becuse service workers scope to their path
 sw ∷ _ → Aff File
 sw _ = PSH.file "file/default/sw.js" {}
+
+--dummy route for ntfy
+topic ∷ _ → Aff Ok
+topic _ = pure ok
 
 developmentFiles ∷ { params ∷ { path ∷ List String } } → Aff File
 developmentFiles { params: { path } } = PSH.file fullPath {}

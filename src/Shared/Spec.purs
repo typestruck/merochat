@@ -119,6 +119,7 @@ spec ∷
                                                 { body ∷ Report
                                                 , response ∷ Ok
                                                 }
+
                                   , tutorial ∷
                                           POST "/tutorial"
                                                 { response ∷ Ok
@@ -286,6 +287,12 @@ spec ∷
                                                 { query ∷ { id ∷ Int, secret ∷ String }
                                                 , response ∷ Ok
                                                 }
+                                  }
+                    , topic ∷
+                            POST "/topic/<..path>"
+                                  { params ∷ { path ∷ List String }
+                                    , body ∷ String
+                                  , response ∷ Ok
                                   }
                     , sw ∷
                             GET "/sw.js"

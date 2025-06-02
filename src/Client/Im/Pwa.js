@@ -19,7 +19,7 @@ export function getSubscription_(registration, cb) {
     });
 }
 
-export async function subscribe_(registration) {
+export function subscribe_(registration, cb) {
     let vp = '[VAPID-PUBLIC-KEY-contenthash]',
         padding = '=',
         base64 = vp.replace(/\-/g, '+').replace(/_/g, '/') + padding,
@@ -30,7 +30,19 @@ export async function subscribe_(registration) {
         vapidPublicKey[i] = rawData.charCodeAt(i);
     }
 
-    let sub = registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey });
+    registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidPublicKey }).then(s => {
+        cb(s)();
+    });
+}
 
-    return sub;
+export function topicBody_(subscription, topic) {
+    let serializedSubscription = JSON.parse(JSON.stringify(subscription));
+
+    return JSON.stringify(
+        {
+            endpoint: serializedSubscription.endpoint,
+            auth: serializedSubscription.keys.auth,
+            p256dh: serializedSubscription.keys.p256dh,
+            topics: [topic],
+        });
 }

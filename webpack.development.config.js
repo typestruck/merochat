@@ -4,7 +4,6 @@ import path from 'path';
 import webpack from 'webpack';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-
 const isWatch = process.argv.some(a => a === '--watch');
 
 export default {

@@ -3,14 +3,23 @@ module Client.Im.Pwa where
 import Prelude
 
 import Client.Common.Dom as CCD
+import Client.Common.Network (request)
+import Client.Common.Network as CCN
+import Client.Im.Flame (NoMessages)
+import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable)
 import Data.Nullable as DN
 import Data.Traversable as DT
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
-import Effect.Uncurried (EffectFn1, EffectFn2)
+import Effect.Aff as EA
+import Effect.Class as EC
+import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
+import Shared.Im.Types (ImModel)
+import Shared.Options.Topic as SOT
 import Web.HTML (Navigator)
 import Web.HTML as WH
 import Web.HTML.Window as WHW
@@ -25,10 +34,15 @@ foreign import ready_ ∷ EffectFn2 Navigator (Registration → Effect Unit) Uni
 
 foreign import getSubscription_ ∷ EffectFn2 Registration (Nullable Subscription → Effect Unit) Unit
 
-foreign import subscribe_ ∷ EffectFn1 Registration Unit
+foreign import subscribe_ ∷ EffectFn2 Registration (Subscription → Effect Unit) Unit
 
-subscribe ∷ Registration → Effect Unit
-subscribe = EU.runEffectFn1 subscribe_
+foreign import topicBody_ ∷ EffectFn2 Subscription String String
+
+subscribe ∷ Registration → (Subscription → Effect Unit) → Effect Unit
+subscribe = EU.runEffectFn2 subscribe_
+
+topicBody ∷ Subscription → String → Effect String
+topicBody = EU.runEffectFn2 topicBody_
 
 getSubscription ∷ Registration → (Nullable Subscription → Effect Unit) → Effect Unit
 getSubscription = EU.runEffectFn2 getSubscription_
@@ -45,18 +59,30 @@ checkPwa = do
       matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ]
       pure $ DT.or matches
 
-registerServiceWorker ∷ Effect Unit
-registerServiceWorker = do
+startPwa ∷ ImModel -> NoMessages
+startPwa model = model /\ [ startIt ]
+      where startIt = EC.liftEffect do
+                  registerServiceWorker model.user.id
+                  pure Nothing
+
+registerServiceWorker ∷ Int → Effect Unit
+registerServiceWorker id = do
       window ← WH.window
       navigator ← WHW.navigator window
       register navigator "/sw.js"
-      ready navigator subscribePush
+      ready navigator (subscribePush id)
 
 -- | Subscribe to push notifications
-subscribePush ∷ Registration → Effect Unit
-subscribePush registration = do
-      getSubscription registration handler
+subscribePush ∷ Int → Registration → Effect Unit
+subscribePush id registration = getSubscription registration handler
       where
       handler existing = case DN.toMaybe existing of
-            Nothing → subscribe registration
-            Just s → pure unit
+            Nothing → subscribe registration topic
+            Just s → topic s -- double subscription?
+
+      topic subscription = do
+            body ← topicBody subscription $ spy "toppic" (SOT.makeTopic id)
+            EA.launchAff_ <<< void <<< CCN.silentResponse $ request.topic
+                  { params: { path: Nil }
+                  , body
+                  }

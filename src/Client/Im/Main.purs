@@ -105,7 +105,7 @@ main = do
 
       when smallScreen CISS.sendSmallScreen
       when (pwa || not smallScreen) CIN.checkNotifications
-      when pwa CIP.registerServiceWorker
+      when pwa $ FS.send imId StartPwa
 
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
@@ -174,6 +174,7 @@ update st model =
             SpecialRequest (ToggleModal toggle) → CIU.toggleModal toggle model
             SetModalContents file root html → CIU.setModalContents file root html model
             --main
+            StartPwa -> CIP.startPwa model
             SetContextMenuToggle toggle → toggleContextMenu toggle model
             ReloadPage → reloadPage model
             ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
