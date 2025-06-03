@@ -17,6 +17,11 @@
       "src": "/file/default/logo.png",
       "sizes": "250x46",
       "type": "image/png"
+    },
+    {
+      "src": "/file/default/notification-icon.png",
+      "sizes": "96x96",
+      "type": "image/png"
     }
   ]
 }

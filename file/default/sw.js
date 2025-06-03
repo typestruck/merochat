@@ -15,12 +15,13 @@ let imageRoute =
                 new CacheableResponsePlugin({
                     statuses: [200]
                 })
-        ]})
+            ]
+        })
     );
 
 registerRoute(imageRoute);
 
-self.addEventListener('install', _ => {});
+self.addEventListener('install', _ => { });
 
 /// push
 self.addEventListener('push', (event) => {
@@ -40,10 +41,24 @@ async function notify(raw) {
         icon: 'https://mero.chat/file/default/notification-icon.png',
         badge: 'https://mero.chat/file/default/notification-icon.png',
         data: parseInt(data.message.click)
-  })
+    })
+}
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(resume());
+});
+
+async function resume() {
+    let windows = await clients.matchAll({ type: 'window' });
+
+    for (let w in windows)
+        return w.focus();
+
+    return clients.openWindow('/im');
 }
 
 //store chats and user data localy with indexeddb?
-    //this would also require some sort of caching of the im page
-    // and js/css scripts
+//this would also require some sort of caching of the im page
+// and js/css scripts
 
