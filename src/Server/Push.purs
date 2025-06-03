@@ -11,7 +11,7 @@ import Shared.Options.Topic as SOT
 foreign import push_ :: EffectFn3 String String Int Unit
 
 ntfyUrl ∷ String
-ntfyUrl = "https://localhost:1111/"
+ntfyUrl = "http://localhost:1111/"
 
 push :: Int -> Int -> String -> Effect Unit
 push loggedUserId userId userName
