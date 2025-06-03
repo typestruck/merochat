@@ -81,8 +81,8 @@ subscribePush id registration = getSubscription registration handler
             Just s → topic s -- double subscription?
 
       topic subscription = do
-            body ← topicBody subscription $ spy "toppic" (SOT.makeTopic id)
+            body ← topicBody subscription $ SOT.makeTopic id
             EA.launchAff_ <<< void <<< CCN.silentResponse $ request.topic
-                  { params: { path: Nil }
+                  { params: { path: Cons "v1" $ Cons "webpush" Nil }
                   , body
                   }
