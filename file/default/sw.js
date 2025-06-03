@@ -39,7 +39,7 @@ async function notify(raw) {
     return self.registration.showNotification(data.message.title, {
         body: 'Message',
         icon: 'https://mero.chat/file/default/notification-icon.png',
-        badge: 'https://mero.chat/file/default/notification-icon.png',
+        badge: 'https://mero.chat/file/default/loading.png',
         tag: data.message.click,
         data: parseInt(data.message.click)
     })
