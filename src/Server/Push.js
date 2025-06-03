@@ -1,5 +1,5 @@
 export async function push_(url, title, action) {
-    let r = await fetch(url, {
+    await fetch(url, {
         method: 'POST',
         headers: {
             'Title': title,
@@ -7,7 +7,4 @@ export async function push_(url, title, action) {
         },
         body: ""
     });
-    let a = await r.json();
-
-    console.log('response', a);
 }
