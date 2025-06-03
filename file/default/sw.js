@@ -37,7 +37,7 @@ async function notify(raw) {
 
     return self.registration.showNotification(data.message.title, {
         body: 'New message',
-        icon: 'https://mero.im/file/default/loading.png',
+        icon: 'https://mero.chat/file/default/loading.png',
         data: parseInt(data.message.click)
   })
 }
