@@ -40,6 +40,7 @@ async function notify(raw) {
         body: 'New message',
         icon: 'https://mero.chat/file/default/notification-icon.png',
         badge: 'https://mero.chat/file/default/notification-icon.png',
+        tag: data.message.click,
         data: parseInt(data.message.click)
     })
 }
