@@ -15,7 +15,6 @@ import Shared.User
 
 import Data.Array.NonEmpty as DAN
 import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
@@ -25,10 +24,10 @@ import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Present (senderRecipientFilter)
 import Shared.Unsafe as SU
 
-isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
-isRecipientVisible loggedUserId userId =
-      map DM.isJust <<< SD.single $
-            select (1 # as c)
+recipientName ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } (Maybe String)
+recipientName loggedUserId userId = do
+      rn <- SD.single $
+            select _name
                   # from (leftJoin (users # as u) (histories # as h) # on (_sender .=. loggedUserId .&&. _recipient .=. userId .||. _sender .=. userId .&&. _recipient .=. loggedUserId))
                   # wher
                           ( u ... _id .=. userId
@@ -36,6 +35,7 @@ isRecipientVisible loggedUserId userId =
                                   .&&.
                                         (u ... _visibility .=. Everyone .||. u ... _visibility .=. NoTemporaryUsers .&&. exists (select (3 # as c) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked false)) .||. u ... _visibility .=. Contacts .&&. (isNotNull _first_message_date .&&. _visibility_last_updated .>=. _first_message_date))
                           )
+      pure $ map _.name rn
 
 deleteMessage ∷ ∀ r. Int → Int → Int → BaseEffect { pool ∷ Pool | r } Unit
 deleteMessage loggedUserId userId messageId = SD.execute $

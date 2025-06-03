@@ -24,15 +24,23 @@ self.addEventListener('install', _ => {});
 
 /// push
 self.addEventListener('push', (event) => {
-    let payload = event.data?.text();
-
-    event.waitUntil(
-        self.registration.showNotification('MeroChat', {
-            body: payload,
-      })
-    );
+    event.waitUntil(notify(event.data));
 });
 
+async function notify(raw) {
+    let data = raw.json(),
+        windows = await clients.matchAll({ type: 'window' });
+
+    //do not raise notifications if app is open
+    if (windows.length == 1 && !windows[0].hidden && windows[0].focused || !data.message)
+        return Promise.resolve();
+
+    return self.registration.showNotification(data.message.title, {
+        body: 'New message',
+        icon: 'https://mero.im/file/default/loading.png',
+        data: parseInt(data.message.click)
+  })
+}
 
 //store chats and user data localy with indexeddb?
     //this would also require some sort of caching of the im page

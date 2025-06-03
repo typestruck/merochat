@@ -20,6 +20,7 @@ import Data.Newtype as DN
 import Data.Time.Duration (Hours)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
@@ -46,6 +47,7 @@ import Server.Effect as SE
 import Server.Im.Action as SIA
 import Server.Im.Database.Execute as SIDE
 import Server.Im.Database.Permission as SIDP
+import Server.Push as SP
 import Server.Settings.Action as SSA
 import Server.Token as ST
 import Server.WebSocket (CloseCode, CloseReason, WebSocketConnection, WebSocketMessage(..))
@@ -293,7 +295,7 @@ sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → Outg
 sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
       processed ← SIA.processMessage loggedUserId outgoing.userId outgoing.content
       case processed of
-            Right (Tuple messageId content) → do
+            Right (messageId /\ userName /\ content) → do
                   now ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let receipientUserAvailability = DH.lookup outgoing.userId allUsersAvailability
                   withConnections receipientUserAvailability (sendRecipient messageId content now)
@@ -304,6 +306,8 @@ sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
 
                   let otherConnections = DH.values $ DH.filterKeys (token /= _) loggedUserConnections
                   DF.traverse_ (sendRecipient messageId content now) otherConnections
+
+                  R.liftEffect $ SP.push loggedUserId outgoing.userId userName
 
                   DM.maybe (pure unit) (SIA.processKarma loggedUserId outgoing.userId) outgoing.turn
             Left UserUnavailable →

@@ -5,6 +5,7 @@ import Prelude
 import Shared.Im.Types
 import Shared.Privilege
 
+import Data.Argonaut ((.!=))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime(..))
@@ -13,13 +14,10 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Nullable as DN
 import Data.Set (Set)
-import Server.Im.Database.Execute as SIDE
-import Server.Im.Database.Suggest as SIDS
-import Server.Im.Database.Permission as SIDPP
-import Server.Im.Database.Present as SIDP
 import Data.Set as DST
 import Data.String as DS
 import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as EC
@@ -29,8 +27,12 @@ import Server.AccountValidation as SA
 import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Email as SE
 import Server.File as SF
+import Server.Im.Database.Execute as SIDE
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
+import Server.Im.Database.Permission as SIDPP
+import Server.Im.Database.Present as SIDP
+import Server.Im.Database.Suggest as SIDS
 import Server.Im.Types (Payload)
 import Server.Sanitize as SS
 import Server.ThreeK as ST
@@ -83,23 +85,23 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
       chatHistory records =
             let contact = DAN.head records in (fromFlatContact contact) { history = fromFlatMessage <$> DAN.toArray records }
 
-processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Tuple Int String))
+processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError ( Int /\ String /\ String))
 processMessage loggedUserId userId content = do
-      isVisible ← SIDE.isRecipientVisible loggedUserId userId
-      if isVisible then do
-            privileges ← markdownPrivileges loggedUserId
-            sanitized ← processMessageContent content privileges
-            if DS.null sanitized then
-                  pure $ Left InvalidMessage
-            else do
-                  id ← SIDE.insertMessage loggedUserId userId sanitized
-                  pure <<< Right $ Tuple id sanitized
-      else
-            pure $ Left UserUnavailable
+      recipientName ← SIDE.recipientName loggedUserId userId
+      case recipientName of
+            Just name ->  do
+                  privileges ← markdownPrivileges loggedUserId
+                  sanitized ← processMessageContent content privileges
+                  if DS.null sanitized then
+                        pure $ Left InvalidMessage
+                  else do
+                        id ← SIDE.insertMessage loggedUserId userId sanitized
+                        pure $ Right (id /\ name /\ sanitized)
+            _ -> pure $ Left UserUnavailable
 
 editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError String)
 editMessage loggedUserId userId messageId content = do
-      isVisible ← SIDE.isRecipientVisible loggedUserId userId
+      isVisible ← DM.isJust <$> SIDE.recipientName loggedUserId userId
       canEdit ← if isVisible then SIDPP.canEditMessage loggedUserId messageId else pure false
       if canEdit then do
             privileges ← markdownPrivileges loggedUserId
@@ -107,7 +109,7 @@ editMessage loggedUserId userId messageId content = do
             if DS.null sanitized then
                   pure $ Left InvalidMessage
             else do
-                  id ← SIDE.updateMessage messageId sanitized
+                  SIDE.updateMessage messageId sanitized
                   pure $ Right sanitized
       else
             pure $ Left UserUnavailable
