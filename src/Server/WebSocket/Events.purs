@@ -295,7 +295,7 @@ sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → Outg
 sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
       processed ← SIA.processMessage loggedUserId outgoing.userId outgoing.content
       case processed of
-            Right (messageId /\ userName /\ content) → do
+            Right (messageId /\ content) → do
                   now ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let receipientUserAvailability = DH.lookup outgoing.userId allUsersAvailability
                   withConnections receipientUserAvailability (sendRecipient messageId content now)
@@ -307,7 +307,7 @@ sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
                   let otherConnections = DH.values $ DH.filterKeys (token /= _) loggedUserConnections
                   DF.traverse_ (sendRecipient messageId content now) otherConnections
 
-                  R.liftEffect $ SP.push loggedUserId outgoing.userId userName
+                  R.liftEffect $ SP.push loggedUserId outgoing.userId outgoing.userName
 
                   DM.maybe (pure unit) (SIA.processKarma loggedUserId outgoing.userId) outgoing.turn
             Left UserUnavailable →

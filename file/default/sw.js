@@ -37,7 +37,7 @@ async function notify(raw) {
         return Promise.resolve();
 
     return self.registration.showNotification(data.message.title, {
-        body: 'New message',
+        body: 'Message',
         icon: 'https://mero.chat/file/default/notification-icon.png',
         badge: 'https://mero.chat/file/default/notification-icon.png',
         tag: data.message.click,

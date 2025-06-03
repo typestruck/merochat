@@ -51,16 +51,16 @@ tests = do
 
             TU.test "sendMessage bumps temporary id" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
-                  let m@{ temporaryId } = DT.fst $ CIC.sendMessage 3 true content date webSocket model
+                  let m@{ temporaryId } = DT.fst $ CIC.sendMessage 3 "test" true content date webSocket model
                   TUA.equal 1 temporaryId
 
-                  let { temporaryId } = DT.fst $ CIC.sendMessage 3 true content date webSocket m
+                  let { temporaryId } = DT.fst $ CIC.sendMessage 3 "test" true content date webSocket m
                   TUA.equal 2 temporaryId
 
             TU.test "sendMessage adds message to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { user: { id: userId }, chatting } = DT.fst $ CIC.sendMessage 3 true content date webSocket model
+                        { user: { id: userId }, chatting } = DT.fst $ CIC.sendMessage 3 "test" true content date webSocket model
                         user = SU.fromJust $ SIC.maybeFindContact chatting model.contacts
 
                   TUA.equal
@@ -78,7 +78,7 @@ tests = do
             TU.test "sendMessage adds markdown image to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { chatting } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) true (Image caption 2 2 image) date webSocket $ model
+                        { chatting } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) "test" true (Image caption 2 2 image) date webSocket $ model
                               { selectedImage = Just { base64: image, width : 2, height : 2 }
                               , imageCaption = Just caption
                               }
@@ -89,7 +89,7 @@ tests = do
             TU.test "sendMessage resets input fields" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) true content date webSocket $ model
+                        { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) "test" true content date webSocket $ model
                               { selectedImage = Just { base64: image, width : 2, height : 2 }
                               , imageCaption = Just caption
                               }

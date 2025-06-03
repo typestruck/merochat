@@ -85,23 +85,23 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
       chatHistory records =
             let contact = DAN.head records in (fromFlatContact contact) { history = fromFlatMessage <$> DAN.toArray records }
 
-processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError ( Int /\ String /\ String))
+processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do
-      recipientName ← SIDE.recipientName loggedUserId userId
-      case recipientName of
-            Just name ->  do
-                  privileges ← markdownPrivileges loggedUserId
-                  sanitized ← processMessageContent content privileges
-                  if DS.null sanitized then
-                        pure $ Left InvalidMessage
-                  else do
-                        id ← SIDE.insertMessage loggedUserId userId sanitized
-                        pure $ Right (id /\ name /\ sanitized)
-            _ -> pure $ Left UserUnavailable
+      isIt ← SIDE.isRecipientVisible loggedUserId userId
+      if isIt then do
+            privileges ← markdownPrivileges loggedUserId
+            sanitized ← processMessageContent content privileges
+            if DS.null sanitized then
+                  pure $ Left InvalidMessage
+            else do
+                  id ← SIDE.insertMessage loggedUserId userId sanitized
+                  pure $ Right (id /\ sanitized)
+      else
+            pure $ Left UserUnavailable
 
 editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError String)
 editMessage loggedUserId userId messageId content = do
-      isVisible ← DM.isJust <$> SIDE.recipientName loggedUserId userId
+      isVisible ← SIDE.isRecipientVisible loggedUserId userId
       canEdit ← if isVisible then SIDPP.canEditMessage loggedUserId messageId else pure false
       if canEdit then do
             privileges ← markdownPrivileges loggedUserId

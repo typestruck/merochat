@@ -110,7 +110,7 @@ messageContent elementId model = do
 prepareSendMessage ∷ ElementId → MessageContent → DateTimeWrapper → WebSocket → ImModel → MoreMessages
 prepareSendMessage elementId content dt webSocket model = case content of
       Text message | DS.null $ DS.trim message → F.noMessages model
-      _ → sendMessage (SU.fromJust updatedModel.chatting) shouldFetchHistory content dt webSocket updatedModel
+      _ → sendMessage (SU.fromJust updatedModel.chatting) model.user.name shouldFetchHistory content dt webSocket updatedModel
       where
       --the user messaged could be in both the contacts and suggestions
       -- in either case, check if the chat history has not already been fetched
@@ -134,8 +134,8 @@ prepareSendMessage elementId content dt webSocket model = case content of
                                           , suggesting = SIS.moveSuggestion model 1 --move it along so mini suggestions dont disappear
                                           }
 
-sendMessage ∷ Int → Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
-sendMessage userId shouldFetchHistory contentMessage date webSocket model =
+sendMessage ∷ Int → String -> Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
+sendMessage userId userName shouldFetchHistory contentMessage date webSocket model =
       model
             { temporaryId = newTemporaryId
             , contacts = map updateContact model.contacts
@@ -158,6 +158,7 @@ sendMessage userId shouldFetchHistory contentMessage date webSocket model =
                               OutgoingMessage
                                     { id: newTemporaryId
                                     , userId
+                                    , userName
                                     , content: contentMessage
                                     , turn: makeTurn model.user <<< SU.fromJust $ SIC.findContact userId model.contacts
                                     }

@@ -78,6 +78,7 @@ tests = do
                                     ( PayloadError
                                             { origin: OutgoingMessage
                                                     { id: 1
+                                                    , userName : "test"
                                                     , userId: contact.user.id
                                                     , content: Text content
                                                     , turn: Nothing

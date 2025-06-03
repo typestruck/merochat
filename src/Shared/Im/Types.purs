@@ -368,6 +368,7 @@ data WebSocketPayloadServer
 type OutgoingRecord =
       BasicMessage
             ( userId ∷ Int
+            , userName ∷ String
             , content ∷ MessageContent
             , turn ∷ Maybe Turn
             )
