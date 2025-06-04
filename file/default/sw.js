@@ -50,17 +50,18 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 async function resume(notification) {
-    notification.close();
-
     let pwa,
-        windows = await clients.matchAll({ type: 'window' });
+        windows = await clients.matchAll({ type: 'window' }),
+        sameNotifications = await self.registration.getNotifications( { tag: notification.tag });
+
+    for (let sn of sameNotifications)
+        sn.close();
 
     if (windows.length > 0) {
         await w.focus();
         pwa = w;
-    } else {
+    } else
         pwa = await clients.openWindow('/im');
-    }
 
     pwa.postMessage({ message: 'resume', userId: notification.data });
 
