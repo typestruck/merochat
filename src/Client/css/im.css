@@ -284,7 +284,8 @@ textarea {
     justify-content: center;
     padding: 5px 0;
     cursor: pointer;
-    background-color: #1b3a28;
+    background-color:var(--background-color);
+    color:var(--text-color);
     font-style: italic;
 }
 
@@ -1055,7 +1056,7 @@ svg.toolbar-action {
     height: 22px;
     border: 1px solid var(--text-color);
     padding: 10px 20px;
-    padding-bottom: 13px;
+    padding-bottom: 12px;
     width: 100%;
     resize: none;
     cursor: text;
