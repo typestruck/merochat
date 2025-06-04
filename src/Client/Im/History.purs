@@ -5,21 +5,17 @@ import Debug
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Scroll as CIS
-import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Flame as F
-import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Unsafe as SU
-import Web.DOM.Element as WDE
 
 --to avoid issues with older missed unread messages just get the whole chat history on first load
 fetchHistory ∷ Int → Boolean → ImModel → MoreMessages
@@ -54,12 +50,11 @@ displayHistory userId history model =
             | contact.user.id == userId = updateHistory contact
             | otherwise = contact
 
-      --when the chat history is first loaded (either by selecting the contact or sending a message from suggesitons)
+      --when the chat history is first loaded (either by selecting the contact or sending a message from suggestions)
       -- avoid overwritting the whole conversation or duplicating unread messages
-      dedup entry anotherEntry = entry.id == anotherEntry.id
       updateHistory contact = contact
             { shouldFetchChatHistory = false
-            , history = if shouldFetchChatHistory then DA.nubByEq dedup (history <> contact.history) else history <> contact.history --see fetchHistory
+            , history = fixHistory $ history <> contact.history
             }
 
       updatedModel = model
@@ -67,3 +62,8 @@ displayHistory userId history model =
             , contacts = map updateContact model.contacts
             }
 
+fixHistory :: Array HistoryMessage -> Array HistoryMessage
+fixHistory = DA.sortBy dates <<< DA.nubByEq dedup
+      where
+      dedup entry anotherEntry = entry.id == anotherEntry.id
+      dates entry anotherEntry = compare entry.date anotherEntry.date

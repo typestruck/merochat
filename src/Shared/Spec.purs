@@ -11,7 +11,7 @@ import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword, RegisterTemporary)
-import Shared.DateTime (DateTimeWrapper(..), DateWrapper)
+import Shared.DateTime (DateTimeWrapper, DateWrapper)
 import Shared.Html (Html)
 import Shared.Settings.Types (PrivacySettings)
 
@@ -102,13 +102,11 @@ spec ∷
                                                 { body ∷ { userId ∷ Int, messageId ∷ Int }
                                                 , response ∷ Ok
                                                 }
-                                  , missedEvents ∷
-                                          GET "/missed?id=<id>&from=<from>"
-                                                { query ∷
-                                                        { id ∷ Maybe Int
-                                                        , from ∷ DateTimeWrapper
-                                                        }
-                                                , response ∷ MissedEvents
+                                  , missedContacts ∷
+                                          GET "/missed?since=<since>"
+                                                {
+                                                query :: { since :: DateTimeWrapper }
+                                                , response ∷ Array Contact
                                                 }
                                   , fortune ∷
                                           GET "/fortune"

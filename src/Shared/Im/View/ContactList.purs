@@ -117,7 +117,7 @@ contactList
       chattingId = (_.id <<< _.user) <$> SIC.maybeFindContact model.chatting model.contacts
 
       -- | Displayed if loading contact from an incoming message fails
-      retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." (CheckMissedEvents Nothing) failedRequests
+      retryLoadingNewContact = SIVR.retry "Failed to sync contacts. You might have missed messages." FetchMissedContacts failedRequests
 
       -- | Displayed if loading contact list fails
       retryLoadingContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) failedRequests

@@ -16,23 +16,20 @@ import Client.Common.Network as CNN
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
-import Client.Im.Flame as CIF
 import Client.Im.History as CIH
 import Client.Im.Notification as CIN
-import Client.Im.Notification as CIUC
 import Client.Im.Pwa as CIP
-import Client.Im.Scroll as CISM
 import Client.Im.SmallScreen as CISS
 import Client.Im.Suggestion as CIS
 import Client.Im.UserMenu as CIU
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
-import Control.Alt ((<|>))
 import Data.Array ((:))
 import Data.Array as DA
 import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.HashMap as DH
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
@@ -44,10 +41,10 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff as EA
-import Effect.Class (liftEffect)
+import Effect.Class as EC
 import Effect.Now as EN
+import Effect.Random as ERN
 import Effect.Ref as ER
-import Effect.Timer as ET
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..))
 import Flame as F
@@ -60,13 +57,11 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SCN
 import Shared.Im.View as SIV
 import Shared.Network (RequestStatus(..))
-import Shared.Options.MountPoint (experimentsId, imId, profileId)
+import Shared.Options.MountPoint (imId, profileId)
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT
-import Shared.ResponseError (DatabaseError(..))
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
-import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User as SUR
 import Type.Proxy (Proxy(..))
@@ -115,9 +110,6 @@ main = do
       input ← CCD.unsafeGetElementById ImageFileInput
       CCF.setUpFileChange (\width height base64 → SetSelectedImage $ Just { width, height, base64 }) input imId
 
-      --harass temporary users on their last day to make an account
-      FS.send imId CheckUserExpiration
-
 update ∷ _ → ListUpdate ImModel ImMessage
 update st model =
       case _ of
@@ -143,6 +135,7 @@ update st model =
             SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
             NoTyping id → F.noMessages $ CIC.toggleTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
+
             --contacts
             ResumeChat userId → CICN.resumeChat userId model
             SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
@@ -152,10 +145,12 @@ update st model =
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
-            ResumeMissedEvents missed → CICN.resumeMissedEvents missed model
+            DisplayMissedContacts missed → CICN.resumeMissedEvents missed model
+
             --history
             SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
             DisplayHistory userId history → CIH.displayHistory userId history model
+
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model
@@ -167,14 +162,16 @@ update st model =
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
             ToggleSuggestionsFromOnline → CIS.toggleSuggestionsFromOnline model
             SetBugging mc → CIS.setBugging mc model
+
             --user menu
             ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
             Logout after → CIU.logout after model
             ToggleUserContextMenu event → toggleUserContextMenu event model
             SpecialRequest (ToggleModal toggle) → CIU.toggleModal toggle model
             SetModalContents file root html → CIU.setModalContents file root html model
+
             --main
-            StartPwa -> CIP.startPwa model
+            StartPwa → CIP.startPwa model
             SetContextMenuToggle toggle → toggleContextMenu toggle model
             ReloadPage → reloadPage model
             ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
@@ -188,12 +185,13 @@ update st model =
             FinishTutorial → finishTutorial model
             ToggleConnected isConnected → CIWE.toggleConnectedWebSocket isConnected model
             TerminateTemporaryUser → terminateAccount model
-            SpecialRequest (CheckMissedEvents dt) → checkMissedEvents dt model
+            SpecialRequest FetchMissedContacts → fetchMissedContacts model
+            SpecialRequest (WaitFetchMissedContacts n) → waitFetchMissedContacts n model
             SetField setter → F.noMessages $ setter model
             ToggleFortune isVisible → toggleFortune isVisible model
             ToggleScrollChatDown scroll userId → toggleScrollChatDown scroll userId model
             DisplayFortune sequence → displayFortune sequence model
-            RequestFailed failure → addFailure failure model
+            RequestFailed failure → handleRequestFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
             SetSmallScreen → CISS.setSmallScreen model
             SendPing isActive → CIWE.sendPing webSocket isActive model
@@ -223,7 +221,7 @@ displayAvailability avl model = F.noMessages $ model
 setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } /\
       [ do
-              liftEffect $ FS.send profileId SPT.AfterRegistration
+              EC.liftEffect $ FS.send profileId SPT.AfterRegistration
               pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
       ]
 
@@ -249,9 +247,9 @@ terminateAccount ∷ ImModel → NextMessage
 terminateAccount model = model /\
       [ do
               status ← CNN.formRequest (show ConfirmAccountTerminationForm) $ request.settings.account.terminate { body: {} }
-              when (status == Success) $ do
+              when (status == Success) do
                     EA.delay $ Milliseconds 3000.0
-                    liftEffect <<< CCL.setLocation $ routes.login.get {}
+                    EC.liftEffect <<< CCL.setLocation $ routes.login.get {}
               pure Nothing
       ]
 
@@ -295,7 +293,7 @@ blockUser webSocket id model =
                     case result of
                           Left _ → pure <<< Just $ RequestFailed { request: BlockUser id, errorMessage: Nothing }
                           _ → do
-                                liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
+                                EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
                                 pure Nothing
             ]
 
@@ -329,7 +327,7 @@ report userId webSocket model@{ reportReason, reportComment } = case reportReaso
                           case result of
                                 Left _ → pure <<< Just $ RequestFailed { request: ReportUser userId, errorMessage: Nothing }
                                 _ → do
-                                      liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
+                                      EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
                                       pure Nothing
                   ]
       Nothing → F.noMessages $ model
@@ -337,10 +335,10 @@ report userId webSocket model@{ reportReason, reportComment } = case reportReaso
             }
 
 reloadPage ∷ ImModel → NextMessage
-reloadPage model = model /\ [ liftEffect CCL.reload *> pure Nothing ]
+reloadPage model = model /\ [ EC.liftEffect CCL.reload *> pure Nothing ]
 
 askNotification ∷ ImModel → MoreMessages
-askNotification model = model { enableNotificationsVisible = false } /\ [ liftEffect CCD.requestNotificationPermission *> pure Nothing ]
+askNotification model = model { enableNotificationsVisible = false } /\ [ EC.liftEffect CCD.requestNotificationPermission *> pure Nothing ]
 
 --refactor: all messages like this can be dryed into a single function
 toggleAskNotification ∷ ImModel → NoMessages
@@ -356,7 +354,7 @@ toggleUserContextMenu event model
               model /\
                     [
                       --we cant use node.contains as some of the elements are dynamically created/destroyed
-                      liftEffect do
+                      EC.liftEffect do
                             let
                                   element = SU.fromJust $ do
                                         target ← WEE.target event
@@ -379,7 +377,7 @@ toggleUserContextMenu event model
 
 focusInput ∷ ElementId → ImModel → NextMessage
 focusInput elementId model = model /\
-      [ liftEffect do
+      [ EC.liftEffect do
               element ← CCD.getElementById elementId
               WHHE.focus $ SU.fromJust do
                     e ← element
@@ -387,18 +385,24 @@ focusInput elementId model = model /\
               pure Nothing
       ]
 
-addFailure ∷ RequestFailure → ImModel → NoMessages
-addFailure failure@{ request } model@{ failedRequests, errorMessage } = F.noMessages $ model
-      { failedRequests = failure : failedRequests
-      , errorMessage = case request of
-              BlockUser _ → "Could not block user. Please try again"
-              ReportUser _ → "Could not report user. Please try again"
-              PreviousSuggestion → suggestionsError
-              NextSuggestion → suggestionsError
-              _ → errorMessage
-      }
+handleRequestFailure ∷ RequestFailure → ImModel → MoreMessages
+handleRequestFailure failure model =
+      model
+            { failedRequests = failure : model.failedRequests
+            , errorMessage = case failure.request of
+                    BlockUser _ → "Could not block user. Please try again"
+                    ReportUser _ → "Could not report user. Please try again"
+                    PreviousSuggestion → suggestionsError
+                    NextSuggestion → suggestionsError
+                    WaitFetchMissedContacts 5 → "Cannot sync contacts. Please reload the page"
+                    _ → model.errorMessage
+            } /\ messages
       where
       suggestionsError = "Could not fetch suggestions. Please try again"
+
+      messages = case failure.request of
+            WaitFetchMissedContacts n |  n < 5 -> [pure <<< Just <<< SpecialRequest $ WaitFetchMissedContacts n]
+            _ -> []
 
 toggleFortune ∷ Boolean → ImModel → MoreMessages
 toggleFortune isVisible model
@@ -423,26 +427,30 @@ displayFortune sequence model = F.noMessages $ model
       { fortune = Just sequence
       }
 
-checkMissedEvents ∷ Maybe DateTimeWrapper → ImModel → MoreMessages
-checkMissedEvents dt model =
-      model /\
-            [ do
-                    from ← case dt of
-                          Nothing → map (DateTimeWrapper <<< SU.fromJust <<< DDT.adjust (Minutes (-1.5))) $ liftEffect EN.nowDateTime
-                          Just w → pure w
-                    CCNT.retryableResponse (CheckMissedEvents dt) ResumeMissedEvents (request.im.missedEvents { query: { id: checkMessagesFrom model.contacts model.user.id, from } })
-            ]
-
--- | The first message which could have not had its status updated or the last one sent
-checkMessagesFrom ∷ Array Contact → Int → Maybe Int
-checkMessagesFrom contacts loggedUserId = _.id <$> (DA.find (\h → loggedUserId == h.sender && h.status == Sent) allHistories <|> DA.find (\h → loggedUserId == h.sender) (DA.reverse allHistories))
+fetchMissedContacts ∷ ImModel → MoreMessages
+fetchMissedContacts model = model /\ [ fetchIt ]
       where
-      allHistories = DA.sortBy ids $ DA.concatMap _.history contacts
-      ids history anotherHistory = compare history.id anotherHistory.id
+      fetchIt = do
+            since ← EC.liftEffect $ sinceLastMessage model
+            CCNT.retryableResponse (WaitFetchMissedContacts 1) DisplayMissedContacts $ request.im.missedContacts { query: { since } }
+
+waitFetchMissedContacts ∷ Int → ImModel → MoreMessages
+waitFetchMissedContacts n model = model /\ [ fetchIt ]
+      where
+      fetchIt = do
+            since ← EC.liftEffect $ sinceLastMessage model
+            ms ← EC.liftEffect $ ERN.randomInt 200 500
+            EA.delay <<< Milliseconds <<< DI.toNumber $ n * ms
+            CCNT.retryableResponse (WaitFetchMissedContacts $ n + 1) DisplayMissedContacts $ request.im.missedContacts { query: { since } }
+
+sinceLastMessage ∷ ImModel → Effect DateTimeWrapper
+sinceLastMessage model = case _.lastMessageDate <$> DA.last model.contacts of
+      Nothing → map (DateTimeWrapper <<< SU.fromJust <<< DDT.adjust (Minutes (-1.5))) EN.nowDateTime
+      Just dt → pure dt
 
 setName ∷ String → ImModel → NoMessages
 setName name model =
-      F.noMessages $ model
+      F.noMessages model
             { user
                     { name = name
                     }
@@ -456,7 +464,7 @@ setAvatar base64 model = F.noMessages $ model
       }
 
 preventStop ∷ Event → ImModel → NoMessages
-preventStop event model = model /\ [ liftEffect $ CCD.preventStop event *> pure Nothing ]
+preventStop event model = model /\ [ EC.liftEffect $ CCD.preventStop event *> pure Nothing ]
 
 --refactor use popstate subscription
 historyChange ∷ Boolean → Effect Unit

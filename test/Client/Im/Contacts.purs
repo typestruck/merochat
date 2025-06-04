@@ -77,28 +77,28 @@ tests = do
                               }
                   TUA.equal [ contact ] contacts
 
-            TU.test "resumeMissedEvents adds missed messages" do
-                  let
-                        updatedModel /\ _ = CICN.resumeMissedEvents { missedMessages: [ historyMessage ] } model
-                              { contacts = [ contact { history = [] } ]
-                              }
-                  TUA.equal 1 $ DA.length updatedModel.contacts
-                  TUA.equal [ historyMessage ] (updatedModel.contacts !@ 0).history
+            -- TU.test "resumeMissedEvents adds missed messages" do
+            --       let
+            --             updatedModel /\ _ = CICN.resumeMissedEvents { missedMessages: [ historyMessage ] } model
+            --                   { contacts = [ contact { history = [] } ]
+            --                   }
+            --       TUA.equal 1 $ DA.length updatedModel.contacts
+            --       TUA.equal [ historyMessage ] (updatedModel.contacts !@ 0).history
 
-            TU.test "resumeMissedEvents syncs messages status" do
-                  let
-                        updatedModel /\ _ = CICN.resumeMissedEvents { missedMessages: [ historyMessage { status = Read } ] } model
-                              { contacts = [ contact { history = [ historyMessage { status = Sent } ] } ]
-                              }
-                  TUA.equal 1 $ DA.length updatedModel.contacts
-                  TUA.equal [ Read ] $ map _.status (updatedModel.contacts !@ 0).history
+            -- TU.test "resumeMissedEvents syncs messages status" do
+            --       let
+            --             updatedModel /\ _ = CICN.resumeMissedEvents { missedMessages: [ historyMessage { status = Read } ] } model
+            --                   { contacts = [ contact { history = [ historyMessage { status = Sent } ] } ]
+            --                   }
+            --       TUA.equal 1 $ DA.length updatedModel.contacts
+            --       TUA.equal [ Read ] $ map _.status (updatedModel.contacts !@ 0).history
 
-            TU.test "resumeMissedEvents ignores messages from new contacts" do
-                  let
-                        updatedModel /\ _ = CICN.resumeMissedEvents { missedMessages: [ historyMessage ] } model
-                              { contacts = []
-                              }
-                  TUA.equal 0 $ DA.length updatedModel.contacts
+            -- TU.test "resumeMissedEvents ignores messages from new contacts" do
+            --       let
+            --             updatedModel /\ _ = CICN.resumeMissedEvents { missedMessages: [ historyMessage ] } model
+            --                   { contacts = []
+            --                   }
+            --       TUA.equal 0 $ DA.length updatedModel.contacts
 
             TU.test "deleteChat removes deleted contact" do
                   let

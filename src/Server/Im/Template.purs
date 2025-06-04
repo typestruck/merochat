@@ -78,7 +78,6 @@ template payload = do
                     , imUpdated: false
                     , isWebSocketConnected: false
                     , failedRequests: []
-                    , hasTriedToConnectYet: false
                     , hash: updateHash
                     , contacts: payload.contacts
                     , suggestions: payload.suggestions

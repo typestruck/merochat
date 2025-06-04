@@ -110,10 +110,6 @@ type TemporaryMessageId =
       , temporaryId ∷ Int
       }
 
-type MissedEvents =
-      { missedMessages ∷ Array HistoryMessage
-      }
-
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
 type Im =
       ( suggestions ∷ Array Suggestion
@@ -154,7 +150,6 @@ type Im =
       , hash ∷ String
       --visibility switches
       , initialScreen ∷ Boolean --used on mobile to switch screens
-      , hasTriedToConnectYet ∷ Boolean
       , fullContactProfileVisible ∷ Boolean
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
@@ -247,7 +242,8 @@ type RequestFailure =
 data RetryableRequest
       = FetchHistory Int Boolean
       | FetchContacts Boolean
-      | CheckMissedEvents (Maybe DateTimeWrapper)
+      | FetchMissedContacts
+      | WaitFetchMissedContacts Int
       | ToggleModal ShowUserMenuModal
       | BlockUser Int
       | PreviousSuggestion
@@ -283,7 +279,7 @@ data ImMessage
       | SetDeliveredStatus
       | DisplayContacts (Array Contact)
       | DisplayNewContacts (Array Contact)
-      | ResumeMissedEvents MissedEvents
+      | DisplayMissedContacts (Array Contact)
 
       --suggestion
       | FetchMoreSuggestions
