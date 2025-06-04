@@ -384,7 +384,7 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
                                         ]
               ]
       , HE.div (HA.class' "back-filter")
-              [ SIA.arrow [ HA.class' { "svg-back-profile": true, hidden: not model.smallScreen }, HA.onClick $ ToggleInitialScreen true ]
+              [ SIA.arrow [ HA.class' "svg-back-profile hidden" , HA.onClick $ ToggleInitialScreen true ]
               , onlineOnlyFilter model
               ]
       ]

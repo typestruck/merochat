@@ -109,6 +109,7 @@ textarea {
     height: 80%;
     width: 950px;
     padding: 40px;
+    color: var(--text-color);
     position: relative;
     border-radius: 40px;
 }
@@ -278,8 +279,8 @@ textarea {
     justify-content: center;
     padding: 5px 0;
     cursor: pointer;
-    background-color:var(--background-color);
-    color:var(--text-color);
+    background-color: var(--background-color);
+    color: var(--text-color);
     font-style: italic;
 }
 
@@ -472,8 +473,8 @@ blockquote {
 }
 
 .outgoing-message .message-context-menu.outer-user-menu svg {
-    fill:var(--text-color);
-    stroke:var(--text-color);
+    fill: var(--text-color);
+    stroke: var(--text-color);
 }
 
 .mini-suggestions .outer-user-menu svg,
@@ -1190,7 +1191,7 @@ svg.toolbar-action {
 }
 
 .incoming-message .message-context-menu.outer-user-menu {
-    color:var(--text-color);
+    color: var(--text-color);
 }
 
 .user-menu.in-message.menu-up {
@@ -2499,6 +2500,20 @@ label {
     background-color: var(--background-color);
 }
 
+.big-card svg {
+    stroke: var(--text-color);
+    fill: var(--text-color);
+}
+
+.contact-full-profile .user-menu {
+    color:var(--text-color)
+}
+
+.big-card .user-menu {
+    color: var(--light-color)
+}
+
+
 /* dry this shite  */
 
 @media (max-width:1279px) {
@@ -2508,11 +2523,21 @@ label {
         height: unset;
     }
 
+    .back-filter .svg-back-profile {
+        fill: var(--text-color)
+    }
+
     .profile-top-menu {
         justify-content: space-between;
     }
 
-    .svg-close-profile, .suggestions-home {
+    .back-filter .svg-back-profile {
+        display: block !important;
+        content-visibility: visible;
+    }
+
+    .svg-close-profile,
+    .suggestions-home {
         display: none;
     }
 
@@ -3032,7 +3057,7 @@ label {
 
     .audio-form {
         background-color: var(--background-color);
-        color:var(--text-color);
+        color: var(--text-color);
         text-align: center;
         align-items: center;
         -webkit-user-select: none;
