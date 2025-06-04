@@ -1,7 +1,7 @@
 {
   "theme_color": "#db5a5d",
   "start_url": "/im",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "name": "MeroChat - Friendly Random Chat",
   "short_name": "MeroChat",
   "display": "standalone",
