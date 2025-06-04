@@ -2,11 +2,11 @@ module Client.Im.Contacts where
 
 import Prelude
 
-import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Common.Network as CCNT
 import Client.Im.Flame (MoreMessages, NoMessages)
+import Client.Im.History as CIH
 import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
 import Client.Im.Scroll as CIS
@@ -27,11 +27,8 @@ import Effect.Class as EC
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), MissedEvents, RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..))
-import Shared.Unsafe as SU
-import Web.DOM.Element as WDE
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..))
 import Web.Event.Internal.Types (Event)
-import Web.HTML.HTMLElement as WHH
 import Web.Socket.WebSocket (WebSocket)
 
 -- | When a contact is selected from the list, update `chatting` accordingly
@@ -53,9 +50,9 @@ resumeChat userId model =
                           case SIC.findContact userId model.contacts of
                                 Nothing → []
                                 Just chatting →
-                                      [ updateReadCountEffect chatting.user.id
-                                      , CIS.scrollLastMessageAff
+                                      [ CIS.scrollLastMessageAff
                                       , fetchHistoryEffect chatting
+                                      , updateReadCountEffect chatting.user.id
                                       ]
                   )
       where
@@ -169,34 +166,18 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
       onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 -- | Messages sent or received while the web socket connection was down
-resumeMissedEvents ∷ MissedEvents → ImModel → MoreMessages
-resumeMissedEvents ev model = CIU.notifyUnreadChats updatedModel contactsWithNewMessages # thenPerform fetchNew
+resumeMissedEvents ∷ (Array Contact) → ImModel → MoreMessages
+resumeMissedEvents contacts model = CIU.notifyUnreadChats updatedModel $ map userId contacts
       where
       updatedModel = model
-            { contacts = map updateHistory model.contacts
+            { contacts = map update model.contacts
             }
 
-      messagesByUser = DA.foldl (\hm v → DH.insertWith (<>) (if v.recipient == model.user.id then v.sender else v.recipient) [ v ] hm) DH.empty ev.missedMessages
-      updateHistory contact = case DH.lookup contact.user.id messagesByUser of
+      userId contact = contact.user.id
+      mapped = DH.fromArrayBy userId identity contacts
+      update contact = case DH.lookup contact.user.id mapped of
             Nothing → contact
-            Just found →
-                  let
-                        history = DA.sortWith _.date $ DA.nubBy (\g h → compare g.id h.id) (found <> contact.history)
-                  in
-                        contact
-                              { history = history
-                              , lastMessageDate = DM.fromMaybe contact.lastMessageDate <<< map _.date $ DA.last history
-                              }
-
-      --if the new message comes from an user that is already in the contact list show notifications
-      -- otherwise fetch the user
-      existingContacts = DS.fromFoldable $ map (\c → c.user.id) model.contacts
-      contactsWithNewMessages = map _.sender $ DA.filter (\h → h.status < Read && h.recipient == model.user.id && DS.member h.sender existingContacts) ev.missedMessages
-      newContacts = map _.sender $ DA.filter (\h → h.recipient == model.user.id && not (DS.member h.sender existingContacts)) ev.missedMessages
-
-      thenPerform e (m /\ ms) = m /\ (ms <> e)
-      fetchNew =
-            map (\id → CCNT.retryableResponse (CheckMissedEvents Nothing) DisplayNewContacts $ request.im.contact { query: { id } }) newContacts
+            Just found → found { history = CIH.fixHistory contact.history <> found.history }
 
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =

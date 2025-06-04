@@ -37,6 +37,7 @@ import Server.Im.Types (Payload)
 import Server.Sanitize as SS
 import Server.ThreeK as ST
 import Server.Wheel as SW
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Resource (Media(..), ResourceType(..))
@@ -70,12 +71,8 @@ listSingleContact loggedUserId userId = presentContacts <$> SIDP.presentSingleCo
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SIDP.presentSingleContact loggedUserId userId skip
 
-listMissedEvents ∷ Int → Maybe Int → DateTime → ServerEffect MissedEvents
-listMissedEvents loggedUserId messageId dt = do
-      messages ← SIDP.presentMissedMessages loggedUserId messageId dt
-      pure
-            { missedMessages: messages
-            }
+listMissedContacts ∷ Int → DateTimeWrapper → ServerEffect (Array Contact)
+listMissedContacts loggedUserId (DateTimeWrapper dt) = presentContacts <$> SIDP.presentMissedContacts loggedUserId dt
 
 presentContacts ∷ Array FlatContactHistoryMessage → Array Contact
 presentContacts = map chatHistory <<< DA.groupBy sameContact

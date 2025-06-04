@@ -173,31 +173,28 @@ ORDER BY s.date DESC
 LIMIT @messagesPerPage
 OFFSET @offset) m ORDER BY m.date"""
 
-presentMissedMessages ∷ Int → Maybe Int → DateTime → ServerEffect (Array HistoryMessage)
-presentMissedMessages loggedUserId messageId dt = SD.unsafeQuery query
+presentMissedContacts ∷ Int → DateTime → ServerEffect (Array FlatContactHistoryMessage)
+presentMissedContacts loggedUserId sinceMessageDate = SD.unsafeQuery query
       { loggedUserId
-      , messageId
-      , dt
-      , status: Delivered
+      , status: Read
+      , sinceMessageDate
+      , contacts: Contacts
       }
       where
       query =
-            """SELECT
-      s.id
-      , s.sender
-      , s.recipient
-      , s.date
-      , s.edited
-      , s.content
-      , s.status
-      FROM messages s
-WHERE  (   sender = @loggedUserId
-           AND ((@messageId :: integer) IS NOT NULL AND id >= @messageId OR (@messageId :: integer) IS NULL AND date >= @dt)
-           OR
-           recipient = @loggedUserId
-           AND status < @status
-           AND date >= @dt)
-      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = s.recipient AND blocked = s.sender OR blocker = s.sender AND blocked = s.recipient)"""
+            "SELECT" <> presentUserContactFields <> ", " <> presentMessageFields <>
+            """FROM users u
+            JOIN karma_leaderboard k ON u.id = k.ranker
+            JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
+            JOIN messages s ON (s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender)
+            LEFT JOIN last_seen ls ON u.id = ls.who
+            WHERE visibility <= @contacts
+                  AND last_message_date > @sinceMessageDate
+                  AND status < @status
+                  AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+                  AND NOT (h.sender = @loggedUserId AND h.sender_deleted_to IS NOT NULL AND s.id <= h.sender_deleted_to OR
+                        h.recipient = @loggedUserId AND h.recipient_deleted_to IS NOT NULL AND s.id <= h.recipient_deleted_to)
+            ORDER BY last_message_date DESC, s.date"""
 
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
 presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
