@@ -46,14 +46,15 @@ async function notify(raw) {
 }
 
 self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
-    event.waitUntil(resume());
+    event.waitUntil(resume(event.notification));
 });
 
-async function resume() {
+async function resume(notification) {
+    notification.close();
+
     let windows = await clients.matchAll({ type: 'window' });
 
-    for (let w in windows)
+    for (let w of windows)
         return w.focus();
 
     return clients.openWindow('/im');

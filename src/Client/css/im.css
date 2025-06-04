@@ -213,17 +213,12 @@ textarea {
 
 .suggestion-box-error {
     padding: 10px 0;
-    background: #262626;
+    background: white;
     font-weight: bold;
-    color: red;
+    color: black;
     display: none;
     align-items: center;
     justify-content: center;
-}
-
-.error-message-connection-lost {
-    text-align: center;
-    white-space: pre-wrap;
 }
 
 .report-reasons {
