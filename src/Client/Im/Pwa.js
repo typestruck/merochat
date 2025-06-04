@@ -46,3 +46,9 @@ export function topicBody_(subscription, topic) {
             topics: [topic],
         });
 }
+
+export function receiveMessage_ (navigator, cb) {
+    navigator.serviceWorker.addEventListener("message", (event) => {
+        cb(event.data.message)(event.data.userId)();
+    });
+}

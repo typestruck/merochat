@@ -52,12 +52,19 @@ self.addEventListener('notificationclick', (event) => {
 async function resume(notification) {
     notification.close();
 
-    let windows = await clients.matchAll({ type: 'window' });
+    let pwa,
+        windows = await clients.matchAll({ type: 'window' });
 
-    for (let w of windows)
-        return w.focus();
+    if (windows.length > 0) {
+        await w.focus();
+        pwa = w;
+    } else {
+        pwa = await clients.openWindow('/im');
+    }
 
-    return clients.openWindow('/im');
+    pwa.postMessage({ message: 'resume', userId: notification.data });
+
+    return Promise.resolve();
 }
 
 //store chats and user data localy with indexeddb?
