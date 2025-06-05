@@ -439,7 +439,7 @@ waitFetchMissedContacts n model = model /\ [ fetchIt ]
       where
       fetchIt = do
             since ← EC.liftEffect $ sinceLastMessage model
-            ms ← EC.liftEffect $ ERN.randomInt 200 500
+            ms ← EC.liftEffect $ ERN.randomInt 300 500
             EA.delay <<< Milliseconds <<< DI.toNumber $ n * ms
             CCNT.retryableResponse (WaitFetchMissedContacts $ n + 1) DisplayMissedContacts $ request.im.missedContacts { query: { since } }
 
