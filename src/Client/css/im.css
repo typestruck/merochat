@@ -3,6 +3,7 @@
     --im-second-background-color: #972123;
     --im-right-background-color: #EFE5DC;
     --im-text-color: #FBFEFB;
+    --im-chat-background-image: url('/file/default/chat-background-light.svg');
 }
 
 body {
@@ -109,8 +110,10 @@ textarea {
     height: 80%;
     width: 950px;
     padding: 40px;
-    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
     position: relative;
+    color: var(--text-color);
     border-radius: 40px;
 }
 
@@ -210,6 +213,9 @@ textarea {
     flex-direction: column;
     background: var(--im-right-background-color);
     position: relative;
+    background-image: var(--im-chat-background-image);
+    background-repeat: no-repeat;
+    background-position-y: bottom;
 }
 
 .suggestion-box-error {
@@ -1130,9 +1136,6 @@ svg.toolbar-action {
     cursor: unset;
 }
 
-.big-card .card-description {
-    max-height: 60%;
-}
 
 .mini-headline-tags .tag {
     border: 1px solid var(--text-color)
@@ -1976,7 +1979,6 @@ select {
     margin-bottom: 40px;
     width: 45%;
     height: 67%;
-    position: relative;
     display: flex;
     flex-direction: column;
     padding: 20px;
@@ -2057,15 +2059,10 @@ select {
 }
 
 .see-profile-chat {
-    position: absolute;
-    bottom: 20px;
     display: flex;
     justify-content: space-between;
-    right: 20px;
-    left: 20px;
+    margin-top: auto;
     padding-top: 10px;
-    background: var(--im-background-color);
-    z-index: 3;
 }
 
 .see-profile-button {
@@ -2506,7 +2503,7 @@ label {
 }
 
 .contact-full-profile .user-menu {
-    color:var(--text-color)
+    color: var(--text-color)
 }
 
 .big-card .user-menu {
@@ -3117,12 +3114,18 @@ label {
         display: block;
     }
 
+    .suggestion-box {
+        background-size: 90%;
+    }
 }
 
 @media (min-width:1280px) and (max-width:1919px) {
-
     .back-side-suggestion {
         padding: 14px 6px;
+    }
+
+    .suggestion-box {
+        background-size: 45%;
     }
 
     .contact-list .sign-up-call {

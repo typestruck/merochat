@@ -62,7 +62,7 @@ logoMenu model = HE.div (HA.class' "relative")
               [ miniSuggestions model
               , HE.img
                       [ HA.onDblclick $ ToggleFortune true
-                      , HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left InvertedLogo) Svg, "180w,", SP.resourcePath (Left LogoSmall) Png, "210w" ]
+                      , HA.createAttribute "srcset" $ DS.joinWith " " [ SP.resourcePath (Left InvertedLogo) Svg, "180w,", SP.resourcePath (Left InvertedLogo) Svg, "210w" ]
                       , HA.createAttribute "sizes" "(max-width: 1920px) 180px, 210px"
                       ]
               ]
