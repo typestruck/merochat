@@ -86,7 +86,9 @@ closeWebSocket webSocketStateRef model = model /\ [ close ]
       where close = EC.liftEffect do
                   state ← ER.read webSocketStateRef
                   status ← WSW.readyState state.webSocket
-                  unless (status == WSRS.Closed || status == WSRS.Closing) $ WSWS.close state.webSocket
+                  unless (status == WSRS.Closed || status == WSRS.Closing) do
+                        clearIntervals webSocketStateRef
+                        WSWS.close state.webSocket
                   pure Nothing
 
 -- | Set listeners for web socket events
