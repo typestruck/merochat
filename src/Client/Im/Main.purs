@@ -15,7 +15,7 @@ import Client.Common.Network as CCNT
 import Client.Common.Network as CNN
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.History as CIH
 import Client.Im.Notification as CIN
 import Client.Im.Pwa as CIP
@@ -89,7 +89,7 @@ main = do
                       FSD.onClick' ToggleUserContextMenu
                     ,
                       --focus event has to be on the window as chrome is a whiny baby about document
-                      FSW.onFocus $ Refocus -- SetReadStatus Nothing
+                      FSW.onFocus Refocus
                     ]
             , init: [] -- we use subscription instead of init events
             , update: update { webSocketRef }
@@ -140,7 +140,6 @@ update st model =
             ResumeChat userId → CICN.resumeChat userId model
             SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
             SetReadStatus userId → CICN.setReadStatus userId webSocket model
-            Refocus  → CICN.setReadStatus Nothing webSocket model
             CheckFetchContacts event → CICN.checkFetchContacts event model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
@@ -185,10 +184,10 @@ update st model =
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             FinishTutorial → finishTutorial model
-            UpdateWebSocketStatus isConnected → CIWE.toggleConnectedWebSocket isConnected model
+            Refocus → refocus model
+            UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
-            SpecialRequest (WaitFetchMissedContacts n) → waitFetchMissedContacts n model
             SetField setter → F.noMessages $ setter model
             ToggleFortune isVisible → toggleFortune isVisible model
             ToggleScrollChatDown scroll userId → toggleScrollChatDown scroll userId model
@@ -226,6 +225,12 @@ setRegistered model = model { user { temporary = false } } /\
               EC.liftEffect $ FS.send profileId SPT.AfterRegistration
               pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
       ]
+
+-- set messages to read
+refocus :: ImModel -> MoreMessages
+refocus model
+      | model.webSocketStatus /= Connected = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
+      | otherwise = model /\ [ pure <<< Just $ SetReadStatus Nothing]
 
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
@@ -387,7 +392,7 @@ focusInput elementId model = model /\
               pure Nothing
       ]
 
-handleRequestFailure ∷ RequestFailure → ImModel → MoreMessages
+handleRequestFailure ∷ RequestFailure → ImModel → NoMessages
 handleRequestFailure failure model =
       model
             { failedRequests = failure : model.failedRequests
@@ -396,15 +401,11 @@ handleRequestFailure failure model =
                     ReportUser _ → "Could not report user. Please try again"
                     PreviousSuggestion → suggestionsError
                     NextSuggestion → suggestionsError
-                    WaitFetchMissedContacts 5 → "Cannot sync contacts. Please reload the page"
+                    FetchMissedContacts → "Cannot sync contacts. Please reload the page"
                     _ → model.errorMessage
-            } /\ messages
+            } /\ []
       where
       suggestionsError = "Could not fetch suggestions. Please try again"
-
-      messages = case failure.request of
-            WaitFetchMissedContacts n |  n < 5 -> [pure <<< Just <<< SpecialRequest $ WaitFetchMissedContacts n]
-            _ -> []
 
 toggleFortune ∷ Boolean → ImModel → MoreMessages
 toggleFortune isVisible model
@@ -434,16 +435,7 @@ fetchMissedContacts model = model /\ [ fetchIt ]
       where
       fetchIt = do
             since ← EC.liftEffect $ sinceLastMessage model
-            CCNT.retryableResponse (WaitFetchMissedContacts 1) DisplayMissedContacts $ request.im.missedContacts { query: { since } }
-
-waitFetchMissedContacts ∷ Int → ImModel → MoreMessages
-waitFetchMissedContacts n model = model /\ [ fetchIt ]
-      where
-      fetchIt = do
-            since ← EC.liftEffect $ sinceLastMessage model
-            ms ← EC.liftEffect $ ERN.randomInt 300 500
-            EA.delay <<< Milliseconds <<< DI.toNumber $ n * ms
-            CCNT.retryableResponse (WaitFetchMissedContacts $ n + 1) DisplayMissedContacts $ request.im.missedContacts { query: { since } }
+            CCNT.retryableResponse FetchMissedContacts DisplayMissedContacts $ request.im.missedContacts { query: { since } }
 
 sinceLastMessage ∷ ImModel → Effect DateTimeWrapper
 sinceLastMessage model = case _.lastMessageDate <$> DA.last model.contacts of
