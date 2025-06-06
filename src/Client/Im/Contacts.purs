@@ -170,14 +170,17 @@ displayMissedContacts ∷ (Array Contact) → ImModel → MoreMessages
 displayMissedContacts contacts model = CIU.notifyUnreadChats updatedModel $ map userId contacts
       where
       updatedModel = model
-            { contacts = map update model.contacts
+            { contacts = map update model.contacts <> newContacts
             }
 
       userId contact = contact.user.id
-      mapped = DH.fromArrayBy userId identity contacts
-      update contact = case DH.lookup contact.user.id mapped of
+      new = DH.fromArrayBy userId identity contacts
+      update contact = case DH.lookup contact.user.id new of
             Nothing → contact
             Just found → found { shouldFetchChatHistory = contact.shouldFetchChatHistory, history = CIH.fixHistory $ contact.history <> found.history }
+
+      existing = DH.fromArrayBy userId identity model.contacts
+      newContacts = DH.values $ DH.difference new existing
 
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =
