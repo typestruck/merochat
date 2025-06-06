@@ -76,7 +76,7 @@ template payload = do
                     , reportReason: Nothing
                     , reportComment: Nothing
                     , imUpdated: false
-                    , isWebSocketConnected: false
+                    , webSocketStatus: Closed
                     , failedRequests: []
                     , hash: updateHash
                     , contacts: payload.contacts
