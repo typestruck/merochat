@@ -327,6 +327,7 @@ data ImMessage
       | PreventStop Event
       | AskNotification
       | ToggleAskNotification
+      | CloseWebSocket
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)
       | CheckUserExpiration

@@ -1,4 +1,4 @@
-module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, sendPing, receiveMessage, reconnectWebSocket) where
+module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, sendPing, receiveMessage, reconnectWebSocket, closeWebSocket) where
 
 import Prelude
 
@@ -51,6 +51,7 @@ import Web.Socket.Event.MessageEvent as WSEM
 import Web.Socket.ReadyState as WSRS
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
+import Web.Socket.WebSocket as WSWS
 
 -- | Reconection, ping and privilege update are done with setInterval
 type WebSocketState =
@@ -79,6 +80,14 @@ reconnectWebSocket webSocketStateRef model = model /\ [ reconnect ]
                   ER.modify_ (_ { webSocket = webSocket }) webSocketStateRef
                   setUpWebSocket webSocketStateRef
             pure Nothing
+
+closeWebSocket :: Ref WebSocketState → ImModel → NoMessages
+closeWebSocket webSocketStateRef model = model /\ [ close ]
+      where close = EC.liftEffect do
+                  state ← ER.read webSocketStateRef
+                  status ← WSW.readyState state.webSocket
+                  unless (status == WSRS.Closed || status == WSRS.Closing) $ WSWS.close state.webSocket
+                  pure Nothing
 
 -- | Set listeners for web socket events
 setUpWebSocket ∷ Ref WebSocketState → Effect Unit

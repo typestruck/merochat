@@ -90,6 +90,8 @@ main = do
                     ,
                       --focus event has to be on the window as chrome is a whiny baby about document
                       FSW.onFocus Refocus
+                    --ws might not error if the connection goes down, so kill it forcefully
+                    , FSW.onOffline CloseWebSocket
                     ]
             , init: [] -- we use subscription instead of init events
             , update: update { webSocketRef }
@@ -171,7 +173,7 @@ update st model =
             SetModalContents file root html → CIU.setModalContents file root html model
 
             --main
-            ReconnectWebSocket -> CIWE.reconnectWebSocket st.webSocketRef model
+            ReconnectWebSocket → CIWE.reconnectWebSocket st.webSocketRef model
             StartPwa → CIP.startPwa model
             SetContextMenuToggle toggle → toggleContextMenu toggle model
             ReloadPage → reloadPage model
@@ -186,6 +188,7 @@ update st model =
             FinishTutorial → finishTutorial model
             Refocus → refocus model
             UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
+            CloseWebSocket → CIWE.closeWebSocket st.webSocketRef model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
             SetField setter → F.noMessages $ setter model
@@ -227,10 +230,10 @@ setRegistered model = model { user { temporary = false } } /\
       ]
 
 -- set messages to read
-refocus :: ImModel -> MoreMessages
+refocus ∷ ImModel → MoreMessages
 refocus model
       | model.webSocketStatus /= Connected = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
-      | otherwise = model /\ [ pure <<< Just $ SetReadStatus Nothing]
+      | otherwise = model /\ [ pure <<< Just $ SetReadStatus Nothing ]
 
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
