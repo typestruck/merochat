@@ -212,6 +212,7 @@ textarea {
     display: flex;
     flex-direction: column;
     background: var(--im-right-background-color);
+    background-blend-mode: darken;
     position: relative;
     background-image: var(--im-chat-background-image);
     background-repeat: no-repeat;
