@@ -18,10 +18,14 @@ import Data.Either (Either(..))
 import Data.Foldable as DT
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
+import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Class as EC
+import Effect.Random as ERN
 import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Timer (IntervalId)
@@ -33,7 +37,7 @@ import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), ImModel)
+import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
 import Shared.Privilege (Privilege)
@@ -44,7 +48,7 @@ import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
 import Web.Socket.Event.EventTypes (onClose, onError, onMessage, onOpen)
 import Web.Socket.Event.MessageEvent as WSEM
-import Web.Socket.ReadyState (ReadyState(..))
+import Web.Socket.ReadyState as WSRS
 import Web.Socket.WebSocket (WebSocket)
 import Web.Socket.WebSocket as WSW
 
@@ -60,7 +64,6 @@ startWebSocket ∷ Effect (Ref WebSocketState)
 startWebSocket = do
       webSocket ← CIW.createWebSocket
       webSocketStateRef ← ER.new { webSocket, pingId: Nothing, privilegesId: Nothing }
-
       setUpWebSocket webSocketStateRef
       pure webSocketStateRef
 
@@ -70,8 +73,10 @@ reconnectWebSocket webSocketStateRef model = model /\ [ reconnect ]
       reconnect = EC.liftEffect do
             state ← ER.read webSocketStateRef
             status ← WSW.readyState state.webSocket
-            unless (status == Open || status == Connecting) do
+            unless (status == WSRS.Open || status == WSRS.Connecting) do
                   clearIntervals webSocketStateRef
+                  webSocket ← CIW.createWebSocket
+                  ER.modify_ (_ { webSocket = webSocket }) webSocketStateRef
                   setUpWebSocket webSocketStateRef
             pure Nothing
 
@@ -103,8 +108,9 @@ handleOpen webSocketStateRef _ = do
       CIW.sendPayload state.webSocket UpdateHash
       --harass temporary users on their last day to make an account
       FS.send imId CheckUserExpiration
-      --signal that messages have been received
+      --signal that messages have been received / read
       FS.send imId SetDeliveredStatus
+      FS.send imId $ SetReadStatus Nothing
 
       where
       privilegeDelay = 1000 * 60 * 60
@@ -388,24 +394,24 @@ updateHistory contacts userId updater = updateIt <$> contacts
             | otherwise = contact
 
 updateWebSocketStatus ∷ WebSocketConnectionStatus → ImModel → NoMessages
-updateWebSocketStatus status model
-      | model.webSocketStatus == status = model /\ [] --close event could be followed after error event
-      | otherwise =
-              model
-                    { webSocketStatus = status
-                    , errorMessage = if status /= Connected then lostConnectionMessage else if model.errorMessage == lostConnectionMessage then "" else model.errorMessage
-                    } /\ messages
-              where
-              lostConnectionMessage = "Syncing messages..."
+updateWebSocketStatus status model =
+      model
+            { webSocketStatus = status
+            , errorMessage = if status /= Connected then lostConnectionMessage else if model.errorMessage == lostConnectionMessage then "" else model.errorMessage
+            } /\ messages
+      where
+      lostConnectionMessage = "Syncing messages..."
 
-              missedContacts = pure <<< Just $ SpecialRequest FetchMissedContacts
-              --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
-              -- the focus event for the document also checks if the connection is open
-              reconnect
-                    | model.smallScreen = do
-                            isFocused ← EC.liftEffect CCD.documentHasFocus
-                            pure $ if isFocused then Just ReconnectWebSocket else Nothing
-                    | otherwise = pure $ Just ReconnectWebSocket
-              messages
-                    | status == Closed = [ reconnect ]
-                    | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts ]
+      missedContacts = pure <<< Just $ SpecialRequest FetchMissedContacts
+      --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
+      -- the focus event for the document also checks if the connection is open
+      reconnect = do
+            when (model.webSocketStatus == Reconnect) (EC.liftEffect (ERN.randomRange 300.0 1000.0) >>= EA.delay <<< Milliseconds)
+            if model.smallScreen then do
+                  isFocused ← EC.liftEffect CCD.documentHasFocus
+                  pure $ if isFocused then Just ReconnectWebSocket else Nothing
+            else pure $ Just ReconnectWebSocket
+      messages
+            | status == Reconnect = [ reconnect ]
+            | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts ]
+            | otherwise = []

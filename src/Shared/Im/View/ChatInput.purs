@@ -96,7 +96,7 @@ chatBarInput eid elementId model = HE.fragment
                                     <>
                                           [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
                                           , HA.id $ show elementId
-                                          , HA.placeholder $ if model.webSocketStatus then "Type here to message " <> recipientName else "Reconnecting..."
+                                          , HA.placeholder $ if model.webSocketStatus == Connected then "Type here to message " <> recipientName else "Reconnecting..."
                                           , SK.keyDownOn "Enter" enterBeforeSendMessageCheck
                                           , HA.onInput' ResizeChatInput
                                           , HA.autocomplete "off"
@@ -116,7 +116,7 @@ chatBarInput eid elementId model = HE.fragment
             Left suggestionId → map _.name $ DA.find ((suggestionId == _) <<< _.id) model.suggestions
             _ → map (_.name <<< _.user) chatting
 
-      enterBeforeSendMessageCheck event = if model.webSocketStatus && model.messageEnter then Just $ EnterSendMessage elementId event else Nothing
+      enterBeforeSendMessageCheck event = if model.webSocketStatus == Connected && model.messageEnter then Just $ EnterSendMessage elementId event else Nothing
 
 emojiButton ∷ ImModel → Html ImMessage
 emojiButton model
@@ -145,7 +145,7 @@ audioButton actions = HE.svg (actions <> [ HA.class' "attachment-button audio-bu
 sendButton ∷ ElementId → Boolean → ImModel → Html ImMessage
 sendButton elementId messageEnter model =
       HE.div
-            (if model.webSocketStatus then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick $ ForceSendMessage elementId ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
+            (if model.webSocketStatus == Connected then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick $ ForceSendMessage elementId ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
 
 sendButtonElements ∷ String → Array (Html ImMessage)
 sendButtonElements title =

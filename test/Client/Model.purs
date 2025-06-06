@@ -67,7 +67,7 @@ model =
       , suggesting: Just 0
       , freeToFetchChatHistory: true
       , contacts: [ contact ]
-      , webSocketStatus: true
+      , webSocketStatus: Closed
       , chatting: Nothing
       }
 

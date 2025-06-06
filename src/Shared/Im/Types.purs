@@ -165,7 +165,7 @@ data MeroChatCall = Backing | Experimenting
 
 newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
-data WebSocketConnectionStatus = Connected | Reconnected | Closed
+data WebSocketConnectionStatus = Connected | Reconnect | Closed
 
 data AfterLogout
       = LoginPage
@@ -245,7 +245,6 @@ data RetryableRequest
       = FetchHistory Int Boolean
       | FetchContacts Boolean
       | FetchMissedContacts
-      | WaitFetchMissedContacts Int
       | ToggleModal ShowUserMenuModal
       | BlockUser Int
       | PreviousSuggestion
@@ -332,7 +331,7 @@ data ImMessage
       | SetAvatarFromProfile (Maybe String)
       | CheckUserExpiration
       | StartPwa
-      | UpdateWebSocketStatus Boolean
+      | UpdateWebSocketStatus WebSocketConnectionStatus
       | SetField (ImModel → ImModel)
       | TerminateTemporaryUser
       | ToggleFortune Boolean
@@ -587,6 +586,12 @@ instance DecodeJson ReportReason where
 instance DecodeJson MessageStatus where
       decodeJson = DADGR.genericDecodeJson
 
+instance DecodeJson WebSocketConnectionStatus where
+      decodeJson = DADGR.genericDecodeJson
+
+instance EncodeJson WebSocketConnectionStatus where
+      encodeJson  = DAEGR.genericEncodeJson
+
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
 
@@ -680,6 +685,7 @@ derive instance Eq ReportReason
 derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
+derive instance Generic WebSocketConnectionStatus _
 derive instance Generic Step _
 derive instance Generic SuggestionsFrom _
 derive instance Generic AfterLogout _
