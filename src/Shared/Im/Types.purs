@@ -127,7 +127,7 @@ type Im =
       , imageCaption ∷ Maybe String
       , messageEnter ∷ Boolean
       , suggestionsPage ∷ Int
-      , webSocketStatus ∷ Boolean
+      , webSocketStatus ∷ WebSocketConnectionStatus
       , erroredFields ∷ Array String
       , fortune ∷ Maybe String
       , failedRequests ∷ Array RequestFailure

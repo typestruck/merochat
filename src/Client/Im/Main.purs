@@ -273,12 +273,12 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
             } /\ [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
-finishTutorial model@{ toggleModal } = model { user { completedTutorial = true } } /\ [ finish, greet ]
+finishTutorial model = model { user { completedTutorial = true } } /\ [ finish, greet ]
       where
       sender = 4
       finish = do
             void <<< CCNT.silentResponse $ request.im.tutorial {}
-            case toggleModal of
+            case model.toggleModal of
                   Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
                   _ → pure Nothing
       greet = do
