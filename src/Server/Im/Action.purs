@@ -79,8 +79,7 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
       where
       sameContact a b = a.id == b.id
 
-      chatHistory records =
-            let contact = DAN.head records in (fromFlatContact contact) { history = fromFlatMessage <$> DAN.toArray records }
+      chatHistory records = (fromFlatContact $ DAN.head records) { history = fromFlatMessage <$> DAN.toArray records }
 
 processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do

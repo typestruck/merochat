@@ -127,7 +127,7 @@ type Im =
       , imageCaption ∷ Maybe String
       , messageEnter ∷ Boolean
       , suggestionsPage ∷ Int
-      , isWebSocketConnected ∷ Boolean
+      , webSocketStatus ∷ Boolean
       , erroredFields ∷ Array String
       , fortune ∷ Maybe String
       , failedRequests ∷ Array RequestFailure
@@ -164,6 +164,8 @@ type ImModel = Record Im
 data MeroChatCall = Backing | Experimenting
 
 newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
+
+data WebSocketConnectionStatus = Connected | Reconnected | Closed
 
 data AfterLogout
       = LoginPage
@@ -317,8 +319,10 @@ data ImMessage
       | ReloadPage
       | FinishTutorial
       | ToggleUserContextMenu Event
+      | Refocus
       | ToggleScrollChatDown Boolean Int
       | SpecialRequest RetryableRequest
+      | ReconnectWebSocket
       | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean
       | PreventStop Event
@@ -328,7 +332,7 @@ data ImMessage
       | SetAvatarFromProfile (Maybe String)
       | CheckUserExpiration
       | StartPwa
-      | ToggleConnected Boolean
+      | UpdateWebSocketStatus Boolean
       | SetField (ImModel → ImModel)
       | TerminateTemporaryUser
       | ToggleFortune Boolean
@@ -417,6 +421,7 @@ instance DecodeQueryParam SuggestionsFrom where
 
 derive instance Eq SuggestionsFrom
 derive instance Eq MeroChatCall
+derive instance Eq WebSocketConnectionStatus
 
 derive instance Ord ReportReason
 derive instance Ord MessageStatus

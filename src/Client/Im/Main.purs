@@ -89,7 +89,7 @@ main = do
                       FSD.onClick' ToggleUserContextMenu
                     ,
                       --focus event has to be on the window as chrome is a whiny baby about document
-                      FSW.onFocus $ SetReadStatus Nothing
+                      FSW.onFocus $ Refocus -- SetReadStatus Nothing
                     ]
             , init: [] -- we use subscription instead of init events
             , update: update { webSocketRef }
@@ -140,12 +140,13 @@ update st model =
             ResumeChat userId → CICN.resumeChat userId model
             SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
             SetReadStatus userId → CICN.setReadStatus userId webSocket model
+            Refocus  → CICN.setReadStatus Nothing webSocket model
             CheckFetchContacts event → CICN.checkFetchContacts event model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
-            DisplayMissedContacts missed → CICN.resumeMissedEvents missed model
+            DisplayMissedContacts missed → CICN.displayMissedContacts missed model
 
             --history
             SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
@@ -171,6 +172,7 @@ update st model =
             SetModalContents file root html → CIU.setModalContents file root html model
 
             --main
+            ReconnectWebSocket -> CIWE.reconnectWebSocket st.webSocketRef model
             StartPwa → CIP.startPwa model
             SetContextMenuToggle toggle → toggleContextMenu toggle model
             ReloadPage → reloadPage model
@@ -183,7 +185,7 @@ update st model =
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             FinishTutorial → finishTutorial model
-            ToggleConnected isConnected → CIWE.toggleConnectedWebSocket isConnected model
+            UpdateWebSocketStatus isConnected → CIWE.toggleConnectedWebSocket isConnected model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
             SpecialRequest (WaitFetchMissedContacts n) → waitFetchMissedContacts n model
@@ -457,7 +459,7 @@ setName name model =
             }
 
 setAvatar ∷ Maybe String → ImModel → NoMessages
-setAvatar base64 model = F.noMessages $ model
+setAvatar base64 model = F.noMessages model
       { user
               { avatar = base64
               }

@@ -33,107 +33,107 @@
       "sizes": "48x48"
     },
     {
-      "src": "file/default/16.png",
+      "src": "/file/default/16.png",
       "sizes": "16x16"
     },
     {
-      "src": "file/default/20.png",
+      "src": "/file/default/20.png",
       "sizes": "20x20"
     },
     {
-      "src": "file/default/29.png",
+      "src": "/file/default/29.png",
       "sizes": "29x29"
     },
     {
-      "src": "file/default/32.png",
+      "src": "/file/default/32.png",
       "sizes": "32x32"
     },
     {
-      "src": "file/default/40.png",
+      "src": "/file/default/40.png",
       "sizes": "40x40"
     },
     {
-      "src": "file/default/50.png",
+      "src": "/file/default/50.png",
       "sizes": "50x50"
     },
     {
-      "src": "file/default/57.png",
+      "src": "/file/default/57.png",
       "sizes": "57x57"
     },
     {
-      "src": "file/default/58.png",
+      "src": "/file/default/58.png",
       "sizes": "58x58"
     },
     {
-      "src": "file/default/60.png",
+      "src": "/file/default/60.png",
       "sizes": "60x60"
     },
     {
-      "src": "file/default/64.png",
+      "src": "/file/default/64.png",
       "sizes": "64x64"
     },
     {
-      "src": "file/default/72.png",
+      "src": "/file/default/72.png",
       "sizes": "72x72"
     },
     {
-      "src": "file/default/76.png",
+      "src": "/file/default/76.png",
       "sizes": "76x76"
     },
     {
-      "src": "file/default/80.png",
+      "src": "/file/default/80.png",
       "sizes": "80x80"
     },
     {
-      "src": "file/default/87.png",
+      "src": "/file/default/87.png",
       "sizes": "87x87"
     },
     {
-      "src": "file/default/100.png",
+      "src": "/file/default/100.png",
       "sizes": "100x100"
     },
     {
-      "src": "file/default/114.png",
+      "src": "/file/default/114.png",
       "sizes": "114x114"
     },
     {
-      "src": "file/default/120.png",
+      "src": "/file/default/120.png",
       "sizes": "120x120"
     },
     {
-      "src": "file/default/128.png",
+      "src": "/file/default/128.png",
       "sizes": "128x128"
     },
     {
-      "src": "file/default/144.png",
+      "src": "/file/default/144.png",
       "sizes": "144x144"
     },
     {
-      "src": "file/default/152.png",
+      "src": "/file/default/152.png",
       "sizes": "152x152"
     },
     {
-      "src": "file/default/167.png",
+      "src": "/file/default/167.png",
       "sizes": "167x167"
     },
     {
-      "src": "file/default/180.png",
+      "src": "/file/default/180.png",
       "sizes": "180x180"
     },
     {
-      "src": "file/default/192.png",
+      "src": "/file/default/192.png",
       "sizes": "192x192"
     },
     {
-      "src": "file/default/256.png",
+      "src": "/file/default/256.png",
       "sizes": "256x256"
     },
     {
-      "src": "file/default/512.png",
+      "src": "/file/default/512.png",
       "sizes": "512x512"
     },
     {
-      "src": "file/default/1024.png",
+      "src": "/file/default/1024.png",
       "sizes": "1024x1024"
     }
   ]

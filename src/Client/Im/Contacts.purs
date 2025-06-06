@@ -166,8 +166,8 @@ updateDisplayContacts newContacts userIds model@{ contacts } =
       onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 -- | Messages sent or received while the web socket connection was down
-resumeMissedEvents ∷ (Array Contact) → ImModel → MoreMessages
-resumeMissedEvents contacts model = CIU.notifyUnreadChats updatedModel $ map userId contacts
+displayMissedContacts ∷ (Array Contact) → ImModel → MoreMessages
+displayMissedContacts contacts model = CIU.notifyUnreadChats updatedModel $ map userId contacts
       where
       updatedModel = model
             { contacts = map update model.contacts
@@ -177,7 +177,7 @@ resumeMissedEvents contacts model = CIU.notifyUnreadChats updatedModel $ map use
       mapped = DH.fromArrayBy userId identity contacts
       update contact = case DH.lookup contact.user.id mapped of
             Nothing → contact
-            Just found → found { history = CIH.fixHistory contact.history <> found.history }
+            Just found → found { shouldFetchChatHistory = contact.shouldFetchChatHistory, history = CIH.fixHistory $ contact.history <> found.history }
 
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =
