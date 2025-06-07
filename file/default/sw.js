@@ -36,15 +36,27 @@ async function notify(raw) {
     if (windows.length == 1 && !windows[0].hidden && windows[0].focused || !data.message)
         return Promise.resolve();
 
-    let incoming = JSON.parse(data.message.message);
+    //old notifications get replaced if tag matches
+    let body,
+        count,
+        incoming = JSON.parse(data.message.message),
+        previousNotifications = await self.registration.getNotifications({ tag: incoming.senderId });
+
+    if (previousNotifications.length == 0) {
+        count = 1;
+        body = incoming.content;
+    } else {
+        count = previousNotifications[0].data + 1;
+        body = `${count} messages`;
+    }
 
     return self.registration.showNotification(data.message.title, {
-        body: incoming.content,
+        body,
         icon: 'https://mero.chat/file/default/android-launchericon-48-48.png',
         badge: 'https://mero.chat/file/default/badge.png',
         tag: incoming.senderId,
-        data: incoming
-    })
+        data: count
+    });
 }
 
 self.addEventListener('notificationclick', (event) => {
@@ -53,11 +65,7 @@ self.addEventListener('notificationclick', (event) => {
 
 async function resume(notification) {
     let pwa,
-        windows = await clients.matchAll({ type: 'window' }),
-        sameNotifications = await self.registration.getNotifications( { tag: notification.tag });
-
-    for (let sn of sameNotifications)
-        sn.close();
+        windows = await clients.matchAll({ type: 'window' });
 
     if (windows.length > 0) {
         pwa = windows[0];
@@ -65,7 +73,7 @@ async function resume(notification) {
     } else
         pwa = await clients.openWindow('/im');
 
-    pwa.postMessage({ message: 'resume', userId: notification.tag });
+    pwa.postMessage({ message: 'resume', userId: parseInt(notification.tag) });
 
     return Promise.resolve();
 }
