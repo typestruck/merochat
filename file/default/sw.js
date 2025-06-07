@@ -58,8 +58,8 @@ async function resume(notification) {
         sn.close();
 
     if (windows.length > 0) {
-        await w.focus();
-        pwa = w;
+        pwa = windows[0];
+        await pwa.focus();
     } else
         pwa = await clients.openWindow('/im');
 
