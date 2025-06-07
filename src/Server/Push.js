@@ -1,11 +1,10 @@
-export async function push_(url, topic, title, userId) {
+export async function push_(url, topic, title, message) {
     await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
-            'topic': topic,
-            'message': '',
-            'title': title,
-            'click': userId + ''
+            topic,
+            title,
+            message
         })
     });
 }

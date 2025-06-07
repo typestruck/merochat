@@ -36,12 +36,14 @@ async function notify(raw) {
     if (windows.length == 1 && !windows[0].hidden && windows[0].focused || !data.message)
         return Promise.resolve();
 
+    let incoming = JSON.parse(data.message.message);
+
     return self.registration.showNotification(data.message.title, {
-        body: 'Message',
+        body: incoming.content,
         icon: 'https://mero.chat/file/default/android-launchericon-48-48.png',
         badge: 'https://mero.chat/file/default/badge.png',
-        tag: data.message.click,
-        data: parseInt(data.message.click)
+        tag: incoming.senderId,
+        data: incoming
     })
 }
 
@@ -63,7 +65,7 @@ async function resume(notification) {
     } else
         pwa = await clients.openWindow('/im');
 
-    pwa.postMessage({ message: 'resume', userId: notification.data });
+    pwa.postMessage({ message: 'resume', userId: notification.tag });
 
     return Promise.resolve();
 }

@@ -307,7 +307,13 @@ sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
                   let otherConnections = DH.values $ DH.filterKeys (token /= _) loggedUserConnections
                   DF.traverse_ (sendRecipient messageId content now) otherConnections
 
-                  R.liftEffect $ SP.push loggedUserId outgoing.userId outgoing.userName
+                  R.liftEffect $ SP.push outgoing.userId outgoing.userName
+                        { id: messageId
+                        , senderId: loggedUserId
+                        , recipientId: outgoing.userId
+                        , content
+                        , date: now
+                        }
 
                   DM.maybe (pure unit) (SIA.processKarma loggedUserId outgoing.userId) outgoing.turn
             Left UserUnavailable →
