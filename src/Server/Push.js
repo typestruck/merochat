@@ -1,5 +1,5 @@
 export async function push_(url, topic, title, userId) {
-    await fetch(url, {
+    let r = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
             'topic': topic,
@@ -8,4 +8,7 @@ export async function push_(url, topic, title, userId) {
             'click': userId
         })
     });
+
+    let c = await r.json();
+    console.log('response', c);
 }
