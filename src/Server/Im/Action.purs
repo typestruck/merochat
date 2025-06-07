@@ -172,7 +172,6 @@ greet loggedUserId =
       where
       sender = 4
 
-
 registerUser ∷ Int → String → String → ServerEffect Unit
 registerUser loggedUserId rawEmail password = do
       email ← SA.validateEmail rawEmail
