@@ -82,6 +82,7 @@ type BaseContact fields =
 type Contact = BaseContact
       ( user ∷ User
       , typing ∷ Boolean
+      , draft :: String
       , scrollChatDown ∷ Boolean
       , history ∷ Array HistoryMessage
       )
@@ -278,6 +279,7 @@ data ImMessage
       | SetReadStatus (Maybe Int)
       | CheckFetchContacts Event
       | SetDeliveredStatus
+      | UpdateDraft Int String
       | DisplayContacts (Array Contact)
       | DisplayNewContacts (Array Contact)
       | DisplayMissedContacts (Array Contact)

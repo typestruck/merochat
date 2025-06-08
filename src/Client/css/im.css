@@ -27,6 +27,10 @@ svg {
     color: red;
 }
 
+.message-draft {
+    font-style: italic;
+}
+
 .input {
     margin-bottom: 10px;
 }

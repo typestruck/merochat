@@ -11,6 +11,7 @@ import Data.Array as DA
 import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Tuple.Nested ((/\))
 import Effect.Aff (Aff)
 import Effect.Class as EC
@@ -21,6 +22,7 @@ import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Types (ImMessage(..), MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..), ImModel)
 import Shared.Options.Page (suggestionsPerPage)
+import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 
 -- | Display next suggestion card
@@ -138,12 +140,22 @@ toggleCollapsedMiniSuggestions model = F.noMessages model
 
 -- | Show suggestion cards again
 resumeSuggesting ∷ ImModel → NoMessages
-resumeSuggesting model = F.noMessages model
-      { chatting = Nothing
-      , toggleChatModal = HideChatModal
-      , showSuggestionChatInput = Nothing
-      , editing = Nothing
-      }
+resumeSuggesting model =
+      model
+            { chatting = Nothing
+            , toggleChatModal = HideChatModal
+            , showSuggestionChatInput = Nothing
+            , editing = Nothing
+            } /\ [ updateDraft ]
+      where
+      updateDraft = EC.liftEffect do
+            input ← CCD.unsafeGetElementById ChatInput
+            draft ← CCD.value input
+            CCD.setValue input ""
+            if DM.isNothing model.chatting then
+                  pure Nothing
+            else
+                  pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) draft
 
 -- | Switch to on or from online only suggestions
 toggleSuggestionsFromOnline ∷ ImModel → MoreMessages

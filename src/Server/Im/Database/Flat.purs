@@ -65,6 +65,7 @@ fromFlatContact fc =
       { shouldFetchChatHistory: true
       , chatAge: DM.fromMaybe 0.0 fc.chatAge
       , chatStarter: fc.chatStarter
+      , draft: ""
       , lastMessageDate: DateTimeWrapper fc.lastMessageDate
       , history: []
       , scrollChatDown: true

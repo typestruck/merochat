@@ -181,6 +181,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
             | contact.user.id == userId =
                     contact
                           { lastMessageDate = date
+                          , draft = ""
                           , history =
                                   case model.editing of
                                         Nothing →

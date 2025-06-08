@@ -2,6 +2,7 @@ module Client.Im.Contacts where
 
 import Prelude
 
+import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Common.Network as CCNT
@@ -19,6 +20,7 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
+import Data.String as DST
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
@@ -27,7 +29,8 @@ import Effect.Class as EC
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (Contact, ImMessage(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..), ImModel)
+import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
 
@@ -50,11 +53,21 @@ resumeChat userId model =
                         } /\
                         ( smallScreenEffect <>
                                 [ CIS.scrollLastMessageAff
+                                , loadDraft chatting.draft
                                 , fetchHistoryEffect chatting
                                 , updateReadCountEffect chatting.user.id
                                 ]
                         )
       where
+      loadDraft currentDraft = EC.liftEffect do
+            input ← CCD.unsafeGetElementById ChatInput
+            previousDraft ← CCD.value input
+            CCD.setValue input currentDraft
+            if DM.isNothing model.chatting then
+                  pure Nothing
+            else
+                  pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) previousDraft
+
       updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
       fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
       smallScreenEffect
@@ -129,6 +142,12 @@ setDeliveredStatus webSocket model@{ contacts, user: { id: loggedUserId } } =
             case DA.filter (\h → h.recipient == loggedUserId && h.status == Received) history of
                   [] → running
                   hs → Tuple userId (map _.id hs) : running
+
+updateDraft :: Int -> String -> ImModel -> NoMessages
+updateDraft userId draft model = model { contacts = map update model.contacts } /\ []
+      where update contact
+                  | contact.user.id == userId = contact { draft = draft }
+                  | otherwise = contact
 
 checkFetchContacts ∷ Event → ImModel → MoreMessages
 checkFetchContacts event model

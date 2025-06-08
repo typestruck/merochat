@@ -11,19 +11,33 @@ import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
-import Effect.Class (liftEffect)
+import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
+import Effect.Class (liftEffect)
+import Effect.Class as EC
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
+import Shared.Unsafe as SU
 
-toggleInitialScreen ∷ Boolean → ImModel → NoMessages
-toggleInitialScreen toggle model = F.noMessages $ model
+toggleInitialScreen ∷ Boolean → ImModel → MoreMessages
+toggleInitialScreen toggle model =  model
       { initialScreen = toggle
       , chatting = Nothing
       , toggleModal = HideUserMenuModal
-      }
+      } /\ [ updateDraft ]
+      where
+      updateDraft
+            | toggle =  EC.liftEffect do
+                  input ← CCD.unsafeGetElementById ChatInput
+                  draft ← CCD.value input
+                  CCD.setValue input ""
+                  if DM.isNothing model.chatting then
+                        pure Nothing
+                  else
+                        pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) draft
+            | otherwise = pure Nothing
 
 logout ∷ AfterLogout → ImModel → MoreMessages
 logout after model = model /\ [ out ]

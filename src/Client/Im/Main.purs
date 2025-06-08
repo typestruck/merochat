@@ -143,6 +143,7 @@ update st model =
             SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
             SetReadStatus userId → CICN.setReadStatus userId webSocket model
             CheckFetchContacts event → CICN.checkFetchContacts event model
+            UpdateDraft userId draft -> CICN.updateDraft userId draft model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
@@ -233,7 +234,7 @@ setRegistered model = model { user { temporary = false } } /\
 -- set messages to read
 refocus ∷ ImModel → MoreMessages
 refocus model
-      | spy "on focus" (model.webSocketStatus /= Connected) = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
+      | model.webSocketStatus /= Connected = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
       | otherwise = model /\ [ pure <<< Just $ SetReadStatus Nothing ]
 
 registerUser ∷ ImModel → MoreMessages
