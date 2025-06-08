@@ -49,6 +49,6 @@ export function topicBody_(subscription, topic) {
 
 export function receiveMessage_ (navigator, cb) {
     navigator.serviceWorker.addEventListener("message", (event) => {
-        cb(event.data.message)(event.data.userId)();
+        cb(event.data.message)(JSON.parse(event.data.payload))();
     });
 }

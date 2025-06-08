@@ -19,7 +19,9 @@ import Effect.Class as EC
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
 import Flame.Subscription as FS
-import Shared.Im.Types (ImMessage(..), ImModel)
+import Foreign (Foreign)
+import Foreign as F
+import Shared.Im.Types (ImMessage(..), ImModel, WebSocketPayloadClient(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Options.Topic as SOT
 import Web.HTML (Navigator)
@@ -40,7 +42,7 @@ foreign import subscribe_ ∷ EffectFn2 Registration (Subscription → Effect Un
 
 foreign import topicBody_ ∷ EffectFn2 Subscription String String
 
-foreign import receiveMessage_ :: EffectFn2 Navigator (String -> Int -> Effect Unit) Unit
+foreign import receiveMessage_ :: EffectFn2 Navigator (String -> Foreign -> Effect Unit) Unit
 
 subscribe ∷ Registration → (Subscription → Effect Unit) → Effect Unit
 subscribe = EU.runEffectFn2 subscribe_
@@ -57,7 +59,7 @@ ready = EU.runEffectFn2 ready_
 register ∷ Navigator → String → Effect Unit
 register = EU.runEffectFn2 register_
 
-receiveMessage :: Navigator -> (String -> Int -> Effect Unit) -> Effect Unit
+receiveMessage :: Navigator -> (String -> Foreign -> Effect Unit) -> Effect Unit
 receiveMessage = EU.runEffectFn2 receiveMessage_
 
 -- | Check if merochat is running as a progressive web application
@@ -79,8 +81,10 @@ registerServiceWorker id = do
       register navigator "/sw.js"
       ready navigator (subscribePush id)
       receiveMessage navigator handler
-      where handler message userId
-                  | message == "resume" = FS.send imId $ ResumeChat userId
+      where handler message payload
+                  | message == "resume" = FS.send imId <<< ResumeChat $ F.unsafeFromForeign payload
+            --might have to nub?
+                  | message == "incoming" = FS.send imId $ ReceiveMessage (NewIncomingMessage $ F.unsafeFromForeign payload) true
                   | otherwise = pure unit
 
 -- | Subscribe to push notifications
