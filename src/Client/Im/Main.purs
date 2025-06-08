@@ -232,7 +232,7 @@ setRegistered model = model { user { temporary = false } } /\
 -- set messages to read
 refocus ∷ ImModel → MoreMessages
 refocus model
-      | model.webSocketStatus /= Connected = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
+      | spy "on focus" (model.webSocketStatus /= Connected) = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
       | otherwise = model /\ [ pure <<< Just $ SetReadStatus Nothing ]
 
 registerUser ∷ ImModel → MoreMessages

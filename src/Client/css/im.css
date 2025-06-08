@@ -4,6 +4,7 @@
     --im-right-background-color: #EFE5DC;
     --im-text-color: #FBFEFB;
     --im-chat-background-image: url('/file/default/chat-background-light.svg');
+    --merochat-green: #2a6846;
 }
 
 body {
@@ -444,7 +445,7 @@ blockquote {
     position: relative;
     border-top-right-radius: 40px;
     align-items: center;
-    background-color: var(--merochat-red);
+    background-color: var(--merochat-green);
     padding: 5px 10px;
     box-shadow: 0px 8px 6px rgba(0, 0, 0, 0.2);
 }
@@ -1476,7 +1477,7 @@ input:not(type=button):focus {
 }
 
 .unread-messages .unread-number {
-    background: var(--merochat-red);
+    background: var(--merochat-green);
     color: var(--light-color);
     padding: 0px 7px;
     border-radius: 70%;
@@ -1968,7 +1969,7 @@ select {
 }
 
 .red-polygon {
-    fill: var(--merochat-red);
+    fill: var(--merochat-green);
 }
 
 .suggestion-arrow:last-child {
@@ -2078,14 +2079,14 @@ select {
 }
 
 .see-profile {
-    color: var(--merochat-red);
-    border: 1px solid var(--merochat-red);
+    color: var(--merochat-green);
+    border: 1px solid var(--merochat-green);
     background-color: var(--im-right-background-color);
 }
 
 .see-chat {
     color: var(--light-color);
-    background-color: var(--merochat-red);
+    background-color: var(--merochat-green);
     border: 0;
 }
 
@@ -2220,8 +2221,8 @@ select {
 }
 
 .svg-mini-chat {
-    stroke: var(--merochat-red);
-    fill: var(--merochat-red);
+    stroke: var(--merochat-green);
+    fill: var(--merochat-green);
     margin-right: 5px;
 }
 
@@ -2232,7 +2233,7 @@ select {
 }
 
 .avatar-settings {
-    background-color: var(--merochat-red);
+    background-color: var(--merochat-green);
     cursor: pointer;
 }
 

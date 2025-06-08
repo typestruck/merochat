@@ -417,7 +417,7 @@ updateWebSocketStatus status model =
       --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
       -- the focus event for the document also checks if the connection is open
       reconnect = do
-            when (model.webSocketStatus == Reconnect) (EC.liftEffect (ERN.randomRange 300.0 1000.0) >>= EA.delay <<< Milliseconds)
+            when (model.webSocketStatus == Reconnect) (EC.liftEffect (ERN.randomRange 300.0 1000.0) >>= EA.delay <<< Milliseconds <<< spy "ms")
             if model.smallScreen then do
                   isFocused ← EC.liftEffect CCD.documentHasFocus
                   pure $ if isFocused then Just ReconnectWebSocket else Nothing

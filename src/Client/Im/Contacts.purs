@@ -36,25 +36,24 @@ resumeChat ∷ Int → ImModel → MoreMessages
 resumeChat userId model =
       if model.chatting == Just userId then
             F.noMessages model
-      else
-            model
-                  { chatting = Just userId
-                  , fullContactProfileVisible = false
-                  , toggleChatModal = HideChatModal
-                  , initialScreen = false
-                  , selectedImage = Nothing
-                  , editing = Nothing
-                  , failedRequests = []
-                  } /\
-                  ( smallScreenEffect <>
-                          case SIC.findContact userId model.contacts of
-                                Nothing → []
-                                Just chatting →
-                                      [ CIS.scrollLastMessageAff
-                                      , fetchHistoryEffect chatting
-                                      , updateReadCountEffect chatting.user.id
-                                      ]
-                  )
+      else case SIC.findContact userId model.contacts of
+            Nothing → F.noMessages model
+            Just chatting →
+                  model
+                        { chatting = Just userId
+                        , fullContactProfileVisible = false
+                        , toggleChatModal = HideChatModal
+                        , initialScreen = false
+                        , selectedImage = Nothing
+                        , editing = Nothing
+                        , failedRequests = []
+                        } /\
+                        ( smallScreenEffect <>
+                                [ CIS.scrollLastMessageAff
+                                , fetchHistoryEffect chatting
+                                , updateReadCountEffect chatting.user.id
+                                ]
+                        )
       where
       updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
       fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
