@@ -114,7 +114,7 @@ fullProfile ∷ User → ImModel → Html ImMessage
 fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMenu : profile
       where
       profileMenu = HE.div (HA.class' "profile-top-menu")
-            [ SIA.arrow [ HA.class' "svg-back-profile" , HA.onClick ToggleContactProfile ]
+            [ SIA.arrow [ HA.class' "svg-back-profile", HA.onClick ToggleContactProfile ]
             , HE.div [ HA.class' "outer-user-menu" ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
@@ -271,14 +271,14 @@ suggestionCards model =
                   , HE.div (HA.class' "mini-name-options")
                           [ HE.strong (HA.class' "card-name") suggestion.name
                           ]
-                  , HE.div_
-                          ( [ HE.div (HA.class' "card-headline") suggestion.headline
-                            , HE.hr' (HA.class' "tag-ruler")
-                            ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
-                          )
-                  , HE.div [ HA.class' "card-description", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
-                          [ HE.span (HA.class' "card-about-description") "About"
-                          , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                  , HE.div (HA.class' "rest-card")
+                          [ HE.div (HA.class' "card-headline") suggestion.headline
+                          , HE.hr' (HA.class' "tag-ruler")
+                          , HE.div_ $ map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
+                          , HE.div [ HA.class' "card-description", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
+                                  [ HE.span (HA.class' "card-about-description") "About"
+                                  , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                                  ]
                           ]
                   , case model.showSuggestionChatInput of
                           Just id | suggestion.id == id →
@@ -384,7 +384,7 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
                                         ]
               ]
       , HE.div (HA.class' "back-filter")
-              [ SIA.arrow [ HA.class' "svg-back-profile hidden" , HA.onClick $ ToggleInitialScreen true ]
+              [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
               , onlineOnlyFilter model
               ]
       ]

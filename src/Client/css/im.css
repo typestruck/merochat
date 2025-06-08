@@ -1125,6 +1125,12 @@ svg.toolbar-action {
     font-size: 0.9em;
 }
 
+.rest-card {
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+}
+
 .card-description {
     overflow-y: hidden;
     cursor: pointer;
@@ -2962,7 +2968,7 @@ label {
         border-color: var(--light-color);
     }
 
-    .card-description {
+    .rest-card,  .card-description {
         overflow-y: visible;
     }
 
