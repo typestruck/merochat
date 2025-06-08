@@ -8,9 +8,8 @@ function switchTheme(theme, fromEvent = false) {
     document.documentElement.style.setProperty('--external-accent', theme === light ? '#EFE5DC' : '#274958');
     document.documentElement.style.setProperty('--other-heading-color', theme === light ? '#42858C' : '#64FCD9');
 
-    document.documentElement.style.setProperty('--im-background-color', theme === light ? '#EFE5DC' : '#393E41');
-    document.documentElement.style.setProperty('--im-second-background-color', theme === light ? '#972123' : '#26292C');
-    document.documentElement.style.setProperty('--im-right-background-color', theme === light ? '#EFE5DC' : '#393E41');
+    document.documentElement.style.setProperty('--im-background-color', theme === light ? '#F0E8DD' : '#393E41');
+    document.documentElement.style.setProperty('--im-second-background-color', theme === light ? '#B8574F' : '#26292C');
     document.documentElement.style.setProperty('--im-chat-background-image', theme === light ? 'url(/file/default/chat-background-light.svg)' : 'url(/file/default/chat-background-dark.svg)');
 
     //if the user choose the theme instead of coming from the system preference, save it
