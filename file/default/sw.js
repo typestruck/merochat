@@ -79,7 +79,7 @@ async function resume(notification) {
     } else
         pwa = await clients.openWindow('/im');
 
-    pwa.postMessage({ message: 'incoming', payload: notification.data.allIncoming });
+    pwa.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
     pwa.postMessage({ message: 'resume', payload: parseInt(notification.tag) });
 
     return Promise.resolve();

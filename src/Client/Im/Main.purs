@@ -178,6 +178,7 @@ update st model =
             SetContextMenuToggle toggle → toggleContextMenu toggle model
             ReloadPage → reloadPage model
             ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
+            PushedMessages payload → CIP.receiveMessageFromPush payload model
             SetNameFromProfile name → setName name model
             SetAvatarFromProfile base64 → setAvatar base64 model
             AskNotification → askNotification model

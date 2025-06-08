@@ -5,7 +5,9 @@ import Prelude
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.Im.Flame (NoMessages)
+import Client.Im.Flame (NoMessages, MoreMessages)
+import Client.Im.History as CIH
+import Data.Array as DA
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable)
@@ -21,12 +23,15 @@ import Effect.Uncurried as EU
 import Flame.Subscription as FS
 import Foreign (Foreign)
 import Foreign as F
-import Shared.Im.Types (ImMessage(..), ImModel, WebSocketPayloadClient(..))
+import Shared.Im.Contact as SC
+import Shared.Im.Types (ClientMessagePayload, ImMessage(..), ImModel, MessageStatus(..), WebSocketPayloadClient(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Options.Topic as SOT
+import Shared.Unsafe as SU
 import Web.HTML (Navigator)
 import Web.HTML as WH
 import Web.HTML.Window as WHW
+import Web.Socket.WebSocket (WebSocket)
 
 foreign import register_ ∷ EffectFn2 Navigator String Unit
 
@@ -42,7 +47,7 @@ foreign import subscribe_ ∷ EffectFn2 Registration (Subscription → Effect Un
 
 foreign import topicBody_ ∷ EffectFn2 Subscription String String
 
-foreign import receiveMessage_ :: EffectFn2 Navigator (String -> Foreign -> Effect Unit) Unit
+foreign import receiveMessage_ ∷ EffectFn2 Navigator (String → Foreign → Effect Unit) Unit
 
 subscribe ∷ Registration → (Subscription → Effect Unit) → Effect Unit
 subscribe = EU.runEffectFn2 subscribe_
@@ -59,7 +64,7 @@ ready = EU.runEffectFn2 ready_
 register ∷ Navigator → String → Effect Unit
 register = EU.runEffectFn2 register_
 
-receiveMessage :: Navigator -> (String -> Foreign -> Effect Unit) -> Effect Unit
+receiveMessage ∷ Navigator → (String → Foreign → Effect Unit) → Effect Unit
 receiveMessage = EU.runEffectFn2 receiveMessage_
 
 -- | Check if merochat is running as a progressive web application
@@ -68,11 +73,12 @@ checkPwa = do
       matches ← DT.traverse CCD.mediaMatches [ "fullscreen", "standalone", "minimal-ui" ]
       pure $ DT.or matches
 
-startPwa ∷ ImModel -> NoMessages
+startPwa ∷ ImModel → NoMessages
 startPwa model = model /\ [ startIt ]
-      where startIt = EC.liftEffect do
-                  registerServiceWorker model.user.id
-                  pure Nothing
+      where
+      startIt = EC.liftEffect do
+            registerServiceWorker model.user.id
+            pure Nothing
 
 registerServiceWorker ∷ Int → Effect Unit
 registerServiceWorker id = do
@@ -81,11 +87,32 @@ registerServiceWorker id = do
       register navigator "/sw.js"
       ready navigator (subscribePush id)
       receiveMessage navigator handler
-      where handler message payload
-                  | message == "resume" = FS.send imId <<< ResumeChat $ F.unsafeFromForeign payload
-            --might have to nub?
-                  | message == "incoming" = FS.send imId $ ReceiveMessage (NewIncomingMessage $ F.unsafeFromForeign payload) true
-                  | otherwise = pure unit
+      where
+      handler message payload
+            | message == "resume" = FS.send imId <<< ResumeChat $ F.unsafeFromForeign payload
+            | message == "pushed" = FS.send imId <<< PushedMessages $ F.unsafeFromForeign payload
+            | otherwise = pure unit
+
+--when messages are received by the service, we update the chat history for a snappier feel
+-- but these message might already be in there
+receiveMessageFromPush ∷ Array ClientMessagePayload → ImModel → NoMessages
+receiveMessageFromPush payload model = model { contacts = map update model.contacts } /\ []
+      where
+      firstMessage = SU.fromJust $ DA.head payload
+      makeHistory message =
+            { status: Received
+            , sender: message.senderId
+            , recipient: message.recipientId
+            , id: message.id
+            , edited: false
+            , content: message.content
+            , date: message.date
+            }
+      update contact
+            | contact.user.id == firstMessage.senderId = contact
+                    { history = if _.id <$> DA.last contact.history < Just firstMessage.id then CIH.fixHistory (contact.history <> map makeHistory payload) else contact.history
+                    }
+            | otherwise = contact
 
 -- | Subscribe to push notifications
 subscribePush ∷ Int → Registration → Effect Unit

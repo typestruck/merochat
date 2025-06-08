@@ -322,6 +322,7 @@ data ImMessage
       | ToggleScrollChatDown Boolean Int
       | SpecialRequest RetryableRequest
       | ReconnectWebSocket
+      | PushedMessages (Array ClientMessagePayload)
       | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean
       | PreventStop Event
