@@ -34,10 +34,6 @@ export function setValue_(element, value) {
       element.value = value;
 }
 
-export function getQueryStringParam_(param) {
-      return (new URLSearchParams(window.location.search)).get(param);
-}
-
 export function documentIsHidden() {
       return document.hidden;
 }

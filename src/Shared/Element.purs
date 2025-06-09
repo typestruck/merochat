@@ -17,9 +17,8 @@ data ElementId
       | ChatInput
       | ProfileEditionForm
       | ImageFormCaption
-      | PasswordDiv
       | FeedbackForm
-      | ConfirmPasswordInput
+      | PasswordConfirmationInput
       | Im
       | MiniChatInputSuggestion
       | LinkFormUrl
@@ -37,11 +36,9 @@ data ElementId
       | Faq
       | TermsSection
       | PasswordInput
-      | EmailDiv
       | PrivacySection
       | EmailInput
       | BackerRoot
-      | ConfirmPassword
       | FeedbackRoot
       | ScreenshotInput
       | FaqLink
@@ -78,8 +75,7 @@ instance Show ElementId where
             MessageHistory → "message-history"
             Favicon → "favicon"
             FeedbackRoot → "feedback-root"
-            ConfirmPasswordInput → "confirm-password-input"
-            PasswordDiv → "password"
+            PasswordConfirmationInput → "password-confirmation-input"
             CaptchaRegularUser → "captcha-regular-user"
             CaptchaTemporaryUser → "captcha-temporary-user"
             TermsLink → "terms-link"
@@ -87,10 +83,8 @@ instance Show ElementId where
             Faq → "faq"
             TermsSection → "terms"
             Im → "im"
-            EmailDiv → "email"
             EmailInput → "email-input"
             PrivacySection → "privacy"
-            ConfirmPassword → "confirm-password"
             FaqLink → "faq-link"
             BackerRoot → "backer-root"
             TemporaryUserSignUp → "temporary-user-sign-up"

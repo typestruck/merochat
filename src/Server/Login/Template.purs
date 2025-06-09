@@ -28,14 +28,13 @@ template = do
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]
             ]
       content =
-            [ HE.div (HA.class' "pastel-area column")
-
+            [ HE.div (HA.class' "pastel-area")
                     [ HE.div (HA.class' "sign-up-form form-up")
-                            [ HE.div [ HA.id $ show EmailDiv, HA.class' "input" ]
+                            [ HE.div [ HA.class' "input" ]
                                     [ HE.input [ HA.placeholder "Email", HA.type' "text", HA.maxlength emailMaxCharacters, HA.id $ show EmailInput ]
                                     , HE.span (HA.class' "error-message") "Please enter a valid email"
                                     ]
-                            , HE.div [ HA.id $ show PasswordDiv, HA.class' "input" ]
+                            , HE.div [ HA.class' "input" ]
                                     [ HE.input [ HA.placeholder "Password", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id $ show PasswordInput ]
                                     , HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                     ]

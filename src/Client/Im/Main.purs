@@ -209,7 +209,7 @@ update st model =
 
 resumeFromNotification :: Effect Unit
 resumeFromNotification = do
-      raw <- CCD.getQueryStringParam "resume"
+      raw <- CCL.queryParameter "resume"
       case raw >>= DI.fromString of
             Just userId -> FS.send imId $ ResumeChat userId
             _ -> pure unit

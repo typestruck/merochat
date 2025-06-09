@@ -18,8 +18,8 @@ import Shared.Routes (routes)
 
 recover ∷ Maybe String → Effect Unit
 recover captchaResponse = do
-      registerLogin ← CCA.validateEmail
-      case registerLogin of
+      inputed ← CCA.validateEmail
+      case inputed of
             Nothing → pure unit
             Just email →
                   if DM.isNothing captchaResponse then
@@ -34,15 +34,16 @@ completeRecover captchaResponse = recover $ Just captchaResponse
 
 reset ∷ String → Effect Unit
 reset token = do
-      registerLogin ← CCA.validatePassword
-      case registerLogin of
-            Nothing → pure unit
+      passwordInputed ← CCA.validatePassword
+      passwordConfirmationInputed ← CCA.validatePasswordConfirmation passwordInputed
+      case passwordConfirmationInputed of
             Just password →
                   EA.launchAff_ do
                         status ← CCA.formRequest $ request.recover.reset { body: { token, password } }
                         when (status == Success) do
                               EA.delay $ Milliseconds 3000.0
                               liftEffect <<< CCL.setLocation $ routes.login.get {}
+            _ -> pure unit
 
 main ∷ Effect Unit
 main = do

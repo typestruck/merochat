@@ -46,10 +46,25 @@ a {
     text-decoration: none;
 }
 
+.column {
+    flex-direction: column;
+}
+
 a,
 input[type="button"] {
     cursor: pointer;
 }
+
+.success-message {
+    display: none;
+}
+
+.success .success-message {
+    display: block;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
 
 .error-message {
     display: none;

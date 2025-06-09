@@ -52,11 +52,11 @@ template = do
                                     ]
                             , HE.div (HA.class' "sign-up-form form-up")
                                     [ HE.div' [ HA.id $ show CaptchaRegularUser, HA.class' "hidden" ]
-                                    , HE.div (HA.id $ show EmailDiv)
+                                    , HE.div_
                                             [ HE.input [ HA.id $ show EmailInput, HA.type' "text", HA.autocomplete "new-email", HA.placeholder "Email" ]
                                             , HE.div (HA.class' "error-message") "Please enter a valid email"
                                             ]
-                                    , HE.div (HA.id $ show PasswordDiv)
+                                    , HE.div_
                                             [ HE.input [ HA.id $ show PasswordInput, HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.placeholder "Password" ]
                                             , HE.div (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                             ]

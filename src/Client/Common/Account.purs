@@ -43,50 +43,45 @@ validateEmailPassword = do
 
 validateEmail ∷ Effect (Maybe String)
 validateEmail = do
-      maybeEmailDiv ← CCD.getElementById EmailDiv
-      case maybeEmailDiv of
-            Nothing → pure Nothing
-            Just _ → do
-                  emailElement ← CCD.unsafeGetElementById EmailInput
-                  email ← CCD.value emailElement
-                  WDE.setClassName "input" emailElement
+      emailElement ← CCD.unsafeGetElementById EmailInput
+      email ← CCD.value emailElement
+      WDE.setClassName "input" emailElement
 
-                  if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then do
-                        WDE.setClassName "input error" emailElement
-                        pure Nothing
-                  else
-                        pure $ Just email
+      if DS.null email || not (DS.contains (Pattern "@") email) || not (DS.contains (Pattern ".") email) then do
+            WDE.setClassName "input error" emailElement
+            pure Nothing
+      else
+            pure $ Just email
 
 validatePassword ∷ Effect (Maybe String)
 validatePassword = do
-      maybePasswordDiv ← CCD.getElementById PasswordDiv
-      case maybePasswordDiv of
-            Nothing → pure Nothing
-            Just _ → do
-                  passwordElement ← CCD.unsafeGetElementById PasswordInput
-                  password ← CCD.value passwordElement
-                  WDE.setClassName "input" passwordElement
+      passwordElement ← CCD.unsafeGetElementById PasswordInput
+      password ← CCD.value passwordElement
+      WDE.setClassName "input" passwordElement
 
-                  if DS.length password < passwordMinCharacters then do
-                        WDE.setClassName "input error" passwordElement
-                        pure Nothing
-                  else
-                        pure $ Just password
+      if DS.length password < passwordMinCharacters then do
+            WDE.setClassName "input error" passwordElement
+            pure Nothing
+      else
+            pure $ Just password
 
-validateConfirmPassword ∷ Effect Unit
-validateConfirmPassword = do
-      maybeConfirmPasswordDiv ← CCD.getElementById ConfirmPasswordInput
-      case maybeConfirmPasswordDiv of
-            Nothing → pure unit
-            Just confirmPasswordDiv → do
-                  confirmPasswordElement ← CCD.unsafeGetElementById ConfirmPasswordInput
-                  password ← CCD.value confirmPasswordElement
-                  WDE.setClassName "input" confirmPasswordDiv
+listenValidatePasswordConfirmation ∷ Effect (Maybe String)
+listenValidatePasswordConfirmation = do
+      passwordElement ← CCD.unsafeGetElementById PasswordInput
+      password ← CCD.value passwordElement
+      validatePasswordConfirmation $ Just password
 
-                  if DS.length password < passwordMinCharacters then do
-                        WDE.setClassName "input error" confirmPasswordElement
-                  else
-                        pure unit
+validatePasswordConfirmation ∷ Maybe String → Effect (Maybe String)
+validatePasswordConfirmation password = do
+      passwordConfirmationElement ← CCD.unsafeGetElementById PasswordConfirmationInput
+      passwordConfirmation ← CCD.value passwordConfirmationElement
+      WDE.setClassName "input" passwordConfirmationElement
+
+      if Just passwordConfirmation /= password then do
+            WDE.setClassName "input error" passwordConfirmationElement
+            pure Nothing
+      else
+            pure password
 
 registerEvents ∷ Effect Unit → Effect Unit
 registerEvents callback = do
@@ -94,10 +89,10 @@ registerEvents callback = do
       button ← CCD.unsafeQuerySelector buttonSelector
       emailElement ← CCD.getElementById EmailInput
       passwordElement ← CCD.getElementById PasswordInput
-      confirmPasswordElement ← CCD.getElementById ConfirmPassword
+      confirmPasswordElement ← CCD.getElementById PasswordConfirmationInput
       listenIfExists emailElement validateEmail
       listenIfExists passwordElement validatePassword
-      listenIfExists confirmPasswordElement validateConfirmPassword
+      listenIfExists confirmPasswordElement listenValidatePasswordConfirmation
       CCD.addEventListener formDiv keyup onEnter
       CCD.addEventListener button click (const callback)
       where
