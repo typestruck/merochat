@@ -29,7 +29,6 @@ import Data.Array as DA
 import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.HashMap as DH
-import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
@@ -43,14 +42,15 @@ import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class as EC
 import Effect.Now as EN
-import Effect.Random as ERN
 import Effect.Ref as ER
 import Effect.Unsafe as EU
-import Flame (ListUpdate, QuerySelector(..))
+import Flame (ListUpdate, QuerySelector(..), Subscription)
 import Flame as F
 import Flame.Subscription as FS
 import Flame.Subscription.Document as FSD
+import Flame.Subscription.Internal.Create as FSIC
 import Flame.Subscription.Window as FSW
+import Flame.Types (Source(..))
 import Safe.Coerce as SC
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
@@ -84,13 +84,9 @@ main = do
       F.resumeMount (QuerySelector $ "#" <> show Im) imId
             { view: SIV.view true
             , subscribe:
-                    [
-                      --display settings/profile/etc page menus
-                      FSD.onClick' ToggleUserContextMenu
-                    ,
-                      --focus event has to be on the window as chrome is a whiny baby about document
-                      FSW.onFocus Refocus
-                    --ws might not error if the connection goes down, so kill it forcefully
+                    [ FSD.onClick' ToggleUserContextMenu
+                    , onVisibilityChange Refocus
+                    , FSW.onFocus Refocus
                     , FSW.onOffline CloseWebSocket
                     ]
             , init: [] -- we use subscription instead of init events
@@ -143,7 +139,7 @@ update st model =
             SetDeliveredStatus → CICN.setDeliveredStatus webSocket model
             SetReadStatus userId → CICN.setReadStatus userId webSocket model
             CheckFetchContacts event → CICN.checkFetchContacts event model
-            UpdateDraft userId draft -> CICN.updateDraft userId draft model
+            UpdateDraft userId draft → CICN.updateDraft userId draft model
             SpecialRequest (FetchContacts shouldFetch) → CICN.fetchContacts shouldFetch model
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
@@ -234,7 +230,7 @@ setRegistered model = model { user { temporary = false } } /\
 -- set messages to read
 refocus ∷ ImModel → MoreMessages
 refocus model
-      | model.webSocketStatus /= Connected = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
+      | (spy "yaya" model.webSocketStatus) /= Connected = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
       | otherwise = model /\ [ pure <<< Just $ SetReadStatus Nothing ]
 
 registerUser ∷ ImModel → MoreMessages
@@ -476,3 +472,5 @@ historyChange smallScreen = do
             CCD.pushState $ routes.im.get {}
             when smallScreen <<< FS.send imId $ ToggleInitialScreen true
 
+onVisibilityChange ∷ ∀ message. message → Subscription message
+onVisibilityChange = FSIC.createSubscription Document "visibilitychange"

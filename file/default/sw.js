@@ -38,20 +38,17 @@ async function notify(raw) {
 
     //old notifications get replaced if tag matches
     let body,
-        count,
         allIncoming = [],
         incoming = JSON.parse(data.message.message),
         previousNotifications = await self.registration.getNotifications({ tag: incoming.senderId });
 
     if (previousNotifications.length == 0) {
-        count = 1;
         body = incoming.content;
         allIncoming.push(incoming);
     } else {
-        count = previousNotifications[0].data.count + 1;
         previousNotifications[0].data.allIncoming.push(incoming);
         allIncoming = previousNotifications[0].data.allIncoming;
-        body = `${count} messages`;
+        body = allIncoming.map(ai => ai.content).join('\n');
     }
 
     return self.registration.showNotification(data.message.title, {
@@ -59,7 +56,7 @@ async function notify(raw) {
         icon: 'https://mero.chat/file/default/android-launchericon-48-48.png',
         badge: 'https://mero.chat/file/default/badge.png',
         tag: incoming.senderId,
-        data: {count, allIncoming }
+        data: { allIncoming }
     });
 }
 
