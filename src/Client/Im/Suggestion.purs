@@ -34,6 +34,7 @@ nextSuggestion model =
             model
                   { freeToFetchSuggestions = true
                   , suggesting = next
+                  , showLargeAvatar = false
                   , showMiniChatInput = false
                   , bugging = Nothing
                   } /\ [ bugUser model ]
@@ -50,6 +51,7 @@ previousSuggestion model =
                   { freeToFetchSuggestions = true
                   , suggesting = previous
                   , showMiniChatInput = false
+                  , showLargeAvatar = false
                   , bugging = Nothing
                   } /\ [ bugUser model ]
       where
@@ -80,6 +82,7 @@ fetchMoreSuggestions model =
             { freeToFetchSuggestions = false --ui uses this flag to show a loading icon and prevent repeated requests
             , failedRequests = []
             , bugging = Nothing
+            , showLargeAvatar = false
             , showMiniChatInput = false
             } /\
             [ CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions
@@ -137,6 +140,11 @@ toggleCollapsedMiniSuggestions ∷ ImModel → NoMessages
 toggleCollapsedMiniSuggestions model = F.noMessages model
       { showCollapsedMiniSuggestions = not model.showCollapsedMiniSuggestions
       }
+
+toggleLargeAvatar ∷ ImModel → NoMessages
+toggleLargeAvatar model = model
+      { showLargeAvatar = not model.showLargeAvatar
+      } /\ []
 
 -- | Show suggestion cards again
 resumeSuggesting ∷ ImModel → NoMessages

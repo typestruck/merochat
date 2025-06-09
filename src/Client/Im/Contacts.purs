@@ -49,6 +49,7 @@ resumeChat userId model =
                         , initialScreen = false
                         , selectedImage = Nothing
                         , editing = Nothing
+                        , showLargeAvatar = false
                         , failedRequests = []
                         } /\
                         ( smallScreenEffect <>

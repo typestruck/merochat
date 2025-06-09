@@ -25,7 +25,7 @@ import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Svg (backArrow, nextArrow, closeX)
+import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Retry as SIVR
@@ -36,7 +36,6 @@ import Shared.Privilege as SP
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
 import Shared.User as SUR
-import Web.HTML.HTMLElement (hidden)
 
 -- | Displays either the current chat or a list of chat suggestions
 suggestionProfile ∷ ImModel → Html ImMessage
@@ -114,47 +113,58 @@ fullProfile ∷ User → ImModel → Html ImMessage
 fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMenu : profile
       where
       profileMenu = HE.div (HA.class' "profile-top-menu")
-            [ SIA.arrow [ HA.class' "svg-back-profile", HA.onClick ToggleContactProfile ]
-            , HE.div [ HA.class' "outer-user-menu" ]
+            [ SIA.arrow [ HA.class' "svg-back-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
+            , HE.div [ HA.class' { "outer-user-menu": true, hidden: model.showLargeAvatar } ]
                     $ SIA.contextMenu
                     $ show FullProfileContextMenu
             , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user.id true
-            , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick ToggleContactProfile ]
+            , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
             ]
 
       profile =
-            [ HE.div (HA.class' "avatar-info")
-                    [ HE.div [ HA.class' "big-avatar-info" ]
-                            [ HE.img [ HA.src $ SA.fromAvatar user.avatar, HA.class' "big-suggestion-avatar" ]
-                            , HE.div (HA.class' "big-suggestion-info")
-                                    ( HE.strong (HA.class' "big-card-name") user.name
-                                            : badges user.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user user ]
-                                    )
-                            , HE.div (HA.class' "big-suggestion-info auto-left")
-                                    ( [ HE.div_ $
-                                              if user.temporary then
-                                                    temporary
-                                              else
-                                                    [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands user.karma
-                                                    , HE.span (HA.class' "duller") $ " karma • #" <> show user.karmaPosition
-                                                    ]
-                                      ]
-                                            <> genderAge user
-                                            <> from user
-                                            <> speaks user
-                                    )
-                            ]
-                    ]
-            , HE.div (HA.class' "full-card-headline-tags")
-                    ( [ HE.div (HA.class' "card-headline") user.headline
-                      , HE.hr' (HA.class' "tag-ruler")
-                      ] <> map (HE.span (HA.class' "tag")) user.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
-                    )
-            , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
-                    [ HE.span (HA.class' "card-about-description") "About"
-                    , HE.div' [ HA.innerHtml $ SM.parse user.description ]
-                    ]
-            ]
+            if model.showLargeAvatar then
+                  [ HE.div (HA.class' "avatar-info")
+                          [ HE.div (HA.class' "big-suggestion-info")
+                                  [ HE.strong (HA.class' "big-card-name big-name-avatar") user.name
+                                  ]
+                          , HE.div [ HA.class' "big-avatar-info" ]
+                                  [ HE.img [ HA.src $ SA.fromAvatar user.avatar, HA.title "Close avatar", HA.class' "bigger-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+                                  ]
+                          ]
+                  ]
+            else
+                  [ HE.div (HA.class' "avatar-info")
+                          [ HE.div [ HA.class' "big-avatar-info" ]
+                                  [ HE.img [ HA.src $ SA.fromAvatar user.avatar, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+                                  , HE.div (HA.class' "big-suggestion-info")
+                                          ( HE.strong (HA.class' "big-card-name") user.name
+                                                  : badges user.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user user ]
+                                          )
+                                  , HE.div (HA.class' "big-suggestion-info auto-left")
+                                          ( [ HE.div_ $
+                                                    if user.temporary then
+                                                          temporary
+                                                    else
+                                                          [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands user.karma
+                                                          , HE.span (HA.class' "duller") $ " karma • #" <> show user.karmaPosition
+                                                          ]
+                                            ]
+                                                  <> genderAge user
+                                                  <> from user
+                                                  <> speaks user
+                                          )
+                                  ]
+                          ]
+                  , HE.div (HA.class' "full-card-headline-tags")
+                          ( [ HE.div (HA.class' "card-headline") user.headline
+                            , HE.hr' (HA.class' "tag-ruler")
+                            ] <> map (HE.span (HA.class' "tag")) user.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
+                          )
+                  , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
+                          [ HE.span (HA.class' "card-about-description") "About"
+                          , HE.div' [ HA.innerHtml $ SM.parse user.description ]
+                          ]
+                  ]
 
 backingTime ∷ Html ImMessage
 backingTime =
@@ -270,7 +280,7 @@ suggestionCards model =
                           ]
                   , HE.div (HA.class' "card-name-online")
                           [ HE.strong (HA.class' "card-name") suggestion.name
-                          , HE.div' [ HA.class' { "online-indicator": true , hidden: suggestion.availability /= Online || not suggestion.onlineStatus || not model.user.onlineStatus } ]
+                          , HE.div' [ HA.class' { "online-indicator": true, hidden: suggestion.availability /= Online || not suggestion.onlineStatus || not model.user.onlineStatus } ]
                           ]
                   , HE.div (HA.class' "rest-card")
                           [ HE.div (HA.class' "card-headline") suggestion.headline

@@ -53,26 +53,11 @@ modals model =
                     ConfirmBlockUser id → confirmBlockUser id
                     Tutorial step → tutorial model step
                     ConfirmTerminationTemporaryUser → confirmTermination
-                    ShowAvatar eid → showAvatar eid model
-                    _ → modalMenu model
+                    tm | tm == ShowExperiments || tm == ShowProfile || tm == ShowSettings || tm == ShowKarmaPrivileges || tm == ShowHelp || tm == ShowBacker || tm == ShowFeedback → modalMenu model
+                    _ → HE.createEmptyElement "div"
             ]
       where
       tutorialSteps = model.toggleModal == Tutorial ChatSuggestions && DM.isNothing model.chatting || model.toggleModal == Tutorial Chatting
-
-showAvatar ∷ Either Int Int → ImModel → Html ImMessage
-showAvatar eid model = HE.lazy Nothing largeAvatar who
-      where
-      who = case eid of
-            Right contactId → _.user <$> SIC.findContact contactId model.contacts
-            Left suggestionId → DA.find ((suggestionId == _) <<< _.id) model.suggestions
-      largeAvatar p =
-            HE.div (HA.class' "confirmation large") case p of
-                  Nothing → HE.createEmptyElement "div"
-                  Just profile → HE.fragment
-                        [ HE.svg [ HA.class' "close-avatar", HA.viewBox "0 0 16 16", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ] SIV.closeElements
-                        , HE.h1 (HA.class' "profile-name extra-padding duller") profile.name
-                        , HE.div (HA.class' "large-avatar-profile") $ SA.avatar [ HA.src $ SA.fromAvatar profile.avatar ]
-                        ]
 
 report ∷ Int → Array String → Html ImMessage
 report id erroredFields =

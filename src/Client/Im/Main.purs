@@ -158,6 +158,7 @@ update st model =
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model
             ToggleContactProfile → CIS.toggleContactProfile model
+            ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
@@ -207,12 +208,12 @@ update st model =
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
 
-resumeFromNotification :: Effect Unit
+resumeFromNotification ∷ Effect Unit
 resumeFromNotification = do
-      raw <- CCL.queryParameter "resume"
+      raw ← CCL.queryParameter "resume"
       case raw >>= DI.fromString of
-            Just userId -> FS.send imId $ ResumeChat userId
-            _ -> pure unit
+            Just userId → FS.send imId $ ResumeChat userId
+            _ → pure unit
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }

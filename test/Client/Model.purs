@@ -33,6 +33,7 @@ model =
       , typingIds: []
       , initialScreen: true
       , suggestionsFrom: ThisWeek
+      , showLargeAvatar: false
       , showSuggestionChatInput: Nothing
       , showCollapsedMiniSuggestions: false
       , showMiniChatInput: false

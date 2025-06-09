@@ -152,6 +152,7 @@ type Im =
       --visibility switches
       , initialScreen ∷ Boolean --used on mobile to switch screens
       , fullContactProfileVisible ∷ Boolean
+      , showLargeAvatar :: Boolean
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
@@ -205,7 +206,6 @@ data ShowUserMenuModal
       | ShowKarmaPrivileges
       | ShowSuggestionCard Int
       | ShowHelp
-      | ShowAvatar (Either Int Int)
       | ShowBacker
       | ShowFeedback
       | ShowReport Int
@@ -296,6 +296,7 @@ data ImMessage
       | SetSelectedImage SelectedImage
       | ToggleContactProfile
       | ToggleMiniChatInput
+      | ToggleLargeAvatar
       | DropFile Event
       | ToggleMessageEnter
       | FocusInput ElementId

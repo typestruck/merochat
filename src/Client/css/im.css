@@ -357,12 +357,6 @@ textarea {
     cursor: pointer;
 }
 
-.avatar-message {
-    width: 54px;
-    height: 54px;
-    border-radius: 100%;
-}
-
 .svg-back-suggestions {
     width: 25px;
     height: 25px;
@@ -398,7 +392,6 @@ textarea {
 }
 
 .avatar-settings,
-.outgoing-message .avatar-message,
 .avatar-profile-edition {
     background: #4d4d51
 }
@@ -1619,7 +1612,6 @@ select {
 
 }
 
-
 .avatar-profile {
     cursor: pointer;
     object-fit: cover;
@@ -2022,14 +2014,9 @@ select {
     fill: none
 }
 
-.large-avatar-profile {
+.bigger-suggestion-avatar {
     align-self: center;
-    display: flex;
-    justify-content: center;
-}
-
-.large-avatar-profile img {
-    max-width: 100%;
+    cursor: pointer;
 }
 
 .suggestion-center {
@@ -2422,11 +2409,14 @@ select {
     width: 102px;
     height: 102px;
     border-radius: 100%;
+    object-fit: cover;
 }
 
 .big-suggestion-avatar {
     width: 132px;
+    cursor: pointer;
     height: 132px;
+    object-fit: cover;
     border-radius: 100%;
 }
 
@@ -2453,6 +2443,7 @@ select {
 .mini-suggestion-avatar {
     width: 82px;
     height: 82px;
+    object-fit: cover;
     border-radius: 100%;
 }
 
@@ -2525,7 +2516,10 @@ label {
     color: var(--light-color)
 }
 
-
+.big-name-avatar {
+    align-self: center;
+    margin-bottom: 20px;
+}
 /* dry this shite  */
 
 @media (max-width:1279px) {
@@ -2625,8 +2619,7 @@ label {
     }
 
     .profile-contact .avatar-profile,
-    .avatar-contact-list,
-    .avatar-message {
+    .avatar-contact-list {
         width: 36px;
         height: 36px;
     }
@@ -3090,7 +3083,7 @@ label {
         font-size: 0.9em
     }
 
-    .large-avatar-profile {
+    .bigger-suggestion-avatar {
         height: 65%;
         width: 65%;
     }
@@ -3176,8 +3169,7 @@ label {
 
     .avatar-settings,
     .profile-contact .avatar-profile,
-    .avatar-contact-list,
-    .avatar-message {
+    .avatar-contact-list {
         width: 44px;
         height: 44px;
     }
@@ -3214,8 +3206,7 @@ label {
 
     .profile-contact .avatar-profile,
     .avatar-contact-list,
-    .avatar-settings,
-    .avatar-message {
+    .avatar-settings {
         width: 64px;
         height: 64px;
     }
@@ -3235,11 +3226,6 @@ label {
         min-height: 70%;
         height: auto;
         max-height: auto;
-    }
-
-    .large-avatar-profile {
-        height: 85%;
-        width: 85%;
     }
 
     .card-sides {

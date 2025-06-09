@@ -61,6 +61,7 @@ template payload = do
                     , enableNotificationsVisible: false
                     , messageEnter: true
                     , editing: Nothing
+                    , showLargeAvatar: false
                     , imageCaption: Nothing
                     , selectedImage: Nothing
                     , bugging: Nothing
