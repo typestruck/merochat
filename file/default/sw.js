@@ -80,7 +80,6 @@ function handleMarkdown(raw) {
     }
 }
 
-
 self.addEventListener('notificationclick', (event) => {
     event.waitUntil(resume(event.notification));
 });
@@ -96,12 +95,12 @@ async function resume(notification) {
         pwa = windows[0];
         await pwa.focus();
 
+        //sync messages from here meanwhile the app loads them
         pwa.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
         pwa.postMessage({ message: 'resume', payload: userId });
-    } else {
+    } else
         //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
         pwa = await self.clients.openWindow(`/im?resume=${userId}`);
-    }
 
     return Promise.resolve();
 }

@@ -21,7 +21,6 @@ view = HE.div (HA.class' "backer")
               ]
       , HE.h3_ "Become a backer on Liberapay"
       , HE.script' [ HA.src "https://liberapay.com/merochat/widgets/button.js", HA.type' "text/javascript" ]
-      , HE.a [ HA.href "https://liberapay.com/merochat/donate", HA.target "_blank" ] $ HE.img [ HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg" ]
       , HE.h3_ "Become a backer on Patreon and get sweet rewards"
       , HE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button" ]
               [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
