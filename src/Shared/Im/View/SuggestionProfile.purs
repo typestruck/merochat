@@ -255,7 +255,7 @@ suggestionCards model =
       card suggestion =
             HE.div (HA.class' "card")
                   [ HE.div (HA.class' "avatar-info")
-                          [ HE.div [ HA.class' "mini-avatar-info", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id, HA.title "See full profile" ]
+                          [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
                                   [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
                                   , HE.div (HA.class' "mini-suggestion-info")
                                           ( [ HE.div_
@@ -268,14 +268,15 @@ suggestionCards model =
                                           )
                                   ]
                           ]
-                  , HE.div (HA.class' "mini-name-options")
+                  , HE.div (HA.class' "card-name-online")
                           [ HE.strong (HA.class' "card-name") suggestion.name
+                          , HE.div' [ HA.class' { "online-indicator": true , hidden: suggestion.availability /= Online || not suggestion.onlineStatus || not model.user.onlineStatus } ]
                           ]
                   , HE.div (HA.class' "rest-card")
                           [ HE.div (HA.class' "card-headline") suggestion.headline
                           , HE.hr' (HA.class' "tag-ruler")
                           , HE.div_ $ map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
-                          , HE.div [ HA.class' "card-description", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
+                          , HE.div (HA.class' "card-description" : showProfile suggestion.id)
                                   [ HE.span (HA.class' "card-about-description") "About"
                                   , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
                                   ]
@@ -292,6 +293,9 @@ suggestionCards model =
                                 , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
                                 ]
                   ]
+      showProfile id
+            | model.smallScreen = []
+            | otherwise = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard id ]
 
 arrow ∷ Html ImMessage → Boolean → ImMessage → Html ImMessage
 arrow svg freeTo message = HE.div (HA.class' "suggestion-arrow" : if freeTo then [ HA.onClick message ] else []) svg

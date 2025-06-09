@@ -950,7 +950,13 @@ img.emoji {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
+}
 
+
+.card-name-online {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
 }
 
 .contact-list.highlighted {
