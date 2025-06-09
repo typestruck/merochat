@@ -30,7 +30,7 @@ self.addEventListener('push', (event) => {
 
 async function notify(raw) {
     let data = raw.json(),
-        windows = await clients.matchAll({ type: 'window' });
+        windows = await self.clients.matchAll({ type: 'window' });
 
     //do not raise notifications if app is open
     if (windows.length == 1 && !windows[0].hidden && windows[0].focused || !data.message)
@@ -87,18 +87,21 @@ self.addEventListener('notificationclick', (event) => {
 
 async function resume(notification) {
     let pwa,
-        windows = await clients.matchAll({ type: 'window' });
+        windows = await self.clients.matchAll({ type: 'window' }),
+        userId = parseInt(notification.tag);
 
     notification.close();
 
     if (windows.length > 0) {
         pwa = windows[0];
         await pwa.focus();
-    } else
-        pwa = await clients.openWindow('/im');
 
-    pwa.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
-    pwa.postMessage({ message: 'resume', payload: parseInt(notification.tag) });
+        pwa.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
+        pwa.postMessage({ message: 'resume', payload: userId });
+    } else {
+        //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
+        pwa = await self.clients.openWindow(`/im?resume=${userId}`);
+    }
 
     return Promise.resolve();
 }

@@ -72,6 +72,11 @@ foreign import scrollIntoView_ ∷ EffectFn1 Element Unit
 foreign import mediaMatches_ ∷ EffectFn1 String Boolean
 
 
+foreign import getQueryStringParam_ :: EffectFn1 String (Nullable String)
+
+getQueryStringParam :: String -> Effect (Maybe String)
+getQueryStringParam = map DN.toMaybe <<< EU.runEffectFn1  getQueryStringParam_
+
 mediaMatches ∷ String → Effect Boolean
 mediaMatches = EU.runEffectFn1 mediaMatches_
 

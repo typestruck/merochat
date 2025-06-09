@@ -29,6 +29,7 @@ import Data.Array as DA
 import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.HashMap as DH
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
@@ -99,6 +100,9 @@ main = do
       when smallScreen CISS.sendSmallScreen
       when (pwa || not smallScreen) CIN.checkNotifications
       when pwa $ FS.send imId StartPwa
+
+      --when the pwa is opened from a chat notification
+      resumeFromNotification
 
       --disable the back button on desktop/make the back button go back to previous screen on mobile
       CCD.pushState $ routes.im.get {}
@@ -202,6 +206,13 @@ update st model =
             DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
+
+resumeFromNotification :: Effect Unit
+resumeFromNotification = do
+      raw <- CCD.getQueryStringParam "resume"
+      case raw >>= DI.fromString of
+            Just userId -> FS.send imId $ ResumeChat userId
+            _ -> pure unit
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
