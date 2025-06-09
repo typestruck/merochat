@@ -229,9 +229,16 @@ setRegistered model = model { user { temporary = false } } /\
 
 -- set messages to read
 refocus ∷ ImModel → MoreMessages
-refocus model
-      | (spy "yaya" model.webSocketStatus) /= Connected = model /\ [ pure <<< Just $ UpdateWebSocketStatus Reconnect ]
-      | otherwise = model /\ [ pure <<< Just $ SetReadStatus Nothing ]
+refocus model =
+      if model.webSocketStatus /= Connected then
+            model /\ [ whenActive (pure <<< Just $ UpdateWebSocketStatus Reconnect) ]
+      else
+            model /\ [ whenActive (pure <<< Just $ SetReadStatus Nothing) ]
+      where
+      whenActive action = EC.liftEffect do
+            focused ← CCD.documentHasFocus
+            hidden ← CCD.documentIsHidden
+            if focused || not hidden then action else pure Nothing
 
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
