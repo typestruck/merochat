@@ -42,6 +42,8 @@ async function notify(raw) {
         incoming = JSON.parse(data.message.message),
         previousNotifications = await self.registration.getNotifications({ tag: incoming.senderId });
 
+    incoming.content = handleMarkdown(incoming.content);
+
     if (previousNotifications.length == 0) {
         body = incoming.content;
         allIncoming.push(incoming);
@@ -59,6 +61,25 @@ async function notify(raw) {
         data: { allIncoming }
     });
 }
+
+//avoid markdown only messages but ignore formatting inside for now
+function handleMarkdown(raw) {
+    let firstCharacter = raw[0];
+
+    switch (firstCharacter) {
+        case '>':
+            return 'Quote';
+        case '!':
+            return 'Picture';
+        case '<':
+            return 'Audio';
+        case '[':
+            return 'Link';
+        default:
+            return raw;
+    }
+}
+
 
 self.addEventListener('notificationclick', (event) => {
     event.waitUntil(resume(event.notification));
