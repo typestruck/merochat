@@ -2006,6 +2006,11 @@ select {
     font-weight: bold;
 }
 
+.big-avatar-center {
+    justify-content: center;
+    height: 75%;
+}
+
 .strokeless {
     stroke: none;
 }
@@ -2015,8 +2020,8 @@ select {
 }
 
 .bigger-suggestion-avatar {
-    align-self: center;
     cursor: pointer;
+    max-width: 100%;
 }
 
 .suggestion-center {
@@ -3081,11 +3086,6 @@ label {
         flex-direction: column;
         align-items: center;
         font-size: 0.9em
-    }
-
-    .bigger-suggestion-avatar {
-        height: 65%;
-        width: 65%;
     }
 
     .settings {

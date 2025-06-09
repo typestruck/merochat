@@ -127,7 +127,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                           [ HE.div (HA.class' "big-suggestion-info")
                                   [ HE.strong (HA.class' "big-card-name big-name-avatar") user.name
                                   ]
-                          , HE.div [ HA.class' "big-avatar-info" ]
+                          , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
                                   [ HE.img [ HA.src $ SA.fromAvatar user.avatar, HA.title "Close avatar", HA.class' "bigger-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
                                   ]
                           ]
