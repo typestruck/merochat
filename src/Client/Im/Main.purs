@@ -87,7 +87,6 @@ main = do
             , subscribe:
                     [ FSD.onClick' ToggleUserContextMenu
                     , onVisibilityChange Refocus
-                    , FSW.onFocus Refocus
                     , FSW.onOffline CloseWebSocket
                     ]
             , init: [] -- we use subscription instead of init events
@@ -238,7 +237,6 @@ setRegistered model = model { user { temporary = false } } /\
               pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
       ]
 
--- set messages to read
 refocus ∷ ImModel → MoreMessages
 refocus model =
       if model.webSocketStatus /= Connected then
