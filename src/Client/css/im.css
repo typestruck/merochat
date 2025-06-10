@@ -2011,6 +2011,15 @@ select {
     height: 75%;
 }
 
+.big-suggestion-header {
+    display: flex;
+}
+
+.big-card-name.grown {
+    flex-grow: 1;
+    text-align: center;
+}
+
 .strokeless {
     stroke: none;
 }

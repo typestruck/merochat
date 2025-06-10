@@ -201,52 +201,66 @@ backingTime =
             ]
 
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
-individualSuggestion suggestion model = HE.div (HA.class' "big-card")
-      [ HE.div (HA.class' "avatar-info")
-              [ HE.div [ HA.class' "big-avatar-info" ]
-                      [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "big-suggestion-avatar" ]
-                      , HE.div (HA.class' "big-suggestion-info")
-                              ( HE.strong (HA.class' "big-card-name") suggestion.name
-                                      : badges suggestion.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user suggestion ]
-                              )
-                      , HE.div (HA.class' "big-suggestion-info auto-left")
-                              ( [ HE.div_ $
-                                        if suggestion.temporary then
-                                              temporary
-                                        else
-                                              [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
-                                              , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
-                                              ]
-                                ]
-                                      <> genderAge suggestion
-                                      <> from suggestion
-                                      <> speaks suggestion
+individualSuggestion suggestion model = HE.div (HA.class' "big-card") $
+      if model.showLargeAvatar then
+            [ HE.div (HA.class' "avatar-info")
+                    [ HE.div (HA.class' "big-suggestion-header")
+                            [ HE.strong (HA.class' "big-card-name grown") suggestion.name
+                            , HE.div [ HA.class' "close-cards", HA.title "Close avatar", HA.onClick ToggleLargeAvatar ]
+                                    [ SIA.closeX []
+                                    ]
+                            ]
+                    , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
+                            [ HE.img [ HA.title "Close avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "bigger-suggestion-avatar" ]
+                            ]
+                    ]
+            ]
+      else
+            [ HE.div (HA.class' "avatar-info")
+                    [ HE.div [ HA.class' "big-avatar-info" ]
+                            [ HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "big-suggestion-avatar" ]
+                            , HE.div (HA.class' "big-suggestion-info")
+                                    ( HE.strong (HA.class' "big-card-name") suggestion.name
+                                            : badges suggestion.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user suggestion ]
+                                    )
+                            , HE.div (HA.class' "big-suggestion-info auto-left")
+                                    ( [ HE.div_ $
+                                              if suggestion.temporary then
+                                                    temporary
+                                              else
+                                                    [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
+                                                    , HE.span (HA.class' "duller") $ " karma • #" <> show suggestion.karmaPosition
+                                                    ]
+                                      ]
+                                            <> genderAge suggestion
+                                            <> from suggestion
+                                            <> speaks suggestion
 
-                              )
-                      , HE.div [ HA.class' "outer-user-menu" ] $ SIA.contextMenu $ show FullProfileContextMenu
-                      , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion.id false
-                      , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideUserMenuModal ]
-                              [ SIA.closeX []
-                              ]
-                      ]
-              ]
-      , HE.div_
-              ( [ HE.div (HA.class' "card-headline") suggestion.headline
-                , HE.hr' (HA.class' "tag-ruler")
-                ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
-              )
-      , arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
-      , HE.div [ HA.class' "card-description" ]
-              [ HE.span (HA.class' "card-about-description") "About"
-              , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
-              ]
+                                    )
+                            , HE.div [ HA.class' "outer-user-menu" ] $ SIA.contextMenu $ show FullProfileContextMenu
+                            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion.id false
+                            , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideUserMenuModal ]
+                                    [ SIA.closeX []
+                                    ]
+                            ]
+                    ]
+            , HE.div_
+                    ( [ HE.div (HA.class' "card-headline") suggestion.headline
+                      , HE.hr' (HA.class' "tag-ruler")
+                      ] <> map (HE.span (HA.class' "tag")) suggestion.tags <> [ HE.hr' (HA.class' "tag-ruler") ]
+                    )
+            , arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
+            , HE.div [ HA.class' "card-description" ]
+                    [ HE.span (HA.class' "card-about-description") "About"
+                    , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                    ]
 
-      , HE.div (HA.class' "see-profile-chat suggestion-input")
-              [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model
-              ]
+            , HE.div (HA.class' "see-profile-chat suggestion-input")
+                    [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model
+                    ]
 
-      , arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
-      ]
+            , arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
+            ]
 
 -- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
