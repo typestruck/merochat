@@ -65,6 +65,7 @@ import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User as SUR
+import Test.Client.Model (webSocket)
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
@@ -187,7 +188,7 @@ update st model =
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             FinishTutorial → finishTutorial model
-            Refocus → refocus model
+            Refocus → refocus webSocket model
             UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
             CloseWebSocket → CIWE.closeWebSocket st.webSocketRef model
             TerminateTemporaryUser → terminateAccount model
@@ -199,19 +200,18 @@ update st model =
             RequestFailed failure → handleRequestFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
             SetSmallScreen → CISS.setSmallScreen model
-            SendPing isActive → CIWE.sendPing webSocket isActive model
             SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
             DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
 
-resumeFromNotification :: Effect Unit
+resumeFromNotification ∷ Effect Unit
 resumeFromNotification = do
-      raw <- CCL.queryParameter "resume"
+      raw ← CCL.queryParameter "resume"
       case raw >>= DI.fromString of
-            Just userId -> FS.send imId $ ResumeChat userId
-            _ -> pure unit
+            Just userId → FS.send imId $ ResumeChat userId
+            _ → pure unit
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
@@ -237,17 +237,23 @@ setRegistered model = model { user { temporary = false } } /\
               pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
       ]
 
-refocus ∷ ImModel → MoreMessages
-refocus model =
+refocus ∷ WebSocket → ImModel → MoreMessages
+refocus webSocket model =
       if model.webSocketStatus /= Connected then
             model /\ [ whenActive (pure <<< Just $ UpdateWebSocketStatus Reconnect) ]
       else
-            model /\ [ whenActive (pure <<< Just $ SetReadStatus Nothing) ]
+            model /\ [ whenActive (pure <<< Just $ SetReadStatus Nothing), updateLastSeen ]
       where
       whenActive action = EC.liftEffect do
             focused ← CCD.documentHasFocus
             hidden ← CCD.documentIsHidden
             if focused || not hidden then action else pure Nothing
+
+      updateLastSeen = EC.liftEffect do
+            focused ← CCD.documentHasFocus
+            hidden ← CCD.documentIsHidden
+            CIW.sendPayload webSocket $ UpdateAvailability { online: focused || not hidden, serialize: false }
+            pure Nothing
 
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =

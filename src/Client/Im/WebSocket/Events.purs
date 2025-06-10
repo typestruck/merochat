@@ -1,4 +1,4 @@
-module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, sendPing, receiveMessage, reconnectWebSocket, closeWebSocket) where
+module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, receiveMessage, reconnectWebSocket, closeWebSocket) where
 
 import Prelude
 
@@ -110,9 +110,9 @@ handleOpen ∷ Ref WebSocketState → Event → Effect Unit
 handleOpen webSocketStateRef _ = do
       state ← ER.read webSocketStateRef
       --when the connection is open and the user is on the page serialize their availability
-      sendSetOnline state.webSocket
+      setOnline state.webSocket
       newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
-      newPingId ← ET.setInterval pingDelay ping
+      newPingId ← ET.setInterval pingDelay (ping state.webSocket)
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId }) webSocketStateRef
       FS.send imId $ UpdateWebSocketStatus Connected
       --check if the page needs to be reloaded
@@ -127,15 +127,13 @@ handleOpen webSocketStateRef _ = do
       privilegeDelay = 1000 * 60 * 60
       pollPrivileges webSocket = CIW.sendPayload webSocket UpdatePrivileges
 
-      pingDelay = 1000 * 10
-      ping = do
-            isFocused ← CCD.documentHasFocus
-            FS.send imId $ SendPing isFocused
+      pingDelay = 1000 * 20
+      ping webSocket = CIW.sendPayload webSocket Ping
 
-      sendSetOnline webSocket = do
+      setOnline webSocket = do
             isFocused ← CCD.documentHasFocus
             hidden ← CCD.documentIsHidden
-            when (isFocused || not hidden) $ CIW.sendPayload webSocket SetOnline
+            when (isFocused || not hidden) <<< CIW.sendPayload webSocket $ UpdateAvailability { online : true, serialize : true}
 
 -- | Handle an incoming (json encoded) message from the server
 handleMessage ∷ Event → Effect Unit
@@ -143,11 +141,12 @@ handleMessage event = do
       let payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust $ WSEM.fromEvent event
       let message = SU.fromRight $ SJ.fromJson payload
       case message of
+            Pong → pure unit
             CloseConnection cc → FS.send imId $ Logout cc --user has been banned or server is on fire
-            Pong p → FS.send imId $ DisplayAvailability p.status --pings are set up when the socket is open
             Content c → do
                   isFocused ← CCD.documentHasFocus
-                  FS.send imId $ ReceiveMessage c isFocused --actual site events, like new messages or status updates
+                  hidden ← CCD.documentIsHidden
+                  FS.send imId <<< ReceiveMessage c $ isFocused || not hidden --actual site events, like new messages or status updates
 
 -- | Clear intervals and set up new web socket connection after a random timeout
 handleCloseError ∷ Event → Effect Unit
@@ -159,18 +158,6 @@ clearIntervals webSocketStateRef = do
       DM.maybe (pure unit) ET.clearInterval state.pingId
       DM.maybe (pure unit) ET.clearInterval state.privilegesId
       ER.modify_ (_ { pingId = Nothing, privilegesId = Nothing }) webSocketStateRef
-
--- | Send ping with users to learn availability of
-sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
-sendPing webSocket isActive model =
-      model /\
-            [ liftEffect do
-                    CIW.sendPayload webSocket $ Ping
-                          { isActive
-                          , statusFor: DA.nub (map _.id model.suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) model.contacts)) -- user might be both in contacts and suggestions
-                          }
-                    pure Nothing
-            ]
 
 -- | Handle content messages from the server
 receiveMessage ∷ WebSocket → Boolean → WebSocketPayloadClient → ImModel → MoreMessages

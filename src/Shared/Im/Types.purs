@@ -316,7 +316,6 @@ data ImMessage
 
       --main
       | DisplayAvailability AvailabilityStatus
-      | SendPing Boolean
       | ReloadPage
       | FinishTutorial
       | ToggleUserContextMenu Event
@@ -350,11 +349,8 @@ data ImMessage
 data WebSocketPayloadServer
       = UpdateHash
       | UpdatePrivileges
-      | SetOnline
+      | UpdateAvailability { online :: Boolean, serialize :: Boolean }
       | Ping
-              { isActive ∷ Boolean
-              , statusFor ∷ Array Int
-              }
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord
       | EditedMessage EditedRecord
@@ -383,7 +379,7 @@ type DeletedRecord = { id ∷ Int, userId ∷ Int }
 type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
 
 data FullWebSocketPayloadClient
-      = Pong { status ∷ AvailabilityStatus }
+      = Pong
       | Content WebSocketPayloadClient
       | CloseConnection AfterLogout
 
