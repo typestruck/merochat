@@ -1243,6 +1243,11 @@ svg.toolbar-action {
     word-wrap: break-word;
     max-width: 50em;
     margin: 5px 0px;
+    margin-bottom: 15px;
+}
+
+.message-content p:last-child {
+    margin-bottom: 5px;
 }
 
 .message-content p a {
