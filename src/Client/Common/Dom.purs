@@ -60,7 +60,7 @@ foreign import toggleDisabled_ ∷ EffectFn1 Element Unit
 
 foreign import documentHasFocus ∷ Effect Boolean
 
-foreign import documentIsHidden ∷ Effect Boolean
+foreign import documentIsNotHidden ∷ Effect Boolean
 
 foreign import screenWidth ∷ Effect Int
 

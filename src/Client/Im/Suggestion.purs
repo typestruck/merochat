@@ -20,7 +20,7 @@ import Flame as F
 import Safe.Coerce as SC
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ImMessage(..), MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..), ImModel)
+import Shared.Im.Types (ImMessage(..), ImModel, MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
@@ -107,7 +107,7 @@ displayMoreSuggestions suggestions model =
                   , suggestions = suggestions
                   , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
                   , suggestionsFrom = suggestionsFrom
-                  } /\ [ scrollToTop ]
+                  } /\ [ scrollToTop, track ]
       where
       suggestionsSize = DA.length suggestions
 
@@ -120,6 +120,7 @@ displayMoreSuggestions suggestions model =
       scrollToTop = do
             EC.liftEffect (CCD.unsafeGetElementById Cards >>= WDE.setScrollTop 0.0)
             pure Nothing
+      track = pure $ Just TrackAvailability
 
 -- | Show or hide full user profile
 toggleSuggestionChatInput ∷ Int → ImModel → NoMessages

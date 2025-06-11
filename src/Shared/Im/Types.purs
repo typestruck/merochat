@@ -315,17 +315,17 @@ data ImMessage
       | TypingId TimeoutId
 
       --main
-      | DisplayAvailability AvailabilityStatus
       | ReloadPage
       | FinishTutorial
       | ToggleUserContextMenu Event
-      | Refocus
+      | Refocus FocusEvent
       | ToggleScrollChatDown Boolean Int
       | SpecialRequest RetryableRequest
       | ReconnectWebSocket
       | PushedMessages (Array ClientMessagePayload)
       | SetSmallScreen
       | ReceiveMessage WebSocketPayloadClient Boolean
+      | TrackAvailability
       | PreventStop Event
       | AskNotification
       | ToggleAskNotification
@@ -350,6 +350,7 @@ data WebSocketPayloadServer
       = UpdateHash
       | UpdatePrivileges
       | UpdateAvailability { online :: Boolean, serialize :: Boolean }
+      | TrackAvailabilityFor { ids :: Array Int }
       | Ping
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord
@@ -376,8 +377,6 @@ type EditedRecord = { id ∷ Int, userId ∷ Int, content ∷ MessageContent }
 
 type DeletedRecord = { id ∷ Int, userId ∷ Int }
 
-type AvailabilityStatus = Array { id ∷ Int, status ∷ Availability }
-
 data FullWebSocketPayloadClient
       = Pong
       | Content WebSocketPayloadClient
@@ -389,6 +388,7 @@ data WebSocketPayloadClient
       | NewIncomingMessage ClientMessagePayload
       | NewEditedMessage EditedMessagePayload
       | NewDeletedMessage DeletedMessagePayload
+      | TrackedAvailability { id :: Int, availability :: Availability}
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
               { previousId ∷ Int
@@ -406,6 +406,8 @@ data WebSocketPayloadClient
 
 data MessageError = UserUnavailable | InvalidMessage
 
+data FocusEvent = VisibilityChange | FocusBlur
+
 data SuggestionsFrom = ThisWeek | LastTwoWeeks | LastMonth | All | OnlineOnly
 
 instance EncodeQueryParam SuggestionsFrom where
@@ -420,6 +422,7 @@ instance DecodeQueryParam SuggestionsFrom where
 
 derive instance Eq SuggestionsFrom
 derive instance Eq MeroChatCall
+derive instance Eq FocusEvent
 derive instance Eq WebSocketConnectionStatus
 
 derive instance Ord ReportReason
