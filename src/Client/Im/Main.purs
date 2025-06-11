@@ -28,21 +28,19 @@ import Data.Array ((:))
 import Data.Array as DA
 import Data.DateTime as DDT
 import Data.Either (Either(..))
-import Data.HashMap as DH
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.Symbol as DST
-import Data.Symbol as TDS
 import Data.Time.Duration (Days(..), Milliseconds(..), Minutes(..))
-import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class as EC
 import Effect.Now as EN
+import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Unsafe as EU
 import Flame (ListUpdate, QuerySelector(..), Subscription)
@@ -80,18 +78,20 @@ import Web.Socket.WebSocket (WebSocket)
 main ∷ Effect Unit
 main = do
       webSocketRef ← CIWE.startWebSocket
-
+      lastActiveRef <- ER.new true
       --im is server side rendered
       F.resumeMount (QuerySelector $ "#" <> show Im) imId
             { view: SIV.view true
             , subscribe:
                     [ FSD.onClick' ToggleUserContextMenu
-                    , onVisibilityChange Refocus
-                    , FSW.onFocus Refocus
+                    --we need focus blur and visibility change to handle all case of when the window is active or not
+                    , FSW.onFocus (Refocus FocusBlur)
+                    , onBlur (Refocus FocusBlur)
+                    , onVisibilityChange (Refocus VisibilityChange)
                     , FSW.onOffline CloseWebSocket
                     ]
             , init: [] -- we use subscription instead of init events
-            , update: update { webSocketRef }
+            , update: update { webSocketRef, lastActiveRef }
             }
 
       smallScreen ← CISS.checkSmallScreen
@@ -189,7 +189,8 @@ update st model =
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             FinishTutorial → finishTutorial model
-            Refocus → refocus model
+            TrackAvailability → CIWE.trackAvailability webSocket model
+            Refocus e → refocus e st.lastActiveRef webSocket model
             UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
             CloseWebSocket → CIWE.closeWebSocket st.webSocketRef model
             TerminateTemporaryUser → terminateAccount model
@@ -201,10 +202,8 @@ update st model =
             RequestFailed failure → handleRequestFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
             SetSmallScreen → CISS.setSmallScreen model
-            SendPing isActive → CIWE.sendPing webSocket isActive model
             SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
-            DisplayAvailability availability → displayAvailability availability model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
 
@@ -218,20 +217,6 @@ resumeFromNotification = do
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
 toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle }
 
-displayAvailability ∷ AvailabilityStatus → ImModel → NoMessages
-displayAvailability avl model = F.noMessages $ model
-      { contacts = map updateContact model.contacts
-      , suggestions = map updateUser model.suggestions
-      }
-      where
-      availability = DH.fromArray $ map (\t → Tuple t.id t.status) avl
-      updateContact contact = case DH.lookup contact.user.id availability of
-            Just status → contact { user { availability = status } }
-            Nothing → contact
-      updateUser user = case DH.lookup user.id availability of
-            Just status → user { availability = status }
-            Nothing → user
-
 setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } /\
       [ do
@@ -239,18 +224,32 @@ setRegistered model = model { user { temporary = false } } /\
               pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
       ]
 
--- set messages to read
-refocus ∷ ImModel → MoreMessages
-refocus model =
+refocus ∷ FocusEvent → Ref Boolean → WebSocket → ImModel → MoreMessages
+refocus focusEvent lastActiveRef webSocket model =
       if model.webSocketStatus /= Connected then
             model /\ [ whenActive (pure <<< Just $ UpdateWebSocketStatus Reconnect) ]
       else
-            model /\ [ whenActive (pure <<< Just $ SetReadStatus Nothing) ]
+            model /\ [ whenFocused (pure <<< Just $ SetReadStatus Nothing), updateLastSeen ]
       where
       whenActive action = EC.liftEffect do
+            active ← case focusEvent of
+                  VisibilityChange → CCD.documentIsNotHidden
+                  FocusBlur → CCD.documentHasFocus
+            if active then action else pure Nothing
+
+      whenFocused action = EC.liftEffect do
             focused ← CCD.documentHasFocus
-            hidden ← CCD.documentIsHidden
-            if focused || not hidden then action else pure Nothing
+            if focusEvent == FocusBlur && focused then action else pure Nothing
+
+      updateLastSeen = EC.liftEffect do
+            active ← case focusEvent of
+                  VisibilityChange → CCD.documentIsNotHidden
+                  FocusBlur → CCD.documentHasFocus
+            lastActive <- ER.read lastActiveRef
+            when (active /= lastActive) do
+                  CIW.sendPayload webSocket $ UpdateAvailability { online: active, serialize: false }
+                  ER.write active lastActiveRef
+            pure Nothing
 
 registerUser ∷ ImModel → MoreMessages
 registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
@@ -313,16 +312,16 @@ finishTutorial model = model { user { completedTutorial = true } } /\ [ finish, 
             pure <<< Just $ DisplayNewContacts contact
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
-blockUser webSocket id model =
-      updateAfterBlock id model /\
-            [ do
-                    result ← CCN.defaultResponse $ request.im.block { body: { id } }
-                    case result of
-                          Left _ → pure <<< Just $ RequestFailed { request: BlockUser id, errorMessage: Nothing }
-                          _ → do
-                                EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
-                                pure Nothing
-            ]
+blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]
+      where
+      block = do
+            result ← CCN.defaultResponse $ request.im.block { body: { id } }
+            case result of
+                  Left _ → pure <<< Just $ RequestFailed { request: BlockUser id, errorMessage: Nothing }
+                  _ → do
+                        EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
+                        pure Nothing
+      track = pure $ Just TrackAvailability
 
 updateAfterBlock ∷ Int → ImModel → ImModel
 updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
@@ -341,25 +340,24 @@ updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
       fromUser { id } = id
 
 report ∷ Int → WebSocket → ImModel → MoreMessages
-report userId webSocket model@{ reportReason, reportComment } = case reportReason of
+report userId webSocket model = case model.reportReason of
       Just rs →
             updateAfterBlock userId
                   ( model
                           { reportReason = Nothing
                           , reportComment = Nothing
                           }
-                  ) /\
-                  [ do
-                          result ← CCN.defaultResponse $ request.im.report { body: { userId, reason: rs, comment: reportComment } }
-                          case result of
-                                Left _ → pure <<< Just $ RequestFailed { request: ReportUser userId, errorMessage: Nothing }
-                                _ → do
-                                      EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
-                                      pure Nothing
-                  ]
-      Nothing → F.noMessages $ model
-            { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "reportReason") ]
-            }
+                  ) /\ [ report rs, track ]
+      Nothing → F.noMessages model
+      where
+      report rs = do
+            result ← CCN.defaultResponse $ request.im.report { body: { userId, reason: rs, comment: model.reportComment } }
+            case result of
+                  Left _ → pure <<< Just $ RequestFailed { request: ReportUser userId, errorMessage: Nothing }
+                  _ → do
+                        EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
+                        pure Nothing
+      track = pure $ Just TrackAvailability
 
 reloadPage ∷ ImModel → NextMessage
 reloadPage model = model /\ [ EC.liftEffect CCL.reload *> pure Nothing ]
@@ -493,3 +491,6 @@ historyChange smallScreen = do
 
 onVisibilityChange ∷ ∀ message. message → Subscription message
 onVisibilityChange = FSIC.createSubscription Document "visibilitychange"
+
+onBlur ∷ ∀ message. message → Subscription message
+onBlur = FSIC.createSubscription Window "blur"

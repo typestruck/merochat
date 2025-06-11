@@ -34,8 +34,8 @@ export function setValue_(element, value) {
       element.value = value;
 }
 
-export function documentIsHidden() {
-      return document.hidden;
+export function documentIsNotHidden() {
+      return !document.hidden;
 }
 
 export function toggleDisabled_(element) {

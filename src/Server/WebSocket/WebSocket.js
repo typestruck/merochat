@@ -42,14 +42,6 @@ export function getLastPing(connection) {
       return connection.lastPingTag;
 }
 
-export function onPong_(ws, handlePong) {
-      ws.on('pong', handlePong);
-}
-
-export function ping_(ws, pinger) {
-      ws.ping(pinger);
-}
-
 export function sendMessage_(ws, message) {
       ws.send(message);
 }

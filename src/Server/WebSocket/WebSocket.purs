@@ -26,8 +26,6 @@ foreign import onServerClose_ ∷ EffectFn2 WebSocketServer (EffectFn1 Unit Unit
 foreign import onMessage_ ∷ EffectFn2 WebSocketConnection (EffectFn1 WebSocketMessage Unit) Unit
 foreign import onClose_ ∷ EffectFn2 WebSocketConnection (EffectFn2 CloseCode CloseReason Unit) Unit
 foreign import onError_ ∷ EffectFn2 WebSocketConnection (EffectFn1 Error Unit) Unit
-foreign import onPong_ ∷ EffectFn2 WebSocketConnection (EffectFn1 Unit Unit) Unit
-foreign import ping_ ∷ EffectFn2 WebSocketConnection (EffectFn1 Unit Unit) Unit
 foreign import sendMessage_ ∷ EffectFn2 WebSocketConnection WebSocketMessage Unit
 foreign import close_ ∷ EffectFn3 WebSocketConnection CloseCode CloseReason Unit
 foreign import terminate_ ∷ EffectFn1 WebSocketConnection Unit
@@ -84,12 +82,6 @@ onClose ws callback = EU.runEffectFn2 onClose_ ws (EU.mkEffectFn2 callback)
 onError ∷ WebSocketConnection → (Error → Effect Unit) → Effect Unit
 onError ws callback = EU.runEffectFn2 onError_ ws (EU.mkEffectFn1 callback)
 
-onPong ∷ WebSocketConnection → (Unit → Effect Unit) → Effect Unit
-onPong ws callback = EU.runEffectFn2 onPong_ ws (EU.mkEffectFn1 callback)
-
-ping ∷ WebSocketConnection → (Unit → Effect Unit) → Effect Unit
-ping ws callback = EU.runEffectFn2 ping_ ws (EU.mkEffectFn1 callback)
-
 -- | Send a message over a WebSocketConnection
 sendMessage ∷ WebSocketConnection → WebSocketMessage → Effect Unit
 sendMessage ws message = EU.runEffectFn2 sendMessage_ ws message
@@ -100,10 +92,6 @@ close ws = EU.runEffectFn3 close_ ws (CloseCode 1000) (CloseReason "Closed by se
 
 terminate ∷ WebSocketConnection → Effect Unit
 terminate ws = EU.runEffectFn1 terminate_ ws
-
--- | Initiate a closing handshake with given code and reason
-close' ∷ WebSocketConnection → CloseCode → CloseReason → Effect Unit
-close' ws code reason = EU.runEffectFn3 close_ ws code reason
 
 -- | Client
 createWebSocket ∷ String → String → Effect WebSocketConnection

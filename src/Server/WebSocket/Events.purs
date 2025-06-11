@@ -4,8 +4,7 @@ import Prelude
 
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
-import Data.Array.NonEmpty as DAN
-import Data.DateTime (DateTime(..), Time(..))
+import Data.DateTime (DateTime(..), Millisecond, Second, Time(..))
 import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.Enum as DEN
@@ -17,6 +16,8 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
 import Data.Newtype as DN
+import Data.Set (Set)
+import Data.Set as DS
 import Data.Time.Duration (Hours)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
@@ -25,8 +26,9 @@ import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
 import Effect.Aff as EA
-import Effect.Class (class MonadEffect, liftEffect)
-import Effect.Console as EC
+import Effect.Class (class MonadEffect)
+import Effect.Class as EC
+import Effect.Console as ECS
 import Effect.Exception (Error)
 import Effect.Now as EN
 import Effect.Ref (Ref)
@@ -46,7 +48,6 @@ import Server.Effect (BaseEffect, BaseReader, Configuration)
 import Server.Effect as SE
 import Server.Im.Action as SIA
 import Server.Im.Database.Execute as SIDE
-import Server.Im.Database.Permission as SIDP
 import Server.Push as SP
 import Server.Settings.Action as SSA
 import Server.Token as ST
@@ -55,7 +56,7 @@ import Server.WebSocket as SW
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Shared.Im.Types (AfterLogout(..), EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..), DeletedRecord)
+import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
@@ -67,7 +68,7 @@ import Simple.JSON as SJS
 -- | Keep each users web socket/availability in a ref
 type UserAvailability =
       { connections ∷ HashMap String WebSocketConnection
-      , lastSeen ∷ DateTime
+      , trackedBy ∷ Set Int
       , availability ∷ Availability
       }
 
@@ -87,19 +88,12 @@ type WebSocketReaderLite = BaseReader
 -- | Wrapper so we can serialize dates in a way postgresql understands
 newtype DT = DT DateTime
 
--- | How often should availability be serialized
-aliveDelay ∷ Int
-aliveDelay = DI.round $ 1000.0 * 60.0 * aliveDelayMinutes
+-- | How often do we check for inactive connections and serialize last seen
+interval ∷ Int
+interval = 1000 * 60 * 60 * intervalHours
 
-aliveDelayMinutes ∷ Number
-aliveDelayMinutes = 0.5
-
--- | How often do we check for inactive connections
-inactiveDelay ∷ Int
-inactiveDelay = 1000 * 60 * 60 * inactiveHours
-
-inactiveHours ∷ Int
-inactiveHours = 1
+intervalHours ∷ Int
+intervalHours = 1
 
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
@@ -107,11 +101,11 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
             userId ← parseUserId
             isIt ← DM.maybe (pure false) SBU.isUserBanned userId
             pure $ if isIt then Nothing else userId
-      liftEffect $ case maybeUserId of
+      EC.liftEffect $ case maybeUserId of
             Nothing → do
                   --this can be made more clear for the end user
                   sendWebSocketMessage connection $ CloseConnection LoginPage
-                  EC.log "terminated due to auth error"
+                  ECS.log "terminated due to auth error"
             Just loggedUserId → do
                   now ← EN.nowDateTime
                   ER.modify_ (DH.alter (upsertUserAvailability now) loggedUserId) allUsersAvailabilityRef
@@ -124,10 +118,11 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
       parseUserId = ST.userIdFromToken configuration.tokenSecret token
 
+      initialAvailability = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, availability: None }
       upsertUserAvailability date =
             case _ of
-                  Nothing → Just $ makeUserAvailabity (DH.fromArray [ Tuple token connection ]) (Right token) true date None --could also query the db
-                  Just userAvailability → Just $ makeUserAvailabity (DH.insert token connection userAvailability.connections) (Right token) true date userAvailability.availability
+                  Nothing → Just $ makeUserAvailabity initialAvailability (Right token) date None --could also query the db
+                  Just userAvailability → Just $ makeUserAvailabity (userAvailability { connections = DH.insert token connection userAvailability.connections }) (Right token) date None
 
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJson message of
@@ -142,7 +137,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
                         EA.launchAff_ <<< EA.catchError run $ reportError payload Nothing
                   Left error → do
                         SW.terminate connection
-                        EC.log $ "terminated due to serialization error: " <> error
+                        ECS.log $ "terminated due to serialization error: " <> error
 
       reportError ∷ ∀ a b. MonadEffect b ⇒ WebSocketPayloadServer → Maybe DatabaseError → a → b Unit
       reportError origin context _ = sendWebSocketMessage connection <<< Content $ PayloadError { origin, context }
@@ -152,36 +147,58 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
             _ → Nothing
 
 handleError ∷ Error → Effect Unit
-handleError = EC.log <<< show
+handleError = ECS.log <<< show
 
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
-      now ← EN.nowDateTime
+      now ← EC.liftEffect EN.nowDateTime
       ER.modify_ (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
       where
-      removeConnection date userAvailability = Just $ makeUserAvailabity userAvailability.connections (Left token) false date userAvailability.availability --this may set an incorrect last seen but it is preferable to saying an user is online when they are not
+      removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do
       context ← RR.ask
-      allUsersAvailability ← liftEffect $ ER.read context.allUsersAvailabilityRef
+      allUsersAvailability ← EC.liftEffect $ ER.read context.allUsersAvailabilityRef
       case payload of
-            Ping ping → sendPong context.token context.loggedUserId context.allUsersAvailabilityRef ping
+            Ping → sendPong context.token context.loggedUserId allUsersAvailability
             OutgoingMessage message → sendOutgoingMessage context.token context.loggedUserId allUsersAvailability message
             EditedMessage message → sendEditedMessage context.token context.loggedUserId allUsersAvailability message
+            TrackAvailabilityFor for → trackAvailability context.loggedUserId context.allUsersAvailabilityRef for
             DeletedMessage message → unsendMessage context.token context.loggedUserId allUsersAvailability message
             ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
             Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
-            SetOnline → setOnline context.loggedUserId
+            UpdateAvailability flags → updateAvailability context.token context.loggedUserId context.allUsersAvailabilityRef flags
             UpdatePrivileges → sendUpdatedPrivileges context.loggedUserId allUsersAvailability
             UpdateHash → sendUpdatedHash context.loggedUserId allUsersAvailability
             UnavailableFor { id } → sendUnavailability context.loggedUserId allUsersAvailability id
             Ban { id } → sendBan allUsersAvailability id
 
-setOnline ∷ Int → WebSocketEffect
-setOnline loggedUserId = do
-      now ← liftEffect EN.nowDateTime
-      SIDE.upsertLastSeen $ SJS.writeJSON [ { who: loggedUserId, date: DT now } ]
+updateAvailability ∷ String → Int → Ref (HashMap Int UserAvailability) → { online ∷ Boolean, serialize ∷ Boolean } → WebSocketEffect
+updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
+      now ← zeroFromMinutes <$>  EC.liftEffect EN.nowDateTime
+      allUsersAvailability ← EC.liftEffect $ ER.read allUsersAvailabilityRef
+      let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
+      let
+            availability
+                  | flags.online = Online
+                  | otherwise = LastSeen $ DateTimeWrapper now
+      when (userAvailability.availability /= availability) do
+            EC.liftEffect $ ER.modify_ (DH.insert loggedUserId (makeUserAvailabity userAvailability (Right token) now availability)) allUsersAvailabilityRef
+            DF.traverse_ (sendAvailability allUsersAvailability availability) userAvailability.trackedBy
+            when flags.serialize <<< SIDE.upsertLastSeen $ SJS.writeJSON [ { who: loggedUserId, date: DT now } ]
+      where
+      --ignore last seen if only difference is in seconds / milliseconds
+      zeroFromMinutes dt = DDT.modifyTime (DDT.setSecond (SU.fromJust $ DEN.toEnum 0) <<< DDT.setMillisecond (SU.fromJust $ DEN.toEnum 0)) dt
+
+      sendAvailability allUsersAvailability availability userId = case DH.lookup userId allUsersAvailability of
+            Just found → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: loggedUserId, availability  }) found.connections
+            Nothing → pure unit
+
+trackAvailability ∷ Int → Ref (HashMap Int UserAvailability) → { ids ∷ Array Int } → WebSocketEffect
+trackAvailability loggedUserId allUsersAvailabilityRef for = R.liftEffect $ DF.traverse_ (\id → ER.modify_ (DH.update track id) allUsersAvailabilityRef) for.ids
+      where
+      track userAvailability = Just userAvailability { trackedBy = DS.insert loggedUserId userAvailability.trackedBy }
 
 sendBan ∷ HashMap Int UserAvailability → Int → WebSocketEffect
 sendBan allUsersAvailability userId = do
@@ -220,43 +237,10 @@ sendTyping loggedUserId allUsersAvailability userId = do
       where
       send connection = sendWebSocketMessage connection <<< Content $ ContactTyping { id: loggedUserId }
 
---pings fulfill three purposes
--- keep the connection alive
--- maintain online status
--- get contacts/suggestions online status
-sendPong ∷ String → Int → Ref (HashMap Int UserAvailability) → { isActive ∷ Boolean, statusFor ∷ Array Int } → WebSocketEffect
-sendPong token loggedUserId allUsersAvailabilityRef ping = do
-      allUsersAvailability ← liftEffect $ ER.read allUsersAvailabilityRef
+sendPong ∷ String → Int → HashMap Int UserAvailability → WebSocketEffect
+sendPong token loggedUserId allUsersAvailability = do
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
-      Tuple users missing ← makeAvailability allUsersAvailability
-      liftEffect do
-            now ← EN.nowDateTime
-            ER.modify_ (DH.insert loggedUserId (makeUserAvailabity userAvailability.connections (Right token) ping.isActive now userAvailability.availability)) allUsersAvailabilityRef
-            ER.modify_ (\avl → DH.union avl $ makeMissingAvailability missing) allUsersAvailabilityRef
-      sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) $ Pong { status: users }
-      where
-      makeAvailability avl = do
-            let
-                  users = map (\id → { id, status: DM.maybe None _.availability $ DH.lookup id avl }) ping.statusFor
-                  nones = map _.id $ DA.filter ((None == _) <<< _.status) users
-            case DAN.fromArray nones of
-                  Nothing → pure $ Tuple users []
-                  Just missing → do
-                        lastSeens ← DH.fromArrayBy _.who _.date <$> SIDP.queryLastSeen missing
-                        let
-                              records = map
-                                    ( \r →
-                                            { id: r.id
-                                            , status: case r.status of
-                                                    None → DM.maybe None (LastSeen <<< DateTimeWrapper) $ DH.lookup r.id lastSeens
-                                                    _ → r.status
-                                            }
-                                    )
-                                    users
-                        pure <<< Tuple records $ DH.toArrayBy Tuple lastSeens
-
-      makeMissingAvailability missing = DH.fromArray $ map newUserAvailability missing
-      newUserAvailability (Tuple id date) = Tuple id $ makeUserAvailabity DH.empty (Left token) false date (LastSeen $ DateTimeWrapper date)
+      sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) Pong
 
 sendUnavailability ∷ Int → HashMap Int UserAvailability → Int → WebSocketEffect
 sendUnavailability loggedUserId allUsersAvailability userId = do
@@ -413,25 +397,23 @@ unsendMessage token loggedUserId allUsersAvailability deleted = do
 
       loggedUserAvailability = DH.lookup loggedUserId allUsersAvailability
 
-makeUserAvailabity ∷ HashMap String WebSocketConnection → Either String String → Boolean → DateTime → Availability → UserAvailability
-makeUserAvailabity connections token isActive lastSeen previousAvailability =
-      { lastSeen
+makeUserAvailabity ∷ UserAvailability → Either String String → DateTime → Availability → UserAvailability
+makeUserAvailabity old token date currentAvailability =
+      { trackedBy: old.trackedBy
       , connections:
               case token of
-                    Right t → DH.update (Just <<< SW.lastPing lastSeen) t connections -- ping on the socket is used to determine inactive connections
-                    Left t → DH.delete t connections
+                    Right t → DH.update (Just <<< SW.lastPing date) t old.connections -- ping on the socket is used to determine inactive connections
+                    Left t → DH.delete t old.connections
       , availability:
-              if isActive then
-                    Online
-              else if previousAvailability == Online then
-                    LastSeen $ DateTimeWrapper lastSeen
-              else
-                    previousAvailability
+              case currentAvailability of
+                    Online → Online
+                    None → old.availability
+                    c → c
       }
 
 -- | Send a json encoded message
 sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWebSocketPayloadClient → b Unit
-sendWebSocketMessage connection = liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson
+sendWebSocketMessage connection = EC.liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson
 
 -- | Connections are dropped after 1 hour of inactivity
 terminateInactive ∷ Ref (HashMap Int UserAvailability) → Effect Unit
@@ -440,16 +422,15 @@ terminateInactive allUsersAvailabilityRef = do
       allUsersAvailability ← ER.read allUsersAvailabilityRef
       DF.traverse_ (check now) $ DH.toArrayBy Tuple allUsersAvailability
       where
+      updateConnections availability connections = availability
+            { connections = DH.difference availability.connections connections
+            }
+      hasExpired now lastSeen = intervalHours <= DI.floor (DN.unwrap (DDT.diff now lastSeen ∷ Hours))
       check now (Tuple id userAvailability) = do
-            let
-                  expiredConnections
-                        | hasExpired now userAvailability.lastSeen = userAvailability.connections
-                        | otherwise = DH.filter (not hasExpired now <<< SW.getLastPing) userAvailability.connections
+            let expiredConnections = DH.filter (not hasExpired now <<< SW.getLastPing) userAvailability.connections
             DF.traverse_ SW.terminate $ DH.values expiredConnections
             when (not $ DH.isEmpty expiredConnections) $
-                  ER.modify_ (DH.insert id (makeUserAvailabity (DH.difference userAvailability.connections expiredConnections) (Left "") false userAvailability.lastSeen userAvailability.availability)) allUsersAvailabilityRef
-
-      hasExpired now lastSeen = inactiveHours <= DI.floor (DN.unwrap (DDT.diff now lastSeen ∷ Hours))
+                  ER.modify_ (DH.insert (spy "expired for" id) (updateConnections userAvailability expiredConnections)) allUsersAvailabilityRef
 
 withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
 withConnections userAvailability handler =
@@ -457,12 +438,11 @@ withConnections userAvailability handler =
             Just ua → DF.traverse_ handler $ DH.values ua.connections
             Nothing → pure unit
 
---we could save some work here by only serializing availabilities that have changed
--- | Last seen dates are serialized every minute
+-- | Last seen dates are serialized every hour
 persistLastSeen ∷ WebSocketReaderLite → Effect Unit
 persistLastSeen context = do
       allUsersAvailability ← ER.read context.allUsersAvailabilityRef
-      now ← liftEffect EN.nowDateTime
+      now ← EC.liftEffect EN.nowDateTime
       when (not $ DH.isEmpty allUsersAvailability) do
             let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SIDE.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy (lastSeens now) allUsersAvailability
             EA.launchAff_ $ EA.catchError run logError
@@ -472,7 +452,7 @@ persistLastSeen context = do
             LastSeen (DateTimeWrapper date) → Just { who: id, date: DT date }
             _ → Nothing
 
-      logError = liftEffect <<< EC.logShow
+      logError = EC.liftEffect <<< ECS.logShow
 
 instance Newtype DT DateTime
 

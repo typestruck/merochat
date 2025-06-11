@@ -5,8 +5,7 @@ import Prelude
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.Common.Network as CCNT
-import Client.Im.Flame (MoreMessages, NoMessages)
+import Client.Im.Flame (NoMessages, MoreMessages)
 import Client.Im.History as CIH
 import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
@@ -20,8 +19,6 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
-import Data.String as DST
-import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class (liftEffect)
@@ -29,7 +26,7 @@ import Effect.Class as EC
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..), ImModel)
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
@@ -108,7 +105,7 @@ setMessageStatus webSocket userId newStatus model =
       setIt ui messages = liftEffect do
             CIW.sendPayload webSocket $ ChangeStatus
                   { status: newStatus
-                  , ids: [ Tuple ui messages ]
+                  , ids: [  ui /\ messages ]
                   }
             CIUN.updateTabCount model.user.id updatedContacts
             pure Nothing
@@ -142,13 +139,14 @@ setDeliveredStatus webSocket model@{ contacts, user: { id: loggedUserId } } =
       sent running { history, user: { id: userId } } =
             case DA.filter (\h → h.recipient == loggedUserId && h.status == Received) history of
                   [] → running
-                  hs → Tuple userId (map _.id hs) : running
+                  hs →  (userId /\ (map _.id hs)) : running
 
-updateDraft :: Int -> String -> ImModel -> NoMessages
+updateDraft ∷ Int → String → ImModel → NoMessages
 updateDraft userId draft model = model { contacts = map update model.contacts } /\ []
-      where update contact
-                  | contact.user.id == userId = contact { draft = draft }
-                  | otherwise = contact
+      where
+      update contact
+            | contact.user.id == userId = contact { draft = draft }
+            | otherwise = contact
 
 checkFetchContacts ∷ Event → ImModel → MoreMessages
 checkFetchContacts event model
@@ -172,21 +170,19 @@ displayNewContacts ∷ Array Contact → ImModel → MoreMessages
 displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → cnt.user.id) newContacts) model
 
 updateDisplayContacts ∷ Array Contact → Array Int → ImModel → MoreMessages
-updateDisplayContacts newContacts userIds model@{ contacts } =
-      CIU.notifyUnreadChats
-            ( model
-                    { contacts = contacts <> onlyNew
+updateDisplayContacts newContacts userIds model = notifyTrack updatedModel userIds
+      where
+      updatedModel = model
+                    { contacts = model.contacts <> onlyNew
                     , freeToFetchContactList = true
                     }
-            )
-            userIds
-      where
-      existingContactIds = DS.fromFoldable $ map (\cnt → cnt.user.id) contacts
+
+      existingContactIds = DS.fromFoldable $ map (\cnt → cnt.user.id) model.contacts
       onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
 
 -- | Messages sent or received while the web socket connection was down
 displayMissedContacts ∷ (Array Contact) → ImModel → MoreMessages
-displayMissedContacts contacts model = CIU.notifyUnreadChats updatedModel $ map userId contacts
+displayMissedContacts contacts model = notifyTrack updatedModel $ map userId contacts
       where
       updatedModel = model
             { contacts = map update model.contacts <> newContacts
@@ -201,6 +197,10 @@ displayMissedContacts contacts model = CIU.notifyUnreadChats updatedModel $ map 
       existing = DH.fromArrayBy userId identity model.contacts
       newContacts = DH.values $ DH.difference new existing
 
+notifyTrack :: ImModel -> Array Int -> MoreMessages
+notifyTrack model userIds = track $ CIU.notifyUnreadChats model userIds
+      where track (m /\ a) = m /\ ((pure $ Just TrackAvailability) : a)
+
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =
       case lastMessageId of
@@ -210,13 +210,14 @@ deleteChat userId model =
                         , toggleChatModal = HideChatModal
                         , contacts = DA.filter ((userId /= _) <<< _.id <<< _.user) model.contacts
                         , chatting = if model.chatting == Just userId then Nothing else model.chatting
-                        } /\ [ deleteIt id ]
+                        } /\ [ delete id, track ]
             Nothing → F.noMessages model
       where
       lastMessageId = SIC.findContact userId model.contacts >>= (map _.id <<< DA.last <<< _.history)
 
-      deleteIt id = do
+      delete id = do
             result ← CCN.defaultResponse $ request.im.delete { body: { userId, messageId: id } }
             case result of
                   Left _ → pure <<< Just $ RequestFailed { request: DeleteChat userId, errorMessage: Nothing }
                   _ → pure Nothing
+      track = pure $ Just TrackAvailability

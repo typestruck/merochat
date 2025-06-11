@@ -1,4 +1,4 @@
-module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, sendPing, receiveMessage, reconnectWebSocket, closeWebSocket) where
+module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, receiveMessage, reconnectWebSocket, closeWebSocket, trackAvailability) where
 
 import Prelude
 
@@ -18,6 +18,7 @@ import Data.Either (Either(..))
 import Data.Foldable as DT
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Set as DS
 import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
@@ -81,15 +82,16 @@ reconnectWebSocket webSocketStateRef model = model /\ [ reconnect ]
                   setUpWebSocket webSocketStateRef
             pure Nothing
 
-closeWebSocket :: Ref WebSocketState → ImModel → NoMessages
+closeWebSocket ∷ Ref WebSocketState → ImModel → NoMessages
 closeWebSocket webSocketStateRef model = model /\ [ close ]
-      where close = EC.liftEffect do
-                  state ← ER.read webSocketStateRef
-                  status ← WSW.readyState state.webSocket
-                  unless (status == WSRS.Closed || status == WSRS.Closing) do
-                        clearIntervals webSocketStateRef
-                        WSWS.close state.webSocket
-                  pure Nothing
+      where
+      close = EC.liftEffect do
+            state ← ER.read webSocketStateRef
+            status ← WSW.readyState state.webSocket
+            unless (status == WSRS.Closed || status == WSRS.Closing) do
+                  clearIntervals webSocketStateRef
+                  WSWS.close state.webSocket
+            pure Nothing
 
 -- | Set listeners for web socket events
 setUpWebSocket ∷ Ref WebSocketState → Effect Unit
@@ -110,9 +112,9 @@ handleOpen ∷ Ref WebSocketState → Event → Effect Unit
 handleOpen webSocketStateRef _ = do
       state ← ER.read webSocketStateRef
       --when the connection is open and the user is on the page serialize their availability
-      sendSetOnline state.webSocket
+      setOnline state.webSocket
       newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
-      newPingId ← ET.setInterval pingDelay ping
+      newPingId ← ET.setInterval pingDelay (ping state.webSocket)
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId }) webSocketStateRef
       FS.send imId $ UpdateWebSocketStatus Connected
       --check if the page needs to be reloaded
@@ -122,19 +124,20 @@ handleOpen webSocketStateRef _ = do
       --signal that messages have been received / read
       FS.send imId SetDeliveredStatus
       FS.send imId $ SetReadStatus Nothing
+      --keep track of users online status
+      FS.send imId TrackAvailability
 
       where
       privilegeDelay = 1000 * 60 * 60
       pollPrivileges webSocket = CIW.sendPayload webSocket UpdatePrivileges
 
-      pingDelay = 1000 * 10
-      ping = do
-            isFocused ← CCD.documentHasFocus
-            FS.send imId $ SendPing isFocused
+      pingDelay = 1000 * 20
+      ping webSocket = CIW.sendPayload webSocket Ping
 
-      sendSetOnline webSocket = do
+      setOnline webSocket = do
             isFocused ← CCD.documentHasFocus
-            when isFocused $ CIW.sendPayload webSocket SetOnline
+            hidden ← CCD.documentIsNotHidden
+            when (isFocused || not hidden) <<< CIW.sendPayload webSocket $ UpdateAvailability { online: true, serialize: true }
 
 -- | Handle an incoming (json encoded) message from the server
 handleMessage ∷ Event → Effect Unit
@@ -142,11 +145,11 @@ handleMessage event = do
       let payload = SU.fromRight <<< CME.runExcept <<< FO.readString <<< WSEM.data_ <<< SU.fromJust $ WSEM.fromEvent event
       let message = SU.fromRight $ SJ.fromJson payload
       case message of
+            Pong → pure unit
             CloseConnection cc → FS.send imId $ Logout cc --user has been banned or server is on fire
-            Pong p → FS.send imId $ DisplayAvailability p.status --pings are set up when the socket is open
             Content c → do
-                  isFocused ← CCD.documentHasFocus
-                  FS.send imId $ ReceiveMessage c isFocused --actual site events, like new messages or status updates
+                  focused ← CCD.documentHasFocus
+                  FS.send imId $ ReceiveMessage c focused --actual site events, like new messages or status updates
 
 -- | Clear intervals and set up new web socket connection after a random timeout
 handleCloseError ∷ Event → Effect Unit
@@ -159,18 +162,6 @@ clearIntervals webSocketStateRef = do
       DM.maybe (pure unit) ET.clearInterval state.privilegesId
       ER.modify_ (_ { pingId = Nothing, privilegesId = Nothing }) webSocketStateRef
 
--- | Send ping with users to learn availability of
-sendPing ∷ WebSocket → Boolean → ImModel → NoMessages
-sendPing webSocket isActive model =
-      model /\
-            [ liftEffect do
-                    CIW.sendPayload webSocket $ Ping
-                          { isActive
-                          , statusFor: DA.nub (map _.id model.suggestions <> map (_.id <<< _.user) (DA.filter ((_ /= Unavailable) <<< _.availability <<< _.user) model.contacts)) -- user might be both in contacts and suggestions
-                          }
-                    pure Nothing
-            ]
-
 -- | Handle content messages from the server
 receiveMessage ∷ WebSocket → Boolean → WebSocketPayloadClient → ImModel → MoreMessages
 receiveMessage webSocket isFocused payload model = case payload of
@@ -181,10 +172,24 @@ receiveMessage webSocket isFocused payload model = case payload of
       NewDeletedMessage nd → receiveDeletedMessage nd model
       ContactTyping tp → receiveTyping tp model
       CurrentPrivileges kp → receivePrivileges kp model
+      TrackedAvailability ta -> receiveAvailability ta model
       CurrentHash newHash → receiveHash newHash model
       ContactUnavailable cu → receiveUnavailable cu model
       BadMessage bm → receiveBadMessage bm model
       PayloadError p → receivePayloadError p model
+
+receiveAvailability ∷ { id :: Int, availability :: Availability} → ImModel → NoMessages
+receiveAvailability received model =  model
+      { contacts = map updateContact model.contacts
+      , suggestions = map updateSuggestion model.suggestions
+      } /\ []
+      where
+      updateContact contact
+            | contact.user.id == received.id = contact { user { availability = received.availability } }
+            | otherwise = contact
+      updateSuggestion suggestion
+            | suggestion.id == received.id = suggestion { availability = received.availability }
+            | otherwise = suggestion
 
 -- | Update message status
 receiveStatusChange ∷ { ids ∷ Array Int, status ∷ MessageStatus, userId ∷ Int } → ImModel → NoMessages
@@ -302,15 +307,17 @@ receiveHash newHash model = F.noMessages model
       { imUpdated = newHash /= model.hash
       }
 
-receiveUnavailable ∷ _ → ImModel → NoMessages
+receiveUnavailable ∷ _ → ImModel → NextMessage
 receiveUnavailable received model =
-      F.noMessages $ unsuggest received.userId model
+      unsuggest received.userId model
             { contacts = case received.temporaryMessageId of
                     Nothing → updatedContacts
                     Just id → markErroredMessage updatedContacts received.userId id
-            }
+            } /\ [ track ]
       where
       updatedContacts = setContactUnavailable model.contacts received.userId
+
+      track = pure $ Just TrackAvailability
 
 -- | Message sent was unsanitary
 receiveBadMessage ∷ _ → ImModel → NoMessages
@@ -426,3 +433,11 @@ updateWebSocketStatus status model =
             | status == Reconnect = [ reconnect ]
             | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts ]
             | otherwise = []
+
+trackAvailability ∷ WebSocket → ImModel → NoMessages
+trackAvailability webSocket model = model /\ [ track ]
+      where
+      userIds = DS.toUnfoldable $ DS.fromFoldable (map _.id model.suggestions <> map (_.id <<< _.user) model.contacts)
+      track = EC.liftEffect do
+            CIW.sendPayload webSocket $ TrackAvailabilityFor { ids : userIds }
+            pure Nothing
