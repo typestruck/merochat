@@ -1657,12 +1657,7 @@ select {
 }
 
 .cancel {
-    border: none;
-    background: transparent;
-    margin: 0 10px;
-    cursor: pointer;
-    color: inherit;
-    font-size: 1em;
+    align-self: flex-end;
 }
 
 .danger {
@@ -1720,6 +1715,7 @@ select {
 
 .image-form {
     padding: 40px;
+    background-color: var(--im-second-background-color);
     max-height: 100vh;
     align-items: center;
 }
@@ -1749,6 +1745,7 @@ select {
 .modal-form input[type=text] {
     height: 40px;
     padding: 10px;
+    outline: none;
     background: #262626;
     border: none
 }
@@ -2470,8 +2467,17 @@ select {
     z-index: 2;
     display: flex;
     min-width: 90%;
-    background: #2d2d2d;
-    flex-direction: column;
+}
+
+#image-form-caption {
+    flex-grow: 1;
+    border-radius: 20px;
+    background: var(--background-color);
+    height: 22px;
+    border: 1px solid var(--text-color);
+    padding: 10px 20px;
+    padding-bottom: 12px;
+    margin-right: 10px ;
 }
 
 .attachment-button {

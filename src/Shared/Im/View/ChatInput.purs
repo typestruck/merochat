@@ -1,4 +1,16 @@
-module Shared.Im.View.ChatInput where
+module Shared.Im.View.ChatInput
+  ( audioButton
+  , audioModal
+  , chat
+  , chatBarInput
+  , emojiButton
+  , emojiClickEvent
+  , emojiModal
+  , imageButton
+  , sendButton
+  , sendButtonElements
+  )
+  where
 
 import Prelude
 import Shared.Availability
@@ -43,7 +55,8 @@ imageModal ∷ ImModel → Html ImMessage
 imageModal { selectedImage, erroredFields, user } =
       HE.div [ HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage } ]
             if SP.hasPrivilege SendImages user then
-                  [ HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
+                  [ SIS.closeX [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ],
+                        HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
                           [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                           , HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
                           ]
@@ -51,12 +64,8 @@ imageModal { selectedImage, erroredFields, user } =
                           [ HE.img <<< HA.src $ DM.maybe "" _.base64 selectedImage
                           ]
                   , HE.div (HA.class' "image-form-controls")
-                          [ HE.label_ "Caption"
-                          , HE.input [ HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
-                          , HE.div (HA.class' "image-buttons")
-                                  [ HE.button [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ] "Cancel"
-                                  , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
-                                  ]
+                          [ HE.input [ HA.placeholder "Caption", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
+                          ,  HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
                           ]
                   ]
             else
