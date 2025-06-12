@@ -152,7 +152,7 @@ handleError = ECS.log <<< show
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
       now ← EC.liftEffect EN.nowDateTime
-      ER.modify_ (DH.update (removeConnection now) (spy "closing for" loggedUserId)) allUsersAvailabilityRef
+      ER.modify_ (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
       where
       removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
 
