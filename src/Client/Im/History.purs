@@ -62,7 +62,7 @@ displayHistory userId history model =
             , contacts = map updateContact model.contacts
             }
 
-fixHistory :: Array HistoryMessage -> Array HistoryMessage
+fixHistory ∷ Array HistoryMessage → Array HistoryMessage
 fixHistory = DA.sortBy dates <<< DA.nubByEq dedup
       where
       dedup entry anotherEntry = entry.id == anotherEntry.id

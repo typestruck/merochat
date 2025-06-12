@@ -22,21 +22,22 @@ import Shared.Routes (routes)
 import Shared.Unsafe as SU
 
 toggleInitialScreen ∷ Boolean → ImModel → MoreMessages
-toggleInitialScreen toggle model =  model
-      { initialScreen = toggle
-      , chatting = Nothing
-      , toggleModal = HideUserMenuModal
-      } /\ [ updateDraft ]
+toggleInitialScreen toggle model =
+      model
+            { initialScreen = toggle
+            , chatting = Nothing
+            , toggleModal = HideUserMenuModal
+            } /\ [ updateDraft ]
       where
       updateDraft
-            | toggle =  EC.liftEffect do
-                  input ← CCD.unsafeGetElementById ChatInput
-                  draft ← CCD.value input
-                  CCD.setValue input ""
-                  if DM.isNothing model.chatting then
-                        pure Nothing
-                  else
-                        pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) draft
+            | toggle = EC.liftEffect do
+                    input ← CCD.unsafeGetElementById ChatInput
+                    draft ← CCD.value input
+                    CCD.setValue input ""
+                    if DM.isNothing model.chatting then
+                          pure Nothing
+                    else
+                          pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) draft
             | otherwise = pure Nothing
 
 logout ∷ AfterLogout → ImModel → MoreMessages

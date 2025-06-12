@@ -1,16 +1,8 @@
 module Shared.Im.View.ChatInput
-  ( audioButton
-  , audioModal
-  , chat
-  , chatBarInput
-  , emojiButton
-  , emojiClickEvent
-  , emojiModal
-  , imageButton
-  , sendButton
-  , sendButtonElements
-  )
-  where
+      ( chat
+      , chatBarInput
+
+      ) where
 
 import Prelude
 import Shared.Availability
@@ -55,8 +47,8 @@ imageModal ∷ ImModel → Html ImMessage
 imageModal { selectedImage, erroredFields, user } =
       HE.div [ HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage } ]
             if SP.hasPrivilege SendImages user then
-                  [ SIS.closeX [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ],
-                        HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
+                  [ SIS.closeX [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ]
+                  , HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
                           [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                           , HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
                           ]
@@ -65,7 +57,7 @@ imageModal { selectedImage, erroredFields, user } =
                           ]
                   , HE.div (HA.class' "image-form-controls")
                           [ HE.input [ HA.placeholder "Caption", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
-                          ,  HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
+                          , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
                           ]
                   ]
             else
@@ -98,23 +90,23 @@ chatBarInput eid elementId model = HE.fragment
                               , HE.label (HA.for "message-enter") "Send message on enter"
                               ]
                       ]
-              , HE.div [ HA.class' { "chat-input-area": true, side: not model.messageEnter } ]
+              , HE.div [ HA.class' "chat-input-area" ]
                       [ emojiButton model
-                      , HE.textarea' $
-                              {-( if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
-                                    <> -}
-                                          [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
-                                          , HA.id $ show elementId
-                                          , HA.placeholder $ if model.webSocketStatus == Connected then "Type here to message " <> recipientName else "Reconnecting..."
-                                          , SK.keyDownOn "Enter" enterBeforeSendMessageCheck
-                                          , HA.onInput' ResizeChatInput
-                                          , HA.autocomplete "off"
-                                          ]
+                      , HE.textarea' {- $
+                        ( if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
+                              <> -}
+                              ( [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
+                                , HA.id $ show elementId
+                                , HA.placeholder ("Type here to message " <> recipientName)
+                                , HA.onInput' ResizeChatInput
+                                , HA.autocomplete "off"
+                                ] <> filterEnterKeydown
+                              )
                       , HE.div (HA.class' "chat-right-buttons")
-                              [ imageButton
-                              , audioButton [ HA.onClick $ ToggleChatModal ShowAudioPrompt ]
-                              , sendButton elementId model.messageEnter model
-                              ]
+                              ( [ imageButton
+                                , audioButton [ HA.onClick $ ToggleChatModal ShowAudioPrompt ]
+                                ] <> sendButton elementId model
+                              )
                       ]
               ]
       ]
@@ -125,7 +117,12 @@ chatBarInput eid elementId model = HE.fragment
             Left suggestionId → map _.name $ DA.find ((suggestionId == _) <<< _.id) model.suggestions
             _ → map (_.name <<< _.user) chatting
 
-      enterBeforeSendMessageCheck event = if model.webSocketStatus == Connected && model.messageEnter then Just $ EnterSendMessage elementId event else Nothing
+      filterEnterKeydown
+            | model.messageEnter = [ SK.keyDownOn "Enter" sendEnter ]
+            | otherwise = []
+      sendEnter event
+            | model.webSocketStatus == Connected = EnterSendMessage elementId event
+            | otherwise = WaitSendMessage elementId
 
 emojiButton ∷ ImModel → Html ImMessage
 emojiButton model
@@ -140,7 +137,8 @@ emojiButton model
 
 imageButton ∷ Html ImMessage
 imageButton = HE.svg [ HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class' "attachment-button", HA.viewBox "0 0 16 16" ]
-      [ HE.path' [ HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z" ]
+      [ HE.title "Send image"
+      , HE.path' [ HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z" ]
       ]
 
 audioButton ∷ Array (NodeData ImMessage) → Html ImMessage
@@ -151,10 +149,14 @@ audioButton actions = HE.svg (actions <> [ HA.class' "attachment-button audio-bu
               ]
       ]
 
-sendButton ∷ ElementId → Boolean → ImModel → Html ImMessage
-sendButton elementId messageEnter model =
-      HE.div
-            (if model.webSocketStatus == Connected then [ HA.class' { "send-button-div": true, hidden: messageEnter }, HA.onClick $ ForceSendMessage elementId ] else [ HA.class' { "send-button-div": true, hidden: messageEnter } ]) $ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message"
+sendButton ∷ ElementId → ImModel → Array (Html ImMessage)
+sendButton elementId model
+      | model.messageEnter = []
+      | otherwise =
+              [ HE.div
+                      [ HA.class' "send-button-div", HA.onClick $ if model.webSocketStatus == Connected then ForceSendMessage elementId else WaitSendMessage elementId ]
+                      [ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message" ]
+              ]
 
 sendButtonElements ∷ String → Array (Html ImMessage)
 sendButtonElements title =

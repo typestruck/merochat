@@ -104,8 +104,7 @@ spec ∷
                                                 }
                                   , missedContacts ∷
                                           GET "/missed?since=<since>"
-                                                {
-                                                query :: { since :: DateTimeWrapper }
+                                                { query ∷ { since ∷ DateTimeWrapper }
                                                 , response ∷ Array Contact
                                                 }
                                   , fortune ∷
@@ -289,7 +288,7 @@ spec ∷
                     , topic ∷
                             POST "/topic/<..path>"
                                   { params ∷ { path ∷ List String }
-                                    , body ∷ String
+                                  , body ∷ String
                                   , response ∷ Ok
                                   }
                     , sw ∷

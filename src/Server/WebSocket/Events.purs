@@ -89,9 +89,15 @@ type WebSocketReaderLite = BaseReader
 -- | Wrapper so we can serialize dates in a way postgresql understands
 newtype DT = DT DateTime
 
+<<<<<<< HEAD
 -- | How often do we check for inactive connections
 inactiveInterval ∷ Int
 inactiveInterval = 1000 * 60 * inactiveMinutes
+=======
+-- | How often do we check for inactive connections and serialize last seen
+interval ∷ Int
+interval =  1000 * 60 --1000 * 60 * 60 * intervalHours
+>>>>>>> 884adb0 (a)
 
 inactiveMinutes ∷ Int
 inactiveMinutes = 1
@@ -153,8 +159,13 @@ handleError = ECS.log <<< show
 
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
+<<<<<<< HEAD
       now ← EN.nowDateTime
       ER.modify_ (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
+=======
+      now ← EC.liftEffect EN.nowDateTime
+      ER.modify_ (DH.update (removeConnection now) (spy "closing for" loggedUserId)) allUsersAvailabilityRef
+>>>>>>> 884adb0 (a)
       where
       removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
 

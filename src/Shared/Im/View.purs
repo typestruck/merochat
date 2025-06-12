@@ -23,7 +23,7 @@ view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model = HE.div "im"
       [ HE.div (HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen })
               [ SIVU.userMenu model
-              , HE.div (HA.class' { "suggestion-box-error": true, flexed:  model.smallScreen && not (DS.null model.errorMessage) }) model.errorMessage
+              , HE.div (HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) }) model.errorMessage
               , SIVN.reloadPage model.imUpdated
               , SIVN.prompt model.enableNotificationsVisible
               , SIVCN.contactList isClientRender model

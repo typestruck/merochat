@@ -105,7 +105,7 @@ setMessageStatus webSocket userId newStatus model =
       setIt ui messages = liftEffect do
             CIW.sendPayload webSocket $ ChangeStatus
                   { status: newStatus
-                  , ids: [  ui /\ messages ]
+                  , ids: [ ui /\ messages ]
                   }
             CIUN.updateTabCount model.user.id updatedContacts
             pure Nothing
@@ -139,7 +139,7 @@ setDeliveredStatus webSocket model@{ contacts, user: { id: loggedUserId } } =
       sent running { history, user: { id: userId } } =
             case DA.filter (\h → h.recipient == loggedUserId && h.status == Received) history of
                   [] → running
-                  hs →  (userId /\ (map _.id hs)) : running
+                  hs → (userId /\ (map _.id hs)) : running
 
 updateDraft ∷ Int → String → ImModel → NoMessages
 updateDraft userId draft model = model { contacts = map update model.contacts } /\ []
@@ -173,9 +173,9 @@ updateDisplayContacts ∷ Array Contact → Array Int → ImModel → MoreMessag
 updateDisplayContacts newContacts userIds model = notifyTrack updatedModel userIds
       where
       updatedModel = model
-                    { contacts = model.contacts <> onlyNew
-                    , freeToFetchContactList = true
-                    }
+            { contacts = model.contacts <> onlyNew
+            , freeToFetchContactList = true
+            }
 
       existingContactIds = DS.fromFoldable $ map (\cnt → cnt.user.id) model.contacts
       onlyNew = DA.filter (\cnt → not $ DS.member cnt.user.id existingContactIds) newContacts -- if a contact from pagination is already in the list
@@ -197,9 +197,10 @@ displayMissedContacts contacts model = notifyTrack updatedModel $ map userId con
       existing = DH.fromArrayBy userId identity model.contacts
       newContacts = DH.values $ DH.difference new existing
 
-notifyTrack :: ImModel -> Array Int -> MoreMessages
+notifyTrack ∷ ImModel → Array Int → MoreMessages
 notifyTrack model userIds = track $ CIU.notifyUnreadChats model userIds
-      where track (m /\ a) = m /\ ((pure $ Just TrackAvailability) : a)
+      where
+      track (m /\ a) = m /\ ((pure $ Just TrackAvailability) : a)
 
 deleteChat ∷ Int → ImModel → MoreMessages
 deleteChat userId model =

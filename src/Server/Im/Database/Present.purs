@@ -183,7 +183,7 @@ presentMissedContacts loggedUserId sinceMessageDate = SD.unsafeQuery query
       where
       query =
             "SELECT" <> presentUserContactFields <> ", " <> presentMessageFields <>
-            """FROM users u
+                  """FROM users u
             JOIN karma_leaderboard k ON u.id = k.ranker
             JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
             JOIN messages s ON (s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender)

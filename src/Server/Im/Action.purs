@@ -59,7 +59,6 @@ im loggedUserId = do
                         , user: SIF.fromFlatUser user
                         }
 
-
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
 suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip sg
 

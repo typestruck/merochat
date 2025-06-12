@@ -16,7 +16,7 @@ defaultContact id chatted =
       , lastMessageDate: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , chatStarter: id
       , history: []
-      , draft : ""
+      , draft: ""
       , scrollChatDown: true
       , chatAge: 0.0
       , typing: false

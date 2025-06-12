@@ -143,9 +143,10 @@ toggleCollapsedMiniSuggestions model = F.noMessages model
       }
 
 toggleLargeAvatar ∷ ImModel → NoMessages
-toggleLargeAvatar model = model
-      { showLargeAvatar = not model.showLargeAvatar
-      } /\ []
+toggleLargeAvatar model =
+      model
+            { showLargeAvatar = not model.showLargeAvatar
+            } /\ []
 
 -- | Show suggestion cards again
 resumeSuggesting ∷ ImModel → NoMessages

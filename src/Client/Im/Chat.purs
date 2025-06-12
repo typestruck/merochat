@@ -5,7 +5,7 @@ import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.Suggestion as SIS
@@ -90,6 +90,9 @@ forceSendMessage elementId model =
             [ messageContent elementId model
             ]
 
+waitSendMessage :: ElementId -> ImModel -> MoreMessages
+waitSendMessage
+
 -- | Is the message to be sent an audio, text or image?
 messageContent ∷ ElementId → ImModel → Aff (Maybe ImMessage)
 messageContent elementId model = do
@@ -134,7 +137,7 @@ prepareSendMessage elementId content dt webSocket model = case content of
                                           , suggesting = SIS.moveSuggestion model 1 --move it along so mini suggestions dont disappear
                                           }
 
-sendMessage ∷ Int → String -> Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
+sendMessage ∷ Int → String → Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
 sendMessage userId userName shouldFetchHistory contentMessage date webSocket model =
       model
             { temporaryId = newTemporaryId

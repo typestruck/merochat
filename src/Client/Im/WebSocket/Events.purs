@@ -38,7 +38,7 @@ import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..))
 import Shared.Json as SJ
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
 import Shared.Privilege (Privilege)
@@ -82,16 +82,18 @@ reconnectWebSocket webSocketStateRef model = model /\ [ reconnect ]
                   setUpWebSocket webSocketStateRef
             pure Nothing
 
-closeWebSocket ∷ Ref WebSocketState → ImModel → NoMessages
-closeWebSocket webSocketStateRef model = model /\ [ close ]
+closeWebSocket ∷ When → Ref WebSocketState → ImModel → NoMessages
+closeWebSocket when webSocketStateRef model = model /\ [ close ]
       where
-      close = EC.liftEffect do
-            state ← ER.read webSocketStateRef
-            status ← WSW.readyState state.webSocket
-            unless (status == WSRS.Closed || status == WSRS.Closing) do
-                  clearIntervals webSocketStateRef
-                  WSWS.close state.webSocket
-            pure Nothing
+      close
+            | when == Desktop && model.smallScreen = pure Nothing
+            | otherwise = EC.liftEffect do
+                    state ← ER.read webSocketStateRef
+                    status ← WSW.readyState state.webSocket
+                    unless (status == WSRS.Closed || status == WSRS.Closing) do
+                          clearIntervals webSocketStateRef
+                          WSWS.close state.webSocket
+                    pure Nothing
 
 -- | Set listeners for web socket events
 setUpWebSocket ∷ Ref WebSocketState → Effect Unit
@@ -172,17 +174,18 @@ receiveMessage webSocket isFocused payload model = case payload of
       NewDeletedMessage nd → receiveDeletedMessage nd model
       ContactTyping tp → receiveTyping tp model
       CurrentPrivileges kp → receivePrivileges kp model
-      TrackedAvailability ta -> receiveAvailability ta model
+      TrackedAvailability ta → receiveAvailability ta model
       CurrentHash newHash → receiveHash newHash model
       ContactUnavailable cu → receiveUnavailable cu model
       BadMessage bm → receiveBadMessage bm model
       PayloadError p → receivePayloadError p model
 
-receiveAvailability ∷ { id :: Int, availability :: Availability} → ImModel → NoMessages
-receiveAvailability received model =  model
-      { contacts = map updateContact model.contacts
-      , suggestions = map updateSuggestion model.suggestions
-      } /\ []
+receiveAvailability ∷ { id ∷ Int, availability ∷ Availability } → ImModel → NoMessages
+receiveAvailability received model =
+      model
+            { contacts = map updateContact model.contacts
+            , suggestions = map updateSuggestion model.suggestions
+            } /\ []
       where
       updateContact contact
             | contact.user.id == received.id = contact { user { availability = received.availability } }
@@ -439,5 +442,5 @@ trackAvailability webSocket model = model /\ [ track ]
       where
       userIds = DS.toUnfoldable $ DS.fromFoldable (map _.id model.suggestions <> map (_.id <<< _.user) model.contacts)
       track = EC.liftEffect do
-            CIW.sendPayload webSocket $ TrackAvailabilityFor { ids : userIds }
+            CIW.sendPayload webSocket $ TrackAvailabilityFor { ids: userIds }
             pure Nothing

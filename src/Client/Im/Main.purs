@@ -78,17 +78,19 @@ import Web.Socket.WebSocket (WebSocket)
 main ∷ Effect Unit
 main = do
       webSocketRef ← CIWE.startWebSocket
-      lastActiveRef <- ER.new true
+      lastActiveRef ← ER.new true
       --im is server side rendered
       F.resumeMount (QuerySelector $ "#" <> show Im) imId
             { view: SIV.view true
             , subscribe:
                     [ FSD.onClick' ToggleUserContextMenu
+                    --possible workaround for a firefox bug
+                    , onBeforeUnload $ CloseWebSocket Desktop
                     --we need focus blur and visibility change to handle all case of when the window is active or not
                     , FSW.onFocus (Refocus FocusBlur)
                     , onBlur (Refocus FocusBlur)
                     , onVisibilityChange (Refocus VisibilityChange)
-                    , FSW.onOffline CloseWebSocket
+                    , FSW.onOffline $ CloseWebSocket Always
                     ]
             , init: [] -- we use subscription instead of init events
             , update: update { webSocketRef, lastActiveRef }
@@ -128,6 +130,7 @@ update st model =
             BeforeAudioMessage → CIC.beforeAudioMessage model
             AudioMessage touch → CIC.audioMessage touch model
             ToggleMiniChatInput → CIC.toggleMiniChatInput model
+            WaitSendMessage elementId → CIC.waitSendMessage elementId model
             SendAudioMessage base64 → CIC.sendAudioMessage base64 model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message et → CIC.quoteMessage message et model
@@ -192,7 +195,7 @@ update st model =
             TrackAvailability → CIWE.trackAvailability webSocket model
             Refocus e → refocus e st.lastActiveRef webSocket model
             UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
-            CloseWebSocket → CIWE.closeWebSocket st.webSocketRef model
+            CloseWebSocket when → CIWE.closeWebSocket when st.webSocketRef model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
             SetField setter → F.noMessages $ setter model
@@ -238,11 +241,11 @@ refocus focusEvent lastActiveRef webSocket model =
             if active then action else pure Nothing
 
       updateLastSeen = EC.liftEffect do
-            active ← case  focusEvent of
+            active ← case focusEvent of
                   VisibilityChange → CCD.documentIsNotHidden
                   FocusBlur → CCD.documentHasFocus
-            lastActive <- ER.read lastActiveRef
-            when ( active /=  lastActive) do
+            lastActive ← ER.read lastActiveRef
+            when (active /= lastActive) do
                   CIW.sendPayload webSocket $ UpdateAvailability { online: active, serialize: false }
                   ER.write active lastActiveRef
             pure Nothing
@@ -490,3 +493,6 @@ onVisibilityChange = FSIC.createSubscription Document "visibilitychange"
 
 onBlur ∷ ∀ message. message → Subscription message
 onBlur = FSIC.createSubscription Window "blur"
+
+onBeforeUnload ∷ ∀ message. message → Subscription message
+onBeforeUnload = FSIC.createSubscription Window "beforeunload"

@@ -82,7 +82,7 @@ type BaseContact fields =
 type Contact = BaseContact
       ( user ∷ User
       , typing ∷ Boolean
-      , draft :: String
+      , draft ∷ String
       , scrollChatDown ∷ Boolean
       , history ∷ Array HistoryMessage
       )
@@ -152,7 +152,7 @@ type Im =
       --visibility switches
       , initialScreen ∷ Boolean --used on mobile to switch screens
       , fullContactProfileVisible ∷ Boolean
-      , showLargeAvatar :: Boolean
+      , showLargeAvatar ∷ Boolean
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
@@ -307,6 +307,7 @@ data ImMessage
       | ForceSendMessage ElementId
       | ResizeChatInput Event
       | SendMessage ElementId MessageContent DateTimeWrapper
+      | WaitSendMessage ElementId
       | SetEmoji ElementId Event
       | BeforeAudioMessage
       | AudioMessage Touch
@@ -330,7 +331,7 @@ data ImMessage
       | PreventStop Event
       | AskNotification
       | ToggleAskNotification
-      | CloseWebSocket
+      | CloseWebSocket When
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)
       | CheckUserExpiration
@@ -347,11 +348,13 @@ data ImMessage
       | SetRegistered
       | ToggleChatModal ShowChatModal
 
+data When = Always | Desktop
+
 data WebSocketPayloadServer
       = UpdateHash
       | UpdatePrivileges
-      | UpdateAvailability { online :: Boolean, serialize :: Boolean }
-      | TrackAvailabilityFor { ids :: Array Int }
+      | UpdateAvailability { online ∷ Boolean, serialize ∷ Boolean }
+      | TrackAvailabilityFor { ids ∷ Array Int }
       | Ping
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord
@@ -389,7 +392,7 @@ data WebSocketPayloadClient
       | NewIncomingMessage ClientMessagePayload
       | NewEditedMessage EditedMessagePayload
       | NewDeletedMessage DeletedMessagePayload
-      | TrackedAvailability { id :: Int, availability :: Availability}
+      | TrackedAvailability { id ∷ Int, availability ∷ Availability }
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
               { previousId ∷ Int
@@ -424,6 +427,7 @@ instance DecodeQueryParam SuggestionsFrom where
 derive instance Eq SuggestionsFrom
 derive instance Eq MeroChatCall
 derive instance Eq FocusEvent
+derive instance Eq When
 derive instance Eq WebSocketConnectionStatus
 
 derive instance Ord ReportReason
@@ -594,7 +598,7 @@ instance DecodeJson WebSocketConnectionStatus where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson WebSocketConnectionStatus where
-      encodeJson  = DAEGR.genericEncodeJson
+      encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce

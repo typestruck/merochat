@@ -43,7 +43,7 @@ reset token = do
                         when (status == Success) do
                               EA.delay $ Milliseconds 3000.0
                               liftEffect <<< CCL.setLocation $ routes.login.get {}
-            _ -> pure unit
+            _ → pure unit
 
 main ∷ Effect Unit
 main = do
