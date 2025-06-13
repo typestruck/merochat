@@ -229,7 +229,7 @@ refocus focusEvent lastActiveRef webSocket model =
       if model.webSocketStatus /= Connected then
             model /\ [ whenActive (pure <<< Just $ UpdateWebSocketStatus Reconnect) ]
       else
-            model /\ [ updateLastSeen, whenFocused (pure <<< Just $ SetReadStatus Nothing) ]
+            model /\ [ updateLastSeen, whenActive (pure <<< Just $ SetReadStatus Nothing) ]
       where
       whenActive action = EC.liftEffect do
             active ← case focusEvent of
@@ -237,16 +237,12 @@ refocus focusEvent lastActiveRef webSocket model =
                   FocusBlur → CCD.documentHasFocus
             if active then action else pure Nothing
 
-      whenFocused action = EC.liftEffect do
-            focused ← CCD.documentHasFocus
-            if focusEvent == FocusBlur && focused then action else pure Nothing
-
       updateLastSeen = EC.liftEffect do
-            active ← case spy "event" focusEvent of
+            active ← case  focusEvent of
                   VisibilityChange → CCD.documentIsNotHidden
                   FocusBlur → CCD.documentHasFocus
             lastActive <- ER.read lastActiveRef
-            when (spy "active" active /= spy "last" lastActive) do
+            when ( active /=  lastActive) do
                   CIW.sendPayload webSocket $ UpdateAvailability { online: active, serialize: false }
                   ER.write active lastActiveRef
             pure Nothing

@@ -17,7 +17,7 @@ import Server.Guard (guards)
 import Server.Handler as SH
 import Server.WebSocket (Port(..))
 import Server.WebSocket as SW
-import Server.WebSocket.Events (interval)
+import Server.WebSocket.Events (inactiveInterval, availabilityInterval)
 import Server.WebSocket.Events as SWE
 import Shared.Options.WebSocket (localPort)
 import Shared.Spec (spec)
@@ -35,8 +35,9 @@ startWebSocketServer configuration = do
       SW.onServerError webSocketServer SWE.handleError
       pool ← SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allUsersAvailabilityRef)
-      intervalId ← ET.setInterval interval (SWE.persistLastSeen { pool, allUsersAvailabilityRef } *> SWE.terminateInactive allUsersAvailabilityRef)
-      SW.onServerClose webSocketServer (const (ET.clearInterval intervalId))
+      inactiveIntervalId ← ET.setInterval inactiveInterval (SWE.terminateInactive allUsersAvailabilityRef)
+      availbitilityIntervallId ← ET.setInterval availabilityInterval (SWE.persistLastSeen pool allUsersAvailabilityRef )
+      SW.onServerClose webSocketServer (const (ET.clearInterval inactiveIntervalId *> ET.clearInterval availbitilityIntervallId))
 
 startHttpServer ∷ Configuration → Effect Unit
 startHttpServer configuration@{ port } = do

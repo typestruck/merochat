@@ -18,10 +18,11 @@ import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Set (Set)
 import Data.Set as DS
-import Data.Time.Duration (Hours)
+import Data.Time.Duration (Hours, Minutes(..))
+import Data.Traversable as DTV
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested (type (/\), (/\))
 import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
@@ -88,20 +89,21 @@ type WebSocketReaderLite = BaseReader
 -- | Wrapper so we can serialize dates in a way postgresql understands
 newtype DT = DT DateTime
 
--- | How often do we check for inactive connections and serialize last seen
-interval ∷ Int
-interval = 1000 * 60 * 60 * intervalHours
+-- | How often do we check for inactive connections
+inactiveInterval ∷ Int
+inactiveInterval = 1000 * 60 * inactiveMinutes
 
-intervalHours ∷ Int
-intervalHours = 1
+inactiveMinutes ∷ Int
+inactiveMinutes = 1
+
+-- | How often do we check serialize availability
+availabilityInterval ∷ Int
+availabilityInterval = 1000 * 60 * 60 * 1
 
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
-      maybeUserId ← SE.poolEffect pool do
-            userId ← parseUserId
-            isIt ← DM.maybe (pure false) SBU.isUserBanned userId
-            pure $ if isIt then Nothing else userId
-      EC.liftEffect $ case maybeUserId of
+      userId ← SE.poolEffect pool parseUserId
+      EC.liftEffect $ case userId of
             Nothing → do
                   --this can be made more clear for the end user
                   sendWebSocketMessage connection $ CloseConnection LoginPage
@@ -151,7 +153,7 @@ handleError = ECS.log <<< show
 
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
-      now ← EC.liftEffect EN.nowDateTime
+      now ← EN.nowDateTime
       ER.modify_ (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
       where
       removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
@@ -161,7 +163,7 @@ handleMessage payload = do
       context ← RR.ask
       allUsersAvailability ← EC.liftEffect $ ER.read context.allUsersAvailabilityRef
       case payload of
-            Ping → sendPong context.token context.loggedUserId allUsersAvailability
+            Ping → sendPong context.token context.loggedUserId context.allUsersAvailabilityRef
             OutgoingMessage message → sendOutgoingMessage context.token context.loggedUserId allUsersAvailability message
             EditedMessage message → sendEditedMessage context.token context.loggedUserId allUsersAvailability message
             TrackAvailabilityFor for → trackAvailability context.loggedUserId context.allUsersAvailabilityRef for
@@ -176,7 +178,7 @@ handleMessage payload = do
 
 updateAvailability ∷ String → Int → Ref (HashMap Int UserAvailability) → { online ∷ Boolean, serialize ∷ Boolean } → WebSocketEffect
 updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
-      now ← zeroFromMinutes <$>  EC.liftEffect EN.nowDateTime
+      now ← zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
       allUsersAvailability ← EC.liftEffect $ ER.read allUsersAvailabilityRef
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       let
@@ -192,7 +194,7 @@ updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
       zeroFromMinutes dt = DDT.modifyTime (DDT.setSecond (SU.fromJust $ DEN.toEnum 0) <<< DDT.setMillisecond (SU.fromJust $ DEN.toEnum 0)) dt
 
       sendAvailability allUsersAvailability availability userId = case DH.lookup userId allUsersAvailability of
-            Just found → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: loggedUserId, availability  }) found.connections
+            Just found → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: loggedUserId, availability }) found.connections
             Nothing → pure unit
 
 trackAvailability ∷ Int → Ref (HashMap Int UserAvailability) → { ids ∷ Array Int } → WebSocketEffect
@@ -237,10 +239,15 @@ sendTyping loggedUserId allUsersAvailability userId = do
       where
       send connection = sendWebSocketMessage connection <<< Content $ ContactTyping { id: loggedUserId }
 
-sendPong ∷ String → Int → HashMap Int UserAvailability → WebSocketEffect
-sendPong token loggedUserId allUsersAvailability = do
+sendPong ∷ String → Int → Ref (HashMap Int UserAvailability) → WebSocketEffect
+sendPong token loggedUserId allUsersAvailabilityRef = do
+      date ← R.liftEffect EN.nowDateTime
+      allUsersAvailability ← R.liftEffect $ ER.read allUsersAvailabilityRef
+      R.liftEffect $ ER.modify_ (DH.update (setLastPing date) loggedUserId) allUsersAvailabilityRef
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) Pong
+      where
+      setLastPing date userAvailability = Just userAvailability { connections = DH.update (Just <<< SW.lastPing date) token userAvailability.connections }
 
 sendUnavailability ∷ Int → HashMap Int UserAvailability → Int → WebSocketEffect
 sendUnavailability loggedUserId allUsersAvailability userId = do
@@ -415,22 +422,49 @@ makeUserAvailabity old token date currentAvailability =
 sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWebSocketPayloadClient → b Unit
 sendWebSocketMessage connection = EC.liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson
 
--- | Connections are dropped after 1 hour of inactivity
+-- | Every few minutes check for dead connections
 terminateInactive ∷ Ref (HashMap Int UserAvailability) → Effect Unit
 terminateInactive allUsersAvailabilityRef = do
+      removeInactiveConnections allUsersAvailabilityRef
+      trackAvailabilityFromTerminated allUsersAvailabilityRef
+
+removeInactiveConnections ∷ Ref (HashMap Int UserAvailability) → Effect Unit
+removeInactiveConnections allUsersAvailabilityRef = do
       now ← EN.nowDateTime
       allUsersAvailability ← ER.read allUsersAvailabilityRef
-      DF.traverse_ (check now) $ DH.toArrayBy Tuple allUsersAvailability
+      DF.traverse_ (remove now) $ DH.toArrayBy Tuple allUsersAvailability
       where
-      updateConnections availability connections = availability
-            { connections = DH.difference availability.connections connections
-            }
-      hasExpired now lastSeen = intervalHours <= DI.floor (DN.unwrap (DDT.diff now lastSeen ∷ Hours))
-      check now (Tuple id userAvailability) = do
-            let expiredConnections = DH.filter (not hasExpired now <<< SW.getLastPing) userAvailability.connections
-            DF.traverse_ SW.terminate $ DH.values expiredConnections
-            when (not $ DH.isEmpty expiredConnections) $
-                  ER.modify_ (DH.insert (spy "expired for" id) (updateConnections userAvailability expiredConnections)) allUsersAvailabilityRef
+      remove now (userId /\ userAvailability) = do
+            let inactiveConnections = DH.filter (isInactive now <<< SW.getLastPing) userAvailability.connections
+            unless (DH.isEmpty inactiveConnections) do
+                  DF.traverse_ SW.terminate $ DH.values inactiveConnections
+                  ER.modify_ (DH.update (updateConnections now inactiveConnections) (spy "expired for" userId)) allUsersAvailabilityRef
+
+      isInactive now lastPing = inactiveMinutes <= DI.floor (DN.unwrap (DDT.diff now lastPing ∷ Minutes))
+      updateConnections now connections userAvailability =
+            let
+                  liveConnections = DH.difference userAvailability.connections connections
+            in
+                  Just userAvailability
+                        { connections = liveConnections
+                        , availability =
+                                if userAvailability.availability == Online && DH.isEmpty liveConnections then
+                                      LastSeen <<< DateTimeWrapper <<< DM.fromMaybe now <<< DF.maximum <<< map SW.getLastPing $ DH.values userAvailability.connections
+                                else
+                                      userAvailability.availability
+                        }
+
+--if all user connections are inactive then availibity is last to last seen and thus needs to be communicated
+trackAvailabilityFromTerminated ∷ Ref (HashMap Int UserAvailability) → Effect Unit
+trackAvailabilityFromTerminated allUsersAvailabilityRef = do
+      allUsersAvailability ← ER.read allUsersAvailabilityRef
+      DF.traverse_ (sendAvailability allUsersAvailability) $ DH.values allUsersAvailability
+      where
+      sendAvailability allUsersAvailability userAvailability = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (send allUsersAvailability userAvailability.availability) userAvailability.trackedBy
+
+      send allUsersAvailability availability userId = case DH.lookup userId allUsersAvailability of
+            Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: userId, availability }) userAvailability.connections
+            Nothing → pure unit
 
 withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
 withConnections userAvailability handler =
@@ -439,16 +473,15 @@ withConnections userAvailability handler =
             Nothing → pure unit
 
 -- | Last seen dates are serialized every hour
-persistLastSeen ∷ WebSocketReaderLite → Effect Unit
-persistLastSeen context = do
-      allUsersAvailability ← ER.read context.allUsersAvailabilityRef
-      now ← EC.liftEffect EN.nowDateTime
+persistLastSeen ∷ Pool → Ref (HashMap Int UserAvailability) → Effect Unit
+persistLastSeen pool allUsersAvailabilityRef = do
+      allUsersAvailability ← ER.read allUsersAvailabilityRef
       when (not $ DH.isEmpty allUsersAvailability) do
-            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SIDE.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy (lastSeens now) allUsersAvailability
+            let run = R.runBaseAff' <<< RE.catch (const (pure unit)) <<< RR.runReader context <<< SIDE.upsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ DH.toArrayBy lastSeens allUsersAvailability
             EA.launchAff_ $ EA.catchError run logError
       where
-      lastSeens now id avl = case avl.availability of
-            Online → Just { who: id, date: DT now }
+      context = { pool, allUsersAvailabilityRef }
+      lastSeens id avl = case avl.availability of
             LastSeen (DateTimeWrapper date) → Just { who: id, date: DT date }
             _ → Nothing
 

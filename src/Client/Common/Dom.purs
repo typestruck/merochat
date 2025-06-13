@@ -158,14 +158,6 @@ createElement tag = do
       document ← WHW.document window
       WDD.createElement tag $ WHHD.toDocument document
 
-onEnter ∷ Element → Effect Unit → Effect Unit
-onEnter element action = do
-      addEventListener element keyup go
-      where
-      go event = do
-            let pressed = WUK.key <<< SU.fromJust $ WUK.fromEvent event
-            when (pressed == "Enter") action
-
 preventStop ∷ Event → Effect Unit
 preventStop event = do
       WEE.preventDefault event

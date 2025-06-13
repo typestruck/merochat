@@ -101,8 +101,8 @@ chatBarInput eid elementId model = HE.fragment
               , HE.div [ HA.class' { "chat-input-area": true, side: not model.messageEnter } ]
                       [ emojiButton model
                       , HE.textarea' $
-                              (if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
-                                    <>
+                              {-( if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
+                                    <> -}
                                           [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
                                           , HA.id $ show elementId
                                           , HA.placeholder $ if model.webSocketStatus == Connected then "Type here to message " <> recipientName else "Reconnecting..."

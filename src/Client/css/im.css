@@ -3213,13 +3213,6 @@ label {
 }
 
 @media (min-width:1920px) {
-
-    html,
-    body {
-        font-size: 18px;
-        line-height: 1.51857143;
-    }
-
     .contact-list .sign-up-call {
         display: none;
     }
