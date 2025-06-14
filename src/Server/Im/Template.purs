@@ -64,6 +64,7 @@ template payload = do
                     , showLargeAvatar: false
                     , imageCaption: Nothing
                     , selectedImage: Nothing
+                    , webSocketMessages: []
                     , bugging: Nothing
                     , fullContactProfileVisible: false
                     , freeToFetchContactList: true

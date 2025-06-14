@@ -5,7 +5,7 @@ import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
-import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.Suggestion as SIS
@@ -16,6 +16,7 @@ import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime)
 import Data.DateTime as DT
 import Data.Either (Either(..))
+import Data.Foldable as DF
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -90,9 +91,6 @@ forceSendMessage elementId model =
             [ messageContent elementId model
             ]
 
-waitSendMessage :: ElementId -> ImModel -> MoreMessages
-waitSendMessage
-
 -- | Is the message to be sent an audio, text or image?
 messageContent ∷ ElementId → ImModel → Aff (Maybe ImMessage)
 messageContent elementId model = do
@@ -147,16 +145,16 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
             , selectedImage = Nothing
             , showMiniChatInput = false
             , editing = Nothing
-            } /\ [ actuallySendMessage, fetchHistory ]
+            } /\ ([ actuallySendMessage ] <> if shouldFetchHistory then [ fetchHistory ] else [])
       where
       -- temporary ids are used to find messages while the server has not yet returned their db id
       newTemporaryId = model.temporaryId + 1
 
-      fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory userId shouldFetchHistory
+      fetchHistory = pure <<< Just <<< SpecialRequest $ FetchHistory userId true
       actuallySendMessage = EC.liftEffect do
             CIS.scrollLastMessage
-            CIW.sendPayload webSocket $
-                  case model.editing of
+            let
+                  payload = case model.editing of
                         Nothing →
                               OutgoingMessage
                                     { id: newTemporaryId
@@ -171,7 +169,11 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
                                     , userId
                                     , content: contentMessage
                                     }
-            pure Nothing
+            if model.webSocketStatus == Connected then do
+                  CIW.sendPayload webSocket payload
+                  pure Nothing
+            else
+                  pure <<< Just <<< ResumeSendMessage $ Just payload
 
       asMarkdownImage caption width height base64 = "![" <> caption <> "]([" <> show width <> "," <> show height <> "]" <> base64 <> ")"
       asAudioMessage base64 = "<audio controls src='" <> base64 <> "'></audio>"
@@ -208,6 +210,27 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
                           , edited = true
                           }
             | otherwise = history
+
+resumeSendMessage ∷ Maybe WebSocketPayloadServer → WebSocket → ImModel → MoreMessages
+resumeSendMessage payload webSocket model = model { webSocketMessages = messages } /\ resume
+      where
+      messages = case payload of
+            Nothing → model.webSocketMessages
+            Just message → message : model.webSocketMessages
+
+      resume
+            | DA.null messages = []
+            | otherwise =
+                    [ EC.liftEffect do
+                            if spy "statatata" model.webSocketStatus == Connected then do
+                                  DF.traverse_ (CIW.sendPayload webSocket) $ spy "msgs" messages
+                                  pure $ Just ClearWebSocketMessages
+                            else
+                                  pure Nothing
+                    ]
+
+clearWebSocketMessages ∷ ImModel → NoMessages
+clearWebSocketMessages model = model { webSocketMessages = [] } /\ []
 
 -- | A "turn" is how much karma is accrued between messages
 -- |

@@ -123,6 +123,7 @@ type Im =
       , temporaryPassword ∷ Maybe String
       , freeToFetchContactList ∷ Boolean
       , suggestionsFrom ∷ SuggestionsFrom
+      , webSocketMessages :: Array WebSocketPayloadServer
       , freeToFetchSuggestions ∷ Boolean
       , selectedImage ∷ SelectedImage
       , imageCaption ∷ Maybe String
@@ -298,6 +299,8 @@ data ImMessage
       | ToggleMiniChatInput
       | ToggleLargeAvatar
       | DropFile Event
+      | ClearWebSocketMessages
+      | ResumeSendMessage (Maybe WebSocketPayloadServer)
       | ToggleMessageEnter
       | FocusInput ElementId
       | QuoteMessage String (Either Touch (Maybe Event))
@@ -307,7 +310,6 @@ data ImMessage
       | ForceSendMessage ElementId
       | ResizeChatInput Event
       | SendMessage ElementId MessageContent DateTimeWrapper
-      | WaitSendMessage ElementId
       | SetEmoji ElementId Event
       | BeforeAudioMessage
       | AudioMessage Touch

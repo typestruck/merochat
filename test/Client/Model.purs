@@ -53,6 +53,7 @@ model =
       , failedRequests: []
       , toggleContextMenu: HideContextMenu
       , imageCaption: Nothing
+      , webSocketMessages: []
       , fullContactProfileVisible: false
       , fortune: Nothing
       , erroredFields: []

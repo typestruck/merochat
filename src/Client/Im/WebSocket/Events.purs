@@ -128,7 +128,6 @@ handleOpen webSocketStateRef _ = do
       FS.send imId $ SetReadStatus Nothing
       --keep track of users online status
       FS.send imId TrackAvailability
-
       where
       privilegeDelay = 1000 * 60 * 60
       pollPrivileges webSocket = CIW.sendPayload webSocket UpdatePrivileges
@@ -429,12 +428,14 @@ updateWebSocketStatus status model =
       reconnect = do
             when (model.webSocketStatus == Reconnect) (EC.liftEffect (ERN.randomRange 300.0 1000.0) >>= EA.delay <<< Milliseconds)
             if model.smallScreen then do
-                  isFocused ← EC.liftEffect CCD.documentHasFocus
-                  pure $ if isFocused then Just ReconnectWebSocket else Nothing
+                  focused ← EC.liftEffect CCD.documentHasFocus
+                  visible <- EC.liftEffect CCD.documentIsNotHidden
+                  pure $ if focused || visible then Just ReconnectWebSocket else Nothing
             else pure $ Just ReconnectWebSocket
+      resumeMessages = pure <<< Just $ ResumeSendMessage Nothing
       messages
             | status == Reconnect = [ reconnect ]
-            | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts ]
+            | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts, resumeMessages ]
             | otherwise = []
 
 trackAvailability ∷ WebSocket → ImModel → NoMessages

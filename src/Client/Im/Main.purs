@@ -129,8 +129,9 @@ update st model =
             ToggleMessageEnter → CIC.toggleMessageEnter model
             BeforeAudioMessage → CIC.beforeAudioMessage model
             AudioMessage touch → CIC.audioMessage touch model
+            ResumeSendMessage payload -> CIC.resumeSendMessage payload webSocket  model
+            ClearWebSocketMessages -> CIC.clearWebSocketMessages model
             ToggleMiniChatInput → CIC.toggleMiniChatInput model
-            WaitSendMessage elementId → CIC.waitSendMessage elementId model
             SendAudioMessage base64 → CIC.sendAudioMessage base64 model
             FocusInput elementId → focusInput elementId model
             QuoteMessage message et → CIC.quoteMessage message et model

@@ -50,10 +50,10 @@ resumeChat userId model =
                         , failedRequests = []
                         } /\
                         ( smallScreenEffect <>
-                                [ CIS.scrollLastMessageAff
+                                [ updateReadCountEffect chatting.user.id
+                                , CIS.scrollLastMessageAff
                                 , loadDraft chatting.draft
                                 , fetchHistoryEffect chatting
-                                , updateReadCountEffect chatting.user.id
                                 ]
                         )
       where

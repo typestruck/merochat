@@ -118,11 +118,8 @@ chatBarInput eid elementId model = HE.fragment
             _ → map (_.name <<< _.user) chatting
 
       filterEnterKeydown
-            | model.messageEnter = [ SK.keyDownOn "Enter" sendEnter ]
+            | model.messageEnter = [ SK.keyDownOn "Enter" (EnterSendMessage elementId) ]
             | otherwise = []
-      sendEnter event
-            | model.webSocketStatus == Connected = EnterSendMessage elementId event
-            | otherwise = WaitSendMessage elementId
 
 emojiButton ∷ ImModel → Html ImMessage
 emojiButton model
@@ -154,7 +151,7 @@ sendButton elementId model
       | model.messageEnter = []
       | otherwise =
               [ HE.div
-                      [ HA.class' "send-button-div", HA.onClick $ if model.webSocketStatus == Connected then ForceSendMessage elementId else WaitSendMessage elementId ]
+                      [ HA.class' "send-button-div", HA.onClick $ ForceSendMessage elementId  ]
                       [ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message" ]
               ]
 

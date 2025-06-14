@@ -15,11 +15,9 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "big-integer": "^1.6.48",
-    "html-inline-css-webpack-plugin": "^1.11.1",
-    "html-webpack-plugin": "^5.5.0",
     "htmlparser2": "^10.0.0",
     "image-type": "^5.1.0",
-    "marked": "^4.0.10",
+    "marked": "^4.3.0",
     "nodemailer": "^6.4.11",
     "pg": "^8.7.1",
     "url": "^0.11.0",
@@ -31,17 +29,18 @@
   "devDependencies": {
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^3.4.1",
+    "html-inline-css-webpack-plugin": "^1.11.2",
+    "html-webpack-plugin": "^5.6.3",
     "mini-css-extract-plugin": "^1.3.3",
-    "nodemon": "^2.0.4",
+    "nodemon": "^2.0.22",
     "purescript-psa": "^0.8.2",
-    "purs-backend-es": "^1.4.2",
+    "purs-backend-es": "^1.4.3",
     "purs-loader": "^3.7.2",
     "purs-tidy": "^0.11.0",
-    "webpack": "^5.94.0",
+    "webpack": "^5.99.9",
     "webpack-cli": "4.9.2"
   },
   "optionalDependencies": {
-    "bufferutil": "^4.0.6",
-    "utf-8-validate": "^5.0.4"
+    "bufferutil": "^4.0.9"
   }
 }
