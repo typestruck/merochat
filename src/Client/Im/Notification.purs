@@ -36,7 +36,7 @@ type Notification =
 foreign import createNotification_ ∷ EffectFn1 Notification Unit
 
 createNotification ∷ Notification → Effect Unit
-createNotification = EU.runEffectFn1 createNotification_
+createNotification n = pure unit -- EU.runEffectFn1 createNotification_
 
 notifyUnreadChats ∷ ImModel → Array Int → NextMessage
 notifyUnreadChats model userIds = model /\
@@ -48,7 +48,7 @@ notifyUnreadChats model userIds = model /\
 notify ∷ ImModel → Array Int → Effect Unit
 notify { user: { id: loggedUserId }, contacts, smallScreen } userIds = do
       updateTabCount loggedUserId contacts
-      unless smallScreen $ DF.traverse_ createNotification' contactUsers
+  --    unless smallScreen $ DF.traverse_ createNotification' contactUsers
       where
       contactUsers = DA.filter byKeys contacts
       byKeys cnt = DA.any (\id → cnt.user.id == id) userIds
