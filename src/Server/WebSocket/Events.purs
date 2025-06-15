@@ -4,7 +4,7 @@ import Prelude
 
 import Browser.Cookies.Internal as BCI
 import Data.Array as DA
-import Data.DateTime (DateTime(..), Millisecond, Second, Time(..))
+import Data.DateTime (DateTime(..), Time(..))
 import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.Enum as DEN
@@ -18,11 +18,10 @@ import Data.Newtype (class Newtype)
 import Data.Newtype as DN
 import Data.Set (Set)
 import Data.Set as DS
-import Data.Time.Duration (Hours, Minutes(..))
-import Data.Traversable as DTV
+import Data.Time.Duration (Minutes)
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Droplet.Driver (Pool)
 import Effect (Effect)
@@ -44,7 +43,6 @@ import Run.Reader as RR
 import Server.Cookies (cookieName)
 import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.Privileges as SIP
-import Server.Database.Users as SBU
 import Server.Effect (BaseEffect, BaseReader, Configuration)
 import Server.Effect as SE
 import Server.Im.Action as SIA
@@ -158,8 +156,7 @@ handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
       now ← EN.nowDateTime
       updatedAllUsersAvailability ← ER.modify (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
       let updatedUserAvaibility = SU.fromJust $ DH.lookup loggedUserId updatedAllUsersAvailability
-      when (spy "spied closed" (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online)) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability) updatedUserAvaibility.trackedBy
-
+      when (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability loggedUserId) updatedUserAvaibility.trackedBy
       where
       removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
 
@@ -437,7 +434,7 @@ removeInactiveConnections ∷ Ref (HashMap Int UserAvailability) → Effect Unit
 removeInactiveConnections allUsersAvailabilityRef = do
       now ← EN.nowDateTime
       allUsersAvailability ← ER.read allUsersAvailabilityRef
-      DF.traverse_ (remove now) $ DH.toArrayBy Tuple allUsersAvailability
+      DF.traverse_ (remove now) $ DH.toArrayBy (/\) allUsersAvailability
       where
       remove now (userId /\ userAvailability) = do
             let inactiveConnections = DH.filter (isInactive now <<< SW.getLastPing) userAvailability.connections
@@ -463,13 +460,13 @@ removeInactiveConnections allUsersAvailabilityRef = do
 trackAvailabilityFromTerminated ∷ Ref (HashMap Int UserAvailability) → Effect Unit
 trackAvailabilityFromTerminated allUsersAvailabilityRef = do
       allUsersAvailability ← ER.read allUsersAvailabilityRef
-      DF.traverse_ (sendAvailability allUsersAvailability) $ DH.values allUsersAvailability
+      DF.traverse_ (sendAvailability allUsersAvailability) $ DH.toArrayBy (/\) allUsersAvailability
       where
-      sendAvailability allUsersAvailability userAvailability = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability) userAvailability.trackedBy
+      sendAvailability allUsersAvailability (userId /\ userAvailability) = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability userId) userAvailability.trackedBy
 
-sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Effect Unit
-sendTrackedAvailability allUsersAvailability availability userId = case DH.lookup userId allUsersAvailability of
-      Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: userId, availability }) userAvailability.connections
+sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Int → Effect Unit
+sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup userId allUsersAvailability of
+      Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: trackedUserId, availability }) userAvailability.connections
       Nothing → pure unit
 
 withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
