@@ -156,7 +156,7 @@ handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
       now ← EN.nowDateTime
       updatedAllUsersAvailability ← ER.modify (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
       let updatedUserAvaibility = SU.fromJust $ DH.lookup loggedUserId updatedAllUsersAvailability
-      when (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability loggedUserId) updatedUserAvaibility.trackedBy
+      when (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability (spy "log" loggedUserId)) (spy "tracjked" updatedUserAvaibility.trackedBy)
       where
       removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
 
