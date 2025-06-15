@@ -103,7 +103,7 @@ availabilityInterval = 1000 * 60 * 60 * 1
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
       userId ← SE.poolEffect pool parseUserId
-      EC.liftEffect $ case spy "hhhhhhhhhhhhhhhhhhhhhh" userId of
+      EC.liftEffect $ case  userId of
             Nothing → do
                   --this can be made more clear for the end user
                   sendWebSocketMessage connection $ CloseConnection LoginPage
@@ -284,7 +284,7 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
 -- | Send a message or another user or sync a message sent from another connection
 sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect
 sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
-      processed ← SIA.processMessage loggedUserId outgoing.userId $ spy "processed" outgoing.content
+      processed ← SIA.processMessage loggedUserId outgoing.userId  outgoing.content
       case processed of
             Right (messageId /\ content) → do
                   now ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -438,7 +438,7 @@ removeInactiveConnections allUsersAvailabilityRef = do
             let inactiveConnections = DH.filter (isInactive now <<< SW.getLastPing) userAvailability.connections
             unless (DH.isEmpty inactiveConnections) do
                   DF.traverse_ SW.terminate $ DH.values inactiveConnections
-                  ER.modify_ (DH.update (updateConnections now inactiveConnections) (spy "expired for" userId)) allUsersAvailabilityRef
+                  ER.modify_ (DH.update (updateConnections now inactiveConnections)  userId) allUsersAvailabilityRef
 
       isInactive now lastPing = inactiveMinutes <= DI.floor (DN.unwrap (DDT.diff now lastPing ∷ Minutes))
       updateConnections now connections userAvailability =

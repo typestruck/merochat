@@ -791,11 +791,6 @@ a {
     margin-top: 15px
 }
 
-.same-bubble-message.message.incoming-message,
-.same-bubble-message.message.outgoing-message {
-    margin-top: 2px
-}
-
 .incoming-message {
     flex-flow: row;
     align-self: flex-start;

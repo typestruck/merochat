@@ -71,8 +71,8 @@ listSingleContact loggedUserId userId = presentContacts <$> SIDP.presentSingleCo
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SIDP.presentSingleContact loggedUserId userId skip
 
-listMissedContacts ∷ Int → DateTimeWrapper → ServerEffect (Array Contact)
-listMissedContacts loggedUserId (DateTimeWrapper dt) = presentContacts <$> SIDP.presentMissedContacts loggedUserId dt
+listMissedContacts ∷ Int → DateTimeWrapper → Maybe Int -> ServerEffect (Array Contact)
+listMissedContacts loggedUserId (DateTimeWrapper dt) lastSentId = presentContacts <$> SIDP.presentMissedContacts loggedUserId dt lastSentId
 
 presentContacts ∷ Array FlatContactHistoryMessage → Array Contact
 presentContacts = map chatHistory <<< DA.groupBy sameContact

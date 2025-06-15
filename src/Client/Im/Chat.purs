@@ -26,6 +26,7 @@ import Data.Ord as DO
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
+import Data.String.Regex.Unsafe as DSR
 import Data.Symbol as TDS
 import Data.Time.Duration (Milliseconds(..), Minutes)
 import Data.Tuple (Tuple(..))
@@ -222,8 +223,8 @@ resumeSendMessage payload webSocket model = model { webSocketMessages = messages
             | DA.null messages = []
             | otherwise =
                     [ EC.liftEffect do
-                            if spy "statatata" model.webSocketStatus == Connected then do
-                                  DF.traverse_ (CIW.sendPayload webSocket) $ spy "msgs" messages
+                            if model.webSocketStatus == Connected then do
+                                  DF.traverse_ (CIW.sendPayload webSocket) messages
                                   pure $ Just ClearWebSocketMessages
                             else
                                   pure Nothing

@@ -78,52 +78,62 @@ chatHistory model =
             Tutorial _ → false
             _ → true
 
-      displayChatHistory contact = DA.mapWithIndex (\i → chatHistoryEntry contact $ map _.sender (contact.history !! (i - 1))) contact.history
-      chatHistoryEntry contact previousSender { id, status, date, sender, content, edited } =
-            let
-                  incomingMessage = sender /= model.user.id
-                  noTimestamps = not model.user.messageTimestamps || not contact.user.messageTimestamps
-                  noReadReceipts = not model.user.readReceipts || not contact.user.readReceipts
-                  isContextMenuVisible = model.toggleContextMenu == ShowMessageContextMenu id
-            in
-                  HE.div
-                        [ HA.class'
-                                { message: true
-                                , "outgoing-message": sender == model.user.id
-                                , "incoming-message": incomingMessage
-                                , "same-bubble-message": previousSender == Just sender -- only the first message in a row has a bubble handle
-                                }
-                        , HA.onDblclick' (QuoteMessage content <<< Right <<< Just)
-                        ]
-                        [ HE.div
-                                [ HA.class' { "message-content": true, "editing-message": Just id == model.editing }, HA.id $ "m" <> show id, CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage content <<< Left) ] -- id is used to scroll into view
-                                [ HE.div [ HA.class' "message-content-in" ]
-                                        [ HE.div' [ HA.innerHtml $ SM.parse content ]
-                                        , HE.div (HA.class' "message-context-options")
-                                                [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu id ]
-                                                        [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
-                                                                [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
-                                                                ]
-                                                        , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history id } ]
-                                                                [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage content (Right Nothing)) ] "Reply"
-                                                                , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": sender /= model.user.id || status < Received }, HA.onClick $ EditMessage content id ] "Edit"
-                                                                , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": sender /= model.user.id || status < Received }, HA.onClick $ DeleteMessage id ] "Unsend"
+      displayChatHistory contact = chatHistoryEntry contact <$> contact.history
+      isBottomMessage history id = (SU.fromJust $ DA.findIndex ((_ == id) <<< _.id) history) >= DA.length history - 2
+      chatHistoryEntry contact entry
+            | entry.status == Errored =
+                --currently the only way a message could fail is if it was unsanitary, otherwise we wouldnt hear from the server
+                -- when this is better we can add a resend logic
+                    HE.div
+                          [ HA.class' "message outgoing-message" ]
+                          [ HE.div
+                                  [ HA.class' "message-content", HA.id $ "m" <> show entry.id ]
+                                  [ HE.div [ HA.class' "message-content-in" ]
+                                          [ HE.div' [ HA.innerHtml $ SM.parse entry.content ]
+                                          ]
+                                  , HE.div (HA.class' "message-status error-message")
+                                          [ HE.span (HA.class' { hidden: not model.user.messageTimestamps || not contact.user.messageTimestamps }) $ SD.agoWithTime (DN.unwrap entry.date)
+                                          , HE.span_ (" - Failed to send")
+                                          ]
+                                  ]
+                          ]
+            | otherwise =
+                    let
+                          incomingMessage = entry.sender /= model.user.id
+                          noTimestamps = not model.user.messageTimestamps || not contact.user.messageTimestamps
+                          noReadReceipts = not model.user.readReceipts || not contact.user.readReceipts
+                          isContextMenuVisible = model.toggleContextMenu == ShowMessageContextMenu entry.id
+                    in
+                          HE.div
+                                [ HA.class'
+                                        { message: true
+                                        , "outgoing-message": entry.sender == model.user.id
+                                        , "incoming-message": incomingMessage
+                                        }
+                                , HA.onDblclick' (QuoteMessage entry.content <<< Right <<< Just)
+                                ]
+                                [ HE.div
+                                        [ HA.class' { "message-content": true, "editing-message": Just entry.id == model.editing }, HA.id $ "m" <> show entry.id, CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage entry.content <<< Left) ] -- id is used to scroll into view
+                                        [ HE.div [ HA.class' "message-content-in" ]
+                                                [ HE.div' [ HA.innerHtml $ SM.parse entry.content ]
+                                                , HE.div (HA.class' "message-context-options")
+                                                        [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
+                                                                [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
+                                                                        [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
+                                                                        ]
+                                                                , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
+                                                                        [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.content (Right Nothing)) ] "Reply"
+                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": not incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] "Edit"
+                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": not incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] "Unsend"
+                                                                        ]
                                                                 ]
                                                         ]
                                                 ]
-                                        ]
-                                , HE.div
-                                        ( HA.class'
-                                                { "error-message": status == Errored
-                                                , "message-status": true
-                                                }
-                                        )
-                                        [ HE.span (HA.class' { hidden: not edited }) "Edited - "
-                                        , HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap date)
-                                        , HE.span (HA.class' { hidden: incomingMessage || noReadReceipts && status /= Errored }) (" - " <> show status)
+                                        , HE.div (HA.class' "message-status")
+                                                [ HE.span (HA.class' { hidden: not entry.edited }) "Edited - "
+                                                , HE.span (HA.class' { hidden: noTimestamps }) $ SD.agoWithTime (DN.unwrap entry.date)
+                                                , HE.span (HA.class' { hidden: incomingMessage || noReadReceipts }) (" - " <> show entry.status)
+                                                ]
                                         ]
                                 ]
-                        ]
-
-      isBottomMessage history id = (SU.fromJust $ DA.findIndex ((_ == id) <<< _.id) history) >= DA.length history - 2
 

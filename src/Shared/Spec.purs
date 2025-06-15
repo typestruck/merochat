@@ -103,8 +103,8 @@ spec ∷
                                                 , response ∷ Ok
                                                 }
                                   , missedContacts ∷
-                                          GET "/missed?since=<since>"
-                                                { query ∷ { since ∷ DateTimeWrapper }
+                                          GET "/missed?since=<since>&last=<last>"
+                                                { query ∷ { since ∷ DateTimeWrapper, last :: Maybe Int }
                                                 , response ∷ Array Contact
                                                 }
                                   , fortune ∷

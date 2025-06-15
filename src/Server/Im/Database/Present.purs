@@ -173,11 +173,12 @@ ORDER BY s.date DESC
 LIMIT @messagesPerPage
 OFFSET @offset) m ORDER BY m.date"""
 
-presentMissedContacts ∷ Int → DateTime → ServerEffect (Array FlatContactHistoryMessage)
-presentMissedContacts loggedUserId sinceMessageDate = SD.unsafeQuery query
+presentMissedContacts ∷ Int → DateTime → Maybe Int -> ServerEffect (Array FlatContactHistoryMessage)
+presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery query
       { loggedUserId
-      , status: Read
       , sinceMessageDate
+      , lastSentId
+      , status: Read
       , contacts: Contacts
       }
       where
@@ -189,8 +190,7 @@ presentMissedContacts loggedUserId sinceMessageDate = SD.unsafeQuery query
             JOIN messages s ON (s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender)
             LEFT JOIN last_seen ls ON u.id = ls.who
             WHERE visibility <= @contacts
-                  AND last_message_date > @sinceMessageDate
-                  AND status < @status
+                  AND (last_message_date > @sinceMessageDate AND status < @status OR s.id > @lastSentId AND s.sender = @loggedUserId)
                   AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
                   AND NOT (h.sender = @loggedUserId AND h.sender_deleted_to IS NOT NULL AND s.id <= h.sender_deleted_to OR
                         h.recipient = @loggedUserId AND h.recipient_deleted_to IS NOT NULL AND s.id <= h.recipient_deleted_to)
