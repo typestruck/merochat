@@ -103,7 +103,7 @@ availabilityInterval = 1000 * 60 * 60 * 1
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
       userId ← SE.poolEffect pool parseUserId
-      EC.liftEffect $ case  userId of
+      EC.liftEffect $ case userId of
             Nothing → do
                   --this can be made more clear for the end user
                   sendWebSocketMessage connection $ CloseConnection LoginPage
@@ -153,8 +153,13 @@ handleError = ECS.log <<< show
 
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
+      allUsersAvailability ← ER.read allUsersAvailabilityRef
+      let userAvaibility = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       now ← EN.nowDateTime
-      ER.modify_ (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
+      updatedAllUsersAvailability ← ER.modify (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
+      let updatedUserAvaibility = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
+      when (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability) updatedUserAvaibility.trackedBy
+
       where
       removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
 
@@ -284,7 +289,7 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
 -- | Send a message or another user or sync a message sent from another connection
 sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect
 sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
-      processed ← SIA.processMessage loggedUserId outgoing.userId  outgoing.content
+      processed ← SIA.processMessage loggedUserId outgoing.userId outgoing.content
       case processed of
             Right (messageId /\ content) → do
                   now ← R.liftEffect $ map DateTimeWrapper EN.nowDateTime
@@ -409,7 +414,7 @@ makeUserAvailabity old token date currentAvailability =
       { trackedBy: old.trackedBy
       , connections:
               case token of
-                    Right t → DH.update (Just <<< SW.lastPing date) t old.connections -- ping on the socket is used to determine inactive connections
+                    Right t → DH.update (Just <<< SW.lastPing date) t old.connections --ping on the socket is used to determine inactive connections
                     Left t → DH.delete t old.connections
       , availability:
               case currentAvailability of
@@ -438,7 +443,7 @@ removeInactiveConnections allUsersAvailabilityRef = do
             let inactiveConnections = DH.filter (isInactive now <<< SW.getLastPing) userAvailability.connections
             unless (DH.isEmpty inactiveConnections) do
                   DF.traverse_ SW.terminate $ DH.values inactiveConnections
-                  ER.modify_ (DH.update (updateConnections now inactiveConnections)  userId) allUsersAvailabilityRef
+                  ER.modify_ (DH.update (updateConnections now inactiveConnections) userId) allUsersAvailabilityRef
 
       isInactive now lastPing = inactiveMinutes <= DI.floor (DN.unwrap (DDT.diff now lastPing ∷ Minutes))
       updateConnections now connections userAvailability =
@@ -460,11 +465,12 @@ trackAvailabilityFromTerminated allUsersAvailabilityRef = do
       allUsersAvailability ← ER.read allUsersAvailabilityRef
       DF.traverse_ (sendAvailability allUsersAvailability) $ DH.values allUsersAvailability
       where
-      sendAvailability allUsersAvailability userAvailability = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (send allUsersAvailability userAvailability.availability) userAvailability.trackedBy
+      sendAvailability allUsersAvailability userAvailability = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability) userAvailability.trackedBy
 
-      send allUsersAvailability availability userId = case DH.lookup userId allUsersAvailability of
-            Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: userId, availability }) userAvailability.connections
-            Nothing → pure unit
+sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Effect Unit
+sendTrackedAvailability allUsersAvailability availability userId = case DH.lookup userId allUsersAvailability of
+      Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: userId, availability }) userAvailability.connections
+      Nothing → pure unit
 
 withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
 withConnections userAvailability handler =
