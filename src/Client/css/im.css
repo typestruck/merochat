@@ -786,11 +786,6 @@ a {
     min-width: 100%;
 }
 
-.message.incoming-message,
-.message.outgoing-message {
-    margin-top: 15px
-}
-
 .incoming-message {
     flex-flow: row;
     align-self: flex-start;
@@ -2843,11 +2838,6 @@ label {
 
     .message div {
         max-width: 100%;
-    }
-
-    .message.incoming-message,
-    .message.outgoing-message {
-        margin-top: 8px
     }
 
     .incoming-message .message-content {
