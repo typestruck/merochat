@@ -152,13 +152,18 @@ handleError = ECS.log <<< show
 handleClose ∷ String → Int → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
       allUsersAvailability ← ER.read allUsersAvailabilityRef
-      let userAvaibility = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       now ← EN.nowDateTime
-      updatedAllUsersAvailability ← ER.modify (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
-      let updatedUserAvaibility = SU.fromJust $ DH.lookup loggedUserId updatedAllUsersAvailability
-      when (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability (spy "log" loggedUserId)) updatedUserAvaibility.trackedBy
+      let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
+      --if thats the only open connection for an online user we need to flag it as not online
+      if userAvailability.availability == Online && DH.size userAvailability.connections == 1 then do
+            let lastSeen = LastSeen $ DateTimeWrapper now
+            updatedAllUsersAvailability ← ER.modify (DH.update (removeConnection now lastSeen) loggedUserId) allUsersAvailabilityRef
+            let updatedUserAvaibility = SU.fromJust $ DH.lookup loggedUserId updatedAllUsersAvailability
+            DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability lastSeen (spy "close" loggedUserId)) updatedUserAvaibility.trackedBy
+      else
+            ER.modify_ (DH.update (removeConnection now None) loggedUserId) allUsersAvailabilityRef
       where
-      removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
+      removeConnection now availability userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now  availability
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do
