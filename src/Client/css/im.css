@@ -1895,8 +1895,9 @@ select {
 .card-top-welcome-filter {
     display: flex;
     align-items: flex-start;
-    align-self: flex-start;
+    /* align-self: flex-start; */
     flex-direction: column;
+    margin-bottom: 10px;
 }
 
 .card-top-header {

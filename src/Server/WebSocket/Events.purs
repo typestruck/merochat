@@ -159,7 +159,7 @@ handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
             let lastSeen = LastSeen $ DateTimeWrapper now
             updatedAllUsersAvailability ← ER.modify (DH.update (removeConnection now lastSeen) loggedUserId) allUsersAvailabilityRef
             let updatedUserAvaibility = SU.fromJust $ DH.lookup loggedUserId updatedAllUsersAvailability
-            DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability lastSeen (spy "close" loggedUserId)) updatedUserAvaibility.trackedBy
+            DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability lastSeen loggedUserId) updatedUserAvaibility.trackedBy
       else
             ER.modify_ (DH.update (removeConnection now None) loggedUserId) allUsersAvailabilityRef
       where
@@ -470,8 +470,8 @@ trackAvailabilityFromTerminated allUsersAvailabilityRef = do
       sendAvailability allUsersAvailability (userId /\ userAvailability) = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability userId) userAvailability.trackedBy
 
 sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Int → Effect Unit
-sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup (spy "sending" userId) allUsersAvailability of
-      Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: (spy "tracked for" trackedUserId), availability }) userAvailability.connections
+sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup  userId allUsersAvailability of
+      Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: trackedUserId, availability }) userAvailability.connections
       Nothing → pure unit
 
 withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
