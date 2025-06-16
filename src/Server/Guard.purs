@@ -34,7 +34,7 @@ guards reading =
 checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { configuration: { tokenSecret }, pool } request = do
       cookies ← PSG.cookies request
-      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
             Just userId → pure $ Right userId
             _ →
@@ -49,7 +49,7 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { configuration: { tokenSecret }, pool } request = do
       cookies ← PSG.cookies request
-      maybeUserId ← SE.poolEffect pool <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
             Just _ →
                   if isPost then

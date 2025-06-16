@@ -40,4 +40,4 @@ type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) 
 
 type ServerEffect a = BaseEffect ServerReader a
 
-poolEffect pool = R.runBaseAff' <<< RE.catch (\e → liftEffect (EC.logShow e) *> pure Nothing) <<< RR.runReader { pool }
+poolEffect pool d = R.runBaseAff' <<< RE.catch (\e → liftEffect (EC.logShow e) *> pure d) <<< RR.runReader { pool }

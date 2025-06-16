@@ -43,6 +43,7 @@ import Run.Reader as RR
 import Server.Cookies (cookieName)
 import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.Privileges as SIP
+import Server.Database.Users as SDU
 import Server.Effect (BaseEffect, BaseReader, Configuration)
 import Server.Effect as SE
 import Server.Im.Action as SIA
@@ -75,6 +76,7 @@ type WebSocketEffect = BaseEffect WebSocketReader Unit
 
 type WebSocketReader = BaseReader
       ( loggedUserId ∷ Int
+      , pwa :: Boolean --only send push notifications if user registered for it
       , token ∷ String --use this to tell connections apart
       , configuration ∷ Configuration
       , allUsersAvailabilityRef ∷ Ref (HashMap Int UserAvailability)
@@ -100,23 +102,24 @@ availabilityInterval = 1000 * 60 * 60 * 1
 
 handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
 handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
-      userId ← SE.poolEffect pool parseUserId
-      EC.liftEffect $ case userId of
-            Nothing → do
+      userId ← SE.poolEffect pool Nothing $ ST.userIdFromToken configuration.tokenSecret token
+      case userId of
+            Nothing → EC.liftEffect do
                   --this can be made more clear for the end user
                   sendWebSocketMessage connection $ CloseConnection LoginPage
                   ECS.log "terminated due to auth error"
             Just loggedUserId → do
-                  now ← EN.nowDateTime
-                  ER.modify_ (DH.alter (upsertUserAvailability now) loggedUserId) allUsersAvailabilityRef
-                  SW.onError connection handleError
-                  SW.onClose connection (handleClose token loggedUserId allUsersAvailabilityRef)
-                  SW.onMessage connection (runMessageHandler loggedUserId)
+                  pwa ← SE.poolEffect pool false $ SDU.hasPwa loggedUserId
+                  EC.liftEffect do
+                        now ← EN.nowDateTime
+                        ER.modify_ (DH.alter (upsertUserAvailability now) loggedUserId) allUsersAvailabilityRef
+                        SW.onError connection handleError
+                        SW.onClose connection (handleClose token loggedUserId allUsersAvailabilityRef)
+                        SW.onMessage connection (runMessageHandler loggedUserId pwa)
       where
       token = DM.fromMaybe "" do
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
-      parseUserId = ST.userIdFromToken configuration.tokenSecret token
 
       initialAvailability = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, availability: None }
       upsertUserAvailability date =
@@ -124,7 +127,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
                   Nothing → Just $ makeUserAvailabity initialAvailability (Right token) date None --could also query the db
                   Just userAvailability → Just $ makeUserAvailabity (userAvailability { connections = DH.insert token connection userAvailability.connections }) (Right token) date None
 
-      runMessageHandler loggedUserId (WebSocketMessage message) = do
+      runMessageHandler loggedUserId pwa (WebSocketMessage message) = do
             case SJ.fromJson message of
                   Right payload → do
                         let
@@ -132,7 +135,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
                                     R.runBaseAff'
                                           <<< RE.catch (\e → reportError payload (checkInternalError e) e)
                                           <<<
-                                                RR.runReader { allUsersAvailabilityRef, configuration, pool, loggedUserId, token } $
+                                                RR.runReader { allUsersAvailabilityRef, configuration, pool, loggedUserId, token, pwa } $
                                           handleMessage payload
                         EA.launchAff_ <<< EA.catchError run $ reportError payload Nothing
                   Left error → do

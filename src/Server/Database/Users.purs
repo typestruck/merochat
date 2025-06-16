@@ -6,12 +6,15 @@ import Prelude
 import Data.Date (Date)
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
+import Data.Maybe as DM
 import Data.Tuple.Nested (type (/\), (/\))
+import Droplet.Driver (Pool)
+import Safe.Coerce as SC
 import Server.Database as SD
 import Server.Database.Countries (CountriesTable)
 import Server.Database.Fields (_id)
-import Server.Database.Types (Checked)
-import Server.Effect (ServerEffect)
+import Server.Database.Types (Checked(..))
+import Server.Effect (ServerEffect, BaseEffect)
 import Shared.Account (RegisterLoginUser)
 import Shared.User (Gender, ProfileVisibility(..), ReceiveEmail)
 import Type.Proxy (Proxy(..))
@@ -27,7 +30,7 @@ type Users =
       , completed_tutorial ∷ Column Checked Default
       , description ∷ String
       , avatar ∷ Maybe String
-      , pwa :: Column Checked Default
+      , pwa ∷ Column Checked Default
       , receive_email ∷ Column ReceiveEmail Default
       , gender ∷ Maybe Gender
       , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
@@ -45,7 +48,7 @@ type UsersTable = Table "users" Users
 users ∷ UsersTable
 users = Table
 
-_pwa :: Proxy "pwa"
+_pwa ∷ Proxy "pwa"
 _pwa = Proxy
 
 _password ∷ Proxy "password"
@@ -110,5 +113,11 @@ userBy ∷ By → ServerEffect (Maybe RegisterLoginUser)
 userBy = case _ of
       Email value → SD.single $ baseQuery (\ft → ft .&&. _email .=. value)
       Id value → SD.single $ baseQuery (\ft → ft .&&. _id .=. value)
+
+hasPwa ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } Boolean
+hasPwa id = map (DM.maybe false (coerce <<< _.pwa)) <<< SD.single $ select (_pwa) # from users # wher (_id .=. id)
+      where
+      coerce ∷ Checked → Boolean
+      coerce = SC.coerce
 
 baseQuery ft = select (_id /\ _email /\ _password) # from users # wher (ft (_visibility .<>. TemporarilyBanned))
