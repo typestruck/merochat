@@ -3,7 +3,7 @@
     --im-second-background-color: #696460;
     --im-text-color: #FBFEFB;
     --im-chat-background-image: url('/file/default/chat-background-light.svg');
-    --im-merochat-green:#327B4F;
+    --im-merochat-green: #327B4F;
 }
 
 body {
@@ -784,6 +784,10 @@ a {
     display: flex;
     margin: 2px 0px;
     min-width: 100%;
+}
+
+.message.outgoing-message+.message.incoming-message {
+    margin-top: 8px;
 }
 
 .incoming-message {
@@ -2468,7 +2472,7 @@ select {
     border: 1px solid var(--text-color);
     padding: 10px 20px;
     padding-bottom: 12px;
-    margin-right: 10px ;
+    margin-right: 10px;
 }
 
 .attachment-button {
@@ -2536,6 +2540,7 @@ label {
     align-self: center;
     margin-bottom: 20px;
 }
+
 /* dry this shite  */
 
 @media (max-width:1279px) {
@@ -2834,6 +2839,7 @@ label {
 
     .message {
         margin: 0;
+        margin-bottom: 2px;
         width: 85%;
     }
 
@@ -2981,7 +2987,8 @@ label {
         border-color: var(--light-color);
     }
 
-    .rest-card,  .card-description {
+    .rest-card,
+    .card-description {
         overflow-y: visible;
     }
 
