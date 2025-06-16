@@ -60,6 +60,7 @@ handlers reading =
               , delete: runJson reading SIH.deleteChat
               , missedContacts: runJson reading SIH.missedContacts
               , fortune: runJson reading SFTH.fortune
+              , subscribe: runJson reading SIH.subscribe
               , register: runJson reading SIH.register
               , report: runJson reading SIH.report
               , tutorial: runJson reading SIH.tutorial

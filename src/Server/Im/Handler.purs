@@ -47,6 +47,11 @@ deleteChat { guards: { loggedUserId }, body } = do
       SIA.deleteChat loggedUserId body
       pure ok
 
+subscribe ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+subscribe { guards } = do
+      SIA.subscribe guards.loggedUserId
+      pure ok
+
 missedContacts ∷ { query ∷ { since ∷ DateTimeWrapper, last :: Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Contact)
 missedContacts request = SIA.listMissedContacts request.guards.loggedUserId request.query.since request.query.last
 

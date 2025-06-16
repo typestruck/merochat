@@ -81,6 +81,10 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
 
       chatHistory records = (fromFlatContact $ DAN.head records) { history = fromFlatMessage <$> DAN.toArray records }
 
+subscribe :: Int -> ServerEffect Unit
+subscribe loggedUserId = SIDE.subscribe loggedUserId
+
+
 processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do
       isIt ← SIDE.isRecipientVisible loggedUserId userId

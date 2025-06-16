@@ -67,6 +67,10 @@ spec ∷
                                           GET "/"
                                                 { response ∷ String
                                                 }
+                                  , subscribe ∷
+                                          POST "/subscribe"
+                                                { response ∷ Ok
+                                                }
                                   , register ∷
                                           POST "/register"
                                                 { body ∷ { email ∷ String, password ∷ String }
@@ -104,7 +108,7 @@ spec ∷
                                                 }
                                   , missedContacts ∷
                                           GET "/missed?since=<since>&last=<last>"
-                                                { query ∷ { since ∷ DateTimeWrapper, last :: Maybe Int }
+                                                { query ∷ { since ∷ DateTimeWrapper, last ∷ Maybe Int }
                                                 , response ∷ Array Contact
                                                 }
                                   , fortune ∷

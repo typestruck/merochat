@@ -119,8 +119,11 @@ subscribePush ∷ Int → Registration → Effect Unit
 subscribePush id registration = getSubscription registration handler
       where
       handler existing = case DN.toMaybe existing of
-            Nothing → subscribe registration topic
-            Just s → topic s -- double subscription?
+            Nothing →
+                  EA.launchAff_ do
+                        void <<< CCN.silentResponse $ request.im.subscribe { }
+                        EC.liftEffect $ subscribe registration topic
+            Just s → topic s
 
       topic subscription = do
             body ← topicBody subscription $ SOT.makeTopic id
