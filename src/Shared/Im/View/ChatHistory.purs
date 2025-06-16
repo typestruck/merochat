@@ -99,7 +99,7 @@ chatHistory model =
                           ]
             | otherwise =
                     let
-                          incomingMessage = entry.sender /= model.user.id
+                          incomingMessage = entry.recipient == model.user.id
                           noTimestamps = not model.user.messageTimestamps || not contact.user.messageTimestamps
                           noReadReceipts = not model.user.readReceipts || not contact.user.readReceipts
                           isContextMenuVisible = model.toggleContextMenu == ShowMessageContextMenu entry.id
@@ -123,8 +123,8 @@ chatHistory model =
                                                                         ]
                                                                 , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
                                                                         [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.content (Right Nothing)) ] "Reply"
-                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": not incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] "Edit"
-                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": not incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] "Unsend"
+                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden":  incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] "Edit"
+                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] "Unsend"
                                                                         ]
                                                                 ]
                                                         ]
