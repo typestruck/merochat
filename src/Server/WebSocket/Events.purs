@@ -92,7 +92,7 @@ inactiveInterval ∷ Int
 inactiveInterval = 1000 * 60 * inactiveMinutes
 
 inactiveMinutes ∷ Int
-inactiveMinutes = 1
+inactiveMinutes = 30
 
 -- | How often do we check serialize availability
 availabilityInterval ∷ Int
@@ -156,7 +156,7 @@ handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
       now ← EN.nowDateTime
       updatedAllUsersAvailability ← ER.modify (DH.update (removeConnection now) loggedUserId) allUsersAvailabilityRef
       let updatedUserAvaibility = SU.fromJust $ DH.lookup loggedUserId updatedAllUsersAvailability
-      when (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability (spy "log" loggedUserId)) (spy "tracjked" updatedUserAvaibility.trackedBy)
+      when (DH.isEmpty updatedUserAvaibility.connections && userAvaibility.availability == Online) $ DF.traverse_ (sendTrackedAvailability updatedAllUsersAvailability updatedUserAvaibility.availability (spy "log" loggedUserId)) updatedUserAvaibility.trackedBy
       where
       removeConnection now userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now None
 
@@ -424,7 +424,7 @@ makeUserAvailabity old token date currentAvailability =
 sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWebSocketPayloadClient → b Unit
 sendWebSocketMessage connection = EC.liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson
 
--- | Every few minutes check for dead connections
+-- | Every `inactiveMinutes` check for dead connections
 terminateInactive ∷ Ref (HashMap Int UserAvailability) → Effect Unit
 terminateInactive allUsersAvailabilityRef = do
       removeInactiveConnections allUsersAvailabilityRef
@@ -465,8 +465,8 @@ trackAvailabilityFromTerminated allUsersAvailabilityRef = do
       sendAvailability allUsersAvailability (userId /\ userAvailability) = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability userId) userAvailability.trackedBy
 
 sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Int → Effect Unit
-sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup userId allUsersAvailability of
-      Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: trackedUserId, availability }) userAvailability.connections
+sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup (spy "sending" userId) allUsersAvailability of
+      Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: (spy "tracked for" trackedUserId), availability }) userAvailability.connections
       Nothing → pure unit
 
 withConnections ∷ Maybe UserAvailability → (WebSocketConnection → WebSocketEffect) → WebSocketEffect
