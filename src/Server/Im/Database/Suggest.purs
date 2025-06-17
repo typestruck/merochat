@@ -40,7 +40,7 @@ import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
 import Server.Im.Database.Present (usersSource, userFields)
 import Shared.DateTime as ST
-import Shared.Im.Types (HistoryMessage, MessageStatus(..), Report, SuggestionsFrom(..), TemporaryMessageId)
+import Shared.Im.Types (HistoryMessage, MessageStatus(..), Report, SuggestionsFrom(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))

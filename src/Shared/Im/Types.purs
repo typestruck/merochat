@@ -8,12 +8,11 @@ import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
-import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.HashMap (HashMap)
+
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -27,7 +26,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper)
 import Shared.Privilege (Privilege)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
@@ -105,11 +104,6 @@ data MessageStatus
       | Received
       | Delivered
       | Read
-
-type TemporaryMessageId =
-      { id ∷ Int
-      , temporaryId ∷ Int
-      }
 
 --refactor: these fields can be grouped into inner objects (eg. report: { reason, comment })
 type Im =

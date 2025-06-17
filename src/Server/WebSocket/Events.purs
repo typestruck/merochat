@@ -48,6 +48,7 @@ import Server.Effect (BaseEffect, BaseReader, Configuration)
 import Server.Effect as SE
 import Server.Im.Action as SIA
 import Server.Im.Database.Execute as SIDE
+import Server.Push (PushMessage(..))
 import Server.Push as SP
 import Server.Settings.Action as SSA
 import Server.Token as ST
@@ -56,7 +57,7 @@ import Server.WebSocket as SW
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus, OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus(..), OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
@@ -69,7 +70,7 @@ import Simple.JSON as SJS
 type UserAvailability =
       { connections ∷ HashMap String WebSocketConnection
       , trackedBy ∷ Set Int
-      , pwa :: Boolean --only send push notifications if user registered for it
+      , hasPwa ∷ Boolean --only send push notifications if user registered for it
       , availability ∷ Availability
       }
 
@@ -121,11 +122,11 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
             map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
 
-      initialAvailability pwa = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, pwa, availability: None }
-      upsertUserAvailability date pwa =
+      initialAvailability hasPwa = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, hasPwa, availability: None }
+      upsertUserAvailability date hasPwa =
             case _ of
-                  Nothing → Just $ makeUserAvailabity (initialAvailability pwa) (Right token) date None --could also query the db
-                  Just userAvailability → Just $ makeUserAvailabity (userAvailability { pwa = pwa, connections = DH.insert token connection userAvailability.connections }) (Right token) date None
+                  Nothing → Just $ makeUserAvailabity (initialAvailability hasPwa) (Right token) date None --could also query the db
+                  Just userAvailability → Just $ makeUserAvailabity (userAvailability { hasPwa = hasPwa, connections = DH.insert token connection userAvailability.connections }) (Right token) date None
 
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJson message of
@@ -166,7 +167,7 @@ handleClose token loggedUserId allUsersAvailabilityRef _ _ = do
       else
             ER.modify_ (DH.update (removeConnection now None) loggedUserId) allUsersAvailabilityRef
       where
-      removeConnection now availability userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now  availability
+      removeConnection now availability userAvailability = Just $ makeUserAvailabity userAvailability (Left token) now availability
 
 handleMessage ∷ WebSocketPayloadServer → WebSocketEffect
 handleMessage payload = do
@@ -272,24 +273,29 @@ sendUnavailability loggedUserId allUsersAvailability userId = do
 sendStatusChange ∷ String → Int → HashMap Int UserAvailability → { ids ∷ Array (Tuple Int (Array Int)), status ∷ MessageStatus } → WebSocketEffect
 sendStatusChange token loggedUserId allUsersAvailability changes = do
       SIDE.changeStatus loggedUserId changes.status $ DA.concatMap DT.snd changes.ids
+
       DF.traverse_ sendReceipients changes.ids
-      DF.traverse_ sendLoggedUser changes.ids
+
+      let loggedUserAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
+      let loggedUserConnections = DH.values $ DH.filterKeys (token /= _) loggedUserAvailability.connections
+      DF.traverse_ (sendLoggedUser loggedUserConnections) changes.ids
+
+      when (changes.status == Read && loggedUserAvailability.hasPwa) $ DF.traverse_ sendPushStatus changes.ids
       where
+      sendPushStatus (userId /\ _) = EC.liftEffect <<< SP.push loggedUserId "" $ MessageReadSomewhereElse { userId }
+
+      sendReceipients (userId /\ messageIds) = do
+            let userAvailability = DH.lookup userId allUsersAvailability
+            withConnections userAvailability $ \connection → send connection messageIds loggedUserId
+      --other connections opened by this user need also to be alerted
+      sendLoggedUser loggedUserConnections (userId /\ messageIds) = DF.traverse_ (\connection → send connection messageIds userId) loggedUserConnections
+
       send connection messageIds userId =
             sendWebSocketMessage connection <<< Content $ ServerChangedStatus
                   { ids: messageIds
                   , status: changes.status
                   , userId
                   }
-
-      sendReceipients (Tuple userId messageIds) = do
-            let userAvailability = DH.lookup userId allUsersAvailability
-            withConnections userAvailability $ \connection → send connection messageIds loggedUserId
-
-      --other connections opened by this user need also to be alerted
-      sendLoggedUser (Tuple userId messageIds) = do
-            let loggedUserConnections = DM.maybe [] (DH.values <<< DH.filterKeys (token /= _) <<< _.connections) $ DH.lookup loggedUserId allUsersAvailability
-            DF.traverse_ (\connection → send connection messageIds userId) loggedUserConnections
 
 -- | Send a message or another user or sync a message sent from another connection
 sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect
@@ -308,7 +314,7 @@ sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
                   let otherConnections = DH.values $ DH.filterKeys (token /= _) loggedUserConnections
                   DF.traverse_ (sendRecipient messageId content now) otherConnections
 
-                  when (DM.maybe false _.pwa receipientUserAvailability) <<< R.liftEffect $ SP.push outgoing.userId outgoing.userName
+                  when (DM.maybe false _.hasPwa receipientUserAvailability) <<< R.liftEffect <<< SP.push outgoing.userId outgoing.userName $ IncomingMessage
                         { id: messageId
                         , senderId: loggedUserId
                         , recipientId: outgoing.userId
@@ -416,7 +422,7 @@ unsendMessage token loggedUserId allUsersAvailability deleted = do
 
 makeUserAvailabity ∷ UserAvailability → Either String String → DateTime → Availability → UserAvailability
 makeUserAvailabity old token date currentAvailability =
-      { pwa: old.pwa
+      { hasPwa: old.hasPwa
       , trackedBy: old.trackedBy
       , connections:
               case token of
@@ -474,7 +480,7 @@ trackAvailabilityFromTerminated allUsersAvailabilityRef = do
       sendAvailability allUsersAvailability (userId /\ userAvailability) = when (DH.isEmpty userAvailability.connections) $ DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability userId) userAvailability.trackedBy
 
 sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Int → Effect Unit
-sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup  userId allUsersAvailability of
+sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup userId allUsersAvailability of
       Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: trackedUserId, availability }) userAvailability.connections
       Nothing → pure unit
 

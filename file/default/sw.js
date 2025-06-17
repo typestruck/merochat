@@ -33,21 +33,34 @@ self.addEventListener("activate", (event) => {
 
 /// push
 self.addEventListener('push', (event) => {
-    event.waitUntil(notify(event.data));
+    event.waitUntil(handlePush(event.data));
 });
 
-async function notify(raw) {
-    let data = raw.json(),
-        windows = await self.clients.matchAll({ type: 'window' });
+async function handlePush(raw) {
+    let data = raw.json();
+
+    if (data.message) {
+        let parsed = JSON.parse(data.message.message);
+
+        switch (parsed.type) {
+            case 'incoming':
+                return notify(data.message, parsed);
+            case 'read':
+                return hideNotifications(parsed);
+        }
+    }
+}
+
+async function notify(data, incoming) {
+    let windows = await self.clients.matchAll({ type: 'window' });
 
     //do not raise notifications if app is open
-    if (windows.length == 1 && !windows[0].hidden && windows[0].focused || !data.message)
-        return Promise.resolve();
+    if (windows.length == 1 && !windows[0].hidden && windows[0].focused)
+        return;
 
     //old notifications get replaced if tag matches (except on safari)
     let body,
         allIncoming = [],
-        incoming = JSON.parse(data.message.message),
         previousNotifications = await self.registration.getNotifications({ tag: incoming.senderId });
 
     incoming.content = handleMarkdown(incoming.content);
@@ -61,7 +74,7 @@ async function notify(raw) {
         body = allIncoming.map(ai => ai.content).join('\n');
     }
 
-    return self.registration.showNotification(data.message.title, {
+    return self.registration.showNotification(data.title, {
         body,
         icon: 'https://mero.chat/file/default/android-launchericon-48-48.png',
         badge: 'https://mero.chat/file/default/badge.png',
@@ -108,9 +121,7 @@ async function resume(notification) {
         pwa.postMessage({ message: 'resume', payload: userId });
     } else
         //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
-        pwa = await self.clients.openWindow(`/im?resume=${userId}`);
-
-    return Promise.resolve();
+        await self.clients.openWindow(`/im?resume=${userId}`);
 }
 
 self.addEventListener('message', (event) => {
@@ -119,13 +130,11 @@ self.addEventListener('message', (event) => {
 });
 
 //when opening a chat from the app / receiving a read status push
-async function hideNotifications(tag) {
-    let notifications = await self.registration.getNotifications({ tag });
+async function hideNotifications(payload) {
+    let notifications = await self.registration.getNotifications({ tag: payload.userId });
 
     for (let n of notifications)
         n.close();
-
-    return Promise.resolve();
 }
 
 //store chats and user data localy with indexeddb?

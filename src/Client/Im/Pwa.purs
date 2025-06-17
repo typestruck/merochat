@@ -76,7 +76,7 @@ postMessage message = do
       window ← WH.window
       navigator ← WHW.navigator window
       case message  of
-            OpenChat userId → EU.runEffectFn3 postMessage_ navigator "read" $ F.unsafeToForeign userId
+            OpenChat userId → EU.runEffectFn3 postMessage_ navigator "read" $ F.unsafeToForeign {userId}
 
 -- | Check if merochat is running as a progressive web application
 checkPwa ∷ Effect Boolean
