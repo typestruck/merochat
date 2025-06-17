@@ -18,7 +18,7 @@ import Debug (spy)
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class as EC
-import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried (EffectFn2, EffectFn3)
 import Effect.Uncurried as EU
 import Flame.Subscription as FS
 import Foreign (Foreign)
@@ -32,6 +32,8 @@ import Web.HTML (Navigator)
 import Web.HTML as WH
 import Web.HTML.Window as WHW
 import Web.Socket.WebSocket (WebSocket)
+
+data SwMessage = OpenChat Int
 
 foreign import register_ ∷ EffectFn2 Navigator String Unit
 
@@ -48,6 +50,8 @@ foreign import subscribe_ ∷ EffectFn2 Registration (Subscription → Effect Un
 foreign import topicBody_ ∷ EffectFn2 Subscription String String
 
 foreign import receiveMessage_ ∷ EffectFn2 Navigator (String → Foreign → Effect Unit) Unit
+
+foreign import postMessage_ ∷ EffectFn3 Navigator String Foreign Unit
 
 subscribe ∷ Registration → (Subscription → Effect Unit) → Effect Unit
 subscribe = EU.runEffectFn2 subscribe_
@@ -66,6 +70,13 @@ register = EU.runEffectFn2 register_
 
 receiveMessage ∷ Navigator → (String → Foreign → Effect Unit) → Effect Unit
 receiveMessage = EU.runEffectFn2 receiveMessage_
+
+postMessage ∷ SwMessage → Effect Unit
+postMessage message = do
+      window ← WH.window
+      navigator ← WHW.navigator window
+      case message  of
+            OpenChat userId → EU.runEffectFn3 postMessage_ navigator "read" $ F.unsafeToForeign userId
 
 -- | Check if merochat is running as a progressive web application
 checkPwa ∷ Effect Boolean
@@ -121,7 +132,7 @@ subscribePush id registration = getSubscription registration handler
       handler existing = case DN.toMaybe existing of
             Nothing →
                   EA.launchAff_ do
-                        void <<< CCN.silentResponse $ request.im.subscribe { }
+                        void <<< CCN.silentResponse $ request.im.subscribe {}
                         EC.liftEffect $ subscribe registration topic
             Just s → topic s
 
@@ -131,3 +142,4 @@ subscribePush id registration = getSubscription registration handler
                   { params: { path: Cons "v1" $ Cons "webpush" Nil }
                   , body
                   }
+

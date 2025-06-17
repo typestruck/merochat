@@ -36,7 +36,7 @@ async function notify(raw) {
     if (windows.length == 1 && !windows[0].hidden && windows[0].focused || !data.message)
         return Promise.resolve();
 
-    //old notifications get replaced if tag matches
+    //old notifications get replaced if tag matches (except on safari)
     let body,
         allIncoming = [],
         incoming = JSON.parse(data.message.message),
@@ -51,10 +51,6 @@ async function notify(raw) {
         previousNotifications[0].data.allIncoming.push(incoming);
         allIncoming = previousNotifications[0].data.allIncoming;
         body = allIncoming.map(ai => ai.content).join('\n');
-
-        for (let pn of previousNotifications) {
-            pn.close()
-        }
     }
 
     return self.registration.showNotification(data.message.title, {
@@ -105,6 +101,21 @@ async function resume(notification) {
     } else
         //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
         pwa = await self.clients.openWindow(`/im?resume=${userId}`);
+
+    return Promise.resolve();
+}
+
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'read')
+        waitUntil(hideNotifications(event.data.payload))
+});
+
+//when opening a chat from the app / receiving a read status push
+async function hideNotifications(tag) {
+    let notifications = await self.registration.getNotifications({ tag });
+
+    for (let n of notifications)
+        n.close();
 
     return Promise.resolve();
 }

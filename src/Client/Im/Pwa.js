@@ -47,8 +47,15 @@ export function topicBody_(subscription, topic) {
         });
 }
 
-export function receiveMessage_ (navigator, cb) {
+export function receiveMessage_(navigator, cb) {
     navigator.serviceWorker.addEventListener("message", (event) => {
         cb(event.data.message)(JSON.parse(event.data.payload))();
+    });
+}
+
+export function postMessage_(navigator, type, payload) {
+    navigator.serviceWorker.controller?.controller.postMessage({
+        type,
+        payload
     });
 }

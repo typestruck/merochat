@@ -95,12 +95,13 @@ chatBarInput eid elementId model = HE.fragment
                       , HE.textarea' {- $
                         ( if elementId == ChatInput then [ HA.onKeydown (SetTyping <<< DT.snd) ] else [])
                               <> -}
-                              ( [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
-                                , HA.id $ show elementId
-                                , HA.placeholder ("Type here to message " <> recipientName)
-                                , HA.onInput' ResizeChatInput
-                                , HA.autocomplete "off"
-                                ] <> filterEnterKeydown
+                              ( filterEnterKeydown <>
+                                      [ HA.class' { "chat-input": true, "editing-message": DM.isJust model.editing }
+                                      , HA.id $ show elementId
+                                      , HA.placeholder ("Type here to message " <> recipientName)
+                                      , HA.onInput' ResizeChatInput
+                                      , HA.autocomplete "off"
+                                      ]
                               )
                       , HE.div (HA.class' "chat-right-buttons")
                               ( [ imageButton
@@ -151,7 +152,7 @@ sendButton elementId model
       | model.messageEnter = []
       | otherwise =
               [ HE.div
-                      [ HA.class' "send-button-div", HA.onClick $ ForceSendMessage elementId  ]
+                      [ HA.class' "send-button-div", HA.onClick $ ForceSendMessage elementId ]
                       [ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message" ]
               ]
 

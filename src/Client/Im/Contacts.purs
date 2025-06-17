@@ -9,6 +9,8 @@ import Client.Im.Flame (NoMessages, MoreMessages)
 import Client.Im.History as CIH
 import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
+import Client.Im.Pwa (SwMessage(..))
+import Client.Im.Pwa as CIP
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
@@ -49,7 +51,7 @@ resumeChat userId model =
                         , showLargeAvatar = false
                         , failedRequests = []
                         } /\
-                        ( smallScreenEffect <>
+                        ( smallScreenEffects chatting <>
                                 [ updateReadCountEffect chatting.user.id
                                 , CIS.scrollLastMessageAff
                                 , loadDraft chatting.draft
@@ -68,9 +70,12 @@ resumeChat userId model =
 
       updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
       fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
-      smallScreenEffect
+      removeNotifications chatting = do
+            EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
+            pure Nothing
+      smallScreenEffects chatting
             | model.smallScreen = []
-            | otherwise = [ pure <<< Just $ FocusInput ChatInput ]
+            | otherwise = [ pure <<< Just $ FocusInput ChatInput, removeNotifications chatting ]
 
 -- | When coming back to the site mark messages as read if a chat is open
 setReadStatus ∷ Maybe Int → WebSocket → ImModel → MoreMessages
@@ -97,7 +102,6 @@ setMessageStatus webSocket userId newStatus model =
       updateStatus entry
             | needsUpdate entry = entry { status = newStatus }
             | otherwise = entry
-
       updateContact ui contact
             | contact.user.id == ui = contact { history = map updateStatus contact.history }
             | otherwise = contact
