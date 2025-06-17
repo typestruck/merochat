@@ -51,6 +51,10 @@ async function notify(raw) {
         previousNotifications[0].data.allIncoming.push(incoming);
         allIncoming = previousNotifications[0].data.allIncoming;
         body = allIncoming.map(ai => ai.content).join('\n');
+
+        for (let pn of previousNotifications) {
+            pn.close()
+        }
     }
 
     return self.registration.showNotification(data.message.title, {
