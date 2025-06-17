@@ -5,7 +5,7 @@
   "name": "MeroChat - Friendly Random Chat",
   "short_name": "MeroChat",
   "display": "standalone",
-  "background_color": "#213027",
+  "background_color": "#327B4F",
   "description": "Text based, friendly only, 1v1 random chat",
   "icons": [
     {

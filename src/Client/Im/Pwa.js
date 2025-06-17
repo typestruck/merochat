@@ -54,7 +54,7 @@ export function receiveMessage_(navigator, cb) {
 }
 
 export function postMessage_(navigator, type, payload) {
-    navigator.serviceWorker.controller?.controller.postMessage({
+    navigator.serviceWorker.controller?.postMessage({
         type,
         payload
     });
