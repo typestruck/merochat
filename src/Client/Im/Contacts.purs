@@ -51,7 +51,7 @@ resumeChat userId model =
                         , showLargeAvatar = false
                         , failedRequests = []
                         } /\
-                        ( smallScreenEffects chatting <>
+                        ( screenEffects chatting <>
                                 [ updateReadCountEffect chatting.user.id
                                 , CIS.scrollLastMessageAff
                                 , loadDraft chatting.draft
@@ -73,9 +73,9 @@ resumeChat userId model =
       removeNotifications chatting = do
             EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
             pure Nothing
-      smallScreenEffects chatting
-            | model.smallScreen = []
-            | otherwise = [ pure <<< Just $ FocusInput ChatInput, removeNotifications chatting ]
+      screenEffects chatting
+            | model.smallScreen = [ removeNotifications chatting ]
+            | otherwise = [ pure <<< Just $ FocusInput ChatInput ]
 
 -- | When coming back to the site mark messages as read if a chat is open
 setReadStatus ∷ Maybe Int → WebSocket → ImModel → MoreMessages
