@@ -21,7 +21,15 @@ let imageRoute =
 
 registerRoute(imageRoute);
 
-self.addEventListener('install', _ => { });
+//apparently we need this to keep the sw up to date
+self.addEventListener('install', _ => {
+    self.skipWaiting();
+});
+
+//so we can user navigator.serviceWorker.controller from the page
+self.addEventListener("activate", (event) => {
+    event.waitUntil(clients.claim());
+});
 
 /// push
 self.addEventListener('push', (event) => {
@@ -107,7 +115,7 @@ async function resume(notification) {
 
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'read')
-        waitUntil(hideNotifications(event.data.payload))
+        event.waitUntil(hideNotifications(event.data.payload))
 });
 
 //when opening a chat from the app / receiving a read status push
