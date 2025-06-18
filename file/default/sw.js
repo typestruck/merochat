@@ -5,6 +5,11 @@ let { registerRoute, Route } = workbox.routing;
 let { CacheFirst } = workbox.strategies;
 let { CacheableResponsePlugin } = workbox.cacheableResponse;
 
+let apple = (function () {
+    let platform = navigator.platform.toLowerCase();
+    return platform.startsWith('mac') || platform.startsWith('iphone') || platform.startsWith('ipad') || platform.startsWith('pike');
+})();
+
 //cache pictures
 let imageRoute =
     new Route(
@@ -71,7 +76,11 @@ async function notify(data, incoming) {
     } else {
         previousNotifications[0].data.allIncoming.push(incoming);
         allIncoming = previousNotifications[0].data.allIncoming;
-        body = allIncoming.map(ai => ai.content).join('\n');
+        //on apple shit notification.tag does not replace previous notifiations so no point in grouping them
+        if (apple)
+            body = incoming.content;
+        else
+            body = allIncoming.map(ai => ai.content).join('\n');
     }
 
     return self.registration.showNotification(data.title, {
