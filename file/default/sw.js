@@ -5,11 +5,6 @@ let { registerRoute, Route } = workbox.routing;
 let { CacheFirst } = workbox.strategies;
 let { CacheableResponsePlugin } = workbox.cacheableResponse;
 
-let apple = (function () {
-    let platform = navigator.platform.toLowerCase();
-    return platform.startsWith('mac') || platform.startsWith('iphone') || platform.startsWith('ipad') || platform.startsWith('pike');
-})();
-
 //cache pictures
 let imageRoute =
     new Route(
@@ -56,14 +51,25 @@ async function handlePush(raw) {
     }
 }
 
+let chattingWith;
+
 async function notify(data, incoming) {
     let windows = await self.clients.matchAll({ type: 'window' });
 
-    //do not raise notifications if app is open
-    if (windows.length == 1 && !windows[0].hidden && windows[0].focused)
+    //do not raise notifications if chat is open
+    if (windows.length == 1 && !windows[0].hidden && windows[0].focused && incoming.senderId === chattingWith)
         return;
 
-    //old notifications get replaced if tag matches (except on safari)
+    await pushNotification(data, incoming);
+    return setBadge();
+}
+
+let apple = (function () {
+    let platform = navigator.platform.toLowerCase();
+    return platform.startsWith('mac') || platform.startsWith('iphone') || platform.startsWith('ipad') || platform.startsWith('pike');
+})();
+
+async function pushNotification(data, incoming) {
     let body,
         allIncoming = [],
         previousNotifications = await self.registration.getNotifications({ tag: incoming.senderId });
@@ -90,6 +96,18 @@ async function notify(data, incoming) {
         tag: incoming.senderId,
         data: { allIncoming }
     });
+}
+
+async function setBadge(unreadChats) {
+    if ('setAppBadge' in navigator) {
+        if (typeof unreadCount === 'undefined') {
+            let allNotifications = await self.registration.getNotifications();
+
+            return navigator.setAppBadge((new Set(allNotifications.map(n => n.tag))).size);
+        }
+
+        return navigator.setAppBadge(unreadChats);
+    }
 }
 
 //avoid markdown only messages but ignore formatting inside for now
@@ -134,9 +152,26 @@ async function resume(notification) {
 }
 
 self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'read')
-        event.waitUntil(hideNotifications(event.data.payload))
+    if (event.data)
+        switch (event.data.type) {
+            case 'not-chatting':
+                event.waitUntil(noChatsOpened());
+                break;
+            case 'read':
+                event.waitUntil(chatOpened(event.data.payload));
+                break;
+        }
 });
+
+async function noChatsOpened() {
+    chattingWith = undefined;
+}
+
+async function chatOpened(payload) {
+    chattingWith = payload.userId;
+
+    return hideNotifications(payload);
+}
 
 //when opening a chat from the app / receiving a read status push
 async function hideNotifications(payload) {

@@ -33,7 +33,7 @@ import Web.HTML as WH
 import Web.HTML.Window as WHW
 import Web.Socket.WebSocket (WebSocket)
 
-data SwMessage = OpenChat Int
+data SwMessage = OpenChat Int | NotChatting
 
 foreign import register_ ∷ EffectFn2 Navigator String Unit
 
@@ -77,6 +77,7 @@ postMessage message = do
       navigator ← WHW.navigator window
       case message  of
             OpenChat userId → EU.runEffectFn3 postMessage_ navigator "read" $ F.unsafeToForeign {userId}
+            NotChatting → EU.runEffectFn3 postMessage_ navigator "not-chatting" $ F.unsafeToForeign DN.null
 
 -- | Check if merochat is running as a progressive web application
 checkPwa ∷ Effect Boolean

@@ -475,7 +475,7 @@ removeInactiveConnections allUsersAvailabilityRef = do
                                       userAvailability.availability
                         }
 
---if all user connections are inactive then availibity is last to last seen and thus needs to be communicated
+--if all user connections are inactive then availibity is last seen and thus needs to be communicated
 trackAvailabilityFromTerminated ∷ Ref (HashMap Int UserAvailability) → Effect Unit
 trackAvailabilityFromTerminated allUsersAvailabilityRef = do
       allUsersAvailability ← ER.read allUsersAvailabilityRef

@@ -8,6 +8,8 @@ import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Pwa (SwMessage(..))
+import Client.Im.Pwa as CIP
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -27,8 +29,11 @@ toggleInitialScreen toggle model =
             { initialScreen = toggle
             , chatting = Nothing
             , toggleModal = HideUserMenuModal
-            } /\ [ updateDraft ]
+            } /\ [ updateDraft, updateServiceWorker ]
       where
+      updateServiceWorker = do
+            EC.liftEffect $ CIP.postMessage NotChatting
+            pure Nothing
       updateDraft
             | toggle = EC.liftEffect do
                     input ← CCD.unsafeGetElementById ChatInput
