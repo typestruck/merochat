@@ -98,15 +98,11 @@ async function pushNotification(data, incoming) {
     });
 }
 
-async function setBadge(unreadChats) {
+async function setBadge() {
     if ('setAppBadge' in navigator) {
-        if (typeof unreadCount === 'undefined') {
-            let allNotifications = await self.registration.getNotifications();
+        let allNotifications = await self.registration.getNotifications();
 
-            return navigator.setAppBadge((new Set(allNotifications.map(n => n.tag))).size);
-        }
-
-        return navigator.setAppBadge(unreadChats);
+        return navigator.setAppBadge((new Set(allNotifications.map(n => n.tag))).size);
     }
 }
 
@@ -170,7 +166,8 @@ async function noChatsOpened() {
 async function chatOpened(payload) {
     chattingWith = payload.userId;
 
-    return hideNotifications(payload);
+    await hideNotifications(payload);
+    return setBadge();
 }
 
 //when opening a chat from the app / receiving a read status push
