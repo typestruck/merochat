@@ -113,8 +113,6 @@ setUpWebSocket webSocketStateRef = do
 handleOpen ∷ Ref WebSocketState → Event → Effect Unit
 handleOpen webSocketStateRef _ = do
       state ← ER.read webSocketStateRef
-      --when the connection is open and the user is on the page serialize their availability
-      setOnline state.webSocket
       newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
       newPingId ← ET.setInterval pingDelay (ping state.webSocket)
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId }) webSocketStateRef
@@ -128,6 +126,8 @@ handleOpen webSocketStateRef _ = do
       FS.send imId $ SetReadStatus Nothing
       --keep track of users online status
       FS.send imId TrackAvailability
+      --when the connection is open and the user is on the page serialize their availability
+      setOnline state.webSocket
       where
       privilegeDelay = 1000 * 60 * 60
       pollPrivileges webSocket = CIW.sendPayload webSocket UpdatePrivileges
@@ -136,9 +136,8 @@ handleOpen webSocketStateRef _ = do
       ping webSocket = CIW.sendPayload webSocket Ping
 
       setOnline webSocket = do
-            isFocused ← CCD.documentHasFocus
-            hidden ← CCD.documentIsNotHidden
-            when (isFocused || not hidden) <<< CIW.sendPayload webSocket $ UpdateAvailability { online: true, serialize: true }
+            focused ← CCD.documentHasFocus
+            when focused <<< CIW.sendPayload webSocket $ UpdateAvailability { online: true, serialize: true }
 
 -- | Handle an incoming (json encoded) message from the server
 handleMessage ∷ Event → Effect Unit
