@@ -196,11 +196,15 @@ updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
             availability
                   | flags.online = Online
                   | otherwise = LastSeen $ DateTimeWrapper now
-      when (availability > userAvailability.availability) do
+      when (shouldUpdate availability userAvailability.availability) do
             EC.liftEffect $ ER.modify_ (DH.insert loggedUserId (makeUserAvailabity userAvailability (Right token) now availability)) allUsersAvailabilityRef
             DF.traverse_ (sendAvailability allUsersAvailability availability) userAvailability.trackedBy
             when flags.serialize <<< SIDE.upsertLastSeen $ SJS.writeJSON [ { who: loggedUserId, date: DT now } ]
       where
+      shouldUpdate new old = case new, old of
+            LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) -> dt > anotherDt
+            newAvailability, oldAvailability -> newAvailability /= oldAvailability
+
       --ignore last seen if only difference is in seconds / milliseconds
       zeroFromMinutes dt = DDT.modifyTime (DDT.setSecond (SU.fromJust $ DEN.toEnum 0) <<< DDT.setMillisecond (SU.fromJust $ DEN.toEnum 0)) dt
 

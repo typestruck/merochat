@@ -15,12 +15,10 @@ import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
 data Availability
-      =
-      None -- no data or private online status Online
+      = None -- no data or private online status Online
       | LastSeen DateTimeWrapper
       | Online
       | Unavailable -- blocked/deleted/private profile
-
 
 derive instance Eq Availability
 
@@ -47,14 +45,14 @@ instance ReadForeign Availability where
 instance WriteForeign Availability where
       writeImpl = F.unsafeToForeign <<< availabilityToWire
 
-availabilityToWire :: Availability -> Number
+availabilityToWire ∷ Availability → Number
 availabilityToWire = case _ of
       Online → 0.0
       LastSeen dt → dateTimeToNumber dt
       Unavailable → 2.0
       None → 3.0
 
-availabilityFromWire :: Number -> Availability
+availabilityFromWire ∷ Number → Availability
 availabilityFromWire = case _ of
       0.0 → Online
       2.0 → Unavailable
