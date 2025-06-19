@@ -1,4 +1,4 @@
-module Shared.Backer.Contact (backer) where
+module Shared.Backer.Contact (backer, backerId) where
 
 import Prelude
 
@@ -14,11 +14,14 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.User (ProfileVisibility(..))
 
-backer ∷ Int → Contact
-backer id = (SC.defaultContact 0 user)
+backerId ∷ Int
+backerId = 0
+
+backer ∷ Contact
+backer = (SC.defaultContact backerId user)
       { history =
-              [ { sender: 0
-                , recipient: id
+              [ { sender: backerId
+                , recipient: 0
                 , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
                 , edited: false
                 , content: "MeroChat depends on you to keep running"
@@ -30,17 +33,17 @@ backer id = (SC.defaultContact 0 user)
 
 user ∷ User
 user =
-      { id: 0
+      { id: backerId
       , name: "Donate to MeroChat!"
       , availability: Online
-      , backer :false
+      , backer: false
       , joined: DateTimeWrapper epoch
       , readReceipts: true
       , messageTimestamps: true
       , typingStatus: true
       , onlineStatus: true
       , completedTutorial: true
-      , avatar: Just "backer-avatar.png"
+      , avatar: Just $ SP.resourcePath (Left BackerAvatar) Png
       , headline: ""
       , description: ""
       , tags: []

@@ -17,7 +17,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Avatar as SA
-import Shared.Backer.Contact as SBC
+import Shared.Backer.Contact (backer, backerId)
 import Shared.DateTime as SD
 import Shared.Im.Contact as SIC
 import Shared.Im.Scroll as SIS
@@ -48,7 +48,8 @@ contactList isClientRender model =
                           entries =
                                 map displayContactListEntry
                                       <<< DA.sortBy compareLastDate
-                                      $ DA.filter (not <<< DA.null <<< _.history) $ backerContact model.contacts
+                                      <<< DA.filter (not <<< DA.null <<< _.history)
+                                      $ backerContact model.contacts
                     in
                           if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
 
@@ -56,14 +57,15 @@ contactList isClientRender model =
             let
                   numberUnreadMessages = countUnread contact.history
                   lastHistoryEntry = SU.fromJust $ DA.last contact.history
+                  backingCall = contact.user.id == backerId
             in
                   HE.div (HA.class' "contact-wrapper")
                         [ HE.div
                                 [ HA.class' { contact: true, "chatting-contact": chattingId == Just contact.user.id }
-                                , HA.onClick $ ResumeChat contact.user.id
+                                , HA.onClick $ if backingCall then SpecialRequest (ToggleModal ShowBacker) else ResumeChat contact.user.id
                                 ]
                                 [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
-                                        [ HE.img [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ SA.fromAvatar contact.user.avatar ]
+                                        [ HE.img [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ if backingCall then (SU.fromJust contact.user.avatar) else SA.fromAvatar contact.user.avatar ]
                                         ]
                                 , HE.div [ HA.class' "contact-profile" ]
                                         [ HE.div (HA.class' "contact-online-wrapper")
@@ -87,7 +89,7 @@ contactList isClientRender model =
                         ]
 
       backerContact contacts
-            | not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = SBC.backer model.user.id : contacts
+            | not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = backer : contacts
             | otherwise = contacts
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
