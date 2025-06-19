@@ -89,8 +89,8 @@ contactList isClientRender model =
                         ]
 
       backerContact contacts
-            | not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = backer : contacts
-            | otherwise = contacts
+            {- | not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = backer : contacts
+            | otherwise -} = contacts
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
       suggestionsCall =
