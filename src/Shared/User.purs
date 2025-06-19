@@ -63,6 +63,7 @@ type IU =
               , profileVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
               , temporary ∷ Boolean
+              , backer :: Boolean
               , messageTimestamps ∷ Boolean
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean

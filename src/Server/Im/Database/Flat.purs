@@ -6,13 +6,12 @@ import Shared.User
 
 import Data.DateTime (DateTime)
 import Data.Int as DI
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Data.Time.Duration (Minutes(..))
 import Debug (spy)
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
-import Shared.Avatar as SA
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
@@ -25,6 +24,7 @@ type FlatFields rest =
       , country ∷ Maybe String
       , description ∷ String
       , gender ∷ Maybe Gender
+      , backer ∷ Checked
       , headline ∷ String
       , id ∷ Int
       , bin ∷ Int
@@ -79,6 +79,7 @@ fromFlatUser fc =
       , name: fc.name
       , headline: fc.headline
       , bin: fc.bin
+      , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility
       , readReceipts: SC.coerce fc.readReceipts
       , messageTimestamps: SC.coerce fc.messageTimestamps

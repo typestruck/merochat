@@ -31,6 +31,7 @@ type Users =
       , description ∷ String
       , avatar ∷ Maybe String
       , pwa ∷ Column Checked Default
+      , backer ∷ Column Checked Default
       , receive_email ∷ Column ReceiveEmail Default
       , gender ∷ Maybe Gender
       , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
@@ -50,6 +51,9 @@ users = Table
 
 _pwa ∷ Proxy "pwa"
 _pwa = Proxy
+
+_backer ∷ Proxy "backer"
+_backer = Proxy
 
 _password ∷ Proxy "password"
 _password = Proxy

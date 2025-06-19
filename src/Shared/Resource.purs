@@ -83,6 +83,7 @@ data Media
       | NicolasCageHiclipart
       | SocratesStingWikimedia
       | BatmanNounProjectAnushaNarvekar
+      | BackerAvatar
       | Upload String
 
 bundlePath ∷ Bundle → ResourceType → String
@@ -138,6 +139,7 @@ resourceName = case _ of
       Left Favicon10 → "favicon-10"
       Left Favicon10Plus → "favicon-10-plus"
       Left Loading → "loading"
+      Left BackerAvatar -> "backer-avatar"
       Left Avatar → "avatar"
       Left NicolasCageHiclipart → "nicolas_cage_hiclipart"
       Left SocratesStingWikimedia → "socrates_Sting_wikimedia"

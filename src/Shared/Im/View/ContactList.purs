@@ -15,7 +15,9 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Safe.Coerce as SC
 import Shared.Avatar as SA
+import Shared.Backer.Contact as SBC
 import Shared.DateTime as SD
 import Shared.Im.Contact as SIC
 import Shared.Im.Scroll as SIS
@@ -46,7 +48,7 @@ contactList isClientRender model =
                           entries =
                                 map displayContactListEntry
                                       <<< DA.sortBy compareLastDate
-                                      $ DA.filter (not <<< DA.null <<< _.history) model.contacts
+                                      $ DA.filter (not <<< DA.null <<< _.history) $ backerContact model.contacts
                     in
                           if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
 
@@ -83,6 +85,10 @@ contactList isClientRender model =
                                 ]
                         , HE.hr' (HA.class' "contact-ruler")
                         ]
+
+      backerContact contacts
+            | not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = SBC.backer model.user.id : contacts
+            | otherwise = contacts
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
       suggestionsCall =

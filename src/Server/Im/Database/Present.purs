@@ -40,6 +40,7 @@ userFields =
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
             /\ _temporary
+            /\ _backer
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
             /\ (l ... _date # as _lastSeen)
@@ -73,6 +74,7 @@ presentUserContactFields =
       , gender
       , temporary
       , joined
+      , backer
       , completed_tutorial "completedTutorial"
       , date_part_age ('year', birthday) age
       , name

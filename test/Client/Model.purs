@@ -83,6 +83,7 @@ imUser =
       , name: "test"
       , id: imUserId
       , profileVisibility: Everyone
+      , backer: false
       , readReceipts: true
       , messageTimestamps: true
       , joined: DateTimeWrapper epoch
