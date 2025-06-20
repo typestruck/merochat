@@ -18,7 +18,7 @@ import Debug (spy)
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class as EC
-import Effect.Uncurried (EffectFn2, EffectFn3)
+import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3)
 import Effect.Uncurried as EU
 import Flame.Subscription as FS
 import Foreign (Foreign)
@@ -49,9 +49,9 @@ foreign import subscribe_ ∷ EffectFn2 Registration (Subscription → Effect Un
 
 foreign import topicBody_ ∷ EffectFn2 Subscription String String
 
-foreign import receiveMessage_ ∷ EffectFn2 Navigator (String → Foreign → Effect Unit) Unit
+foreign import receiveMessage_ ∷ EffectFn1 (String → Foreign → Effect Unit) Unit
 
-foreign import postMessage_ ∷ EffectFn3 Navigator String Foreign Unit
+foreign import postMessage_ ∷ EffectFn2 String Foreign Unit
 
 subscribe ∷ Registration → (Subscription → Effect Unit) → Effect Unit
 subscribe = EU.runEffectFn2 subscribe_
@@ -68,16 +68,16 @@ ready = EU.runEffectFn2 ready_
 register ∷ Navigator → String → Effect Unit
 register = EU.runEffectFn2 register_
 
-receiveMessage ∷ Navigator → (String → Foreign → Effect Unit) → Effect Unit
-receiveMessage = EU.runEffectFn2 receiveMessage_
+receiveMessage ∷ (String → Foreign → Effect Unit) → Effect Unit
+receiveMessage = EU.runEffectFn1 receiveMessage_
 
 postMessage ∷ SwMessage → Effect Unit
 postMessage message = do
       window ← WH.window
       navigator ← WHW.navigator window
-      case message  of
-            OpenChat userId → EU.runEffectFn3 postMessage_ navigator "read" $ F.unsafeToForeign {userId}
-            NotChatting → EU.runEffectFn3 postMessage_ navigator "not-chatting" $ F.unsafeToForeign DN.null
+      case message of
+            OpenChat userId → EU.runEffectFn2 postMessage_ "read" $ F.unsafeToForeign { userId }
+            NotChatting → EU.runEffectFn2 postMessage_ "not-chatting" $ F.unsafeToForeign DN.null
 
 -- | Check if merochat is running as a progressive web application
 checkPwa ∷ Effect Boolean
@@ -98,7 +98,7 @@ registerServiceWorker id = do
       navigator ← WHW.navigator window
       register navigator "/sw.js"
       ready navigator (subscribePush id)
-      receiveMessage navigator handler
+      receiveMessage handler
       where
       handler message payload
             | message == "resume" = FS.send imId <<< ResumeChat $ F.unsafeFromForeign payload

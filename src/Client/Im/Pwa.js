@@ -47,14 +47,16 @@ export function topicBody_(subscription, topic) {
         });
 }
 
-export function receiveMessage_(navigator, cb) {
-    navigator.serviceWorker.addEventListener("message", (event) => {
+let channel = new BroadcastChannel("merochat");
+
+export function receiveMessage_(cb) {
+    channel.addEventListener("message", (event) => {
         cb(event.data.message)(event.data.payload)();
     });
 }
 
-export function postMessage_(navigator, type, payload) {
-    navigator.serviceWorker.controller?.postMessage({
+export function postMessage_(type, payload) {
+    channel.postMessage({
         type,
         payload
     });

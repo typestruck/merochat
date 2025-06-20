@@ -1,9 +1,9 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js');
 
 /// caching
-let { registerRoute, Route } = workbox.routing;
-let { CacheFirst } = workbox.strategies;
-let { CacheableResponsePlugin } = workbox.cacheableResponse;
+let { registerRoute, Route } = workbox.routing,
+    { CacheFirst } = workbox.strategies,
+    { CacheableResponsePlugin } = workbox.cacheableResponse;
 
 //cache pictures
 let imageRoute =
@@ -21,15 +21,15 @@ let imageRoute =
 
 registerRoute(imageRoute);
 
-//apparently we need this to keep the sw up to date
-self.addEventListener('install', _ => {
-    self.skipWaiting();
-});
+// //apparently we need this to keep the sw up to date
+// self.addEventListener('install', _ => {
+//     self.skipWaiting();
+// });
 
-//so we can user navigator.serviceWorker.controller from the page
-self.addEventListener("activate", (event) => {
-    event.waitUntil(clients.claim());
-});
+// //so we can user navigator.serviceWorker.controller from the page
+// self.addEventListener("activate", (event) => {
+//     event.waitUntil(clients.claim());
+// });
 
 /// push
 self.addEventListener('push', (event) => {
@@ -51,7 +51,39 @@ async function handlePush(raw) {
     }
 }
 
-let chattingWith;
+let chattingWith,
+    channel = new BroadcastChannel("merochat");
+
+channel.addEventListener('message', (event) => {
+    if (event.data)
+        switch (event.data.type) {
+            case 'not-chatting':
+                event.waitUntil(noChatsOpened());
+                break;
+            case 'read':
+                event.waitUntil(chatOpened(event.data.payload));
+                break;
+        }
+});
+
+async function noChatsOpened() {
+    chattingWith = undefined;
+}
+
+async function chatOpened(payload) {
+    chattingWith = payload.userId;
+
+    await hideNotifications(payload);
+    return setBadge();
+}
+
+//when opening a chat from the app / receiving a read status push
+async function hideNotifications(payload) {
+    let notifications = await self.registration.getNotifications({ tag: payload.userId });
+
+    for (let n of notifications)
+        n.close();
+}
 
 async function notify(data, incoming) {
     let windows = await self.clients.matchAll({ type: 'window' });
@@ -129,53 +161,20 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 async function resume(notification) {
-    let pwa,
-        windows = await self.clients.matchAll({ type: 'window' }),
+    let windows = await self.clients.matchAll({ type: 'window' }),
         userId = parseInt(notification.tag);
 
     notification.close();
 
     if (windows.length > 0) {
-        pwa = windows[0];
-        await pwa.focus();
+        await windows[0].focus();
 
         //sync messages from here meanwhile the app loads them
-        pwa.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
-        pwa.postMessage({ message: 'resume', payload: userId });
+        channel.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
+        channel.postMessage({ message: 'resume', payload: userId });
     } else
         //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
         await self.clients.openWindow(`/im?resume=${userId}`);
-}
-
-self.addEventListener('message', (event) => {
-    if (event.data)
-        switch (event.data.type) {
-            case 'not-chatting':
-                event.waitUntil(noChatsOpened());
-                break;
-            case 'read':
-                event.waitUntil(chatOpened(event.data.payload));
-                break;
-        }
-});
-
-async function noChatsOpened() {
-    chattingWith = undefined;
-}
-
-async function chatOpened(payload) {
-    chattingWith = payload.userId;
-
-    await hideNotifications(payload);
-    return setBadge();
-}
-
-//when opening a chat from the app / receiving a read status push
-async function hideNotifications(payload) {
-    let notifications = await self.registration.getNotifications({ tag: payload.userId });
-
-    for (let n of notifications)
-        n.close();
 }
 
 //store chats and user data localy with indexeddb?
