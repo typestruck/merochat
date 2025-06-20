@@ -38,7 +38,7 @@ contactList isClientRender model =
                         [ SIS.onScrollEvent CheckFetchContacts
                         , HA.class' { "contact-list": true, highlighted: model.toggleModal == Tutorial ChatList }
                         ]
-                        $ retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts
+                        (retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts)
       where
       -- | Contact list sorting is only done for the dom nodes, model.contacts is left unchanged
       displayContactList
@@ -48,7 +48,7 @@ contactList isClientRender model =
                           entries =
                                 map displayContactListEntry
                                       <<< DA.sortBy compareLastDate
-                                      <<< DA.filter (not <<< DA.null <<< _.history)
+                               --       <<< DA.filter (not <<< DA.null <<< _.history)
                                       $ backerContact model.contacts
                     in
                           if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
@@ -59,7 +59,7 @@ contactList isClientRender model =
                   lastHistoryEntry = SU.fromJust $ DA.last contact.history
                   backingCall = contact.user.id == backerId
             in
-                  HE.div (HA.class' "contact-wrapper")
+                  HE.div [HA.class' "contact-wrapper"]
                         [ HE.div
                                 [ HA.class' { contact: true, "chatting-contact": chattingId == Just contact.user.id }
                                 , HA.onClick $ if backingCall then SpecialRequest (ToggleModal ShowBacker) else ResumeChat contact.user.id
@@ -88,9 +88,9 @@ contactList isClientRender model =
                         , HE.hr' (HA.class' "contact-ruler")
                         ]
 
-      backerContact contacts
-            {- | not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = backer : contacts
-            | otherwise -} = contacts
+      backerContact contacts = contacts
+            --| not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = backer : contacts
+            --| otherwise  = contacts
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
       suggestionsCall =
