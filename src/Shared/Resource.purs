@@ -63,8 +63,7 @@ data Bundle
       | Settings
 
 data Media
-      = InvertedLogo
-      | LogoSmall
+      = LogoSmall
       | Logo
       | Favicon
       | Favicon1
@@ -123,7 +122,6 @@ resourceName = case _ of
       Right Profile → "profile"
       Right Recover → "recover"
       Right Settings → "settings"
-      Left InvertedLogo → "inverted-logo"
       Left LogoSmall → "logo-small"
       Left Logo → "logo"
       Left Favicon → "favicon"

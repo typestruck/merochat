@@ -6,7 +6,6 @@ import Run as R
 import Run.Reader as RR
 import Server.Token as ST
 
-import Shared.Unsafe as SU
 import Test.Server as TS
 import Test.Unit (TestSuite)
 import Server.Landing.Database as SLD

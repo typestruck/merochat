@@ -2541,6 +2541,14 @@ label {
     margin-bottom: 20px;
 }
 
+.inverted-merochat-svg {
+    width: 210px;
+    height: 22px;
+    cursor: initial;
+    fill: var(--text-color);
+    stroke: none;
+}
+
 /* dry this shite  */
 
 @media (max-width:1279px) {
