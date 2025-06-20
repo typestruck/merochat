@@ -5,10 +5,9 @@ import Prelude
 import Shared.Im.Types
 import Shared.Privilege
 
-import Data.Argonaut ((.!=))
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
-import Data.DateTime (DateTime(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -16,13 +15,12 @@ import Data.Nullable as DN
 import Data.Set (Set)
 import Data.Set as DST
 import Data.String as DS
-import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
-import Effect.Class (liftEffect)
-import Effect.Class.Console as EC
 import Environment (production)
 import Run.Except as RE
+import Server.Database.Types (Checked(..))
+import Safe.Coerce as SC
 import Server.AccountValidation as SA
 import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Email as SE
@@ -37,7 +35,9 @@ import Server.Im.Types (Payload)
 import Server.Sanitize as SS
 import Server.ThreeK as ST
 import Server.Wheel as SW
+import Shared.Backer.Contact (backer)
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime as SD
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Resource (Media(..), ResourceType(..))
@@ -54,10 +54,14 @@ im loggedUserId = do
                   suggestions ← suggest loggedUserId 0 ThisWeek
                   contacts ← listContacts loggedUserId 0
                   pure
-                        { contacts
+                        { contacts: backContacts user contacts
                         , suggestions
                         , user: SIF.fromFlatUser user
                         }
+      where
+      backContacts user contacts
+            | not (SC.coerce user.backer) && SD.daysDiff user.joined > 3 = backer user.id : contacts
+            | otherwise = contacts
 
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
 suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip sg

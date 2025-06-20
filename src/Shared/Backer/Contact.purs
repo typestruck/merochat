@@ -17,11 +17,11 @@ import Shared.User (ProfileVisibility(..))
 backerId ∷ Int
 backerId = 0
 
-backer ∷ Contact
-backer = (SC.defaultContact backerId user)
+backer ∷ Int -> Contact
+backer userId = (SC.defaultContact backerId user)
       { history =
               [ { sender: backerId
-                , recipient: 0
+                , recipient: userId
                 , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
                 , edited: false
                 , content: "MeroChat depends on you to keep running"

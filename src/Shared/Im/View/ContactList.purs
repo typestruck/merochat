@@ -12,12 +12,12 @@ import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Newtype as DN
 import Data.String as DS
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Safe.Coerce as SC
 import Shared.Avatar as SA
-import Shared.Backer.Contact (backer, backerId)
+import Shared.Backer.Contact (backerId)
 import Shared.DateTime as SD
 import Shared.Im.Contact as SIC
 import Shared.Im.Scroll as SIS
@@ -44,14 +44,8 @@ contactList isClientRender model =
       displayContactList
             | DA.null model.contacts = [ suggestionsCall ]
             | otherwise =
-                    let
-                          entries =
-                                map displayContactListEntry
-                                      <<< DA.sortBy compareLastDate
-                               --       <<< DA.filter (not <<< DA.null <<< _.history)
-                                      $ backerContact model.contacts
-                    in
-                          if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
+                    let entries = map displayContactListEntry $ DA.sortBy compareLastDate model.contacts
+                    in if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
 
       displayContactListEntry contact =
             let
@@ -59,7 +53,7 @@ contactList isClientRender model =
                   lastHistoryEntry = SU.fromJust $ DA.last contact.history
                   backingCall = contact.user.id == backerId
             in
-                  HE.div [HA.class' "contact-wrapper"]
+                  HE.div [ HA.class' "contact-wrapper" ]
                         [ HE.div
                                 [ HA.class' { contact: true, "chatting-contact": chattingId == Just contact.user.id }
                                 , HA.onClick $ if backingCall then SpecialRequest (ToggleModal ShowBacker) else ResumeChat contact.user.id
@@ -87,10 +81,6 @@ contactList isClientRender model =
                                 ]
                         , HE.hr' (HA.class' "contact-ruler")
                         ]
-
-      backerContact contacts = contacts
-            --| not model.user.backer && SD.daysDiff (SC.coerce model.user.joined) > 3 = backer : contacts
-            --| otherwise  = contacts
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
       suggestionsCall =
