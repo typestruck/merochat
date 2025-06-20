@@ -82,8 +82,8 @@ chatHistory model =
       isBottomMessage history id = (SU.fromJust $ DA.findIndex ((_ == id) <<< _.id) history) >= DA.length history - 2
       chatHistoryEntry contact entry
             | entry.status == Errored =
-                --currently the only way a message could fail is if it was unsanitary, otherwise we wouldnt hear from the server
-                -- when this is better we can add a resend logic
+                    --currently the only way a message could fail is if it was unsanitary, otherwise we wouldnt hear from the server
+                    -- when this is better we can add a resend logic
                     HE.div
                           [ HA.class' "message outgoing-message" ]
                           [ HE.div
@@ -123,7 +123,7 @@ chatHistory model =
                                                                         ]
                                                                 , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
                                                                         [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.content (Right Nothing)) ] "Reply"
-                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden":  incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] "Edit"
+                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] "Edit"
                                                                         , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] "Unsend"
                                                                         ]
                                                                 ]

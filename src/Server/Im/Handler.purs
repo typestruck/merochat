@@ -52,7 +52,7 @@ subscribe { guards } = do
       SIA.subscribe guards.loggedUserId
       pure ok
 
-missedContacts ∷ { query ∷ { since ∷ DateTimeWrapper, last :: Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Contact)
+missedContacts ∷ { query ∷ { since ∷ DateTimeWrapper, last ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Contact)
 missedContacts request = SIA.listMissedContacts request.guards.loggedUserId request.query.since request.query.last
 
 report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ Report } → ServerEffect Ok

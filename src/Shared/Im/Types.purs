@@ -117,7 +117,7 @@ type Im =
       , temporaryPassword ∷ Maybe String
       , freeToFetchContactList ∷ Boolean
       , suggestionsFrom ∷ SuggestionsFrom
-      , webSocketMessages :: Array WebSocketPayloadServer
+      , webSocketMessages ∷ Array WebSocketPayloadServer
       , freeToFetchSuggestions ∷ Boolean
       , selectedImage ∷ SelectedImage
       , imageCaption ∷ Maybe String

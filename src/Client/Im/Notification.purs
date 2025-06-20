@@ -46,11 +46,11 @@ notifyUnreadChats model userIds = model /\
       ]
 
 notify ∷ ImModel → Array Int → Effect Unit
-notify { user: { id: loggedUserId }, contacts, smallScreen } userIds = do
-      updateTabCount loggedUserId contacts
-  --    unless smallScreen $ DF.traverse_ createNotification' contactUsers
+notify model userIds = do
+      updateTabCount model model.contacts
+      --    unless smallScreen $ DF.traverse_ createNotification' contactUsers
       where
-      contactUsers = DA.filter byKeys contacts
+      contactUsers = DA.filter byKeys model.contacts
       byKeys cnt = DA.any (\id → cnt.user.id == id) userIds
 
       createNotification' { user } = createNotification
@@ -64,13 +64,14 @@ notify' model userIds = do
       liftEffect $ notify model userIds
       pure Nothing
 
-updateTabCount ∷ Int → Array Contact → Effect Unit
-updateTabCount id contacts = do
+updateTabCount ∷ ImModel → Array Contact → Effect Unit
+updateTabCount model contacts = do
       CCD.setTitle $ SIU.title unreadChats
-      faviconElement ← CCD.unsafeGetElementById SE.Favicon
-      WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
+      unless model.smallScreen do
+            faviconElement ← CCD.unsafeGetElementById SE.Favicon
+            WHL.setHref (SIU.favicon unreadChats) <<< SU.fromJust $ WHL.fromElement faviconElement
       where
-      unreadChats = SIU.countUnreadChats id contacts
+      unreadChats = SIU.countUnreadChats model.user.id contacts
 
 checkNotifications ∷ Effect Unit
 checkNotifications = do

@@ -44,8 +44,10 @@ contactList isClientRender model =
       displayContactList
             | DA.null model.contacts = [ suggestionsCall ]
             | otherwise =
-                    let entries = map displayContactListEntry $ DA.sortBy compareLastDate model.contacts
-                    in if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
+                    let
+                          entries = map displayContactListEntry $ DA.sortBy compareLastDate model.contacts
+                    in
+                          if model.user.temporary then SIVP.signUpCall model.user.joined : entries else entries
 
       displayContactListEntry contact =
             let

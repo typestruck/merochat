@@ -202,8 +202,8 @@ updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
             when flags.serialize <<< SIDE.upsertLastSeen $ SJS.writeJSON [ { who: loggedUserId, date: DT now } ]
       where
       shouldUpdate new old = case new, old of
-            LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) -> dt > anotherDt
-            newAvailability, oldAvailability -> newAvailability /= oldAvailability
+            LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → dt > anotherDt
+            newAvailability, oldAvailability → newAvailability /= oldAvailability
 
       --ignore last seen if only difference is in seconds / milliseconds
       zeroFromMinutes dt = DDT.modifyTime (DDT.setSecond (SU.fromJust $ DEN.toEnum 0) <<< DDT.setMillisecond (SU.fromJust $ DEN.toEnum 0)) dt

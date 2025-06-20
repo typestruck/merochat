@@ -23,7 +23,7 @@ foreign import resetImg ∷ ∀ a. Node → a → a → Node
 defaultAvatar ∷ String
 defaultAvatar = SP.resourcePath (Left Avatar) Svg
 
-fromAvatar ∷ forall r. { id :: Int, avatar :: Maybe String | r} → String
+fromAvatar ∷ ∀ r. { id ∷ Int, avatar ∷ Maybe String | r } → String
 fromAvatar user
       | user.id == backerId = SU.fromJust user.avatar
       | otherwise = DM.fromMaybe defaultAvatar $ map uploaded user.avatar

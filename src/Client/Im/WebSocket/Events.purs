@@ -197,7 +197,7 @@ receiveStatusChange ∷ { ids ∷ Array Int, status ∷ MessageStatus, userId �
 receiveStatusChange received model =
       model
             { contacts = updatedContacts
-            } /\ [ when (received.status == Read) (liftEffect $ CIUC.updateTabCount model.user.id updatedContacts) *> pure Nothing ]
+            } /\ [ when (received.status == Read) (liftEffect $ CIUC.updateTabCount model updatedContacts) *> pure Nothing ]
       where
       updatedContacts = updateHistory model.contacts received.userId updateStatus
 
@@ -238,7 +238,7 @@ receiveIncomingMessage webSocket isFocused payload model =
                   Right updatedModel →
                         if model.user.id == payload.senderId then
                               --syncing message sent from other connections
-                              updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
+                              updatedModel /\ [ liftEffect (CIUC.updateTabCount model updatedModel.contacts) *> pure Nothing ]
                         else if isFocused && shouldScrollDown (SIC.maybeFindContact updatedModel.chatting updatedModel.contacts) then
                               --new message from the user being chatted with
                               CICN.setMessageStatus webSocket userId Read updatedModel # withExtraMessage CISM.scrollLastMessageAff
@@ -263,7 +263,7 @@ receiveEditedMessage webSocket isFocused payload model =
       if DA.elem userId model.blockedUsers then
             F.noMessages model
       else if model.user.id == payload.senderId then
-            updatedModel /\ [ liftEffect (CIUC.updateTabCount model.user.id updatedModel.contacts) *> pure Nothing ]
+            updatedModel /\ [ liftEffect (CIUC.updateTabCount model updatedModel.contacts) *> pure Nothing ]
       else
             CICN.setMessageStatus webSocket userId (if isFocused && model.chatting == Just userId then Read else Delivered) updatedModel
       where
@@ -428,7 +428,7 @@ updateWebSocketStatus status model =
             when (model.webSocketStatus == Reconnect) (EC.liftEffect (ERN.randomRange 300.0 1000.0) >>= EA.delay <<< Milliseconds)
             if model.smallScreen then do
                   focused ← EC.liftEffect CCD.documentHasFocus
-                  visible <- EC.liftEffect CCD.documentIsNotHidden
+                  visible ← EC.liftEffect CCD.documentIsNotHidden
                   pure $ if focused || visible then Just ReconnectWebSocket else Nothing
             else pure $ Just ReconnectWebSocket
       resumeMessages = pure <<< Just $ ResumeSendMessage Nothing

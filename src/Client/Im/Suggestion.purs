@@ -16,7 +16,7 @@ import Effect.Class as EC
 import Flame as F
 import Shared.Backer.Contact (backerId)
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ImMessage(..), ImModel,  RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
@@ -32,7 +32,7 @@ nextSuggestion model =
                   , suggesting = next
                   , showLargeAvatar = false
                   , showMiniChatInput = false
-                  } /\ [  ]
+                  } /\ []
       where
       next = moveSuggestion model 1
 
@@ -47,7 +47,7 @@ previousSuggestion model =
                   , suggesting = previous
                   , showMiniChatInput = false
                   , showLargeAvatar = false
-                  } /\ [  ]
+                  } /\ []
       where
       previous = moveSuggestion model (-1)
 

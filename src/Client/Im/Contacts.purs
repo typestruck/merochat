@@ -111,7 +111,7 @@ setMessageStatus webSocket userId newStatus model =
                   { status: newStatus
                   , ids: [ ui /\ messages ]
                   }
-            CIUN.updateTabCount model.user.id updatedContacts
+            CIUN.updateTabCount model updatedContacts
             pure Nothing
 
 -- | Update message status to unread upon openning the site or receveing from new contacts

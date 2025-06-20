@@ -175,7 +175,7 @@ ORDER BY s.date DESC
 LIMIT @messagesPerPage
 OFFSET @offset) m ORDER BY m.date"""
 
-presentMissedContacts ∷ Int → DateTime → Maybe Int -> ServerEffect (Array FlatContactHistoryMessage)
+presentMissedContacts ∷ Int → DateTime → Maybe Int → ServerEffect (Array FlatContactHistoryMessage)
 presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery query
       { loggedUserId
       , sinceMessageDate

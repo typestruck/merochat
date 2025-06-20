@@ -25,7 +25,7 @@ import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Present (senderRecipientFilter)
 import Shared.Unsafe as SU
 
-subscribe :: Int -> ServerEffect Unit
+subscribe ∷ Int → ServerEffect Unit
 subscribe loggedUserId = SD.execute $ update users # set (_pwa .=. Checked true) # wher (_id .=. loggedUserId)
 
 isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean

@@ -130,8 +130,8 @@ update st model =
             ToggleMessageEnter → CIC.toggleMessageEnter model
             BeforeAudioMessage → CIC.beforeAudioMessage model
             AudioMessage touch → CIC.audioMessage touch model
-            ResumeSendMessage payload -> CIC.resumeSendMessage payload webSocket  model
-            ClearWebSocketMessages -> CIC.clearWebSocketMessages model
+            ResumeSendMessage payload → CIC.resumeSendMessage payload webSocket model
+            ClearWebSocketMessages → CIC.clearWebSocketMessages model
             ToggleMiniChatInput → CIC.toggleMiniChatInput model
             SendAudioMessage base64 → CIC.sendAudioMessage base64 model
             FocusInput elementId → focusInput elementId model
@@ -454,7 +454,7 @@ fetchMissedContacts model = model /\ [ fetchIt ]
       lastMessageDate contact anotherContact = contact.lastMessageDate `compare` anotherContact.lastMessageDate
       fetchIt = do
             since ← EC.liftEffect $ sinceLastMessage model
-            let last =  (map _.history <<< DA.last <<< DA.sortBy lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts ) >>= (map _.id <<< DA.last)
+            let last = (map _.history <<< DA.last <<< DA.sortBy lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts) >>= (map _.id <<< DA.last)
             CCNT.retryableResponse FetchMissedContacts DisplayMissedContacts $ request.im.missedContacts { query: { since, last } }
 
 sinceLastMessage ∷ ImModel → Effect DateTimeWrapper

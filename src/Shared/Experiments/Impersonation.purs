@@ -118,7 +118,7 @@ batman =
       , karma: 877
       , karmaPosition: 342
       , gender: Just $ show Male
-      , backer :false
+      , backer: false
       , privileges: []
       , bin: 1
       , badges: []
@@ -139,7 +139,7 @@ socrates =
       , bin: 1
       , availability: None
       , readReceipts: true
-      , backer :false
+      , backer: false
       , privileges: []
       , badges: []
       , temporary: false
@@ -171,7 +171,7 @@ nicolasCage =
       , headline: "I think I jump around more when I'm alone"
       , profileVisibility: Everyone
       , readReceipts: true
-      , backer :false
+      , backer: false
       , messageTimestamps: true
       , completedTutorial: true
       , privileges: []

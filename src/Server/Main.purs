@@ -36,7 +36,7 @@ startWebSocketServer configuration = do
       pool ← SD.newPool configuration
       SW.onConnection webSocketServer (SWE.handleConnection configuration pool allUsersAvailabilityRef)
       inactiveIntervalId ← ET.setInterval inactiveInterval (SWE.terminateInactive allUsersAvailabilityRef)
-      availbitilityIntervallId ← ET.setInterval availabilityInterval (SWE.persistLastSeen pool allUsersAvailabilityRef )
+      availbitilityIntervallId ← ET.setInterval availabilityInterval (SWE.persistLastSeen pool allUsersAvailabilityRef)
       SW.onServerClose webSocketServer (const (ET.clearInterval inactiveIntervalId *> ET.clearInterval availbitilityIntervallId))
 
 startHttpServer ∷ Configuration → Effect Unit

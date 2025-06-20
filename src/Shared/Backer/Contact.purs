@@ -17,7 +17,7 @@ import Shared.User (ProfileVisibility(..))
 backerId ∷ Int
 backerId = 0
 
-backerContact ∷ Int -> Contact
+backerContact ∷ Int → Contact
 backerContact userId = (SC.defaultContact backerId backerUser)
       { history =
               [ { sender: backerId
@@ -45,11 +45,12 @@ backerUser =
       , completedTutorial: true
       , avatar: Just $ SP.resourcePath (Left BackerAvatar) Png
       , headline: "MeroChat depends on you to keep running"
-      , description: """Hey you!
+      , description:
+              """Hey you!
 Yes, you!
 Donate today if you want to save the only good place to chat online
 ❤️"""
-      , tags: ["merochat", "you", "support"]
+      , tags: [ "merochat", "you", "support" ]
       , karma: 10000000
       , karmaPosition: 234
       , gender: Nothing
