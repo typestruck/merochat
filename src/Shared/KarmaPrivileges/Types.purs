@@ -9,10 +9,10 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
-import Shared.Privilege (Privilege)
 
 type LeaderboardUser =
-      { position ∷ Int
+      { id ∷ Int
+      , position ∷ Int
       , karma ∷ Int
       , avatar ∷ Maybe String
       , name ∷ String

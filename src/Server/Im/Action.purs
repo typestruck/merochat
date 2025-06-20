@@ -19,9 +19,9 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
 import Environment (production)
 import Run.Except as RE
-import Server.Database.Types (Checked(..))
 import Safe.Coerce as SC
 import Server.AccountValidation as SA
+import Server.Database.Types (Checked(..))
 import Server.Effect (BaseEffect, Configuration, ServerEffect)
 import Server.Email as SE
 import Server.File as SF
@@ -35,7 +35,8 @@ import Server.Im.Types (Payload)
 import Server.Sanitize as SS
 import Server.ThreeK as ST
 import Server.Wheel as SW
-import Shared.Backer.Contact (backer)
+import Shared.Backer.Contact (backerUser)
+import Shared.Backer.Contact as SBC
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Markdown (Token(..))
@@ -53,15 +54,12 @@ im loggedUserId = do
             Just user → do
                   suggestions ← suggest loggedUserId 0 ThisWeek
                   contacts ← listContacts loggedUserId 0
+                  let shouldDonate = not (SC.coerce user.backer) && SD.daysDiff user.joined > 3
                   pure
-                        { contacts: backContacts user contacts
-                        , suggestions
+                        { contacts: if shouldDonate then SBC.backerContact user.id : contacts else contacts
+                        , suggestions: if shouldDonate then DA.snoc suggestions backerUser else suggestions
                         , user: SIF.fromFlatUser user
                         }
-      where
-      backContacts user contacts
-            | not (SC.coerce user.backer) && SD.daysDiff user.joined > 3 = backer user.id : contacts
-            | otherwise = contacts
 
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array Suggestion)
 suggest loggedUserId skip sg = map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip sg
@@ -75,7 +73,7 @@ listSingleContact loggedUserId userId = presentContacts <$> SIDP.presentSingleCo
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SIDP.presentSingleContact loggedUserId userId skip
 
-listMissedContacts ∷ Int → DateTimeWrapper → Maybe Int -> ServerEffect (Array Contact)
+listMissedContacts ∷ Int → DateTimeWrapper → Maybe Int → ServerEffect (Array Contact)
 listMissedContacts loggedUserId (DateTimeWrapper dt) lastSentId = presentContacts <$> SIDP.presentMissedContacts loggedUserId dt lastSentId
 
 presentContacts ∷ Array FlatContactHistoryMessage → Array Contact
@@ -85,9 +83,8 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
 
       chatHistory records = (fromFlatContact $ DAN.head records) { history = fromFlatMessage <$> DAN.toArray records }
 
-subscribe :: Int -> ServerEffect Unit
+subscribe ∷ Int → ServerEffect Unit
 subscribe loggedUserId = SIDE.subscribe loggedUserId
-
 
 processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do

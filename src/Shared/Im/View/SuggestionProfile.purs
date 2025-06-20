@@ -20,6 +20,7 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Avatar as SA
+import Shared.Backer.Contact (backerId)
 import Shared.Badge (Badge)
 import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
@@ -35,6 +36,7 @@ import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SR
+import Shared.Unsafe as SU
 import Shared.User as SUR
 
 -- | Displays either the current chat or a list of chat suggestions
@@ -85,7 +87,7 @@ compactProfile contact model =
       HE.div (HA.class' { "profile-contact": true, highlighted: model.toggleModal == Tutorial Chatting })
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' "avatar-profile", HA.src $ SA.fromAvatar contact.user.avatar ] <> showProfileAction
+                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' "avatar-profile", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
                     , HE.div (HA.class' "profile-contact-header" : showProfileAction)
                             [ HE.div (HA.class' "contact-name-badge") $ HE.h1 (HA.class' "contact-name") contact.user.name : badges contact.user.badges
                             , typingNotice
@@ -128,14 +130,14 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                                   [ HE.strong (HA.class' "big-card-name big-name-avatar") user.name
                                   ]
                           , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
-                                  [ HE.img [ HA.src $ SA.fromAvatar user.avatar, HA.title "Close avatar", HA.class' "bigger-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+                                  [ HE.img [ HA.src $ SA.fromAvatar user, HA.title "Close avatar", HA.class' "bigger-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
                                   ]
                           ]
                   ]
             else
                   [ HE.div (HA.class' "avatar-info")
                           [ HE.div [ HA.class' "big-avatar-info" ]
-                                  [ HE.img [ HA.src $ SA.fromAvatar user.avatar, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+                                  [ HE.img [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
                                   , HE.div (HA.class' "big-suggestion-info")
                                           ( HE.strong (HA.class' "big-card-name") user.name
                                                   : badges user.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user user ]
@@ -166,40 +168,6 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                           ]
                   ]
 
-backingTime ∷ Html ImMessage
-backingTime =
-      HE.div (HA.class' "backing-suggestion-call")
-            [ HE.img [ HA.class' "point-melon", HA.src $ SR.resourcePath (Left Loading) Png ]
-            , HE.h2 (HA.class' "backing-suggestion-call-enjoyer") "Enjoying MeroChat??"
-            , HE.text "Donate today! MeroChat depends on people like you to exist"
-            , HE.br
-            , HE.text "Your money will pay for server costs, marketing and development time"
-            , HE.br
-            , HE.div (HA.class' "donate-options")
-                    [ HE.i_ "PayPal"
-                    , HE.form [ HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_blank" ]
-                            [ HE.input [ HA.type' "hidden", HA.name "business", HA.value "RAH62A4TZZD7L" ]
-                            , HE.input [ HA.type' "hidden", HA.name "currency_code", HA.value "USD" ]
-                            , HE.input [ HA.type' "image", HA.src "https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif", HA.name "submit", HA.title "PayPal - The safer, easier way to pay online!", HA.alt "Donate with PayPal button" ]
-                            , HE.img [ HA.alt "", HA.src "https://www.paypal.com/en_US/i/scr/pixel.gif", HA.width "1", HA.height "1" ]
-                            ]
-                    , HE.i_ "Liberapay"
-                    , HE.script' [ HA.src "https://liberapay.com/merochat/widgets/button.js", HA.type' "text/javascript" ]
-                    , HE.a [ HA.href "https://liberapay.com/merochat/donate", HA.target "_blank" ] $ HE.img [ HA.alt "Donate using Liberapay", HA.src "https://liberapay.com/assets/widgets/donate.svg" ]
-
-                    , HE.i_ "Patreon"
-                    , HE.a [ HA.href "https://www.patreon.com/bePatron?u=41075080", HA.target "_blank", HA.class' "patreon-button" ]
-                            [ HE.svg [ HA.viewBox "0 0 569 546", HA.class' "svg-patreon" ]
-                                    [ HE.g_
-                                            [ HE.circle' [ HA.cx "362.589996", HA.cy "204.589996", HA.r "204.589996" ]
-                                            , HE.rect' [ HA.height "545.799988", HA.width "100", HA.x "0", HA.y "0" ]
-                                            ]
-                                    ]
-                            , HE.text "Subscribe"
-                            ]
-                    ]
-            ]
-
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
 individualSuggestion suggestion model = HE.div (HA.class' "big-card") $
       if model.showLargeAvatar then
@@ -211,14 +179,14 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card") $
                                     ]
                             ]
                     , HE.div [ HA.class' "big-avatar-info big-avatar-center" ]
-                            [ HE.img [ HA.title "Close avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "bigger-suggestion-avatar" ]
+                            [ HE.img [ HA.title "Close avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "bigger-suggestion-avatar" ]
                             ]
                     ]
             ]
       else
             [ HE.div (HA.class' "avatar-info")
                     [ HE.div [ HA.class' "big-avatar-info" ]
-                            [ HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "big-suggestion-avatar" ]
+                            [ HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]
                             , HE.div (HA.class' "big-suggestion-info")
                                     ( HE.strong (HA.class' "big-card-name") suggestion.name
                                             : badges suggestion.badges <> [ HE.div (HA.class' "duller") $ onlineStatus model.user suggestion ]
@@ -256,11 +224,16 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card") $
                     ]
 
             , HE.div (HA.class' "see-profile-chat suggestion-input")
-                    [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model
-                    ]
+                    $
+                          if backingCall then []
+                          else
+                                [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model
+                                ]
 
             , arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
             ]
+      where
+      backingCall = suggestion.id == backerId
 
 -- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
@@ -280,7 +253,7 @@ suggestionCards model =
             HE.div (HA.class' "card")
                   [ HE.div (HA.class' "avatar-info")
                           [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
-                                  [ HE.img [ HA.src $ SA.fromAvatar suggestion.avatar, HA.class' "suggestion-avatar" ]
+                                  [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ]
                                   , HE.div (HA.class' "mini-suggestion-info")
                                           ( [ HE.div_
                                                     [ HE.strong (HA.class' "mini-suggestion-karma") $ SI.thousands suggestion.karma
@@ -314,7 +287,7 @@ suggestionCards model =
                                       ]
                           _ → HE.div (HA.class' "see-profile-chat")
                                 [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
-                                , HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
+                                , HE.input ([ HA.class' "see-profile-button see-chat", HA.type' "button" ] <> (if suggestion.id == backerId then [ HA.value "Donate", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker ] else [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]))
                                 ]
                   ]
       showProfile id
@@ -413,7 +386,7 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
               ]
       , HE.div (HA.class' "back-filter")
               [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
-            --  , onlineOnlyFilter model
+              --  , onlineOnlyFilter model
               ]
       ]
 

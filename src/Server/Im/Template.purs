@@ -65,7 +65,6 @@ template payload = do
                     , imageCaption: Nothing
                     , selectedImage: Nothing
                     , webSocketMessages: []
-                    , bugging: Nothing
                     , fullContactProfileVisible: false
                     , freeToFetchContactList: true
                     , erroredFields: []

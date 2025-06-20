@@ -11,16 +11,12 @@ import Data.Array as DA
 import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.String as DS
 import Data.Tuple.Nested ((/\))
-import Effect.Aff (Aff)
 import Effect.Class as EC
-import Effect.Random as ER
 import Flame as F
-import Safe.Coerce as SC
-import Shared.DateTime as SD
+import Shared.Backer.Contact (backerId)
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ImMessage(..), ImModel, MeroChatCall(..), RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
+import Shared.Im.Types (ImMessage(..), ImModel,  RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
@@ -36,7 +32,6 @@ nextSuggestion model =
                   , suggesting = next
                   , showLargeAvatar = false
                   , showMiniChatInput = false
-                  , bugging = Nothing
                   } /\ [  ]
       where
       next = moveSuggestion model 1
@@ -52,7 +47,6 @@ previousSuggestion model =
                   , suggesting = previous
                   , showMiniChatInput = false
                   , showLargeAvatar = false
-                  , bugging = Nothing
                   } /\ [  ]
       where
       previous = moveSuggestion model (-1)
@@ -71,7 +65,6 @@ fetchMoreSuggestions model =
       model
             { freeToFetchSuggestions = false --ui uses this flag to show a loading icon and prevent repeated requests
             , failedRequests = []
-            , bugging = Nothing
             , showLargeAvatar = false
             , showMiniChatInput = false
             } /\
@@ -97,7 +90,7 @@ displayMoreSuggestions suggestions model =
             model
                   { freeToFetchSuggestions = true
                   , suggesting = _.id <$> DA.head suggestions
-                  , suggestions = suggestions
+                  , suggestions = suggestions <> DA.filter ((backerId == _) <<< _.id) model.suggestions
                   , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
                   , suggestionsFrom = suggestionsFrom
                   } /\ [ scrollToTop, track ]
@@ -162,10 +155,4 @@ toggleSuggestionsFromOnline ∷ ImModel → MoreMessages
 toggleSuggestionsFromOnline model = fetchMoreSuggestions model
       { suggestionsFrom = if model.suggestionsFrom == OnlineOnly then ThisWeek else OnlineOnly
       , suggestionsPage = 0
-      }
-
--- | Display special card instead of suggestion
-setBugging ∷ MeroChatCall → ImModel → NoMessages
-setBugging mc model = F.noMessages model
-      { bugging = Just mc
       }

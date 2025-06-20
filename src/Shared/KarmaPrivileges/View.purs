@@ -87,14 +87,14 @@ view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent,
                     ]
             ]
 
-      leaderboardEntry index { position, avatar, name, karma } =
-            HE.div (HA.class' $ "board-position" <> if position == userPosition then " user" else "")
-                  [ HE.div (HA.class' "avatar-leaderboard-div") $ HE.img [ HA.class' "avatar-leaderboard", HA.src $ SA.fromAvatar avatar ]
+      leaderboardEntry index user =
+            HE.div (HA.class' $ "board-position" <> if user.position == userPosition then " user" else "")
+                  [ HE.div (HA.class' "avatar-leaderboard-div") $ HE.img [ HA.class' "avatar-leaderboard", HA.src $ SA.fromAvatar user ]
                   , HE.div (HA.class' "name-karma")
                           [ HE.div_
-                                  [ HE.div (HA.class' "name") name
-                                  , HE.span (HA.class' "duller") $ SI.thousands karma
+                                  [ HE.div (HA.class' "name") user.name
+                                  , HE.span (HA.class' "duller") $ SI.thousands user.karma
                                   ]
-                          , HE.div (HA.class' "position") <<< HE.span (HA.class' "position-number") $ show position
+                          , HE.div (HA.class' "position") <<< HE.span (HA.class' "position-number") $ show user.position
                           ]
                   ]

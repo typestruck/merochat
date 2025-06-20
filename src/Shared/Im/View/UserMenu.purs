@@ -77,15 +77,13 @@ userMenu model =
             ]
 
 header ∷ ImModel → Html ImMessage
-header model@{ user: { karma, karmaPosition } } = HE.fragment
-      [ HE.img [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.fromAvatar avatar ]
+header model = HE.fragment
+      [ HE.img [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user ]
       , HE.div [ HA.class' "settings-name" ]
-              [ HE.strong (HA.class' "contact-name") name
+              [ HE.strong (HA.class' "contact-name") model.user.name
               , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]
-                      [ HE.span [ HA.class' "karma-number" ] $ SI.thousands karma
-                      , HE.span (HA.class' "duller") $ " karma • (#" <> show karmaPosition <> ")"
+                      [ HE.span [ HA.class' "karma-number" ] $ SI.thousands model.user.karma
+                      , HE.span (HA.class' "duller") $ " karma • (#" <> show model.user.karmaPosition <> ")"
                       ]
               ]
       ]
-      where
-      { name, avatar } = model.user

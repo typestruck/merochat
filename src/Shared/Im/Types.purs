@@ -141,7 +141,6 @@ type Im =
       , showMiniChatInput ∷ Boolean
       , showCollapsedMiniSuggestions ∷ Boolean
       , editing ∷ Maybe Int
-      , bugging ∷ Maybe MeroChatCall
       --used to signal that the page should be reloaded
       , hash ∷ String
       --visibility switches
@@ -157,8 +156,6 @@ type Im =
       )
 
 type ImModel = Record Im
-
-data MeroChatCall = Backing | Experimenting
 
 newtype TimeoutIdWrapper = TimeoutIdWrapper TimeoutId
 
@@ -420,7 +417,6 @@ instance DecodeQueryParam SuggestionsFrom where
                   _ → errorDecoding query key
 
 derive instance Eq SuggestionsFrom
-derive instance Eq MeroChatCall
 derive instance Eq FocusEvent
 derive instance Eq When
 derive instance Eq WebSocketConnectionStatus
@@ -550,9 +546,6 @@ instance Enum MessageStatus where
 instance DecodeJson TimeoutIdWrapper where
       decodeJson = Right <<< UC.unsafeCoerce
 
-instance DecodeJson MeroChatCall where
-      decodeJson = DADGR.genericDecodeJson
-
 instance DecodeJson SuggestionsFrom where
       decodeJson = DADGR.genericDecodeJson
 
@@ -599,9 +592,6 @@ instance EncodeJson TimeoutIdWrapper where
       encodeJson = UC.unsafeCoerce
 
 instance EncodeJson SuggestionsFrom where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance EncodeJson MeroChatCall where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson AfterLogout where
@@ -695,7 +685,6 @@ derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
 derive instance Generic MessageContent _
 derive instance Generic MessageError _
-derive instance Generic MeroChatCall _
 derive instance Generic WebSocketPayloadClient _
 derive instance Generic FullWebSocketPayloadClient _
 derive instance Generic WebSocketPayloadServer _

@@ -59,7 +59,7 @@ contactList isClientRender model =
                                 , HA.onClick $ if backingCall then SpecialRequest (ToggleModal ShowBacker) else ResumeChat contact.user.id
                                 ]
                                 [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
-                                        [ HE.img [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ if backingCall then (SU.fromJust contact.user.avatar) else SA.fromAvatar contact.user.avatar ]
+                                        [ HE.img [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ SA.fromAvatar contact.user ]
                                         ]
                                 , HE.div [ HA.class' "contact-profile" ]
                                         [ HE.div (HA.class' "contact-online-wrapper")

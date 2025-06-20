@@ -10,8 +10,10 @@ import Flame.Html.Attribute as HA
 import Flame.Html.Element (class ToNode)
 import Flame.Html.Element as HE
 import Flame.Types (Html, NodeData)
+import Shared.Backer.Contact (backerId)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
+import Shared.Unsafe as SU
 import Web.DOM (Node)
 
 foreign import createImg ∷ Effect Node
@@ -21,10 +23,12 @@ foreign import resetImg ∷ ∀ a. Node → a → a → Node
 defaultAvatar ∷ String
 defaultAvatar = SP.resourcePath (Left Avatar) Svg
 
-fromAvatar ∷ Maybe String → String
-fromAvatar av = DM.fromMaybe defaultAvatar $ map uploaded av
-      where
-      uploaded a = SP.resourcePath (Left $ Upload a) Ignore
+fromAvatar ∷ forall r. { id :: Int, avatar :: Maybe String | r} → String
+fromAvatar user
+      | user.id == backerId = SU.fromJust user.avatar
+      | otherwise = DM.fromMaybe defaultAvatar $ map uploaded user.avatar
+              where
+              uploaded a = SP.resourcePath (Left $ Upload a) Ignore
 
 async ∷ ∀ message. NodeData message
 async = HA.createAttribute "async" ""

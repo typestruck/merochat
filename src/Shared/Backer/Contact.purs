@@ -1,4 +1,4 @@
-module Shared.Backer.Contact (backer, backerId) where
+module Shared.Backer.Contact (backerContact, backerId, backerUser) where
 
 import Prelude
 
@@ -17,8 +17,8 @@ import Shared.User (ProfileVisibility(..))
 backerId ∷ Int
 backerId = 0
 
-backer ∷ Int -> Contact
-backer userId = (SC.defaultContact backerId user)
+backerContact ∷ Int -> Contact
+backerContact userId = (SC.defaultContact backerId backerUser)
       { history =
               [ { sender: backerId
                 , recipient: userId
@@ -31,8 +31,8 @@ backer userId = (SC.defaultContact backerId user)
               ]
       }
 
-user ∷ User
-user =
+backerUser ∷ User
+backerUser =
       { id: backerId
       , name: "Donate to MeroChat!"
       , availability: Online
@@ -44,18 +44,21 @@ user =
       , onlineStatus: true
       , completedTutorial: true
       , avatar: Just $ SP.resourcePath (Left BackerAvatar) Png
-      , headline: ""
-      , description: ""
-      , tags: []
-      , karma: 0
-      , karmaPosition: 0
+      , headline: "MeroChat depends on you to keep running"
+      , description: """Hey you!
+Yes, you!
+Donate today if you want to save the only good place to chat online
+❤️"""
+      , tags: ["merochat", "you", "support"]
+      , karma: 10000000
+      , karmaPosition: 234
       , gender: Nothing
       , privileges: []
-      , bin: 1
+      , bin: 2
       , badges: []
       , temporary: false
       , country: Nothing
       , languages: []
       , profileVisibility: Everyone
-      , age: Just 0
+      , age: Just 39
       }

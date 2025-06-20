@@ -20,7 +20,7 @@ unreadNotification model
               where
               unreadChats = map markup $ DA.filter unread model.contacts
               unread entry = DF.any (\m → m.status < Read && m.sender /= model.user.id && Just m.sender /= model.chatting) entry.history
-              markup entry = HE.img [ HA.class' $ "avatar-notification-mobile", HA.src $ SA.fromAvatar entry.user.avatar ]
+              markup entry = HE.img [ HA.class' $ "avatar-notification-mobile", HA.src $ SA.fromAvatar entry.user ]
 
               avatars
                     | DA.length unreadChats > 5 = DA.snoc (DA.take 5 unreadChats) $ HE.text "..."
