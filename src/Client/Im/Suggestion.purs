@@ -37,7 +37,7 @@ nextSuggestion model =
                   , showLargeAvatar = false
                   , showMiniChatInput = false
                   , bugging = Nothing
-                  } /\ [ bugUser model ]
+                  } /\ [  ]
       where
       next = moveSuggestion model 1
 
@@ -53,7 +53,7 @@ previousSuggestion model =
                   , showMiniChatInput = false
                   , showLargeAvatar = false
                   , bugging = Nothing
-                  } /\ [ bugUser model ]
+                  } /\ [  ]
       where
       previous = moveSuggestion model (-1)
 
@@ -64,16 +64,6 @@ moveSuggestion model by = do
       index ← DA.findIndex ((_ == currentId) <<< _.id) model.suggestions
       suggestion ← model.suggestions !! (index + by)
       Just $ suggestion.id
-
--- | When moving suggestion cards, diplay a special card n% of the time
-bugUser ∷ ImModel → Aff (Maybe ImMessage)
-bugUser model = do
-      chance ← EC.liftEffect $ ER.randomInt 0 100
-      --bug user only if account is older than 3 days
-      if chance <= 10 && SD.daysDiff (SC.coerce model.user.joined) > 3 then
-            pure <<< Just $ SetBugging Backing
-      else
-            pure Nothing
 
 -- | Fetch next page of suggestions
 fetchMoreSuggestions ∷ ImModel → NextMessage

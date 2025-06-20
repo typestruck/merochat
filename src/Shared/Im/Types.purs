@@ -285,7 +285,6 @@ data ImMessage
       | DisplayMoreSuggestions (Array Suggestion)
       | ToggleSuggestionsFromOnline
       | ToggleSuggestionChatInput Int
-      | SetBugging MeroChatCall
 
       --chat
       | SetSelectedImage SelectedImage

@@ -10,7 +10,7 @@ view ∷ Html Unit
 view = HE.div (HA.class' "backer")
       [ HE.h3 (HA.class' "initial bottom") "MeroChat depends on people like you to keep running"
       , HE.p_ "We will never show ads, charge for subscriptions, sell cosmetics or anything that would stand in the way of being the best place ever to chat"
-      , HE.p_ "At the same time: apps have costs. Servers, domains, marketing campaigns, designing and development time, etc. quickly become expensive. All the more for a passion project like MeroChat that is not tied to any big corporations or VC money"
+      , HE.p_ "At the same time: apps have costs. Servers, domains, marketing campaigns, design and development time, etc. quickly become expensive. All the more for a passion project like MeroChat that is not tied to any big corporations or VC money"
       , HE.p_ "So why not pitch in if you can? All proceeds go straight into making this place even better :)"
       , HE.h3_ "Make an one time donation via PayPal"
       , HE.form [ HA.action "https://www.paypal.com/donate", HA.method "post", HA.target "_blank" ]

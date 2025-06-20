@@ -1,5 +1,5 @@
 let maxWidth = typeof window !== "undefined" && window.matchMedia('(max-width:1279px)').matches ?
-    parseFloat(getComputedStyle(document.querySelector('#im')).width) - 20 :
+    parseInt(getComputedStyle(document.querySelector('#im')).width) - 20 :
     50 * 16, // max width of messages times font size
     quality = 0.9;
 
