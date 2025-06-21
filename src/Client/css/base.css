@@ -202,7 +202,6 @@ svg {
 }
 
 .sign-up-form input {
-    font-family: var(--dark-text-color);
     padding: 10px;
     font-size: 1em;
     width: 500px;
@@ -213,7 +212,7 @@ svg {
 
 .sign-up-form input[type=text],
 .sign-up-form input[type=password] {
-    color: var(--merochat-red);
+    color: #1B1F3B;
     background-color: var(--light-color);
 }
 

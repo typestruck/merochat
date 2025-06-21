@@ -172,9 +172,11 @@ async function resume(notification) {
         //sync messages from here meanwhile the app loads them
         channel.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
         channel.postMessage({ message: 'resume', payload: userId });
-    } else
+    } else {
+        await noChatsOpened();
         //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
         await self.clients.openWindow(`/im?resume=${userId}`);
+    }
 }
 
 //store chats and user data localy with indexeddb?
