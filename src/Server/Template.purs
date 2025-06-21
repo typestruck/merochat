@@ -91,8 +91,8 @@ templateWith parameters =
       HE.html (HA.lang "en")
             [ HE.head_
                     ( [ HE.meta $ HA.charset "UTF-8"
-                      , HE.meta [ HA.name "viewport", HA.content "width=device-width" ]
-                      , HE.meta [ HA.name "description", HA.content "Chat to new people who also just want to chat. MeroChat is a text based chat site for having actual conversations" ]
+                      , HE.meta [ HA.name "viewport", HA.content "width=device-width, interactive-widget=resizes-content" ]
+                      , HE.meta [ HA.name "description", HA.content "Text based, 1 on 1, friendly only random chat!" ]
                       , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href parameters.favicon ]
                       , HE.link [ HA.rel "manifest", HA.href parameters.favicon, HA.href "/file/default/manifest.json" ]
                       , HE.link [ HA.rel "preconnect", HA.href "https://fonts.googleapis.com" ]
