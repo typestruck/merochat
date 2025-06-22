@@ -86,14 +86,10 @@ contactList isClientRender model =
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
       suggestionsCall =
-            HE.div (HA.class' "suggestions-call")
-                  [ HE.div (HA.onClick $ ToggleInitialScreen false) backArrow
-                  , HE.div (HA.class' { "suggestions-call-middle": true })
-                          [ HE.div (HA.class' "welcome-suggestions-call") "Welcome!"
-                          , HE.div_ "Tap on either of the arrows to see "
-                          , HE.div_ "new users to chat to"
-                          ]
-                  , HE.div (HA.onClick $ ToggleInitialScreen false) nextArrow
+            HE.div [ HA.class' "suggestions-call", HA.onClick $ ToggleInitialScreen false ]
+                  [ HE.div (HA.class' "welcome-suggestions-call") "Welcome!"
+                  , HE.div_ "Tap here to see "
+                  , HE.div_ "suggested users to chat to"
                   ]
 
       compareLastDate contact anotherContact = compare anotherContact.lastMessageDate contact.lastMessageDate

@@ -2924,19 +2924,13 @@ label {
 
     .suggestions-call {
         display: flex;
-        color: #b9c658;
+        color: var(--light-color);
         min-height: 90%;
+        justify-content: center;
         align-items: center;
         padding: 0px 10px;
-        justify-content: space-between;
-    }
-
-    .suggestions-call-middle {
-        display: flex;
+        font-size: 1.2em;
         flex-direction: column;
-        align-items: center;
-        text-align: center;
-        font-size: 1.1em
     }
 
     .welcome-suggestions-call {
