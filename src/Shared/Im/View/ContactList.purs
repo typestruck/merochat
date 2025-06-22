@@ -23,7 +23,7 @@ import Shared.Im.Contact as SIC
 import Shared.Im.Scroll as SIS
 import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.View.Retry as SIVR
-import Shared.Im.View.SuggestionProfile as SIVP
+import Shared.Im.View.Profile as SIVP
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))

@@ -16,7 +16,7 @@ import Shared.Im.View.LogoMenu as SIVL
 import Shared.Im.View.Modals as SIVM
 import Shared.Im.View.Notification as SIVN
 import Shared.Im.View.NotificationMobile as SIVNM
-import Shared.Im.View.SuggestionProfile as SIVP
+import Shared.Im.View.Profile as SIVP
 import Shared.Im.View.UserMenu as SIVU
 
 view ∷ Boolean → ImModel → Html ImMessage

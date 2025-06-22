@@ -12,11 +12,15 @@ import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect.Class as EC
 import Flame as F
-import Shared.Backer.Contact (backerId)
+import Server.Database.LastSeen (LastSeen)
+import Shared.Availability (Availability(..))
+import Shared.Backer.Contact (backerId, backerUser)
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..), ShowChatModal(..), Suggestion, SuggestionsFrom(..))
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..), ShowChatModal(..), SuggestionsFrom(..), Suggestion)
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
@@ -138,6 +142,7 @@ resumeSuggesting model =
             { chatting = Nothing
             , toggleChatModal = HideChatModal
             , showSuggestionChatInput = Nothing
+            , suggestions = byAvailability model.suggestions
             , editing = Nothing
             } /\ [ updateDraft ]
       where
@@ -149,6 +154,15 @@ resumeSuggesting model =
                   pure Nothing
             else
                   pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) draft
+
+--sort the suggestion when the user is not looking
+byAvailability ∷ Array Suggestion → Array Suggestion
+byAvailability suggestions = DA.snoc (DA.filter ( (backerId /= _) <<< _.id) $ DA.sortBy available suggestions) backerUser
+      where
+      available suggestion anotherSuggestion =
+                  case suggestion.availability, anotherSuggestion.availability of
+                        LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) →  anotherDt `compare` dt
+                        a, s → s `compare` a
 
 -- | Switch to on or from online only suggestions
 toggleSuggestionsFromOnline ∷ ImModel → MoreMessages

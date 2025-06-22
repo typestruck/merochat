@@ -31,7 +31,7 @@ import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIS
-import Shared.Im.View.SuggestionProfile as SIVP
+import Shared.Im.View.Profile as SIVP
 import Shared.Markdown as SM
 import Shared.Network (RequestStatus(..))
 import Shared.Privilege (Privilege(..))

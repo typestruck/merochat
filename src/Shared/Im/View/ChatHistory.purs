@@ -22,7 +22,7 @@ import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Im.View.Retry as SIVR
-import Shared.Im.View.SuggestionProfile as SIVP
+import Shared.Im.View.Profile as SIVP
 import Shared.Markdown as SM
 import Shared.Unsafe as SU
 import Shared.Im.Scroll as SIS

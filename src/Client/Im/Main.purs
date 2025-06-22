@@ -451,10 +451,9 @@ displayFortune sequence model = F.noMessages $ model
 fetchMissedContacts ∷ ImModel → MoreMessages
 fetchMissedContacts model = model /\ [ fetchIt ]
       where
-      lastMessageDate contact anotherContact = contact.lastMessageDate `compare` anotherContact.lastMessageDate
       fetchIt = do
             since ← EC.liftEffect $ sinceLastMessage model
-            let last = (map _.history <<< DA.last <<< DA.sortBy lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts) >>= (map _.id <<< DA.last)
+            let last = (map _.history <<< DA.last <<< DA.sortWith _.lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts) >>= (map _.id <<< DA.last)
             CCNT.retryableResponse FetchMissedContacts DisplayMissedContacts $ request.im.missedContacts { query: { since, last } }
 
 sinceLastMessage ∷ ImModel → Effect DateTimeWrapper

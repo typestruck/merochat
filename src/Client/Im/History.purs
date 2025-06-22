@@ -63,7 +63,6 @@ displayHistory userId history model =
             }
 
 fixHistory ∷ Array HistoryMessage → Array HistoryMessage
-fixHistory = DA.sortBy dates <<< DA.nubByEq dedup
+fixHistory = DA.sortWith _.date <<< DA.nubByEq dedup
       where
       dedup entry anotherEntry = entry.id == anotherEntry.id
-      dates entry anotherEntry = compare entry.date anotherEntry.date

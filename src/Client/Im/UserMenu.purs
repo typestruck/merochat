@@ -10,6 +10,7 @@ import Client.Common.Network as CCN
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
+import Client.Im.Suggestion (byAvailability)
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -29,6 +30,8 @@ toggleInitialScreen toggle model =
             { initialScreen = toggle
             , chatting = Nothing
             , toggleModal = HideUserMenuModal
+            -- false toggle means we are showing suggestions
+            , suggestions = if not toggle then byAvailability model.suggestions else model.suggestions
             } /\ [ updateDraft, updateServiceWorker ]
       where
       updateServiceWorker = do

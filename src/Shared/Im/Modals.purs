@@ -22,7 +22,7 @@ import Shared.Im.Contact as SIC
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIV
 import Shared.Im.View.Retry as SIVR
-import Shared.Im.View.SuggestionProfile as CISP
+import Shared.Im.View.Profile as CISP
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
