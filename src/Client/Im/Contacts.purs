@@ -90,15 +90,10 @@ setMessageStatus webSocket userId newStatus model =
       model
             { contacts = updatedContacts
             } /\
-            [ setIt userId (messageIdsUpdated <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts)
-            ]
+            if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds]
 
       where
-      updatedContacts = map (updateContact userId) model.contacts
-
       needsUpdate entry = entry.status >= Sent && entry.status < newStatus && entry.recipient == model.user.id
-      messageIdsUpdated history = map _.id $ DA.filter needsUpdate history
-
       updateStatus entry
             | needsUpdate entry = entry { status = newStatus }
             | otherwise = entry
@@ -106,6 +101,8 @@ setMessageStatus webSocket userId newStatus model =
             | contact.user.id == ui = contact { history = map updateStatus contact.history }
             | otherwise = contact
 
+      updatedMessageIds = map _.id <<< DA.filter needsUpdate <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts
+      updatedContacts = map (updateContact userId) model.contacts
       setIt ui messages = liftEffect do
             CIW.sendPayload webSocket $ ChangeStatus
                   { status: newStatus
