@@ -2352,15 +2352,6 @@ select {
     margin-top: 0 !important;
 }
 
-.message-history .sign-up-call {
-    order: -1;
-    text-align: center;
-    width: fit-content;
-    align-self: center;
-    position: absolute;
-    z-index: 3;
-}
-
 .impersonation-warning-history {
     z-index: 4;
     margin-bottom: auto;
@@ -2377,8 +2368,18 @@ select {
 .message-history .sign-up-call {
     border: 1px solid #db5a5d;
     padding: 10px 20px;
+    margin-bottom: 10px;
+
+    text-align: center;
     background-color: #262626;
     border-radius: 4px;
+}
+
+.message-history .sign-up-call {
+    width: fit-content;
+    align-self: center;
+    position:sticky;
+    top: 0;
 }
 
 .exit-impersonation {
@@ -2571,6 +2572,7 @@ label {
         content-visibility: visible;
     }
 
+    .card-top-header,
     .svg-close-profile,
     .suggestions-home {
         display: none;
@@ -2676,7 +2678,6 @@ label {
         width: 20em;
     }
 
-    .card-top-header,
     .side-suggestions-container,
     .logo-contact-list,
     .fortune,

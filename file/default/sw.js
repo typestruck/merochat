@@ -31,26 +31,6 @@ registerRoute(imageRoute);
 //     event.waitUntil(clients.claim());
 // });
 
-/// push
-self.addEventListener('push', (event) => {
-    event.waitUntil(handlePush(event.data));
-});
-
-async function handlePush(raw) {
-    let data = raw.json();
-
-    if (data.message) {
-        let parsed = JSON.parse(data.message.message);
-
-        switch (parsed.type) {
-            case 'incoming':
-                return notify(data.message, parsed);
-            case 'read':
-                return hideNotifications(parsed);
-        }
-    }
-}
-
 let chattingWith,
     channel = new BroadcastChannel("merochat");
 
@@ -83,6 +63,26 @@ async function hideNotifications(payload) {
 
     for (let n of notifications)
         n.close();
+}
+
+self.addEventListener('push', (event) => {
+    event.waitUntil(handlePush(event.data));
+});
+
+async function handlePush(raw) {
+    let data = raw.json();
+
+    if (data.message) {
+        let parsed = JSON.parse(data.message.message);
+
+        switch (parsed.type) {
+            case 'incoming':
+                return notify(data.message, parsed);
+            case 'read':
+                await hideNotifications(parsed);
+                return setBadge();
+        }
+    }
 }
 
 async function notify(data, incoming) {

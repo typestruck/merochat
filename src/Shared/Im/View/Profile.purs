@@ -349,11 +349,16 @@ profileContextMenu id delete =
       ]
 
 welcomeTemporary ∷ User → Html ImMessage
-welcomeTemporary { name, joined } =
-      HE.div (HA.class' "card-top-header")
-            [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
-            , signUpCall joined
-            ]
+welcomeTemporary { name, joined } = HE.div (HA.class' "card-top-welcome-filter")
+      [ HE.div (HA.class' "card-top-header")
+              [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
+              , signUpCall joined
+              ]
+      , HE.div (HA.class' "back-filter")
+              [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
+              --  , onlineOnlyFilter model
+              ]
+      ]
 
 signUpCall ∷ DateTimeWrapper → Html ImMessage
 signUpCall joined = HE.div (HA.class' "sign-up-call")
