@@ -44,19 +44,19 @@ chat model =
             ]
 
 imageModal ∷ ImModel → Html ImMessage
-imageModal { selectedImage, erroredFields, user } =
-      HE.div [ HA.class' { "image-form modal-form": true, hidden: DM.isNothing selectedImage } ]
-            if SP.hasPrivilege SendImages user then
+imageModal model =
+      HE.div [ HA.class' { "image-form modal-form": true, hidden: DM.isNothing model.selectedImage } ]
+            if SP.hasPrivilege SendImages model.user then
                   [ SIS.closeX [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ]
                   , HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
                           [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                           , HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
                           ]
                   , HE.div (HA.class' { "image-form-image": true, hidden: imageValidationFailed })
-                          [ HE.img <<< HA.src $ DM.maybe "" _.base64 selectedImage
+                          [ HE.img <<< HA.src $ DM.maybe "" _.base64 model.selectedImage
                           ]
                   , HE.div (HA.class' "image-form-controls")
-                          [ HE.input [ HA.placeholder "Caption", HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
+                          [ HE.input [ HA.placeholder "Caption", HA.value $ DM.fromMaybe "" model.imageCaption , HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
                           , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
                           ]
                   ]
@@ -66,7 +66,7 @@ imageModal { selectedImage, erroredFields, user } =
                   , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
                   ]
       where
-      imageValidationFailed = DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) erroredFields
+      imageValidationFailed = DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) model.erroredFields
 
 audioModal ∷ ImModel → Html ImMessage
 audioModal model =
