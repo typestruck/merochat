@@ -345,7 +345,7 @@ data When = Always | Desktop
 data WebSocketPayloadServer
       = UpdateHash
       | UpdatePrivileges
-      | UpdateAvailability { online ∷ Boolean, serialize ∷ Boolean }
+      | UpdateAvailability { online ∷ Boolean }
       | TrackAvailabilityFor { ids ∷ Array Int }
       | Ping
       | Typing { id ∷ Int }
@@ -356,9 +356,7 @@ data WebSocketPayloadServer
               { status ∷ MessageStatus
               , ids ∷ Array (Tuple Int (Array Int))
               }
-      | UnavailableFor
-              { id ∷ Int
-              }
+      | UnavailableFor{ id ∷ Int}
       | Ban { id ∷ Int, secret ∷ String }
 
 type OutgoingRecord =

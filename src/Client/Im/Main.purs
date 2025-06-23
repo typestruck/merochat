@@ -247,7 +247,7 @@ refocus focusEvent lastActiveRef webSocket model =
                   FocusBlur → CCD.documentHasFocus
             lastActive ← ER.read lastActiveRef
             when (active /= lastActive) do
-                  CIW.sendPayload webSocket $ UpdateAvailability { online: active, serialize: false }
+                  CIW.sendPayload webSocket $ UpdateAvailability { online: active }
                   ER.write active lastActiveRef
             pure Nothing
 

@@ -137,7 +137,7 @@ handleOpen webSocketStateRef _ = do
 
       setOnline webSocket = do
             focused ← CCD.documentHasFocus
-            when focused <<< CIW.sendPayload webSocket $ UpdateAvailability { online: true, serialize: true }
+            when focused <<< CIW.sendPayload webSocket $ UpdateAvailability { online: true }
 
 -- | Handle an incoming (json encoded) message from the server
 handleMessage ∷ Event → Effect Unit

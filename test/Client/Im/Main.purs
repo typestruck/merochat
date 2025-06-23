@@ -1,10 +1,9 @@
 module Test.Client.Im.Main where
 
 import Prelude
-import Shared.Availability
-import Shared.Im.Types
+import Shared.Availability (Availability(..))
+import Shared.Im.Types (MessageContent(..), MessageStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 
-import Client.Im.Main as CIM
 import Client.Im.WebSocket.Events as CIWE
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -16,7 +15,7 @@ import Effect.Now as EN
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.ResponseError (DatabaseError(..))
 import Shared.Unsafe ((!@))
-import Test.Client.Model (anotherImUserId, contact, contactId, historyMessage, imUser, imUserId, model, webSocket)
+import Test.Client.Model (anotherImUserId, contact, contactId, historyMessage, imUser, model, webSocket)
 import Test.Unit (TestSuite)
 import Test.Unit as TU
 import Test.Unit.Assert as TUA

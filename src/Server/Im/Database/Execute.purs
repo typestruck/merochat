@@ -14,6 +14,7 @@ import Shared.Im.Types
 import Shared.User
 
 import Data.Array.NonEmpty as DAN
+import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
@@ -92,6 +93,9 @@ chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipien
 registerUser ∷ Int → String → String → ServerEffect Unit
 registerUser loggedUserId email password = SD.execute $ update users # set ((_email .=. Just email) /\ (_password .=. Just password) /\ (_temporary .=. Checked false)) # wher (_id .=. loggedUserId)
 
-upsertLastSeen ∷ ∀ r. String → BaseEffect { pool ∷ Pool | r } Unit
-upsertLastSeen jsonInput = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (who integer, date timestamptz)) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { jsonInput }
+upsertLastSeen ∷ ∀ r. Int → DateTime -> BaseEffect { pool ∷ Pool | r } Unit
+upsertLastSeen who date = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) values(@who, @date) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { who, date }
+
+bulkUpsertLastSeen ∷ ∀ r. String → BaseEffect { pool ∷ Pool | r } Unit
+bulkUpsertLastSeen jsonInput = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (who integer, date timestamptz)) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { jsonInput }
 

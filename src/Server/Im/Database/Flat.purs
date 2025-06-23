@@ -94,7 +94,7 @@ fromFlatUser fc =
       , avatar: fc.avatar
       , tags: DM.fromMaybe [] fc.tags
       , karma: fc.karma
-      , availability: if fc.lastSeen >= ST.unsafeAdjustFromNow (Minutes (-1.0)) then Online else LastSeen $ DateTimeWrapper fc.lastSeen
+      , availability: LastSeen $ DateTimeWrapper fc.lastSeen
       , karmaPosition: fc.karmaPosition
       , gender: show <$> fc.gender
       , country: fc.country
