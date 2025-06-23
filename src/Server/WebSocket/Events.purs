@@ -151,7 +151,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
 handleError ∷ Error → Effect Unit
 handleError = ECS.log <<< show
 
-handleClose ∷ String → Int → Pool -> Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
+handleClose ∷ String → Int → Pool → Ref (HashMap Int UserAvailability) → CloseCode → CloseReason → Effect Unit
 handleClose token loggedUserId pool allUsersAvailabilityRef _ _ = do
       allUsersAvailability ← ER.read allUsersAvailabilityRef
       now ← EN.nowDateTime
@@ -443,7 +443,7 @@ sendWebSocketMessage ∷ ∀ b. MonadEffect b ⇒ WebSocketConnection → FullWe
 sendWebSocketMessage connection = EC.liftEffect <<< SW.sendMessage connection <<< WebSocketMessage <<< SJ.toJson
 
 -- | Every `inactiveMinutes` check for dead connections
-terminateInactive ∷ Pool -> Ref (HashMap Int UserAvailability) → Effect Unit
+terminateInactive ∷ Pool → Ref (HashMap Int UserAvailability) → Effect Unit
 terminateInactive pool allUsersAvailabilityRef = do
       removeInactiveConnections allUsersAvailabilityRef
       trackAvailabilityFromTerminated pool allUsersAvailabilityRef
@@ -477,19 +477,19 @@ removeInactiveConnections allUsersAvailabilityRef = do
                         }
 
 --if all user connections were inactive then availibity is last seen and thus needs to be communicated
-trackAvailabilityFromTerminated ∷ Pool -> Ref (HashMap Int UserAvailability) → Effect Unit
+trackAvailabilityFromTerminated ∷ Pool → Ref (HashMap Int UserAvailability) → Effect Unit
 trackAvailabilityFromTerminated pool allUsersAvailabilityRef = do
       allUsersAvailability ← ER.read allUsersAvailabilityRef
       let terminatedConnections = DA.filter (DH.isEmpty <<< _.connections <<< DT.snd) $ DH.toArrayBy (/\) allUsersAvailability
       unless (DA.null terminatedConnections) do
             DF.traverse_ (sendAvailability allUsersAvailability) terminatedConnections
-            EA.launchAff_ <<< SE.poolEffect pool unit <<< SIDE.bulkUpsertLastSeen <<< SJS.writeJSON $ map whoDate terminatedConnections
+            EA.launchAff_ <<< SE.poolEffect pool unit <<< SIDE.bulkUpsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ map whoDate terminatedConnections
       where
       sendAvailability allUsersAvailability (userId /\ userAvailability) = DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability userId) userAvailability.trackedBy
 
       whoDate (userId /\ userAvailability) = case userAvailability.availability of
-            LastSeen (DateTimeWrapper dt) -> { who : userId, date : DT dt}
-            a -> EEU.unsafeThrow ("Invalid availability for trackAvailabilityFromTerminated: " <> show a)
+            LastSeen (DateTimeWrapper dt) → Just { who: userId, date: DT dt }
+            _ → Nothing
 
 sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Int → Effect Unit
 sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup userId allUsersAvailability of
