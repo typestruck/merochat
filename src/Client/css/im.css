@@ -2991,8 +2991,12 @@ label {
     }
 
     .rest-card,
-    .card-description {
+    .contact-full-profile .card-description {
         overflow-y: visible;
+    }
+
+    .contact-full-profile {
+        overflow-y: auto;
     }
 
     .card.card-load-more {
