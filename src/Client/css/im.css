@@ -2565,6 +2565,8 @@ label {
 
     .profile-top-menu {
         justify-content: space-between;
+        top:-20px;
+        background-color: var(--im-second-background-color);
     }
 
     .back-filter .svg-back-profile {
