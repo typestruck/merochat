@@ -160,7 +160,7 @@ deleteChat loggedUserId ids@{ userId } = do
 
 reportUser ∷ Int → Report → ServerEffect Unit
 reportUser loggedUserId report = do
-      id <- SID.insertReport loggedUserId report
+      id <- SIDE.insertReport loggedUserId report
       SE.sendEmail loggedUserId id Report
 
 finishTutorial ∷ Int → ServerEffect Unit
