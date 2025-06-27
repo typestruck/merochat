@@ -5,11 +5,7 @@ import Prelude
 import Server.Effect
 
 import Data.Maybe (Maybe(..))
-import Data.String as DS
 import Data.UUID as DU
-import Flame.Html.Attribute as HA
-import Flame.Html.Element as HE
-import Flame.Renderer.String as FRS
 import Run as R
 import Server.AccountValidation as SA
 import Server.Captcha as SC
@@ -21,8 +17,6 @@ import Server.Recover.Database as SRD
 import Server.Response as SR
 import Server.Token as ST
 import Shared.Account (ResetPassword, RecoverAccount)
-import Shared.Options.Domain (domain)
-import Shared.Routes (routes)
 
 accountNotFound ∷ String
 accountNotFound = "Could not find an account with this email"
@@ -40,7 +34,7 @@ recover rec = do
             Just user → do
                   token ← R.liftEffect (DU.toString <$> DU.genUUID)
                   id <- SRD.insertRecover user.id token
-                  SE.sendEmail user.id id Reset
+                  SE.sendEmail $ Reset { user_id : user.id, token, email }
 
 reset ∷ ResetPassword → ServerEffect Unit
 reset { token, password } = do

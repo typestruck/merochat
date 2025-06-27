@@ -1,10 +1,6 @@
-export async function sendEmail_(url, userId, recordId, emailOption) {
+export async function sendEmail_(url, payload) {
     await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({
-            userId,
-            recordId,
-            emailOption
-        })
+        body: JSON.stringify(payload)
     });
 }
