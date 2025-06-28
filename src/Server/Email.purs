@@ -14,9 +14,10 @@ import Foreign (Foreign)
 import Foreign as FO
 import Server.Effect (ServerEffect)
 
+--mailjet template vars must always be set
 data Email
-      = Feedback { feedbacker ∷ Int, comments ∷ String, file :: Maybe String }
-      | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷ Maybe String }
+      = Feedback { feedbacker ∷ Int, comments ∷ String, file ::  String }
+      | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷  String }
       | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
 
 foreign import sendEmail_ ∷ EffectFn2 String Foreign Unit

@@ -3,6 +3,7 @@ module Server.Feedback.Action where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.String as DS
 import Server.Effect (ServerEffect)
 import Server.Email (Email(..))
@@ -19,4 +20,4 @@ sendFeedback loggedUserId rawComments screenshot = do
             Just base64 → Just <$> SF.saveBase64File base64
             Nothing → pure Nothing
       void $ SFD.insertFeedback loggedUserId comments fileName
-      SE.sendEmail $ Feedback {  feedbacker: loggedUserId, comments, file: fileName }
+      SE.sendEmail $ Feedback {  feedbacker: loggedUserId, comments, file: DM.fromMaybe ""  fileName }
