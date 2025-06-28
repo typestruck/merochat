@@ -18,5 +18,5 @@ sendFeedback loggedUserId rawComments screenshot = do
       fileName ← case screenshot of
             Just base64 → Just <$> SF.saveBase64File base64
             Nothing → pure Nothing
-      id ← SFD.insertFeedback loggedUserId rawComments fileName
-      SE.sendEmail Feedback
+      void $ SFD.insertFeedback loggedUserId comments fileName
+      SE.sendEmail $ Feedback {  feedbacker: loggedUserId, comments, file: fileName }

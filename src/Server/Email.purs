@@ -14,7 +14,10 @@ import Foreign (Foreign)
 import Foreign as FO
 import Server.Effect (ServerEffect)
 
-data Email = Feedback | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷ Maybe String } | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
+data Email
+      = Feedback { feedbacker ∷ Int, comments ∷ String, file :: Maybe String }
+      | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷ Maybe String }
+      | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
 
 foreign import sendEmail_ ∷ EffectFn2 String Foreign Unit
 
@@ -25,6 +28,6 @@ sendEmail ∷ Email → ServerEffect Unit
 sendEmail email = EC.liftEffect $ EU.runEffectFn2 sendEmail_ (url <> route) payload
       where
       route /\ payload = case email of
-            Feedback → "/feedback" /\ FO.unsafeToForeign {}
+            Feedback f → "/feedback" /\ FO.unsafeToForeign f
             Report r → "/report" /\ FO.unsafeToForeign r
             Reset r → "/reset" /\ FO.unsafeToForeign r
