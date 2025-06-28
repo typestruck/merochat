@@ -24,6 +24,9 @@ function st(options, handler) {
                 lock.release().then(() => {
                     lock = undefined
                 });
+
+            for (let t of stream.getTracks())
+                t.stop();
         }
     };
 }
