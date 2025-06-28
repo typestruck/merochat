@@ -1,17 +1,34 @@
-module Server.Email (sendEmail) where
+module Server.Email
+      ( sendEmail
+      , Email(..)
+      ) where
 
 import Prelude
 
-import Effect.Uncurried (EffectFn4)
+import Data.Maybe (Maybe)
+import Data.Tuple.Nested ((/\))
+import Effect.Class as EC
+import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
-import Environment (production)
-import Run as R
-import Run.Reader as RR
+import Foreign (Foreign)
+import Foreign as FO
 import Server.Effect (ServerEffect)
 
-foreign import sendEmail_ ∷ EffectFn4 { host ∷ String, user ∷ String, password ∷ String } String String String Unit
+--mailjet template vars must always be set
+data Email
+      = Feedback { feedbacker ∷ Int, comments ∷ String, file ::  String }
+      | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷  String }
+      | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
 
-sendEmail ∷ String → String → String → ServerEffect Unit
-sendEmail to subject content = do
-      { configuration: { emailUser, emailHost, emailPassword } } ← RR.ask
-      when production <<< R.liftEffect $ EU.runEffectFn4 sendEmail_ { user: emailUser, host: emailHost, password: emailPassword } to subject content
+foreign import sendEmail_ ∷ EffectFn2 String Foreign Unit
+
+url ∷ String
+url = "http://localhost:4000/"
+
+sendEmail ∷ Email → ServerEffect Unit
+sendEmail email = EC.liftEffect $ EU.runEffectFn2 sendEmail_ (url <> route) payload
+      where
+      route /\ payload = case email of
+            Feedback f → "/feedback" /\ FO.unsafeToForeign f
+            Report r → "/report" /\ FO.unsafeToForeign r
+            Reset r → "/reset" /\ FO.unsafeToForeign r
