@@ -1,10 +1,11 @@
 module Server.Email
-      ( sendEmail,
-      Email(..)
+      ( sendEmail
+      , Email(..)
       ) where
 
 import Prelude
 
+import Data.Maybe (Maybe)
 import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
 import Effect.Uncurried (EffectFn2)
@@ -13,7 +14,7 @@ import Foreign (Foreign)
 import Foreign as FO
 import Server.Effect (ServerEffect)
 
-data Email = Feedback | Report | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
+data Email = Feedback | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷ Maybe String } | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
 
 foreign import sendEmail_ ∷ EffectFn2 String Foreign Unit
 
@@ -25,5 +26,5 @@ sendEmail email = EC.liftEffect $ EU.runEffectFn2 sendEmail_ (url <> route) payl
       where
       route /\ payload = case email of
             Feedback → "/feedback" /\ FO.unsafeToForeign {}
-            Report → "/report" /\ FO.unsafeToForeign {}
+            Report r → "/report" /\ FO.unsafeToForeign r
             Reset r → "/reset" /\ FO.unsafeToForeign r
