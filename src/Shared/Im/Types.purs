@@ -187,7 +187,8 @@ data ShowContextMenu
       | ShowMessageContextMenu Int
 
 data ShowUserMenuModal
-      = HideUserMenuModal
+      = ShowUserMenuModal
+      | HideUserMenuModal
       | ConfirmLogout
       | ConfirmTerminationTemporaryUser
       | ConfirmDeleteChat Int

@@ -2877,8 +2877,13 @@ label {
         padding: 0
     }
 
-    .modal-menu {
-        display: none;
+    .modal-menu .entry {
+        margin: 0;
+        padding: 10px;
+        padding-right:0 ;
+        text-align: left;
+        width: auto;
+
     }
 
     #temporary-user-sign-up-form,

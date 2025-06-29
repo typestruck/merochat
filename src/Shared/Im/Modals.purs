@@ -1,26 +1,20 @@
 module Shared.Im.View.Modals where
 
 import Prelude
-import Shared.Im.Types
+import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, ReportReason(..), RetryableRequest(..), ShowUserMenuModal(..), Step(..))
 
-import Data.Array ((!!), (:))
 import Data.Array as DA
-import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Time.Duration (Days(..))
-import Data.Tuple (Tuple)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
-import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
-import Shared.Im.Contact as SIC
 import Shared.Im.Svg as SIA
-import Shared.Im.Svg as SIV
 import Shared.Im.View.Profile as CISP
 import Shared.Im.View.Retry as SIVR
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
@@ -52,13 +46,13 @@ modals model =
             )
       where
       modal = case model.toggleModal of
-            ShowSuggestionCard _ → [CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model]
-            ShowReport id → [report id model.erroredFields]
-            ConfirmLogout → [confirmLogout]
-            ConfirmDeleteChat id → [confirmDeleteChat id]
-            ConfirmBlockUser id → [confirmBlockUser id]
-            Tutorial step → [tutorial model step]
-            ConfirmTerminationTemporaryUser → [confirmTermination]
+            ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
+            ShowReport id → [ report id model.erroredFields ]
+            ConfirmLogout → [ confirmLogout ]
+            ConfirmDeleteChat id → [ confirmDeleteChat id ]
+            ConfirmBlockUser id → [ confirmBlockUser id ]
+            Tutorial step → [ tutorial model step ]
+            ConfirmTerminationTemporaryUser → [ confirmTermination ]
             _ → []
 
       tutorialSteps = model.toggleModal == Tutorial ChatSuggestions && DM.isNothing model.chatting || model.toggleModal == Tutorial Chatting
@@ -178,47 +172,48 @@ tutorial { chatting } = case _ of
             ]
 
 modalMenu ∷ ImModel → Html ImMessage
-modalMenu model@{ toggleModal, failedRequests, user: { temporary, joined } } =
-      HE.div (HA.class' "modal-placeholder") $
+modalMenu model =
+      HE.div (HA.class' "modal-placeholder")
             [ HE.div (HA.class' "modal-menu-mobile")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal ]
-                    , HE.strong_ $ show toggleModal
+                    , HE.strong_ $ show model.toggleModal
                     ]
-            , HE.div (HA.class' "modal-menu")
-                    [ HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal, HA.class' { back: true, hidden: expired } ]
+            , HE.div (HA.class' { "modal-menu": true, hidden: model.smallScreen && model.toggleModal /= ShowUserMenuModal })
+                    [ HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideUserMenuModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
                             [ HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 30 30" ]
                                     [ HE.path' [ HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z" ]
                                     ]
                             , HE.text " Back to chats"
                             ]
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' { entry: true, selected: toggleModal == ShowProfile } ] $ show ShowProfile
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings, HA.class' { entry: true, selected: toggleModal == ShowSettings } ] $ show ShowSettings
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges, HA.class' { entry: true, selected: toggleModal == ShowKarmaPrivileges } ] $ show ShowKarmaPrivileges
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments, HA.class' { entry: true, selected: toggleModal == ShowExperiments } ] $ show ShowExperiments
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggleModal == ShowBacker } ] $ show ShowBacker
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggleModal == ShowHelp } ] $ show ShowHelp
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback, HA.class' { entry: true, selected: toggleModal == ShowFeedback } ] $ show ShowFeedback
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' { entry: true, selected: model.toggleModal == ShowProfile } ] $ show ShowProfile
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings, HA.class' { entry: true, selected: model.toggleModal == ShowSettings } ] $ show ShowSettings
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges, HA.class' { entry: true, selected: model.toggleModal == ShowKarmaPrivileges } ] $ show ShowKarmaPrivileges
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments, HA.class' { entry: true, selected: model.toggleModal == ShowExperiments } ] $ show ShowExperiments
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: model.toggleModal == ShowBacker } ] $ show ShowBacker
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: model.toggleModal == ShowHelp } ] $ show ShowHelp
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback, HA.class' { entry: true, selected: model.toggleModal == ShowFeedback } ] $ show ShowFeedback
                     , HE.div (HA.class' "entry theme-modal")
                             [ SSI.sun
                             , SSI.moon
                             ]
                     ]
-            , temporaryUserSignUp model
-            , HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowProfile } ] $ retry ShowProfile
-            , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowSettings } ] $ retry ShowSettings
-            , HE.div [ HA.id $ show KarmaPrivilegesRoot, HA.class' { hidden: temporary || toggleModal /= ShowKarmaPrivileges } ] $ retry ShowKarmaPrivileges
-            , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: temporary || toggleModal /= ShowExperiments } ] $ retry ShowExperiments
-            , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: temporary || toggleModal /= ShowBacker } ] $ retry ShowBacker
-            , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: toggleModal /= ShowHelp } ] $ retry ShowHelp
-            , HE.div [ HA.id $ show FeedbackRoot, HA.class' { hidden: temporary || toggleModal /= ShowFeedback } ] $ retry ShowFeedback
+            , if model.user.temporary then
+                    temporaryUserSignUp model
+              else HE.fragment
+                    [ HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: model.toggleModal /= ShowProfile } ] $ retry ShowProfile
+                    , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: model.toggleModal /= ShowSettings } ] $ retry ShowSettings
+                    , HE.div [ HA.id $ show KarmaPrivilegesRoot, HA.class' { hidden: model.toggleModal /= ShowKarmaPrivileges } ] $ retry ShowKarmaPrivileges
+                    , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: model.toggleModal /= ShowExperiments } ] $ retry ShowExperiments
+                    , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: model.toggleModal /= ShowBacker } ] $ retry ShowBacker
+                    , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: model.toggleModal /= ShowHelp } ] $ retry ShowHelp
+                    , HE.div [ HA.id $ show FeedbackRoot, HA.class' { hidden: model.toggleModal /= ShowFeedback } ] $ retry ShowFeedback
+                    ]
             ]
       where
       retry tm = HE.div (HA.class' "retry-modal")
-            [ SIVR.retry "Failed to load contents" (ToggleModal tm) failedRequests
+            [ SIVR.retry "Failed to load contents" (ToggleModal tm) model.failedRequests
             , HE.div' (HA.class' "loading")
             ]
-
-      expired = temporary && SUR.temporaryUserExpiration joined <= Days 0.0
 
 --only for temporary users, since logging out = deleting account
 confirmTermination ∷ Html ImMessage
