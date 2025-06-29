@@ -1,7 +1,6 @@
 module Shared.Im.View.Modals where
 
 import Prelude
-import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, ReportReason(..), RetryableRequest(..), ShowUserMenuModal(..), Step(..))
 
 import Data.Array as DA
 import Data.Int as DI
@@ -15,8 +14,10 @@ import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
+import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, ReportReason(..), RetryableRequest(..), ShowUserMenuModal(..), Step(..))
 import Shared.Im.View.Profile as CISP
 import Shared.Im.View.Retry as SIVR
+import Shared.Im.View.UserMenu as SIU
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
@@ -24,6 +25,7 @@ import Shared.Setter as SS
 import Shared.Svg as SSI
 import Shared.Unsafe as SU
 import Shared.User as SUR
+import Test.Client.Model (model)
 import Type.Proxy (Proxy(..))
 
 lazyLoad ∷ Bundle → Html ImMessage

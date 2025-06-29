@@ -2236,12 +2236,6 @@ select {
     margin-right: 5px;
 }
 
-.suggestions-button,
-.tabs,
-.mobile-profile-header {
-    display: none;
-}
-
 .avatar-settings {
     background-color: var(--im-merochat-green);
     cursor: pointer;
@@ -2687,9 +2681,7 @@ label {
     .side-suggestions-container,
     .logo-contact-list,
     .fortune,
-    .avatar-settings,
     .see-profile-button.see-profile,
-    .settings-name,
     .tutorial,
     .message-context-options {
         display: none;
@@ -2712,22 +2704,17 @@ label {
         display: block;
     }
 
-    .tabs {
+    .suggestion-mobile-button {
         display: flex;
-        justify-content: space-around;
-        padding: 5px;
-        padding-top: 10px;
-        background-color: var(--im-second-background-color);
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
+        height: 52px;
+        background: var(--im-second-background-color);
     }
 
-    .tab-item {
-        color: var(--light-color);
-    }
-
-    .tab-item svg {
-        fill: var(--light-color);
-        stroke: var(--light-color)
+    .suggestion-mobile-button i {
+        margin-right: 10px;
     }
 
     .avatar-settings {
@@ -2765,13 +2752,6 @@ label {
     .donate-options .patreon-button {
         width: fit-content;
         align-self: center;
-    }
-
-    .suggestions-button {
-        display: block;
-        cursor: pointer;
-        margin-left: auto;
-        order: 3;
     }
 
     .avatar-profile {
@@ -2965,11 +2945,6 @@ label {
     .tag {
         word-break: break-word;
         width: auto;
-    }
-
-    .settings .outer-user-menu {
-
-        margin-left: unset;
     }
 
     .cards {

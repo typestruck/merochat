@@ -14,7 +14,6 @@ import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Maybe.Last (Last)
 import Data.Time.Duration (Days(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -24,7 +23,7 @@ import Shared.Avatar as SA
 import Shared.Backer.Contact (backerId)
 import Shared.Badge (Badge)
 import Shared.Badge as SB
-import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, home, nextArrow)
