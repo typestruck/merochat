@@ -1,30 +1,29 @@
 module Server.Im.Database.Execute where
 
-import Droplet.Language
-import Prelude hiding (not)
-import Server.Database.Blocks
-import Server.Database.Fields
-import Server.Database.Histories
-import Server.Database.KarmaHistories
-import Server.Database.Messages
-import Server.Database.Reports
-import Server.Database.Types
-import Server.Database.Users
-import Shared.Im.Types
-import Shared.User
-
 import Data.Array.NonEmpty as DAN
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
+import Droplet.Language (as, delete, exists, from, in_, insert, into, isNotNull, leftJoin, not, on, returning, select, set, update, values, wher, (.&&.), (...), (.=.), (.>=.), (.||.))
+import Prelude (Unit, bind, discard, map, otherwise, pure, unit, void, when, (#), ($), (&&), (<$>), (<<<), (<=), (>))
 import Server.Database as SD
+import Server.Database.Blocks (_blocked, _blocker, blocks)
+import Server.Database.Fields (_id, _recipient, _sender, c, h, u)
 import Server.Database.Functions (insert_history)
+import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
+import Server.Database.KarmaHistories (_amount, _target, karma_histories)
+import Server.Database.Messages (_content, _edited, _status, messages)
+import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
+import Server.Database.Types (Checked(..))
+import Server.Database.Users (_completedTutorial, _email, _password, _pwa, _temporary, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Present (senderRecipientFilter)
+import Shared.Im.Types (MessageStatus, Report)
 import Shared.Unsafe as SU
+import Shared.User (ProfileVisibility(..))
 
 subscribe ∷ Int → ServerEffect Unit
 subscribe loggedUserId = SD.execute $ update users # set (_pwa .=. Checked true) # wher (_id .=. loggedUserId)
@@ -71,7 +70,7 @@ changeStatus loggedUserId status = case _ of
 insertBlock ∷ Int → Int → ServerEffect Unit
 insertBlock loggedUserId blocked = SD.execute $ blockQuery loggedUserId blocked
 
-markAsDeleted ∷ Boolean → Int → { userId ∷ Int, messageId ∷ Int } → _
+markAsDeleted ∷ Boolean → Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit
 markAsDeleted isSender loggedUserId { userId, messageId }
       | isSender = SD.execute $ update histories # set (_sender_deleted_to .=. Just messageId) # senderRecipientFilter loggedUserId userId
       | otherwise = SD.execute $ update histories # set (_recipient_deleted_to .=. Just messageId) # senderRecipientFilter loggedUserId userId
@@ -88,7 +87,7 @@ insertReport loggedUserId report = SD.withTransaction $ \connection → do
 updateTutorialCompleted ∷ Int → ServerEffect Unit
 updateTutorialCompleted loggedUserId = SD.execute $ update users # set (_completedTutorial .=. Checked true) # wher (_id .=. loggedUserId)
 
-chatHistoryEntry ∷ Int → Int → _
+chatHistoryEntry ∷ Int → Int → ServerEffect _
 chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipient) # from histories # senderRecipientFilter loggedUserId otherId
 
 registerUser ∷ Int → String → String → ServerEffect Unit

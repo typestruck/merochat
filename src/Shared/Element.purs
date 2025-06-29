@@ -6,8 +6,7 @@ import Data.Hashable (class Hashable)
 import Data.Hashable as HS
 
 data ElementId
-      = UserContextMenu
-      | SuggestionContextMenu
+      = SuggestionContextMenu
       | CompactProfileContextMenu
       | FullProfileContextMenu
       | ImageFileInput
@@ -54,7 +53,6 @@ instance Hashable ElementId where
 
 instance Show ElementId where
       show = case _ of
-            UserContextMenu → "user-context-menu"
             SuggestionContextMenu → "suggestion-context-menu"
             CompactProfileContextMenu → "compact-profile-context-menu"
             FullProfileContextMenu → "full-profile-context-menu"

@@ -14,6 +14,10 @@ strong {
     font-weight: bold;
 }
 
+.theme-modal {
+    margin-top: auto;
+}
+
 svg {
     stroke: rgb(238, 238, 238);
     fill: rgb(238, 238, 238);

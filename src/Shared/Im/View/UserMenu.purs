@@ -8,10 +8,8 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Shared.Avatar as SA
-import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIS
 import Shared.Intl as SI
-import Shared.Svg as SS
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model =
@@ -19,50 +17,10 @@ userMenu model =
             [ header model
             , HE.div [ HA.class' "outer-user-menu" ]
                     [ SIS.home
-                    , HE.svg [ HA.id $ show UserContextMenu, HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 24 24" ]
-                            [ HE.path' [ HA.d "M19.6515 19.4054C20.2043 19.2902 20.5336 18.7117 20.2589 18.2183C19.6533 17.1307 18.6993 16.1749 17.4788 15.4465C15.907 14.5085 13.9812 14 12 14C10.0188 14 8.09292 14.5085 6.52112 15.4465C5.30069 16.1749 4.34666 17.1307 3.74108 18.2183C3.46638 18.7117 3.79562 19.2902 4.34843 19.4054C9.39524 20.4572 14.6047 20.4572 19.6515 19.4054Z" ]
-                            , HE.circle' [ HA.cx "12", HA.cy "8", HA.r "5" ]
-                            ]
-                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowUserContextMenu } ]
-                            [ HE.div (HA.class' "user-menu-item")
-                                    [ SS.sun
-                                    , SS.moon
-                                    ]
-                            , HE.div (HA.class' "mobile-profile-header") $ header model
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile ]
-                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowProfile
-                                    , HE.span_ "Set your profile picture, name"
-                                    ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings ]
-                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowSettings
-                                    , HE.span_ "Change email, password, etc"
-                                    ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowKarmaPrivileges ]
-                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowKarmaPrivileges
-                                    , HE.span_ "See your privileges, karma stats"
-                                    ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowExperiments ]
-                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowExperiments
-                                    , HE.span_ "Talk in novel ways"
-                                    ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker ]
-                                    [ HE.div (HA.class' "menu-item-heading") $ show ShowBacker
-                                    , HE.span_ "Donate or become a patron"
-                                    ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Help"
-                                    , HE.span_ "Learn more about MeroChat"
-                                    ]
-                            , HE.div [ HA.class' "user-menu-item", HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback ]
-                                    [ HE.div (HA.class' "menu-item-heading") "Send feedback"
-                                    , HE.span_ "Report issues, or leave a question"
-                                    ]
-                            , if model.user.temporary then
-                                    HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmTerminationTemporaryUser ] "Delete my data"
-                              else
-                                    HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest $ ToggleModal ConfirmLogout ] "Logout"
+                    , HE.svg [ HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile, HA.class' "svg-32 svg-user-menu-context", HA.viewBox "0 0 50 50" ]
+                            [ HE.path' [ HA.d "M47.16,21.221l-5.91-0.966c-0.346-1.186-0.819-2.326-1.411-3.405l3.45-4.917c0.279-0.397,0.231-0.938-0.112-1.282 l-3.889-3.887c-0.347-0.346-0.893-0.391-1.291-0.104l-4.843,3.481c-1.089-0.602-2.239-1.08-3.432-1.427l-1.031-5.886 C28.607,2.35,28.192,2,27.706,2h-5.5c-0.49,0-0.908,0.355-0.987,0.839l-0.956,5.854c-1.2,0.345-2.352,0.818-3.437,1.412l-4.83-3.45 c-0.399-0.285-0.942-0.239-1.289,0.106L6.82,10.648c-0.343,0.343-0.391,0.883-0.112,1.28l3.399,4.863 c-0.605,1.095-1.087,2.254-1.438,3.46l-5.831,0.971c-0.482,0.08-0.836,0.498-0.836,0.986v5.5c0,0.485,0.348,0.9,0.825,0.985 l5.831,1.034c0.349,1.203,0.831,2.362,1.438,3.46l-3.441,4.813c-0.284,0.397-0.239,0.942,0.106,1.289l3.888,3.891 c0.343,0.343,0.884,0.391,1.281,0.112l4.87-3.411c1.093,0.601,2.248,1.078,3.445,1.424l0.976,5.861C21.3,47.647,21.717,48,22.206,48 h5.5c0.485,0,0.9-0.348,0.984-0.825l1.045-5.89c1.199-0.353,2.348-0.833,3.43-1.435l4.905,3.441 c0.398,0.281,0.938,0.232,1.282-0.111l3.888-3.891c0.346-0.347,0.391-0.894,0.104-1.292l-3.498-4.857 c0.593-1.08,1.064-2.222,1.407-3.408l5.918-1.039c0.479-0.084,0.827-0.5,0.827-0.985v-5.5C47.999,21.718,47.644,21.3,47.16,21.221z M25,32c-3.866,0-7-3.134-7-7c0-3.866,3.134-7,7-7s7,3.134,7,7C32,28.866,28.866,32,25,32z" ] ]
+                    --             , HE.div (HA.class' "mobile-profile-header") $ header model
 
-                            ]
                     ]
             , HE.span [ HA.class' "suggestions-button", HA.onClick $ ToggleInitialScreen false ] $
                     HE.svg [ HA.class' "svg-suggestion-button", HA.viewBox "0 0 16 16" ]

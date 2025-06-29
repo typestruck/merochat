@@ -347,10 +347,10 @@ report userId webSocket model = case model.reportReason of
                           { reportReason = Nothing
                           , reportComment = Nothing
                           }
-                  ) /\ [ report rs, track ]
+                  ) /\ [ reportIt rs, track ]
       Nothing → F.noMessages model
       where
-      report rs = do
+      reportIt rs = do
             result ← CCN.defaultResponse $ request.im.report { body: { userId, reason: rs, comment: model.reportComment } }
             case result of
                   Left _ → pure <<< Just $ RequestFailed { request: ReportUser userId, errorMessage: Nothing }
@@ -393,7 +393,6 @@ toggleUserContextMenu event model
                     ]
               where
               toggle elementId parentId
-                    | elementId == show UserContextMenu || parentId == show UserContextMenu = ShowUserContextMenu
                     | elementId == show SuggestionContextMenu || parentId == show SuggestionContextMenu = ShowSuggestionContextMenu
                     | elementId == show CompactProfileContextMenu || parentId == show CompactProfileContextMenu = ShowCompactProfileContextMenu
                     | elementId == show FullProfileContextMenu || parentId == show FullProfileContextMenu = ShowFullProfileContextMenu

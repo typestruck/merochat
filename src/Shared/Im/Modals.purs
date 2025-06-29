@@ -21,12 +21,13 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIV
-import Shared.Im.View.Retry as SIVR
 import Shared.Im.View.Profile as CISP
+import Shared.Im.View.Retry as SIVR
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Setter as SS
+import Shared.Svg as SSI
 import Shared.Unsafe as SU
 import Shared.User as SUR
 import Type.Proxy (Proxy(..))
@@ -194,6 +195,10 @@ modalMenu model@{ toggleModal, failedRequests, user: { temporary, joined } } =
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker, HA.class' { entry: true, selected: toggleModal == ShowBacker } ] $ show ShowBacker
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowHelp, HA.class' { entry: true, selected: toggleModal == ShowHelp } ] $ show ShowHelp
                     , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal ShowFeedback, HA.class' { entry: true, selected: toggleModal == ShowFeedback } ] $ show ShowFeedback
+                    , HE.div (HA.class' "entry theme-modal")
+                            [ SSI.sun
+                            , SSI.moon
+                            ]
                     ]
             , temporaryUserSignUp model
             , HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: temporary || toggleModal /= ShowProfile } ] $ retry ShowProfile
