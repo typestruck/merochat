@@ -3,7 +3,7 @@ module Shared.Im.View.Modals where
 import Prelude
 import Shared.Im.Types
 
-import Data.Array ((!!))
+import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Int as DI
@@ -38,26 +38,29 @@ lazyLoad resource = HE.link [ HA.rel "preload", HA.type' "text/css", HA.createAt
 modals ∷ ImModel → Html ImMessage
 modals model =
       HE.div (HA.class' { "modal-placeholder-overlay": true, "hidden": model.toggleModal == HideUserMenuModal, "contacts-only": tutorialSteps })
-            [ lazyLoad Help
-            , lazyLoad Profile
-            , lazyLoad Settings
-            , lazyLoad Profile
-            , lazyLoad Backer
-            , lazyLoad Experiments
-            , lazyLoad KarmaPrivileges
-            , lazyLoad Feedback
-            , case model.toggleModal of
-                    ShowSuggestionCard _ → CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model
-                    ShowReport id → report id model.erroredFields
-                    ConfirmLogout → confirmLogout
-                    ConfirmDeleteChat id → confirmDeleteChat id
-                    ConfirmBlockUser id → confirmBlockUser id
-                    Tutorial step → tutorial model step
-                    ConfirmTerminationTemporaryUser → confirmTermination
-                    tm | tm == ShowExperiments || tm == ShowProfile || tm == ShowSettings || tm == ShowKarmaPrivileges || tm == ShowHelp || tm == ShowBacker || tm == ShowFeedback → modalMenu model
-                    _ → HE.createEmptyElement "div"
-            ]
+            ( modal <>
+                    [ lazyLoad Help
+                    , lazyLoad Profile
+                    , lazyLoad Settings
+                    , lazyLoad Profile
+                    , lazyLoad Backer
+                    , lazyLoad Experiments
+                    , lazyLoad KarmaPrivileges
+                    , lazyLoad Feedback
+                    , modalMenu model
+                    ]
+            )
       where
+      modal = case model.toggleModal of
+            ShowSuggestionCard _ → [CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model]
+            ShowReport id → [report id model.erroredFields]
+            ConfirmLogout → [confirmLogout]
+            ConfirmDeleteChat id → [confirmDeleteChat id]
+            ConfirmBlockUser id → [confirmBlockUser id]
+            Tutorial step → [tutorial model step]
+            ConfirmTerminationTemporaryUser → [confirmTermination]
+            _ → []
+
       tutorialSteps = model.toggleModal == Tutorial ChatSuggestions && DM.isNothing model.chatting || model.toggleModal == Tutorial Chatting
 
 report ∷ Int → Array String → Html ImMessage
