@@ -17,7 +17,6 @@ import Shared.Im.Svg as SIA
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, ReportReason(..), RetryableRequest(..), ShowUserMenuModal(..), Step(..))
 import Shared.Im.View.Profile as CISP
 import Shared.Im.View.Retry as SIVR
-import Shared.Im.View.UserMenu as SIU
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
@@ -25,7 +24,6 @@ import Shared.Setter as SS
 import Shared.Svg as SSI
 import Shared.Unsafe as SU
 import Shared.User as SUR
-import Test.Client.Model (model)
 import Type.Proxy (Proxy(..))
 
 lazyLoad ∷ Bundle → Html ImMessage
