@@ -14,7 +14,7 @@ logoMenu ∷ ImModel → Html ImMessage
 logoMenu model
       | model.smallScreen = HE.div (HA.class' "relative")
               [ HE.div [ HA.class' "suggestion-mobile-button", HA.onClick $ ToggleInitialScreen false ]
-                      [ HE.i "See your chat suggestions"
+                      [ HE.i_ "Start new chat"
                       , nextArrow
                       ]
               ]

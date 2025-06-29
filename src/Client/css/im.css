@@ -2705,16 +2705,20 @@ label {
     }
 
     .suggestion-mobile-button {
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        height: 52px;
+        height: 62px;
         background: var(--im-second-background-color);
     }
 
     .suggestion-mobile-button i {
         margin-right: 10px;
+    }
+
+    .contact-box.current-mobile-screen .suggestion-mobile-button {
+        display: flex;
     }
 
     .avatar-settings {
