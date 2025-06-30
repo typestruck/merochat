@@ -128,7 +128,7 @@ type Im =
       , fortune ∷ Maybe String
       , failedRequests ∷ Array RequestFailure
       , errorMessage ∷ String
-      , modalsLoaded ∷ Array ShowUserMenuModal
+      , modalsLoaded ∷ Array ScreenModal
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
       , lastTyping ∷ DateTimeWrapper
@@ -151,8 +151,7 @@ type Im =
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
       , toggleContextMenu ∷ ShowContextMenu
-      , toggleModal ∷ ShowUserMenuModal --refactor: toggleModal and toggleChatModal should be merged
-      , toggleChatModal ∷ ShowChatModal
+      , modal ∷ Modal
       )
 
 type ImModel = Record Im
@@ -171,12 +170,6 @@ type SelectedImage = Maybe
       , base64 ∷ String
       }
 
-data ShowChatModal
-      = HideChatModal
-      | ShowSelectedImage
-      | ShowAudioPrompt
-      | ShowEmojis
-
 data ShowContextMenu
       = HideContextMenu
       | ShowUserContextMenu
@@ -186,23 +179,33 @@ data ShowContextMenu
       | ShowFullProfileContextMenu
       | ShowMessageContextMenu Int
 
-data ShowUserMenuModal
-      = ShowUserMenuModal
-      | HideUserMenuModal
-      | ConfirmLogout
-      | ConfirmTerminationTemporaryUser
-      | ConfirmDeleteChat Int
-      | ConfirmBlockUser Int
+data Modal = HideModal | Screen ScreenModal | Confirmation ConfirmationModal | Chat ChatModal | Special SpecialModal
+
+data ScreenModal
+      = ShowMenu
       | ShowExperiments
       | ShowProfile
       | ShowSettings
       | ShowKarmaPrivileges
-      | ShowSuggestionCard Int
       | ShowHelp
       | ShowBacker
       | ShowFeedback
-      | ShowReport Int
+
+data ConfirmationModal =
+       ConfirmLogout
+      | ConfirmTerminationTemporaryUser
+      | ConfirmDeleteChat Int
+      | ConfirmBlockUser Int
+      | ConfirmReport Int
+
+data SpecialModal =
+       ShowSuggestionCard Int
       | Tutorial Step
+
+data ChatModal
+      = ShowSelectedImage
+      | ShowAudioPrompt
+      | ShowEmojis
 
 data Step
       = Welcome
@@ -239,7 +242,7 @@ data RetryableRequest
       = FetchHistory Int Boolean
       | FetchContacts Boolean
       | FetchMissedContacts
-      | ToggleModal ShowUserMenuModal
+      | ToggleModal Modal
       | BlockUser Int
       | PreviousSuggestion
       | NextSuggestion
@@ -339,7 +342,6 @@ data ImMessage
       | SetPrivacySettings PrivacySettings
       | CreateUserFromTemporary
       | SetRegistered
-      | ToggleChatModal ShowChatModal
 
 data When = Always | Desktop
 
@@ -418,6 +420,8 @@ instance DecodeQueryParam SuggestionsFrom where
 derive instance Eq SuggestionsFrom
 derive instance Eq FocusEvent
 derive instance Eq When
+derive instance Eq ConfirmationModal
+derive instance Eq SpecialModal
 derive instance Eq WebSocketConnectionStatus
 
 derive instance Ord ReportReason
@@ -548,13 +552,22 @@ instance DecodeJson TimeoutIdWrapper where
 instance DecodeJson SuggestionsFrom where
       decodeJson = DADGR.genericDecodeJson
 
+instance DecodeJson ConfirmationModal where
+      decodeJson = DADGR.genericDecodeJson
+
+instance DecodeJson SpecialModal where
+      decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson MessageContent where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson ShowUserMenuModal where
+instance DecodeJson Modal where
+      decodeJson = DADGR.genericDecodeJson
+
+instance DecodeJson ScreenModal where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Step where
@@ -572,7 +585,7 @@ instance DecodeJson ShowContextMenu where
 instance DecodeJson RetryableRequest where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson ShowChatModal where
+instance DecodeJson ChatModal where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson ReportReason where
@@ -585,6 +598,12 @@ instance DecodeJson WebSocketConnectionStatus where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson WebSocketConnectionStatus where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson ConfirmationModal where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson SpecialModal where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson TimeoutIdWrapper where
@@ -605,7 +624,10 @@ instance EncodeJson MessageContent where
 instance EncodeJson Step where
       encodeJson = DAEGR.genericEncodeJson
 
-instance EncodeJson ShowUserMenuModal where
+instance EncodeJson Modal where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson ScreenModal where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson WebSocketPayloadClient where
@@ -617,7 +639,7 @@ instance EncodeJson ShowContextMenu where
 instance EncodeJson RetryableRequest where
       encodeJson = DAEGR.genericEncodeJson
 
-instance EncodeJson ShowChatModal where
+instance EncodeJson ChatModal where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson ReportReason where
@@ -643,7 +665,7 @@ instance Show ReportReason where
             Spam → "Spam/Product placement"
             OtherReason → "Other"
 
-instance Show ShowUserMenuModal where
+instance Show ScreenModal where
       show = case _ of
             ShowProfile → "Profile"
             ShowSettings → "Settings"
@@ -670,15 +692,18 @@ derive instance Eq ShowContextMenu
 derive instance Eq AfterLogout
 derive instance Eq MessageError
 derive instance Eq RetryableRequest
-derive instance Eq ShowChatModal
+derive instance Eq ChatModal
+derive instance Eq Modal
 derive instance Eq Step
-derive instance Eq ShowUserMenuModal
+derive instance Eq ScreenModal
 derive instance Eq ReportReason
 derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
 derive instance Generic WebSocketConnectionStatus _
 derive instance Generic Step _
+derive instance Generic ConfirmationModal _
+derive instance Generic SpecialModal _
 derive instance Generic SuggestionsFrom _
 derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
@@ -687,10 +712,11 @@ derive instance Generic MessageError _
 derive instance Generic WebSocketPayloadClient _
 derive instance Generic FullWebSocketPayloadClient _
 derive instance Generic WebSocketPayloadServer _
-derive instance Generic ShowUserMenuModal _
+derive instance Generic Modal _
+derive instance Generic ScreenModal _
 derive instance Generic ShowContextMenu _
 derive instance Generic RetryableRequest _
-derive instance Generic ShowChatModal _
+derive instance Generic ChatModal _
 
 instance ToValue MessageStatus where
       toValue v = F.unsafeToForeign $ DE.fromEnum v

@@ -59,8 +59,7 @@ model =
       , selectedImage: Nothing
       , messageEnter: true
       , blockedUsers: []
-      , toggleModal: HideUserMenuModal
-      , toggleChatModal: HideChatModal
+      , modal: HideModal
       , enableNotificationsVisible: false
       , user: imUser
       , suggestions: [ suggestion ]

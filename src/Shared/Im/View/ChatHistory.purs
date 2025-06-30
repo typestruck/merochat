@@ -73,10 +73,7 @@ chatHistory model =
                   ]
       where
       retryOrWarning id = SIVR.retry "Failed to load chat history" (FetchHistory id true) model.failedRequests
-      temporaryChatWarning = if model.user.temporary && isNotTutorial then [ SIVP.signUpCall model.user.joined ] else []
-      isNotTutorial = case model.toggleModal of
-            Tutorial _ → false
-            _ → true
+      temporaryChatWarning = if model.user.temporary then [ SIVP.signUpCall model.user.joined ] else []
 
       displayChatHistory contact = chatHistoryEntry contact <$> contact.history
       isBottomMessage history id = (SU.fromJust $ DA.findIndex ((_ == id) <<< _.id) history) >= DA.length history - 2

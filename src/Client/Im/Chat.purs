@@ -142,7 +142,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
             { temporaryId = newTemporaryId
             , contacts = map updateContact model.contacts
             , imageCaption = Nothing
-            , toggleModal = HideUserMenuModal
+            , modal = HideModal
             , selectedImage = Nothing
             , showMiniChatInput = false
             , editing = Nothing
@@ -337,7 +337,7 @@ catchFile event model = model /\ [ catchIt ]
 setSelectedImage ∷ SelectedImage → ImModel → NextMessage
 setSelectedImage selected model =
       model
-            { toggleChatModal = ShowSelectedImage
+            { modal = Chat ShowSelectedImage
             , selectedImage = selected
             , erroredFields =
                     if isTooLarge $ DM.maybe "" _.base64 selected then
@@ -356,7 +356,7 @@ setEmoji elementId event model = model /\ [ setIt, hideModal ]
             emoji ← CCD.innerTextFromTarget event
             input ← CCD.unsafeGetElementById elementId
             setAtCursor input emoji
-      hideModal = pure <<< Just $ ToggleChatModal HideChatModal
+      hideModal = pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
 
 -- | Send "is typing" notification
 sendTyping ∷ String → DateTime → WebSocket → ImModel → MoreMessages
@@ -392,10 +392,10 @@ toggleMiniChatInput model = F.noMessages model
       }
 
 -- | Show or hide chat modals
-toggleModal ∷ ShowChatModal → ImModel → MoreMessages
-toggleModal toggle model =
+modal ∷ ChatModal → ImModel → MoreMessages
+modal toggle model =
       model
-            { toggleChatModal = if model.toggleChatModal == toggle then HideChatModal else toggle
+            { modal = Chat toggle
             , selectedImage = Nothing
             } /\ case toggle of
             ShowSelectedImage → [ pickImage ]
@@ -418,7 +418,7 @@ beforeAudioMessage model = model /\ [ record ]
 -- | Finish recording an audio message
 audioMessage ∷ Touch → ImModel → MoreMessages
 audioMessage touch model =
-      model { toggleChatModal = HideChatModal } /\
+      model { modal = HideModal } /\
             [ finish
             ]
 

@@ -20,7 +20,7 @@ import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..), ShowChatModal(..), SuggestionsFrom(..), Suggestion)
+import Shared.Im.Types (ChatModal(..), ImMessage(..), ImModel, Modal(..), RetryableRequest(..), Suggestion, SuggestionsFrom(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
@@ -140,7 +140,7 @@ resumeSuggesting ∷ ImModel → NoMessages
 resumeSuggesting model =
       model
             { chatting = Nothing
-            , toggleChatModal = HideChatModal
+            , modal = HideModal
             , showSuggestionChatInput = Nothing
             , suggestions = byAvailability model.suggestions
             , editing = Nothing

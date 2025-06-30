@@ -83,7 +83,7 @@ unavailable name =
 -- | Compact profile view shown by default
 compactProfile ∷ Contact → ImModel → Html ImMessage
 compactProfile contact model =
-      HE.div (HA.class' { "profile-contact": true, highlighted: model.toggleModal == Tutorial Chatting })
+      HE.div (HA.class' "profile-contact")
             [ HE.div (HA.class' "profile-contact-top")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
                     , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' "avatar-profile", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
@@ -206,7 +206,7 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card") $
                                     )
                             , HE.div [ HA.class' "outer-user-menu" ] $ SIA.contextMenu $ show FullProfileContextMenu
                             , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion.id false
-                            , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideUserMenuModal ]
+                            , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ]
                                     [ SIA.closeX []
                                     ]
                             ]
@@ -285,13 +285,13 @@ suggestionCards model =
                                               ]
                                       ]
                           _ → HE.div (HA.class' "see-profile-chat")
-                                [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
-                                , HE.input ([ HA.class' "see-profile-button see-chat", HA.type' "button" ] <> (if suggestion.id == backerId then [ HA.value "Donate", HA.onClick <<< SpecialRequest $ ToggleModal ShowBacker ] else [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]))
+                                [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
+                                , HE.input ([ HA.class' "see-profile-button see-chat", HA.type' "button" ] <> (if suggestion.id == backerId then [ HA.value "Donate", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] else [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]))
                                 ]
                   ]
       showProfile id
             | model.smallScreen = []
-            | otherwise = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard id ]
+            | otherwise = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard id ]
 
 arrow ∷ Html ImMessage → Boolean → ImMessage → Html ImMessage
 arrow svg freeTo message = HE.div (HA.class' "suggestion-arrow" : if freeTo then [ HA.onClick message ] else []) svg
@@ -321,7 +321,7 @@ temporary =
               [ HE.p_ "Quick-sign up means users that just got started on MeroChat and have yet to finish creating their account"
               , HE.p_
                       [ HE.text "You can opt to not be seen (or messaged by) quick-sign up users on the "
-                      , HE.a (HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings) " settings"
+                      , HE.a (HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings) " settings"
                       , HE.text " page"
                       ]
               ]
@@ -342,9 +342,9 @@ badges source = map (it <<< SB.badgeFor) source
 
 profileContextMenu ∷ Int → Boolean → Array (Html ImMessage)
 profileContextMenu id delete =
-      [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmDeleteChat id ] "Delete chat"
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ConfirmBlockUser id ] "Block"
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowReport id ] "Report"
+      [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmDeleteChat id ] "Delete chat"
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmBlockUser id ] "Block"
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmReport id ] "Report"
       ]
 
 welcomeTemporary ∷ User → Html ImMessage
@@ -362,7 +362,7 @@ welcomeTemporary { name, joined } = HE.div (HA.class' "card-top-welcome-filter")
 signUpCall ∷ DateTimeWrapper → Html ImMessage
 signUpCall joined = HE.div (HA.class' "sign-up-call")
       [ HE.text "Enjoying MeroChat?"
-      , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest $ ToggleModal ShowProfile ] $ " Create an account  " <> remaining
+      , HE.a [ HA.class' "warning-temporary bold", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ] $ " Create an account  " <> remaining
       , HE.text " to keep your chats"
       ]
       where
@@ -377,7 +377,7 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
               [ HE.div (HA.class' "welcome") $ "Welcome, " <> model.user.name <> "!"
               , HE.div (HA.class' "welcome-new") $
                       if not SP.hasPrivilege StartChats model.user then
-                            [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
+                            [ HE.span (HA.class' "no-self-start") $ CCP.notEnoughKarma "start chats" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
                             ]
                       else
                             case model.user.profileVisibility of
@@ -397,7 +397,7 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
       where
       warn level =
             [ HE.text $ "Your profile is set to " <> level <> ". Change your "
-            , HE.a (HA.onClick <<< SpecialRequest $ ToggleModal ShowSettings) " settings "
+            , HE.a (HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings) " settings "
             , HE.text "to see new chat suggestions"
             ]
 
@@ -421,7 +421,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                   , HE.div (HA.class' "mini-suggestion-cards")
                           [ HE.div (HA.class' "mini-avatar-info-arrows")
                                   [ arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
-                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div (HA.class' "mini-suggestion-info")
                                                   ( [ HE.div_
@@ -448,7 +448,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                                                   ]
                                           ]
                                   ]
-                          , HE.div [ HA.class' "mini-headline-tags", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
+                          , HE.div [ HA.class' "mini-headline-tags", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
                                   ( [ HE.div (HA.class' "mini-headline") suggestion.headline
                                     , HE.hr' (HA.class' "tag-ruler")
                                     ] <> map (HE.span (HA.class' "tag")) suggestion.tags
@@ -465,7 +465,7 @@ miniSuggestions model = HE.div (HA.class' "mini-suggestions")
                   , HE.div (HA.class' "mini-suggestion-cards collapsed")
                           [ HE.div (HA.class' "mini-avatar-info-arrows")
                                   [ arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
-                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal $ ShowSuggestionCard suggestion.id ]
+                                  , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div (HA.class' "mini-suggestion-info")
                                                   ( [ HE.strong (HA.class' "collapsed-name") suggestion.name

@@ -28,7 +28,7 @@ import Effect.Class as EC
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), ShowChatModal(..), ShowUserMenuModal(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), ChatModal(..), Modal(..), WebSocketPayloadServer(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)
@@ -44,7 +44,7 @@ resumeChat userId model =
                   model
                         { chatting = Just userId
                         , fullContactProfileVisible = false
-                        , toggleChatModal = HideChatModal
+                        , modal = HideModal
                         , initialScreen = false
                         , selectedImage = Nothing
                         , editing = Nothing
@@ -208,8 +208,7 @@ deleteChat userId model =
       case lastMessageId of
             Just id →
                   model
-                        { toggleModal = HideUserMenuModal
-                        , toggleChatModal = HideChatModal
+                        { modal = HideModal
                         , contacts = DA.filter ((userId /= _) <<< _.id <<< _.user) model.contacts
                         , chatting = if model.chatting == Just userId then Nothing else model.chatting
                         } /\ [ delete id, track ]

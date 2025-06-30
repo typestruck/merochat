@@ -119,7 +119,6 @@ update ∷ _ → ListUpdate ImModel ImMessage
 update st model =
       case _ of
             --chat
-            ToggleChatModal modal → CIC.toggleModal modal model
             DropFile event → CIC.catchFile event model
             ResizeChatInput event → CIC.resizeChatInput event model
             EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
@@ -175,7 +174,7 @@ update st model =
             ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model
             Logout after → CIU.logout after model
             ToggleUserContextMenu event → toggleUserContextMenu event model
-            SpecialRequest (ToggleModal toggle) → CIU.toggleModal toggle model
+            SpecialRequest (ToggleModal toggle) → CIU.modal toggle model
             SetModalContents file root html → CIU.setModalContents file root html model
 
             --main
@@ -225,7 +224,7 @@ setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } /\
       [ do
               EC.liftEffect $ FS.send profileId SPT.AfterRegistration
-              pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile
+              pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
       ]
 
 refocus ∷ FocusEvent → Ref Boolean → WebSocket → ImModel → MoreMessages
@@ -281,7 +280,7 @@ terminateAccount model = model /\
 
 checkUserExpiration ∷ ImModel → MoreMessages
 checkUserExpiration model@{ user: { temporary, joined } }
-      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest $ ToggleModal ShowProfile ]
+      | temporary && SUR.temporaryUserExpiration joined <= Days 1.0 = model /\ [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile ]
       | otherwise = F.noMessages model
 
 setPrivacySettings ∷ PrivacySettings → ImModel → NextMessage
@@ -302,8 +301,8 @@ finishTutorial model = model { user { completedTutorial = true } } /\ [ finish, 
       sender = 4
       finish = do
             void <<< CCNT.silentResponse $ request.im.tutorial {}
-            case model.toggleModal of
-                  Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideUserMenuModal
+            case model.modal of
+             --     Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
                   _ → pure Nothing
       greet = do
             EA.delay $ Milliseconds 2000.0
@@ -332,7 +331,7 @@ updateAfterBlock blocked model@{ contacts, suggestions, blockedUsers } =
             , chatting = Nothing
             , failedRequests = []
             , initialScreen = true
-            , toggleModal = HideUserMenuModal
+            , modal = HideModal
             , toggleContextMenu = HideContextMenu
             }
       where

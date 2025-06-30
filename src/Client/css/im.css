@@ -411,7 +411,6 @@ textarea {
     height: 54px;
 }
 
-
 .hidden {
     content-visibility: hidden;
     display: none !important;
@@ -2546,6 +2545,11 @@ label {
     cursor: initial;
     fill: var(--text-color);
     stroke: none;
+}
+
+.svg-32.svg-user-menu-context {
+    width:23px;
+    height: 23px;
 }
 
 /* dry this shite  */

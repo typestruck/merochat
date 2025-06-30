@@ -13,7 +13,7 @@ import Shared.Im.View.ChatHistory as SIVH
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.ContactList as SIVCN
 import Shared.Im.View.LogoMenu as SIVL
-import Shared.Im.View.Modals as SIVM
+import Shared.Im.View.Modal as SIVM
 import Shared.Im.View.Notification as SIVN
 import Shared.Im.View.NotificationMobile as SIVNM
 import Shared.Im.View.Profile as SIVP

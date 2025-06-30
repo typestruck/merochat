@@ -36,7 +36,7 @@ contactList isClientRender model =
             _ →
                   HE.div
                         [ SIS.onScrollEvent CheckFetchContacts
-                        , HA.class' { "contact-list": true, highlighted: model.toggleModal == Tutorial ChatList }
+                        , HA.class' "contact-list"
                         ]
                         (retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts)
       where
@@ -58,7 +58,7 @@ contactList isClientRender model =
                   HE.div [ HA.class' "contact-wrapper" ]
                         [ HE.div
                                 [ HA.class' { contact: true, "chatting-contact": chattingId == Just contact.user.id }
-                                , HA.onClick $ if backingCall then SpecialRequest (ToggleModal ShowBacker) else ResumeChat contact.user.id
+                                , HA.onClick $ if backingCall then SpecialRequest (ToggleModal $ Screen ShowBacker) else ResumeChat contact.user.id
                                 ]
                                 [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
                                         [ HE.img [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ SA.fromAvatar contact.user ]

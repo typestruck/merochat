@@ -47,7 +47,7 @@ imageModal ∷ ImModel → Html ImMessage
 imageModal model =
       HE.div [ HA.class' { "image-form modal-form": true, hidden: DM.isNothing model.selectedImage } ]
             if SP.hasPrivilege SendImages model.user then
-                  [ SIS.closeX [ HA.class' "cancel", HA.onClick $ ToggleChatModal HideChatModal ]
+                  [ SIS.closeX [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
                   , HE.div (HA.class' { "upload-div": true, hidden: not imageValidationFailed })
                           [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                           , HE.div (HA.class' "error-message") $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file."
@@ -56,28 +56,28 @@ imageModal model =
                           [ HE.img <<< HA.src $ DM.maybe "" _.base64 model.selectedImage
                           ]
                   , HE.div (HA.class' "image-form-controls")
-                          [ HE.input [ HA.placeholder "Caption", HA.value $ DM.fromMaybe "" model.imageCaption , HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
+                          [ HE.input [ HA.placeholder "Caption", HA.value $ DM.fromMaybe "" model.imageCaption, HA.id $ show ImageFormCaption, HA.type' "text", HA.onInput (SS.setJust (Proxy ∷ Proxy "imageCaption")) ]
                           , HE.svg [ HA.class' "svg-50 send-image-button", HA.onClick $ ForceSendMessage ChatInput, HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send file"
                           ]
                   ]
             else
                   [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp", HA.class' "hidden" ]
-                  , CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
-                  , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
+                  , CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                  , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] "Dismiss"
                   ]
       where
       imageValidationFailed = DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "selectedImage")) model.erroredFields
 
 audioModal ∷ ImModel → Html ImMessage
 audioModal model =
-      HE.div [ HA.class' { "modal-form audio-form": true, hidden: model.toggleChatModal /= ShowAudioPrompt } ]
+      HE.div [ HA.class' { "modal-form audio-form": true, hidden: model.modal /= Chat ShowAudioPrompt } ]
             if SP.hasPrivilege SendAudios model.user then
                   [ HE.div (HA.class' "duller") "Hold the button to record. Release to send, or slide left to discard"
                   , audioButton [ CIT.onTouchStart $ Just BeforeAudioMessage, CIT.onTouchEnd AudioMessage ]
                   ]
             else
-                  [ CCP.notEnoughKarma "send audios" (SpecialRequest <<< ToggleModal $ ShowKarmaPrivileges)
-                  , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick $ ToggleChatModal HideChatModal ] "Dismiss"
+                  [ CCP.notEnoughKarma "send audios" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                  , HE.div (HA.class' "image-buttons") $ HE.button [ HA.class' "green-button", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] "Dismiss"
                   ]
 
 chatBarInput ∷ Either Int Int → ElementId → ImModel → Html ImMessage
@@ -105,7 +105,7 @@ chatBarInput eid elementId model = HE.fragment
                               )
                       , HE.div (HA.class' "chat-right-buttons")
                               ( [ imageButton
-                                , audioButton [ HA.onClick $ ToggleChatModal ShowAudioPrompt ]
+                                , audioButton [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Chat ShowAudioPrompt ]
                                 ] <> sendButton elementId model
                               )
                       ]
@@ -125,16 +125,16 @@ chatBarInput eid elementId model = HE.fragment
 emojiButton ∷ ImModel → Html ImMessage
 emojiButton model
       | model.smallScreen = HE.div' (HA.class' "emoji-access-div hidden")
-      | model.toggleChatModal == ShowEmojis =
-              HE.div (HA.class' "emoji-access-div") $ SIS.closeX [ HA.onClick $ ToggleChatModal HideChatModal, HA.class' "emoji-access" ]
+      | model.modal == Chat ShowEmojis =
+              HE.div (HA.class' "emoji-access-div") $ SIS.closeX [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' "emoji-access" ]
       | otherwise =
-              HE.div (HA.class' "emoji-access-div") $ HE.svg [ HA.onClick $ ToggleChatModal ShowEmojis, HA.class' "emoji-access", HA.viewBox "0 0 1024 1024" ]
+              HE.div (HA.class' "emoji-access-div") $ HE.svg [ HA.onClick <<< SpecialRequest $ ToggleModal $ Chat ShowEmojis, HA.class' "emoji-access", HA.viewBox "0 0 1024 1024" ]
                     [ HE.path' [ HA.d "M510.944 960c-247.04 0-448-200.96-448-448s200.992-448 448-448 448 200.96 448 448-200.96 448-448 448z m0-832c-211.744 0-384 172.256-384 384s172.256 384 384 384 384-172.256 384-384-172.256-384-384-384z" ]
                     , HE.path' [ HA.d "M512 773.344c-89.184 0-171.904-40.32-226.912-110.624-10.88-13.92-8.448-34.016 5.472-44.896 13.888-10.912 34.016-8.48 44.928 5.472 42.784 54.688 107.136 86.048 176.512 86.048 70.112 0 134.88-31.904 177.664-87.552 10.784-14.016 30.848-16.672 44.864-5.888 14.016 10.784 16.672 30.88 5.888 44.864C685.408 732.32 602.144 773.344 512 773.344zM368 515.2c-26.528 0-48-21.472-48-48v-64c0-26.528 21.472-48 48-48s48 21.472 48 48v64c0 26.496-21.504 48-48 48zM656 515.2c-26.496 0-48-21.472-48-48v-64c0-26.528 21.504-48 48-48s48 21.472 48 48v64c0 26.496-21.504 48-48 48z" ]
                     ]
 
 imageButton ∷ Html ImMessage
-imageButton = HE.svg [ HA.onClick $ ToggleChatModal ShowSelectedImage, HA.class' "attachment-button", HA.viewBox "0 0 16 16" ]
+imageButton = HE.svg [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Chat ShowSelectedImage, HA.class' "attachment-button", HA.viewBox "0 0 16 16" ]
       [ HE.title "Send image"
       , HE.path' [ HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z" ]
       ]
@@ -165,8 +165,8 @@ sendButtonElements title =
 
 emojiModal ∷ ElementId → ImModel → Html ImMessage
 emojiModal elementId model
-      | model.smallScreen = HE.div' [ HA.class' "emoji-wrapper hidden" ]
-      | otherwise = HE.div [ HA.class' { "emoji-wrapper": true, hidden: model.toggleChatModal /= ShowEmojis } ] <<< HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory SIE.byCategory
+      | model.smallScreen || model.modal /= Chat ShowEmojis = HE.div' [ HA.class' "emoji-wrapper hidden" ]
+      | otherwise = HE.div [ HA.class' "emoji-wrapper" ] <<< HE.div [ HA.class' "emojis", emojiClickEvent (SetEmoji elementId) ] $ map toEmojiCategory SIE.byCategory
               where
               toEmojiCategory (Tuple name pairs) = HE.div_
                     [ HE.div (HA.class' "duller") name

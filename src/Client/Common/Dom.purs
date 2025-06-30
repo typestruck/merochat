@@ -5,6 +5,7 @@ import Prelude
 import Shared.Im.Types
 
 import Data.ArrayBuffer.Types (Uint8Array)
+import Data.Either (Either(..))
 import Data.Function.Uncurried (Fn2, Fn1)
 import Data.Maybe (Maybe)
 import Data.Maybe as DM

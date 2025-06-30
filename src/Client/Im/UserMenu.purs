@@ -7,6 +7,7 @@ import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
+import Client.Im.Chat as CIC
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
@@ -29,7 +30,7 @@ toggleInitialScreen toggle model =
       model
             { initialScreen = toggle
             , chatting = Nothing
-            , toggleModal = HideUserMenuModal
+            , modal = HideModal
             -- false toggle means we are showing suggestions
             , suggestions = if not toggle then byAvailability model.suggestions else model.suggestions
             } /\ [ updateDraft, updateServiceWorker ]
@@ -58,37 +59,38 @@ logout after model = model /\ [ out ]
                   Banned → routes.banned {}
             pure Nothing
 
-toggleModal ∷ ShowUserMenuModal → ImModel → NextMessage
-toggleModal mToggle model =
-      case mToggle of
-            ShowProfile → showTab request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
-            ShowSettings → showTab request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
-            ShowKarmaPrivileges → showTab request.leaderboard ShowKarmaPrivileges (Just KarmaPrivileges) KarmaPrivilegesRoot
-            ShowHelp → showTab request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
-            ShowExperiments → showTab request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
-            ShowBacker → showTab request.internalBacker ShowBacker Nothing BackerRoot
-            ShowFeedback → showTab request.feedback.get ShowFeedback (Just Feedback) FeedbackRoot
-            ShowSuggestionCard id → F.noMessages model
-                  { toggleModal = ShowSuggestionCard id
+modal ∷ Modal → ImModel → NextMessage
+modal toggled model =
+      case toggled of
+            Screen ShowProfile → showTab request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
+            Screen ShowSettings → showTab request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
+            Screen ShowKarmaPrivileges → showTab request.leaderboard ShowKarmaPrivileges (Just KarmaPrivileges) KarmaPrivilegesRoot
+            Screen ShowHelp → showTab request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
+            Screen ShowExperiments → showTab request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
+            Screen ShowBacker → showTab request.internalBacker ShowBacker Nothing BackerRoot
+            Screen ShowFeedback → showTab request.feedback.get ShowFeedback (Just Feedback) FeedbackRoot
+            Special (ShowSuggestionCard id) → F.noMessages model
+                  { modal = Special $ ShowSuggestionCard id
                   , showCollapsedMiniSuggestions = true
                   , suggesting = Just id
                   }
-            modal → F.noMessages model
-                  { toggleModal = modal
+            Chat c -> CIC.modal c model
+            t → F.noMessages model
+                  { modal = t
                   , erroredFields = []
                   , toggleContextMenu = HideContextMenu
                   }
       where
       showTab req toggle resource root =
             model
-                  { toggleModal = toggle
+                  { modal = Screen toggle
                   , toggleContextMenu = HideContextMenu
                   , failedRequests = []
                   , modalsLoaded = toggle : model.modalsLoaded
                   } /\
-                  if toggle /= ShowKarmaPrivileges && DA.elem toggle model.modalsLoaded then []
+                  if toggle /=  ShowKarmaPrivileges && DA.elem toggle model.modalsLoaded then []
                   else
-                        [ CCN.retryableResponse (ToggleModal toggle) (SetModalContents resource root) (req {})
+                        [ CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
                         -- during the tutorial the user may click on the user menu instead of "finish tutorial"
                         --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]
