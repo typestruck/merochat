@@ -2871,6 +2871,7 @@ label {
         height: 100%;
         flex-direction: column;
         width: 100%;
+        border-radius: 0;
     }
 
     .modal-menu .entry {
@@ -2879,7 +2880,10 @@ label {
         padding-right: 0;
         text-align: left;
         width: auto;
+    }
 
+    .modal-menu {
+        height: 100%;
     }
 
     #temporary-user-sign-up-form,
@@ -2892,7 +2896,24 @@ label {
     #experiments-root {
         margin: 0;
         width: 100%;
+        height: unset;
         overflow-x: hidden;
+    }
+
+    #modal-root {
+        display: block;
+    }
+
+    #modal-root .backer,
+    #settings-edition,
+    #internal-help,
+    #feedback-form,
+    #chat-experiments,
+    #karma-leaderboard,
+    #profile-edition-form {
+        margin-left: 0;
+        width: 100%;
+        height: auto;
     }
 
     #temporary-user-sign-up-form {
@@ -2928,6 +2949,7 @@ label {
 
     .modal-menu-mobile .svg-back-card {
         margin-right: 15px;
+        fill: var(--text-color);
     }
 
     .suggestions-call {
