@@ -19,11 +19,16 @@ import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Effect.Class as EC
+import Effect.Uncurried (EffectFn1)
+import Effect.Uncurried as EU
 import Flame as F
 import Shared.Element (ElementId(..))
-import Shared.Resource (Bundle(..))
+import Shared.Resource (Bundle(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
+
+foreign import dynamicImport_ :: EffectFn1 String Unit
 
 toggleInitialScreen ∷ Boolean → ImModel → MoreMessages
 toggleInitialScreen toggle model =
@@ -86,10 +91,7 @@ modal toggled model =
                   { modal = Screen toggle
                   , toggleContextMenu = HideContextMenu
                   , failedRequests = []
-                  , modalsLoaded = toggle : model.modalsLoaded
                   } /\
-                  if toggle /=  ShowKarmaPrivileges && DA.elem toggle model.modalsLoaded then []
-                  else
                         [ CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
                         -- during the tutorial the user may click on the user menu instead of "finish tutorial"
                         --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
@@ -103,7 +105,7 @@ setModalContents resource root html model = model /\ [ loadModal ]
             CCD.setInnerHTML element html
             --scripts don't load when inserted via innerHTML
             case resource of
-                  Just name → CCD.loadScript name
+                  Just name → EU.runEffectFn1 dynamicImport_ $ SP.bundlePath name Js
                   Nothing → pure unit
             pure Nothing
 

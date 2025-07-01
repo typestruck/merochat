@@ -128,7 +128,6 @@ type Im =
       , fortune ∷ Maybe String
       , failedRequests ∷ Array RequestFailure
       , errorMessage ∷ String
-      , modalsLoaded ∷ Array ScreenModal
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
       , lastTyping ∷ DateTimeWrapper

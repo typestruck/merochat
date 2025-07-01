@@ -7,9 +7,7 @@ import Shared.Im.Types
 import Shared.User
 
 import Data.HashMap (HashMap)
-import Data.HashMap as HM
 import Data.HashMap as HS
-import Data.HashSet as DHS
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
 import Effect.Now as EN
@@ -28,8 +26,7 @@ run m f = do
 
 model ∷ ImModel
 model =
-      { modalsLoaded: []
-      , freeToFetchSuggestions: true
+      {  freeToFetchSuggestions: true
       , typingIds: []
       , initialScreen: true
       , suggestionsFrom: ThisWeek

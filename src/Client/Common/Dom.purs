@@ -144,15 +144,6 @@ tagNameFromTarget event = WDE.tagName $ SU.fromJust do
       target ← WEE.target event
       WDE.fromEventTarget target
 
-loadScript ∷ Bundle → Effect Unit
-loadScript resource = do
-      window ← WH.window
-      document ← WHW.document window
-      script ← WDD.createElement "script" $ WHHD.toDocument document
-      WHS.setSrc (SP.bundlePath resource Js) <<< SU.fromJust $ WHS.fromElement script
-      body ← SU.fromJust <$> WHHD.body document
-      void <<< WDN.appendChild (WHE.toNode script) $ WHHE.toNode body
-
 createElement ∷ String → Effect Element
 createElement tag = do
       window ← WH.window

@@ -42,7 +42,6 @@ template payload = do
                     , freeToFetchSuggestions: true
                     , temporaryId: 0
                     , typingIds: []
-                    , modalsLoaded: []
                     , suggesting:
                             if DA.null payload.suggestions then Nothing
                             else map _.id $ DA.head payload.suggestions
