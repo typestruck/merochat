@@ -68,13 +68,13 @@ logout after model = model /\ [ out ]
 modal ∷ Modal → ImModel → NextMessage
 modal toggled model =
       case toggled of
-            Screen ShowProfile → showModal request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
-            Screen ShowSettings → showModal request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
-            Screen ShowKarmaPrivileges → showModal request.leaderboard ShowKarmaPrivileges (Just KarmaPrivileges) KarmaPrivilegesRoot
-            Screen ShowHelp → showModal request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
-            Screen ShowExperiments → showModal request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
-            Screen ShowBacker → showModal request.internalBacker ShowBacker Nothing BackerRoot
-            Screen ShowFeedback → showModal request.feedback.get ShowFeedback (Just Feedback) FeedbackRoot
+            Screen ShowProfile → showModal request.profile.get ShowProfile Profile ProfileEditionRoot
+            Screen ShowSettings → showModal request.settings.get ShowSettings Settings SettingsEditionRoot
+            Screen ShowKarmaPrivileges → showModal request.leaderboard ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
+            Screen ShowHelp → showModal request.internalHelp ShowHelp InternalHelp HelpRoot
+            Screen ShowExperiments → showModal request.experiments ShowExperiments Experiments ExperimentsRoot
+            Screen ShowBacker → showModal request.internalBacker ShowBacker InternalBacker BackerRoot
+            Screen ShowFeedback → showModal request.feedback.get ShowFeedback Feedback FeedbackRoot
             Special (ShowSuggestionCard id) → F.noMessages model
                   { modal = Special $ ShowSuggestionCard id
                   , showCollapsedMiniSuggestions = true
@@ -108,15 +108,13 @@ modal toggled model =
                         --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]
 
-setModalContents ∷ Maybe Bundle → ElementId → String → ImModel → NextMessage
+setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage
 setModalContents resource root html model = model /\ [ loadModal ]
       where
       loadModal = liftEffect do
             element ← CCD.unsafeGetElementById root
             CCD.setInnerHTML element html
-            --scripts don't load when inserted via innerHTML
-            case resource of
-                  Just name → CCD.loadScript name
-                  Nothing → pure unit
+            --scripts don't load when inserted via innerHTML and dynamic module import is a whole can of worms
+            CCD.loadScript resource
             pure Nothing
 

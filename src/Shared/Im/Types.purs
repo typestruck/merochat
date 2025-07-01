@@ -147,7 +147,7 @@ type Im =
       , initialScreen ∷ Boolean --used on mobile to switch screens
       , fullContactProfileVisible ∷ Boolean
       , showLargeAvatar ∷ Boolean
-      , modalsLoaded :: Array ScreenModal
+      , modalsLoaded ∷ Array ScreenModal
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
@@ -179,7 +179,6 @@ data ShowContextMenu
       | ShowMiniSuggestionContextMenu
       | ShowFullProfileContextMenu
       | ShowMessageContextMenu Int
-
 
 type Stats =
       { characters ∷ Number
@@ -234,7 +233,7 @@ data ImMessage
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
       | Logout AfterLogout
       | SetContextMenuToggle ShowContextMenu
-      | SetModalContents (Maybe Bundle) ElementId String
+      | SetModalContents Bundle ElementId String
 
       --contact
       | ResumeChat Int
@@ -325,7 +324,7 @@ data WebSocketPayloadServer
               { status ∷ MessageStatus
               , ids ∷ Array (Tuple Int (Array Int))
               }
-      | UnavailableFor{ id ∷ Int}
+      | UnavailableFor { id ∷ Int }
       | Ban { id ∷ Int, secret ∷ String }
 
 type OutgoingRecord =
@@ -593,7 +592,6 @@ instance Show ReportReason where
             Minor → "User is a minor"
             Spam → "Spam/Product placement"
             OtherReason → "Other"
-
 
 instance Show MessageContent where
       show = DGRS.genericShow

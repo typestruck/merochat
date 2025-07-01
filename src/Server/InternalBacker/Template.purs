@@ -3,8 +3,14 @@ module Server.InternalBacker.Template where
 import Server.Effect
 
 import Effect (Effect)
-import Flame.Renderer.String as FRS
+import Flame (QuerySelector(..))
+import Flame as F
 import Shared.Backer.View as SIBV
 
 template ∷ Effect String
-template = FRS.render SIBV.view
+template = F.preMount (QuerySelector ".backer")
+      { view: SIBV.view
+      , init:
+              { visible: true
+              }
+      }

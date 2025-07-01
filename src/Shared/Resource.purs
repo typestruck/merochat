@@ -54,6 +54,7 @@ data Bundle
       | Help
       | Im
       | InternalHelp
+      | InternalBacker
       | Landing
       | Feedback
       | KarmaPrivileges
@@ -115,6 +116,7 @@ resourceName = case _ of
       Right Help → "help"
       Right Im → "im"
       Right InternalHelp → "internalHelp"
+      Right InternalBacker -> "internalBacker"
       Right Feedback → "feedback"
       Right Landing → "landing"
       Right KarmaPrivileges → "karmaPrivileges"
@@ -166,6 +168,7 @@ replacement bundle tp
                     Im → reps ".[im-js-contenthash]" ".[im-css-contenthash]"
                     Feedback → reps ".[feedback-js-contenthash]" ".[feedback-css-contenthash]"
                     InternalHelp → reps ".[internalHelp-js-contenthash]" ".[internalHelp-css-contenthash]"
+                    InternalBacker  -> reps ".[internalBacker-js-contenthash]" ".[internalBacker-css-contenthash]"
                     Landing → reps ".[landing-js-contenthash]" ".[landing-css-contenthash]"
                     KarmaPrivileges → reps ".[karmaPrivileges-js-contenthash]" ".[karmaPrivileges-css-contenthash]"
                     Login → reps ".[login-js-contenthash]" ".[login-css-contenthash]"

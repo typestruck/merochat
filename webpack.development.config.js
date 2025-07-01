@@ -45,7 +45,11 @@ export default {
             recover: './loader/development/recover.bundle.js',
             emoji: './output/Shared.Im.Emoji/index.js',
             base: './src/Client/css/base.css',
-            backer: './src/Client/css/backer.css'
+            backer: './src/Client/css/backer.css',
+            internalBacker: {
+                  import: ['./loader/development/internalBacker.bundle.js'],
+                  dependOn: 'im'
+            }
       },
 
       output: {
