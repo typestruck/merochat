@@ -416,6 +416,10 @@ textarea {
     display: none !important;
 }
 
+#modal-root {
+    position: absolute;
+}
+
 blockquote {
     padding: 2px 10px;
     margin: 0;
@@ -840,23 +844,25 @@ a {
 .modal-placeholder {
     display: flex;
     flex-flow: row;
-    padding: 30px 15px;
-    padding-right: 0px;
     z-index: 7;
     width: 72em;
     height: 90%;
+    background-color: var(--im-background-color);
+    border-radius: 42px;
     overflow-y: auto;
-    background: #262626;
+    box-shadow: 8px 8px 6px rgba(0, 0, 0, 0.2), -8px -8px 6px rgba(0, 0, 0, 0.2);
 }
 
 .modal-menu {
     display: flex;
     position: sticky;
     top: 0;
-    left: 0;
+    left: 0px;
     bottom: 0;
+    padding:30px;
+    padding-right: 20px;
     flex-flow: column;
-    border-right: 1px solid #373737;
+    background-color: var(--im-merochat-green);
     min-width: max-content;
 }
 
@@ -894,6 +900,12 @@ img.emoji {
 .emoji-icon {
     padding: 5px;
     cursor: pointer;
+}
+
+.back {
+    margin: 15px;
+    margin-left: auto;
+
 }
 
 .inline {
@@ -1180,18 +1192,17 @@ svg.toolbar-action {
 }
 
 .modal-menu .entry {
-    margin: 5px 0;
-    padding: 10px;
+    margin-right: 10px;
+    padding: 20px 0;
     cursor: pointer;
-    font-weight: bold;
+    opacity: 0.86;
+    border-bottom: 1px solid #EFE5DC;
 }
 
 .modal-menu .entry.selected {
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-    background: #373737;
+  font-weight: bold;
+    opacity: 1;
 }
-
 
 .user-menu.in-message {
     background-color: var(--background-color);
@@ -1209,18 +1220,6 @@ svg.toolbar-action {
 
 .user-menu.mini.menu-up {
     top: -92px;
-}
-
-.modal-menu .back {
-    color: hsl(145, 80%, 28%);
-    margin-bottom: 25px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.modal-menu .back svg {
-    fill: hsl(145, 80%, 28%);
-    stroke: hsl(145, 80%, 28%);
 }
 
 .end {
@@ -1432,7 +1431,8 @@ input:not(type=button):focus {
 }
 
 .logout {
-    color: hsl(359, 85%, 62%) !important;
+    color: red !important;
+    font-weight: bold;
     padding-top: 20px;
 }
 
@@ -2862,7 +2862,6 @@ label {
         height: 100%;
         flex-direction: column;
         width: 100%;
-        padding: 0
     }
 
     .modal-menu .entry {
@@ -3324,3 +3323,6 @@ label {
         min-width: 60px;
     }
 }
+
+
+

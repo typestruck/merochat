@@ -670,8 +670,8 @@ instance Show ScreenModal where
             ShowSettings → "Settings"
             ShowKarmaPrivileges → "Karma"
             ShowHelp → "Help"
-            ShowExperiments → "Chat experiments"
-            ShowBacker → "Backing"
+            ShowExperiments → "Experiments"
+            ShowBacker → "Support us"
             ShowFeedback → "Send feedback"
             _ → ""
 

@@ -1,3 +1,3 @@
 export function dynamicImport_(path) {
-    import('./' + path);
+    import( /* webpackIgnore: true */ `/${path}`);
 }

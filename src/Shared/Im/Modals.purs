@@ -14,6 +14,7 @@ import Flame.Html.Element as HE
 import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
+import Shared.Im.Svg as SIS
 import Shared.Im.Types (AfterLogout(..), ConfirmationModal(..), ImMessage(..), ImModel, Modal(..), ReportReason(..), RetryableRequest(..), ScreenModal(..), SpecialModal(..), Step(..))
 import Shared.Im.View.Profile as CISP
 import Shared.Im.View.Retry as SIVR
@@ -186,13 +187,8 @@ modalMenu model =
                         _ -> ""
                     ]
             , HE.div (HA.class' { "modal-menu": true, hidden: model.smallScreen && model.modal /= Screen ShowMenu })
-                    [ HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
-                            [ HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 30 30" ]
-                                    [ HE.path' [ HA.d "M30 13.125H7.18125L17.6625 2.64375L15 0L0 15L15 30L17.6437 27.3563L7.18125 16.875H30V13.125Z" ]
-                                    ]
-                            , HE.text " Back to chats"
-                            ]
-                    , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] $ show ShowProfile
+                    [
+                    HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] $ show ShowProfile
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] $ show ShowSettings
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] $ show ShowKarmaPrivileges
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowExperiments, HA.class' { entry: true, selected: model.modal == Screen ShowExperiments } ] $ show ShowExperiments
@@ -208,26 +204,15 @@ modalMenu model =
                       else
                             HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmLogout ] "Logout"
                     ]
-            , if model.user.temporary then
-                    temporaryUserSignUp model
-              else HE.fragment
-                    [ HE.div [ HA.id $ show ProfileEditionRoot, HA.class' { hidden: model.modal /= Screen ShowProfile } ] $ retry ShowProfile
-                    , HE.div [ HA.id $ show SettingsEditionRoot, HA.class' { hidden: model.modal /= Screen ShowSettings } ] $ retry ShowSettings
-                    , HE.div [ HA.id $ show KarmaPrivilegesRoot, HA.class' { hidden: model.modal /= Screen ShowKarmaPrivileges } ] $ retry ShowKarmaPrivileges
-                    , HE.div [ HA.id $ show ExperimentsRoot, HA.class' { hidden: model.modal /= Screen ShowExperiments } ] $ retry ShowExperiments
-                    , HE.div [ HA.id $ show BackerRoot, HA.class' { hidden: model.modal /= Screen ShowBacker } ] $ retry ShowBacker
-                    , HE.div [ HA.id $ show HelpRoot, HA.class' { hidden: model.modal /= Screen ShowHelp } ] $ retry ShowHelp
-                    , HE.div [ HA.id $ show FeedbackRoot, HA.class' { hidden: model.modal /= Screen ShowFeedback } ] $ retry ShowFeedback
-                    ]
+                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
+                            [ SIS.closeX []
+                            ]
             ]
       where
       screenModal = case model.modal of
                 Screen _ -> true
                 _ -> false
-      retry tm = HE.div (HA.class' "retry-modal")
-            [ SIVR.retry "Failed to load contents" (ToggleModal $ Screen tm) model.failedRequests
-            , HE.div' (HA.class' "loading")
-            ]
+
 
 --only for temporary users, since logging out = deleting account
 confirmTermination ∷ Html ImMessage
@@ -248,7 +233,7 @@ confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
       ]
 
 temporaryUserSignUp ∷ ImModel → Html ImMessage
-temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, modal, user: { temporary, joined } } =
+temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { temporary, joined } } =
       HE.div [ HA.id $ show TemporaryUserSignUpForm, HA.class' { hidden: not temporary } ]
             [ if expired then
                     HE.div (HA.class' "warning-temporary") "Your access has expired"

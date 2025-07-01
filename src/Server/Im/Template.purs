@@ -3,6 +3,7 @@ module Server.Im.Template where
 import Prelude
 import Shared.Im.Types
 
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -25,15 +26,15 @@ import Shared.Resource as SP
 template ∷ Payload → Effect String
 template payload = do
       lt ← EN.nowDateTime
-      F.preMount (QuerySelector $ show SE.Im)
-            { view: \model → ST.templateWith $ defaultParameters
+      F.preMount (QuerySelector $ "#" <> show SE.Im)
+            { view: \model → ST.templateWith  defaultParameters
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
                     , header =
                             [ if production then HE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
                               else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
                             ]
-                    , content = [ SIV.view false model ]
+                    , content = modals : [ SIV.view false model ]
                     , javascript = javascript
                     , css = css
                     }
@@ -84,8 +85,20 @@ template payload = do
                     }
             }
       where
-      unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
+      modals = {- if payload.user.temporary then
+                    temporaryUserSignUp model
+              else -}
+                HE.div "modal-root"    [ HE.div' [ HA.id $ show SE.ProfileEditionRoot ]
+                    , HE.div' [ HA.id $ show SE.SettingsEditionRoot ]
+                    , HE.div' [ HA.id $ show SE.KarmaPrivilegesRoot ]
+                    , HE.div' [ HA.id $ show SE.ExperimentsRoot ]
+                    , HE.div' [ HA.id $ show SE.BackerRoot ]
+                    , HE.div' [ HA.id $ show SE.HelpRoot ]
+                    , HE.div' [ HA.id $ show SE.FeedbackRoot ]
+                    ]
 
+
+      unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Emoji Js ]
             , HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Im Js ]
@@ -100,3 +113,4 @@ template payload = do
                     }
                     """
             ]
+
