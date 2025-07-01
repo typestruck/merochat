@@ -31,8 +31,6 @@ import Shared.Resource as SP
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
 
-foreign import dynamicImport_ ∷ EffectFn1 String Unit
-
 toggleInitialScreen ∷ Boolean → ImModel → MoreMessages
 toggleInitialScreen toggle model =
       model
@@ -118,7 +116,7 @@ setModalContents resource root html model = model /\ [ loadModal ]
             CCD.setInnerHTML element html
             --scripts don't load when inserted via innerHTML
             case resource of
-                  Just name → EU.runEffectFn1 dynamicImport_ $ SP.bundlePath name Js
+                  Just name → CCD.loadScript name
                   Nothing → pure unit
             pure Nothing
 
