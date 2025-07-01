@@ -416,10 +416,6 @@ textarea {
     display: none !important;
 }
 
-#modal-root {
-    position: absolute;
-}
-
 blockquote {
     padding: 2px 10px;
     margin: 0;
@@ -818,17 +814,21 @@ a {
     align-self: flex-end;
 }
 
-.modal-placeholder-overlay {
+.modal-placeholder-overlay,
+#modal-root {
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.modal-placeholder-overlay {
     background: rgba(15, 18, 19, 0.75);
+    flex-direction: column;
     z-index: 6;
 }
 
@@ -859,7 +859,7 @@ a {
     top: 0;
     left: 0px;
     bottom: 0;
-    padding:30px;
+    padding: 30px;
     padding-right: 20px;
     flex-flow: column;
     background-color: var(--im-merochat-green);
@@ -1154,7 +1154,6 @@ svg.toolbar-action {
     cursor: unset;
 }
 
-
 .mini-headline-tags .tag {
     border: 1px solid var(--text-color)
 }
@@ -1163,31 +1162,41 @@ svg.toolbar-action {
     display: hidden;
 }
 
-#profile-edition-root {
-    margin: 0 20px;
-}
-
+#backer-root,
 #temporary-user-sign-up-form,
-#experiments-root,
-#profile-edition-root,
-#settings-edition-root,
-#feedback-root,
-#karma-privileges-root,
 #help-root,
-#backer-root {
-    margin-top: 45px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    align-items: center;
+#feedback-root,
+#experiments-root,
+#karma-privileges-root,
+#profile-edition-root,
+#settings-edition-root {
+    height: 90%;
 }
 
-.settings-edition fieldset {
+#modal-root .backer,
+#settings-edition,
+#internal-help,
+#feedback-form,
+#chat-experiments,
+#karma-leaderboard,
+#profile-edition-form {
+    position: relative;
+    z-index: 8;
+    margin-top: 60px;
+    height: 90%;
+    overflow-y: auto;
+}
+
+#profile-edition-form {
+    margin-left: 200px;
+}
+
+#settings-edition fieldset {
     padding: 15px;
     padding-top: 0;
 }
 
-.settings-edition fieldset div {
+#settings-edition fieldset div {
     margin: 15px 0;
 }
 
@@ -1200,7 +1209,7 @@ svg.toolbar-action {
 }
 
 .modal-menu .entry.selected {
-  font-weight: bold;
+    font-weight: bold;
     opacity: 1;
 }
 
@@ -1431,7 +1440,7 @@ input:not(type=button):focus {
 }
 
 .logout {
-    color: red !important;
+    color: white !important;
     font-weight: bold;
     padding-top: 20px;
 }
@@ -2375,7 +2384,7 @@ select {
 .message-history .sign-up-call {
     width: fit-content;
     align-self: center;
-    position:sticky;
+    position: sticky;
     top: 0;
 }
 
@@ -2548,7 +2557,7 @@ label {
 }
 
 .svg-32.svg-user-menu-context {
-    width:23px;
+    width: 23px;
     height: 23px;
 }
 
@@ -2567,7 +2576,7 @@ label {
 
     .profile-top-menu {
         justify-content: space-between;
-        top:-20px;
+        top: -20px;
         background-color: var(--im-second-background-color);
     }
 
@@ -2867,7 +2876,7 @@ label {
     .modal-menu .entry {
         margin: 0;
         padding: 10px;
-        padding-right:0 ;
+        padding-right: 0;
         text-align: left;
         width: auto;
 
@@ -2902,7 +2911,7 @@ label {
         margin-right: -10px;
     }
 
-    .chat-experiments,
+    #chat-experiments,
     .profile-contact {
         padding: 10px;
     }
@@ -3323,6 +3332,3 @@ label {
         min-width: 60px;
     }
 }
-
-
-

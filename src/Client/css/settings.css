@@ -12,7 +12,7 @@
 }
 
 @media (max-width:1279px) {
-    .settings-edition {
+    #settings-edition {
         width: 100%;
     }
 }

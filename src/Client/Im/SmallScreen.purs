@@ -8,7 +8,7 @@ import Effect (Effect)
 import Flame as F
 import Flame.Subscription as FS
 import Shared.Breakpoint (mobileBreakpoint)
-import Shared.Im.Types (ImMessage(..), ImModel, Modal(..))
+import Shared.Im.Types
 import Shared.Options.MountPoint (imId)
 
 -- | Keep track of mobile (-like) screens for things that cannot be done with media queries

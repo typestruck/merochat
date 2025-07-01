@@ -3,7 +3,7 @@
     margin-bottom: 15px;
 }
 
-.karma-leaderboard {
+#karma-leaderboard {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -117,7 +117,7 @@
         height: 64px;
     }
 
-    .karma-leaderboard {
+    #karma-leaderboard {
         padding: 10px
     }
 

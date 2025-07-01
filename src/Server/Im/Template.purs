@@ -20,6 +20,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element as SE
 import Shared.Im.Unread as SIU
 import Shared.Im.View as SIV
+import Shared.Modal.Types (Modal(..))
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 
@@ -78,6 +79,7 @@ template payload = do
                     , imUpdated: false
                     , webSocketStatus: Closed
                     , failedRequests: []
+                    , modalsLoaded: []
                     , hash: updateHash
                     , contacts: payload.contacts
                     , suggestions: payload.suggestions

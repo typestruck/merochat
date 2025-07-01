@@ -4,8 +4,6 @@ import Prelude
 import Shared.KarmaPrivileges.Types
 
 import Data.Array as DA
-import Data.Maybe (Maybe(..))
-import Data.Maybe as DM
 import Shared.Intl as SI
 import Data.Tuple (Tuple(..))
 import Flame (Html)
@@ -14,8 +12,8 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 
 view ∷ KarmaPrivilegesModel → Html KarmaPrivilegesMessage
-view { top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent, started, karma, total } } =
-      HE.div (HA.class' "karma-leaderboard") $
+view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent, started, karma, total } } =
+      HE.div [HA.id "karma-leaderboard", HA.class' { hidden: not model.visible } ] $
             HE.div (HA.class' "modal-section leaderboard ")
                   [ HE.div (HA.class' "modal-part")
                           [ HE.div (HA.class' "section-label")

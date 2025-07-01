@@ -15,6 +15,7 @@ import Effect.Unsafe as EU
 import Safe.Coerce as SC
 import Shared.Element (ElementId)
 import Shared.Im.Contact as SIC
+import Shared.Modal.Types (Modal(..))
 import Unsafe.Coerce as UC
 import Web.DOM (Element)
 import Web.Socket.WebSocket (WebSocket)
@@ -33,6 +34,7 @@ model =
       , showLargeAvatar: false
       , showSuggestionChatInput: Nothing
       , showCollapsedMiniSuggestions: false
+      , modalsLoaded: []
       , showMiniChatInput: false
       , temporaryEmail: Nothing
       , editing: Nothing

@@ -12,7 +12,6 @@ import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodePoints as DSC
 import Data.Symbol (class IsSymbol)
-import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute (ToSpecialEvent)
 import Flame.Html.Attribute as HA
@@ -21,7 +20,6 @@ import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
-import Shared.Resource as SP
 import Shared.Settings.Types (PrivacySettingsId(..), SM, SettingsMessage(..), SettingsModel)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -32,7 +30,7 @@ import Web.Event.Event as WEE
 
 view ∷ SettingsModel → Html SettingsMessage
 view model =
-      HE.div (HA.class' "settings-edition") $ account model
+      HE.div [HA.id "settings-edition", HA.class' { hidden: not model.visible}] $ account model
 
 formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"

@@ -42,10 +42,9 @@ import Shared.User (Gender(..))
 import Type.Data.Symbol as TDS
 import Type.Proxy (Proxy(..))
 
---REFACTOR: some bits can still be abstracted
 view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div (show ProfileEditionForm)
-      [ HE.div [ HA.class' { "profile-edition suggestion contact": true } ]
+      [ HE.div [ HA.class' { "profile-edition suggestion contact": true, hidden : not model.visible } ]
               [ HE.div (HA.class' { "loading-over": true, hidden: not model.loading })
                       [ HE.div' (HA.class' "loading")
                       ]

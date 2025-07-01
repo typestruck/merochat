@@ -10,9 +10,10 @@ import Shared.InternalHelp.View as SIHV
 
 template ∷ Effect String
 template =
-      F.preMount (QuerySelector ".internal-help")
+      F.preMount (QuerySelector "#internal-help")
             { view: SIHV.view
             , init:
                     { toggleHelp: FAQ
+                    , visible : true
                     }
             }

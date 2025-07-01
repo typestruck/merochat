@@ -32,6 +32,7 @@ import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Retry as SIVR
 import Shared.Intl as SI
 import Shared.Markdown as SM
+import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Resource (ResourceType(..))

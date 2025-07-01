@@ -12,6 +12,7 @@ import Data.Maybe (Maybe(..))
 import Data.Show.Generic as DGRS
 import Foreign as F
 import Shared.DateTime (DateWrapper)
+import Shared.Modal.Types (ScreenModal)
 import Shared.Network (RequestStatus)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
@@ -25,6 +26,7 @@ data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SelectAvatar
       | Save Field
+      | ToggleVisibility ScreenModal
       | AfterRegistration
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
@@ -67,6 +69,7 @@ type PM =
       , genderInputed ∷ Choice (Maybe Gender)
       , countryInputed ∷ Choice (Maybe Int)
       , languagesInputed ∷ Maybe Int
+      , visible :: Boolean
       , languagesInputedList ∷ Maybe (Array Int)
       , tagsInputed ∷ Maybe String
       , tagsInputedList ∷ Maybe (Array String)

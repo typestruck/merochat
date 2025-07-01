@@ -1,6 +1,7 @@
 module Client.Im.Contacts where
 
 import Prelude
+import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
@@ -28,7 +29,7 @@ import Effect.Class as EC
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), ChatModal(..), Modal(..), WebSocketPayloadServer(..))
+import Shared.Modal.Types (Modal(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.Socket.WebSocket (WebSocket)

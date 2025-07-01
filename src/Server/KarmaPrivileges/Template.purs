@@ -8,7 +8,7 @@ import Shared.KarmaPrivileges.View as SLV
 
 template ∷ _ → Effect String
 template { top10, inBetween10, userPosition, privileges, stats } =
-      F.preMount (QuerySelector ".karma-leaderboard")
+      F.preMount (QuerySelector "#karma-leaderboard")
             { view: SLV.view
             , init:
                     { toggleBoard: InBetween10
@@ -16,6 +16,7 @@ template { top10, inBetween10, userPosition, privileges, stats } =
                     , inBetween10
                     , userPosition
                     , privileges
+                    , visible : true
                     , stats
                     }
             }

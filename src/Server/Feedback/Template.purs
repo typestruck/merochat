@@ -17,6 +17,7 @@ template =
             , init:
                     { feedbackStatus: Nothing
                     , screenshot: Nothing
+                    , visible : true
                     , comments: ""
                     , loading: false
                     }

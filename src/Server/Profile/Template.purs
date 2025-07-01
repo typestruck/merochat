@@ -21,6 +21,7 @@ template { user: user, countries, languages } = do
                     , genderInputed: Nothing
                     , countryInputed: Nothing
                     , languagesInputed: Nothing
+                    , visible: true
                     , languagesInputedList: Nothing
                     , tagsInputed: Nothing
                     , tagsInputedList: Nothing

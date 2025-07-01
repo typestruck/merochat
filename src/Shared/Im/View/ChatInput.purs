@@ -28,6 +28,7 @@ import Shared.Im.Contact as SIC
 import Shared.Im.Emoji as SIE
 import Shared.Im.Svg as SIS
 import Shared.Keydown as SK
+import Shared.Modal.Types (ChatModal(..), Modal(..), ScreenModal(..))
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Resource (maxImageSizeKB)

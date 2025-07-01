@@ -1,6 +1,7 @@
 module Shared.Im.View.Modal where
 
 import Prelude
+import Shared.Im.Types
 
 import Data.Array as DA
 import Data.Int as DI
@@ -15,9 +16,9 @@ import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIS
-import Shared.Im.Types (AfterLogout(..), ConfirmationModal(..), ImMessage(..), ImModel, Modal(..), ReportReason(..), RetryableRequest(..), ScreenModal(..), SpecialModal(..), Step(..))
 import Shared.Im.View.Profile as CISP
 import Shared.Im.View.Retry as SIVR
+import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP

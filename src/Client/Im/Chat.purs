@@ -46,6 +46,7 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
+import Shared.Modal.Types (ChatModal(..), Modal(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))

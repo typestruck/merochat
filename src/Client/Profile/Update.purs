@@ -1,8 +1,6 @@
 module Client.Profile.Update where
 
 import Prelude
-import Shared.Experiments.Types as SET
-import Shared.Im.Types as SIT
 import Shared.Profile.Types
 
 import Client.Common.Dom as CCD
@@ -20,6 +18,9 @@ import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
 import Shared.Element (ElementId(..))
+import Shared.Experiments.Types as SET
+import Shared.Im.Types as SIT
+import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Options.MountPoint (imId)
@@ -33,9 +34,13 @@ update rc@{ message } =
       case message of
             SelectAvatar → selectAvatar
             SetPField setter → pure setter
+            ToggleVisibility modal -> setVisibility modal
             Save field → saveField rc field
             AfterRegistration → setRegistrationMessage
             UpdatePrivileges kp → updatePrivileges kp
+
+setVisibility :: ScreenModal -> Aff (ProfileModel -> ProfileModel)
+setVisibility modal =  pure (_ { visible = modal == ShowProfile })
 
 updatePrivileges ∷ _ → Aff (ProfileModel → ProfileModel)
 updatePrivileges { karma, privileges } = pure (_ { user { karma = karma, privileges = privileges } })

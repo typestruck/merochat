@@ -9,6 +9,7 @@ import Data.Argonaut.Encode (class EncodeJson)
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
+import Shared.Modal.Types (ScreenModal)
 
 type LeaderboardUser =
       { id ∷ Int
@@ -22,6 +23,7 @@ type KarmaPrivilegesModel =
       { top10 ∷ Array LeaderboardUser
       , inBetween10 ∷ Array LeaderboardUser
       , userPosition ∷ Int
+      , visible :: Boolean
       , toggleBoard ∷ ToggleBoard
       , privileges ∷ Array PrivilegeUser
       , stats ∷ KarmaStats
@@ -41,7 +43,9 @@ type PrivilegeUser =
       , quantity ∷ Int
       }
 
-data KarmaPrivilegesMessage = ToggleBoardDisplay ToggleBoard
+data KarmaPrivilegesMessage =
+      ToggleBoardDisplay ToggleBoard
+      | ToggleVisibility ScreenModal
 
 data ToggleBoard
       = InBetween10

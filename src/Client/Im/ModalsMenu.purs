@@ -1,4 +1,4 @@
-module Client.Im.UserMenu where
+module Client.Im.ModalsMenu where
 
 import Prelude
 import Shared.Im.Types
@@ -22,13 +22,16 @@ import Effect.Class as EC
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame as F
+import Flame.Subscription.Unsafe.CustomEvent as FS
 import Shared.Element (ElementId(..))
+import Shared.Im.EventTypes (modalVisible)
+import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
 
-foreign import dynamicImport_ :: EffectFn1 String Unit
+foreign import dynamicImport_ ∷ EffectFn1 String Unit
 
 toggleInitialScreen ∷ Boolean → ImModel → MoreMessages
 toggleInitialScreen toggle model =
@@ -67,32 +70,42 @@ logout after model = model /\ [ out ]
 modal ∷ Modal → ImModel → NextMessage
 modal toggled model =
       case toggled of
-            Screen ShowProfile → showTab request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
-            Screen ShowSettings → showTab request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
-            Screen ShowKarmaPrivileges → showTab request.leaderboard ShowKarmaPrivileges (Just KarmaPrivileges) KarmaPrivilegesRoot
-            Screen ShowHelp → showTab request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
-            Screen ShowExperiments → showTab request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
-            Screen ShowBacker → showTab request.internalBacker ShowBacker Nothing BackerRoot
-            Screen ShowFeedback → showTab request.feedback.get ShowFeedback (Just Feedback) FeedbackRoot
+            Screen ShowProfile → showModal request.profile.get ShowProfile (Just Profile) ProfileEditionRoot
+            Screen ShowSettings → showModal request.settings.get ShowSettings (Just Settings) SettingsEditionRoot
+            Screen ShowKarmaPrivileges → showModal request.leaderboard ShowKarmaPrivileges (Just KarmaPrivileges) KarmaPrivilegesRoot
+            Screen ShowHelp → showModal request.internalHelp ShowHelp (Just InternalHelp) HelpRoot
+            Screen ShowExperiments → showModal request.experiments ShowExperiments (Just Experiments) ExperimentsRoot
+            Screen ShowBacker → showModal request.internalBacker ShowBacker Nothing BackerRoot
+            Screen ShowFeedback → showModal request.feedback.get ShowFeedback (Just Feedback) FeedbackRoot
             Special (ShowSuggestionCard id) → F.noMessages model
                   { modal = Special $ ShowSuggestionCard id
                   , showCollapsedMiniSuggestions = true
                   , suggesting = Just id
                   }
-            Chat c -> CIC.modal c model
-            t → F.noMessages model
-                  { modal = t
-                  , erroredFields = []
-                  , toggleContextMenu = HideContextMenu
-                  }
+            Chat c → CIC.modal c model
+            t →
+                  model
+                        { modal = t
+                        , erroredFields = []
+                        , toggleContextMenu = HideContextMenu
+                        } /\ [ visible ShowMenu ]
       where
-      showTab req toggle resource root =
+      visible toggle = do
+            EC.liftEffect $ FS.broadcast modalVisible toggle
+            pure Nothing
+
+      showModal req toggle resource root =
             model
                   { modal = Screen toggle
                   , toggleContextMenu = HideContextMenu
                   , failedRequests = []
+                  , modalsLoaded = toggle : model.modalsLoaded
                   } /\
-                        [ CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
+                  if DA.elem toggle model.modalsLoaded then
+                        [ visible toggle ]
+                  else
+                        [ visible toggle
+                        , CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
                         -- during the tutorial the user may click on the user menu instead of "finish tutorial"
                         --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
                         ]

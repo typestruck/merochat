@@ -10,7 +10,8 @@ import Effect.Class (liftEffect)
 import Flame (ListUpdate)
 import Flame as F
 import Flame.Subscription as FS
-import Shared.Im.Types (ImMessage(..), Modal(..), RetryableRequest(..), ScreenModal(..))
+import Shared.Im.Types (ImMessage(..), RetryableRequest(..))
+import Shared.Modal.Types (Modal(..), ScreenModal(..))
 import Shared.Options.MountPoint (imId)
 
 update ∷ ListUpdate ChatExperimentModel ChatExperimentMessage
@@ -21,6 +22,7 @@ update model =
                           liftEffect CCL.reload
                           pure Nothing
                   ]
+            ToggleVisibility modal -> model {visible = modal == ShowExperiments} /\ []
             JoinExperiment code →
                   F.noMessages model
             -- { current = Just code

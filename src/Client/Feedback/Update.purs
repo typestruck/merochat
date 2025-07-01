@@ -17,6 +17,7 @@ import Effect.Class (liftEffect)
 import Flame (ListUpdate)
 import Flame as F
 import Shared.Element (ElementId(..))
+import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Unsafe as SU
@@ -26,6 +27,7 @@ import Web.HTML.HTMLInputElement as WHI
 update ∷ ListUpdate FeedbackModel FeedbackMessage
 update model@{ comments, screenshot } =
       case _ of
+            ToggleVisibility modal -> model { visible = modal == ShowFeedback } /\ []
             SetComments input → F.noMessages $ model
                   { comments = input
                   }

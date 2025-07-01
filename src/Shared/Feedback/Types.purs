@@ -7,6 +7,7 @@ import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
+import Shared.Modal.Types (ScreenModal)
 import Shared.Network (RequestStatus)
 
 data Status
@@ -16,6 +17,7 @@ data Status
 type FeedbackModel =
       { feedbackStatus ∷ Maybe Status
       , comments ∷ String
+      , visible :: Boolean
       , screenshot ∷ Maybe String
       , loading ∷ Boolean
       }
@@ -23,6 +25,7 @@ type FeedbackModel =
 data FeedbackMessage
       = SetComments String
       | SetScreenshot String
+      | ToggleVisibility ScreenModal
       | SetFeedbackStatus (Maybe RequestStatus)
       | SendFeedback
 

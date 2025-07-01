@@ -10,6 +10,7 @@ import Flame.Html.Element as HE
 import Shared.Avatar as SA
 import Shared.Im.Svg as SIS
 import Shared.Intl as SI
+import Shared.Modal.Types (Modal(..), ScreenModal(..))
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model =

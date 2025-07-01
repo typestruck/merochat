@@ -1,6 +1,7 @@
 module Client.Im.Suggestion where
 
 import Prelude
+import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
@@ -20,7 +21,7 @@ import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ChatModal(..), ImMessage(..), ImModel, Modal(..), RetryableRequest(..), Suggestion, SuggestionsFrom(..))
+import Shared.Modal.Types (Modal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Web.DOM.Element as WDE

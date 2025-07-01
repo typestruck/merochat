@@ -1,4 +1,4 @@
-.chat-experiments {
+#chat-experiments {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,7 +15,7 @@
     max-width: 18em;
 }
 
-.chat-experiments .green-button {
+#chat-experiments .green-button {
     width: max-content;
     margin: 0;
     align-self: flex-end;
@@ -33,7 +33,7 @@
     font-weight: bold;
 }
 
-.chat-experiments .modal-part {
+#chat-experiments .modal-part {
     margin-bottom: 40px;
 }
 
@@ -59,7 +59,7 @@
 }
 
 @media (max-width:1279px) {
-    .chat-experiments {
+    #chat-experiments {
         width: 100%;
     }
 

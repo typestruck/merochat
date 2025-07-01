@@ -11,8 +11,8 @@ import Shared.Element (ElementId(..))
 import Shared.Network (RequestStatus(..))
 
 view ∷ FeedbackModel → Html FeedbackMessage
-view { feedbackStatus, loading, comments } =
-      HE.div (show FeedbackForm)
+view model@{ feedbackStatus, loading, comments } =
+      HE.div [ HA.id $ show FeedbackForm, HA.class' { hidden: not model.visible } ]
             [ HE.div (HA.class' "center duller")
                     [ HE.span_ "Use the form bellow to report any issues,"
                     , HE.br

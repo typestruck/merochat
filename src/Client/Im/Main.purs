@@ -17,11 +17,11 @@ import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.History as CIH
+import Client.Im.ModalsMenu as CIU
 import Client.Im.Notification as CIN
 import Client.Im.Pwa as CIP
 import Client.Im.SmallScreen as CISS
 import Client.Im.Suggestion as CIS
-import Client.Im.UserMenu as CIU
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
 import Data.Array ((:))
@@ -56,6 +56,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SCN
 import Shared.Im.View as SIV
+import Shared.Modal.Types (Modal(..), ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId, profileId)
 import Shared.Options.Profile (passwordMinCharacters)

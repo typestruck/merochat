@@ -2,6 +2,7 @@ module Shared.Settings.Types where
 
 import Prelude
 
+import Shared.Modal.Types (ScreenModal)
 import Shared.User (ProfileVisibility)
 
 type SM =
@@ -10,6 +11,7 @@ type SM =
       , password ∷ String
       , erroredFields ∷ Array String
       , passwordConfirmation ∷ String
+      , visible :: Boolean
       , hideSuccessMessage ∷ Boolean
       , confirmTermination ∷ Boolean
       | PS
@@ -32,6 +34,7 @@ data SettingsMessage
       | ChangeEmail
       | ChangePrivacySettings
       | ChangePassword
+      | ToggleVisibility ScreenModal
       | ToggleTerminateAccount
       | TerminateAccount --very bad
 

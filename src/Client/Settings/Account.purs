@@ -1,6 +1,7 @@
 module Client.Settings.Account where
 
 import Prelude
+import Shared.Im.Types
 
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
@@ -13,7 +14,7 @@ import Flame.Application.Effectful (AffUpdate)
 import Flame.Application.Effectful as FAE
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
-import Shared.Im.Types (ImMessage(..))
+import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Routes (routes)
@@ -30,6 +31,10 @@ update w@{ model, message } =
             ToggleTerminateAccount → toggleTerminateAccount model
             TerminateAccount → terminateAccount
             ChangePrivacySettings → changePrivacySettings w
+            ToggleVisibility modal -> setVisibility modal
+
+setVisibility :: ScreenModal -> Aff (SettingsModel -> SettingsModel)
+setVisibility modal =  pure (_ { visible = modal == ShowSettings })
 
 changePrivacySettings ∷ AffUpdate SettingsModel SettingsMessage
 changePrivacySettings { display, model: { readReceipts, typingStatus, onlineStatus, messageTimestamps, profileVisibility } } = do

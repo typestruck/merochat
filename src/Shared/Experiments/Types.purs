@@ -13,6 +13,7 @@ import Data.Maybe (Maybe(..))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
+import Shared.Modal.Types (ScreenModal)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Shared.User (IU)
@@ -31,6 +32,7 @@ data ChatExperimentMessage
       = QuitExperiment
       | JoinExperiment ChatExperiment
       | ConfirmExperiment (Maybe Experiment)
+      | ToggleVisibility ScreenModal
       | RedirectKarma
       | ToggleSection ImpersonationSection
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
@@ -40,6 +42,7 @@ type ChatExperimentModel =
       , confirming ∷ Maybe Experiment
       , current ∷ Maybe Experiment
       , user ∷ ChatExperimentUser
+      , visible :: Boolean
       , section ∷ ImpersonationSection
       }
 

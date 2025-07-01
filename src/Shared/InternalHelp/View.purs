@@ -12,8 +12,8 @@ import Server.Terms as ST
 import Shared.InternalHelp.Types (DisplayHelpSection(..), InternalHelpMessage(..), InternalHelpModel)
 
 view ∷ InternalHelpModel → Html InternalHelpMessage
-view { toggleHelp } =
-      HE.div (HA.class' "internal-help")
+view model@{ toggleHelp } =
+      HE.div [HA.class' { hidden : not model.visible }, HA.id "internal-help"]
             [ HE.div (HA.class' "help") $ HE.div_
                     [ HE.div (HA.class' "center")
                             [ HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == FAQ }, HA.onClick $ ToggleHelpSection FAQ ] "FAQ"
