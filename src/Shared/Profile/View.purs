@@ -44,7 +44,7 @@ import Type.Proxy (Proxy(..))
 
 view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div (show ProfileEditionForm)
-      [ HE.div [ HA.class' { "profile-edition suggestion contact": true, hidden : not model.visible } ]
+      [ HE.div [ HA.class' { "contact profile-edition suggestion": true, hidden : not model.visible } ]
               [ HE.div (HA.class' { "loading-over": true, hidden: not model.loading })
                       [ HE.div' (HA.class' "loading")
                       ]
