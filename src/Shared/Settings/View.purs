@@ -30,7 +30,7 @@ import Web.Event.Event as WEE
 
 view ∷ SettingsModel → Html SettingsMessage
 view model =
-      HE.div [HA.id "settings-edition", HA.class' { hidden: not model.visible}] $ account model
+      HE.div [ HA.id "settings-edition", HA.class' { hidden: not model.visible } ] $ account model
 
 formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"

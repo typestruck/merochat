@@ -158,12 +158,12 @@ resumeSuggesting model =
 
 --sort the suggestion when the user is not looking
 byAvailability ∷ Array Suggestion → Array Suggestion
-byAvailability suggestions = DA.snoc (DA.filter ( (backerId /= _) <<< _.id) $ DA.sortBy available suggestions) backerUser
+byAvailability suggestions = DA.snoc (DA.filter ((backerId /= _) <<< _.id) $ DA.sortBy available suggestions) backerUser
       where
       available suggestion anotherSuggestion =
-                  case suggestion.availability, anotherSuggestion.availability of
-                        LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) →  anotherDt `compare` dt
-                        a, s → s `compare` a
+            case suggestion.availability, anotherSuggestion.availability of
+                  LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → anotherDt `compare` dt
+                  a, s → s `compare` a
 
 -- | Switch to on or from online only suggestions
 toggleSuggestionsFromOnline ∷ ImModel → MoreMessages

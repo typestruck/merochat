@@ -1,6 +1,6 @@
-let key = 'merochat-theme';
-let light = 'light';
-let dark = 'dark';
+let key = 'merochat-theme',
+    light = 'light',
+    dark = 'dark';
 
 function switchTheme(theme, fromEvent = false) {
     document.documentElement.style.setProperty('--background-color', theme === light ? '#FBFEFB' : '#1D2B35');
@@ -28,3 +28,4 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector('#light-theme-switch').addEventListener('click', () => switchTheme(light, true));
     document.querySelector('#dark-theme-switch').addEventListener('click', () => switchTheme(dark, true));
 });
+

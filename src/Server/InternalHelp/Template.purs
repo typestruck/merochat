@@ -14,6 +14,6 @@ template =
             { view: SIHV.view
             , init:
                     { toggleHelp: FAQ
-                    , visible : true
+                    , visible: true
                     }
             }

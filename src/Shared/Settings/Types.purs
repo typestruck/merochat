@@ -11,7 +11,7 @@ type SM =
       , password ∷ String
       , erroredFields ∷ Array String
       , passwordConfirmation ∷ String
-      , visible :: Boolean
+      , visible ∷ Boolean
       , hideSuccessMessage ∷ Boolean
       , confirmTermination ∷ Boolean
       | PS

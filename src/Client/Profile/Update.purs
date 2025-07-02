@@ -34,13 +34,13 @@ update rc@{ message } =
       case message of
             SelectAvatar → selectAvatar
             SetPField setter → pure setter
-            ToggleVisibility modal -> setVisibility modal
+            ToggleVisibility modal → setVisibility modal
             Save field → saveField rc field
             AfterRegistration → setRegistrationMessage
             UpdatePrivileges kp → updatePrivileges kp
 
-setVisibility :: ScreenModal -> Aff (ProfileModel -> ProfileModel)
-setVisibility modal =  pure (_ { visible = modal == ShowProfile })
+setVisibility ∷ ScreenModal → Aff (ProfileModel → ProfileModel)
+setVisibility modal = pure (_ { visible = modal == ShowProfile })
 
 updatePrivileges ∷ _ → Aff (ProfileModel → ProfileModel)
 updatePrivileges { karma, privileges } = pure (_ { user { karma = karma, privileges = privileges } })

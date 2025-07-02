@@ -91,7 +91,7 @@ setMessageStatus webSocket userId newStatus model =
       model
             { contacts = updatedContacts
             } /\
-            if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds]
+            if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds ]
 
       where
       needsUpdate entry = entry.status >= Sent && entry.status < newStatus && entry.recipient == model.user.id

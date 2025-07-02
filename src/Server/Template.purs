@@ -59,8 +59,8 @@ externalDefaultParameters =
                                       , HE.a (HA.href $ routes.backer {}) "Donate"
                                       , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] "Login"
                                       , HE.div (HA.class' "theme-switcher")
-                                              [ SS.sun
-                                              , SS.moon
+                                              [ SS.sun []
+                                              , SS.moon []
                                               ]
                                       ]
                               , HE.div (HA.class' "merochat")

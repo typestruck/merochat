@@ -15,7 +15,7 @@ import Shared.Resource as SP
 template ∷ Effect String
 template = do
       contents ← ST.template externalDefaultParameters
-            { content = externalDefaultParameters.content <> [ SBV.view { visible : true} ]
+            { content = externalDefaultParameters.content <> [ SBV.view { visible: true } ]
             , css = externalDefaultParameters.css <>
                     [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Backer Css ]
                     ]

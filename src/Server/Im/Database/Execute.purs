@@ -81,7 +81,7 @@ blockQuery blocker blocked = insert # into blocks (_blocker /\ _blocked) # value
 insertReport ∷ Int → Report → ServerEffect Int
 insertReport loggedUserId report = SD.withTransaction $ \connection → do
       SD.executeWith connection $ blockQuery loggedUserId report.userId
-      returned <- SD.singleWith connection $ insert # into reports (_reporter /\ _reported /\ _reason /\ _comment) # values (loggedUserId /\ report.userId /\ report.reason /\ report.comment) # returning _id
+      returned ← SD.singleWith connection $ insert # into reports (_reporter /\ _reported /\ _reason /\ _comment) # values (loggedUserId /\ report.userId /\ report.reason /\ report.comment) # returning _id
       pure (SU.fromJust returned).id
 
 updateTutorialCompleted ∷ Int → ServerEffect Unit
@@ -93,7 +93,7 @@ chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipien
 registerUser ∷ Int → String → String → ServerEffect Unit
 registerUser loggedUserId email password = SD.execute $ update users # set ((_email .=. Just email) /\ (_password .=. Just password) /\ (_temporary .=. Checked false)) # wher (_id .=. loggedUserId)
 
-upsertLastSeen ∷ ∀ r. Int → DateTime -> BaseEffect { pool ∷ Pool | r } Unit
+upsertLastSeen ∷ ∀ r. Int → DateTime → BaseEffect { pool ∷ Pool | r } Unit
 upsertLastSeen who date = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) values(@who, @date) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { who, date }
 
 bulkUpsertLastSeen ∷ ∀ r. String → BaseEffect { pool ∷ Pool | r } Unit

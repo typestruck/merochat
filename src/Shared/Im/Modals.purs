@@ -48,21 +48,21 @@ modals model =
             )
       where
       shouldShow = case model.modal of
-        Chat _ -> false
-        HideModal -> false
-        _ -> true
+            Chat _ → false
+            HideModal → false
+            _ → true
 
       otherModals = case model.modal of
-            Confirmation cf -> case cf of
-                ConfirmReport id → [ confirmReport id model.erroredFields ]
-                ConfirmLogout → [ confirmLogout ]
-                ConfirmDeleteChat id → [ confirmDeleteChat id ]
-                ConfirmBlockUser id → [ confirmBlockUser id ]
-                ConfirmTerminationTemporaryUser → [ confirmTermination ]
-            Special sp -> case sp of
-                ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
-                Tutorial step → [  ]
-            _ -> []
+            Confirmation cf → case cf of
+                  ConfirmReport id → [ confirmReport id model.erroredFields ]
+                  ConfirmLogout → [ confirmLogout ]
+                  ConfirmDeleteChat id → [ confirmDeleteChat id ]
+                  ConfirmBlockUser id → [ confirmBlockUser id ]
+                  ConfirmTerminationTemporaryUser → [ confirmTermination ]
+            Special sp → case sp of
+                  ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
+                  Tutorial step → []
+            _ → []
 
 confirmReport ∷ Int → Array String → Html ImMessage
 confirmReport id erroredFields =
@@ -184,12 +184,11 @@ modalMenu model =
             [ HE.div (HA.class' "modal-menu-mobile")
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
                     , HE.strong_ $ case model.modal of
-                        Screen m -> show m
-                        _ -> ""
+                            Screen m → show m
+                            _ → ""
                     ]
             , HE.div (HA.class' { "modal-menu": true, hidden: model.smallScreen && model.modal /= Screen ShowMenu })
-                    [
-                    HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] $ show ShowProfile
+                    [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] $ show ShowProfile
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] $ show ShowSettings
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] $ show ShowKarmaPrivileges
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowExperiments, HA.class' { entry: true, selected: model.modal == Screen ShowExperiments } ] $ show ShowExperiments
@@ -197,23 +196,22 @@ modalMenu model =
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] $ show ShowHelp
                     , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] $ show ShowFeedback
                     , HE.div (HA.class' "entry theme-modal")
-                            [ SSI.sun
-                            , SSI.moon
+                            [ SSI.sun [HA.onClick $ SetTheme Dark]
+                            , SSI.moon [HA.onClick $ SetTheme Light]
                             ]
                     , if model.user.temporary then
                             HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmTerminationTemporaryUser ] "Delete my data"
                       else
                             HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmLogout ] "Logout"
                     ]
-                    , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
-                            [ SIS.closeX []
-                            ]
+            , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
+                    [ SIS.closeX []
+                    ]
             ]
       where
       screenModal = case model.modal of
-                Screen _ -> true
-                _ -> false
-
+            Screen _ → true
+            _ → false
 
 --only for temporary users, since logging out = deleting account
 confirmTermination ∷ Html ImMessage

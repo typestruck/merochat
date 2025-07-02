@@ -9,12 +9,12 @@ import Data.Generic.Rep (class Generic)
 import Shared.Modal.Types (ScreenModal)
 
 type InternalHelpModel =
-      { toggleHelp ∷ DisplayHelpSection,
-      visible :: Boolean
+      { toggleHelp ∷ DisplayHelpSection
+      , visible ∷ Boolean
       }
 
-data InternalHelpMessage =
-      ToggleVisibility ScreenModal
+data InternalHelpMessage
+      = ToggleVisibility ScreenModal
       | ToggleHelpSection DisplayHelpSection
 
 data DisplayHelpSection

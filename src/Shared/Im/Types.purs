@@ -283,6 +283,7 @@ data ImMessage
       | ToggleUserContextMenu Event
       | Refocus FocusEvent
       | ToggleScrollChatDown Boolean Int
+      | SetTheme Theme
       | SpecialRequest RetryableRequest
       | ReconnectWebSocket
       | PushedMessages (Array ClientMessagePayload)
@@ -307,6 +308,8 @@ data ImMessage
       | SetPrivacySettings PrivacySettings
       | CreateUserFromTemporary
       | SetRegistered
+
+data Theme = Light | Dark
 
 data When = Always | Desktop
 

@@ -7,7 +7,6 @@ import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 
-
 data Modal = HideModal | Screen ScreenModal | Confirmation ConfirmationModal | Chat ChatModal | Special SpecialModal
 
 data ScreenModal
@@ -20,15 +19,15 @@ data ScreenModal
       | ShowBacker
       | ShowFeedback
 
-data ConfirmationModal =
-       ConfirmLogout
+data ConfirmationModal
+      = ConfirmLogout
       | ConfirmTerminationTemporaryUser
       | ConfirmDeleteChat Int
       | ConfirmBlockUser Int
       | ConfirmReport Int
 
-data SpecialModal =
-       ShowSuggestionCard Int
+data SpecialModal
+      = ShowSuggestionCard Int
       | Tutorial Step
 
 data ChatModal
@@ -44,7 +43,6 @@ data Step
       | ChatList
       | OptionsMenu
 
-
 derive instance Eq ConfirmationModal
 derive instance Eq SpecialModal
 
@@ -55,7 +53,7 @@ instance DecodeJson SpecialModal where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Modal where
-    decodeJson = DADGR.genericDecodeJson
+      decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson ScreenModal where
       decodeJson = DADGR.genericDecodeJson

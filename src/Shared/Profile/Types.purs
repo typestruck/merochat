@@ -69,7 +69,7 @@ type PM =
       , genderInputed ∷ Choice (Maybe Gender)
       , countryInputed ∷ Choice (Maybe Int)
       , languagesInputed ∷ Maybe Int
-      , visible :: Boolean
+      , visible ∷ Boolean
       , languagesInputedList ∷ Maybe (Array Int)
       , tagsInputed ∷ Maybe String
       , tagsInputedList ∷ Maybe (Array String)

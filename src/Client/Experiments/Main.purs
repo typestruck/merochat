@@ -16,7 +16,7 @@ main ∷ Effect Unit
 main =
       F.resumeMount (QuerySelector "#chat-experiments") experimentsId
             { view: SEV.view
-            , subscribe: [FS.onCustomEvent modalVisible ToggleVisibility]
+            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
             , init: []
             , update: CEU.update
             }

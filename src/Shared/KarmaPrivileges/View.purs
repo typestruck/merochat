@@ -13,7 +13,7 @@ import Shared.Avatar as SA
 
 view ∷ KarmaPrivilegesModel → Html KarmaPrivilegesMessage
 view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: { sent, started, karma, total } } =
-      HE.div [HA.id "karma-leaderboard", HA.class' { hidden: not model.visible } ] $
+      HE.div [ HA.id "karma-leaderboard", HA.class' { hidden: not model.visible } ] $
             HE.div (HA.class' "modal-section leaderboard ")
                   [ HE.div (HA.class' "modal-part")
                           [ HE.div (HA.class' "section-label")

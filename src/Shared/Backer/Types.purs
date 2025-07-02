@@ -4,10 +4,9 @@ import Prelude
 
 import Shared.Modal.Types (ScreenModal)
 
-type BackerModel = {
-    visible :: Boolean
-}
+type BackerModel =
+      { visible ∷ Boolean
+      }
 
-data BackerMessage
-      =
-       ToggleVisibility ScreenModal
+data BackerMessage =
+      ToggleVisibility ScreenModal

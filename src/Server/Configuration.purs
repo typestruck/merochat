@@ -1,7 +1,7 @@
 module Server.Configuration where
 
 import Prelude
-import Server.Effect(Configuration)
+import Server.Effect (Configuration)
 
 import Data.Int as DI
 import Data.Maybe (Maybe(..))

@@ -165,7 +165,7 @@ reportUser loggedUserId report = do
             { reported: report.userId
             , reporter: loggedUserId
             , reason: show report.reason
-            , comment:  DM.fromMaybe "" report.comment
+            , comment: DM.fromMaybe "" report.comment
             }
 
 finishTutorial ∷ Int → ServerEffect Unit

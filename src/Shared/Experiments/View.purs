@@ -12,7 +12,7 @@ import Shared.Experiments.WordChain as SEW
 import Shared.Experiments.Doppelganger as SED
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
-view model = HE.div [HA.id "chat-experiments", HA.class' { hidden: not model.visible }] $ case model.current of
+view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.visible } ] $ case model.current of
       Just _ →
             HE.div (HA.class' "modal-section") "joined" -- $ SEI.joined profile
       _ →

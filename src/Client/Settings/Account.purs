@@ -31,10 +31,10 @@ update w@{ model, message } =
             ToggleTerminateAccount → toggleTerminateAccount model
             TerminateAccount → terminateAccount
             ChangePrivacySettings → changePrivacySettings w
-            ToggleVisibility modal -> setVisibility modal
+            ToggleVisibility modal → setVisibility modal
 
-setVisibility :: ScreenModal -> Aff (SettingsModel -> SettingsModel)
-setVisibility modal =  pure (_ { visible = modal == ShowSettings })
+setVisibility ∷ ScreenModal → Aff (SettingsModel → SettingsModel)
+setVisibility modal = pure (_ { visible = modal == ShowSettings })
 
 changePrivacySettings ∷ AffUpdate SettingsModel SettingsMessage
 changePrivacySettings { display, model: { readReceipts, typingStatus, onlineStatus, messageTimestamps, profileVisibility } } = do

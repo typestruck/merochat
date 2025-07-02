@@ -27,7 +27,7 @@ import Web.HTML.HTMLInputElement as WHI
 update ∷ ListUpdate FeedbackModel FeedbackMessage
 update model@{ comments, screenshot } =
       case _ of
-            ToggleVisibility modal -> model { visible = modal == ShowFeedback } /\ []
+            ToggleVisibility modal → model { visible = modal == ShowFeedback } /\ []
             SetComments input → F.noMessages $ model
                   { comments = input
                   }

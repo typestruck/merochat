@@ -33,8 +33,8 @@ recover rec = do
             Nothing → SR.throwBadRequest accountNotFound
             Just user → do
                   token ← R.liftEffect (DU.toString <$> DU.genUUID)
-                  id <- SRD.insertRecover user.id token
-                  SE.sendEmail $ Reset { user_id : user.id, token, email }
+                  id ← SRD.insertRecover user.id token
+                  SE.sendEmail $ Reset { user_id: user.id, token, email }
 
 reset ∷ ResetPassword → ServerEffect Unit
 reset { token, password } = do

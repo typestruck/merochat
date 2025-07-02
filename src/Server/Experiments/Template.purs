@@ -13,7 +13,7 @@ template payload = F.preMount (QuerySelector "#chat-experiments")
       , init:
               { experiments: payload.experiments
               , current: Nothing
-              , visible : true
+              , visible: true
               , confirming: Nothing
               , user: payload.user
               , section: HideSections

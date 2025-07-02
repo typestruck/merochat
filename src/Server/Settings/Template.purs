@@ -18,7 +18,7 @@ template settings =
                           , password: ""
                           , passwordConfirmation: ""
                           , confirmTermination: false
-                          , visible : true
+                          , visible: true
                           , erroredFields: []
                           , hideSuccessMessage: true
                           }

@@ -12,7 +12,7 @@ import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Data.Maybe (Maybe(..))
-import Effect.Class(liftEffect)
+import Effect.Class (liftEffect)
 
 type Configuration =
       { port ∷ Int

@@ -16,7 +16,7 @@ template { top10, inBetween10, userPosition, privileges, stats } =
                     , inBetween10
                     , userPosition
                     , privileges
-                    , visible : true
+                    , visible: true
                     , stats
                     }
             }

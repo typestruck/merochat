@@ -22,6 +22,7 @@ import Client.Im.Notification as CIN
 import Client.Im.Pwa as CIP
 import Client.Im.SmallScreen as CISS
 import Client.Im.Suggestion as CIS
+import Client.Im.Theme as CIT
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
 import Data.Array ((:))
@@ -197,6 +198,7 @@ update st model =
             Refocus e → refocus e st.lastActiveRef webSocket model
             UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
             CloseWebSocket when → CIWE.closeWebSocket when st.webSocketRef model
+            SetTheme theme -> CIT.setTheme theme model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
             SetField setter → F.noMessages $ setter model
@@ -303,7 +305,7 @@ finishTutorial model = model { user { completedTutorial = true } } /\ [ finish, 
       finish = do
             void <<< CCNT.silentResponse $ request.im.tutorial {}
             case model.modal of
-             --     Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
+                  --     Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
                   _ → pure Nothing
       greet = do
             EA.delay $ Milliseconds 2000.0

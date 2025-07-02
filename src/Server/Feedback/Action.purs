@@ -20,4 +20,4 @@ sendFeedback loggedUserId rawComments screenshot = do
             Just base64 → Just <$> SF.saveBase64File base64
             Nothing → pure Nothing
       void $ SFD.insertFeedback loggedUserId comments fileName
-      SE.sendEmail $ Feedback {  feedbacker: loggedUserId, comments, file: DM.fromMaybe ""  fileName }
+      SE.sendEmail $ Feedback { feedbacker: loggedUserId, comments, file: DM.fromMaybe "" fileName }

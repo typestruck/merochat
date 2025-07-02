@@ -42,7 +42,7 @@ type ChatExperimentModel =
       , confirming ∷ Maybe Experiment
       , current ∷ Maybe Experiment
       , user ∷ ChatExperimentUser
-      , visible :: Boolean
+      , visible ∷ Boolean
       , section ∷ ImpersonationSection
       }
 

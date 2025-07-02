@@ -23,7 +23,7 @@ type KarmaPrivilegesModel =
       { top10 ∷ Array LeaderboardUser
       , inBetween10 ∷ Array LeaderboardUser
       , userPosition ∷ Int
-      , visible :: Boolean
+      , visible ∷ Boolean
       , toggleBoard ∷ ToggleBoard
       , privileges ∷ Array PrivilegeUser
       , stats ∷ KarmaStats
@@ -43,8 +43,8 @@ type PrivilegeUser =
       , quantity ∷ Int
       }
 
-data KarmaPrivilegesMessage =
-      ToggleBoardDisplay ToggleBoard
+data KarmaPrivilegesMessage
+      = ToggleBoardDisplay ToggleBoard
       | ToggleVisibility ScreenModal
 
 data ToggleBoard

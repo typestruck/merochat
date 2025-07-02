@@ -15,7 +15,7 @@ main ∷ Effect Unit
 main =
       F.resumeMount_ (QuerySelector ".backer")
             { view: SIHV.view
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility]
+            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
             , init: []
             , update: CIHU.update
             }

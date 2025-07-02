@@ -19,7 +19,7 @@ main = do
       F.resumeMount (QuerySelector $ "#" <> show FeedbackForm) feedbackId
             { view: SFV.view
             , update: CFU.update
-            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility]
+            , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
             , init: []
             }
       --file changes

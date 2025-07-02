@@ -22,7 +22,7 @@ update model =
                           liftEffect CCL.reload
                           pure Nothing
                   ]
-            ToggleVisibility modal -> model {visible = modal == ShowExperiments} /\ []
+            ToggleVisibility modal → model { visible = modal == ShowExperiments } /\ []
             JoinExperiment code →
                   F.noMessages model
             -- { current = Just code
