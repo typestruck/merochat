@@ -2,6 +2,7 @@ import path from 'path';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import TerserPlugin from "terser-webpack-plugin";
+import webpack from 'webpack';
 import ReplaceHashPlugin from './ReplaceHashPlugin.js';
 
 export default {
@@ -56,7 +57,8 @@ export default {
         }),
         new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
         new webpack.DefinePlugin({
-            'process.env.PRODUCTION': true
+            'process.env.PRODUCTION': true,
+            'process.env.VAPID_PUBLIC_KEY': process.env.VAPID_PUBLIC_KEY
         })
     ],
     module: {
