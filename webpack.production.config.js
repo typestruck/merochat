@@ -58,7 +58,7 @@ export default {
         new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
         new webpack.DefinePlugin({
             'process.env.PRODUCTION': true,
-            'process.env.VAPID_PUBLIC_KEY': process.env.VAPID_PUBLIC_KEY
+            'process.env.VAPID_PUBLIC_KEY': JSON.stringify(process.env.VAPID_PUBLIC_KEY)
         })
     ],
     module: {
