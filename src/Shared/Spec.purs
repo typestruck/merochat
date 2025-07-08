@@ -10,7 +10,7 @@ import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
-import Shared.Account (RecoverAccount, RegisterLogin, ResetPassword, RegisterTemporary)
+import Shared.Account (EmailCaptcha, EmailPasswordCaptcha, RegisterTemporary, ResetPassword, EmailPassword)
 import Shared.DateTime (DateTimeWrapper, DateWrapper)
 import Shared.Html (Html)
 import Shared.Settings.Types (PrivacySettings)
@@ -30,13 +30,12 @@ spec ∷
                     , temporary ∷
                             POST "/temporary"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
-                                  , body ∷ RegisterTemporary
                                   , response ∷ Ok
                                   }
                     , register ∷
                             POST "/register"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
-                                  , body ∷ RegisterLogin
+                                  , body ∷ EmailPasswordCaptcha
                                   , response ∷ Ok
                                   }
                     , unsubscribe ∷
@@ -56,7 +55,7 @@ spec ∷
                                     --the query parameter next is only used client side
                                     post ∷
                                           POST "/"
-                                                { body ∷ RegisterLogin
+                                                { body ∷ EmailPassword
                                                 , response ∷ Ok
                                                 }
                                   }
@@ -73,7 +72,7 @@ spec ∷
                                                 }
                                   , register ∷
                                           POST "/register"
-                                                { body ∷ { email ∷ String, password ∷ String }
+                                                { body ∷ EmailPassword
                                                 , response ∷ Ok
                                                 }
                                   , contacts ∷
@@ -216,7 +215,7 @@ spec ∷
                                                 }
                                   , post ∷
                                           POST "/"
-                                                { body ∷ RecoverAccount
+                                                { body ∷ EmailCaptcha
                                                 , response ∷ Ok
                                                 }
                                   , reset ∷

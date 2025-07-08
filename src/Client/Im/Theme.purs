@@ -9,8 +9,6 @@ import Effect.Class as EC
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Shared.Im.Types (Theme(..), ImModel)
-
-
 foreign import setTheme_ :: EffectFn1 String Unit
 
 setTheme :: Theme -> ImModel -> NoMessages

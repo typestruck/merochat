@@ -22,7 +22,8 @@ import Run as R
 import Run.Except (EXCEPT)
 import Run.Except as RE
 import Run.Reader as RR
-import Server.Effect (BaseEffect, Configuration)
+import Server.Effect (BaseEffect)
+import Server.Environment (databaseHost)
 import Shared.ResponseError (DatabaseError(..))
 import Shared.ResponseError as ST
 import Type.Row (type (+))
@@ -140,8 +141,8 @@ hoistTransaction action = do
             Right r → pure r
             Left l → RE.throw l
 
-newPool ∷ Configuration → Effect Pool
-newPool { databaseHost } =
+newPool ∷  Effect Pool
+newPool =
       DD.newPool $ (DD.defaultConfiguration "merochat")
             { user = Just "merochat"
             , host = databaseHost

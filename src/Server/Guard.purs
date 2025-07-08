@@ -22,6 +22,7 @@ import Run.Except as RE
 import Run.Reader as RR
 import Server.Cookies (cookieName)
 import Server.Effect as SE
+import Server.Environment (tokenSecret)
 import Server.Token as ST
 import Shared.Routes (routes)
 
@@ -32,7 +33,7 @@ guards reading =
       }
 
 checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
-checkLoggedUser { configuration: { tokenSecret }, pool } request = do
+checkLoggedUser {  pool } request = do
       cookies ← PSG.cookies request
       maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
@@ -47,7 +48,7 @@ checkLoggedUser { configuration: { tokenSecret }, pool } request = do
       redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
 
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
-checkAnonymous { configuration: { tokenSecret }, pool } request = do
+checkAnonymous {  pool } request = do
       cookies ← PSG.cookies request
       maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of

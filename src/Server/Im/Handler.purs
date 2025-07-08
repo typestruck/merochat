@@ -15,6 +15,7 @@ import Server.Im.Action as SIA
 import Server.Im.Template as SIT
 import Server.Ok (Ok, ok)
 import Server.Response as SR
+import Shared.Account (EmailPassword)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
 
@@ -70,7 +71,7 @@ greeting { guards: { loggedUserId } } = do
       SIA.greet loggedUserId
       pure ok
 
-register ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { email ∷ String, password ∷ String } } → ServerEffect Ok
+register ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ EmailPassword } → ServerEffect Ok
 register { guards: { loggedUserId }, body: { email, password } } = do
       SIA.registerUser loggedUserId email password
       pure ok

@@ -3,7 +3,6 @@ module Client.Landing.Main where
 import Prelude
 
 import Client.Common.Account as CCA
-import Client.Common.Captcha as CCC
 import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
@@ -20,36 +19,30 @@ import Shared.Routes (routes)
 import Shared.Unsafe as SU
 import Web.HTML.Event.EventTypes (click)
 
-registerRegularUser ∷ Maybe String → Effect Unit
-registerRegularUser captchaResponse = do
+registerRegularUser ∷ Effect Unit
+registerRegularUser = do
       registerLogin ← CCA.validateEmailPassword
       case registerLogin of
             Nothing → pure unit
-            Just rl → runCaptcha (DN.notNull "0") captchaResponse $ request.register { body: rl { captchaResponse = captchaResponse } }
+            Just rl → EA.launchAff_ do
+                  status ← CCA.formRequest $ request.register { body:  { email : rl.email, password : rl.password, captchaResponse : "" } }
+                  liftEffect $ case status of
+                        Success → CCL.setLocation $ routes.im.get {}
+                        Failure _ → pure unit
 
-registerTemporaryUser ∷ Maybe String → Effect Unit
-registerTemporaryUser captchaResponse = runCaptcha (DN.notNull "1") captchaResponse $ request.temporary { body: { captchaResponse } }
-
-runCaptcha ∷ Nullable String → Maybe String → Aff _ → Effect Unit
-runCaptcha widgetId captchaResponse request = case captchaResponse of
-      Nothing → CCC.execute widgetId
-      _ → EA.launchAff_ do
-            status ← CCA.formRequest request
-            liftEffect $ case status of
-                  Success → CCL.setLocation $ routes.im.get {}
-                  Failure _ → CCC.reset widgetId
+registerTemporaryUser ∷ Effect Unit
+registerTemporaryUser  =  EA.launchAff_ do
+      status ← CCA.formRequest $ request.temporary {  }
+      liftEffect $ case status of
+            Success → CCL.setLocation $ routes.im.get {}
+            Failure _ → pure unit
 
 registerTemporaryUserEvents ∷ Effect Unit
 registerTemporaryUserEvents = do
       temporaryUserElement ← CCD.getElementById TemporaryUserSignUp
-      CCD.addEventListener (SU.fromJust temporaryUserElement) click (const (registerTemporaryUser Nothing))
-
-initCaptchas ∷ Effect Unit
-initCaptchas = do
-      CCC.render (show CaptchaRegularUser) (CCC.defaultParameters (registerRegularUser <<< Just)) false
-      CCC.render (show CaptchaTemporaryUser) (CCC.defaultParameters (registerTemporaryUser <<< Just)) false
+      CCD.addEventListener (SU.fromJust temporaryUserElement) click (const registerTemporaryUser)
 
 main ∷ Effect Unit
 main = do
-      CCA.registerEvents (registerRegularUser Nothing)
+      CCA.registerEvents registerRegularUser
       registerTemporaryUserEvents

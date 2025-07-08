@@ -7,14 +7,14 @@ import Environment (production)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
+import Server.Landing.Svg as SLS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
-import Server.Landing.Svg as SLS
-import Shared.Svg as SS
 import Shared.Options.Profile (passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
+
 
 template ∷ Effect String
 template = do
@@ -33,7 +33,6 @@ template = do
                     ]
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Landing Js ]
-            , HE.script' [ HA.createAttribute "async" "true", HA.src "https://www.google.com/recaptcha/api.js?onload=initCaptchas&render=explicit" ]
             ]
       content =
             [ HE.div (HA.class' "landing")
@@ -51,8 +50,7 @@ template = do
                                     , HE.strong_ " strictly platonic"
                                     ]
                             , HE.div (HA.class' "sign-up-form form-up")
-                                    [ HE.div' [ HA.id $ show CaptchaRegularUser, HA.class' "hidden" ]
-                                    , HE.div_
+                                    [ HE.div_
                                             [ HE.input [ HA.id $ show EmailInput, HA.type' "text", HA.autocomplete "new-email", HA.placeholder "Email" ]
                                             , HE.div (HA.class' "error-message") "Please enter a valid email"
                                             ]
@@ -60,8 +58,7 @@ template = do
                                             [ HE.input [ HA.id $ show PasswordInput, HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.placeholder "Password" ]
                                             , HE.div (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
                                             ]
-                                    , HE.div' [ HA.id $ show CaptchaTemporaryUser, HA.class' "hidden" ]
-                                    , HE.input [ HA.class' "shadow", HA.type' "button", HA.value "Create account" ]
+                                    , HE.input [ HA.id $ show CreateAccount, HA.class' "shadow", HA.type' "button", HA.value "Create account" ]
                                     , HE.a (HA.id $ show TemporaryUserSignUp) "Or continue as a guest →"
                                     , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]

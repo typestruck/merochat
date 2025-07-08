@@ -15,7 +15,7 @@ import Server.Database.Countries (CountriesTable)
 import Server.Database.Fields (_id)
 import Server.Database.Types (Checked(..))
 import Server.Effect (ServerEffect, BaseEffect)
-import Shared.Account (RegisterLoginUser)
+
 import Shared.User (Gender, ProfileVisibility(..), ReceiveEmail)
 import Type.Proxy (Proxy(..))
 
@@ -113,7 +113,13 @@ data By
       = Id Int
       | Email String
 
-userBy ∷ By → ServerEffect (Maybe RegisterLoginUser)
+type UserAccount = {
+      id :: Int
+      , email ∷ Maybe String
+      , password ∷ Maybe String
+}
+
+userBy ∷ By → ServerEffect (Maybe UserAccount)
 userBy = case _ of
       Email value → SD.single $ baseQuery (\ft → ft .&&. _email .=. value)
       Id value → SD.single $ baseQuery (\ft → ft .&&. _id .=. value)

@@ -27,7 +27,7 @@ tests = do
                   $ expectException
                           { email: ""
                           , password: ""
-                          , captchaResponse: Nothing
+
                           }
 
             TU.test "does not accept empty password"
@@ -35,7 +35,7 @@ tests = do
                   $ expectException
                           { email
                           , password: ""
-                          , captchaResponse: Nothing
+
                           }
 
             TU.test "does not accept inexistent login"
@@ -43,7 +43,7 @@ tests = do
                   $ expectException
                           { email
                           , password
-                          , captchaResponse: Nothing
+
                           }
 
             TU.test "does not accept wrong password" $
@@ -52,7 +52,7 @@ tests = do
                         SLIA.login
                               { email
                               , password: "sssss"
-                              , captchaResponse: Nothing
+
                               }
 
             TU.test "creates session token" $
@@ -66,7 +66,7 @@ tests = do
                         SLIA.login
                               { email: email2
                               , password
-                              , captchaResponse: Nothing
+
                               }
 
             TU.test "does not accept banned users" $
@@ -77,5 +77,5 @@ tests = do
                         SLIA.login
                               { email
                               , password
-                              , captchaResponse: Nothing
+
                               }

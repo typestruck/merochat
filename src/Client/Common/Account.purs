@@ -10,7 +10,7 @@ import Data.String as DS
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Payload.Client (ClientResponse)
-import Shared.Account (RegisterLogin)
+import Shared.Account (EmailPassword)
 import Shared.Element (ElementId(..))
 import Shared.Network (RequestStatus)
 import Shared.Options.Profile (passwordMinCharacters)
@@ -27,7 +27,7 @@ formSelector = ".form-up"
 buttonSelector ∷ String
 buttonSelector = formSelector <> " input[type=button]"
 
-validateEmailPassword ∷ Effect (Maybe RegisterLogin)
+validateEmailPassword ∷ Effect (Maybe EmailPassword)
 validateEmailPassword = do
       maybeEmail ← validateEmail
       maybePassword ← validatePassword
@@ -37,7 +37,6 @@ validateEmailPassword = do
                   pure $ Just
                         { email: email
                         , password: password
-                        , captchaResponse: Nothing
                         }
             _, _ → pure Nothing
 

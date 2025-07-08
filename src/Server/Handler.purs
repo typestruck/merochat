@@ -35,12 +35,12 @@ import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH
 import Server.NotFound.Handler as SNH
+import Server.Ok (Ok, ok)
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
 import Server.Unsubscribe.Handler as SUH
 import Shared.Resource (localBasePath)
-import Server.Ok (Ok, ok)
 import Shared.ResponseError (ResponseError(..))
 import Shared.Routes (routes)
 

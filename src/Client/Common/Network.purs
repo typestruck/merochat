@@ -48,11 +48,7 @@ formRequest formSelector aff = do
       buttonSelector = formSelectorId <> " input[type=button], " <> formSelectorId <> " button"
       errorMessageSelector = formSelectorId <> " .request-error-message"
 
-      loadingMessage baseText =
-            let
-                  split = DS.split (Pattern " ") baseText
-            in
-                  DS.joinWith " " <<< DM.fromMaybe [] $ DA.modifyAt 0 continuous split
+      loadingMessage baseText = DS.joinWith " " <<< DM.fromMaybe [] <<< DA.modifyAt 0 continuous $ DS.split (Pattern " ") baseText
 
       continuous word =
             let

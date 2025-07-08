@@ -22,7 +22,7 @@ import Run.Except as RE
 import Safe.Coerce as SC
 import Server.AccountValidation as SA
 import Server.Database.Types (Checked(..))
-import Server.Effect (BaseEffect, Configuration, ServerEffect)
+import Server.Effect (BaseEffect, ServerEffect)
 import Server.Email (Email(..))
 import Server.Email as SE
 import Server.File as SF
@@ -87,7 +87,7 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
 subscribe ∷ Int → ServerEffect Unit
 subscribe loggedUserId = SIDE.subscribe loggedUserId
 
-processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError (Int /\ String))
+processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do
       isIt ← SIDE.isRecipientVisible loggedUserId userId
       if isIt then do
@@ -101,7 +101,7 @@ processMessage loggedUserId userId content = do
       else
             pure $ Left UserUnavailable
 
-editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } (Either MessageError String)
+editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect {  pool ∷ Pool | r } (Either MessageError String)
 editMessage loggedUserId userId messageId content = do
       isVisible ← SIDE.isRecipientVisible loggedUserId userId
       canEdit ← if isVisible then SIDPP.canEditMessage loggedUserId messageId else pure false
@@ -116,14 +116,14 @@ editMessage loggedUserId userId messageId content = do
       else
             pure $ Left UserUnavailable
 
-unsendMessage ∷ ∀ r. Int → Int → Int → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } Unit
+unsendMessage ∷ ∀ r. Int → Int → Int → BaseEffect {  pool ∷ Pool | r } Unit
 unsendMessage loggedUserId userId messageId = SIDE.deleteMessage loggedUserId userId messageId
 
 markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Privilege)
 markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SIDPP.markdownPrivileges loggedUserId
 
 -- | Sanitizes markdown and handle image uploads
-processMessageContent ∷ ∀ r. MessageContent → Set Privilege → BaseEffect { configuration ∷ Configuration, pool ∷ Pool | r } String
+processMessageContent ∷ ∀ r. MessageContent → Set Privilege → BaseEffect {  pool ∷ Pool | r } String
 processMessageContent content privileges = do
       message ← case content of
             Text m | allowed m → pure m

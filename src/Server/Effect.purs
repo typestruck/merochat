@@ -11,17 +11,7 @@ import Effect.Console as EC
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
-import Data.Maybe (Maybe(..))
 import Effect.Class (liftEffect)
-
-type Configuration =
-      { port ∷ Int
-      , captchaSecret ∷ String
-      , adminSecret ∷ String
-      , tokenSecret ∷ String
-      , salt ∷ String
-      , databaseHost ∷ Maybe String
-      }
 
 type BaseReader extension =
       { pool ∷ Pool
@@ -29,7 +19,7 @@ type BaseReader extension =
       }
 
 type ServerReader = BaseReader
-      ( configuration ∷ Configuration
+      (
       )
 
 type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) a

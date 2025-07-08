@@ -19,9 +19,8 @@ export function getSubscription_(registration, cb) {
     });
 }
 
-export function subscribe_(registration, cb) {
-    let vp = '[VAPID-PUBLIC-KEY-contenthash]',
-        padding = '=',
+export function subscribe_(vp, registration, cb) {
+    let padding = '=',
         base64 = vp.replace(/\-/g, '+').replace(/_/g, '/') + padding,
         rawData = window.atob(base64),
         vapidPublicKey = new Uint8Array(rawData.length);

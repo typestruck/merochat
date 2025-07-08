@@ -8,7 +8,6 @@ import Data.Maybe (Maybe(..))
 import Data.UUID as DU
 import Run as R
 import Server.AccountValidation as SA
-import Server.Captcha as SC
 import Server.Database.Users (By(..))
 import Server.Database.Users as SDU
 import Server.Email (Email(..))
@@ -16,7 +15,7 @@ import Server.Email as SE
 import Server.Recover.Database as SRD
 import Server.Response as SR
 import Server.Token as ST
-import Shared.Account (ResetPassword, RecoverAccount)
+import Shared.Account (ResetPassword, EmailCaptcha)
 
 accountNotFound ∷ String
 accountNotFound = "Could not find an account with this email"
@@ -24,9 +23,8 @@ accountNotFound = "Could not find an account with this email"
 invalidRecovery ∷ String
 invalidRecovery = "Invalid recovery link"
 
-recover ∷ RecoverAccount → ServerEffect Unit
+recover ∷ EmailCaptcha → ServerEffect Unit
 recover rec = do
-      SC.validateCaptcha rec.captchaResponse
       email ← SA.validateEmail rec.email
       record ← SDU.userBy $ Email email
       case record of

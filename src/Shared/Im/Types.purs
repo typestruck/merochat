@@ -338,6 +338,15 @@ type OutgoingRecord =
             , turn ∷ Maybe Turn
             )
 
+
+type Challenge =
+      { algorithm ∷ String
+      , challenge ∷ String
+      , maxnumber ∷ Number
+      , salt ∷ String
+      , signature ∷ String
+      }
+
 type EditedRecord = { id ∷ Int, userId ∷ Int, content ∷ MessageContent }
 
 type DeletedRecord = { id ∷ Int, userId ∷ Int }

@@ -41,7 +41,7 @@ tests = do
                   $ registerExceptionTest
                           { email: ""
                           , password: ""
-                          , captchaResponse: Nothing
+                          , captchaResponse: ""
                           }
 
             TU.test "register does not accept empty password"
@@ -49,7 +49,7 @@ tests = do
                   $ registerExceptionTest
                           { email
                           , password: ""
-                          , captchaResponse: Nothing
+                          , captchaResponse: ""
                           }
 
             TU.test "register does not accept existing email"
@@ -66,7 +66,7 @@ tests = do
                           registerExceptionTest $
                                 { email
                                 , password
-                                , captchaResponse: Nothing
+                                , captchaResponse: ""
                                 }
 
             TU.test "register creates user"
@@ -75,7 +75,7 @@ tests = do
                           void $ SLA.registerRegularUser
                                 { email
                                 , password
-                                , captchaResponse: Nothing
+                                , captchaResponse: ""
                                 }
                           maybeUser ← SDU.userBy $ Email email
                           case maybeUser of
@@ -87,7 +87,7 @@ tests = do
             TU.test "register creates temporary user"
                   $ TS.serverAction
                   $ do
-                          void $ SLA.registerTemporaryUser Nothing
+                          void $ SLA.registerTemporaryUser
                           count ← STU.userCount
                           when (count == 0) $ R.liftAff $ TU.failure "user not created!"
 
@@ -98,7 +98,7 @@ tests = do
                           void $ SLA.registerRegularUser
                                 { email: upcaseEmail
                                 , password
-                                , captchaResponse: Nothing
+                                , captchaResponse: ""
                                 }
                           maybeUser ← SDU.userBy <<< Email $ DS.toLower upcaseEmail
                           when (DM.isNothing maybeUser) <<< R.liftAff $ TU.failure "user not created!"
@@ -109,7 +109,7 @@ tests = do
                           void $ SLA.registerRegularUser
                                 { email
                                 , password
-                                , captchaResponse: Nothing
+                                , captchaResponse: ""
                                 }
                           { id } ← SU.fromJust <$> (SDU.userBy $ Email email)
                           history ← SD.single $ select (count _id # as c) # from karma_histories # wher (_target .=. id)
@@ -123,7 +123,7 @@ tests = do
                           void $ SLA.registerRegularUser
                                 { email
                                 , password
-                                , captchaResponse: Nothing
+                                , captchaResponse: ""
                                 }
                           { id } ← SU.fromJust <$> (SDU.userBy $ Email email)
                           suggestion ← SD.single $ select (count _id # as c) # from suggestions # wher (_suggested .=. id)

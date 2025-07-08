@@ -1,25 +1,22 @@
 module Shared.Account where
 
-import Data.Maybe (Maybe)
-
-type EmailCaptcha r =
+type EmailCaptcha =
       { email ∷ String
-      , captchaResponse ∷ Maybe String
-      | r
+      , captchaResponse ∷ String
       }
 
--- | Fields for registration or login
-type RegisterLogin = (EmailCaptcha (password ∷ String))
-
-type RegisterTemporary = { captchaResponse ∷ Maybe String }
-
-type RegisterLoginUser =
-      { id ∷ Int
-      , email ∷ Maybe String
-      , password ∷ Maybe String
+type EmailPassword =
+      { email ∷ String
+      , password ∷ String
       }
 
-type RecoverAccount = EmailCaptcha ()
+type EmailPasswordCaptcha =
+      { email ∷ String
+      , password ∷ String
+      , captchaResponse ∷ String
+      }
+
+type RegisterTemporary = { captchaResponse ∷ String }
 
 type ResetPassword =
       { token ∷ String

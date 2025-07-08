@@ -4,11 +4,11 @@ import Prelude
 
 import Debug (spy)
 import Effect.Class (liftEffect)
-
 import Run.Reader as RR
+import Server.Effect (ServerEffect)
+import Server.Environment (adminSecret)
 import Server.Response as SR
 import Server.Token as ST
-import Server.Effect (ServerEffect)
 import Server.WebSocket (WebSocketMessage(..))
 import Server.WebSocket as SW
 import Shared.Im.Types (WebSocketPayloadServer(..))
@@ -17,7 +17,6 @@ import Shared.Options.WebSocket (localPort)
 
 ban ∷ Int → { id ∷ Int, secret ∷ String } → ServerEffect Unit
 ban loggedUserId query = do
-      { configuration: { adminSecret } } ← RR.ask
       if query.secret == adminSecret then do
             cookie ← ST.createToken loggedUserId
             liftEffect do

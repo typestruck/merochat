@@ -5,7 +5,7 @@ import Prelude
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.Im.Flame (NoMessages, MoreMessages)
+import Client.Im.Flame (NoMessages)
 import Client.Im.History as CIH
 import Data.Array as DA
 import Data.List (List(..))
@@ -14,16 +14,15 @@ import Data.Nullable (Nullable)
 import Data.Nullable as DN
 import Data.Traversable as DT
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class as EC
 import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3)
 import Effect.Uncurried as EU
+import Environment (vapidPublicKey)
 import Flame.Subscription as FS
 import Foreign (Foreign)
 import Foreign as F
-import Shared.Im.Contact as SC
 import Shared.Im.Types (ClientMessagePayload, ImMessage(..), ImModel, MessageStatus(..), WebSocketPayloadClient(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Options.Topic as SOT
@@ -31,7 +30,6 @@ import Shared.Unsafe as SU
 import Web.HTML (Navigator)
 import Web.HTML as WH
 import Web.HTML.Window as WHW
-import Web.Socket.WebSocket (WebSocket)
 
 data SwMessage = OpenChat Int | NotChatting
 
@@ -45,7 +43,7 @@ foreign import ready_ ∷ EffectFn2 Navigator (Registration → Effect Unit) Uni
 
 foreign import getSubscription_ ∷ EffectFn2 Registration (Nullable Subscription → Effect Unit) Unit
 
-foreign import subscribe_ ∷ EffectFn2 Registration (Subscription → Effect Unit) Unit
+foreign import subscribe_ ∷ EffectFn3 String Registration (Subscription → Effect Unit) Unit
 
 foreign import topicBody_ ∷ EffectFn2 Subscription String String
 
@@ -54,7 +52,7 @@ foreign import receiveMessage_ ∷ EffectFn1 (String → Foreign → Effect Unit
 foreign import postMessage_ ∷ EffectFn2 String Foreign Unit
 
 subscribe ∷ Registration → (Subscription → Effect Unit) → Effect Unit
-subscribe = EU.runEffectFn2 subscribe_
+subscribe = EU.runEffectFn3 subscribe_ vapidPublicKey
 
 topicBody ∷ Subscription → String → Effect String
 topicBody = EU.runEffectFn2 topicBody_

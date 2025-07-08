@@ -2,7 +2,6 @@ import path from 'path';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import TerserPlugin from "terser-webpack-plugin";
-import webpack from 'webpack';
 import ReplaceHashPlugin from './ReplaceHashPlugin.js';
 
 export default {
@@ -55,11 +54,10 @@ export default {
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css',
         }),
+        new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
         new webpack.DefinePlugin({
             'process.env.PRODUCTION': true
-        }),
-        new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
-        new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'im' }, 'output-es/Shared.Resource/index.js'] })
+        })
     ],
     module: {
         rules: [

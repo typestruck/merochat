@@ -29,7 +29,6 @@ data ElementId
       | SettingsEditionRoot
       | ExperimentsRoot
       | HelpRoot
-      | CaptchaTemporaryUser
       | TermsLink
       | PrivacyLink
       | Faq
@@ -41,8 +40,9 @@ data ElementId
       | FeedbackRoot
       | ScreenshotInput
       | FaqLink
-      | CaptchaRegularUser
+      | CaptchaUser
       | TemporaryUserSignUp
+      | CreateAccount
       | ConfirmAccountTerminationForm
       | AvatarFileInput
       | TemporaryUserSignUpForm
@@ -57,6 +57,7 @@ instance Show ElementId where
             CompactProfileContextMenu → "compact-profile-context-menu"
             FullProfileContextMenu → "full-profile-context-menu"
             ImageFileInput → "image-file-input"
+            CreateAccount -> "create-account"
             ConfirmAccountTerminationForm → "confirm-account-termination-form"
             LinkFormUrl → "link-form-url"
             ProfileEditionForm → "profile-edition-form"
@@ -74,8 +75,7 @@ instance Show ElementId where
             Favicon → "favicon"
             FeedbackRoot → "feedback-root"
             PasswordConfirmationInput → "password-confirmation-input"
-            CaptchaRegularUser → "captcha-regular-user"
-            CaptchaTemporaryUser → "captcha-temporary-user"
+            CaptchaUser → "captcha-user"
             TermsLink → "terms-link"
             PrivacyLink → "privacy-link"
             Faq → "faq"

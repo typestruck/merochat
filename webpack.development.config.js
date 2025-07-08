@@ -53,7 +53,7 @@ export default {
       },
 
       output: {
-            path: path.resolve(".", './file/bundle'),
+            path: path.resolve('.', './file/bundle'),
             filename: '[name].bundle.js'
       },
 
@@ -103,10 +103,10 @@ export default {
             }),
             new webpack.LoaderOptionsPlugin({
                   debug: true
-            })
-            ,
+            }),
             new webpack.DefinePlugin({
-                  'process.env.PRODUCTION': false
-            })
+                  'process.env.PRODUCTION': false,
+                  'process.env.VAPID_PUBLIC_KEY': "'something or the other'",
+              })
       ]
 };

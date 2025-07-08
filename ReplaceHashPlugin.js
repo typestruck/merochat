@@ -17,8 +17,6 @@ ReplaceHashPlugin.prototype.apply = function (compiler) {
 function replace(options, assets) {
     let hash = new Map()
 
-    hash.set('[VAPID-PUBLIC-KEY-contenthash]', process.env.VAPID_PUBLIC_KEY);
-
     for (let key in assets) {
         let splitted = key.split('.'),
             extension = splitted.pop();

@@ -1,6 +1,8 @@
 module Server.Token where
 
+import Debug
 import Prelude
+import Server.Effect
 
 import Data.Array ((!!))
 import Data.Either as DE
@@ -8,24 +10,21 @@ import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS
+import Droplet.Driver (Pool)
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Node.Buffer as NB
-import Server.Database.Tokens as SDT
 import Node.Crypto.Hmac as NCH
 import Node.Encoding (Encoding(..))
 import Node.Simple.Jwt as NSJ
 import Run as R
-import Run.Reader as RR
+import Server.Database.Tokens as SDT
 import Server.Effect (ServerEffect)
-import Server.Effect
-import Debug
-import Droplet.Driver (Pool)
+import Server.Environment (salt, tokenSecret)
 
 hashPassword ∷ String → ServerEffect String
 hashPassword password = do
-      { configuration: { salt } } ← RR.ask
       R.liftEffect do
             key ← NB.fromString salt UTF8
             buffer ← NB.fromString password UTF8
@@ -33,7 +32,6 @@ hashPassword password = do
 
 createToken ∷ Int → ServerEffect String
 createToken id = do
-      { configuration: { tokenSecret } } ← RR.ask
       instant ← liftEffect EN.now
       token ← NSJ.toString <$> (R.liftEffect <<< NSJ.encode tokenSecret NSJ.HS512 $ show instant <> "-" <> show id)
       SDT.insertToken id token

@@ -21,7 +21,7 @@ import Node.Buffer as NB
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff as NFA
 import Run as R
-import Server.Effect (BaseEffect, Configuration)
+import Server.Effect (BaseEffect)
 import Server.Response as SR
 import Shared.Resource (allowedExtensions, allowedMediaTypes, localBasePath, maxImageSize, maxImageSizeKB, uploadFolder)
 
@@ -36,7 +36,7 @@ invalidImageMessage = "Invalid image"
 imageTooBigMessage ∷ String
 imageTooBigMessage = "Max allowed size for pictures is " <> maxImageSizeKB
 
-saveBase64File ∷ ∀ r. String → BaseEffect { configuration ∷ Configuration | r } String
+saveBase64File ∷ ∀ r. String → BaseEffect   r  String
 saveBase64File input =
       case DS.split (Pattern ",") input of
             [ mediaType, base64 ] → do

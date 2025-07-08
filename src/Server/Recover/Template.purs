@@ -25,7 +25,6 @@ template token = do
       where
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Recover Js ]
-            , HE.script' $ HA.src "https://www.google.com/recaptcha/api.js"
             ]
       content =
             [ HE.div (HA.class' "pastel-area column")

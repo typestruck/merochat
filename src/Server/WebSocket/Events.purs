@@ -46,8 +46,9 @@ import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.LastSeen (LastSeen)
 import Server.Database.Privileges as SIP
 import Server.Database.Users as SDU
-import Server.Effect (BaseEffect, BaseReader, Configuration)
+import Server.Effect (BaseEffect, BaseReader)
 import Server.Effect as SE
+import Server.Environment (tokenSecret)
 import Server.Im.Action as SIA
 import Server.Im.Database.Execute as SIDE
 import Server.Push (PushMessage(..))
@@ -81,7 +82,6 @@ type WebSocketEffect = BaseEffect WebSocketReader Unit
 type WebSocketReader = BaseReader
       ( loggedUserId ∷ Int
       , token ∷ String --use this to tell connections apart
-      , configuration ∷ Configuration
       , allUsersAvailabilityRef ∷ Ref (HashMap Int UserAvailability)
       )
 
@@ -99,9 +99,9 @@ inactiveInterval = 1000 * 60 * inactiveMinutes
 inactiveMinutes ∷ Int
 inactiveMinutes = 30
 
-handleConnection ∷ Configuration → Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
-handleConnection configuration pool allUsersAvailabilityRef connection request = EA.launchAff_ do
-      userId ← SE.poolEffect pool Nothing $ ST.userIdFromToken configuration.tokenSecret token
+handleConnection ∷  Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
+handleConnection  pool allUsersAvailabilityRef connection request = EA.launchAff_ do
+      userId ← SE.poolEffect pool Nothing $ ST.userIdFromToken tokenSecret token
       case userId of
             Nothing → EC.liftEffect do
                   --this can be made more clear for the end user
@@ -134,7 +134,7 @@ handleConnection configuration pool allUsersAvailabilityRef connection request =
                                     R.runBaseAff'
                                           <<< RE.catch (\e → reportError payload (checkInternalError e) e)
                                           <<<
-                                                RR.runReader { allUsersAvailabilityRef, configuration, pool, loggedUserId, token } $
+                                                RR.runReader { allUsersAvailabilityRef, pool, loggedUserId, token } $
                                           handleMessage payload
                         EA.launchAff_ <<< EA.catchError run $ reportError payload Nothing
                   Left error → do
