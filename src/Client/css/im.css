@@ -1504,12 +1504,14 @@ input:not(type=button):focus {
 
 .green-button {
     display: block;
-    border-radius: 5px;
+    border-radius: 10px;
     color: inherit;
     border: none;
     cursor: pointer;
-    padding: 17px;
-    background: #1b3a28;
+    margin-left: 15px;
+    font-weight: bold;
+    padding: 10px 30px;
+    background: var(--im-merochat-green);
 }
 
 .right-align {
@@ -1587,7 +1589,7 @@ select {
     z-index: 20;
     position: absolute;
     padding: 50px;
-    background: #262626;
+    background: var(--im-second-background-color);
     width: 500px;
     height: 120px;
     margin-left: -250px;
@@ -1595,6 +1597,7 @@ select {
     top: 35%;
     left: 50%;
     display: flex;
+    border-radius: 20px;
     flex-direction: column;
 }
 
@@ -1669,11 +1672,14 @@ select {
 }
 
 .cancel {
-    align-self: flex-end;
+    color: var(--text-color);
+    background-color:var(--im-second-backgorund-color);
+    border:0;
+    cursor: pointer;
 }
 
 .danger {
-    background: hsl(359, 82%, 47.6%) !important;
+    background: red !important;
 }
 
 .emoji-wrapper {
@@ -2632,11 +2638,6 @@ label {
         margin-top: unset !important;
     }
 
-    #temporary-user-sign-up-form {
-        padding: 15px;
-        align-items: flex-start;
-    }
-
     .back-filter {
         display: flex;
         width: 100%;
@@ -2947,6 +2948,12 @@ label {
     .modal-input {
         width: auto;
         margin-bottom: 20px;
+    }
+
+    #temporary-user-sign-up-form {
+        padding: 15px;
+        margin-left: 15px ;
+        align-items: flex-start;
     }
 
     .modal-menu-mobile {
@@ -3361,3 +3368,4 @@ label {
         min-width: 60px;
     }
 }
+
