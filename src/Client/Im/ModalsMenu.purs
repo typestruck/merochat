@@ -92,21 +92,28 @@ modal toggled model =
             EC.liftEffect $ FS.broadcast modalVisible toggle
             pure Nothing
 
-      showModal req toggle resource root =
-            model
-                  { modal = Screen toggle
-                  , toggleContextMenu = HideContextMenu
-                  , failedRequests = []
-                  , modalsLoaded = toggle : model.modalsLoaded
-                  } /\
-                  if DA.elem toggle model.modalsLoaded then
-                        [ visible toggle ]
-                  else
-                        [ visible toggle
-                        , CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
-                        -- during the tutorial the user may click on the user menu instead of "finish tutorial"
-                        --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
-                        ]
+      showModal req toggle resource root
+            | model.user.temporary =
+                    model
+                          { modal = Screen toggle
+                          , toggleContextMenu = HideContextMenu
+                          , failedRequests = []
+                          } /\ []
+            | otherwise =
+                    model
+                          { modal = Screen toggle
+                          , toggleContextMenu = HideContextMenu
+                          , failedRequests = []
+                          , modalsLoaded = toggle : model.modalsLoaded
+                          } /\
+                          if DA.elem toggle model.modalsLoaded then
+                                [ visible toggle ]
+                          else
+                                [ visible toggle
+                                , CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
+                                -- during the tutorial the user may click on the user menu instead of "finish tutorial"
+                                --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
+                                ]
 
 setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage
 setModalContents resource root html model = model /\ [ loadModal ]

@@ -181,33 +181,36 @@ confirmBlockUser id =
 modalMenu ∷ ImModel → Html ImMessage
 modalMenu model =
       HE.div (HA.class' { "modal-placeholder": true, hidden: not screenModal })
-            [ HE.div (HA.class' "modal-menu-mobile")
-                    [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
-                    , HE.strong_ $ case model.modal of
-                            Screen m → show m
-                            _ → ""
-                    ]
-            , HE.div (HA.class' { "modal-menu": true, hidden: model.smallScreen && model.modal /= Screen ShowMenu })
-                    [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] $ show ShowProfile
-                    , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] $ show ShowSettings
-                    , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] $ show ShowKarmaPrivileges
-                    , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowExperiments, HA.class' { entry: true, selected: model.modal == Screen ShowExperiments } ] $ show ShowExperiments
-                    , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker, HA.class' { entry: true, selected: model.modal == Screen ShowBacker } ] $ show ShowBacker
-                    , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] $ show ShowHelp
-                    , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] $ show ShowFeedback
-                    , HE.div (HA.class' "entry theme-modal")
-                            [ SSI.sun [HA.onClick $ SetTheme Light]
-                            , SSI.moon [HA.onClick $ SetTheme Dark]
-                            ]
-                    , if model.user.temporary then
-                            HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmTerminationTemporaryUser ] "Delete my data"
-                      else
-                            HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmLogout ] "Logout"
-                    ]
-            , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
-                    [ SIS.closeX []
-                    ]
-            ]
+            ( [ HE.div (HA.class' "modal-menu-mobile")
+                      [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
+                      , HE.strong_ $ case model.modal of
+                              Screen m → show m
+                              _ → ""
+                      ]
+              , HE.div (HA.class' { "modal-menu": true, hidden: model.smallScreen && model.modal /= Screen ShowMenu })
+                      [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] $ show ShowProfile
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] $ show ShowSettings
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] $ show ShowKarmaPrivileges
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowExperiments, HA.class' { entry: true, selected: model.modal == Screen ShowExperiments } ] $ show ShowExperiments
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker, HA.class' { entry: true, selected: model.modal == Screen ShowBacker } ] $ show ShowBacker
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] $ show ShowHelp
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] $ show ShowFeedback
+                      , HE.div (HA.class' "entry theme-modal")
+                              [ SSI.sun [ HA.onClick $ SetTheme Light ]
+                              , SSI.moon [ HA.onClick $ SetTheme Dark ]
+                              ]
+                      , if model.user.temporary then
+                              HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmTerminationTemporaryUser ] "Delete my data"
+                        else
+                              HE.div [ HA.class' "user-menu-item logout menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal $ Confirmation ConfirmLogout ] "Logout"
+                      ]
+              , HE.div [ HA.onClick <<< SpecialRequest $ ToggleModal HideModal, HA.class' { back: true, hidden: model.smallScreen || model.user.temporary && SUR.temporaryUserExpiration model.user.joined <= Days 0.0 } ]
+                      [ SIS.closeX []
+                      ]
+              ] <>
+                    ( if model.user.temporary then [ temporaryUserSignUp model ] else []
+                    )
+            )
       where
       screenModal = case model.modal of
             Screen _ → true
@@ -232,8 +235,8 @@ confirmTermination = HE.div (HA.class' "modal-placeholder-overlay")
       ]
 
 temporaryUserSignUp ∷ ImModel → Html ImMessage
-temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { temporary, joined } } =
-      HE.div [ HA.id $ show TemporaryUserSignUpForm, HA.class' { hidden: not temporary } ]
+temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: {  joined } } =
+      HE.div [ HA.id $ show TemporaryUserSignUpForm ]
             [ if expired then
                     HE.div (HA.class' "warning-temporary") "Your access has expired"
               else HE.fragment

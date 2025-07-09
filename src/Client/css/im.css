@@ -210,6 +210,12 @@ textarea {
     flex-direction: column;
 }
 
+#temporary-user-sign-up-form {
+    order:0;
+    margin: 0 auto;
+    align-self: center;
+}
+
 #temporary-user-sign-up-form div {
     width: 500px;
 }
@@ -905,7 +911,7 @@ img.emoji {
 .back {
     margin: 15px;
     margin-left: auto;
-
+    order:1;
 }
 
 .inline {
