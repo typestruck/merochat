@@ -14,22 +14,30 @@
 .backer p {
     display: block;
     word-wrap: break-word;
-    max-width: 45em;
+    width: 45em;
     margin: 5px 0px;
 }
 
 .backer h3 {
-    margin-top: 40px;
+    margin-top: 20px;
     font-family: var(--heading-font);
 }
 
 h3.initial {
     margin-top: initial;
+}
 
+.svg-stripe {
+    width: 75px;
+    height:30px;
 }
 
 h3.bottom {
     margin-bottom: 10px;
+}
+
+svg {
+    cursor: pointer;
 }
 
 .svg-patreon {
