@@ -1193,10 +1193,6 @@ svg.toolbar-action {
     overflow-y: auto;
 }
 
-#profile-edition-form {
-    margin-left: 200px;
-}
-
 #settings-edition fieldset {
     padding: 15px;
     padding-top: 0;
@@ -1649,6 +1645,12 @@ select {
     background: #469bc5;
     border-top-left-radius: 13px;
     border-bottom-right-radius: 13px;
+}
+
+.modal-input {
+    border-radius: 20px;
+    border: 1px solid var(--text-color);
+    padding: 5px;
 }
 
 .chat-step,
@@ -3368,4 +3370,5 @@ label {
         min-width: 60px;
     }
 }
+
 
