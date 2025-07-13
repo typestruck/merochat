@@ -47,19 +47,12 @@ profile loggedUserId = do
             , languages
             }
 
-saveGeneratedField ∷ Int → What → Maybe String → ServerEffect String
-saveGeneratedField loggedUserId field value = do
-      finalValue ← case field of
-            Name → DS.take nameMaxCharacters <$> DM.maybe ST.generateName pure value
-            Headline → DS.take headlineMaxCharacters <$> DM.maybe ST.generateHeadline pure value
-            Description → SS.sanitize <<< DS.take descriptionMaxCharacters <$> DM.maybe ST.generateDescription pure value
-      SPD.saveRequiredField loggedUserId f (DM.isNothing value) finalValue
-      pure finalValue
-      where
-      f = case field of
-            Name → CP.Name
-            Headline → CP.Headline
-            Description → CP.Description
+generateField ∷ What → ServerEffect String
+generateField field = do
+      case field of
+            Name → ST.generateName
+            Headline → ST.generateHeadline
+            Description → ST.generateDescription
 
 saveAvatar ∷ Int → Maybe String → ServerEffect Unit
 saveAvatar loggedUserId base64 = do

@@ -25,8 +25,8 @@ profile { guards: { loggedUserId } } = do
             , languages
             }
 
-generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What, value ∷ Maybe String } } → ServerEffect String
-generated { guards: { loggedUserId }, body: { field, value } } = SPA.saveGeneratedField loggedUserId field value
+generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What} } → ServerEffect String
+generated { body } = SPA.generateField body.field
 
 avatar ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { base64 ∷ Maybe String } } → ServerEffect Ok
 avatar { guards: { loggedUserId }, body: { base64 } } = do

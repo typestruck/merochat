@@ -4,6 +4,7 @@ import Prelude
 
 import Client.Common.Dom as CCD
 import Data.Maybe (Maybe(..))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
@@ -37,5 +38,5 @@ setUpFileChange message input appId = do
 resizeAndSendFirstFile ∷ ∀ message. Maybe FileList → AppId MountPoint message → (Int → Int → String → message) → Effect Unit
 resizeAndSendFirstFile maybeFileList appId message =
       case maybeFileList >>= WFL.item 0 of
-            Nothing → pure unit
-            Just file → resizeAndSendFile file (\w h b → FS.send appId $ message w h b)
+            Nothing → pure  unit
+            Just file → resizeAndSendFile file (\w h b → FS.send  appId $ message w h b)

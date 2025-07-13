@@ -22,6 +22,7 @@ template { user: user, countries, languages } = do
                     , countryInputed: Nothing
                     , languagesInputed: Nothing
                     , visible: true
+                    , avatarInputed : Nothing
                     , languagesInputedList: Nothing
                     , tagsInputed: Nothing
                     , tagsInputedList: Nothing

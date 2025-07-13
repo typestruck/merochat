@@ -1,10 +1,57 @@
-
 .profile-section {
     display: flex;
     flex-direction: column;
+    padding-bottom: 15px;
+}
+
+.profile-section .modal-input,
+.profile-section .modal-select {
+    width: 45em;
+}
+
+.profile-section .profile-section-wedge .modal-input,
+.profile-section .profile-section-wedge .modal-select {
+    width: 22.5em;
 }
 
 .profile-section-label {
-  font-weight: bold;
-  margin-bottom: 10px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.profile-section-label-smaller {
+    font-size: 0.9em;
+    margin-bottom: 5px
+}
+
+.profile-section-wedge {
+    display: flex;
+    margin: 10px 0;
+}
+
+.margined {
+    margin-right: 10px;
+}
+
+.profile-buttons {
+    position: sticky;
+    bottom:0px;
+    flex-direction: row;
+    padding-top:20px;
+    justify-content:  flex-end;
+    background-color:  var(--im-background-color);
+}
+
+.green-button.bigger {
+    width: 80%;
+}
+
+.profile-section.tabbed {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.avatar-profile-edition {
+    cursor: pointer;
 }
