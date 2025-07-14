@@ -63,7 +63,7 @@ view model = HE.div (show ProfileEditionForm)
                       [ HE.div (HA.class' "profile-section-label") "Avatar"
                       , HE.div (HA.class' "profile-section-label-smaller") "Your display picture"
                       , HE.div (HA.onClick SelectAvatar)
-                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src avatar ]
+                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ DM.fromMaybe (SA.fromAvatar model.user) model.avatarInputed ]
                               , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                               , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                                       [ HE.title "Reset profile picture"
@@ -81,15 +81,20 @@ view model = HE.div (show ProfileEditionForm)
                       [ HE.div (HA.class' "profile-section-label") "Basic info"
                       , HE.div (HA.class' "profile-section-label-smaller") "All fields are optional"
                       , HE.div (HA.class' "profile-section-wedge")
-                              [ HE.input [ HA.class' "modal-input margined", HA.type' "date", HA.placeholder "Your age" ]
+                              [ HE.input [ HA.class' "modal-input margined", HA.type' "date", HA.placeholder "Your age", HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate model.ageInputed ]
                               , HE.select [ HA.class' "modal-select" ]
-                                      [ HE.option_ "Do not show my gender"
+                                      [ HE.option [ HA.value "", HA.selected $ model.genderInputed == Nothing ] "Do not show my gender"
+                                      , HE.option [ HA.value $ show Female, HA.selected $ model.genderInputed == Just Female ] $ show Female
+                                      , HE.option [ HA.value $ show Male, HA.selected $ model.genderInputed == Just Male ] $ show Male
+                                      , HE.option [ HA.value $ show NonBinary, HA.selected $ model.genderInputed == Just NonBinary ] $ show NonBinary
+                                      , HE.option [ HA.value $ show Other, HA.selected $ model.genderInputed == Just Other ] $ show Other
                                       ]
                               ]
                       , HE.div (HA.class' "profile-section-wedge")
                               [ HE.select [ HA.class' "modal-select margined" ]
-                                      [ HE.option_ "Do not show my country"
-                                      ]
+                                      ( HE.option [ HA.value "", HA.selected $ model.countryInputed == Nothing ] "Do not show my country"
+                                              : map (\c → HE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] c.name) model.countries
+                                      )
                               , HE.select [ HA.class' "modal-select" ]
                                       [ HE.option_ "Do not show my languages"
                                       ]
@@ -116,9 +121,6 @@ view model = HE.div (show ProfileEditionForm)
                       ]
               ]
       ]
-
-      where
-      avatar = DM.fromMaybe (SA.fromAvatar model.user) model.avatarInputed
 
 change ∷ (String → ProfileMessage) → NodeData ProfileMessage
 change message = HA.createRawEvent "change" handler

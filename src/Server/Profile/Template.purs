@@ -17,8 +17,8 @@ template { user: user, countries, languages } = do
             , init:
                     { nameInputed: Just user.name
                     , headlineInputed: Just user.headline
-                    , ageInputed: Nothing
-                    , genderInputed: Nothing
+                    , ageInputed:  user.age
+                    , genderInputed: user.gender
                     , countryInputed: Nothing
                     , languagesInputed: Nothing
                     , visible: true

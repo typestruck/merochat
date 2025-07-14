@@ -53,11 +53,11 @@ type GeneratedInput = { field ∷ What }
 type PM =
       ( user ∷ ProfileUser
       , nameInputed ∷ Maybe String
-      , avatarInputed :: Maybe String
+      , avatarInputed ∷ Maybe String
       , headlineInputed ∷ Maybe String
-      , ageInputed ∷ Maybe (Maybe DateWrapper)
-      , genderInputed ∷ Maybe (Maybe Gender)
-      , countryInputed ∷ Maybe (Maybe Int)
+      , ageInputed ∷ Maybe DateWrapper
+      , genderInputed ∷ Maybe Gender
+      , countryInputed ∷ Maybe Int
       , languagesInputed ∷ Maybe Int
       , visible ∷ Boolean
       , languagesInputedList ∷ Maybe (Array Int)
