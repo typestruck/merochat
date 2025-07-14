@@ -15,8 +15,8 @@ template { user: user, countries, languages } = do
       F.preMount (QuerySelector ("#" <> show ProfileEditionForm))
             { view: SPV.view
             , init:
-                    { nameInputed: Nothing
-                    , headlineInputed: Nothing
+                    { nameInputed: Just user.name
+                    , headlineInputed: Just user.headline
                     , ageInputed: Nothing
                     , genderInputed: Nothing
                     , countryInputed: Nothing
