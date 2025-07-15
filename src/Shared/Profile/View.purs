@@ -96,8 +96,8 @@ view model = HE.div (show ProfileEditionForm)
                                               : map (\c → HE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] c.name) model.countries
                                       )
                               , HE.select [ HA.class' "modal-select" ]
-                                      [ HE.option_ "Do not show my languages"
-                                      ]
+                                      (HE.option [ HA.value "", HA.selected $ DA.null model.languagesInputed ] "Do not show my languages"
+                                              : map (\c → HE.option [ HA.value $ show c.id ] c.name) model.languages)
                               ]
                       ]
               , HE.div (HA.class' "profile-section")

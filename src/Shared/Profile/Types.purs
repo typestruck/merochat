@@ -58,9 +58,8 @@ type PM =
       , ageInputed ∷ Maybe DateWrapper
       , genderInputed ∷ Maybe Gender
       , countryInputed ∷ Maybe Int
-      , languagesInputed ∷ Maybe Int
       , visible ∷ Boolean
-      , languagesInputedList ∷ Maybe (Array Int)
+      , languagesInputed ∷ Array Int
       , tagsInputed ∷ Maybe String
       , tagsInputedList ∷ Maybe (Array String)
       , registrationMessage ∷ Boolean
