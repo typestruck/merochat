@@ -14,6 +14,10 @@
     width: 22.5em;
 }
 
+.profile-section .profile-section-wedge .modal-select {
+    height: fit-content;
+}
+
 .profile-section-label {
     font-weight: bold;
     margin-bottom: 5px;
@@ -35,11 +39,11 @@
 
 .profile-buttons {
     position: sticky;
-    bottom:0px;
+    bottom: 0px;
     flex-direction: row;
-    padding-top:20px;
-    justify-content:  flex-end;
-    background-color:  var(--im-background-color);
+    padding-top: 20px;
+    justify-content: flex-end;
+    background-color: var(--im-background-color);
 }
 
 .green-button.bigger {
@@ -53,5 +57,19 @@
 }
 
 .avatar-profile-edition {
+    cursor: pointer;
+}
+
+.profile-languages {
+    display: flex;
+    flex-direction: column;
+}
+
+.fit {
+    width: fit-content;
+}
+
+.profile-selected-language {
+    padding: 5px;
     cursor: pointer;
 }

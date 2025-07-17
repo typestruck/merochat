@@ -20,10 +20,9 @@ template { user: user, countries, languages } = do
                     , ageInputed:  user.age
                     , genderInputed: user.gender
                     , countryInputed: Nothing
-                    , languagesInputed: Nothing
+                    , languagesInputed: user.languages
                     , visible: true
                     , avatarInputed : Nothing
-                    , languagesInputedList: Nothing
                     , tagsInputed: Nothing
                     , tagsInputedList: Nothing
                     , descriptionInputed: Nothing

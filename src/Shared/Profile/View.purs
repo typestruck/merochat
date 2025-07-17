@@ -45,7 +45,7 @@ import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 
-view ∷ ProfileModel → Html ProfileMessage
+view ∷  ProfileModel → Html ProfileMessage
 view model = HE.div (show ProfileEditionForm)
       [ HE.div [ HA.class' { "profile-edition": true, hidden: not model.visible } ]
               [ HE.div (HA.class' { "loading-over": true, hidden: not model.loading })
@@ -62,7 +62,7 @@ view model = HE.div (show ProfileEditionForm)
               , HE.div (HA.class' "profile-section")
                       [ HE.div (HA.class' "profile-section-label") "Avatar"
                       , HE.div (HA.class' "profile-section-label-smaller") "Your display picture"
-                      , HE.div (HA.onClick SelectAvatar)
+                      , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
                               [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ DM.fromMaybe (SA.fromAvatar model.user) model.avatarInputed ]
                               , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                               , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
@@ -95,9 +95,14 @@ view model = HE.div (show ProfileEditionForm)
                                       ( HE.option [ HA.value "", HA.selected $ model.countryInputed == Nothing ] "Do not show my country"
                                               : map (\c → HE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] c.name) model.countries
                                       )
-                              , HE.select [ HA.class' "modal-select" ]
-                                      (HE.option [ HA.value "", HA.selected $ DA.null model.languagesInputed ] "Do not show my languages"
-                                              : map (\c → HE.option [ HA.value $ show c.id ] c.name) model.languages)
+                              , HE.div (HA.class' "profile-languages")
+                                      [ HE.select [ HA.class' "modal-select", HA.onInput SetLanguage ]
+                                              ( HE.option [ HA.value "", HA.selected $ DA.null model.languagesInputed ] "Do not show my languages"
+                                                      : map (\c → HE.option [ HA.value $ show c.id, HA.selected (Just c.id == firstLanguage) ] c.name) model.languages
+                                              )
+                                      , HE.div (HA.class' { hidden: DA.null model.languagesInputed })
+                                              $ map languageEntry model.languagesInputed
+                                      ]
                               ]
                       ]
               , HE.div (HA.class' "profile-section")
@@ -121,6 +126,13 @@ view model = HE.div (show ProfileEditionForm)
                       ]
               ]
       ]
+
+      where
+      firstLanguage = DA.head model.languagesInputed
+
+      languages = DH.fromArrayBy _.id _.name model.languages
+
+      languageEntry id = HE.div [HA.class' "profile-selected-language" , HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id] (SU.fromJust (DH.lookup id languages) <> " x ")
 
 change ∷ (String → ProfileMessage) → NodeData ProfileMessage
 change message = HA.createRawEvent "change" handler

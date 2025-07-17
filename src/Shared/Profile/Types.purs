@@ -17,13 +17,13 @@ import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
 import Simple.JSON (class ReadForeign, class WriteForeign)
-import Web.Event.Internal.Types (Event)
 
 --used to generically set records
 type ProfileModel = Record PM
 
 data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
+      | SetLanguage String
       | SelectAvatar
       | Save
       | ToggleVisibility ScreenModal
