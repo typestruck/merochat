@@ -126,7 +126,6 @@ view model = HE.div (show ProfileEditionForm)
                       ]
               ]
       ]
-
       where
       firstLanguage = DA.head model.languagesInputed
 
