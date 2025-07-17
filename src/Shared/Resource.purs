@@ -162,13 +162,13 @@ replacement bundle tp
                     Common → reps ".[common-js-contenthash]" ".[common-css-contenthash]"
                     Emoji → reps ".[emoji-js-contenthash]" ".[emoji-css-contenthash]"
                     Experiments → reps ".[experiments-js-contenthash]" ".[experiments-css-contenthash]"
+                    InternalBacker → reps ".[internalBacker-js-contenthash]" ".[internalBacker-css-contenthash]"
                     Backer → reps ".[backer-js-contenthash]" ".[backer-css-contenthash]"
                     Base → reps ".[base-js-contenthash]" ".[base-css-contenthash]"
                     Help → reps ".[help-js-contenthash]" ".[help-css-contenthash]"
                     Im → reps ".[im-js-contenthash]" ".[im-css-contenthash]"
                     Feedback → reps ".[feedback-js-contenthash]" ".[feedback-css-contenthash]"
                     InternalHelp → reps ".[internalHelp-js-contenthash]" ".[internalHelp-css-contenthash]"
-                    InternalBacker → reps ".[internalBacker-js-contenthash]" ".[internalBacker-css-contenthash]"
                     Landing → reps ".[landing-js-contenthash]" ".[landing-css-contenthash]"
                     KarmaPrivileges → reps ".[karmaPrivileges-js-contenthash]" ".[karmaPrivileges-css-contenthash]"
                     Login → reps ".[login-js-contenthash]" ".[login-css-contenthash]"
@@ -180,4 +180,4 @@ replacement bundle tp
       | otherwise = ""
 
 updateHash ∷ String
-updateHash = replacement Common Js <> replacement Im Js <> replacement Im Css <> replacement Profile Js <> replacement Experiments Js <> replacement Settings Js
+updateHash = replacement Common Js <> replacement Im Js <> replacement Im Css <> replacement Profile Js <> replacement Experiments Js <> replacement Settings Js <> replacement InternalBacker Js

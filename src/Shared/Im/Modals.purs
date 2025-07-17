@@ -38,7 +38,6 @@ modals model =
                     [ lazyLoad Help
                     , lazyLoad Profile
                     , lazyLoad Settings
-                    , lazyLoad Profile
                     , lazyLoad Backer
                     , lazyLoad Experiments
                     , lazyLoad KarmaPrivileges
