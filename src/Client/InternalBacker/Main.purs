@@ -13,7 +13,7 @@ import Shared.Backer.View as SIHV
 
 main ∷ Effect Unit
 main =
-      F.resumeMount_ (QuerySelector ".backer")
+      F.resumeMount_ (QuerySelector "#backer")
             { view: SIHV.view
             , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
             , init: []

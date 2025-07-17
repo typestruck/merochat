@@ -8,7 +8,7 @@ import Flame as F
 import Shared.Backer.View as SIBV
 
 template ∷ Effect String
-template = F.preMount (QuerySelector ".backer")
+template = F.preMount (QuerySelector "#backer")
       { view: SIBV.view
       , init:
               { visible: true
