@@ -1,7 +1,7 @@
 .profile-section {
     display: flex;
     flex-direction: column;
-    padding-bottom: 15px;
+    padding-bottom: 25px;
 }
 
 .profile-section .modal-input,
@@ -53,6 +53,9 @@
 .profile-section.tabbed {
     flex-direction: row;
     justify-content: center;
+    position: sticky;
+    top:0;
+    background-color: var(--im-background-color);
     align-items: center;
 }
 
@@ -69,7 +72,8 @@
     width: fit-content;
 }
 
-.profile-selected-language {
+.profile-selected-item {
     padding: 5px;
     cursor: pointer;
+    width: fit-content;
 }
