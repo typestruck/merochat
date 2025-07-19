@@ -70,12 +70,7 @@ handlers reading =
               { get: runJson reading SPH.profile
               , field:
                       { generated: runJson reading SPH.generated
-                      , avatar: runJson reading SPH.avatar
-                      , age: runJson reading SPH.age
-                      , gender: runJson reading SPH.gender
-                      , country: runJson reading SPH.country
-                      , language: runJson reading SPH.language
-                      , tag: runJson reading SPH.tag
+                      , save: runJson reading SPH.save
                       }
               }
       , login:

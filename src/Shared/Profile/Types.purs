@@ -10,6 +10,7 @@ import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Foreign as F
+import Server.Profile.Handler (gender)
 import Shared.DateTime (DateWrapper)
 import Shared.Modal.Types (ScreenModal)
 import Shared.Network (RequestStatus)
@@ -45,6 +46,18 @@ type PU =
       )
 
 type ProfileUser = Record PU
+
+type SavedFields =
+      { name ∷ String
+      , headline ∷ String
+      , description ∷ String
+      , birthday ∷ Maybe DateWrapper
+      , tags ∷ Array String
+      , country ∷ Maybe Int
+      , languages ∷ Array Int
+      , gender ∷ Maybe Gender
+      , avatar ∷ Maybe String
+      }
 
 type GeneratedInput = { field ∷ What }
 

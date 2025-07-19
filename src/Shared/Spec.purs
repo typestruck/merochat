@@ -143,34 +143,9 @@ spec ∷
                                                               { body ∷ GeneratedInput
                                                               , response ∷ String
                                                               }
-                                                , avatar ∷
-                                                        POST "/avatar"
-                                                              { body ∷ { base64 ∷ Maybe String }
-                                                              , response ∷ Ok
-                                                              }
-                                                , age ∷
-                                                        POST "/age"
-                                                              { body ∷ { birthday ∷ Maybe DateWrapper }
-                                                              , response ∷ Ok
-                                                              }
-                                                , gender ∷
-                                                        POST "/gender"
-                                                              { body ∷ { gender ∷ Maybe Gender }
-                                                              , response ∷ Ok
-                                                              }
-                                                , country ∷
-                                                        POST "/country"
-                                                              { body ∷ { country ∷ Maybe Int }
-                                                              , response ∷ Ok
-                                                              }
-                                                , language ∷
-                                                        POST "/language"
-                                                              { body ∷ { ids ∷ Maybe (Array Int) }
-                                                              , response ∷ Ok
-                                                              }
-                                                , tag ∷
-                                                        POST "/tag"
-                                                              { body ∷ { tags ∷ Maybe (Array String) }
+                                                , save ::
+                                                        POST "/save"
+                                                              { body ∷ SavedFields
                                                               , response ∷ Ok
                                                               }
                                                 }

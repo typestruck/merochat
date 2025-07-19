@@ -25,7 +25,7 @@ import Server.ThreeK as ST
 import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
 import Shared.Privilege (Privilege(..))
-import Shared.Profile.Types (What(..))
+import Shared.Profile.Types (What(..), SavedFields)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SRS
 import Shared.User (Gender)
@@ -54,34 +54,19 @@ generateField field = do
             Headline → ST.generateHeadline
             Description → ST.generateDescription
 
-saveAvatar ∷ Int → Maybe String → ServerEffect Unit
-saveAvatar loggedUserId base64 = do
-      avatar ← case base64 of
+save :: Int → SavedFields → ServerEffect Unit
+save loggedUserId fields = do
+      avatar ← case fields.avatar of
             Nothing → pure Nothing
-            Just path → Just <$> SF.saveBase64File path
-      SPD.saveField loggedUserId CP.Avatar avatar
-
-saveAge ∷ Int → Maybe DateWrapper → ServerEffect Unit
-saveAge loggedUserId birthday = do
+            Just base64 → Just <$> SF.saveBase64File base64
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
-      when (map DN.unwrap birthday > eighteen) $ SR.throwBadRequest tooYoungMessage
-      SPD.saveField loggedUserId CP.Birthday birthday
-
-saveGender ∷ Int → Maybe Gender → ServerEffect Unit
-saveGender loggedUserId gender = SPD.saveField loggedUserId CP.Gender gender
-
-saveCountry ∷ Int → Maybe Int → ServerEffect Unit
-saveCountry loggedUserId country = SPD.saveField loggedUserId CP.Country country
-
-saveLanguages ∷ Int → Maybe (Array Int) → ServerEffect Unit
-saveLanguages loggedUserId languages = SPD.saveLanguages loggedUserId <<< DA.take maxLanguages $ DM.fromMaybe [] languages
-
-saveTags ∷ Int → Maybe (Array String) → ServerEffect Unit
-saveTags loggedUserId tags = do
+      when (map DN.unwrap fields.birthday > eighteen) $ SR.throwBadRequest tooYoungMessage
+      SPD.saveLanguages loggedUserId <<< DA.take maxLanguages $ DM.fromMaybe [] fields.languages
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
       let
             numberTags
                   | moreTags = maxFinalTags
                   | otherwise = maxStartingTags
       SPD.saveTags loggedUserId <<< DA.take numberTags <<< map (DS.take tagMaxCharacters) $ DM.fromMaybe [] tags
+      pure ok
 

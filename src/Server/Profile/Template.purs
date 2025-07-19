@@ -3,6 +3,7 @@ module Server.Profile.Template where
 import Prelude
 
 import Data.Maybe (Maybe(..))
+import Debug (spy)
 import Effect (Effect)
 import Flame (QuerySelector(..))
 import Flame as F
@@ -24,7 +25,7 @@ template { user: user, countries, languages } = do
                     , visible: true
                     , avatarInputed : user.avatar
                     , tagsInputed: user.tags
-                    , descriptionInputed: Just user.description
+                    , descriptionInputed:  Just user.description
                     , loading: false
                     , registrationMessage: false
                     , updateRequestStatus: Nothing

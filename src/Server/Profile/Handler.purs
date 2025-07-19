@@ -28,32 +28,7 @@ profile { guards: { loggedUserId } } = do
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What} } → ServerEffect String
 generated { body } = SPA.generateField body.field
 
-avatar ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { base64 ∷ Maybe String } } → ServerEffect Ok
-avatar { guards: { loggedUserId }, body: { base64 } } = do
-      SPA.saveAvatar loggedUserId base64
-      pure ok
-
-age ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { birthday ∷ Maybe DateWrapper } } → ServerEffect Ok
-age { guards: { loggedUserId }, body: { birthday } } = do
-      SPA.saveAge loggedUserId birthday
-      pure ok
-
-gender ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { gender ∷ Maybe Gender } } → ServerEffect Ok
-gender { guards: { loggedUserId }, body: { gender: picked } } = do
-      SPA.saveGender loggedUserId picked
-      pure ok
-
-country ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { country ∷ Maybe Int } } → ServerEffect Ok
-country { guards: { loggedUserId }, body: { country: id } } = do
-      SPA.saveCountry loggedUserId id
-      pure ok
-
-language ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { ids ∷ Maybe (Array Int) } } → ServerEffect Ok
-language { guards: { loggedUserId }, body: { ids } } = do
-      SPA.saveLanguages loggedUserId ids
-      pure ok
-
-tag ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { tags ∷ Maybe (Array String) } } → ServerEffect Ok
-tag { guards: { loggedUserId }, body: { tags } } = do
-      SPA.saveTags loggedUserId tags
+save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect Ok
+save request = do
+      SPA.save request.guards.loggedUserId request.body
       pure ok
