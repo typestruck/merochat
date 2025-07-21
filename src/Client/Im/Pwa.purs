@@ -106,7 +106,7 @@ registerServiceWorker id = do
 --when messages are received by the service, we update the chat history for a snappier feel
 -- but these message might already be in there
 receiveMessageFromPush ∷ Array ClientMessagePayload → ImModel → NoMessages
-receiveMessageFromPush payload model = model { contacts = map update model.contacts } /\ []
+receiveMessageFromPush payload model = model /\ [] --model { contacts = map update model.contacts } /\ []
       where
       firstMessage = SU.fromJust $ DA.head payload
       makeHistory message =
