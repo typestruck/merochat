@@ -81,7 +81,7 @@ resumeChat userId model =
 -- | When coming back to the site mark messages as read if a chat is open
 setReadStatus ∷ Maybe Int → WebSocket → ImModel → MoreMessages
 setReadStatus userId webSocket model =
-      case userId <|> model.chatting of
+      case (spy "resumed 2" userId) <|> model.chatting of
             Just chatting → setMessageStatus webSocket chatting Read model
             Nothing → F.noMessages model
 
@@ -91,7 +91,7 @@ setMessageStatus webSocket userId newStatus model =
       model
             { contacts = updatedContacts
             } /\
-            if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds ]
+            if DA.null (spy "resumed 3" updatedMessageIds) then [] else [ setIt userId updatedMessageIds ]
 
       where
       needsUpdate entry = entry.status >= Sent && entry.status < newStatus && entry.recipient == model.user.id
