@@ -34,14 +34,14 @@ registerRoute(imageRoute);
 let chattingWith,
     channel = new BroadcastChannel("merochat");
 
-channel.addEventListener('message', (event) => {
+channel.addEventListener('message', async (event) => {
     if (event.data)
         switch (event.data.type) {
             case 'not-chatting':
-                event.waitUntil(noChatsOpened());
+                await noChatsOpened();
                 break;
             case 'read':
-                event.waitUntil(chatOpened(event.data.payload));
+                await chatOpened(event.data.payload);
                 break;
         }
 });
