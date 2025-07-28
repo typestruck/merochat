@@ -9,6 +9,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.String as DS
 import Data.Symbol (class IsSymbol)
 import Data.Tuple.Nested (type (/\), (/\))
@@ -26,8 +27,10 @@ import Shared.Network as SN
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (ProfileMessage(..), ProfileModel, What(..), PM)
+import Test.Client.Model (model)
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
+import Web.HTML.HTMLMediaElement (load)
 
 getFileInput ∷ Effect Element
 getFileInput = CCD.unsafeGetElementById AvatarFileInput
@@ -44,10 +47,27 @@ update model = case _ of
       AfterRegistration → model /\ []
       UpdatePrivileges _ → model /\ []
 
-
-save :: ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+save ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 save model = model { loading = true } /\ [ s ]
-      where s =
+      where
+      fields =
+            { name: DM.fromMaybe model.nameInputed
+            , headline: model.headlineInputed
+            , description: model.descriptionInputed
+            , birthday: model.birthdayInputed
+            , tags: model.tagsInputed
+            , country: model.countryInputed
+            , languages: model.languagesInputed
+            , gender: model.genderInputed
+            , avatar: model.avatarInputed
+            }
+      s = do
+            result ← request.profile.save { body: fields }
+            case result of
+                  Right _ → do
+                        pure Nothing
+                  Left err → do
+                        pure <<< Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
 
 setTag ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setTag tag model =

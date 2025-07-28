@@ -38,14 +38,14 @@ export default {
             import: ['./loader/production/feedback.bundle.js', './src/Client/css/feedback.css'],
             dependOn: 'im'
         },
-        recover: './loader/production/recover.bundle.js',
-        emoji: './output-es/Shared.Im.Emoji/index.js',
-        base: './src/Client/css/base.css',
-        backer: './src/Client/css/backer.css',
         internalBacker: {
             import: './loader/production/internalBacker.bundle.js',
             dependOn: 'im'
         },
+        recover: './loader/production/recover.bundle.js',
+        emoji: './output-es/Shared.Im.Emoji/index.js',
+        base: './src/Client/css/base.css',
+        backer: './src/Client/css/backer.css'
     },
     output: {
         path: path.resolve(".", 'file/bundle'),

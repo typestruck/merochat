@@ -10,7 +10,6 @@ import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Foreign as F
-import Server.Profile.Handler (gender)
 import Shared.DateTime (DateWrapper)
 import Shared.Modal.Types (ScreenModal)
 import Shared.Network (RequestStatus)

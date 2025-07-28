@@ -68,10 +68,8 @@ handlers reading =
               }
       , profile:
               { get: runJson reading SPH.profile
-              , field:
-                      { generated: runJson reading SPH.generated
-                      , save: runJson reading SPH.save
-                      }
+              , generated: runJson reading SPH.generated
+              , save: runJson reading SPH.save
               }
       , login:
               { get: runHtml reading SLGH.login
