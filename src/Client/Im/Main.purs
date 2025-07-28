@@ -217,7 +217,7 @@ resumeFromNotification ∷ Effect Unit
 resumeFromNotification = do
       raw ← CCL.queryParameter "resume"
       case raw >>= DI.fromString of
-            Just userId → FS.send imId $ ResumeChat (spy "resumed" userId)
+            Just userId → FS.send imId $ ResumeChat userId
             _ → pure unit
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
