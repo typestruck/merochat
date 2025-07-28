@@ -239,7 +239,7 @@ individualSuggestion suggestion model = HE.div (HA.class' "big-card") $
 suggestionCards ∷ ImModel → Html ImMessage
 suggestionCards model =
       HE.div (HA.class' "suggestion-cards")
-            [ if model.user.temporary then welcomeTemporary model.user else welcome model
+            [ if model.user.temporary then welcomeTemporary model else welcome model
             , HE.div [ HA.class' "cards", HA.id $ show Cards ] $ map card model.suggestions <> moreCards
             ]
       where
@@ -348,15 +348,15 @@ profileContextMenu id delete =
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmReport id ] "Report"
       ]
 
-welcomeTemporary ∷ User → Html ImMessage
-welcomeTemporary { name, joined } = HE.div (HA.class' "card-top-welcome-filter")
+welcomeTemporary ∷ ImModel → Html ImMessage
+welcomeTemporary model = HE.div (HA.class' "card-top-welcome-filter")
       [ HE.div (HA.class' "card-top-header")
-              [ HE.div (HA.class' "welcome") $ "Welcome, " <> name
-              , signUpCall joined
+              [ HE.div (HA.class' "welcome") $ "Welcome, " <> model.user.name
+              , signUpCall model.user.joined
               ]
       , HE.div (HA.class' "back-filter")
               [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
-              --  , onlineOnlyFilter model
+              ,  onlineOnlyFilter model
               ]
       ]
 
@@ -391,7 +391,7 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
               ]
       , HE.div (HA.class' "back-filter")
               [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
-              --  , onlineOnlyFilter model
+                , onlineOnlyFilter model
               ]
       ]
 
