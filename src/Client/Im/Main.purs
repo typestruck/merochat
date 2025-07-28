@@ -226,8 +226,8 @@ toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle
 setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } /\
       [ do
-              EC.liftEffect $ FS.send profileId SPT.AfterRegistration
-              pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
+            EC.liftEffect $ FS.send profileId SPT.AfterRegistration
+            pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
       ]
 
 refocus ∷ FocusEvent → Ref Boolean → WebSocket → ImModel → MoreMessages
