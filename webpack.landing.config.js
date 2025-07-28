@@ -26,7 +26,7 @@ export default {
             'process.env.PRODUCTION': true,
             'process.env.VAPID_PUBLIC_KEY': JSON.stringify(process.env.VAPID_PUBLIC_KEY)
         }),
-        new ReplaceHashPlugin({ files: [{ dir: 'file/bundle', prefix: 'common' }, 'output-es/Shared.Resource/index.js'] }),
+        new ReplaceHashPlugin({ files: ['output-es/Shared.Resource/index.js'] }),
         new InlineResourcePlugin({ files: [{resourceFile: 'file/bundle/style.css', htmlFile: 'output-es/Server.Landing.Template/index.js'} ]}),
         new InlineResourcePlugin({ files: [{resourceFile: 'file/default/theme-switcher.js', htmlFile: 'output-es/Server.Template/index.js'} ]}),
         new InlineResourcePlugin({ files: [{resourceFile: 'file/default/theme-switcher.js', htmlFile: 'output-es/Server.Im.Template/index.js'} ]}),

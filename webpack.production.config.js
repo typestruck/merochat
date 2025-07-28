@@ -21,6 +21,10 @@ export default {
             import: ['./loader/production/karmaPrivileges.bundle.js', './src/Client/css/karmaPrivileges.css'],
             dependOn: 'im'
         },
+        internalBacker: {
+            import: './loader/production/internalBacker.bundle.js',
+            dependOn: 'im'
+        },
         help: ['./loader/production/help.bundle.js', './src/Client/css/help.css'],
         internalHelp: {
             import: './loader/production/internalHelp.bundle.js',
@@ -41,11 +45,7 @@ export default {
         recover: './loader/production/recover.bundle.js',
         emoji: './output-es/Shared.Im.Emoji/index.js',
         base: './src/Client/css/base.css',
-        backer: './src/Client/css/backer.css',
-        internalBacker: {
-            import: './loader/production/internalBacker.bundle.js',
-            dependOn: 'im'
-        },
+        backer: './src/Client/css/backer.css'
     },
     output: {
         path: path.resolve(".", 'file/bundle'),
