@@ -10,9 +10,11 @@ import Data.Maybe as DM
 import Data.Newtype as DN
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
+import Data.Tuple as DT
 import Debug (spy)
 import Run as R
-import Server.Database.CompleteProfiles as CP
+import Server.Database as SD
+import Server.Database.CompleteProfiles (ProfileColumn(..))
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
 import Server.File as SF
@@ -25,8 +27,8 @@ import Server.ThreeK as ST
 import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
 import Shared.Privilege (Privilege(..))
-import Shared.Profile.Types (What(..), SavedFields)
-import Shared.Resource (Media(..), ResourceType(..))
+import Shared.Profile.Types (SavedFields)
+import Shared.Profile.Types as SPT
 import Shared.Resource as SRS
 import Shared.User (Gender)
 
@@ -47,26 +49,34 @@ profile loggedUserId = do
             , languages
             }
 
-generateField ∷ What → ServerEffect String
+generateField ∷ SPT.What → ServerEffect String
 generateField field = do
       case field of
-            Name → ST.generateName
-            Headline → ST.generateHeadline
-            Description → ST.generateDescription
+            SPT.Name → ST.generateName
+            SPT.Headline → ST.generateHeadline
+            SPT.Description → ST.generateDescription
 
-save :: Int → SavedFields → ServerEffect Unit
 save loggedUserId fields = do
       avatar ← case fields.avatar of
-            Nothing → pure Nothing
-            Just base64 → Just <$> SF.saveBase64File base64
+                  Nothing → pure Nothing
+                  Just base64 → Just <$> SF.saveBase64File base64
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
-      when (map DN.unwrap fields.birthday > eighteen) $ SR.throwBadRequest tooYoungMessage
-      SPD.saveLanguages loggedUserId <<< DA.take maxLanguages $ DM.fromMaybe [] fields.languages
+      when (map DN.unwrap fields.age > eighteen) $ SR.throwBadRequest tooYoungMessage
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
-      let
-            numberTags
-                  | moreTags = maxFinalTags
-                  | otherwise = maxStartingTags
-      SPD.saveTags loggedUserId <<< DA.take numberTags <<< map (DS.take tagMaxCharacters) $ DM.fromMaybe [] tags
-      pure ok
+      --keep the old logic to save fields individually in case we need to do it again
+      SD.withTransaction $ \connection -> do
+            SPD.saveRequiredField connection loggedUserId Name (DS.take nameMaxCharacters fields.name.value) fields.name.generated
+            SPD.saveRequiredField connection loggedUserId Headline (DS.take headlineMaxCharacters fields.headline.value) fields.headline.generated
+            SPD.saveRequiredField connection loggedUserId Description (DS.take descriptionMaxCharacters fields.description.value) fields.description.generated
+            SPD.saveField connection loggedUserId Avatar avatar
+            SPD.saveField connection loggedUserId Birthday fields.age
+            SPD.saveField connection loggedUserId Gender fields.gender
+            SPD.saveField connection loggedUserId Country fields.country
+            SPD.saveLanguages connection loggedUserId $ DA.take maxLanguages fields.languages
+            let
+                  numberTags
+                        | moreTags = maxFinalTags
+                        | otherwise = maxStartingTags
+            SPD.saveTags connection loggedUserId <<< DA.take numberTags $ map (DS.take tagMaxCharacters) fields.tags
+
 

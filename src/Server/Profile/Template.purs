@@ -23,6 +23,7 @@ template { user: user, countries, languages } = do
                     , countryInputed: user.country
                     , languagesInputed: user.languages
                     , visible: true
+                    , generated : []
                     , avatarInputed : user.avatar
                     , tagsInputed: user.tags
                     , descriptionInputed:  Just user.description

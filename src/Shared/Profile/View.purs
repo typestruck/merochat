@@ -46,16 +46,10 @@ import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 
-view ∷  ProfileModel → Html ProfileMessage
+view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div (show ProfileEditionForm)
       [ HE.div [ HA.class' { "profile-edition": true, hidden: not model.visible } ]
-              [ HE.div (HA.class' { "loading-over": true, hidden: not model.loading })
-                      [ HE.div' (HA.class' "loading")
-                      ]
-              , HE.div (HA.class' "request-result-message success")
-                      [ HE.span (HA.class' { "request-error-message": true, hidden: true }) ""
-                      ]
-              , HE.div (HA.class' "profile-section tabbed")
+              [ HE.div (HA.class' "profile-section tabbed")
                       [ HE.div_ "Edit"
                       , HE.div (HA.class' "separator duller") "•"
                       , HE.div_ "Preview"
@@ -123,16 +117,23 @@ view model = HE.div (show ProfileEditionForm)
                       ]
               , HE.div (HA.class' "profile-section profile-buttons")
                       [ HE.input [ HA.type' "button", HA.class' "cancel", HA.value "Discard" ]
-                      , HE.input [ HA.type' "button", HA.disabled model.loading, HA.class' "green-button bigger", HA.value "Save" ]
+                      , if model.loading then HE.div (HA.class' "loading-over")
+                              [ HE.div' (HA.class' "loading")
+                              ]
+                        else
+                              HE.input [ HA.type' "button", HA.onClick Save, HA.class' "green-button bigger", HA.value "Save" ]
+                      ]
+              , HE.div (HA.class' "request-result-message success")
+                      [ HE.span (HA.class' { "request-error-message": true, hidden: true }) ""
                       ]
               ]
       ]
       where
       firstLanguage = DA.head model.languagesInputed
       languages = DH.fromArrayBy _.id _.name model.languages
-      languageEntry id = HE.div [HA.class' "profile-selected-item" , HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id] (SU.fromJust (DH.lookup id languages) <> " x ")
+      languageEntry id = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id ] (SU.fromJust (DH.lookup id languages) <> " x ")
 
-      tagEntry tag = HE.div [HA.class' "profile-selected-item" , HA.title "Click to remove", HA.onClick $ SetTag tag] (tag <> " x ")
+      tagEntry tag = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick $ SetTag tag ] (tag <> " x ")
 
 onChange ∷ (String → ProfileMessage) → NodeData ProfileMessage
 onChange message = HA.createRawEvent "change" handler

@@ -9,6 +9,7 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested (type (/\), (/\))
 import Foreign as F
 import Shared.DateTime (DateWrapper)
 import Shared.Modal.Types (ScreenModal)
@@ -47,10 +48,10 @@ type PU =
 type ProfileUser = Record PU
 
 type SavedFields =
-      { name ∷ String
-      , headline ∷ String
-      , description ∷ String
-      , birthday ∷ Maybe DateWrapper
+      { name ∷ { value :: String, generated :: Boolean }
+      , headline ∷ { value :: String, generated :: Boolean }
+      , description ∷ { value :: String, generated :: Boolean }
+      , age ∷ Maybe DateWrapper
       , tags ∷ Array String
       , country ∷ Maybe Int
       , languages ∷ Array Int
@@ -71,6 +72,7 @@ type PM =
       , ageInputed ∷ Maybe DateWrapper
       , genderInputed ∷ Maybe Gender
       , countryInputed ∷ Maybe Int
+      , generated :: Array What
       , visible ∷ Boolean
       , languagesInputed ∷ Array Int
       , tagsInputed ∷ Array String

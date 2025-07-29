@@ -60,23 +60,22 @@ upsertCompletness connection loggedUserId field = SD.unsafeExecuteWith connectio
 removeCompletness ∷ Connection → Int → CP.ProfileColumn → _
 removeCompletness connection loggedUserId field = SD.executeWith connection $ delete # from complete_profiles # wher (_completer .=. loggedUserId .&&. _completed .=. field)
 
-saveRequiredField ∷ ∀ t. ToValue t ⇒ Int → CP.ProfileColumn → Boolean → t → ServerEffect Unit
-saveRequiredField loggedUserId field generated value = SD.withTransaction $ \connection → do
+saveRequiredField ∷ ∀ t. ToValue t ⇒ Connection -> Int → CP.ProfileColumn →  t -> Boolean  → _
+saveRequiredField connection loggedUserId field value generated  =  do
       SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
       if generated then
             removeCompletness connection loggedUserId field
       else
             upsertCompletness connection loggedUserId field
 
-saveField ∷ ∀ t. ToValue t ⇒ Int → CP.ProfileColumn → Maybe t → ServerEffect Unit
-saveField loggedUserId field value = SD.withTransaction $ \connection → do
+saveField ∷ ∀ t. ToValue t ⇒ Connection -> Int → CP.ProfileColumn → Maybe t → _
+saveField connection loggedUserId field value =  do
       SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
       case value of
             Just _ → upsertCompletness connection loggedUserId field
             Nothing → removeCompletness connection loggedUserId field
 
-saveLanguages ∷ Int → Array Int → ServerEffect Unit
-saveLanguages loggedUserId languages = SD.withTransaction $ \connection → void do
+saveLanguages connection loggedUserId languages = void do
       SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. loggedUserId)
       if DA.null languages then
             removeCompletness connection loggedUserId CP.Languages
@@ -84,8 +83,7 @@ saveLanguages loggedUserId languages = SD.withTransaction $ \connection → void
             upsertCompletness connection loggedUserId CP.Languages
             SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (map (loggedUserId /\ _) languages)
 
-saveTags ∷ Int → Array String → ServerEffect Unit
-saveTags loggedUserId tags = SD.withTransaction $ \connection → void do
+saveTags connection loggedUserId tags =  void do
       SD.executeWith connection $ delete # from tags_users # wher (_creator .=. loggedUserId)
       if DA.null tags then
             removeCompletness connection loggedUserId CP.Tags
