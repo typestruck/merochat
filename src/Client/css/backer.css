@@ -29,7 +29,7 @@ h3.initial {
 
 .svg-stripe {
     width: 75px;
-    height:30px;
+    height: 30px;
 }
 
 h3.bottom {
@@ -66,7 +66,7 @@ svg {
 
     .backer p {
         width: 100%;
-        margin:12px 0px;
-padding-left: 0;
+        margin: 12px 0px;
+        padding-left: 0;
     }
 }
