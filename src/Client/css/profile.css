@@ -47,7 +47,12 @@
 }
 
 .green-button.bigger {
-    width: 80%;
+    max-width: 80%;
+    flex-grow: 1;
+}
+
+.profile-edition .request-error-message {
+    padding: 0 10px;
 }
 
 .profile-section.tabbed {

@@ -1,48 +1,31 @@
 module Shared.Profile.View where
 
 import Prelude
-import Shared.Experiments.Types
-import Shared.Im.Types
-import Shared.Options.Profile
-import Shared.Profile.Types
 
 import Client.Common.Dom as CCD
 import Data.Array ((:))
 import Data.Array as DA
-import Data.Foldable as DF
+import Data.Either (Either(..))
 import Data.HashMap as DH
-import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype as DN
+import Data.String (Pattern(..))
 import Data.String as DS
-import Data.String.Read as DSR
-import Data.Symbol (class IsSymbol)
-import Data.Tuple (Tuple(..))
-import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
-import Prim.Row (class Cons)
-import Prim.Symbol (class Append)
-import Record as R
 import Shared.Avatar as SA
-import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
-import Shared.Im.Svg as SIS
-import Shared.Im.View.Profile as SIVP
-import Shared.Intl as SI
 import Shared.Keydown as SK
-import Shared.Markdown as SM
 import Shared.Network (RequestStatus(..))
-import Shared.Privilege (Privilege(..))
-import Shared.Privilege as SP
+import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
+import Shared.Profile.Types (ProfileMessage(..), ProfileModel, What(..))
+import Shared.Resource (Media(..), ResourceType(..))
+import Shared.Resource (resourcePath) as SP
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
-import Type.Data.Symbol as TDS
-import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 
@@ -58,7 +41,7 @@ view model = HE.div (show ProfileEditionForm)
                       [ HE.div (HA.class' "profile-section-label") "Avatar"
                       , HE.div (HA.class' "profile-section-label-smaller") "Your display picture"
                       , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
-                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ DM.fromMaybe (SA.fromAvatar model.user) model.avatarInputed ]
+                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ DM.fromMaybe (SA.fromAvatar model.user) $ fromAvatar model.avatarInputed ]
                               , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                               , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                                       [ HE.title "Reset profile picture"
@@ -71,8 +54,8 @@ view model = HE.div (show ProfileEditionForm)
                       [ HE.div (HA.class' "profile-section-label") "Basic info"
                       , HE.div (HA.class' "profile-section-label-smaller") "All fields are optional"
                       , HE.div (HA.class' "profile-section-wedge")
-                              [ HE.input [ HA.class' "modal-input margined", HA.type' "date", HA.placeholder "Your age", HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate model.ageInputed ]
-                              , HE.select [ HA.class' "modal-select" ]
+                              [ HE.input [ onChange SetAge, HA.class' "modal-input margined", HA.type' "date", HA.placeholder "Your age", HA.value <<< DM.fromMaybe "" $ map SDT.formatIsoDate model.ageInputed ]
+                              , HE.select [ HA.class' "modal-select", HA.onInput SetGender ]
                                       [ HE.option [ HA.value "", HA.selected $ model.genderInputed == Nothing ] "Do not show my gender"
                                       , HE.option [ HA.value $ show Female, HA.selected $ model.genderInputed == Just Female ] $ show Female
                                       , HE.option [ HA.value $ show Male, HA.selected $ model.genderInputed == Just Male ] $ show Male
@@ -81,7 +64,7 @@ view model = HE.div (show ProfileEditionForm)
                                       ]
                               ]
                       , HE.div (HA.class' "profile-section-wedge")
-                              [ HE.select [ HA.class' "modal-select margined" ]
+                              [ HE.select [ HA.class' "modal-select margined", HA.onInput SetCountry ]
                                       ( HE.option [ HA.value "", HA.selected $ model.countryInputed == Nothing ] "Do not show my country"
                                               : map (\c → HE.option [ HA.value $ show c.id, HA.selected $ model.countryInputed == Just c.id ] c.name) model.countries
                                       )
@@ -122,18 +105,25 @@ view model = HE.div (show ProfileEditionForm)
                               ]
                         else
                               HE.input [ HA.type' "button", HA.onClick Save, HA.class' "green-button bigger", HA.value "Save" ]
-                      ]
-              , HE.div (HA.class' "request-result-message success")
-                      [ HE.span (HA.class' { "request-error-message": true, hidden: true }) ""
+                      , HE.span (HA.class' { "request-error-message": true, hidden: model.updateRequestStatus == Nothing }) $ DM.maybe "" unwrapFailure model.updateRequestStatus
                       ]
               ]
       ]
       where
+      fromAvatar = case _ of
+            Just a | DS.contains (Pattern "data:image") a → Just a
+            Just aa → Just $ SP.resourcePath (Left $ Upload aa) Ignore
+            aaa → aaa
+
       firstLanguage = DA.head model.languagesInputed
       languages = DH.fromArrayBy _.id _.name model.languages
       languageEntry id = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick <<< SetLanguage $ show id ] (SU.fromJust (DH.lookup id languages) <> " x ")
 
       tagEntry tag = HE.div [ HA.class' "profile-selected-item", HA.title "Click to remove", HA.onClick $ SetTag tag ] (tag <> " x ")
+
+      unwrapFailure = case _ of
+            Failure s → s
+            _ → ""
 
 onChange ∷ (String → ProfileMessage) → NodeData ProfileMessage
 onChange message = HA.createRawEvent "change" handler

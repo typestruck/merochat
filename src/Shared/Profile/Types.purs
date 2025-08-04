@@ -9,7 +9,6 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested (type (/\), (/\))
 import Foreign as F
 import Shared.DateTime (DateWrapper)
 import Shared.Modal.Types (ScreenModal)
@@ -22,7 +21,10 @@ import Simple.JSON (class ReadForeign, class WriteForeign)
 data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SetLanguage String
+      | SetAge String
       | SelectAvatar
+      | SetGender String
+      | SetCountry String
       | Save
       | SetTag String
       | ToggleVisibility ScreenModal
