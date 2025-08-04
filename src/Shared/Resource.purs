@@ -148,11 +148,11 @@ resourceName = case _ of
 
 resourceType ∷ ResourceType → String
 resourceType = case _ of
+      Ico → ".ico"
       Js → ".bundle.js"
       Css → ".css"
       Png → ".png"
       Svg → ".svg"
-      Ico → ".ico"
       Ignore → ""
 
 replacement ∷ Bundle → ResourceType → String

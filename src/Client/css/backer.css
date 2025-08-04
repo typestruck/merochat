@@ -56,11 +56,17 @@ svg {
 
 @media (max-width:1279px) {
     .backer {
-        max-width: 100%;
+        max-width: 95%;
         padding: 10px
     }
 
     .backer strong {
         text-align: center;
+    }
+
+    .backer p {
+        width: 100%;
+        margin:12px 0px;
+padding-left: 0;
     }
 }
