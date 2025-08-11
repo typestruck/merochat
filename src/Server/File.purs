@@ -12,6 +12,7 @@ import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
+import Data.Tuple.Nested (type (/\), (/\))
 import Data.UUID as DU
 import Debug (spy)
 import Effect (Effect)
@@ -36,26 +37,30 @@ invalidImageMessage = "Invalid image"
 imageTooBigMessage ∷ String
 imageTooBigMessage = "Max allowed size for pictures is " <> maxImageSizeKB
 
-saveBase64File ∷ ∀ r. String → BaseEffect   r  String
-saveBase64File input =
-      case DS.split (Pattern ",") input of
-            [ mediaType, base64 ] → do
-                  case DH.lookup (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" mediaType) allowedMediaTypes of
-                        Nothing → invalidImage
-                        Just _ → do
-                              buffer ← R.liftEffect $ NB.fromString base64 Base64
-                              bufferSize ← R.liftEffect $ NB.size buffer
-                              if bufferSize > maxImageSize then
-                                    SR.throwBadRequest imageTooBigMessage
-                              else do
-                                    extension ← map ("." <> _) <<< R.liftAff $ realFileExtension buffer
-                                    if DST.member extension allowedExtensions then do
-                                          uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
-                                          let fileName = uuid <> extension
-                                          R.liftAff $ NFA.writeFile (localBasePath <> uploadFolder <> fileName) buffer
-                                          pure fileName
-                                    else
-                                          invalidImage
-            _ → invalidImage
+saveBase64File ∷ ∀ r. String → BaseEffect r String
+saveBase64File input = case fromBase64File input of
+      Just (mediaType /\ base64) →
+            case DH.lookup (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" mediaType) allowedMediaTypes of
+                  Nothing → invalidImage
+                  Just _ → do
+                        buffer ← R.liftEffect $ NB.fromString base64 Base64
+                        bufferSize ← R.liftEffect $ NB.size buffer
+                        if bufferSize > maxImageSize then
+                              SR.throwBadRequest imageTooBigMessage
+                        else do
+                              extension ← map ("." <> _) <<< R.liftAff $ realFileExtension buffer
+                              if DST.member extension allowedExtensions then do
+                                    uuid ← R.liftEffect (DU.toString <$> DU.genUUID)
+                                    let fileName = uuid <> extension
+                                    R.liftAff $ NFA.writeFile (localBasePath <> uploadFolder <> fileName) buffer
+                                    pure fileName
+                              else
+                                    invalidImage
+      _ → invalidImage
       where
       invalidImage = SR.throwBadRequest invalidImageMessage
+
+fromBase64File :: String -> Maybe (String /\ String)
+fromBase64File input = case DS.split (Pattern ",") input of
+      [ mediaType, base64 ] → Just (mediaType /\ base64)
+      _ → Nothing

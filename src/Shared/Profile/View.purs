@@ -15,6 +15,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
+import Shared.Avatar (defaultAvatar)
 import Shared.Avatar as SA
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
@@ -41,7 +42,7 @@ view model = HE.div (show ProfileEditionForm)
                       [ HE.div (HA.class' "profile-section-label") "Avatar"
                       , HE.div (HA.class' "profile-section-label-smaller") "Your display picture"
                       , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
-                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ DM.fromMaybe (SA.fromAvatar model.user) $ fromAvatar model.avatarInputed ]
+                              [ HE.img [ HA.class' "avatar-profile-edition", HA.src $ DM.fromMaybe defaultAvatar $ fromAvatar model.avatarInputed ]
                               , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                               , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                                       [ HE.title "Reset profile picture"

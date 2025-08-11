@@ -3,14 +3,14 @@ module Server.Profile.Handler where
 import Prelude
 import Server.Effect
 import Shared.Profile.Types
+import Shared.User
 
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Run as R
 import Server.Ok (Ok, ok)
 import Server.Profile.Action as SPA
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
-import Shared.User
 import Server.Profile.Template as SPT
 import Shared.DateTime (DateWrapper)
 
@@ -28,7 +28,5 @@ profile { guards: { loggedUserId } } = do
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What} } → ServerEffect String
 generated { body } = SPA.generateField body.field
 
-save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect Ok
-save request = do
-      SPA.save request.guards.loggedUserId request.body
-      pure ok
+save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect {avatar :: Maybe String }
+save request =  SPA.save request.guards.loggedUserId request.body

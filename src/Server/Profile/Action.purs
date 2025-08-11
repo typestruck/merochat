@@ -56,19 +56,25 @@ generateField field = do
             SPT.Headline → ST.generateHeadline
             SPT.Description → ST.generateDescription
 
+data SaveAvatar = Ignore | Save (Maybe String)
+
+save ∷ Int → SavedFields → _
 save loggedUserId fields = do
       avatar ← case fields.avatar of
-                  Nothing → pure Nothing
-                  Just base64 → Just <$> SF.saveBase64File base64
+            Nothing → pure $ Save Nothing
+            Just base64 | DM.isJust (SF.fromBase64File base64) → Save <<< Just <$> SF.saveBase64File base64
+            _ → pure Ignore
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map DN.unwrap fields.age > eighteen) $ SR.throwBadRequest tooYoungMessage
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
       --keep the old logic to save fields individually in case we need to do it again
-      SD.withTransaction $ \connection -> do
+      SD.withTransaction $ \connection → do
             SPD.saveRequiredField connection loggedUserId Name (DS.take nameMaxCharacters fields.name.value) fields.name.generated
             SPD.saveRequiredField connection loggedUserId Headline (DS.take headlineMaxCharacters fields.headline.value) fields.headline.generated
             SPD.saveRequiredField connection loggedUserId Description (DS.take descriptionMaxCharacters fields.description.value) fields.description.generated
-            SPD.saveField connection loggedUserId Avatar avatar
+            case avatar of
+                  Save a → SPD.saveField connection loggedUserId Avatar a
+                  _ → pure unit
             SPD.saveField connection loggedUserId Birthday fields.age
             SPD.saveField connection loggedUserId Gender fields.gender
             SPD.saveField connection loggedUserId Country fields.country
@@ -78,5 +84,8 @@ save loggedUserId fields = do
                         | moreTags = maxFinalTags
                         | otherwise = maxStartingTags
             SPD.saveTags connection loggedUserId <<< DA.take numberTags $ map (DS.take tagMaxCharacters) fields.tags
-
+      pure $ case avatar of
+            Save a → { avatar : a }
+            Ignore -> { avatar : fields.avatar }
+            _ → { avatar : Nothing }
 

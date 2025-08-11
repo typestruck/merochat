@@ -145,9 +145,8 @@ spec ∷
                                   , save ∷
                                           POST "/save"
                                                 { body ∷ SavedFields
-                                                , response ∷ Ok
+                                                , response ∷ {avatar :: Maybe String }
                                                 }
-
                                   }
                     , settings ∷
                             Routes "/settings"
