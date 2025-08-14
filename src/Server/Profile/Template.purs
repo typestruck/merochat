@@ -9,6 +9,7 @@ import Flame (QuerySelector(..))
 import Flame as F
 import Server.Profile.Types (Payload)
 import Shared.Element (ElementId(..))
+import Shared.Profile.Types (ProfileMode(..))
 import Shared.Profile.View as SPV
 
 template ∷ Payload → Effect String
@@ -20,6 +21,7 @@ template { user: user, countries, languages } = do
                     , headlineInputed: Just user.headline
                     , ageInputed:  user.age
                     , genderInputed: user.gender
+                    , mode : Edit
                     , countryInputed: user.country
                     , languagesInputed: user.languages
                     , visible: true

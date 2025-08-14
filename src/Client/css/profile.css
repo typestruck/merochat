@@ -51,6 +51,11 @@
     flex-grow: 1;
 }
 
+.profile-mode-selected {
+    font-weight: 900;
+    color: var(--im-merochat-green);
+}
+
 .profile-edition .request-error-message {
     padding: 0 10px;
 }
@@ -62,6 +67,10 @@
     top:0;
     background-color: var(--im-background-color);
     align-items: center;
+}
+
+.c {
+    cursor: pointer;
 }
 
 .avatar-profile-edition {

@@ -22,7 +22,7 @@ import Shared.Element (ElementId(..))
 import Shared.Keydown as SK
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
-import Shared.Profile.Types (ProfileMessage(..), ProfileModel, What(..))
+import Shared.Profile.Types (ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource (resourcePath) as SP
 import Shared.Unsafe as SU
@@ -34,9 +34,9 @@ view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div (show ProfileEditionForm)
       [ HE.div [ HA.class' { "profile-edition": true, hidden: not model.visible } ]
               [ HE.div (HA.class' "profile-section tabbed")
-                      [ HE.div_ "Edit"
+                      [ HE.div [HA.class' { c : true, "profile-mode-selected": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit}] "Edit"
                       , HE.div (HA.class' "separator duller") "•"
-                      , HE.div_ "Preview"
+                      , HE.div [HA.class' { c : true, "profile-mode-selected": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview}] "Preview"
                       ]
               , HE.div (HA.class' "profile-section")
                       [ HE.div (HA.class' "profile-section-label") "Avatar"

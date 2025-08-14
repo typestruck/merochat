@@ -63,6 +63,8 @@ type SavedFields =
 
 type GeneratedInput = { field ∷ What }
 
+data ProfileMode = Edit | Preview
+
 --used to generically set records
 type ProfileModel = Record PM
 
@@ -78,6 +80,7 @@ type PM =
       , visible ∷ Boolean
       , languagesInputed ∷ Array Int
       , tagsInputed ∷ Array String
+      , mode :: ProfileMode
       , registrationMessage ∷ Boolean
       , descriptionInputed ∷ Maybe String
       , loading ∷ Boolean
@@ -88,14 +91,24 @@ type PM =
 
 derive instance Generic What _
 
+derive instance Generic ProfileMode _
+
 derive instance Eq What
+
+derive instance Eq ProfileMode
 
 derive instance Ord What
 
 instance EncodeJson What where
       encodeJson = DAEGR.genericEncodeJson
 
+instance EncodeJson ProfileMode where
+      encodeJson = DAEGR.genericEncodeJson
+
 instance DecodeJson What where
+      decodeJson = DADGR.genericDecodeJson
+
+instance DecodeJson ProfileMode where
       decodeJson = DADGR.genericDecodeJson
 
 instance ReadForeign What where
