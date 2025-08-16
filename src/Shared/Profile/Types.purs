@@ -41,6 +41,7 @@ type PU =
       ( BasicUser
               ( gender ∷ Maybe Gender
               , country ∷ Maybe Int
+              , onlineStatus :: Boolean
               , languages ∷ Array Int
               , age ∷ Maybe DateWrapper
               , privileges ∷ Array Privilege
