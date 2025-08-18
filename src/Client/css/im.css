@@ -2783,7 +2783,7 @@ label {
     #profile-edition-form,
     .backing-suggestion-call,
     .suggestion.old {
-        padding: 10px 15px;
+        padding: 10px 10px;
     }
 
     .card-top-welcome-filter {
@@ -2917,7 +2917,7 @@ label {
     #karma-leaderboard,
     #profile-edition-form {
         margin-left: 0;
-        width: 100%;
+        width: calc(100% - 20px);
         height: auto;
     }
 

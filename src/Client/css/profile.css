@@ -51,6 +51,11 @@
     flex-grow: 1;
 }
 
+.profile-edition .full-card-headline-tags {
+    width: 47em;
+}
+
+
 .profile-mode-selected {
     font-weight: 900;
     color: var(--im-merochat-green);
@@ -90,4 +95,23 @@
     padding: 5px;
     cursor: pointer;
     width: fit-content;
+}
+
+@media (max-width:1279px) {
+    .profile-section-wedge {
+        flex-direction: column;
+    }
+
+    .margined {
+        margin: 0;
+        margin-bottom: 10px;
+    }
+
+    .profile-section .profile-section-wedge .modal-input, .profile-section .profile-section-wedge .modal-select, .profile-section .modal-input, .profile-section .modal-select, .profile-edition .full-card-headline-tags {
+        width: auto;
+    }
+
+    .profile-section {
+        padding-bottom: 15px;
+    }
 }

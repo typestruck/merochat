@@ -23,6 +23,7 @@ data ProfileMessage
       | SetLanguage String
       | SetAge String
       | SelectAvatar
+      | Clear
       | SetGender String
       | SetCountry String
       | Save

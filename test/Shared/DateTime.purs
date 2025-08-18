@@ -23,16 +23,16 @@ tests ∷ TestSuite
 tests = do
       TU.suite "calculating age" do
             TU.test "ageFrom' handles leap years" do
-                  TUA.equal (Just 40) <<< SD.ageFrom' (makeDate 2041 1 2) <<< Just $ makeDate 2000 1 3
-                  TUA.equal (Just 40) <<< SD.ageFrom' (makeDate 2041 2 28) <<< Just $ makeDate 2000 2 29
-                  TUA.equal (Just 39) <<< SD.ageFrom' (makeDate 2040 2 28) <<< Just $ makeDate 2000 2 29
+                  TUA.equal 40 <<< SD.ageFrom' (makeDate 2041 1 2)  $ makeDate 2000 1 3
+                  TUA.equal 40 <<< SD.ageFrom' (makeDate 2041 2 28)  $ makeDate 2000 2 29
+                  TUA.equal 39 <<< SD.ageFrom' (makeDate 2040 2 28)  $ makeDate 2000 2 29
 
             TU.test "ageFrom' handles earlier birthdays" do
-                  TUA.equal (Just 39) <<< SD.ageFrom' (makeDate 2040 1 19) <<< Just $ makeDate 2000 1 20
+                  TUA.equal 39 <<< SD.ageFrom' (makeDate 2040 1 19) $ makeDate 2000 1 20
 
             TU.test "ageFrom' handles later birthdays" do
-                  TUA.equal (Just 40) <<< SD.ageFrom' (makeDate 2040 1 20) <<< Just $ makeDate 2000 1 20
-                  TUA.equal (Just 40) <<< SD.ageFrom' (makeDate 2040 8 20) <<< Just $ makeDate 2000 1 20
+                  TUA.equal 40 <<< SD.ageFrom' (makeDate 2040 1 20) $ makeDate 2000 1 20
+                  TUA.equal 40 <<< SD.ageFrom' (makeDate 2040 8 20) $ makeDate 2000 1 20
 
       TU.suite "displaying message date time" do
             TU.test "ago shows yesterday" do
