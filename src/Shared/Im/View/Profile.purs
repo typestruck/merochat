@@ -1,4 +1,4 @@
-module Shared.Im.View.Profile (suggestionProfile, signUpCall, badges, profileContextMenu, individualSuggestion, miniSuggestions) where
+module Shared.Im.View.Profile (suggestionProfile, signUpCall, badges, profileContextMenu, individualSuggestion, miniSuggestions, separator) where
 
 import Debug
 import Prelude
@@ -303,7 +303,7 @@ genderAge suggestion =
             [ g, a ] → [ HE.div_ [ g, separator, a ] ]
             ga → ga
 
-separator ∷ Html ImMessage
+separator ∷ forall m. Html m
 separator = HE.span (HA.class' "duller") " • "
 
 onlineStatus ∷ User → Suggestion → Array (Html ImMessage)

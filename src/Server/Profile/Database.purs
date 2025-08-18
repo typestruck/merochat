@@ -1,6 +1,7 @@
 module Server.Profile.Database where
 
 import Droplet.Language
+import Prelude hiding (join)
 import Server.Database.Badges
 import Server.Database.BadgesUsers
 import Server.Database.CompleteProfiles
@@ -10,18 +11,17 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver.Internal.Query (Connection(..))
-import Prelude hiding (join)
 import Prelude as P
 import Server.Database as SD
 import Server.Database.CompleteProfiles as CP
 import Server.Database.Countries (countries)
-import Server.Database.Fields (_id, _name, k, l, lu, tu, u, b, bu)
+import Server.Database.Fields (_id, _name, b, bu, k, l, lu, onlineStatus, tu, u)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
-import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, users)
+import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, _onlineStatus, users)
 import Server.Effect (ServerEffect)
 import Server.Profile.Database.Flat (FlatProfileUser)
 import Shared.Unsafe as SU
@@ -37,6 +37,7 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
             /\ _birthday
             /\ _name
             /\ _headline
+            /\ (_onlineStatus # as onlineStatus)
             /\ _description
             /\ _country
             /\ (select (array_agg _feature # as _privileges) # from privileges # wher (_quantity .<=. k ... _current_karma) # orderBy _privileges # limit (Proxy ∷ _ 1))
@@ -60,23 +61,22 @@ upsertCompletness connection loggedUserId field = SD.unsafeExecuteWith connectio
 removeCompletness ∷ Connection → Int → CP.ProfileColumn → _
 removeCompletness connection loggedUserId field = SD.executeWith connection $ delete # from complete_profiles # wher (_completer .=. loggedUserId .&&. _completed .=. field)
 
-saveRequiredField ∷ ∀ t. ToValue t ⇒ Int → CP.ProfileColumn → Boolean → t → ServerEffect Unit
-saveRequiredField loggedUserId field generated value = SD.withTransaction $ \connection → do
+saveRequiredField ∷ ∀ t. ToValue t ⇒ Connection -> Int → CP.ProfileColumn →  t -> Boolean  → _
+saveRequiredField connection loggedUserId field value generated  =  do
       SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
       if generated then
             removeCompletness connection loggedUserId field
       else
             upsertCompletness connection loggedUserId field
 
-saveField ∷ ∀ t. ToValue t ⇒ Int → CP.ProfileColumn → Maybe t → ServerEffect Unit
-saveField loggedUserId field value = SD.withTransaction $ \connection → do
+saveField ∷ ∀ t. ToValue t ⇒ Connection -> Int → CP.ProfileColumn → Maybe t → _
+saveField connection loggedUserId field value =  do
       SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
       case value of
             Just _ → upsertCompletness connection loggedUserId field
             Nothing → removeCompletness connection loggedUserId field
 
-saveLanguages ∷ Int → Array Int → ServerEffect Unit
-saveLanguages loggedUserId languages = SD.withTransaction $ \connection → void do
+saveLanguages connection loggedUserId languages = void do
       SD.executeWith connection $ delete # from languages_users # wher (_speaker .=. loggedUserId)
       if DA.null languages then
             removeCompletness connection loggedUserId CP.Languages
@@ -84,8 +84,7 @@ saveLanguages loggedUserId languages = SD.withTransaction $ \connection → void
             upsertCompletness connection loggedUserId CP.Languages
             SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (map (loggedUserId /\ _) languages)
 
-saveTags ∷ Int → Array String → ServerEffect Unit
-saveTags loggedUserId tags = SD.withTransaction $ \connection → void do
+saveTags connection loggedUserId tags =  void do
       SD.executeWith connection $ delete # from tags_users # wher (_creator .=. loggedUserId)
       if DA.null tags then
             removeCompletness connection loggedUserId CP.Tags

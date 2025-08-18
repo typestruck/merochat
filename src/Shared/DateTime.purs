@@ -53,23 +53,19 @@ newtype DateWrapper = DateWrapper Date
 
 newtype DateTimeWrapper = DateTimeWrapper DateTime
 
-ageFrom ∷ Maybe Date → Maybe Int
-ageFrom = ageFrom' now
+ageFrom ∷ DateWrapper → Int
+ageFrom (DateWrapper dt) = ageFrom' now dt
       where
       now = EU.unsafePerformEffect EN.nowDate
 
-ageFrom' ∷ Date → Maybe Date → Maybe Int
-ageFrom' now birthday = calculate <$> birthday
+ageFrom' ∷ Date → Date → Int
+ageFrom' now birthday = DE.fromEnum currentYear - DE.fromEnum birthdayYear - if DateTime now zeroTime < birthdayThisYear then 1 else 0
       where
-      calculate b =
-            let
-                  currentYear = DD.year now
-                  birthdayYear = DD.year b
-                  birthdayMonth = DD.month b
-                  birthdayDay = DD.day b
-                  birthdayThisYear = DateTime (DD.canonicalDate currentYear birthdayMonth birthdayDay) zeroTime
-            in
-                  DE.fromEnum currentYear - DE.fromEnum birthdayYear - if DateTime now zeroTime < birthdayThisYear then 1 else 0
+      currentYear = DD.year now
+      birthdayYear = DD.year birthday
+      birthdayMonth = DD.month birthday
+      birthdayDay = DD.day birthday
+      birthdayThisYear = DateTime (DD.canonicalDate currentYear birthdayMonth birthdayDay) zeroTime
 
 --minimum age to sign up is 18
 latestEligibleBirthday ∷ Effect Date

@@ -1,8 +1,8 @@
 module Shared.User where
 
 import Prelude
-import Shared.Availability
-import Shared.DateTime
+import Shared.Availability (Availability)
+import Shared.DateTime (DateTimeWrapper(..))
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
@@ -14,8 +14,6 @@ import Data.Either as DET
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-import Data.Hashable (class Hashable)
-import Data.Hashable as DH
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic as DSG
@@ -33,7 +31,6 @@ import Payload.Client.EncodeBody (class EncodeBody)
 import Payload.ContentType (class HasContentType, json)
 import Payload.Server.DecodeBody (class DecodeBody)
 import Shared.Badge (Badge)
-import Shared.DateTime as SDT
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)

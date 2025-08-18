@@ -7,7 +7,6 @@ import Debug (spy)
 import Flame (ListUpdate)
 import Shared.Backer.Types (BackerMessage(..), BackerModel)
 import Shared.Modal.Types (ScreenModal(..))
-
 update ∷ ListUpdate BackerModel BackerMessage
 update model =
       case _ of

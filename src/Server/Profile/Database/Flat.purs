@@ -7,6 +7,8 @@ import Data.Date (Date)
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Debug (spy)
+import Safe.Coerce as SC
+import Server.Database.Types (Checked(..))
 import Shared.Avatar as SA
 import Shared.Badge (Badge)
 import Shared.DateTime (DateWrapper(..))
@@ -20,6 +22,7 @@ type FlatProfileUser =
       , country ∷ Maybe Int
       , description ∷ String
       , gender ∷ Maybe Gender
+      , onlineStatus ∷ Checked
       , headline ∷ String
       , privileges ∷ Maybe (Array Privilege)
       , badges ∷ Maybe (Array Badge)
@@ -40,6 +43,7 @@ fromFlatProfileUser fu =
       , gender: fu.gender
       , headline: fu.headline
       , availability: None
+      , onlineStatus: SC.coerce fu.onlineStatus
       , id: fu.id
       , karma: fu.karma
       , karmaPosition: fu.karmaPosition
