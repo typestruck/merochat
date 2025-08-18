@@ -65,6 +65,7 @@ clear model =
             , headlineInputed = Just model.user.headline
             , descriptionInputed = Just model.user.description
             , ageInputed = model.user.age
+            , updateRequestStatus = Nothing
             , tagsInputed = model.user.tags
             , countryInputed = model.user.country
             , languagesInputed = model.user.languages
