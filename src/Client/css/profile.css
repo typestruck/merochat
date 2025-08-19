@@ -51,7 +51,7 @@
     flex-grow: 1;
 }
 
-.profile-edition .full-card-headline-tags {
+.profile-edition .full-card-headline-tags, .profile-edition .card-description  {
     width: 47em;
 }
 
@@ -107,7 +107,7 @@
         margin-bottom: 10px;
     }
 
-    .profile-section .profile-section-wedge .modal-input, .profile-section .profile-section-wedge .modal-select, .profile-section .modal-input, .profile-section .modal-select, .profile-edition .full-card-headline-tags {
+    .profile-section .profile-section-wedge .modal-input, .profile-section .profile-section-wedge .modal-select, .profile-section .modal-input, .profile-section .modal-select, .profile-edition .full-card-headline-tags, .profile-edition .card-description  {
         width: auto;
     }
 
