@@ -48,7 +48,7 @@ svg {
 }
 
 .patreon-button {
-    color: rgb(238, 238, 238);
+    color: var(--light-color);
     border-radius: 25px;
     padding: 5px 20px;
     background: rgb(255, 66, 77)

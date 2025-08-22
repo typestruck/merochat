@@ -19,8 +19,8 @@ strong {
 }
 
 svg {
-    stroke: rgb(238, 238, 238);
-    fill: rgb(238, 238, 238);
+    stroke: var(--light-color);
+    fill: var(--light-color);
     cursor: pointer;
 }
 
@@ -137,7 +137,7 @@ textarea {
 
 .online-indicator {
     border-radius: 100%;
-    background-color: hsl(145, 80%, 28%);
+    background-color: var(--im-merochat-green);
     min-width: 10px;
     margin-left: 9px;
     height: 10px;
@@ -350,7 +350,7 @@ textarea {
 }
 
 .step-button {
-    background: rgb(238, 238, 238);
+    background: var(--light-color);
     color: #469bc5;
     font-weight: bold;
 }
@@ -1481,11 +1481,12 @@ input:not(type=button):focus {
 
 .place-link {
     cursor: pointer;
-    color: hsl(145, 80%, 28%);
+
 }
 
 .place-link.selected {
     font-weight: bold;
+    color: var(--im-merochat-green);
 }
 
 .separator {
@@ -1508,7 +1509,7 @@ input:not(type=button):focus {
 .green-button {
     display: block;
     border-radius: 10px;
-    color: inherit;
+    color: var(--light-color);
     border: none;
     cursor: pointer;
     margin-left: 15px;
@@ -1522,7 +1523,7 @@ input:not(type=button):focus {
 }
 
 .step-button {
-    background: rgb(238, 238, 238);
+    background: var(--light-color);
     color: #4783ff;
     font-weight: bold;
 }
@@ -1724,7 +1725,7 @@ input:not(type=button):focus {
 
 .modal-form {
     /* position: absolute; */
-    background: #2d2d2d;
+    background: var(--im-second-background-color);
     padding: 20px;
     display: flex;
     color: inherit;
@@ -1790,8 +1791,8 @@ input:not(type=button):focus {
 }
 
 .send-image-button {
-    fill: rgb(238, 238, 238);
-    stroke: rgb(238, 238, 238);
+    fill: var(--light-color);
+    stroke: var(--light-color);
 }
 
 .emoji-access-div {

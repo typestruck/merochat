@@ -18,7 +18,7 @@
 
 .name {
     font-size: 1em;
-    color: rgb(238, 238, 238)
+    color: var(--light-color)
 }
 
 .privilege-name-description {
@@ -31,9 +31,9 @@
 }
 
 .position-number {
-    color: rgb(238, 238, 238);
+    color: var(--light-color);
     padding: 6px;
-    border: 1px dashed rgb(238, 238, 238);
+    border: 1px dashed var(--light-color);
     border-radius: 100%;
     min-width: 33px;
     display: inline-block;
@@ -56,14 +56,14 @@
     padding-right: 40px;
     align-self: center;
     min-width: 55px;
-    color: hsl(145, 80%, 28%)
+    color: var(--im-merochat-green)
 }
 
 .privilege-quantity svg {
     width: 30px;
     height: 30px;
-    stroke: hsl(145, 80%, 28%);
-    fill: hsl(145, 80%, 28%);
+    stroke: var(--im-merochat-green);
+    fill: var(--im-merochat-green);
     cursor: initial;
 }
 
@@ -72,7 +72,7 @@
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     padding-left: 15px;
-    background-color: #2d2d2d;
+    background-color: var(--im-second-background-color);
     display: flex;
 }
 
@@ -89,15 +89,17 @@
     width: 80px;
     height: 80px;
     border-radius: 100%;
-    border: 15px solid #2d2d2d;
+    border: 15px solid var(--im-second-background-color);
+    background: var(--im-second-background-color);
 }
 
 .user .name-karma {
-    background: #1b3a28;
+    background: var(--im-merochat-green);
 }
 
 .user .avatar-leaderboard {
-    border-color: #1b3a28
+    border-color: var(--im-merochat-green);
+    background: var(--im-merochat-green)
 }
 
 .center {
