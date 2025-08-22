@@ -105,7 +105,7 @@ ul li {
     bottom: 0;
     flex-flow: column;
     margin-right: 70px;
-    border-right: 1px solid #373737;
+    border-right: 1px solid var(--im-second-background-color);
 }
 
 .external-help .help, .external-help .terms, .external-help .faq .bulleted:first-of-type, .no-padding {

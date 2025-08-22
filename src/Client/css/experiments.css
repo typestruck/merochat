@@ -38,14 +38,14 @@
 }
 
 .impersonation-header {
-    border-bottom: 1px solid #373737;
+    border-bottom: 1px solid var(--im-second-background-color);
     padding: 0px 5px;
     display: flex;
     width: 25em;
     justify-content: space-between;
     margin-bottom: 15px;
     cursor: pointer;
-    color: hsl(145, 80%, 28%);
+    color: var(--im-merochat-green);
 }
 
 .header-plus {
