@@ -100,7 +100,7 @@ setMessageStatus webSocket userId newStatus model =
                   EC.liftEffect do
                         c <- SIP.checkPwa
                         h <- WH.window
-                        when (c && model.user.id == 4) (SAD.alert (show (updatedMessageIds)) h )
+                        when (c && model.user.id == 4) (SAD.alert (show (map (\f -> f.status) $ DA.filter needsUpdate <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts)) h )
                   pure Nothing
             ] <> (if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds ]))
 
