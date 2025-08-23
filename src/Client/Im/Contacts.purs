@@ -79,12 +79,7 @@ resumeChat userId model =
             EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
             pure Nothing
       screenEffects chatting
-            | model.smallScreen = [ do
-                  EC.liftEffect do
-                        c <- SIP.checkPwa
-                        h <- WH.window
-                        when (c && model.user.id == 4) (SAD.alert (show $ map _.status chatting.history) h )
-                  removeNotifications chatting ]
+            | model.smallScreen = [  removeNotifications chatting ]
             | otherwise = [ pure <<< Just $ FocusInput ChatInput ]
 
 -- | When coming back to the site mark messages as read if a chat is open
@@ -100,7 +95,14 @@ setMessageStatus webSocket userId newStatus model =
       model
             { contacts = updatedContacts
             } /\
-            if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds ]
+
+            ([do
+                  EC.liftEffect do
+                        c <- SIP.checkPwa
+                        h <- WH.window
+                        when (c && model.user.id == 4) (SAD.alert (show (updatedMessageIds)) h )
+                  pure Nothing
+            ] <> (if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds ]))
 
       where
       needsUpdate entry = entry.status >= Sent && entry.status < newStatus && entry.recipient == model.user.id
