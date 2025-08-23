@@ -21,16 +21,6 @@ let imageRoute =
 
 registerRoute(imageRoute);
 
-// //apparently we need this to keep the sw up to date
-// self.addEventListener('install', _ => {
-//     self.skipWaiting();
-// });
-
-// //so we can user navigator.serviceWorker.controller from the page
-// self.addEventListener("activate", (event) => {
-//     event.waitUntil(clients.claim());
-// });
-
 let chattingWith,
     channel = new BroadcastChannel("merochat");
 
@@ -38,7 +28,7 @@ channel.addEventListener('message', async (event) => {
     if (event.data)
         switch (event.data.type) {
             case 'not-chatting':
-                await noChatsOpened();
+                noChatsOpened();
                 break;
             case 'read':
                 await chatOpened(event.data.payload);
@@ -46,7 +36,7 @@ channel.addEventListener('message', async (event) => {
         }
 });
 
-async function noChatsOpened() {
+function noChatsOpened() {
     chattingWith = undefined;
 }
 
@@ -173,7 +163,7 @@ async function resume(notification) {
         channel.postMessage({ message: 'pushed', payload: notification.data.allIncoming });
         channel.postMessage({ message: 'resume', payload: userId });
     } else {
-        await noChatsOpened();
+        noChatsOpened();
         //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
         await self.clients.openWindow(`/im?resume=${userId}`);
     }

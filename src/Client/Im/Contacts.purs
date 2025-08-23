@@ -12,6 +12,7 @@ import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
 import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
+import Client.Im.Pwa as SIP
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
@@ -32,6 +33,9 @@ import Shared.Im.Contact as SIC
 import Shared.Modal.Types (Modal(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
+import Web.HTML as WH
+import Web.HTML.Window (alert)
+import Web.HTML.Window as SAD
 import Web.Socket.WebSocket (WebSocket)
 
 -- | When a contact is selected from the list, update `chatting` accordingly
@@ -75,7 +79,12 @@ resumeChat userId model =
             EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
             pure Nothing
       screenEffects chatting
-            | model.smallScreen = [ removeNotifications chatting ]
+            | model.smallScreen = [ do
+                  EC.liftEffect do
+                        c <- SIP.checkPwa
+                        h <- WH.window
+                        when (c && model.user.id == 4) (SAD.alert (show $ map _.status chatting.history) h )
+                  removeNotifications chatting ]
             | otherwise = [ pure <<< Just $ FocusInput ChatInput ]
 
 -- | When coming back to the site mark messages as read if a chat is open
