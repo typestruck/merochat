@@ -23,8 +23,10 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
+import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
+import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
@@ -108,15 +110,14 @@ setMessageStatus webSocket userId newStatus model =
 
       updatedMessageIds = map _.id <<< DA.filter needsUpdate <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts
       updatedContacts = map (updateContact userId) model.contacts
-      setIt ui messages = liftEffect do
-            c <- SIP.checkPwa
-            h <- WH.window
-            when (c && model.user.id == 4) (SAD.alert (show [ ui /\ messages ]) h )
-            CIW.sendPayload webSocket $ ChangeStatus
-                  { status: newStatus
-                  , ids: [ ui /\ messages ]
-                  }
-            CIUN.updateTabCount model updatedContacts
+      setIt ui messages = do
+            EA.delay $ Milliseconds 3000.0
+            liftEffect do
+                  CIW.sendPayload webSocket $ ChangeStatus
+                        { status: newStatus
+                        , ids: [ ui /\ messages ]
+                        }
+                  CIUN.updateTabCount model updatedContacts
             pure Nothing
 
 -- | Update message status to unread upon openning the site or receveing from new contacts
