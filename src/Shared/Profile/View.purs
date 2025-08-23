@@ -50,7 +50,9 @@ view model = HE.div (show ProfileEditionForm)
 
 edit ∷ ProfileModel → Array (Html ProfileMessage)
 edit model =
-      [ HE.div (HA.class' "profile-section")
+      [ HE.div (HA.class' { "profile-section created-account": true, hidden : not model.fromTemporary }) "You account has been created"
+
+      , HE.div (HA.class' "profile-section")
               [ HE.div (HA.class' "profile-section-label") "Avatar"
               , HE.div (HA.class' "profile-section-label-smaller") "Your display picture"
               , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
@@ -139,7 +141,7 @@ preview model =
                       [ HE.img [ HA.src <<< DM.fromMaybe defaultAvatar $ fromAvatar model.avatarInputed, HA.class' "big-suggestion-avatar" ]
                       , HE.div (HA.class' "big-suggestion-info")
                               ( HE.strong (HA.class' "big-card-name") (DM.fromMaybe "" model.nameInputed)
-                                      : SIVP.badges model.user.badges <> [ HE.div (HA.class' "duller") onlineStatus  ]
+                                      : SIVP.badges model.user.badges <> [ HE.div (HA.class' "duller") onlineStatus ]
                               )
                       , HE.div (HA.class' "big-suggestion-info auto-left")
                               ( [ HE.div_
@@ -171,7 +173,7 @@ preview model =
             case DM.maybe [] (DA.singleton <<< HE.span_ <<< show) model.genderInputed <> DM.maybe [] (DA.singleton <<< HE.span_ <<< show <<< DST.ageFrom) model.ageInputed of
                   [ g, a ] → [ HE.div_ [ g, separator, a ] ]
                   ga → ga
-      from = DM.maybe [] (\c → [ HE.div_ [ HE.span (HA.class' "duller") "from ", HE.span_ <<< _.name <<< SU.fromJust $ DA.find ( (c == _) <<< _.id ) model.countries ] ]) model.countryInputed
+      from = DM.maybe [] (\c → [ HE.div_ [ HE.span (HA.class' "duller") "from ", HE.span_ <<< _.name <<< SU.fromJust $ DA.find ((c == _) <<< _.id) model.countries ] ]) model.countryInputed
       speaks
             | DA.null model.languagesInputed = []
             | otherwise = [ HE.div_ $ HE.span (HA.class' "duller") "speaks " : (DA.intersperse separator $ map languageEntry model.languagesInputed) ]

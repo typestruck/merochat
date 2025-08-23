@@ -22,6 +22,7 @@ template { user: user, countries, languages } = do
                     , ageInputed:  user.age
                     , genderInputed: user.gender
                     , mode : Edit
+                    , fromTemporary : false
                     , countryInputed: user.country
                     , languagesInputed: user.languages
                     , visible: true

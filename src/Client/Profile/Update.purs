@@ -55,7 +55,7 @@ update model = case _ of
       SetLanguage value → setLanguage value model
       SetTag value → setTag value model
       Save → save model
-      AfterRegistration → model /\ []
+      AfterRegistration → setFromTemporary model
       UpdatePrivileges _ → model /\ []
 
 clear ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
@@ -65,6 +65,7 @@ clear model =
             , headlineInputed = Just model.user.headline
             , descriptionInputed = Just model.user.description
             , ageInputed = model.user.age
+            , fromTemporary = false
             , updateRequestStatus = Nothing
             , tagsInputed = model.user.tags
             , countryInputed = model.user.country
@@ -74,7 +75,7 @@ clear model =
             } /\ []
 
 save ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-save model = model { loading = true } /\ [ saveIt ]
+save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
       where
       fields =
             { name: { value: DM.fromMaybe model.user.name model.nameInputed, generated: DA.elem Name model.generated }
@@ -97,6 +98,9 @@ save model = model { loading = true } /\ [ saveIt ]
                         pure <<< Just <<< SetPField $ _ { loading = false }
                   Left err → do
                         pure <<< Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
+
+setFromTemporary ::  ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+setFromTemporary model = model { fromTemporary = true } /\ []
 
 setAge ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setAge value model = model { ageInputed = DateWrapper <$> SDT.unformatIsoDate value } /\ []

@@ -76,6 +76,7 @@ type PM =
       , avatarInputed ∷ Maybe String
       , headlineInputed ∷ Maybe String
       , ageInputed ∷ Maybe DateWrapper
+      , fromTemporary :: Boolean
       , genderInputed ∷ Maybe Gender
       , countryInputed ∷ Maybe Int
       , generated :: Array What

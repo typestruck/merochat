@@ -37,6 +37,11 @@
     margin-right: 10px;
 }
 
+.created-account {
+    color: var(--im-merochat-green);
+  font-weight: bold;
+}
+
 .profile-buttons {
     position: sticky;
     bottom: 0px;
