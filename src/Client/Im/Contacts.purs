@@ -110,16 +110,14 @@ setMessageStatus webSocket userId newStatus model =
 
       updatedMessageIds = map _.id <<< DA.filter needsUpdate <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts
       updatedContacts = map (updateContact userId) model.contacts
-      setIt ui messages =  do
-            when (model.user.id == 4) $ EA.delay $ Milliseconds 3000.9
+      setIt ui messages =
             liftEffect do
-
                   CIW.sendPayload webSocket $ ChangeStatus
                         { status: newStatus
                         , ids: [ ui /\ messages ]
                         }
                   CIUN.updateTabCount model updatedContacts
-            pure Nothing
+                  pure Nothing
 
 -- | Update message status to unread upon openning the site or receveing from new contacts
 setDeliveredStatus ∷ WebSocket → ImModel → NoMessages
