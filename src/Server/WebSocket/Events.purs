@@ -28,6 +28,7 @@ import Effect (Effect)
 import Effect.Aff as EA
 import Effect.Class (class MonadEffect)
 import Effect.Class as EC
+import Effect.Console as ECC
 import Effect.Console as ECS
 import Effect.Exception (Error, throw)
 import Effect.Exception.Unsafe as EEU
@@ -275,6 +276,7 @@ sendUnavailability loggedUserId allUsersAvailability userId = do
 
 sendStatusChange ∷ String → Int → HashMap Int UserAvailability → { ids ∷ Array (Tuple Int (Array Int)), status ∷ MessageStatus } → WebSocketEffect
 sendStatusChange token loggedUserId allUsersAvailability changes = do
+      when (loggedUserId == 4) $ EC.liftEffect $ ECC.logShow changes
       SIDE.changeStatus loggedUserId changes.status $ DA.concatMap DT.snd changes.ids
 
       DF.traverse_ sendReceipients changes.ids
@@ -284,6 +286,7 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
       DF.traverse_ (sendLoggedUser loggedUserConnections) changes.ids
 
       when (changes.status == Read && loggedUserAvailability.hasPwa) $ DF.traverse_ sendPushStatus changes.ids
+      when (loggedUserId == 4) $ EC.liftEffect $ ECC.logShow changes.ids
       where
       sendPushStatus (userId /\ _) = EC.liftEffect <<< SP.push loggedUserId "" $ MessageReadSomewhereElse { userId }
 
