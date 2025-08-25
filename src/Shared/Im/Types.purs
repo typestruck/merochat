@@ -259,7 +259,7 @@ data ImMessage
       | ToggleLargeAvatar
       | DropFile Event
       | ClearWebSocketMessages
-      | ResumeSendMessage (Maybe WebSocketPayloadServer)
+      | ResumeWebSocketMessage (Maybe WebSocketPayloadServer)
       | ToggleMessageEnter
       | FocusInput ElementId
       | QuoteMessage String (Either Touch (Maybe Event))
@@ -313,6 +313,10 @@ data Theme = Light | Dark
 
 data When = Always | Desktop
 
+type StatusUpdate = { status ∷ MessageStatus
+              , ids ∷ Array (Tuple Int (Array Int))
+              }
+
 data WebSocketPayloadServer
       = UpdateHash
       | UpdatePrivileges
@@ -323,10 +327,7 @@ data WebSocketPayloadServer
       | OutgoingMessage OutgoingRecord
       | EditedMessage EditedRecord
       | DeletedMessage DeletedRecord
-      | ChangeStatus
-              { status ∷ MessageStatus
-              , ids ∷ Array (Tuple Int (Array Int))
-              }
+      | ChangeStatus StatusUpdate
       | UnavailableFor { id ∷ Int }
       | Ban { id ∷ Int, secret ∷ String }
 

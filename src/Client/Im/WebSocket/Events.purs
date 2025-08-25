@@ -1,4 +1,4 @@
-module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, receiveMessage, reconnectWebSocket, closeWebSocket, trackAvailability) where
+module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, receiveMessage, reconnectWebSocket, closeWebSocket, trackAvailability, resumeWebSocketMessage, clearWebSocketMessages) where
 
 import Prelude
 
@@ -15,6 +15,7 @@ import Control.Monad.Except as CME
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Foldable as DF
 import Data.Foldable as DT
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -123,9 +124,9 @@ handleOpen webSocketStateRef _ = do
       FS.send imId CheckUserExpiration
       --signal that messages have been received / read
       FS.send imId SetDeliveredStatus
-      FS.send imId $ SetReadStatus Nothing
       --keep track of users online status
       FS.send imId TrackAvailability
+      FS.send imId $ SetReadStatus Nothing
       --when the connection is open and the user is on the page serialize their availability
       setOnline state.webSocket
       where
@@ -431,7 +432,7 @@ updateWebSocketStatus status model =
                   visible ← EC.liftEffect CCD.documentIsNotHidden
                   pure $ if focused || visible then Just ReconnectWebSocket else Nothing
             else pure $ Just ReconnectWebSocket
-      resumeMessages = pure <<< Just $ ResumeSendMessage Nothing
+      resumeMessages = pure <<< Just $ ResumeWebSocketMessage Nothing
       messages
             | status == Reconnect = [ reconnect ]
             | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts, resumeMessages ]
@@ -444,3 +445,24 @@ trackAvailability webSocket model = model /\ [ track ]
       track = EC.liftEffect do
             CIW.sendPayload webSocket $ TrackAvailabilityFor { ids: userIds }
             pure Nothing
+
+resumeWebSocketMessage ∷ Maybe WebSocketPayloadServer → WebSocket → ImModel → MoreMessages
+resumeWebSocketMessage payload webSocket model = model { webSocketMessages = messages } /\ resume
+      where
+      messages = case payload of
+            Nothing → model.webSocketMessages
+            Just message → message : model.webSocketMessages
+
+      resume
+            | DA.null messages = []
+            | otherwise =
+                    [ EC.liftEffect do
+                            if model.webSocketStatus == Connected then do
+                                  DF.traverse_ (CIW.sendPayload webSocket) messages
+                                  pure $ Just ClearWebSocketMessages
+                            else
+                                  pure Nothing
+                    ]
+
+clearWebSocketMessages ∷ ImModel → NoMessages
+clearWebSocketMessages model = model { webSocketMessages = [] } /\ []

@@ -175,7 +175,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
                   CIW.sendPayload webSocket payload
                   pure Nothing
             else
-                  pure <<< Just <<< ResumeSendMessage $ Just payload
+                  pure <<< Just <<< ResumeWebSocketMessage $ Just payload
 
       asMarkdownImage caption width height base64 = "![" <> caption <> "]([" <> show width <> "," <> show height <> "]" <> base64 <> ")"
       asAudioMessage base64 = "<audio controls src='" <> base64 <> "'></audio>"
@@ -212,27 +212,6 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
                           , edited = true
                           }
             | otherwise = history
-
-resumeSendMessage ∷ Maybe WebSocketPayloadServer → WebSocket → ImModel → MoreMessages
-resumeSendMessage payload webSocket model = model { webSocketMessages = messages } /\ resume
-      where
-      messages = case payload of
-            Nothing → model.webSocketMessages
-            Just message → message : model.webSocketMessages
-
-      resume
-            | DA.null messages = []
-            | otherwise =
-                    [ EC.liftEffect do
-                            if model.webSocketStatus == Connected then do
-                                  DF.traverse_ (CIW.sendPayload webSocket) messages
-                                  pure $ Just ClearWebSocketMessages
-                            else
-                                  pure Nothing
-                    ]
-
-clearWebSocketMessages ∷ ImModel → NoMessages
-clearWebSocketMessages model = model { webSocketMessages = [] } /\ []
 
 -- | A "turn" is how much karma is accrued between messages
 -- |

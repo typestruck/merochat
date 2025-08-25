@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Maybe (Maybe(..))
 import Run as R
-import Run.Reader as RR
 import Server.Environment (tokenSecret)
 import Server.Landing.Database as SLD
 import Server.Token as ST
