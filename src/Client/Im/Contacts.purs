@@ -36,6 +36,7 @@ import Shared.Modal.Types (Modal(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
+import Web.HTML as WW
 import Web.HTML.Window (alert)
 import Web.HTML.Window as SAD
 import Web.Socket.WebSocket (WebSocket)
@@ -81,7 +82,7 @@ resumeChat userId model =
             EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
             pure Nothing
       screenEffects chatting
-            | model.smallScreen = [  removeNotifications chatting ]
+            | model.smallScreen = [ removeNotifications chatting ]
             | otherwise = [ pure <<< Just $ FocusInput ChatInput ]
 
 -- | When coming back to the site mark messages as read if a chat is open
@@ -97,7 +98,7 @@ setMessageStatus webSocket userId newStatus model =
       model
             { contacts = updatedContacts
             } /\
-      if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds ]
+            if DA.null updatedMessageIds then [] else [ setIt userId updatedMessageIds ]
 
       where
       needsUpdate entry = entry.status >= Sent && entry.status < newStatus && entry.recipient == model.user.id
@@ -110,17 +111,22 @@ setMessageStatus webSocket userId newStatus model =
 
       updatedMessageIds = map _.id <<< DA.filter needsUpdate <<< DM.maybe [] _.history $ SIC.findContact userId model.contacts
       updatedContacts = map (updateContact userId) model.contacts
-      setIt ui messages = do
-            liftEffect do
-                  let changes = { status: newStatus
-                              , ids: [ ui /\ messages ]
-                              }
-                  CIUN.updateTabCount model updatedContacts
-                  if model.webSocketStatus == Connected then do
-                        CIW.sendPayload webSocket $ ChangeStatus changes
-                        pure Nothing
-                  else
-                        pure <<< Just <<< ResumeWebSocketMessage <<< Just $ ChangeStatus changes
+      setIt ui messages = liftEffect do
+            let
+                  changes =
+                        { status: newStatus
+                        , ids: [ ui /\ messages ]
+                        }
+            CIUN.updateTabCount model updatedContacts
+            if model.webSocketStatus == Connected then do
+                  w ← WW.window
+                  when (model.user.id == 4) $ SAD.alert ("conne" <> show changes) w
+                  CIW.sendPayload webSocket $ ChangeStatus changes
+                  pure Nothing
+            else do
+                  w ← WW.window
+                  when (model.user.id == 4) $ SAD.alert ("not conne" <> show changes) w
+                  pure <<< Just <<< ResumeWebSocketMessage <<< Just $ ChangeStatus changes
 
 -- | Update message status to unread upon openning the site or receveing from new contacts
 setDeliveredStatus ∷ WebSocket → ImModel → NoMessages
