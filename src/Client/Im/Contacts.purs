@@ -12,7 +12,6 @@ import Client.Im.Notification as CIU
 import Client.Im.Notification as CIUN
 import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
-import Client.Im.Pwa as SIP
 import Client.Im.Scroll as CIS
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
@@ -23,10 +22,8 @@ import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Set as DS
-import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
-import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
@@ -36,8 +33,6 @@ import Shared.Modal.Types (Modal(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 import Web.HTML as WH
-import Web.HTML as WW
-import Web.HTML.Window (alert)
 import Web.HTML.Window as SAD
 import Web.Socket.WebSocket (WebSocket)
 
@@ -77,7 +72,7 @@ resumeChat userId model =
                   pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) previousDraft
 
       updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
-      fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
+      fetchHistoryEffect chatting = if model.user.id == 4 then pure Nothing else pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
       removeNotifications chatting = do
             EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
             pure Nothing
