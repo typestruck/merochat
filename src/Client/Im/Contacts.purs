@@ -55,10 +55,10 @@ resumeChat userId model =
                         , failedRequests = []
                         } /\
                         ( screenEffects chatting <>
-                                [ updateReadCountEffect chatting.user.id
+                                [ fetchHistoryEffect chatting
                                 , CIS.scrollLastMessageAff
                                 , loadDraft chatting.draft
-                                , fetchHistoryEffect chatting
+                                , updateReadCountEffect chatting.user.id
                                 ]
                         )
       where
@@ -72,7 +72,7 @@ resumeChat userId model =
                   pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) previousDraft
 
       updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
-      fetchHistoryEffect chatting = if model.user.id == 4 then pure Nothing else pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
+      fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
       removeNotifications chatting = do
             EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
             pure Nothing
