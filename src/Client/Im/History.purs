@@ -54,7 +54,7 @@ displayHistory userId history model =
       -- avoid overwritting the whole conversation or duplicating unread messages
       updateHistory contact = contact
             { shouldFetchChatHistory = false
-            , history = fixHistory $ history <> contact.history
+            , history = fixHistory $ contact.history <> history
             }
 
       updatedModel = model
