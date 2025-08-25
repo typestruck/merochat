@@ -117,15 +117,11 @@ setMessageStatus webSocket userId newStatus model =
                         { status: newStatus
                         , ids: [ ui /\ messages ]
                         }
-            CIUN.updateTabCount model updatedContacts
             if model.webSocketStatus == Connected then do
-                  w ← WW.window
-                  when (model.user.id == 4) $ SAD.alert ("conne" <> show changes) w
+                  CIUN.updateTabCount model updatedContacts
                   CIW.sendPayload webSocket $ ChangeStatus changes
                   pure Nothing
-            else do
-                  w ← WW.window
-                  when (model.user.id == 4) $ SAD.alert ("not conne" <> show changes) w
+            else
                   pure <<< Just <<< ResumeWebSocketMessage <<< Just $ ChangeStatus changes
 
 -- | Update message status to unread upon openning the site or receveing from new contacts

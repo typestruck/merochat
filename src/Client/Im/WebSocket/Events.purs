@@ -120,13 +120,6 @@ handleOpen webSocketStateRef _ = do
       FS.send imId $ UpdateWebSocketStatus Connected
       --check if the page needs to be reloaded
       CIW.sendPayload state.webSocket UpdateHash
-      --harass temporary users on their last day to make an account
-      FS.send imId CheckUserExpiration
-      --signal that messages have been received / read
-      FS.send imId SetDeliveredStatus
-      --keep track of users online status
-      FS.send imId TrackAvailability
-      FS.send imId $ SetReadStatus Nothing
       --when the connection is open and the user is on the page serialize their availability
       setOnline state.webSocket
       where
@@ -423,19 +416,29 @@ updateWebSocketStatus status model =
       lostConnectionMessage = "Syncing messages..."
 
       missedContacts = pure <<< Just $ SpecialRequest FetchMissedContacts
-      --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
-      -- the focus event for the document also checks if the connection is open
       reconnect = do
             when (model.webSocketStatus == Reconnect) (EC.liftEffect (ERN.randomRange 300.0 1000.0) >>= EA.delay <<< Milliseconds)
+            --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
+            -- the focus event for the document also checks if the connection is open
             if model.smallScreen then do
                   focused ← EC.liftEffect CCD.documentHasFocus
                   visible ← EC.liftEffect CCD.documentIsNotHidden
                   pure $ if focused || visible then Just ReconnectWebSocket else Nothing
-            else pure $ Just ReconnectWebSocket
+            else
+                  pure $ Just ReconnectWebSocket
       resumeMessages = pure <<< Just $ ResumeWebSocketMessage Nothing
+      --harass temporary users on their last day to make an account
+      checkExpired = pure $ Just CheckUserExpiration
+      --keep track of users online status
+      trackAvailable = pure $ Just TrackAvailability
+      --signal that messages have been received / read
+      setDelivered = pure $ Just SetDeliveredStatus
+      setRead = pure <<< Just $ SetReadStatus Nothing
       messages
             | status == Reconnect = [ reconnect ]
             | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts, resumeMessages ]
+            --first connection
+            | model.webSocketStatus == Closed && status == Connected = [ resumeMessages, checkExpired, trackAvailable, setDelivered, setRead ]
             | otherwise = []
 
 trackAvailability ∷ WebSocket → ImModel → NoMessages
