@@ -5,7 +5,7 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Debug (spy)
 import Effect (Effect)
-import Flame (QuerySelector(..))
+import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Server.Profile.Types (Payload)
 import Shared.Element (ElementId(..))
@@ -16,7 +16,7 @@ template ∷ Payload → Effect String
 template { user: user, countries, languages } = do
       F.preMount (QuerySelector ("#" <> show ProfileEditionForm))
             { view: SPV.view
-            , init:
+            , model:
                     { nameInputed: Just user.name
                     , headlineInputed: Just user.headline
                     , ageInputed:  user.age

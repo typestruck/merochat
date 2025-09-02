@@ -20,7 +20,7 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Class as EC
-import Flame (ListUpdate)
+import Flame (Update)
 import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
 import Prim.Row (class Cons)
@@ -42,7 +42,7 @@ import Web.DOM (Element)
 getFileInput ∷ Effect Element
 getFileInput = CCD.unsafeGetElementById AvatarFileInput
 
-update ∷ ListUpdate ProfileModel ProfileMessage
+update ∷ Update ProfileModel ProfileMessage
 update model = case _ of
       SetPField upd → setField model upd
       SelectAvatar → selectAvatar model

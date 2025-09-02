@@ -2,7 +2,7 @@ module Server.Experiments.Template where
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Flame (QuerySelector(..))
+import Web.DOM.ParentNode (QuerySelector(..))
 import Shared.Experiments.Types
 import Flame as F
 import Shared.Experiments.View as SEV
@@ -10,7 +10,7 @@ import Shared.Experiments.View as SEV
 template ∷ _ → Effect String
 template payload = F.preMount (QuerySelector "#chat-experiments")
       { view: SEV.view
-      , init:
+      , model:
               { experiments: payload.experiments
               , current: Nothing
               , visible: true

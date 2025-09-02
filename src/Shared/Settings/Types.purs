@@ -33,6 +33,7 @@ data SettingsMessage
       = SetSField (SettingsModel → SettingsModel)
       | ChangeEmail
       | ChangePrivacySettings
+      | ShowSuccess
       | ChangePassword
       | ToggleVisibility ScreenModal
       | ToggleTerminateAccount

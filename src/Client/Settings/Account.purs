@@ -6,12 +6,13 @@ import Shared.Im.Types
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CNN
+import Data.Maybe (Maybe(..))
 import Data.Symbol (class IsSymbol)
+import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
-import Effect.Class (liftEffect)
-import Flame.Application.Effectful (AffUpdate)
-import Flame.Application.Effectful as FAE
+import Effect.Class as EC
+import Flame (Update)
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Shared.Modal.Types (ScreenModal(..))
@@ -22,49 +23,57 @@ import Shared.Settings.Types (PrivacySettingsId(..), SettingsMessage(..), Settin
 import Shared.Settings.View as SSV
 import Type.Proxy (Proxy(..))
 
-update ∷ AffUpdate SettingsModel SettingsMessage
-update w@{ model, message } =
+update ∷ Update SettingsModel SettingsMessage
+update model message =
       case message of
-            SetSField setter → pure setter
+            SetSField s → setIt s model
             ChangeEmail → changeEmail model
             ChangePassword → changePassword model
             ToggleTerminateAccount → toggleTerminateAccount model
-            TerminateAccount → terminateAccount
-            ChangePrivacySettings → changePrivacySettings w
-            ToggleVisibility modal → setVisibility modal
+            ShowSuccess → showSuccess model
+            TerminateAccount → terminateAccount model
+            ChangePrivacySettings → changePrivacySettings model
+            ToggleVisibility modal → setIt (_ { visible = modal == ShowSettings }) model
 
-setVisibility ∷ ScreenModal → Aff (SettingsModel → SettingsModel)
-setVisibility modal = pure (_ { visible = modal == ShowSettings })
+setIt ∷ (SettingsModel -> SettingsModel) -> SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+setIt s model = s model /\ []
 
-changePrivacySettings ∷ AffUpdate SettingsModel SettingsMessage
-changePrivacySettings { display, model: { readReceipts, typingStatus, onlineStatus, messageTimestamps, profileVisibility } } = do
-      status ← CNN.formRequest (show PrivacySettingsId) $ request.settings.account.privacy { body: { profileVisibility, readReceipts, typingStatus, onlineStatus, messageTimestamps } }
-      case status of
-            Success → do
-                  display $ _ { hideSuccessMessage = false }
-                  liftEffect <<<
+changePrivacySettings ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+changePrivacySettings model = model /\ [ change ]
+      where
+      payload = { profileVisibility: model.profileVisibility, readReceipts: model.readReceipts, typingStatus: model.typingStatus, onlineStatus: model.onlineStatus, messageTimestamps: model.messageTimestamps }
+      change = do
+            status ← CNN.formRequest (show PrivacySettingsId) $ request.settings.account.privacy { body: payload }
+            case status of
+                  Success → do
                         --let im know that the settings has changed
-                        FS.send imId $ SetPrivacySettings { profileVisibility, readReceipts, typingStatus, onlineStatus, messageTimestamps }
-                  EA.delay $ Milliseconds 3000.0
-                  FAE.diff { hideSuccessMessage: true }
-            _ → FAE.noChanges
+                        EC.liftEffect <<< FS.send imId $ SetPrivacySettings payload
+                        pure $ Just ShowSuccess
+                  _ → pure Nothing
 
-toggleTerminateAccount ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
-toggleTerminateAccount _ = pure (\model → model { confirmTermination = not model.confirmTermination })
+showSuccess ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+showSuccess model = model { hideSuccessMessage = false } /\ [ hide ]
+      where
+      hide = do
+            EA.delay $ Milliseconds 3000.0
+            pure <<< Just <<< SetSField $ _ { hideSuccessMessage = true }
 
-changeEmail ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
-changeEmail { email } = requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email } }
+toggleTerminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+toggleTerminateAccount model =  model { confirmTermination = not model.confirmTermination } /\ []
 
-changePassword ∷ SettingsModel → Aff (SettingsModel → SettingsModel)
-changePassword { password } = requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password } }
+changeEmail ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+changeEmail model = model /\ [requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email: model.email } }]
 
-requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (SettingsModel → SettingsModel)
+changePassword ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+changePassword model = model /\  [requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password : model.password } }]
+
+requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (Maybe SettingsMessage)
 requestAndLogout field aff = do
       status ← CNN.formRequest (SSV.formId field) aff
       when (status == Success) $ do
             EA.delay $ Milliseconds 3000.0
-            liftEffect <<< CCL.setLocation $ routes.login.get {}
-      FAE.noChanges
+            EC.liftEffect <<< CCL.setLocation $ routes.login.get {}
+      pure Nothing
 
-terminateAccount ∷ Aff (SettingsModel → SettingsModel)
-terminateAccount = requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ request.settings.account.terminate { body: {} }
+terminateAccount ∷ SettingsModel -> SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+terminateAccount model = model /\ [requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ request.settings.account.terminate { body: {} }]

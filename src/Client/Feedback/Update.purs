@@ -14,7 +14,7 @@ import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
-import Flame (ListUpdate)
+import Flame (Update)
 import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Modal.Types (ScreenModal(..))
@@ -24,7 +24,7 @@ import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.HTML.HTMLInputElement as WHI
 
-update ∷ ListUpdate FeedbackModel FeedbackMessage
+update ∷ Update FeedbackModel FeedbackMessage
 update model@{ comments, screenshot } =
       case _ of
             ToggleVisibility modal → model { visible = modal == ShowFeedback } /\ []

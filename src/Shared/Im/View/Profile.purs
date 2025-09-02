@@ -404,7 +404,7 @@ welcome model = HE.div (HA.class' "card-top-welcome-filter")
 
 onlineOnlyFilter ∷ ImModel → Html ImMessage
 onlineOnlyFilter model =
-      HE.div [ HA.class' "online-only-filter" ]
+      HE.div [ HA.class' {"online-only-filter" : true, hidden : model.user.profileVisibility == Nobody } ]
             [ HE.input [ HA.type' "checkbox", HA.checked (model.suggestionsFrom == OnlineOnly), HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
             , HE.label [ HA.for "online-only", HA.class' "online-only-label" ] "Show only users online"
             ]

@@ -44,7 +44,7 @@ import Effect.Now as EN
 import Effect.Ref (Ref)
 import Effect.Ref as ER
 import Effect.Unsafe as EU
-import Flame (ListUpdate, QuerySelector(..), Subscription)
+import Flame (Update, Subscription)
 import Flame as F
 import Flame.Subscription as FS
 import Flame.Subscription.Document as FSD
@@ -69,6 +69,7 @@ import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
+import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
@@ -83,7 +84,7 @@ main = do
       webSocketRef ← CIWE.startWebSocket
       lastActiveRef ← ER.new true
       --im is server side rendered
-      F.resumeMount (QuerySelector $ "#" <> show Im) imId
+      model ← F.resumeMount (QuerySelector $ "#" <> show Im) imId
             { view: SIV.view true
             , subscribe:
                     [ FSD.onClick' ToggleUserContextMenu
@@ -95,7 +96,6 @@ main = do
                     , onVisibilityChange (Refocus VisibilityChange)
                     , FSW.onOffline $ CloseWebSocket Always
                     ]
-            , init: [] -- we use subscription instead of init events
             , update: update { webSocketRef, lastActiveRef }
             }
 
@@ -118,9 +118,9 @@ main = do
       CCF.setUpFileChange (\width height base64 → SetSelectedImage $ Just { width, height, base64 }) input imId
 
       --greet new users after they have created an account
-      FS.send imId FinishTutorial
+      unless (model.user.completedTutorial) $ FS.send imId FinishTutorial
 
-update ∷ _ → ListUpdate ImModel ImMessage
+update ∷ _ → Update ImModel ImMessage
 update st model =
       case _ of
             --chat
@@ -304,17 +304,15 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
             } /\ [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
-finishTutorial model
-      | spy "completed" model.user.completedTutorial = model /\ []
-      | otherwise = model { user { completedTutorial = true } } /\ [ greet ]
-              where
-              sender = 4
-              greet = do
-                    void <<< CCNT.silentResponse $ request.im.tutorial {}
-                    EA.delay $ Milliseconds 2000.0
-                    void <<< CCNT.silentResponse $ request.im.greeting {}
-                    contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
-                    pure <<< Just $ DisplayNewContacts (spy "cnt" contact)
+finishTutorial model = model { user { completedTutorial = true } } /\ [ greet ]
+      where
+      sender = 4
+      greet = do
+            void <<< CCNT.silentResponse $ request.im.tutorial {}
+            EA.delay $ Milliseconds 2000.0
+            void <<< CCNT.silentResponse $ request.im.greeting {}
+            contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
+            pure <<< Just $ DisplayNewContacts (spy "cnt" contact)
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
 blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]

@@ -9,7 +9,7 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
 import Environment (production)
-import Flame (QuerySelector(..))
+import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -39,7 +39,7 @@ template payload = do
                     , javascript = javascript
                     , css = css
                     }
-            , init:
+            , model:
                     { chatting: Nothing
                     , freeToFetchSuggestions: true
                     , temporaryId: 0

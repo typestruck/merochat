@@ -7,14 +7,14 @@ import Client.Common.Location as CCL
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
-import Flame (ListUpdate)
+import Flame (Update)
 import Flame as F
 import Flame.Subscription as FS
 import Shared.Im.Types (ImMessage(..), RetryableRequest(..))
 import Shared.Modal.Types (Modal(..), ScreenModal(..))
 import Shared.Options.MountPoint (imId)
 
-update ∷ ListUpdate ChatExperimentModel ChatExperimentMessage
+update ∷ Update ChatExperimentModel ChatExperimentMessage
 update model =
       case _ of
             QuitExperiment → model /\

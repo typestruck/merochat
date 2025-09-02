@@ -18,10 +18,9 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 main ∷ Effect Unit
 main = do
-      F.resumeMount (QuerySelector $ "#" <> show ProfileEditionForm) profileId
+      void $ F.resumeMount (QuerySelector $ "#" <> show ProfileEditionForm) profileId
             { view: SPV.view
             , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-            , init: []
             , update: CPU.update
             }
       --avatar changes

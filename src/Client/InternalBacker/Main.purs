@@ -4,7 +4,7 @@ import Prelude
 
 import Client.InternalBacker.Update as CIHU
 import Effect (Effect)
-import Flame (QuerySelector(..))
+import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Flame.Subscription as FS
 import Shared.Im.EventTypes (modalVisible)
@@ -13,9 +13,8 @@ import Shared.Backer.View as SIHV
 
 main ∷ Effect Unit
 main =
-      F.resumeMount_ (QuerySelector "#backer")
+      void $ F.resumeMount_ (QuerySelector "#backer")
             { view: SIHV.view
             , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
-            , init: []
             , update: CIHU.update
             }
