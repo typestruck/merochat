@@ -28,7 +28,7 @@ template ∷ Payload → Effect String
 template payload = do
       lt ← EN.nowDateTime
       F.preMount (QuerySelector $ "#" <> show SE.Im)
-            { view: \model → ST.templateWith  defaultParameters
+            { view: \model → ST.templateWith defaultParameters
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
                     , header =
@@ -72,7 +72,6 @@ template payload = do
                     , fortune: Nothing
                     , toggleContextMenu: HideContextMenu
                     , modal: HideModal
-                    -- , modal: if payload.user.completedTutorial then HideModal else Tutorial Welcome
                     , blockedUsers: []
                     , reportReason: Nothing
                     , reportComment: Nothing
@@ -87,18 +86,16 @@ template payload = do
                     }
             }
       where
-      modals = {- if payload.user.temporary then
-                    temporaryUserSignUp model
-              else -}
-                HE.div "modal-root"    [ HE.div' [ HA.id $ show SE.ProfileEditionRoot ]
-                    , HE.div' [ HA.id $ show SE.SettingsEditionRoot ]
-                    , HE.div' [ HA.id $ show SE.KarmaPrivilegesRoot ]
-                    , HE.div' [ HA.id $ show SE.ExperimentsRoot ]
-                    , HE.div' [ HA.id $ show SE.BackerRoot ]
-                    , HE.div' [ HA.id $ show SE.HelpRoot ]
-                    , HE.div' [ HA.id $ show SE.FeedbackRoot ]
-                    ]
-
+      modals =
+            HE.div "modal-root"
+                  [ HE.div' [ HA.id $ show SE.ProfileEditionRoot ]
+                  , HE.div' [ HA.id $ show SE.SettingsEditionRoot ]
+                  , HE.div' [ HA.id $ show SE.KarmaPrivilegesRoot ]
+                  , HE.div' [ HA.id $ show SE.ExperimentsRoot ]
+                  , HE.div' [ HA.id $ show SE.BackerRoot ]
+                  , HE.div' [ HA.id $ show SE.HelpRoot ]
+                  , HE.div' [ HA.id $ show SE.FeedbackRoot ]
+                  ]
 
       unreadChats = SIU.countUnreadChats payload.user.id payload.contacts
       javascript =

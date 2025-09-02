@@ -46,7 +46,7 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
-import Shared.Modal.Types (ChatModal(..), Modal(..))
+import Shared.Modal.Types (ChatModal(..), Modal(..), SpecialModal(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
@@ -143,7 +143,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
             { temporaryId = newTemporaryId
             , contacts = map updateContact model.contacts
             , imageCaption = Nothing
-            , modal = HideModal
+            , modal =  HideModal
             , selectedImage = Nothing
             , showMiniChatInput = false
             , editing = Nothing

@@ -111,8 +111,6 @@ modal toggled model =
                           else
                                 [ visible toggle
                                 , CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
-                                -- during the tutorial the user may click on the user menu instead of "finish tutorial"
-                                --, if model.user.completedTutorial then pure Nothing else pure $ Just FinishTutorial
                                 ]
 
 setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage

@@ -1524,7 +1524,7 @@ input:not(type=button):focus {
 
 .step-button {
     background: var(--light-color);
-    color: #4783ff;
+    color: var(--im-merochat-green);
     font-weight: bold;
 }
 
@@ -1640,11 +1640,6 @@ input:not(type=button):focus {
     height: auto;
 }
 
-.tutorial {
-    background: #469bc5;
-    border-top-left-radius: 13px;
-    border-bottom-right-radius: 13px;
-}
 
 .modal-select, .modal-input {
     border-radius: 20px;
@@ -1665,6 +1660,7 @@ input:not(type=button):focus {
     margin-left: 10px;
     padding: 20px;
     height: auto;
+    width: auto;
 }
 
 .options-menu-step {
@@ -2700,7 +2696,6 @@ label {
     .logo-contact-list,
     .fortune,
     .see-profile-button.see-profile,
-    .tutorial,
     .message-context-options {
         display: none;
         content-visibility: hidden;
@@ -3196,10 +3191,6 @@ label {
         display: none;
     }
 
-    .tutorial {
-        width: 400px;
-    }
-
     .online-indicator {
         margin-top: 3px;
     }
@@ -3366,6 +3357,8 @@ label {
         min-width: 60px;
     }
 }
+
+
 
 
 

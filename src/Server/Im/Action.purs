@@ -176,7 +176,7 @@ greet ∷ Int → ServerEffect Unit
 greet loggedUserId =
       if production then do
             starter ← ST.generateConversationStarter
-            void $ SIDE.insertMessage sender loggedUserId starter
+            void $ SIDE.insertMessage sender loggedUserId ( "hey there! " <> starter)
       else
             pure unit
       where

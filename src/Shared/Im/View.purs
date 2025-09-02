@@ -8,7 +8,6 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Element (ElementId(..))
 import Shared.Im.View.ChatHistory as SIVH
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.ContactList as SIVCN
@@ -18,6 +17,7 @@ import Shared.Im.View.Notification as SIVN
 import Shared.Im.View.NotificationMobile as SIVNM
 import Shared.Im.View.Profile as SIVP
 import Shared.Im.View.UserMenu as SIVU
+import Shared.Modal.Types (Modal(..), SpecialModal(..), Step(..))
 
 view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model = HE.div "im"

@@ -243,8 +243,7 @@ create table stock_text
 create table last_seen (
     id integer generated always as identity primary key,
     who integer not null unique,
-    date timestamptz not null,
-    constraint who_user_user foreign key (who) references users(id) on delete cascade
+    date timestamptz not null
 );
 
 create table tokens (

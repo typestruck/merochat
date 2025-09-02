@@ -28,7 +28,6 @@ data ConfirmationModal
 
 data SpecialModal
       = ShowSuggestionCard Int
-      | Tutorial Step
 
 data ChatModal
       = ShowSelectedImage

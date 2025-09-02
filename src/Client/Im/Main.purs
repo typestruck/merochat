@@ -117,6 +117,9 @@ main = do
       input ← CCD.unsafeGetElementById ImageFileInput
       CCF.setUpFileChange (\width height base64 → SetSelectedImage $ Just { width, height, base64 }) input imId
 
+      --greet new users after they have created an account
+      FS.send imId FinishTutorial
+
 update ∷ _ → ListUpdate ImModel ImMessage
 update st model =
       case _ of
@@ -191,14 +194,14 @@ update st model =
             AskNotification → askNotification model
             ToggleAskNotification → toggleAskNotification model
             CreateUserFromTemporary → registerUser model
+            FinishTutorial → finishTutorial model
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
-            FinishTutorial → finishTutorial model
             TrackAvailability → CIWE.trackAvailability webSocket model
             Refocus e → refocus e st.lastActiveRef webSocket model
             UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
             CloseWebSocket when → CIWE.closeWebSocket when st.webSocketRef model
-            SetTheme theme -> CIT.setTheme theme model
+            SetTheme theme → CIT.setTheme theme model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
             SetField setter → F.noMessages $ setter model
@@ -225,12 +228,11 @@ toggleContextMenu toggle model = F.noMessages model { toggleContextMenu = toggle
 
 setRegistered ∷ ImModel → NoMessages
 setRegistered model = model { user { temporary = false } } /\
-      [
-            pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile,
-            do
-                  EA.delay $ Milliseconds 1000.0
-                  EC.liftEffect $ FS.send profileId SPT.AfterRegistration
-                  pure Nothing
+      [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
+      , do
+              EA.delay $ Milliseconds 1000.0
+              EC.liftEffect $ FS.send profileId SPT.AfterRegistration
+              pure Nothing
       ]
 
 refocus ∷ FocusEvent → Ref Boolean → WebSocket → ImModel → MoreMessages
@@ -302,19 +304,17 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
             } /\ [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
-finishTutorial model = model { user { completedTutorial = true } } /\ [ finish, greet ]
-      where
-      sender = 4
-      finish = do
-            void <<< CCNT.silentResponse $ request.im.tutorial {}
-            case model.modal of
-                  --     Tutorial _ → pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
-                  _ → pure Nothing
-      greet = do
-            EA.delay $ Milliseconds 2000.0
-            void <<< CCNT.silentResponse $ request.im.greeting {}
-            contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
-            pure <<< Just $ DisplayNewContacts contact
+finishTutorial model
+      | spy "completed" model.user.completedTutorial = model /\ []
+      | otherwise = model { user { completedTutorial = true } } /\ [ greet ]
+              where
+              sender = 4
+              greet = do
+                    void <<< CCNT.silentResponse $ request.im.tutorial {}
+                    EA.delay $ Milliseconds 2000.0
+                    void <<< CCNT.silentResponse $ request.im.greeting {}
+                    contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
+                    pure <<< Just $ DisplayNewContacts (spy "cnt" contact)
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
 blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]

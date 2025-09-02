@@ -279,7 +279,6 @@ data ImMessage
 
       --main
       | ReloadPage
-      | FinishTutorial
       | ToggleUserContextMenu Event
       | Refocus FocusEvent
       | ToggleScrollChatDown Boolean Int
@@ -307,6 +306,7 @@ data ImMessage
       | RequestFailed RequestFailure
       | SetPrivacySettings PrivacySettings
       | CreateUserFromTemporary
+      | FinishTutorial
       | SetRegistered
 
 data Theme = Light | Dark

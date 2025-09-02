@@ -18,7 +18,7 @@ import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIS
 import Shared.Im.View.Profile as CISP
 import Shared.Im.View.Retry as SIVR
-import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..), Step(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
@@ -60,7 +60,7 @@ modals model =
                   ConfirmTerminationTemporaryUser → [ confirmTermination ]
             Special sp → case sp of
                   ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
-                  Tutorial step → []
+
             _ → []
 
 confirmReport ∷ Int → Array String → Html ImMessage
@@ -119,63 +119,6 @@ confirmBlockUser id =
                     , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ BlockUser id ] "Block"
                     ]
             ]
-
--- tutorial ∷ ImModel → Step → Html ImMessage
--- tutorial { chatting } = case _ of
---       Welcome → HE.div (HA.class' "confirmation tutorial")
---             [ HE.span (HA.class' "bold") "Welcome!"
---             , HE.span_ "Let's take you through a brief tutorial"
---             , HE.div (HA.class' "buttons")
---                     [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
---                     , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatSuggestions ] "Start!"
---                     ]
---             ]
---       ChatSuggestions → HE.div (HA.class' "confirmation tutorial chat-step")
---             [ HE.span (HA.class' "bold") "Chat suggestions"
---             , HE.span_ "Use the arrows to move back and forth suggestions"
---             , HE.span_ "When you see someone you'd like to chat with,"
---             , HE.span (HA.class' "italic") "send them a message to enable the next step"
---             , HE.div (HA.class' "buttons")
---                     [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
---                     , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial Chatting, HA.disabled $ DM.isNothing chatting, HA.title $ if DM.isNothing chatting then "Send a message to enable the next step" else "" ] "Done!"
---                     ]
---             ]
---       Chatting → HE.div (HA.class' "confirmation tutorial chatting-step")
---             [ HE.span (HA.class' "bold") "Chatting"
---             , HE.span_ "Nice, you started your first chat!"
---             , HE.span_ "You can click the menu on top to see the"
---             , HE.span_ "full profile of the person you are chatting with"
---             , HE.div (HA.class' "buttons")
---                     [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
---                     , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial BackSuggestions ] "Got it!"
---                     ]
---             ]
---       BackSuggestions → HE.div (HA.class' "confirmation tutorial back-suggestions-step")
---             [ HE.span (HA.class' "bold") "Moving between chats and suggestions"
---             , HE.span_ "Whenever you are chatting, you can click"
---             , HE.span_ "on the green box see your suggestions again"
---             , HE.div (HA.class' "buttons")
---                     [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
---                     , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial ChatList ] "Done!"
---                     ]
---             ]
---       ChatList → HE.div (HA.class' "confirmation tutorial chat-list-step")
---             [ HE.span (HA.class' "bold") "Chat list"
---             , HE.span_ "Your recent chats appear on the left"
---             , HE.span_ "At any time, you can click on a chat to resume it"
---             , HE.div (HA.class' "buttons")
---                     [ HE.button [ HA.class' "cancel", HA.onClick FinishTutorial ] "Skip tutorial"
---                     , HE.button [ HA.class' "green-button step-button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Tutorial OptionsMenu ] "Got it!"
---                     ]
---             ]
---       OptionsMenu → HE.div (HA.class' "confirmation tutorial options-menu-step")
---             [ HE.span (HA.class' "bold") "Options menu"
---             , HE.span_ "Tweak your preferences with the menu on the top left"
---             , HE.span_ "You can edit your profile, modify your settings, get help, send feedback and more"
---             , HE.div (HA.class' "buttons")
---                     [ HE.button [ HA.class' "green-button step-button", HA.onClick FinishTutorial ] "Finish tutorial"
---                     ]
---             ]
 
 modalMenu ∷ ImModel → Html ImMessage
 modalMenu model =
