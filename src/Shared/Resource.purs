@@ -150,10 +150,10 @@ resourceType ∷ ResourceType → String
 resourceType = case _ of
       Ico → ".ico"
       Svg → ".svg"
-      Js → ".bundle.js"
       Css → ".css"
       Ignore → ""
       Png → ".png"
+      Js → ".bundle.js"
 
 replacement ∷ Bundle → ResourceType → String
 replacement bundle tp
