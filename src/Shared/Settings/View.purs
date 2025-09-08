@@ -30,42 +30,42 @@ import Web.Event.Event as WEE
 
 view ∷ SettingsModel → Html SettingsMessage
 view model =
-      HE.div [ HA.id "settings-edition", HA.class' { hidden: not model.visible } ] $ account model
+      HE.div [ HA.id "settings-edition", HA.class' { hidden: not model.visible } ] [account model]
 
 formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"
 
 account ∷ SettingsModel → Html SettingsMessage
 account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVisibility, readReceipts, onlineStatus, messageTimestamps, typingStatus } =
-      HE.div (HA.class' "modal-section")
-            [ HE.div (HA.class' "modal-part")
+      HE.div [ HA.class' "modal-section" ]
+            [ HE.div [ HA.class' "modal-part" ]
                     [ privacyHeader
                     , privacySection
                     ]
-            , HE.div (HA.class' "modal-part")
+            , HE.div [ HA.class' "modal-part" ]
                     [ accountHeader
                     , accountSection
                     ]
             ]
       where
-      privacyHeader = HE.div (HA.class' "section-label")
-            [ HE.div (HA.class' "bold") "Privacy"
-            , HE.div (HA.class' "duller")
+      privacyHeader = HE.div [ HA.class' "section-label" ]
+            [ HE.div [ HA.class' "bold" ] [ HE.text "Privacy" ]
+            , HE.div [ HA.class' "duller" ]
                     [ HE.text "Change your profile"
                     , HE.br
                     , HE.text "privacy settings"
                     ]
             ]
-      privacySection = HE.div (show PrivacySettingsId)
-            [ HE.label_ "Profile visibility"
+      privacySection = HE.div [ HA.id $ show PrivacySettingsId ]
+            [ HE.label_ [ HE.text "Profile visibility" ]
             , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { profileVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
-                    [ HE.option [ HA.selected $ profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] "Show profile (default)"
-                    , HE.option [ HA.selected $ profileVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] "Show profile only to registered users"
-                    , HE.option [ HA.selected $ profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] "Show profile only to contacts"
-                    , HE.option [ HA.selected $ profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] "Do not show profile"
+                    [ HE.option [ HA.selected $ profileVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show profile (default)" ]
+                    , HE.option [ HA.selected $ profileVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show profile only to registered users" ]
+                    , HE.option [ HA.selected $ profileVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show profile only to contacts" ]
+                    , HE.option [ HA.selected $ profileVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show profile" ]
                     ]
 
-            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] "All users can see your profile and send you messages"
+            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Everyone } ] [ HE.text "All users can see your profile and send you messages" ]
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= NoTemporaryUsers } ]
                     [ HE.text "All users (excluding quick sign up users) can see your"
                     , HE.br
@@ -76,41 +76,41 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                     , HE.br
                     , HE.text "profile or send you messages"
                     ]
-            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Nobody } ] "No one can see your profile or message you"
-            , HE.label_ "Chat display settings"
+            , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Nobody } ] [ HE.text "No one can see your profile or message you" ]
+            , HE.label_ [ HE.text "Chat display settings" ]
             , HE.div_
                     [ HE.input [ HA.id "read-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked readReceipts, HA.onChange (SetSField (_ { readReceipts = not readReceipts })) ]
-                    , HE.label [ HA.for "read-toggle", HA.class' "inline" ] "Read receipts"
+                    , HE.label [ HA.for "read-toggle", HA.class' "inline" ] [ HE.text "Read receipts" ]
                     ]
             , HE.div_
                     [ HE.input [ HA.id "online-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked onlineStatus, HA.onChange (SetSField (_ { onlineStatus = not onlineStatus })) ]
-                    , HE.label [ HA.for "online-toggle", HA.class' "inline" ] "Online status"
+                    , HE.label [ HA.for "online-toggle", HA.class' "inline" ] [ HE.text "Online status" ]
                     ]
             , HE.div_
                     [ HE.input [ HA.id "message-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked messageTimestamps, HA.onChange (SetSField (_ { messageTimestamps = not messageTimestamps })) ]
-                    , HE.label [ HA.for "message-toggle", HA.class' "inline" ] "Message timestamps"
+                    , HE.label [ HA.for "message-toggle", HA.class' "inline" ] [ HE.text "Message timestamps" ]
                     ]
             , HE.div_
                     [ HE.input [ HA.id "typing-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked typingStatus, HA.onChange (SetSField (_ { typingStatus = not typingStatus })) ]
-                    , HE.label [ HA.for "typing-toggle", HA.class' "inline" ] "Typing status"
+                    , HE.label [ HA.for "typing-toggle", HA.class' "inline" ] [ HE.text "Typing status" ]
                     ]
             , HE.br
-            , HE.div (HA.class' "section-buttons privacy")
+            , HE.div [ HA.class' "section-buttons privacy" ]
                     [ HE.input
                             [ HA.type' "button"
                             , HA.class' "green-button"
                             , HA.value "Change privacy settings"
                             , HA.onClick ChangePrivacySettings
                             ]
-                    , HE.span' (HA.class' "request-error-message")
-                    , HE.span (HA.class' { "success-message": true, hidden: hideSuccessMessage })
+                    , HE.span' [ HA.class' "request-error-message" ]
+                    , HE.span [ HA.class' { "success-message": true, hidden: hideSuccessMessage } ]
                             [ HE.text "Privacy settings changed!"
                             ]
                     ]
             ]
-      accountHeader = HE.div (HA.class' "section-label")
-            [ HE.div (HA.class' "bold") "Account"
-            , HE.div (HA.class' "duller")
+      accountHeader = HE.div [ HA.class' "section-label" ]
+            [ HE.div [ HA.class' "bold" ] [ HE.text "Account" ]
+            , HE.div [ HA.class' "duller" ]
                     [ HE.text "Change your settings"
                     , HE.br
                     , HE.text "or close your account"
@@ -123,23 +123,23 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
             , fieldConfirmationSection (Proxy ∷ Proxy "password") "password" passwordMaxCharacters validatePassword ("Password must be " <> show passwordMinCharacters <> " characters or more") ChangePassword
             , terminate
             ]
-      terminate = HE.div (formId (Proxy ∷ Proxy "confirmTermination"))
-            [ HE.label_ "Permanently delete all my data and close my account"
-            , HE.div (HA.class' "section-buttons margined")
+      terminate = HE.div [ HA.id (formId (Proxy ∷ Proxy "confirmTermination")) ]
+            [ HE.label_ [ HE.text "Permanently delete all my data and close my account" ]
+            , HE.div [ HA.class' "section-buttons margined" ]
                     [ HE.input [ HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ]
-                    , HE.span' (HA.class' "request-error-message")
-                    , HE.span (HA.class' "success-message")
+                    , HE.span' [ HA.class' "request-error-message" ]
+                    , HE.span [ HA.class' "success-message" ]
                             [ HE.text "Account terminated!"
                             , HE.br
                             , HE.text "You will be logged out..."
                             ]
                     ]
-            , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: not confirmTermination })
-                    [ HE.div (HA.class' "confirmation")
-                            [ HE.span (HA.class' "bold") "Do you really want to terminate your account? All of your data will be permanently lost."
-                            , HE.div (HA.class' "buttons")
-                                    [ HE.button [ HA.class' "cancel", HA.onClick ToggleTerminateAccount ] "Cancel"
-                                    , HE.button [ HA.class' "green-button danger", HA.onClick TerminateAccount ] "Terminate"
+            , HE.div [ HA.class' { "modal-placeholder-overlay": true, hidden: not confirmTermination } ]
+                    [ HE.div [ HA.class' "confirmation" ]
+                            [ HE.span [ HA.class' "bold" ] [ HE.text "Do you really want to terminate your account? All of your data will be permanently lost." ]
+                            , HE.div [ HA.class' "buttons" ]
+                                    [ HE.button [ HA.class' "cancel", HA.onClick ToggleTerminateAccount ] [ HE.text "Cancel" ]
+                                    , HE.button [ HA.class' "green-button danger", HA.onClick TerminateAccount ] [ HE.text "Terminate" ]
                                     ]
                             ]
                     ]
@@ -164,21 +164,21 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                         else
                               message
             in
-                  HE.div (formId field)
-                        [ HE.div (HA.class' { errored: hasErrors })
-                                [ HE.label_ capitalizedStringField
+                  HE.div [ HA.id $ formId field ]
+                        [ HE.div [ HA.class' { errored: hasErrors } ]
+                                [ HE.label_ [ HE.text capitalizedStringField ]
                                 , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.class' "modal-input", HA.value fieldValue, onChangeValue (setValidatedField validator field), HA.autocomplete $ "new-" <> stringField ]
-                                , HE.div (HA.class' "error-message") fieldErrorMessage
+                                , HE.div [ HA.class' "error-message" ] [ HE.text fieldErrorMessage ]
                                 ]
-                        , HE.div (HA.class' { errored: hasConfirmationErrors })
-                                [ HE.label_ $ "Confirm " <> stringField
+                        , HE.div [ HA.class' { errored: hasConfirmationErrors } ]
+                                [ HE.label_ [ HE.text $ "Confirm " <> stringField ]
                                 , HE.input [ HA.type' inputType, HA.maxlength maxChars, HA.autocomplete $ "new-" <> stringField, HA.class' "modal-input", HA.value fieldConfirmationValue, onChangeValue (setValidatedField (_ == fieldValue) fieldConfirmation) ]
-                                , HE.div (HA.class' "error-message") $ capitalizedStringField <> " confirmation must match " <> stringField
+                                , HE.div [ HA.class' "error-message" ] [ HE.text $ capitalizedStringField <> " confirmation must match " <> stringField ]
                                 ]
-                        , HE.div (HA.class' "section-buttons")
+                        , HE.div [ HA.class' "section-buttons" ]
                                 [ HE.input [ HA.type' "button", HA.class' "green-button", HA.disabled $ hasErrors || hasConfirmationErrors, HA.value $ "Change " <> stringField, HA.onClick messageIfValidated ]
-                                , HE.span' (HA.class' "request-error-message")
-                                , HE.span (HA.class' "success-message")
+                                , HE.span' [ HA.class' "request-error-message" ]
+                                , HE.span [ HA.class' "success-message" ]
                                         [ HE.text $ capitalizedStringField <> " changed!"
                                         , HE.br
                                         , HE.text "You will be logged out..."

@@ -2,33 +2,39 @@ module Server.Im.Database.Present where
 
 import Droplet.Language
 import Prelude hiding (join, not)
+import Server.Database.Badges
+import Server.Database.BadgesUsers
+import Server.Database.Countries
 import Server.Database.Fields
+import Server.Database.KarmaLeaderboard
+import Server.Database.Languages
+import Server.Database.LanguagesUsers
+import Server.Database.LastSeen
+import Server.Database.Privileges
 import Server.Database.Suggestions
+import Server.Database.Tags
+import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Im.Database.Flat
-
-import Type.Proxy (Proxy(..))
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe)
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
+import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
-import Server.Database.Languages
-import Server.Database.Countries
-import Server.Database.KarmaLeaderboard
-import Server.Database.LanguagesUsers
-import Server.Database.LastSeen
-import Server.Database.Badges
-import Server.Database.BadgesUsers
-import Server.Database.Tags
-import Server.Database.TagsUsers
-import Server.Database.Privileges
 import Server.Effect (ServerEffect)
 import Shared.Im.Types (HistoryMessage, MessageStatus(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.User (ProfileVisibility(..))
+import Type.Proxy (Proxy(..))
 
-userPresentationFields = userFields /\ (1 # as _bin)
+userPresentationFields =
+      userFields
+      /\ (1 # as _bin)
+      /\ completeness
+
+completeness = (select (array_agg (_completed # orderBy  _completed) # as _completedFields) # from complete_profiles # wher (_completer .=. u ... _id) # orderBy _completedFields # limit (Proxy ∷ _ 1))
+      where  _completedFields = Proxy :: Proxy "completedFields"
 
 userFields =
       (u ... _id # as _id)
@@ -84,6 +90,7 @@ presentUserContactFields =
       , read_receipts "readReceipts"
       , typing_status "typingStatus"
       , array[]::integer[] as "privileges"
+      , array[]::integer[] as "completedFields"
       , online_status "onlineStatus"
       , message_timestamps "messageTimestamps"
       , headline

@@ -14,16 +14,18 @@ import Shared.InternalHelp.Types (DisplayHelpSection(..), InternalHelpMessage(..
 view ∷ InternalHelpModel → Html InternalHelpMessage
 view model@{ toggleHelp } =
       HE.div [ HA.class' { hidden: not model.visible }, HA.id "internal-help" ]
-            [ HE.div (HA.class' "help") $ HE.div_
-                    [ HE.div (HA.class' "center")
-                            [ HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == FAQ }, HA.onClick $ ToggleHelpSection FAQ ] "FAQ"
-                            , HE.span (HA.class' "separator duller") "•"
-                            , HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == Terms }, HA.onClick $ ToggleHelpSection Terms ] "Terms and conditions"
-                            , HE.span (HA.class' "separator duller") "•"
-                            , HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == Privacy }, HA.onClick $ ToggleHelpSection Privacy ] "Privacy policy"
+            [ HE.div [ HA.class' "help" ]
+                    [ HE.div_
+                            [ HE.div [ HA.class' "center" ]
+                                    [ HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == FAQ }, HA.onClick $ ToggleHelpSection FAQ ] [ HE.text "FAQ" ]
+                                    , HE.span [ HA.class' "separator duller" ] [ HE.text "•" ]
+                                    , HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == Terms }, HA.onClick $ ToggleHelpSection Terms ] [ HE.text "Terms and conditions" ]
+                                    , HE.span [ HA.class' "separator duller" ] [ HE.text "•" ]
+                                    , HE.span [ HA.class' { "place-link": true, "selected": toggleHelp == Privacy }, HA.onClick $ ToggleHelpSection Privacy ] [ HE.text "Privacy policy" ]
+                                    ]
+                            , HE.div [ HA.class' { "hidden": toggleHelp /= FAQ } ] [ SH.faq ]
+                            , HE.div [ HA.class' { "hidden": toggleHelp /= Terms } ] [ ST.terms ]
+                            , HE.div [ HA.class' { "hidden": toggleHelp /= Privacy } ] [ SP.privacy ]
                             ]
-                    , HE.div (HA.class' { "hidden": toggleHelp /= FAQ }) SH.faq
-                    , HE.div (HA.class' { "hidden": toggleHelp /= Terms }) ST.terms
-                    , HE.div (HA.class' { "hidden": toggleHelp /= Privacy }) SP.privacy
                     ]
             ]

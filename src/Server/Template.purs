@@ -47,25 +47,25 @@ externalDefaultParameters =
       , bundled: false
       , css: []
       , header:
-              [ HE.div (HA.class' "header")
+              [ HE.div [HA.class' "header"]
                       [ HE.div [ HA.id "header", HA.class' "big-logo" ]
                               [ SS.logo
 
                               ]
-                      , HE.div (HA.class' "menu-merochat")
-                              [ HE.div (HA.class' "menu")
-                                      [ HE.a (HA.href $ routes.landing {}) "Home"
-                                      , HE.a (HA.href $ routes.help {} <> "#faq") "FAQ"
-                                      , HE.a (HA.href $ routes.backer {}) "Donate"
-                                      , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] "Login"
-                                      , HE.div (HA.class' "theme-switcher")
+                      , HE.div [HA.class' "menu-merochat"]
+                              [ HE.div [HA.class' "menu"]
+                                      [ HE.a [HA.href $ routes.landing {}] [HE.text "Home"]
+                                      , HE.a [HA.href $ routes.help {} <> "#faq"] [HE.text "FAQ"]
+                                      , HE.a [HA.href $ routes.backer {}] [HE.text "Donate"]
+                                      , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] [HE.text "Login"]
+                                      , HE.div [HA.class' "theme-switcher"]
                                               [ SS.sun []
                                               , SS.moon []
                                               ]
                                       ]
-                              , HE.div (HA.class' "merochat")
-                                      [ HE.h1 (HA.class' "name") "MeroChat"
-                                      , HE.div (HA.class' "tagline") "The friendliest place to chat on the internet"
+                              , HE.div [HA.class' "merochat"]
+                                      [ HE.h1 [HA.class' "name"] [HE.text "MeroChat"]
+                                      , HE.div [HA.class' "tagline"] [HE.text "The friendliest place to chat on the internet"]
                                       ]
                               ]
                       ]
@@ -74,11 +74,11 @@ externalDefaultParameters =
               ]
       , content: []
       , footer:
-              [ HE.div (HA.class' "footer")
-                      [ HE.a (HA.href $ routes.help {} <> "#privacy") "Terms and conditions"
-                      , HE.a (HA.href $ routes.help {} <> "#privacy") "Privacy policy"
-                      , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] "Source code"
-                      , HE.a (HA.href $ routes.backer {}) "Donate"
+              [ HE.div [HA.class' "footer"]
+                      [ HE.a [HA.href $ routes.help {} <> "#privacy"] [HE.text "Terms and conditions"]
+                      , HE.a [HA.href $ routes.help {} <> "#privacy"] [HE.text "Privacy policy"]
+                      , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [HE.text "Source code"]
+                      , HE.a [HA.href $ routes.backer {}] [HE.text "Donate"]
                       ]
               ]
       }
@@ -88,9 +88,9 @@ template = pure <<< templateWith
 
 templateWith ∷ ∀ a. Parameters a → Html a
 templateWith parameters =
-      HE.html (HA.lang "en")
+      HE.html [HA.lang "en"]
             [ HE.head_
-                    ( [ HE.meta $ HA.charset "UTF-8"
+                    ( [ HE.meta [ HA.charset "UTF-8"]
                       , HE.meta [ HA.name "viewport", HA.content "width=device-width, interactive-widget=resizes-content" ]
                       , HE.meta [ HA.name "description", HA.content "Text based, 1 on 1, friendly only random chat!" ]
                       , HE.link [ HA.id "favicon", HA.rel "shortcut icon", HA.type' "image/ico", HA.href parameters.favicon ]
@@ -98,7 +98,7 @@ templateWith parameters =
                       , HE.link [ HA.rel "preconnect", HA.href "https://fonts.googleapis.com" ]
                       , HE.link [ HA.rel "preconnect", HA.href "https://fonts.gstatic.com", HA.createAttribute "crossorigin" "" ]
                       , HE.link [ HA.href "https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Inter:ital,opsz@0,14..32;1,14..32&display=swap", HA.rel "stylesheet" ]
-                      , HE.title parameters.title
+                      , HE.title [HE.text parameters.title]
                       ] <> styleSheets
                     )
             , HE.body_ $ parameters.header <> parameters.content <> parameters.footer <> javascript

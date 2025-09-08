@@ -14,6 +14,7 @@ import Data.Maybe as DM
 import Data.String as DS
 import Data.String.Read as DSR
 import Data.Symbol (class IsSymbol)
+import Data.Tuple as DT
 import Data.Tuple.Nested (type (/\), (/\))
 import Debug (spy)
 import Effect (Effect)
@@ -36,6 +37,7 @@ import Shared.Options.MountPoint (imId)
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (PM, ProfileMessage(..), ProfileModel, What(..))
+import Shared.ProfileColumn as SP
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 
@@ -95,11 +97,30 @@ save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
                         EC.liftEffect do
                               FS.send imId $ SetNameFromProfile fields.name.value
                               FS.send imId $ SetAvatarFromProfile response.body.avatar
+                              FS.send imId $ SetCompletedFields
+                                    ( (if DA.elem Name model.generated || model.nameInputed == Just model.user.name then [ SP.Name ] else [])
+                                            <>
+                                                  (if DA.elem Headline model.generated || model.headlineInputed == Just model.user.headline then [] else [ SP.Headline ])
+                                            <>
+                                                  (if DA.elem Description model.generated || model.descriptionInputed == Just model.user.description then [] else [ SP.Description ])
+                                            <>
+                                                  (if DM.isNothing model.ageInputed then [] else [ SP.Birthday ])
+                                            <>
+                                                  (if DA.null model.tagsInputed then [] else [ SP.Tags ])
+                                            <>
+                                                  (if DM.isNothing model.countryInputed then [] else [ SP.Country ])
+                                            <>
+                                                  (if DA.null model.languagesInputed then [] else [ SP.Languages ])
+                                            <>
+                                                  (if DM.isNothing model.genderInputed then [] else [ SP.Gender ])
+                                            <>
+                                                  (if DM.isNothing model.avatarInputed then [] else [ SP.Avatar ])
+                                    )
                         pure <<< Just <<< SetPField $ _ { loading = false }
                   Left err → do
                         pure <<< Just <<< SetPField $ _ { updateRequestStatus = Just <<< Failure $ SN.errorMessage err }
 
-setFromTemporary ::  ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+setFromTemporary ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 setFromTemporary model = model { fromTemporary = true } /\ []
 
 setAge ∷ String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))

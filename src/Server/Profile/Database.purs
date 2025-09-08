@@ -13,7 +13,6 @@ import Data.Tuple.Nested ((/\))
 import Droplet.Driver.Internal.Query (Connection(..))
 import Prelude as P
 import Server.Database as SD
-import Server.Database.CompleteProfiles as CP
 import Server.Database.Countries (countries)
 import Server.Database.Fields (_id, _name, b, bu, k, l, lu, onlineStatus, tu, u)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
@@ -24,6 +23,7 @@ import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, _onlineStatus, users)
 import Server.Effect (ServerEffect)
 import Server.Profile.Database.Flat (FlatProfileUser)
+import Shared.ProfileColumn as CP
 import Shared.Unsafe as SU
 import Simple.JSON as SJ
 import Type.Proxy (Proxy(..))
@@ -54,6 +54,9 @@ presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _
 
 presentLanguages ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
+
+presentGeneratedFields :: Connection -> Int -> _
+presentGeneratedFields connection loggedUserId = map SU.fromJust <<< SD.singleWith connection $ select (_name /\ _headline /\ _description ) # from users # wher (_id .=. loggedUserId)
 
 upsertCompletness ∷ Connection → Int → CP.ProfileColumn → _
 upsertCompletness connection loggedUserId field = SD.unsafeExecuteWith connection "INSERT INTO complete_profiles(completer, completed) values(@loggedUserId, @field) ON CONFLICT (completer, completed) DO NOTHING" { loggedUserId, field }

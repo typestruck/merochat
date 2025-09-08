@@ -211,7 +211,7 @@ textarea {
 }
 
 #temporary-user-sign-up-form {
-    order:0;
+    order: 0;
     margin: 0 auto;
     align-self: center;
 }
@@ -912,7 +912,7 @@ img.emoji {
 .back {
     margin: 15px;
     margin-left: auto;
-    order:1;
+    order: 1;
 }
 
 .inline {
@@ -1641,14 +1641,15 @@ input:not(type=button):focus {
 }
 
 
-.modal-select, .modal-input {
+.modal-select,
+.modal-input {
     border-radius: 20px;
     border: 1px solid var(--text-color);
     padding: 15px;
     flex-grow: 1;
 }
 
-.modal-select  {
+.modal-select {
     color: inherit;
     font-size: inherit;
     background-color: inherit;
@@ -1677,8 +1678,8 @@ input:not(type=button):focus {
 
 .cancel {
     color: var(--text-color);
-    background-color:var(--im-second-backgorund-color);
-    border:0;
+    background-color: var(--im-second-backgorund-color);
+    border: 0;
     cursor: pointer;
 }
 
@@ -1917,9 +1918,14 @@ input:not(type=button):focus {
 .card-top-welcome-filter {
     display: flex;
     align-items: flex-start;
+    padding-top: 10px;
     /* align-self: flex-start; */
     flex-direction: column;
     margin-bottom: 10px;
+}
+
+.build-checked svg {
+    vertical-align: middle;
 }
 
 .card-top-header {
@@ -2567,7 +2573,45 @@ label {
     height: 23px;
 }
 
-/* dry this shite  */
+.build-profile {
+    padding: 50px 30px;
+    background-color: var(--im-merochat-green) !important;
+    color: var(--light-color);
+    border: none;
+    max-width: 40%;
+    padding: 50px;
+    max-height: 61%;
+    cursor: initial;
+}
+
+.build-profile .suggestion-avatar {
+    width: 82px;
+    height: 82px;
+}
+
+.build-profile .mini-suggestion-info {
+    cursor: initial;
+}
+
+.green-button.bigger {
+    max-width: 80%;
+    flex-grow: 1;
+}
+
+.green-button.bigger.build {
+    border:1px solid var(--light-color) ;
+    border-radius: 30px;
+}
+
+.build-list {
+    padding-top: 15px;
+    padding-left: 5px;
+}
+
+.build-call {
+    font-size: 1.6em;
+    font-weight: bold;
+}
 
 @media (max-width:1279px) {
     #im {
@@ -2945,7 +2989,7 @@ label {
 
     #temporary-user-sign-up-form {
         padding: 15px;
-        margin-left: 15px ;
+        margin-left: 15px;
         align-items: flex-start;
     }
 
@@ -3008,6 +3052,11 @@ label {
         padding: 40px 20px;
     }
 
+    .build-profile {
+        width: auto;
+        max-width: 100%;
+    }
+
     .card:nth-child(odd) {
         background: var(--im-second-background-color);
         color: var(--light-color);
@@ -3015,6 +3064,10 @@ label {
 
     .card:nth-child(odd) .see-profile-chat {
         background: var(--im-second-background-color);
+    }
+
+    .build-profile .see-profile-chat {
+        background: inherit !important;
     }
 
     .card:nth-child(odd) .tag {
@@ -3357,9 +3410,3 @@ label {
         min-width: 60px;
     }
 }
-
-
-
-
-
-

@@ -62,6 +62,7 @@ import Shared.Network (RequestStatus(..))
 import Shared.Options.MountPoint (imId, profileId)
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT
+import Shared.ProfileColumn (ProfileColumn)
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
@@ -189,9 +190,11 @@ update st model =
             ReloadPage → reloadPage model
             ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
             PushedMessages payload → CIP.receiveMessageFromPush payload model
+            HideBuildProfile → hideBuildProfile model
             SetNameFromProfile name → setName name model
             SetAvatarFromProfile base64 → setAvatar base64 model
             AskNotification → askNotification model
+            SetCompletedFields fields → setCompletedFields fields model
             ToggleAskNotification → toggleAskNotification model
             CreateUserFromTemporary → registerUser model
             FinishTutorial → finishTutorial model
@@ -312,7 +315,7 @@ finishTutorial model = model { user { completedTutorial = true } } /\ [ greet ]
             EA.delay $ Milliseconds 2000.0
             void <<< CCNT.silentResponse $ request.im.greeting {}
             contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
-            pure <<< Just $ DisplayNewContacts (spy "cnt" contact)
+            pure <<< Just $ DisplayNewContacts contact
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
 blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]
@@ -500,3 +503,9 @@ onBlur = FSIC.createSubscription Window "blur"
 
 onBeforeUnload ∷ ∀ message. message → Subscription message
 onBeforeUnload = FSIC.createSubscription Window "beforeunload"
+
+hideBuildProfile ∷ ImModel → NoMessages
+hideBuildProfile model = model { showBuildProfile = false } /\ []
+
+setCompletedFields ∷ Array ProfileColumn → ImModel → NoMessages
+setCompletedFields fields model = model { user = model.user { completedFields = fields } } /\ []

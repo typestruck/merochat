@@ -65,32 +65,32 @@ contactList isClientRender model =
                                         [ HE.img [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ SA.fromAvatar contact.user ]
                                         ]
                                 , HE.div [ HA.class' "contact-profile" ]
-                                        [ HE.div (HA.class' "contact-online-wrapper")
-                                                [ HE.span (HA.class' "contact-name") contact.user.name
+                                        [ HE.div [HA.class' "contact-online-wrapper"]
+                                                [ HE.span [HA.class' "contact-name"] [HE.text contact.user.name]
                                                 , HE.div' [ HA.class' { "online-indicator": true, hidden: contact.user.availability /= Online || not contact.user.onlineStatus || not model.user.onlineStatus } ]
                                                 ]
                                         , if contact.typing && model.user.typingStatus && contact.user.typingStatus then
-                                                HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ "Typing..." ]
+                                                HE.div [ HA.class' "contact-list-last-message duller typing" ] [ HE.p_ [HE.text "Typing..."] ]
                                           else if not $ DS.null contact.draft then
                                                 HE.div' [ HA.class' "contact-list-last-message duller message-draft", HA.innerHtml $ SM.parseRestricted ("Draft: " <> contact.draft) ]
                                           else
                                                 HE.div' [ HA.class' "contact-list-last-message duller", HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
                                         ]
-                                , HE.div (HA.class' "contact-options")
-                                        [ HE.span (HA.class' { duller: true, invisible: not isClientRender || not model.user.messageTimestamps || not contact.user.messageTimestamps }) <<< SD.ago $ DN.unwrap lastHistoryEntry.date
-                                        , HE.div (HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }) <<< HE.span (HA.class' "unread-number") $ show numberUnreadMessages
-                                        , HE.div (HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not model.user.readReceipts }) $ show lastHistoryEntry.status
+                                , HE.div [HA.class' "contact-options"]
+                                        [ HE.span [HA.class' { duller: true, invisible: not isClientRender || not model.user.messageTimestamps || not contact.user.messageTimestamps }] [HE.text <<< SD.ago $ DN.unwrap lastHistoryEntry.date]
+                                        , HE.div [HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 }] [ HE.span [HA.class' "unread-number"] [HE.text $ show numberUnreadMessages]]
+                                        , HE.div [HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not model.user.readReceipts }] [HE.text $ show lastHistoryEntry.status]
                                         ]
                                 ]
-                        , HE.hr' (HA.class' "contact-ruler")
+                        , HE.hr' [HA.class' "contact-ruler"]
                         ]
 
       -- | Since on mobile contact list takes most of the screen, show a welcoming message for new users
       suggestionsCall =
             HE.div [ HA.class' "suggestions-call", HA.onClick $ ToggleInitialScreen false ]
-                  [ HE.div (HA.class' "welcome-suggestions-call") "Welcome!"
-                  , HE.div_ "Tap here to see "
-                  , HE.div_ "suggested users to chat to"
+                  [ HE.div [HA.class' "welcome-suggestions-call"] [HE.text "Welcome!"]
+                  , HE.div_ [HE.text "Tap here to see "]
+                  , HE.div_ [HE.text "suggested users to chat to"]
                   ]
 
       compareLastDate contact anotherContact = compare anotherContact.lastMessageDate contact.lastMessageDate

@@ -151,9 +151,9 @@ resourceType = case _ of
       Ico → ".ico"
       Svg → ".svg"
       Css → ".css"
-      Ignore → ""
       Png → ".png"
       Js → ".bundle.js"
+      Ignore → ""
 
 replacement ∷ Bundle → ResourceType → String
 replacement bundle tp

@@ -48,34 +48,34 @@ instance Show ExperimentPayload where
       show = DGRS.genericShow
 
 joined ∷ ImpersonationProfile → Html ChatExperimentMessage
-joined profile = HE.div (HA.class' "exit-impersonation")
-      [ HE.strong_ "You have already joined the Impersonation Experiment"
-      , HE.button [ HA.class' "green-button danger exit-experiment", HA.onClick QuitExperiment ] "Exit"
+joined profile = HE.div [HA.class' "exit-impersonation"]
+      [ HE.strong_ [HE.text "You have already joined the Impersonation Experiment"]
+      , HE.button [ HA.class' "green-button danger exit-experiment", HA.onClick QuitExperiment ] [HE.text "Exit"]
       ]
 
 view ∷ ChatExperimentModel → Html ChatExperimentMessage
-view model = HE.div (HA.class' "impersonation")
+view model = HE.div [HA.class' "impersonation"]
       [ header Characters "Fictional"
       , profiles Characters [ batman ]
       , header HistoricalFigures "Historical figures"
       , profiles HistoricalFigures [ socrates ]
       , header Celebrities "Celebrities"
       , profiles Celebrities [ nicolasCage ]
-      , HE.div (HA.class' { "modal-placeholder-overlay": true, hidden: DM.isNothing impersonation })
-              [ HE.div (HA.class' "confirmation")
+      , HE.div [HA.class' { "modal-placeholder-overlay": true, hidden: DM.isNothing impersonation }]
+              [ HE.div [HA.class' "confirmation"]
                       if SPV.hasPrivilege ImpersonationChatExperiment model.user then
-                            [ {- HE.span (HA.class' "bold") $ "Start Impersonation Experiment as " <>  DM.maybe "" _.name impersonation <> "?"
-                            , HE.div (HA.class' "buttons")
-                                    [ HE.button [ HA.class' "cancel" , HA.onClick $ ConfirmImpersonation Nothing ] "Cancel"
-                                    , HE.button [ HA.class' "green-button" , HA.onClick <<< JoinExperiment $ Impersonation impersonation ] "Start"
+                            [ {- HE.span [HA.class' "bold"] $ "Start Impersonation Experiment as " <>  DM.maybe "" _.name impersonation <> "?"
+                            , HE.div [HA.class' "buttons"]
+                                    [ HE.button [ HA.class' "cancel" , HA.onClick $ ConfirmImpersonation Nothing ] [HE.text "Cancel"]
+                                    , HE.button [ HA.class' "green-button" , HA.onClick <<< JoinExperiment $ Impersonation impersonation ] [HE.text "Start"]
                                     ] -} HE.text "Impesonation experiment is currently unavailable"
-                            , HE.div (HA.class' "buttons")
-                                    $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmExperiment Nothing ] "Dismiss"
+                            , HE.div [HA.class' "buttons"]
+                                    [ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmExperiment Nothing ] [HE.text "Dismiss"]]
                             ]
                       else
                             [ CCP.notEnoughKarma "start this chat experiment" RedirectKarma
-                            , HE.div (HA.class' "buttons")
-                                    $ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmExperiment Nothing ] "Dismiss"
+                            , HE.div [HA.class' "buttons"]
+                                    [ HE.button [ HA.class' "green-button", HA.onClick $ ConfirmExperiment Nothing ] [HE.text "Dismiss"]]
                             ]
               ]
       ]
@@ -86,17 +86,17 @@ view model = HE.div (HA.class' "impersonation")
 
       header s name = HE.div [ HA.class' "impersonation-header", HA.onClick $ ToggleSection s ]
             [ HE.text name
-            , HE.span (HA.class' "header-plus") if model.section == s then "-" else "+"
+            , HE.span [HA.class' "header-plus"] [HE.text $ if model.section == s then "-" else "+"]
             ]
 
-      profiles s = HE.div (HA.class' { hidden: model.section /= s }) <<< DA.mapWithIndex toProfile
+      profiles s = HE.div [HA.class' { hidden: model.section /= s }] <<< DA.mapWithIndex toProfile
       toProfile index p = HE.div [ HA.class' "contact", HA.onClick <<< ConfirmExperiment <<< Just <<< Impersonation $ Just p ]
-            [ HE.div (HA.class' "avatar-contact-list-div")
+            [ HE.div [HA.class' "avatar-contact-list-div"]
                     [ HE.img [ HA.title $ SU.fromJust p.avatar, HA.class' "avatar-contact-list", HA.src $ SU.fromJust p.avatar ]
                     ]
             , HE.div [ HA.class' "contact-profile", HA.title $ "Start Impersonation as " <> p.name ]
-                    [ HE.span (HA.class' "contact-name") p.name
-                    , HE.span (HA.class' "duller") p.headline
+                    [ HE.span [HA.class' "contact-name"] [HE.text p.name]
+                    , HE.span [HA.class' "duller"] [HE.text p.headline]
                     ]
             ]
 
@@ -122,6 +122,7 @@ batman =
       , privileges: []
       , bin: 1
       , badges: []
+      , completedFields : []
       , temporary: false
       , country: Just "Gotham"
       , languages: []
@@ -139,6 +140,7 @@ socrates =
       , bin: 1
       , availability: None
       , readReceipts: true
+      , completedFields : []
       , backer: false
       , privileges: []
       , badges: []
@@ -179,6 +181,7 @@ nicolasCage =
       , bin: 1
       , typingStatus: true
       , temporary: false
+      , completedFields : []
       , joined: DateTimeWrapper epoch
       , onlineStatus: true
       , availability: None

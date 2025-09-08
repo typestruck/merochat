@@ -42,6 +42,7 @@ backerUser =
       , messageTimestamps: true
       , typingStatus: true
       , onlineStatus: true
+      , completedFields: []
       , completedTutorial: true
       , avatar: Just $ SP.resourcePath (Left BackerAvatar) Png
       , headline: "MeroChat depends on you to keep running"

@@ -29,6 +29,7 @@ model ∷ ImModel
 model =
       {  freeToFetchSuggestions: true
       , typingIds: []
+      , showBuildProfile : true
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
@@ -81,6 +82,7 @@ imUser =
       , id: imUserId
       , profileVisibility: Everyone
       , backer: false
+      , completedFields : []
       , readReceipts: true
       , messageTimestamps: true
       , joined: DateTimeWrapper epoch

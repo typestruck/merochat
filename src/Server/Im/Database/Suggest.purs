@@ -5,6 +5,7 @@ import Droplet.Language
 import Prelude hiding (not, join)
 import Server.Database.Badges
 import Server.Database.BadgesUsers
+import Server.Database.Fields
 import Server.Database.Suggestions
 import Shared.Privilege
 
@@ -21,7 +22,6 @@ import Droplet.Driver (Pool)
 import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
-import Server.Database.Fields
 import Server.Database.Functions (date_part_age, datetime_part_age, insert_history, utc_now)
 import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
 import Server.Database.KarmaHistories (_amount, _target, karma_histories)
@@ -38,7 +38,7 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
-import Server.Im.Database.Present (usersSource, userFields)
+import Server.Im.Database.Present (completeness, userFields, usersSource)
 import Shared.DateTime as ST
 import Shared.Im.Types (HistoryMessage, MessageStatus(..), Report, SuggestionsFrom(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
@@ -68,7 +68,7 @@ suggest loggedUserId skip =
 
 -- top level to avoid monomorphic filter
 suggestBaseQuery loggedUserId filter =
-      select (userFields /\ _bin)
+      select (userFields /\ _bin /\ completeness)
             # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
             # wher filter
 

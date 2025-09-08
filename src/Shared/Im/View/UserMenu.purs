@@ -14,7 +14,7 @@ import Shared.Modal.Types (Modal(..), ScreenModal(..))
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model =
-      HE.div (HA.class' "settings")
+      HE.div [HA.class' "settings"]
             [ header model
             , HE.div [ HA.class' "outer-user-menu" ]
                     [ SIS.home
@@ -27,10 +27,10 @@ header ∷ ImModel → Html ImMessage
 header model = HE.fragment
       [ HE.img [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user ]
       , HE.div [ HA.class' "settings-name" ]
-              [ HE.strong (HA.class' "contact-name") model.user.name
+              [ HE.strong [HA.class' "contact-name"] [HE.text model.user.name]
               , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]
-                      [ HE.span [ HA.class' "karma-number" ] $ SI.thousands model.user.karma
-                      , HE.span (HA.class' "duller") $ " karma • (#" <> show model.user.karmaPosition <> ")"
+                      [ HE.span [ HA.class' "karma-number" ] [HE.text $ SI.thousands model.user.karma]
+                      , HE.span [HA.class' "duller"] [HE.text $ " karma • (#" <> show model.user.karmaPosition <> ")"]
                       ]
               ]
       ]

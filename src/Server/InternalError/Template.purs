@@ -15,11 +15,11 @@ template reason = do
       FRS.render contents
       where
       content =
-            [ HE.div (HA.class' "green-box")
-                    [ HE.div (HA.class' "error-page")
-                            [ HE.div (HA.class' "error-page-code") "500"
-                            , HE.div_ "An internal error occurred. We will look into it."
-                            , HE.div (HA.class' "reason") reason
+            [ HE.div [HA.class' "green-box"]
+                    [ HE.div [HA.class' "error-page"]
+                            [ HE.div [HA.class' "error-page-code"] [HE.text "500"]
+                            , HE.div_ [HE.text "An internal error occurred. We will look into it."]
+                            , HE.div [HA.class' "reason"] [HE.text reason]
                             ]
                     ]
             ]

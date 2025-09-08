@@ -51,15 +51,9 @@
     background-color: var(--im-background-color);
 }
 
-.green-button.bigger {
-    max-width: 80%;
-    flex-grow: 1;
-}
-
 .profile-edition .full-card-headline-tags, .profile-edition .card-description  {
     width: 47em;
 }
-
 
 .profile-mode-selected {
     font-weight: 900;

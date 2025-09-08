@@ -7,7 +7,6 @@ import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Effect (Effect)
 import Flame.Html.Attribute as HA
-import Flame.Html.Element (class ToNode)
 import Flame.Html.Element as HE
 import Flame.Types (Html, NodeData)
 import Shared.Backer.Contact (backerId)
@@ -37,7 +36,7 @@ decoding ∷ ∀ (message ∷ Type). String → NodeData message
 decoding value = HA.createAttribute "decoding" value
 
 -- avoid lagging pictures when browsing suggestions
-avatar ∷ ∀ nd34 message35. ToNode nd34 message35 NodeData ⇒ nd34 → Html message35
+avatar ∷ ∀ message. Array (NodeData message) → Html message
 avatar attributes = HE.managed { createNode, updateNode } attributes unit
       where
       createNode _ = createImg

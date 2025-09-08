@@ -25,16 +25,16 @@ template = do
       FRS.render contents
       where
       content =
-            [ HE.div (HA.class' "external-help")
-                    [ HE.div (HA.class' "modal-menu")
-                            [ HE.div [ HA.class' "entry selected", HA.id "faq-link" ] "FAQ"
-                            , HE.div [ HA.class' "entry", HA.id "terms-link" ] "Terms and conditions"
-                            , HE.div [ HA.class' "entry", HA.id "privacy-link" ] "Privacy policy"
+            [ HE.div [HA.class' "external-help"]
+                    [ HE.div [HA.class' "modal-menu"]
+                            [ HE.div [ HA.class' "entry selected", HA.id "faq-link" ] [HE.text "FAQ"]
+                            , HE.div [ HA.class' "entry", HA.id "terms-link" ] [HE.text "Terms and conditions"]
+                            , HE.div [ HA.class' "entry", HA.id "privacy-link" ] [HE.text "Privacy policy"]
                             ]
-                    , HE.div (HA.class' "help")
-                            [ HE.div "faq" SA.faq
-                            , HE.div [ HA.id "terms", HA.class' "hidden" ] STM.terms
-                            , HE.div [ HA.id "privacy", HA.class' "hidden" ] SP.privacy
+                    , HE.div [HA.class' "help"]
+                            [ HE.div [HA.id "faq"] [SA.faq]
+                            , HE.div [ HA.id "terms", HA.class' "hidden" ] [STM.terms]
+                            , HE.div [ HA.id "privacy", HA.class' "hidden" ] [SP.privacy]
                             ]
                     ]
             ]

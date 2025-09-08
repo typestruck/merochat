@@ -15,7 +15,7 @@ import Shared.Avatar as SA
 unreadNotification ∷ ImModel → Html ImMessage
 unreadNotification model
       | model.smallScreen =
-              HE.div [ HA.onClick $ ToggleInitialScreen true, HA.title "Back to contact list", HA.class' { "mobile-notification": true, hidden: DA.null avatars } ] $ HE.span (HA.class' "notification-header") "New messages from  " : avatars
+              HE.div [ HA.onClick $ ToggleInitialScreen true, HA.title "Back to contact list", HA.class' { "mobile-notification": true, hidden: DA.null avatars } ] $ HE.span [HA.class' "notification-header"] [HE.text "New messages from  "] : avatars
 
               where
               unreadChats = map markup $ DA.filter unread model.contacts
@@ -29,4 +29,4 @@ unreadNotification model
       | otherwise = emptyDiv
 
 emptyDiv ∷ Html ImMessage
-emptyDiv = HE.createEmptyElement "div"
+emptyDiv = HE.div [] []

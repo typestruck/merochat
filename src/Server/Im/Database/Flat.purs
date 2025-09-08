@@ -11,6 +11,7 @@ import Data.Maybe as DM
 import Data.Time.Duration (Minutes(..))
 import Debug (spy)
 import Safe.Coerce as SC
+import Shared.ProfileColumn (ProfileColumn)
 import Server.Database.Types (Checked(..))
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
@@ -38,6 +39,7 @@ type FlatFields rest =
       , messageTimestamps ∷ Checked
       , typingStatus ∷ Checked
       , temporary ∷ Checked
+      , completedFields ∷ Maybe (Array ProfileColumn)
       , privileges ∷ Maybe (Array Privilege)
       , badges ∷ Maybe (Array Badge)
       , onlineStatus ∷ Checked
@@ -91,6 +93,7 @@ fromFlatUser fc =
       , badges: DM.fromMaybe [] fc.badges
       , temporary: SC.coerce fc.temporary
       , joined: DateTimeWrapper fc.joined
+      , completedFields : DM.fromMaybe [] fc.completedFields
       , avatar: fc.avatar
       , tags: DM.fromMaybe [] fc.tags
       , karma: fc.karma

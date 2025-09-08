@@ -9,7 +9,6 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
 import Environment (production)
-import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -23,6 +22,7 @@ import Shared.Im.View as SIV
 import Shared.Modal.Types (Modal(..))
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
+import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ Payload → Effect String
 template payload = do
@@ -53,6 +53,7 @@ template payload = do
                     , suggestionsFrom: ThisWeek
                     , showSuggestionChatInput: Nothing
                     , lastTyping: DateTimeWrapper lt
+                    , showBuildProfile: DA.length payload.user.completedFields  < 3
                     , smallScreen: false
                     , showMiniChatInput: false
                     , initialScreen: true
@@ -87,7 +88,7 @@ template payload = do
             }
       where
       modals =
-            HE.div "modal-root"
+            HE.div [ HA.id "modal-root" ]
                   [ HE.div' [ HA.id $ show SE.ProfileEditionRoot ]
                   , HE.div' [ HA.id $ show SE.SettingsEditionRoot ]
                   , HE.div' [ HA.id $ show SE.KarmaPrivilegesRoot ]
@@ -104,12 +105,14 @@ template payload = do
             ]
       css =
             [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SP.bundlePath Im Css ]
-            , HE.style (HA.type' "text/css")
-                    """
+            , HE.style [ HA.type' "text/css" ]
+                    [ HE.text
+                            """
                     svg {
                         width:20px;
                         height:20px;
                     }
                     """
+                    ]
             ]
 

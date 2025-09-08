@@ -28,24 +28,24 @@ template = do
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]
             ]
       content =
-            [ HE.div (HA.class' "pastel-area")
-                    [ HE.div (HA.class' "sign-up-form form-up")
+            [ HE.div [HA.class' "pastel-area"]
+                    [ HE.div [HA.class' "sign-up-form form-up"]
                             [ HE.div [ HA.class' "input" ]
                                     [ HE.input [ HA.placeholder "Email", HA.type' "text", HA.maxlength emailMaxCharacters, HA.id $ show EmailInput ]
-                                    , HE.span (HA.class' "error-message") "Please enter a valid email"
+                                    , HE.span [HA.class' "error-message"] [HE.text "Please enter a valid email"]
                                     ]
                             , HE.div [ HA.class' "input" ]
                                     [ HE.input [ HA.placeholder "Password", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.id $ show PasswordInput ]
-                                    , HE.span (HA.class' "error-message") $ "Password must be " <> show passwordMinCharacters <> " characters or more"
+                                    , HE.span [HA.class' "error-message"] [HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more"]
                                     ]
                             , HE.div [ HA.class' "input" ]
                                     [ HE.input [ HA.type' "button", HA.value "Log in" ]
                                     , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]
-                            , HE.div (HA.class' "forgot-sign-up")
-                                    [ HE.a [ HA.href $ routes.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] "Forgot your password?"
-                                    , HE.span [ HA.class' "or" ] "or"
-                                    , HE.a [ HA.href $ routes.landing {}, HA.class' "question-link" ] "Don't have an account?"
+                            , HE.div [HA.class' "forgot-sign-up"]
+                                    [ HE.a [ HA.href $ routes.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] [HE.text "Forgot your password?"]
+                                    , HE.span [ HA.class' "or" ] [HE.text "or"]
+                                    , HE.a [ HA.href $ routes.landing {}, HA.class' "question-link" ] [HE.text "Don't have an account?"]
                                     ]
                             ]
                     ]

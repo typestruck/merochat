@@ -4,17 +4,13 @@ import Prelude
 import Shared.Options.Profile
 
 import Data.Array as DA
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype as DN
-import Data.String (Pattern(..), Replacement(..))
 import Data.String as DS
-import Data.Tuple as DT
 import Debug (spy)
 import Run as R
 import Server.Database as SD
-import Server.Database.CompleteProfiles (ProfileColumn(..))
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
 import Server.File as SF
@@ -22,15 +18,12 @@ import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Server.Profile.Types (Payload)
 import Server.Response as SR
-import Server.Sanitize as SS
 import Server.ThreeK as ST
-import Shared.DateTime (DateWrapper)
 import Shared.DateTime as SDT
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (SavedFields)
 import Shared.Profile.Types as SPT
-import Shared.Resource as SRS
-import Shared.User (Gender)
+import Shared.ProfileColumn (ProfileColumn(..))
 
 tooYoungMessage ∷ String
 tooYoungMessage = "You must be over 18 years old in order to use MeroChat"
@@ -69,9 +62,13 @@ save loggedUserId fields = do
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
       --keep the old logic to save fields individually in case we need to do it again
       SD.withTransaction $ \connection → do
-            SPD.saveRequiredField connection loggedUserId Name (DS.take nameMaxCharacters fields.name.value) fields.name.generated
-            SPD.saveRequiredField connection loggedUserId Headline (DS.take headlineMaxCharacters fields.headline.value) fields.headline.generated
-            SPD.saveRequiredField connection loggedUserId Description (DS.take descriptionMaxCharacters fields.description.value) fields.description.generated
+            current <- SPD.presentGeneratedFields connection loggedUserId
+            let name = DS.take nameMaxCharacters fields.name.value
+            unless (name == current.name) $ SPD.saveRequiredField connection loggedUserId Name name fields.name.generated
+            let headline = DS.take headlineMaxCharacters fields.headline.value
+            unless (headline == current.headline) $ SPD.saveRequiredField connection loggedUserId Headline headline fields.headline.generated
+            let description = DS.take descriptionMaxCharacters fields.description.value
+            unless (description == current.description) $ SPD.saveRequiredField connection loggedUserId Description description fields.description.generated
             case avatar of
                   Save a → SPD.saveField connection loggedUserId Avatar a
                   _ → pure unit

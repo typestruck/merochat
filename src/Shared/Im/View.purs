@@ -20,10 +20,10 @@ import Shared.Im.View.UserMenu as SIVU
 import Shared.Modal.Types (Modal(..), SpecialModal(..), Step(..))
 
 view ∷ Boolean → ImModel → Html ImMessage
-view isClientRender model = HE.div "im"
-      [ HE.div (HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen })
+view isClientRender model = HE.div [HA.id "im"]
+      [ HE.div [HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen }]
               [ SIVU.userMenu model
-              , HE.div (HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) }) model.errorMessage
+              , HE.div [HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) }] [HE.text model.errorMessage]
               , SIVN.reloadPage model.imUpdated
               , SIVN.prompt model.enableNotificationsVisible
               , SIVCN.contactList isClientRender model
@@ -31,7 +31,7 @@ view isClientRender model = HE.div "im"
               , SIVM.modals model
               ]
       , HE.div [ HA.class' { "suggestion-box": true, "current-mobile-screen": not model.initialScreen }, HA.onDragenter' PreventStop, HA.onDragover' PreventStop, HA.onDrop' DropFile ]
-              [ HE.div [ HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: not $ DS.null model.errorMessage } ] model.errorMessage
+              [ HE.div [ HA.class' { "suggestion-box-error": true, "error-message-connection-lost": true, flexed: not $ DS.null model.errorMessage } ] [HE.text model.errorMessage]
               , SIVNM.unreadNotification model
               , SIVP.suggestionProfile model
               , SIVH.chatHistory model

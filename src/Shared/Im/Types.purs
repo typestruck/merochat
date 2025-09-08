@@ -3,6 +3,7 @@ module Shared.Im.Types where
 import Prelude
 import Shared.Availability
 import Shared.Element
+import Shared.Modal.Types
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
@@ -12,12 +13,10 @@ import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
-
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Show.Generic as DGRS
-import Shared.Modal.Types
 import Data.Tuple (Tuple)
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
@@ -29,6 +28,7 @@ import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Privilege (Privilege)
+import Shared.ProfileColumn (ProfileColumn)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
@@ -113,6 +113,7 @@ type Im =
       --in case a message from someone blocked was already midway
       , blockedUsers ∷ Array Int
       , temporaryId ∷ Int
+      , showBuildProfile :: Boolean
       , freeToFetchChatHistory ∷ Boolean
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
@@ -265,6 +266,7 @@ data ImMessage
       | QuoteMessage String (Either Touch (Maybe Event))
       | EditMessage String Int
       | DeleteMessage Int
+      | HideBuildProfile
       | EnterSendMessage ElementId Event
       | ForceSendMessage ElementId
       | ResizeChatInput Event
@@ -295,6 +297,7 @@ data ImMessage
       | CloseWebSocket When
       | SetNameFromProfile String
       | SetAvatarFromProfile (Maybe String)
+      | SetCompletedFields (Array ProfileColumn)
       | CheckUserExpiration
       | StartPwa
       | UpdateWebSocketStatus WebSocketConnectionStatus

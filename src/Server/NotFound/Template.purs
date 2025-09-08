@@ -15,10 +15,10 @@ template = do
       FRS.render contents
       where
       content =
-            [ HE.div (HA.class' "green-box")
-                    [ HE.div (HA.class' "error-page")
-                            [ HE.div (HA.class' "error-page-code") "404"
-                            , HE.div_ "The requested page could not be found"
+            [ HE.div [HA.class' "green-box"]
+                    [ HE.div [HA.class' "error-page"]
+                            [ HE.div [HA.class' "error-page-code"] [HE.text "404"]
+                            , HE.div_ [HE.text "The requested page could not be found"]
 
                             ]
                     ]

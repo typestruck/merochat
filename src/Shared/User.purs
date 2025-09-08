@@ -1,8 +1,6 @@
 module Shared.User where
 
 import Prelude
-import Shared.Availability (Availability)
-import Shared.DateTime (DateTimeWrapper(..))
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
@@ -30,8 +28,11 @@ import Foreign as F
 import Payload.Client.EncodeBody (class EncodeBody)
 import Payload.ContentType (class HasContentType, json)
 import Payload.Server.DecodeBody (class DecodeBody)
+import Shared.Availability (Availability)
 import Shared.Badge (Badge)
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Privilege (Privilege)
+import Shared.ProfileColumn (ProfileColumn)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
@@ -54,6 +55,7 @@ type IU =
               ( gender ∷ Maybe String
               , country ∷ Maybe String
               , languages ∷ Array String
+              , completedFields :: Array ProfileColumn
               , age ∷ Maybe Int
               , readReceipts ∷ Boolean
               , typingStatus ∷ Boolean
