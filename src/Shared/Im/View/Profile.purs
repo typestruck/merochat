@@ -250,7 +250,7 @@ suggestionCards model =
             ]
       where
       allCards
-           | model.showBuildProfile = buildProfile : map card model.suggestions <> moreCards
+           | not model.user.temporary && model.showBuildProfile = buildProfile : map card model.suggestions <> moreCards
            | otherwise = map card model.suggestions <> moreCards
 
       buildProfile =
