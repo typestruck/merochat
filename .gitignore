@@ -16,3 +16,14 @@ todo
 file/bundle/
 file/upload
 spago.log
+*.keystore
+*.apk
+*.apk.*
+*.aab
+*.gradle
+gradle*
+*.txt
+store_icon.png
+twa-manifest.json
+build/
+app/

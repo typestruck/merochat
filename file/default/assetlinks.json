@@ -1,0 +1,10 @@
+[{
+ "relation": ["delegate_permission/common.handle_all_urls"],
+ "target": {
+   "namespace": "chat.mero.twa",
+   "package_name": "chat.mero.twa",
+   "sha256_cert_fingerprints": [
+     "80:A4:81:6F:BE:0B:58:82:99:C7:44:AE:85:A4:42:84:8D:94:07:AD:B5:E6:6B:B4:D6:28:31:78:AA:B1:19:E0"
+   ]
+ }
+}]
