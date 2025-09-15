@@ -13,7 +13,7 @@ import Shared.Changelog (Changelog)
 
 listChangelogs ∷ Int → Maybe Int → ServerEffect (Array Changelog)
 listChangelogs loggedUserId id = do
-      SD.unsafeQuery "SELECT c.id id, description, changed, (log IS NOT NULL) read FROM changelogs c LEFT JOIN changelog_read ON c.id = log AND who = @loggedUserId WHERE ((changed = @loggedUserId AND log IS NOT NULL OR changed IS NULL OR c.id < @id) AND date >= (SELECT joined FROM users WHERE id = @loggedUserId)) ORDER BY date DESC LIMIT 5" { loggedUserId, id }
+      SD.unsafeQuery "SELECT c.id id, description, changed, (log IS NOT NULL) AS read FROM changelogs c LEFT JOIN changelog_read ON c.id = log AND who = @loggedUserId WHERE ((changed = @loggedUserId AND log IS NOT NULL OR changed IS NULL OR c.id < @id) AND date >= (SELECT joined FROM users WHERE id = @loggedUserId)) ORDER BY date DESC LIMIT 5" { loggedUserId, id }
 
 markRead ∷ Int → Array Int → ServerEffect Unit
 markRead loggedUserId ids = SD.execute $ insert # into changelog_read (_who /\ _log) # values ((loggedUserId /\ _) <$> ids)
