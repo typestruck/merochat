@@ -30,10 +30,12 @@ model =
       {  freeToFetchSuggestions: true
       , typingIds: []
       , showBuildProfile : true
+      , showChangelogs : false
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
       , showSuggestionChatInput: Nothing
+      , changelogs : []
       , showCollapsedMiniSuggestions: false
       , modalsLoaded: []
       , showMiniChatInput: false

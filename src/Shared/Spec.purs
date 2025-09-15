@@ -11,6 +11,7 @@ import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (EmailCaptcha, EmailPasswordCaptcha, RegisterTemporary, ResetPassword, EmailPassword)
+import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper, DateWrapper)
 import Shared.Html (Html)
 import Shared.Profile.Types (SavedFields)
@@ -81,6 +82,18 @@ spec ∷
                                                 { query ∷ { skip ∷ Int }
                                                 , response ∷ Array Contact
                                                 }
+                                  , changelog ∷
+                                          Routes "/changelog"
+                                                { get ∷
+                                                        GET "/?before=<before>"
+                                                              { query ∷ { before ∷ Maybe Int }
+                                                              , response ∷ Array Changelog
+                                                              }
+                                                , post :: POST "/"
+                                                              { body ∷ { ids ∷ Array Int }
+                                                              , response ∷ Ok
+                                                              }
+                                                }
                                   , contact ∷
                                           GET "/contact?id=<id>"
                                                 { query ∷ { id ∷ Int }
@@ -145,7 +158,7 @@ spec ∷
                                   , save ∷
                                           POST "/save"
                                                 { body ∷ SavedFields
-                                                , response ∷ {avatar :: Maybe String }
+                                                , response ∷ { avatar ∷ Maybe String }
                                                 }
                                   }
                     , settings ∷

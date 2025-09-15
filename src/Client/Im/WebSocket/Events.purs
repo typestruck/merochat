@@ -417,7 +417,9 @@ updateWebSocketStatus status model =
 
       missedContacts = pure <<< Just $ SpecialRequest FetchMissedContacts
       reconnect = do
-            when (model.webSocketStatus == Reconnect) (EC.liftEffect (ERN.randomRange 300.0 1000.0) >>= EA.delay <<< Milliseconds)
+            when (model.webSocketStatus == Reconnect) do
+                  ms <- EC.liftEffect $ ERN.randomRange 300.0 1000.0
+                  EA.delay $ Milliseconds ms
             --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
             -- the focus event for the document also checks if the connection is open
             if model.smallScreen then do
@@ -434,11 +436,12 @@ updateWebSocketStatus status model =
       --signal that messages have been received / read
       setDelivered = pure $ Just SetDeliveredStatus
       setRead = pure <<< Just $ SetReadStatus Nothing
+      changelog = pure $ Just FetchChangelog
       messages
             | status == Reconnect = [ reconnect ]
-            | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts, resumeMessages ]
+            | model.webSocketStatus == Reconnect && status == Connected = [ missedContacts, resumeMessages, changelog ]
             --first connection
-            | model.webSocketStatus == Closed && status == Connected = [ resumeMessages, checkExpired, trackAvailable, setDelivered, setRead ]
+            | model.webSocketStatus == Closed && status == Connected = [ resumeMessages, checkExpired, trackAvailable, setDelivered, setRead, changelog ]
             | otherwise = []
 
 trackAvailability ∷ WebSocket → ImModel → NoMessages

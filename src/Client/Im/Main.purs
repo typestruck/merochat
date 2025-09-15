@@ -13,9 +13,10 @@ import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Common.Network as CCNT
 import Client.Common.Network as CNN
+import Client.Im.Changelog as CICL
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.History as CIH
 import Client.Im.ModalsMenu as CIU
 import Client.Im.Notification as CIN
@@ -183,12 +184,22 @@ update st model =
             SpecialRequest (ToggleModal toggle) → CIU.modal toggle model
             SetModalContents file root html → CIU.setModalContents file root html model
 
-            --main
+            --websocket
             ReconnectWebSocket → CIWE.reconnectWebSocket st.webSocketRef model
+            TrackAvailability → CIWE.trackAvailability webSocket model
+            UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
+            CloseWebSocket when → CIWE.closeWebSocket when st.webSocketRef model
+            ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
+
+            --changelogs
+            FetchChangelog -> CICL.fetchChangelog model
+            DisplayChangelog changelogs -> CICL.displayChangelog changelogs model
+            ToggleChangelog -> CICL.toggleChangelog model
+
+            --main
             StartPwa → CIP.startPwa model
             SetContextMenuToggle toggle → toggleContextMenu toggle model
             ReloadPage → reloadPage model
-            ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
             PushedMessages payload → CIP.receiveMessageFromPush payload model
             HideBuildProfile → hideBuildProfile model
             SetNameFromProfile name → setName name model
@@ -200,10 +211,7 @@ update st model =
             FinishTutorial → finishTutorial model
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
-            TrackAvailability → CIWE.trackAvailability webSocket model
             Refocus e → refocus e st.lastActiveRef webSocket model
-            UpdateWebSocketStatus status → CIWE.updateWebSocketStatus status model
-            CloseWebSocket when → CIWE.closeWebSocket when st.webSocketRef model
             SetTheme theme → CIT.setTheme theme model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
@@ -218,6 +226,7 @@ update st model =
             SetPrivacySettings ps → setPrivacySettings ps model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
+
 
 resumeFromNotification ∷ Effect Unit
 resumeFromNotification = do

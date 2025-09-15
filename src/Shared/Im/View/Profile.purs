@@ -104,6 +104,7 @@ compactProfile contact model =
                             [ HE.div [ HA.class' "outer-user-menu" ] [ SIA.contextMenu $ show CompactProfileContextMenu ]
                             ]
                     , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] $ profileContextMenu contact.user.id true
+                    , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick ResumeSuggesting ]
                     ]
             ]
       where

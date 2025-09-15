@@ -447,6 +447,7 @@ blockquote {
 }
 
 .settings {
+    z-index: 2;
     position: relative;
     border-top-right-radius: 40px;
     align-items: center;
@@ -1506,6 +1507,51 @@ input:not(type=button):focus {
     border-radius: 70%;
 }
 
+.changelog-count {
+    background: #db5a5d;
+    font-size: 0.6em;
+    padding: 0 4px;
+    text-align: center;
+    border-radius: 60%;
+    margin-left: -15px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.changelog-inbox {
+    position: absolute;
+    width: 500px;
+    background: var(--im-second-background-color);
+    padding: 10px 15px;
+    border-radius: 10px;
+    right: -250px;
+}
+
+.inbox-updates {
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+
+.inbox {
+    display: flex;
+    flex-direction: column;
+}
+
+.inbox-entry {
+    padding: 5px 0;
+}
+
+.unread-inbox-entry {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.inbox-header {
+    display: flex;
+    padding-bottom: 10px;
+    justify-content: space-between;
+}
+
 .green-button {
     display: block;
     border-radius: 10px;
@@ -1817,7 +1863,7 @@ input:not(type=button):focus {
 }
 
 .fortune {
-    background: #262626;
+    background: var(--im-second-background-color);
     position: absolute;
     left: 10px;
     right: 10px;
@@ -1834,7 +1880,7 @@ input:not(type=button):focus {
     height: 17px;
     position: absolute;
     width: 26px;
-    background-color: #262626;
+    background-color: var(--im-second-background-color);
     bottom: -6px;
     left: 50%;
     margin-left: -15px;
@@ -2216,8 +2262,8 @@ input:not(type=button):focus {
 }
 
 .svg-32 {
-    width: 25px;
-    height: 25px;
+    width: 25px !important;
+    height: 25px !important;
 }
 
 .svg-20 {
@@ -2560,6 +2606,7 @@ label {
     margin-bottom: 20px;
 }
 
+.inbox-inverted-merochat-svg,
 .inverted-merochat-svg {
     width: 210px;
     height: 22px;
@@ -2568,9 +2615,14 @@ label {
     stroke: none;
 }
 
+.inbox-inverted-merochat-svg {
+    width: 110px;
+    height: 20px;
+}
+
 .svg-32.svg-user-menu-context {
-    width: 23px;
-    height: 23px;
+    width: 23px !important;
+    height: 23px !important;
 }
 
 .build-profile {
@@ -2582,6 +2634,22 @@ label {
     padding: 50px;
     max-height: 61%;
     cursor: initial;
+}
+
+.svg-inbox {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.svg-inbox-unread {
+    width: 10px;
+    height: 10px;
+    margin-right: 8px;
+}
+
+.profile-contact-deets #compact-profile-context-menu {
+    padding-top: 9px;
 }
 
 .build-profile .suggestion-avatar {
@@ -2599,7 +2667,7 @@ label {
 }
 
 .green-button.bigger.build {
-    border:1px solid var(--light-color) ;
+    border: 1px solid var(--light-color);
     border-radius: 30px;
 }
 
@@ -3181,6 +3249,10 @@ label {
         fill: rgb(195, 211, 101);
     }
 
+    .profile-contact-deets #compact-profile-context-menu {
+        padding-top: 0px;
+    }
+
     .settings {
         padding: 10px;
     }
@@ -3228,6 +3300,13 @@ label {
 
     .suggestion-box {
         background-size: 90%;
+    }
+
+    .changelog-inbox {
+        right: unset;
+        left: -83vw;
+        width: max-content;
+        max-width: 100vw;
     }
 }
 

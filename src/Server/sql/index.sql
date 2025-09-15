@@ -350,6 +350,24 @@ create table doppelganger_answers(
     constraint user_answer foreign key (taker) references users(id) on delete cascade
 );
 
+create table changelogs(
+    id integer generated always as identity primary key,
+    changed integer,
+    description text not null,
+    date timestamptz not null default (utc_now()),
+
+    constraint changes_for foreign key (changed) references users(id) on delete cascade
+);
+
+create table changelog_read(
+    id integer generated always as identity primary key,
+    log integer not null,
+    who integer not null,
+
+    constraint entry_log foreign key (log) references changelogs(id) on delete cascade,
+    constraint entry_log_user foreign key (who) references users(id) on delete cascade
+);
+
 -- when users first edit new field in their profile, place them higher in the suggestions list if have filled 3 or more profile fields
 create or replace function temporarily_place_at_top() returns trigger as
 $$

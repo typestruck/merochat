@@ -58,6 +58,8 @@ template payload = do
                     , showMiniChatInput: false
                     , initialScreen: true
                     , temporaryEmail: Nothing
+                    , changelogs : []
+                    , showChangelogs : false
                     , showCollapsedMiniSuggestions: false
                     , temporaryPassword: Nothing
                     , enableNotificationsVisible: false

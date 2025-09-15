@@ -26,6 +26,7 @@ import Server.Effect (BaseEffect, ServerEffect)
 import Server.Email (Email(..))
 import Server.Email as SE
 import Server.File as SF
+import Server.Im.Database.Changelog as SIDC
 import Server.Im.Database.Execute as SIDE
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
@@ -38,6 +39,7 @@ import Server.ThreeK as ST
 import Server.Wheel as SW
 import Shared.Backer.Contact (backerUser)
 import Shared.Backer.Contact as SBC
+import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Markdown (Token(..))
@@ -100,6 +102,12 @@ processMessage loggedUserId userId content = do
                   pure $ Right (id /\ sanitized)
       else
             pure $ Left UserUnavailable
+
+listChangelogs :: Int -> Maybe Int -> ServerEffect (Array Changelog)
+listChangelogs loggedUserId id = SIDC.listChangelogs loggedUserId id
+
+markRead :: Int -> Array Int -> ServerEffect Unit
+markRead loggedUserId ids = SIDC.markRead loggedUserId ids
 
 editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect {  pool ∷ Pool | r } (Either MessageError String)
 editMessage loggedUserId userId messageId content = do

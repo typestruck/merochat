@@ -26,6 +26,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
+import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
@@ -115,12 +116,12 @@ type Im =
       , temporaryId ∷ Int
       , showBuildProfile :: Boolean
       , freeToFetchChatHistory ∷ Boolean
+      , freeToFetchContactList ∷ Boolean
+      , freeToFetchSuggestions ∷ Boolean
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
-      , freeToFetchContactList ∷ Boolean
       , suggestionsFrom ∷ SuggestionsFrom
       , webSocketMessages ∷ Array WebSocketPayloadServer
-      , freeToFetchSuggestions ∷ Boolean
       , selectedImage ∷ SelectedImage
       , imageCaption ∷ Maybe String
       , messageEnter ∷ Boolean
@@ -129,6 +130,7 @@ type Im =
       , erroredFields ∷ Array String
       , fortune ∷ Maybe String
       , failedRequests ∷ Array RequestFailure
+      , changelogs :: Array Changelog
       , errorMessage ∷ String
       , reportReason ∷ Maybe ReportReason
       , reportComment ∷ Maybe String
@@ -152,6 +154,7 @@ type Im =
       , imUpdated ∷ Boolean
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
+      , showChangelogs :: Boolean
       , toggleContextMenu ∷ ShowContextMenu
       , modal ∷ Modal
       )
@@ -278,6 +281,11 @@ data ImMessage
       | SetTyping String
       | NoTyping Int
       | TypingId TimeoutId
+
+      --changelog
+      | DisplayChangelog (Array Changelog)
+      | FetchChangelog
+      | ToggleChangelog
 
       --main
       | ReloadPage

@@ -16,6 +16,7 @@ import Server.Im.Template as SIT
 import Server.Ok (Ok, ok)
 import Server.Response as SR
 import Shared.Account (EmailPassword)
+import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
 
@@ -51,6 +52,14 @@ deleteChat { guards: { loggedUserId }, body } = do
 subscribe ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
 subscribe { guards } = do
       SIA.subscribe guards.loggedUserId
+      pure ok
+
+changelogs :: { query ∷ { before ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Changelog)
+changelogs request = SIA.listChangelogs request.guards.loggedUserId request.query.before
+
+changelog :: { body ∷ { ids ∷ Array Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+changelog request = do
+      SIA.markRead request.guards.loggedUserId request.body.ids
       pure ok
 
 missedContacts ∷ { query ∷ { since ∷ DateTimeWrapper, last ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Contact)

@@ -61,6 +61,10 @@ handlers reading =
               , missedContacts: runJson reading SIH.missedContacts
               , fortune: runJson reading SFTH.fortune
               , subscribe: runJson reading SIH.subscribe
+              , changelog: {
+                get : runJson reading SIH.changelogs
+                , post : runJson reading SIH.changelog
+              }
               , register: runJson reading SIH.register
               , report: runJson reading SIH.report
               , tutorial: runJson reading SIH.tutorial
