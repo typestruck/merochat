@@ -27,7 +27,6 @@ import Shared.Element (ElementId(..))
 import Shared.Im.EventTypes (modalVisible)
 import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
-import Shared.Resource as SP
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
 
@@ -37,6 +36,7 @@ toggleInitialScreen toggle model =
             { initialScreen = toggle
             , chatting = Nothing
             , modal = HideModal
+            , showChangelogs = model.showChangelogs && toggle
             -- false toggle means we are showing suggestions
             , suggestions = if not toggle then byAvailability model.suggestions else model.suggestions
             } /\ [ updateDraft, updateServiceWorker ]
