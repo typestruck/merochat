@@ -27,10 +27,11 @@ toggleChangelog model =
       if shown then
             model { showChangelogs = true } /\ []
       else
-            model { showChangelogs = false, changelogs = (_ { read = true }) <$> model.changelogs } /\ [readIt]
+            model { showChangelogs = false, changelogs = (_ { read = true }) <$> model.changelogs } /\ [ readIt ]
       where
       shown = not model.showChangelogs
 
       readIt = do
-            void <<< CCN.silentResponse $ request.im.changelog.post { body : { ids : _.id <$> model.changelogs } }
+            let ids = map _.id $ DA.filter (not <<< _.read) model.changelogs
+            unless (DA.null ids) <<< void <<< CCN.silentResponse $ request.im.changelog.post { body: { ids } }
             pure Nothing

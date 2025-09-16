@@ -32,8 +32,6 @@ import Shared.Im.Contact as SIC
 import Shared.Modal.Types (Modal(..))
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
-import Web.HTML as WH
-import Web.HTML.Window as SAD
 import Web.Socket.WebSocket (WebSocket)
 
 -- | When a contact is selected from the list, update `chatting` accordingly
@@ -52,6 +50,7 @@ resumeChat userId model =
                         , selectedImage = Nothing
                         , editing = Nothing
                         , showLargeAvatar = false
+                        , showChangelogs = model.showChangelogs && not model.smallScreen
                         , failedRequests = []
                         } /\
                         ( screenEffects chatting <>
