@@ -2216,6 +2216,31 @@ input:not(type=button):focus {
     margin-bottom: 25px;
 }
 
+.big-card .big-avatar-info {
+    margin-bottom: 0px;
+}
+
+.green-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    width: fit-content;
+}
+
+.regular-green-tab {
+    padding: 0px 15px;
+    color:var(--im-merochat-green);
+}
+
+.selected-green-tab {
+    border-radius: 10px;
+    color:var(--light-color);
+    background: var(--im-merochat-green);
+}
+
 .mini-avatar-info {
     display: flex;
     cursor: pointer;

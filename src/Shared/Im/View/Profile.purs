@@ -219,6 +219,10 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                                     ]
                             ]
                     ]
+            , HE.div [ HA.class' "green-tab" ]
+                    [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": true } ] [ HE.text "Info" ]
+                    , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": false } ] [ HE.text "Posts" ]
+                    ]
             , HE.div_
                     ( [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
                       , HE.hr' [ HA.class' "tag-ruler" ]
@@ -251,8 +255,8 @@ suggestionCards model =
             ]
       where
       allCards
-           | not model.user.temporary && model.showBuildProfile = buildProfile : map card model.suggestions <> moreCards
-           | otherwise = map card model.suggestions <> moreCards
+            | not model.user.temporary && model.showBuildProfile = buildProfile : map card model.suggestions <> moreCards
+            | otherwise = map card model.suggestions <> moreCards
 
       buildProfile =
             let
@@ -278,8 +282,8 @@ suggestionCards model =
                                 , HE.input [ HA.type' "button", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' "green-button bigger build", HA.value "Go to profile" ]
                                 ]
                         ]
-      check p = HE.div [HA.class' "build-checked"] [ SS.checked "", HE.text $ SPC.displayColumn p ]
-      uncheck p = HE.div_ [ HE.text $ "... " <> show p ]
+      check p = HE.div [ HA.class' "build-checked" ] [ SS.checked "", HE.text $ SPC.displayColumn p ]
+      uncheck p = HE.div_ [ HE.text $ "➡ " <> show p ]
 
       moreCards =
             [ HE.div (HA.class' "card card-load-more" : if model.freeToFetchSuggestions then [ HA.onClick FetchMoreSuggestions ] else [])
