@@ -11,6 +11,19 @@
     font-weight: bold;
 }
 
+#settings-edition .modal-section .error-message {
+    visibility: unset;
+    display: none;
+}
+
+#settings-edition .modal-section .errored .error-message {
+    display: block;
+}
+
+#settings-edition .modal-section input.modal-input {
+    margin-bottom: 20px;
+}
+
 @media (max-width:1279px) {
     #settings-edition {
         width: 100%;
