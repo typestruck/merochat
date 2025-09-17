@@ -11,7 +11,6 @@ import Server.Database.LastSeen (_who)
 import Server.Effect (ServerEffect)
 import Shared.Changelog (Changelog)
 
-
 listChangelogs ∷ Int → Maybe Int → ServerEffect (Array Changelog)
 listChangelogs loggedUserId id = do
       SD.unsafeQuery "SELECT c.id id, description, changed, (log IS NOT NULL) AS read FROM changelogs c LEFT JOIN changelog_read ON c.id = log AND who = @loggedUserId WHERE ((changed = @loggedUserId OR changed IS NULL) AND date >= (SELECT joined FROM users WHERE id = @loggedUserId)) ORDER BY date DESC LIMIT 5" { loggedUserId }

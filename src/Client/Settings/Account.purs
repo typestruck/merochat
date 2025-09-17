@@ -35,13 +35,13 @@ update model message =
             ChangePrivacySettings → changePrivacySettings model
             ToggleVisibility modal → setIt (_ { visible = modal == ShowSettings }) model
 
-setIt ∷ (SettingsModel -> SettingsModel) -> SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+setIt ∷ (SettingsModel → SettingsModel) → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 setIt s model = s model /\ []
 
 changePrivacySettings ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 changePrivacySettings model = model /\ [ change ]
       where
-      payload = { profileVisibility: model.profileVisibility, readReceipts: model.readReceipts, typingStatus: model.typingStatus, onlineStatus: model.onlineStatus, messageTimestamps: model.messageTimestamps }
+      payload = { postsVisibility: model.postsVisibility, profileVisibility: model.profileVisibility, readReceipts: model.readReceipts, typingStatus: model.typingStatus, onlineStatus: model.onlineStatus, messageTimestamps: model.messageTimestamps }
       change = do
             status ← CNN.formRequest (show PrivacySettingsId) $ request.settings.account.privacy { body: payload }
             case status of
@@ -59,13 +59,13 @@ showSuccess model = model { hideSuccessMessage = false } /\ [ hide ]
             pure <<< Just <<< SetSField $ _ { hideSuccessMessage = true }
 
 toggleTerminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-toggleTerminateAccount model =  model { confirmTermination = not model.confirmTermination } /\ []
+toggleTerminateAccount model = model { confirmTermination = not model.confirmTermination } /\ []
 
 changeEmail ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-changeEmail model = model /\ [requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email: model.email } }]
+changeEmail model = model /\ [ requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email: model.email } } ]
 
 changePassword ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-changePassword model = model /\  [requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password : model.password } }]
+changePassword model = model /\ [ requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password: model.password } } ]
 
 requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (Maybe SettingsMessage)
 requestAndLogout field aff = do
@@ -75,5 +75,5 @@ requestAndLogout field aff = do
             EC.liftEffect <<< CCL.setLocation $ routes.login.get {}
       pure Nothing
 
-terminateAccount ∷ SettingsModel -> SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-terminateAccount model = model /\ [requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ request.settings.account.terminate { body: {} }]
+terminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+terminateAccount model = model /\ [ requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ request.settings.account.terminate { body: {} } ]

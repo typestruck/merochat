@@ -36,20 +36,22 @@ privacySettings loggedUserId = SSDF.toPrivacySettings <<< SU.fromJust <$>
                             /\ (_readReceipts # as readReceipts)
                             /\ (_typingStatus # as typingStatus)
                             /\ (_onlineStatus # as onlineStatus)
+                            /\ (_postsVisibility # as postsVisibility)
                             /\ (_messageTimestamps # as messageTimestamps)
                     ) # from users # wher (_id .=. loggedUserId)
       )
 
 changePrivacySettings ∷ ∀ r. Int → PrivacySettings → BaseEffect { pool ∷ Pool | r } Unit
-changePrivacySettings loggedUserId { readReceipts, typingStatus, profileVisibility, onlineStatus, messageTimestamps } = do
+changePrivacySettings loggedUserId ps = do
       now ← liftEffect EN.nowDateTime
       SD.execute $ update users
             # set
-                    ( (_visibility .=. profileVisibility)
+                    ( (_visibility .=. ps.profileVisibility)
                             /\ (_visibility_last_updated .=. now)
-                            /\ (_readReceipts .=. Checked readReceipts)
-                            /\ (_typingStatus .=. Checked typingStatus)
-                            /\ (_onlineStatus .=. Checked onlineStatus)
-                            /\ (_messageTimestamps .=. Checked messageTimestamps)
+                            /\ (_readReceipts .=. Checked ps.readReceipts)
+                            /\ (_typingStatus .=. Checked ps.typingStatus)
+                            /\ (_onlineStatus .=. Checked ps.onlineStatus)
+                            /\ (_messageTimestamps .=. Checked ps.messageTimestamps)
+                            /\ (_postsVisibility .=. ps.postsVisibility)
                     )
             # wher (_id .=. loggedUserId)

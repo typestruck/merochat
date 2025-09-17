@@ -30,7 +30,7 @@ import Web.Event.Event as WEE
 
 view ∷ SettingsModel → Html SettingsMessage
 view model =
-      HE.div [ HA.id "settings-edition", HA.class' { hidden: not model.visible } ] [account model]
+      HE.div [ HA.id "settings-edition", HA.class' { hidden: not model.visible } ] [ account model ]
 
 formId ∷ ∀ field. IsSymbol field ⇒ Proxy field → String
 formId field = TDS.reflectSymbol field <> "-form"
@@ -77,6 +77,21 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                     , HE.text "profile or send you messages"
                     ]
             , HE.div [ HA.class' { duller: true, hidden: profileVisibility /= Nobody } ] [ HE.text "No one can see your profile or message you" ]
+
+            , HE.label_ [ HE.text "Posts visibility" ]
+            , HE.select [ HA.class' "modal-input", HA.onInput (\v → SetSField (_ { postsVisibility = SU.fromJust (DE.toEnum =<< DI.fromString v) })) ]
+                    [ HE.option [ HA.selected $ model.postsVisibility == Everyone, HA.value <<< show $ DE.fromEnum Everyone ] [ HE.text "Show posts (default)" ]
+                    , HE.option [ HA.selected $ model.postsVisibility == NoTemporaryUsers, HA.value <<< show $ DE.fromEnum NoTemporaryUsers ] [ HE.text "Show posts only to registered users" ]
+                    , HE.option [ HA.selected $ model.postsVisibility == Contacts, HA.value <<< show $ DE.fromEnum Contacts ] [ HE.text "Show posts only to contacts" ]
+                    , HE.option [ HA.selected $ model.postsVisibility == Nobody, HA.value <<< show $ DE.fromEnum Nobody ] [ HE.text "Do not show posts" ]
+                    ]
+            , HE.div [ HA.class' "duller" ] $ case model.postsVisibility of
+                    Everyone → [ HE.text "All users can see your posts" ]
+                    NoTemporaryUsers → [ HE.text "All users (excluding quick sign up users) can see your posts" ]
+                    Contacts → [ HE.text "Only users you have previously messaged can see your posts" ]
+                    Nobody → [ HE.text "No one can see your profile or message you" ]
+                    TemporarilyBanned -> []
+
             , HE.label_ [ HE.text "Chat display settings" ]
             , HE.div_
                     [ HE.input [ HA.id "read-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked readReceipts, HA.onChange (SetSField (_ { readReceipts = not readReceipts })) ]

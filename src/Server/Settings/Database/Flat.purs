@@ -11,6 +11,7 @@ toPrivacySettings ∷
       , profileVisibility ∷ ProfileVisibility
       , onlineStatus ∷ Checked
       , messageTimestamps ∷ Checked
+      , postsVisibility ∷ ProfileVisibility
       } →
       PrivacySettings
 toPrivacySettings p = SC.coerce p

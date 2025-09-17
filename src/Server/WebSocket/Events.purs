@@ -225,6 +225,7 @@ sendBan allUsersAvailability userId = do
             , onlineStatus: true
             , readReceipts: true
             , typingStatus: true
+            , postsVisibility : TemporarilyBanned
             , profileVisibility: TemporarilyBanned
             }
       withConnections userAvailability send

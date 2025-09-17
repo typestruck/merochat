@@ -34,6 +34,7 @@ create table users
     read_receipts boolean not null default true,
     typing_status boolean not null default true,
     online_status boolean not null default true,
+    posts_visibility smallint not null default 0,
     message_timestamps boolean not null default true,
     completed_tutorial boolean not null default false,
     temporary boolean not null default false,

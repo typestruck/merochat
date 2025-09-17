@@ -31,10 +31,10 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_temporary, users)
 import Server.File (imageTooBigMessage, invalidImageMessage)
 import Server.Im.Action as SIA
-import Server.Im.Database.Suggest as SID
 import Server.Im.Database.Execute as SID
 import Server.Im.Database.Permission as SID
 import Server.Im.Database.Present as SID
+import Server.Im.Database.Suggest as SID
 import Server.Landing.Database as SLD
 import Server.Settings.Action as SSA
 import Shared.Privilege (Privilege(..))
@@ -67,7 +67,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: Nobody, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId { postsVisibility: Nobody, profileVisibility: Nobody, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           suggestions ← SIA.suggest userId 0 ThisWeek
                           R.liftAff $ TUA.equal [] suggestions
 
@@ -75,7 +75,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId { postsVisibility: Nobody, profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           suggestions ← SIA.suggest userId 0 ThisWeek
                           R.liftAff $ TUA.equal [] suggestions
 
@@ -84,7 +84,7 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. anotherUserId)
-                          SSA.changePrivacySettings userId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings userId { postsVisibility: Nobody, profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           suggestions ← SIA.suggest userId 0 ThisWeek
                           R.liftAff $ TUA.equal [] suggestions
 
@@ -93,7 +93,7 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. userId)
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId {postsVisibility : Nobody, profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           suggestions ← SIA.suggest userId 0 ThisWeek
                           R.liftAff $ TUA.equal [] suggestions
 
@@ -455,7 +455,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: Nobody, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId { postsVisibility: Nobody, profileVisibility: Nobody, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId $ Text "oi"
                           R.liftAff $ TUA.equal (Left UserUnavailable) processed
 
@@ -471,7 +471,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId {postsVisibility: Nobody,  profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId $ Text "oi"
                           R.liftAff $ TUA.equal (Left UserUnavailable) processed
 
@@ -480,7 +480,7 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           SD.execute $ update users # set (_temporary .=. Checked true) # wher (_id .=. userId)
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId { postsVisibility: Nobody, profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId $ Text "oi"
                           R.liftAff $ TUA.equal (Left UserUnavailable) processed
 
@@ -488,7 +488,7 @@ tests = do
                   $ TS.serverAction
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId { postsVisibility: Nobody, profileVisibility: NoTemporaryUsers, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId $ Text "oi"
                           R.liftAff <<< TUA.assert "is right" $ DE.isRight processed
 
@@ -497,7 +497,7 @@ tests = do
                   $ do
                           Tuple userId anotherUserId ← setUpUsers
                           void <<< SIA.processMessage userId anotherUserId $ Text "oi"
-                          SSA.changePrivacySettings anotherUserId { profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
+                          SSA.changePrivacySettings anotherUserId { postsVisibility: Nobody, profileVisibility: Contacts, onlineStatus: true, typingStatus: true, messageTimestamps: true, readReceipts: true }
                           processed ← SIA.processMessage userId anotherUserId $ Text "ola"
                           R.liftAff <<< TUA.assert "is right" $ DE.isRight processed
       where
