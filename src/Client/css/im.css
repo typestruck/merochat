@@ -2232,12 +2232,12 @@ input:not(type=button):focus {
 
 .regular-green-tab {
     padding: 0px 15px;
-    color:var(--im-merochat-green);
+    color: var(--im-merochat-green);
 }
 
 .selected-green-tab {
     border-radius: 10px;
-    color:var(--light-color);
+    color: var(--light-color);
     background: var(--im-merochat-green);
 }
 
@@ -2832,7 +2832,6 @@ label {
     .side-suggestions-container,
     .logo-contact-list,
     .fortune,
-    .see-profile-button.see-profile,
     .message-context-options {
         display: none;
         content-visibility: hidden;
@@ -3140,13 +3139,14 @@ label {
         border: none;
         border-bottom: 1px solid var(--text-color);
         width: auto;
-        height: auto;
+        height: 70%;
         margin-bottom: 0;
         padding: 40px 20px;
     }
 
     .build-profile {
         width: auto;
+        height: auto;
         max-width: 100%;
     }
 
@@ -3167,9 +3167,12 @@ label {
         border-color: var(--light-color);
     }
 
-    .rest-card,
     .contact-full-profile .card-description {
         overflow-y: visible;
+    }
+
+    .contact-full-profile .card-description {
+        margin-bottom: 15px;
     }
 
     .contact-full-profile {
@@ -3180,11 +3183,6 @@ label {
         border-bottom: none;
         background: var(--im-background-color);
         color: var(--text-color)
-    }
-
-    .see-profile-chat {
-        position: static;
-        justify-content: center;
     }
 
     .contact-full-profile {
@@ -3332,6 +3330,41 @@ label {
         left: -81vw;
         width: max-content;
         max-width: 86vw;
+    }
+
+    .big-card {
+        width: auto;
+        border-radius: 0;
+        height: 100%;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    .big-suggestion-avatar {
+        width: 102px;
+        height: 102px;
+    }
+
+    .close-cards {
+        display: none;
+    }
+
+    .big-card .auto-left {
+        flex-grow: 2;
+    }
+
+    .big-suggestion-info {
+        font-size: 0.9em;
+    }
+
+    .full {
+        width: 100%;
+        text-align: center;
+        align-items: center;
+    }
+
+    .big-card .green-tab {
+        margin-top:15px
     }
 }
 

@@ -193,12 +193,12 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
       else
             [ HE.div [ HA.class' "avatar-info" ]
                     [ HE.div [ HA.class' "big-avatar-info" ]
-                            [ HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]
-                            , HE.div [ HA.class' "big-suggestion-info" ]
+                            [HE.div [HA.class' "full"] [HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]]
+                            , HE.div [ HA.class' "big-suggestion-info full" ]
                                     ( HE.strong [ HA.class' "big-card-name" ] [ HE.text suggestion.name ]
                                             : badges suggestion.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user suggestion ]
                                     )
-                            , HE.div [ HA.class' "big-suggestion-info auto-left" ]
+                            , HE.div [ HA.class' "big-suggestion-info auto-left order-2" ]
                                     ( [ HE.div_ $
                                               if suggestion.temporary then
                                                     temporary
@@ -212,7 +212,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                                             <> speaks suggestion
 
                                     )
-                            , HE.div [ HA.class' "outer-user-menu" ] [ SIA.contextMenu $ show FullProfileContextMenu ]
+                            , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIA.contextMenu $ show FullProfileContextMenu ]
                             , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion.id false
                             , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ]
                                     [ SIA.closeX []
@@ -332,9 +332,7 @@ suggestionCards model =
                                 , HE.input ([ HA.class' "see-profile-button see-chat", HA.type' "button" ] <> (if suggestion.id == backerId then [ HA.value "Donate", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] else [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]))
                                 ]
                   ]
-      showProfile id
-            | model.smallScreen = []
-            | otherwise = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard id ]
+      showProfile id = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard id ]
 
 arrow ∷ Html ImMessage → Boolean → ImMessage → Html ImMessage
 arrow svg freeTo message = HE.div (HA.class' "suggestion-arrow" : if freeTo then [ HA.onClick message ] else []) [ svg ]
