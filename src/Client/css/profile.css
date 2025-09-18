@@ -55,26 +55,8 @@
     width: 47em;
 }
 
-.profile-mode-selected {
-    font-weight: 900;
-    color: var(--im-merochat-green);
-}
-
 .profile-edition .request-error-message {
     padding: 0 10px;
-}
-
-.profile-section.tabbed {
-    flex-direction: row;
-    justify-content: center;
-    position: sticky;
-    top:0;
-    background-color: var(--im-background-color);
-    align-items: center;
-}
-
-.c {
-    cursor: pointer;
 }
 
 .avatar-profile-edition {

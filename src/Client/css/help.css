@@ -6,11 +6,13 @@
     display: none !important;
 }
 
-.help, .terms {
+.help,
+.terms {
     margin: 30px 0;
 }
 
-#internal-help h1, .help h1 {
+#internal-help h1,
+.help h1 {
     font-family: var(--heading-font);
     font-size: 1.7em;
     margin-bottom: 50px;
@@ -29,7 +31,8 @@ p {
     margin-top: 0;
 }
 
-.help p a, .internalHelp p a {
+.help p a,
+.internalHelp p a {
     font-weight: bold;
 }
 
@@ -62,12 +65,15 @@ ul li a {
 }
 
 
-.help p a:hover, .help ul li a, .internalHelp p a:hover,
+.help p a:hover,
+.help ul li a,
+.internalHelp p a:hover,
 .internalHelp ul li a {
     font-weight: bold;
 }
 
-.help ul li a:hover, .internalHelp ul li a:hover {
+.help ul li a:hover,
+.internalHelp ul li a:hover {
     color: var(--merochat-red);
 }
 
@@ -94,7 +100,7 @@ ul li {
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
     background: var(--merochat-red);
-    color:var(--background-color);
+    color: var(--background-color);
 }
 
 .external-help .modal-menu {
@@ -108,9 +114,16 @@ ul li {
     border-right: 1px solid var(--im-second-background-color);
 }
 
-.external-help .help, .external-help .terms, .external-help .faq .bulleted:first-of-type, .no-padding {
+.external-help .help,
+.external-help .terms,
+.external-help .faq .bulleted:first-of-type,
+.no-padding {
     margin-top: 0;
     padding-top: 0;
+}
+
+#internal-help .help {
+    margin: 0 15px;
 }
 
 @media (max-width:1279px) {
@@ -119,7 +132,7 @@ ul li {
         max-width: 100%;
         width: auto;
         padding: 10px;
-        margin:5px auto;
+        margin: 5px auto;
     }
 
     .external-help .modal-menu {

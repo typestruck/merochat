@@ -22,10 +22,9 @@ view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: {
                                     , HE.div [ HA.class' "duller" ] [ HE.text "Your karma ranking" ]
                                     ]
                             , HE.div [ HA.class' "margin-m" ]
-                                    [ HE.div [ HA.class' "center" ]
-                                            [ HE.span [ HA.class' { "place-link": true, "selected": toggleBoard == InBetween10 }, HA.onClick $ ToggleBoardDisplay InBetween10 ] [ HE.text "Your position" ]
-                                            , HE.span [ HA.class' "separator duller" ] [ HE.text "•" ]
-                                            , HE.span [ HA.class' { "place-link": true, "selected": toggleBoard == Top10 }, HA.onClick $ ToggleBoardDisplay Top10 ] [ HE.text "Top 10" ]
+                                    [ HE.div [ HA.class' "green-tab" ]
+                                            [ HE.span [ HA.class' { "regular-green-tab": true, "selected-green-tab": toggleBoard == InBetween10 }, HA.onClick $ ToggleBoardDisplay InBetween10 ] [ HE.text "Your position" ]
+                                            , HE.span [ HA.class' { "regular-green-tab": true, "selected-green-tab": toggleBoard == Top10 }, HA.onClick $ ToggleBoardDisplay Top10 ] [ HE.text "Top 10" ]
                                             ]
                                     , HE.div [ HA.class' { "hidden": toggleBoard == InBetween10 } ] $ DA.mapWithIndex leaderboardEntry top10
                                     , HE.div [ HA.class' { "hidden": toggleBoard == Top10 } ] $ DA.mapWithIndex leaderboardEntry inBetween10

@@ -2224,10 +2224,10 @@ input:not(type=button):focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
     align-self: center;
     margin-top: 5px;
     margin-bottom: 20px;
-    width: fit-content;
 }
 
 .regular-green-tab {

@@ -39,10 +39,9 @@ import Web.Event.Event as WEE
 view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div [HA.id $ show ProfileEditionForm]
       [ HE.div [ HA.class' { "profile-edition": true, hidden: not model.visible } ]
-              [ HE.div [HA.class' "profile-section tabbed"]
-                      [ HE.div [ HA.class' { c: true, "profile-mode-selected": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [HE.text "Edit"]
-                      , HE.div [HA.class' "separator duller"] [HE.text "•"]
-                      , HE.div [ HA.class' { c: true, "profile-mode-selected": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [HE.text "Preview"]
+              [ HE.div [HA.class' "green-tab"]
+                      [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [HE.text "Edit"]
+                      , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [HE.text "Preview"]
                       ]
               , HE.fragment $ if model.mode == Edit then edit model else preview model
               ]
