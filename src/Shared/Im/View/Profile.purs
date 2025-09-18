@@ -35,7 +35,6 @@ import Shared.Im.View.Retry as SIVR
 import Shared.Intl as SI
 import Shared.Markdown as SM
 import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
-import Shared.Options.Profile (headlineMaxCharacters, nameMaxCharacters)
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.ProfileColumn (ProfileColumn(..))
@@ -191,9 +190,15 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                     ]
             ]
       else
-            [ HE.div [ HA.class' "avatar-info" ]
+            [ HE.div [ HA.class' "back-filter" ]
+                    [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ] ]
+            , HE.div [HA.class' "suggestion-arrow-mobile"]
+                    [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
+                    , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
+                    ]
+            , HE.div [ HA.class' "avatar-info" ]
                     [ HE.div [ HA.class' "big-avatar-info" ]
-                            [HE.div [HA.class' "full"] [HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]]
+                            [ HE.div [ HA.class' "full" ] [ HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ] ]
                             , HE.div [ HA.class' "big-suggestion-info full" ]
                                     ( HE.strong [ HA.class' "big-card-name" ] [ HE.text suggestion.name ]
                                             : badges suggestion.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user suggestion ]
@@ -228,7 +233,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                       , HE.hr' [ HA.class' "tag-ruler" ]
                       ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
                     )
-            , arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
+
             , HE.div [ HA.class' "card-description" ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                     , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
@@ -240,8 +245,6 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                           else
                                 [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model
                                 ]
-
-            , arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
             ]
       where
       backingCall = suggestion.id == backerId
@@ -334,8 +337,8 @@ suggestionCards model =
                   ]
       showProfile id = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard id ]
 
-arrow ∷ Html ImMessage → Boolean → ImMessage → Html ImMessage
-arrow svg freeTo message = HE.div (HA.class' "suggestion-arrow" : if freeTo then [ HA.onClick message ] else []) [ svg ]
+arrow ∷ Html ImMessage → Boolean → Array String → ImMessage → Html ImMessage
+arrow svg freeTo extraClasses message = HE.div (HA.class' ("suggestion-arrow" : extraClasses) : if freeTo then [ HA.onClick message ] else []) [ svg ]
 
 genderAge ∷ Suggestion → Array (Html ImMessage)
 genderAge suggestion =
@@ -461,7 +464,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                   , seeAllSuggestions
                   , HE.div [ HA.class' "mini-suggestion-cards" ]
                           [ HE.div [ HA.class' "mini-avatar-info-arrows" ]
-                                  [ arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
+                                  [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
                                   , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div [ HA.class' "mini-suggestion-info" ]
@@ -473,7 +476,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                                                           <> onlineStatus model.user suggestion
                                                   )
                                           ]
-                                  , arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
+                                  , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
                                   ]
                           , HE.div [ HA.class' "mini-name-options" ]
                                   [ HE.strong_ [ HE.text suggestion.name ]
@@ -506,7 +509,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                   , seeAllSuggestions
                   , HE.div [ HA.class' "mini-suggestion-cards collapsed" ]
                           [ HE.div [ HA.class' "mini-avatar-info-arrows" ]
-                                  [ arrow backArrow model.freeToFetchSuggestions $ SpecialRequest PreviousSuggestion
+                                  [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
                                   , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
                                           [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
                                           , HE.div [ HA.class' "mini-suggestion-info" ]
@@ -515,7 +518,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                                                     ] <> onlineStatus model.user suggestion
                                                   )
                                           ]
-                                  , arrow nextArrow model.freeToFetchSuggestions $ SpecialRequest NextSuggestion
+                                  , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
                                   ]
                           ]
                   ]

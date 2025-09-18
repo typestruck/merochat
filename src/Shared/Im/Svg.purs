@@ -11,8 +11,7 @@ import Flame.Types (NodeData)
 
 arrow ∷ Array (NodeData ImMessage) → Html ImMessage
 arrow attrs = HE.svg (HA.viewBox "0 0 16 16" : attrs)
-      [ HE.line' [ HA.strokeWidth "1.5px", HA.x1 "15.98", HA.y1 "8", HA.x2 "1.61", HA.y2 "8" ]
-      , HE.polygon' [ HA.points "6.43 2.05 7.42 3.12 2.17 8 7.42 12.88 6.43 13.95 0.03 8 6.43 2.05" ]
+      [ HE.polygon' [ HA.points "6.43 2.05 7.42 3.12 2.17 8 7.42 12.88 6.43 13.95 0.03 8 6.43 2.05" ]
       ]
 
 home ∷ Html ImMessage

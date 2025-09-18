@@ -2005,10 +2005,10 @@ input:not(type=button):focus {
 }
 
 .big-card .suggestion-arrow {
-    margin-left: -67px
+    margin-left: -57px
 }
 
-.big-card .suggestion-arrow:last-child {
+.big-card .suggestion-arrow.next-arrow {
     margin-left: -21px
 }
 
@@ -2039,7 +2039,7 @@ input:not(type=button):focus {
     fill: var(--im-merochat-green);
 }
 
-.suggestion-arrow:last-child {
+.suggestion-arrow.next-arrow {
     left: 100%;
 }
 
@@ -3337,7 +3337,11 @@ label {
         border-radius: 0;
         height: 100%;
         overflow-y: auto;
-        padding: 15px;
+        padding:0 15px;
+    }
+
+    .big-card .card-description {
+        overflow-y: unset;
     }
 
     .big-suggestion-avatar {
@@ -3364,7 +3368,46 @@ label {
     }
 
     .big-card .green-tab {
-        margin-top:15px
+        margin-top: 15px
+    }
+
+    .big-card .suggestion-arrow-mobile {
+        position: sticky;
+        top: 50px;
+        display: flex;
+        margin-top: 30px;
+        justify-content: space-between;
+    }
+
+    .big-card .suggestion-arrow.next-arrow,
+    .big-card .suggestion-arrow {
+        margin: 0;
+        position: unset;
+    }
+
+    .big-card .back-filter {
+        position: sticky;
+        top: 0;
+        z-index: 12;
+        background: var(--im-background-color);
+    }
+
+    .big-card {
+        padding-top: 0;
+    }
+
+    .big-suggestion-info.full {
+        margin-bottom: 10px;
+    }
+
+    .big-card .big-avatar-info {
+        margin-top: -71px
+    }
+
+    .big-card .see-profile-chat {
+        bottom:0;
+        background: var(--im-background-color);
+        position: sticky;
     }
 }
 
