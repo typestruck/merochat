@@ -119,6 +119,8 @@ batman =
       , karmaPosition: 342
       , gender: Just $ show Male
       , backer: false
+      , posts : []
+      , showing: ShowInfo
       , privileges: []
       , bin: 1
       , badges: []
@@ -138,9 +140,11 @@ socrates =
       , headline: "I know that I know nothing"
       , profileVisibility: Everyone
       , bin: 1
+      , showing: ShowInfo
       , availability: None
       , readReceipts: true
       , completedFields : []
+      , posts : []
       , backer: false
       , privileges: []
       , badges: []
@@ -173,9 +177,11 @@ nicolasCage =
       , headline: "I think I jump around more when I'm alone"
       , profileVisibility: Everyone
       , readReceipts: true
+      , showing: ShowInfo
       , backer: false
       , messageTimestamps: true
       , completedTutorial: true
+      , posts : []
       , privileges: []
       , badges: []
       , bin: 1

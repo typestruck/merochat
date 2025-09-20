@@ -115,7 +115,7 @@ textarea {
 
 .big-card {
     background-color: var(--im-background-color);
-    height: 80%;
+    height: 88%;
     width: 950px;
     padding: 40px;
     display: flex;
@@ -2005,7 +2005,7 @@ input:not(type=button):focus {
 }
 
 .big-card .suggestion-arrow {
-    margin-left: -57px
+    margin-left: -67px
 }
 
 .big-card .suggestion-arrow.next-arrow {
@@ -2706,6 +2706,46 @@ label {
     font-weight: bold;
 }
 
+.big-call .loading {
+    align-self: center;
+}
+
+.posts {
+    display: flex;
+    overflow-y: scroll;
+    flex-direction: column;
+}
+
+.post-list {
+    display: flex;
+    flex-direction: column;
+    padding-right: 55px;
+    padding-left: 20px;
+}
+
+.post-content {
+    padding-top: 5px;
+}
+
+.post-header-separator {
+    padding: 0 5px;
+}
+
+.post-content a {
+    color: var(--im-merochat-green);
+    text-decoration: underline;
+}
+
+.post-header {
+    display: flex;
+    font-size: 0.95em;
+}
+
+.post-entry {
+    margin: 15px 0;
+    border-bottom: 1px dotted var(--light-color);
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;
@@ -2740,6 +2780,14 @@ label {
 
     .audio-button {
         display: block;
+    }
+
+    .posts {
+        overflow-y: unset;
+    }
+
+    .post-list {
+        padding: 0;
     }
 
     .sign-up-call {
@@ -3337,7 +3385,7 @@ label {
         border-radius: 0;
         height: 100%;
         overflow-y: auto;
-        padding:0 15px;
+        padding: 0 15px;
     }
 
     .big-card .card-description {
@@ -3405,7 +3453,7 @@ label {
     }
 
     .big-card .see-profile-chat {
-        bottom:0;
+        bottom: 0;
         background: var(--im-background-color);
         position: sticky;
     }

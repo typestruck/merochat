@@ -14,6 +14,7 @@ import Shared.Account (EmailCaptcha, EmailPasswordCaptcha, RegisterTemporary, Re
 import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper, DateWrapper)
 import Shared.Html (Html)
+import Shared.Post (Post)
 import Shared.Profile.Types (SavedFields)
 import Shared.Settings.Types (PrivacySettings)
 
@@ -61,6 +62,15 @@ spec ∷
                                                 , response ∷ Ok
                                                 }
                                   }
+                    , posts ∷
+                            Routes "/posts"
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
+                                  , get ∷
+                                          GET "/?poster=<poster>"
+                                                { query ∷ { poster ∷ Int }
+                                                , response ∷ Array Post
+                                                }
+                                  }
                     , im ∷
                             Routes "/im"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
@@ -89,7 +99,8 @@ spec ∷
                                                               { query ∷ { before ∷ Maybe Int }
                                                               , response ∷ Array Changelog
                                                               }
-                                                , post :: POST "/"
+                                                , post ∷
+                                                        POST "/"
                                                               { body ∷ { ids ∷ Array Int }
                                                               , response ∷ Ok
                                                               }

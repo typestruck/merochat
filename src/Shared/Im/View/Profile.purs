@@ -31,6 +31,7 @@ import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, home, nextArrow)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.ChatInput as SIVC
+import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Retry as SIVR
 import Shared.Intl as SI
 import Shared.Markdown as SM
@@ -192,7 +193,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
       else
             [ HE.div [ HA.class' "back-filter" ]
                     [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ] ]
-            , HE.div [HA.class' "suggestion-arrow-mobile"]
+            , HE.div [ HA.class' "suggestion-arrow-mobile" ]
                     [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
                     , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
                     ]
@@ -224,19 +225,30 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                                     ]
                             ]
                     ]
+
             , HE.div [ HA.class' "green-tab" ]
-                    [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": true } ] [ HE.text "Info" ]
-                    , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": false } ] [ HE.text "Posts" ]
+                    [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
+                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
                     ]
-            , HE.div_
+
+            , HE.div [ HA.class' { hidden: suggestion.showing == ShowPosts } ]
                     ( [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
                       , HE.hr' [ HA.class' "tag-ruler" ]
                       ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
                     )
-
-            , HE.div [ HA.class' "card-description" ]
+            , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing == ShowPosts } ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                     , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                    ]
+
+            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing == ShowInfo } ]
+                    [ SIVR.retry "Failed to load posts" FetchPosts model.failedRequests
+                    , if model.freeToFetchPosts && DA.null suggestion.posts then
+                            HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
+                      else if model.freeToFetchPosts then
+                            HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
+                      else
+                            HE.div' [ HA.class' "loading" ]
                     ]
 
             , HE.div [ HA.class' "see-profile-chat suggestion-input" ]

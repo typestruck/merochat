@@ -28,13 +28,14 @@ import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper)
+import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
-import Shared.User (IU)
+import Shared.User (IU, ProfilePost(..))
 import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
@@ -118,6 +119,7 @@ type Im =
       , freeToFetchChatHistory ∷ Boolean
       , freeToFetchContactList ∷ Boolean
       , freeToFetchSuggestions ∷ Boolean
+      , freeToFetchPosts :: Boolean
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
       , suggestionsFrom ∷ SuggestionsFrom
@@ -211,6 +213,7 @@ data RetryableRequest
       = FetchHistory Int Boolean
       | FetchContacts Boolean
       | FetchMissedContacts
+      | FetchPosts
       | ToggleModal Modal
       | BlockUser Int
       | PreviousSuggestion
@@ -253,6 +256,7 @@ data ImMessage
       | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
+      | ToggleShowing Int ProfilePost
       | ToggleSuggestionsFromOnline
       | ToggleSuggestionChatInput Int
 
@@ -286,6 +290,9 @@ data ImMessage
       | DisplayChangelog (Array Changelog)
       | FetchChangelog
       | ToggleChangelog
+
+      --posts
+      | DisplayPosts Int (Array Post)
 
       --main
       | ReloadPage

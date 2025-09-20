@@ -20,6 +20,7 @@ import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.History as CIH
 import Client.Im.ModalsMenu as CIU
 import Client.Im.Notification as CIN
+import Client.Im.Posts as CIPS
 import Client.Im.Pwa as CIP
 import Client.Im.SmallScreen as CISS
 import Client.Im.Suggestion as CIS
@@ -165,6 +166,10 @@ update st model =
             SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
             DisplayHistory userId history → CIH.displayHistory userId history model
 
+            --posts
+            DisplayPosts userId posts -> CIPS.displayPosts userId posts model
+            (SpecialRequest FetchPosts) -> model /\ []
+
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
             ResumeSuggesting → CIS.resumeSuggesting model
@@ -172,6 +177,7 @@ update st model =
             ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
+            ToggleShowing userId toggle -> CIS.toggleShowingSuggestion userId toggle model
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model

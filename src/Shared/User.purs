@@ -31,6 +31,7 @@ import Payload.Server.DecodeBody (class DecodeBody)
 import Shared.Availability (Availability)
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.Unsafe as SU
@@ -59,6 +60,8 @@ type IU =
               , age ∷ Maybe Int
               , readReceipts ∷ Boolean
               , typingStatus ∷ Boolean
+              , posts :: Array Post
+              , showing :: ProfilePost
               , profileVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
               , temporary ∷ Boolean
@@ -70,6 +73,8 @@ type IU =
               , privileges ∷ Array Privilege
               )
       )
+
+data ProfilePost = ShowInfo | ShowPosts
 
 data ReceiveEmail = AllEmails | UnreadMessageEmails | NoEmails
 
@@ -88,9 +93,13 @@ data ProfileVisibility
 
 derive instance Eq ReceiveEmail
 derive instance Eq ProfileVisibility
+derive instance Eq ProfilePost
 derive instance Eq Gender
 
 instance DecodeJson ReceiveEmail where
+      decodeJson = DADGR.genericDecodeJson
+
+instance DecodeJson ProfilePost where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Gender where
@@ -100,6 +109,9 @@ instance DecodeJson ProfileVisibility where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson ReceiveEmail where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson ProfilePost where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson Gender where
@@ -118,6 +130,9 @@ instance Show Gender where
 instance Show ProfileVisibility where
       show = DSG.genericShow
 
+instance Show ProfilePost where
+      show = DSG.genericShow
+
 instance ReadForeign Gender where
       readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
 
@@ -127,14 +142,21 @@ instance ReadForeign ReceiveEmail where
 instance ReadForeign ProfileVisibility where
       readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
 
+instance ReadForeign ProfilePost where
+      readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
+
 derive instance Generic ReceiveEmail _
 derive instance Generic Gender _
+derive instance Generic ProfilePost _
 derive instance Generic ProfileVisibility _
 
 instance WriteForeign Gender where
       writeImpl gender = F.unsafeToForeign $ show gender
 
 instance WriteForeign ReceiveEmail where
+      writeImpl = F.unsafeToForeign <<< DE.fromEnum
+
+instance WriteForeign ProfilePost where
       writeImpl = F.unsafeToForeign <<< DE.fromEnum
 
 instance WriteForeign ProfileVisibility where
@@ -148,6 +170,7 @@ instance ToValue Gender where
 
 derive instance Ord ReceiveEmail
 derive instance Ord Gender
+derive instance Ord ProfilePost
 derive instance Ord ProfileVisibility
 
 --refactor: should just use Enum (have to fix read/writeforeign instances for gender)
@@ -163,6 +186,21 @@ instance Read Gender where
 instance Bounded Gender where
       bottom = Female
       top = Other
+
+instance Bounded ProfilePost where
+      bottom = ShowInfo
+      top = ShowPosts
+
+instance BoundedEnum ProfilePost where
+      cardinality = Cardinality 1
+      fromEnum = case _ of
+            ShowInfo → 0
+            ShowPosts → 1
+
+      toEnum = case _ of
+            0 → Just ShowInfo
+            1 → Just ShowPosts
+            _ → Nothing
 
 instance BoundedEnum Gender where
       cardinality = Cardinality 1
@@ -192,6 +230,14 @@ instance Enum Gender where
             Male → Just Female
             NonBinary → Just Male
             Other → Just NonBinary
+
+instance Enum ProfilePost where
+      succ = case _ of
+            ShowInfo → Just ShowPosts
+            ShowPosts → Nothing
+      pred = case _ of
+            ShowInfo → Nothing
+            ShowPosts → Just ShowInfo
 
 instance Bounded ProfileVisibility where
       bottom = Everyone

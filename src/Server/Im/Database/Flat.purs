@@ -80,6 +80,8 @@ fromFlatUser fc =
       { id: fc.id
       , name: fc.name
       , headline: fc.headline
+      , posts : []
+      , showing : ShowInfo
       , bin: fc.bin
       , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility

@@ -21,9 +21,10 @@ import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
-import Shared.Modal.Types (Modal(..))
+import Shared.Modal.Types (Modal(..), ScreenModal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
+import Shared.User (ProfilePost(..))
 import Web.DOM.Element as WDE
 
 -- | Display next suggestion card
@@ -171,3 +172,17 @@ toggleSuggestionsFromOnline model = fetchMoreSuggestions model
       { suggestionsFrom = if model.suggestionsFrom == OnlineOnly then ThisWeek else OnlineOnly
       , suggestionsPage = 0
       }
+
+toggleShowingSuggestion ∷ Int → ProfilePost → ImModel → MoreMessages
+toggleShowingSuggestion userId toggle model = model { suggestions = map update model.suggestions, freeToFetchPosts = not shouldFetch } /\ effects
+      where
+      found = DA.find ((_ == userId) <<< _.id) model.suggestions
+      shouldFetch = toggle == ShowPosts && Just ShowInfo == ( _.showing <$> found) && Just 0 == (DA.length <<< _.posts  <$> found)
+
+      update suggestion
+            | suggestion.id == userId = suggestion { showing = toggle }
+            | otherwise = suggestion
+
+      effects
+            | shouldFetch = [ CCN.retryableResponse FetchPosts (DisplayPosts userId) $ request.posts.get { query: { poster: userId } } ]
+            | otherwise = []

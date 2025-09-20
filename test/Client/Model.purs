@@ -15,7 +15,7 @@ import Effect.Unsafe as EU
 import Safe.Coerce as SC
 import Shared.Element (ElementId)
 import Shared.Im.Contact as SIC
-import Shared.Modal.Types (Modal(..))
+import Shared.Modal.Types (Modal(..), ScreenModal(..))
 import Unsafe.Coerce as UC
 import Web.DOM (Element)
 import Web.Socket.WebSocket (WebSocket)
@@ -27,15 +27,16 @@ run m f = do
 
 model ∷ ImModel
 model =
-      {  freeToFetchSuggestions: true
+      { freeToFetchSuggestions: true
       , typingIds: []
-      , showBuildProfile : true
-      , showChangelogs : false
+      , freeToFetchPosts: true
+      , showBuildProfile: true
+      , showChangelogs: false
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
       , showSuggestionChatInput: Nothing
-      , changelogs : []
+      , changelogs: []
       , showCollapsedMiniSuggestions: false
       , modalsLoaded: []
       , showMiniChatInput: false
@@ -82,9 +83,11 @@ imUser =
       , age: Nothing
       , name: "test"
       , id: imUserId
+      , showing: ShowInfo
       , profileVisibility: Everyone
       , backer: false
-      , completedFields : []
+      , posts: []
+      , completedFields: []
       , readReceipts: true
       , messageTimestamps: true
       , joined: DateTimeWrapper epoch

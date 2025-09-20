@@ -36,6 +36,7 @@ import Server.Logout as SL
 import Server.Logout.Handler as SLOH
 import Server.NotFound.Handler as SNH
 import Server.Ok (Ok, ok)
+import Server.Posts.Handler as SPSH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
@@ -50,6 +51,9 @@ handlers reading =
       , register: runJson reading SLH.register
       , temporary: runJson reading SLH.temporary
       , unsubscribe: runHtml reading SUH.unsubscribe
+      , posts:
+              { get: runJson reading SPSH.posts
+              }
       , im:
               { get: runHtml reading SIH.im
               , contacts: runJson reading SIH.contacts
@@ -61,10 +65,10 @@ handlers reading =
               , missedContacts: runJson reading SIH.missedContacts
               , fortune: runJson reading SFTH.fortune
               , subscribe: runJson reading SIH.subscribe
-              , changelog: {
-                get : runJson reading SIH.changelogs
-                , post : runJson reading SIH.changelog
-              }
+              , changelog:
+                      { get: runJson reading SIH.changelogs
+                      , post: runJson reading SIH.changelog
+                      }
               , register: runJson reading SIH.register
               , report: runJson reading SIH.report
               , tutorial: runJson reading SIH.tutorial

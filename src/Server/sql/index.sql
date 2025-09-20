@@ -369,6 +369,16 @@ create table changelog_read(
     constraint entry_log_user foreign key (who) references users(id) on delete cascade
 );
 
+create table posts (
+    id integer generated always as identity primary key,
+    poster integer not null,
+    content text not null,
+    date timestamptz not null default (utc_now()),
+    expires timestamptz,
+
+    constraint post_poster foreign key (poster) references users(id) on delete cascade
+);
+
 -- when users first edit new field in their profile, place them higher in the suggestions list if have filled 3 or more profile fields
 create or replace function temporarily_place_at_top() returns trigger as
 $$
