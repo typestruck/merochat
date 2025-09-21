@@ -68,7 +68,7 @@ suggest loggedUserId skip =
 
 -- top level to avoid monomorphic filter
 suggestBaseQuery loggedUserId filter =
-      select (userFields /\ _bin /\ completeness /\ (false # as _isContact))
+      select (userFields /\ _bin /\ completeness /\ (isNotNull _sender # as _isContact) )
             # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
             # wher filter
 

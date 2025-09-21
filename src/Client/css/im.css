@@ -2710,6 +2710,10 @@ label {
     align-self: center;
 }
 
+.big-card .see-chat {
+    align-self: flex-end;
+}
+
 .posts {
     display: flex;
     overflow-y: scroll;

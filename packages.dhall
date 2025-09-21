@@ -123,7 +123,7 @@ let upstream =
 let overrides =
       { droplet =
               upstream.droplet
-          //  { version = "94e5373f97b074832a8155af71b44fe1aa8d79a0" }
+          //  { version = "ce2541c6d0db343a8c6168ce7ed79f5c0bb2c860" }
           , flame =
              upstream.flame
           //  { version = "v1.6.0" }

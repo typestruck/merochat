@@ -10,12 +10,12 @@ import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Debug (spy)
 import Safe.Coerce as SC
-import Shared.ProfileColumn (ProfileColumn)
 import Server.Database.Types (Checked(..))
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Im.Types (Contact, HM, User, HistoryMessage)
 import Shared.Privilege (Privilege)
+import Shared.ProfileColumn (ProfileColumn)
 
 type FlatFields rest =
       { age ∷ Maybe Number

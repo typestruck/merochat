@@ -8,6 +8,7 @@ import Client.Im.Flame (NoMessages, MoreMessages)
 import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Post (Post)
 import Shared.Unsafe as SU
@@ -24,11 +25,11 @@ displayPosts userId posts model = model { freeToFetchPosts = true, suggestions =
             | otherwise = contact
 
 fetchPosts ∷ Int → ImModel → MoreMessages
-fetchPosts userId model = model /\ effects
+fetchPosts userId model = model { freeToFetchPosts = not arePostsVisible } /\ effects
       where
       found = SU.fromJust (DA.find ((_ == userId) <<< _.id) model.suggestions <|> (_.user <$> DA.find ((_ == userId) <<< _.id <<< _.user) model.contacts))
-      arePostsVisible = found.postsVisibility == Everyone || found.postsVisibility == NoTemporaryUsers && not model.user.temporary || found.postsVisibility == Contacts && found.isContact
+      arePostsVisible = found.postsVisibility == Everyone || (found.postsVisibility == NoTemporaryUsers && not model.user.temporary) || (found.postsVisibility == Contacts && found.isContact)
 
       effects
-            | arePostsVisible = [ CCN.retryableResponse FetchPosts (DisplayPosts userId) $ request.posts.get { query: { poster: userId } } ]
+            | arePostsVisible = [ CCN.retryableResponse (FetchPosts userId) (DisplayPosts userId) $ request.posts.get { query: { poster: userId } } ]
             | otherwise = []

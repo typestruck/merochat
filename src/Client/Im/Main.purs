@@ -168,7 +168,7 @@ update st model =
 
             --posts
             DisplayPosts userId posts -> CIPS.displayPosts userId posts model
-            (SpecialRequest FetchPosts) -> model /\ []
+            SpecialRequest (FetchPosts userId) -> CIPS.fetchPosts userId model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model

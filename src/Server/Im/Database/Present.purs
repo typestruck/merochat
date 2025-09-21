@@ -16,8 +16,9 @@ import Server.Database.Tags
 import Server.Database.TagsUsers
 import Server.Database.Users
 import Server.Im.Database.Flat
+
 import Data.DateTime (DateTime(..))
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
@@ -77,8 +78,8 @@ presentUserContactFields =
       , h.recipient_deleted_to
       , h.last_message_date "lastMessageDate"
       , date_part ('day', utc_now() - COALESCE(first_message_date, utc_now())) "chatAge"
-      , u.postsVisibility as "postsVisibility"
-      , true as "isContact"
+      , u.posts_visibility as "postsVisibility"
+      , false as "isContact"
       , u.id
       , avatar
       , gender

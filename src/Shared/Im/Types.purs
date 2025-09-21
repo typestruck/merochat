@@ -213,7 +213,7 @@ data RetryableRequest
       = FetchHistory Int Boolean
       | FetchContacts Boolean
       | FetchMissedContacts
-      | FetchPosts
+      | FetchPosts Int
       | ToggleModal Modal
       | BlockUser Int
       | PreviousSuggestion
@@ -293,7 +293,7 @@ data ImMessage
 
       --posts
       | DisplayPosts Int (Array Post)
-      | CheckFetchPosts Int Event
+   --   | CheckFetchPosts Int Event
 
       --main
       | ReloadPage

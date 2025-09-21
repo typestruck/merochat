@@ -184,5 +184,5 @@ toggleShowingSuggestion userId toggle model = model { suggestions = map update m
             | otherwise = suggestion
 
       effects
-            | shouldFetch = [ pure <<< Just $ SpecialRequest FetchPosts ]
+            | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId ]
             | otherwise = []
