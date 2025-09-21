@@ -173,6 +173,11 @@ fetchContacts shouldFetch model@{ contacts }
 displayContacts ∷ Array Contact → ImModel → MoreMessages
 displayContacts newContacts model = updateDisplayContacts newContacts [] model
 
+--contact from open chat button in suggestions
+displaySuggestionContact ∷ Array Contact → ImModel → MoreMessages
+displaySuggestionContact contacts model = model { contacts = model.contacts <> contacts } /\ [ resume ]
+      where resume = pure (ResumeChat <<< _.id <<< _.user <$> DA.head contacts)
+
 --new chats
 displayNewContacts ∷ Array Contact → ImModel → MoreMessages
 displayNewContacts newContacts model = updateDisplayContacts newContacts (map (\cnt → cnt.user.id) newContacts) model

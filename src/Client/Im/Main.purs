@@ -160,6 +160,7 @@ update st model =
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
+            DisplaySuggestionContact contacts → CICN.displaySuggestionContact contacts model
             DisplayMissedContacts missed → CICN.displayMissedContacts missed model
 
             --history
@@ -182,6 +183,7 @@ update st model =
             SpecialRequest (BlockUser id) → blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
             ToggleSuggestionsFromOnline → CIS.toggleSuggestionsFromOnline model
+            ResumeSuggestionChat userId → CIS.resumeSuggestionChat userId model
 
             --user menu
             ToggleInitialScreen toggle → CIU.toggleInitialScreen toggle model

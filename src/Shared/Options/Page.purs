@@ -1,7 +1,7 @@
 module Shared.Options.Page where
 
 contactsPerPage ∷ Int
-contactsPerPage = 15
+contactsPerPage = 1
 
 suggestionsPerPage ∷ Int
 suggestionsPerPage = 10

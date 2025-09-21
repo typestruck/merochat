@@ -3461,6 +3461,10 @@ label {
         background: var(--im-background-color);
         position: sticky;
     }
+
+    .big-card .see-chat {
+        margin-bottom: 10px;
+    }
 }
 
 @media (min-width:1280px) and (max-width:1919px) {

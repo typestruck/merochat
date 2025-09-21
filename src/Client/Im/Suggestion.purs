@@ -6,7 +6,8 @@ import Shared.Im.Types
 import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.Common.Network as CCNT
+import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.Enum as DE
@@ -21,6 +22,7 @@ import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SIC
 import Shared.Modal.Types (Modal(..), ScreenModal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
@@ -177,7 +179,7 @@ toggleShowingSuggestion ∷ Int → ProfilePost → ImModel → MoreMessages
 toggleShowingSuggestion userId toggle model = model { suggestions = map update model.suggestions, freeToFetchPosts = not shouldFetch } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
-      shouldFetch = toggle == ShowPosts && Just ShowInfo == ( _.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
+      shouldFetch = toggle == ShowPosts && Just ShowInfo == (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
 
       update suggestion
             | suggestion.id == userId = suggestion { showing = toggle }
@@ -186,3 +188,16 @@ toggleShowingSuggestion userId toggle model = model { suggestions = map update m
       effects
             | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId ]
             | otherwise = []
+
+resumeSuggestionChat ∷ Int → ImModel → NextMessage
+resumeSuggestionChat userId model =
+      model
+            { suggestions = DA.filter ((_ /= userId) <<< _.id) model.suggestions
+            , suggesting = moveSuggestion model 1
+            }
+            /\ [ resume ]
+      where
+      existing = SIC.findContact userId model.contacts
+      resume = case existing of
+            Nothing → CCNT.retryableResponse (FetchContacts true) DisplaySuggestionContact $ request.im.contact { query: { id: userId } }
+            _ → pure <<< Just $ ResumeChat userId

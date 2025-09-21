@@ -249,6 +249,7 @@ data ImMessage
       | SetDeliveredStatus
       | UpdateDraft Int String
       | DisplayContacts (Array Contact)
+      | DisplaySuggestionContact (Array Contact)
       | DisplayNewContacts (Array Contact)
       | DisplayMissedContacts (Array Contact)
 
@@ -258,6 +259,7 @@ data ImMessage
       | DisplayMoreSuggestions (Array Suggestion)
       | ToggleShowing Int ProfilePost
       | ToggleSuggestionsFromOnline
+      | ResumeSuggestionChat Int
       | ToggleSuggestionChatInput Int
 
       --chat
