@@ -63,7 +63,9 @@ type IU =
               , posts :: Array Post
               , showing :: ProfilePost
               , profileVisibility ∷ ProfileVisibility
+              , postsVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
+              , isContact :: Boolean
               , temporary ∷ Boolean
               , backer ∷ Boolean
               , messageTimestamps ∷ Boolean

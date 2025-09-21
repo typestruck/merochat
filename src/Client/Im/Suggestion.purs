@@ -177,12 +177,12 @@ toggleShowingSuggestion ∷ Int → ProfilePost → ImModel → MoreMessages
 toggleShowingSuggestion userId toggle model = model { suggestions = map update model.suggestions, freeToFetchPosts = not shouldFetch } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
-      shouldFetch = toggle == ShowPosts && Just ShowInfo == ( _.showing <$> found) && Just 0 == (DA.length <<< _.posts  <$> found)
+      shouldFetch = toggle == ShowPosts && Just ShowInfo == ( _.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
 
       update suggestion
             | suggestion.id == userId = suggestion { showing = toggle }
             | otherwise = suggestion
 
       effects
-            | shouldFetch = [ CCN.retryableResponse FetchPosts (DisplayPosts userId) $ request.posts.get { query: { poster: userId } } ]
+            | shouldFetch = [ pure <<< Just $ SpecialRequest FetchPosts ]
             | otherwise = []

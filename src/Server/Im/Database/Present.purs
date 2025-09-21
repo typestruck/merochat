@@ -31,6 +31,7 @@ import Type.Proxy (Proxy(..))
 userPresentationFields =
       userFields
       /\ (1 # as _bin)
+      /\ (false # as _isContact)
       /\ completeness
 
 completeness = (select (array_agg (_completed # orderBy  _completed) # as _completedFields) # from complete_profiles # wher (_completer .=. u ... _id) # orderBy _completedFields # limit (Proxy ∷ _ 1))
@@ -46,6 +47,7 @@ userFields =
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
             /\ _temporary
+            /\ (_postsVisibility # as postsVisibility)
             /\ _backer
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
@@ -75,6 +77,8 @@ presentUserContactFields =
       , h.recipient_deleted_to
       , h.last_message_date "lastMessageDate"
       , date_part ('day', utc_now() - COALESCE(first_message_date, utc_now())) "chatAge"
+      , u.postsVisibility as "postsVisibility"
+      , true as "isContact"
       , u.id
       , avatar
       , gender
@@ -206,4 +210,4 @@ presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery 
             ORDER BY last_message_date DESC, s.date"""
 
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
-presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
+presentUser loggedUserId = SD.single $ select userPresentationFields  # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)

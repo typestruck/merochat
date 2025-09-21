@@ -62,6 +62,9 @@ _password = Proxy
 _temporary ∷ Proxy "temporary"
 _temporary = Proxy
 
+_isContact :: Proxy "isContact"
+_isContact = Proxy
+
 _headline ∷ Proxy "headline"
 _headline = Proxy
 

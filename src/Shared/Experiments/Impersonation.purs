@@ -121,6 +121,8 @@ batman =
       , backer: false
       , posts : []
       , showing: ShowInfo
+      , postsVisibility : Everyone
+      , isContact : false
       , privileges: []
       , bin: 1
       , badges: []
@@ -143,6 +145,8 @@ socrates =
       , showing: ShowInfo
       , availability: None
       , readReceipts: true
+      , postsVisibility : Everyone
+      , isContact : false
       , completedFields : []
       , posts : []
       , backer: false
@@ -183,6 +187,8 @@ nicolasCage =
       , completedTutorial: true
       , posts : []
       , privileges: []
+      , postsVisibility : Everyone
+      , isContact : false
       , badges: []
       , bin: 1
       , typingStatus: true

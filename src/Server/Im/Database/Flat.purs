@@ -8,14 +8,12 @@ import Data.DateTime (DateTime)
 import Data.Int as DI
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
-import Data.Time.Duration (Minutes(..))
 import Debug (spy)
 import Safe.Coerce as SC
 import Shared.ProfileColumn (ProfileColumn)
 import Server.Database.Types (Checked(..))
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
-import Shared.DateTime as ST
 import Shared.Im.Types (Contact, HM, User, HistoryMessage)
 import Shared.Privilege (Privilege)
 
@@ -31,6 +29,8 @@ type FlatFields rest =
       , bin ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int
+      , postsVisibility ∷ ProfileVisibility
+      , isContact ∷ Boolean
       , completedTutorial ∷ Checked
       , languages ∷ Maybe (Array String)
       , profileVisibility ∷ ProfileVisibility
@@ -80,8 +80,10 @@ fromFlatUser fc =
       { id: fc.id
       , name: fc.name
       , headline: fc.headline
-      , posts : []
-      , showing : ShowInfo
+      , posts: []
+      , postsVisibility: fc.postsVisibility
+      , isContact: fc.isContact
+      , showing: ShowInfo
       , bin: fc.bin
       , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility
@@ -95,7 +97,7 @@ fromFlatUser fc =
       , badges: DM.fromMaybe [] fc.badges
       , temporary: SC.coerce fc.temporary
       , joined: DateTimeWrapper fc.joined
-      , completedFields : DM.fromMaybe [] fc.completedFields
+      , completedFields: DM.fromMaybe [] fc.completedFields
       , avatar: fc.avatar
       , tags: DM.fromMaybe [] fc.tags
       , karma: fc.karma

@@ -35,7 +35,7 @@ import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Types (Checked(..))
-import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
+import Server.Database.Users (_avatar, _birthday, _completedTutorial, _country, _description, _email, _gender, _headline, _isContact, _joined, _messageTimestamps, _onlineStatus, _password, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
 import Server.Im.Database.Present (completeness, userFields, usersSource)
@@ -68,7 +68,7 @@ suggest loggedUserId skip =
 
 -- top level to avoid monomorphic filter
 suggestBaseQuery loggedUserId filter =
-      select (userFields /\ _bin /\ completeness)
+      select (userFields /\ _bin /\ completeness /\ (false # as _isContact))
             # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) histories # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
             # wher filter
 

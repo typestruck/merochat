@@ -42,6 +42,8 @@ backerUser =
       , posts : []
       , showing : ShowInfo
       , messageTimestamps: true
+      , postsVisibility : Everyone
+      , isContact : false
       , typingStatus: true
       , onlineStatus: true
       , completedFields: []

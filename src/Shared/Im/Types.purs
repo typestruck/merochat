@@ -293,6 +293,7 @@ data ImMessage
 
       --posts
       | DisplayPosts Int (Array Post)
+      | CheckFetchPosts Int Event
 
       --main
       | ReloadPage

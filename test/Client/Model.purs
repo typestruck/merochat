@@ -13,6 +13,7 @@ import Effect.Aff (Aff)
 import Effect.Now as EN
 import Effect.Unsafe as EU
 import Safe.Coerce as SC
+import Server.Database.Fields (postsVisibility)
 import Shared.Element (ElementId)
 import Shared.Im.Contact as SIC
 import Shared.Modal.Types (Modal(..), ScreenModal(..))
@@ -88,6 +89,8 @@ imUser =
       , backer: false
       , posts: []
       , completedFields: []
+      , postsVisibility : Everyone
+      , isContact : false
       , readReceipts: true
       , messageTimestamps: true
       , joined: DateTimeWrapper epoch
