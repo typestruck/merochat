@@ -44,6 +44,7 @@ backerUser =
       , messageTimestamps: true
       , postsVisibility : Everyone
       , isContact : false
+      , totalPosts: 0
       , typingStatus: true
       , onlineStatus: true
       , completedFields: []

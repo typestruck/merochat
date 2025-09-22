@@ -4,6 +4,8 @@ import Prelude
 import Shared.Availability
 import Shared.User
 
+import Data.BigInt (BigInt)
+import Data.BigInt as BI
 import Data.DateTime (DateTime)
 import Data.Int as DI
 import Data.Maybe (Maybe)
@@ -24,6 +26,7 @@ type FlatFields rest =
       , description ∷ String
       , gender ∷ Maybe Gender
       , backer ∷ Checked
+      , totalPosts ∷ Maybe BigInt
       , headline ∷ String
       , id ∷ Int
       , bin ∷ Int
@@ -84,6 +87,7 @@ fromFlatUser fc =
       , postsVisibility: fc.postsVisibility
       , isContact: fc.isContact
       , showing: ShowInfo
+      , totalPosts: DM.fromMaybe 0 (fc.totalPosts >>= BI.toInt)
       , bin: fc.bin
       , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility

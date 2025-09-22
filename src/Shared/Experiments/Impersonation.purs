@@ -125,6 +125,7 @@ batman =
       , isContact : false
       , privileges: []
       , bin: 1
+      , totalPosts : 0
       , badges: []
       , completedFields : []
       , temporary: false
@@ -144,6 +145,7 @@ socrates =
       , bin: 1
       , showing: ShowInfo
       , availability: None
+      , totalPosts : 0
       , readReceipts: true
       , postsVisibility : Everyone
       , isContact : false
@@ -187,6 +189,7 @@ nicolasCage =
       , completedTutorial: true
       , posts : []
       , privileges: []
+      , totalPosts : 0
       , postsVisibility : Everyone
       , isContact : false
       , badges: []

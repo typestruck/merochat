@@ -88,6 +88,7 @@ imUser =
       , profileVisibility: Everyone
       , backer: false
       , posts: []
+      , totalPosts: 0
       , completedFields: []
       , postsVisibility : Everyone
       , isContact : false

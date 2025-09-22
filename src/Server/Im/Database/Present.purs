@@ -23,6 +23,7 @@ import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
+import Server.Database.Posts (_poster, _totalPosts, posts)
 import Server.Effect (ServerEffect)
 import Shared.Im.Types (HistoryMessage, MessageStatus(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
@@ -50,6 +51,7 @@ userFields =
             /\ _temporary
             /\ (_postsVisibility # as postsVisibility)
             /\ _backer
+            /\ (select (count _id # as _totalPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _totalPosts # limit (Proxy :: _ 1))
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
             /\ (l ... _date # as _lastSeen)
@@ -87,6 +89,7 @@ presentUserContactFields =
       , joined
       , backer
       , completed_tutorial "completedTutorial"
+      , (select count(1) "totalPosts" from posts where poster = u.id)
       , date_part_age ('year', birthday) age
       , name
       , 1 as bin

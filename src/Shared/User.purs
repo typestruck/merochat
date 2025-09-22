@@ -69,6 +69,7 @@ type IU =
               , temporary ∷ Boolean
               , backer ∷ Boolean
               , messageTimestamps ∷ Boolean
+              , totalPosts :: Int
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
               , bin ∷ Int

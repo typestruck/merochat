@@ -34,3 +34,6 @@ _expires = Proxy
 
 _poster ∷ Proxy "poster"
 _poster = Proxy
+
+_totalPosts :: Proxy "totalPosts"
+_totalPosts = Proxy

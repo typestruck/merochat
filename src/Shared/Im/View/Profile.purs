@@ -213,9 +213,9 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                                                     , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show suggestion.karmaPosition ]
                                                     ]
                                       ]
-                                            <> genderAge suggestion
-                                            <> from suggestion
+                                            <> [ HE.div_ $ genderAge suggestion <> countrySeparator <> from suggestion ]
                                             <> speaks suggestion
+                                            <> postsCount
 
                                     )
                             , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIA.contextMenu $ show FullProfileContextMenu ]
@@ -254,13 +254,21 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
             , HE.div [ HA.class' "see-profile-chat suggestion-input" ]
                     $
                           if suggestion.isContact then
-                                [ HE.input  [HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ]]
+                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ] ]
                           else if suggestion.id == backerId then
-                                [ HE.input [HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "See donation options", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ]]
+                                [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "See donation options", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] ]
                           else
                                 [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model ]
 
             ]
+      where
+      countrySeparator
+            | DM.isJust suggestion.country && (DM.isJust suggestion.gender || DM.isJust suggestion.age) = [separator]
+            | otherwise = []
+
+      postsCount
+            | suggestion.totalPosts == 0 = []
+            | otherwise = [ HE.span_ [ HE.text $ show suggestion.totalPosts <> " posts" ] ]
 
 -- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
@@ -394,7 +402,7 @@ temporary =
       ]
 
 from ∷ Suggestion → Array (Html ImMessage)
-from suggestion = DM.maybe [] (\c → [ HE.div_ [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text c ] ] ]) suggestion.country
+from suggestion = DM.maybe [] (\c → [ HE.span_ [ HE.span [ HA.class' "duller" ] [ HE.text "from " ], HE.span_ [ HE.text c ] ] ]) suggestion.country
 
 speaks ∷ Suggestion → Array (Html ImMessage)
 speaks suggestion
