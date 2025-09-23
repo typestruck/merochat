@@ -20,8 +20,13 @@ import Shared.Account (EmailPassword)
 import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
-import Shared.Post (Post)
+import Shared.Post (Post, PostPayload)
 
 posts ∷ { guards ∷ { loggedUserId ∷ Int }, query :: { poster :: Int } } → ServerEffect (Array Post)
 posts request = SPA.posts request.guards.loggedUserId request.query.poster
+
+post ∷ { guards ∷ { loggedUserId ∷ Int }, body :: PostPayload } → ServerEffect Ok
+post request = do
+    SPA.post request.guards.loggedUserId request.body
+    pure ok
 

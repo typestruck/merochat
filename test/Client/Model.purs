@@ -34,10 +34,13 @@ model =
       , showBuildProfile: true
       , showChangelogs: false
       , initialScreen: true
+      , freeToPost: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
       , showSuggestionChatInput: Nothing
       , changelogs: []
+      , showPostForm: NoPostForm
+      , postContent: Nothing
       , showCollapsedMiniSuggestions: false
       , modalsLoaded: []
       , showMiniChatInput: false
@@ -90,8 +93,8 @@ imUser =
       , posts: []
       , totalPosts: 0
       , completedFields: []
-      , postsVisibility : Everyone
-      , isContact : false
+      , postsVisibility: Everyone
+      , isContact: false
       , readReceipts: true
       , messageTimestamps: true
       , joined: DateTimeWrapper epoch

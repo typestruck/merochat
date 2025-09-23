@@ -170,6 +170,9 @@ update st model =
             --posts
             DisplayPosts userId posts -> CIPS.displayPosts userId posts model
             SpecialRequest (FetchPosts userId) -> CIPS.fetchPosts userId model
+            TogglePostForm toggle -> CIPS.togglePostForm toggle model
+            SetPostContent content -> CIPS.setPostContent content model
+            SendPost -> CIPS.sendPost model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model

@@ -280,10 +280,10 @@ suggestionCards model =
       where
       allCards
             | not model.user.temporary && model.showBuildProfile = buildProfile : map card model.suggestions <> moreCards
-            | not model.user.temporary && not model.showBuildProfile = postCard : map card model.suggestions <> moreCards
+            | not model.user.temporary && not model.showBuildProfile && model.showPostForm == SuggestionsPostForm = postCard : map card model.suggestions <> moreCards
             | otherwise = map card model.suggestions <> moreCards
 
-      postCard = HE.div [ HA.class' "card build-profile post-card" ] $ SIVP.postForm model.user
+      postCard = HE.div [ HA.class' "card build-profile post-card" ] $ SIVP.postForm model
 
       buildProfile =
             let

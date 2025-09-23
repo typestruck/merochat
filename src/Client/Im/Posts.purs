@@ -7,9 +7,11 @@ import Client.Common.Network as CCN
 import Client.Im.Flame (NoMessages, MoreMessages)
 import Control.Alt ((<|>))
 import Data.Array as DA
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
-import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..), ShowPostForm)
 import Shared.Post (Post)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -33,3 +35,16 @@ fetchPosts userId model = model { freeToFetchPosts = not arePostsVisible } /\ ef
       effects
             | arePostsVisible = [ CCN.retryableResponse (FetchPosts userId) (DisplayPosts userId) $ request.posts.get { query: { poster: userId } } ]
             | otherwise = []
+
+togglePostForm ∷ ShowPostForm → ImModel → NoMessages
+togglePostForm toggle model = model { showPostForm = toggle } /\ []
+
+setPostContent ∷ Maybe String → ImModel → NoMessages
+setPostContent content model = model { postContent = content, freeToPost = model.freeToPost || DM.isNothing content } /\ []
+
+sendPost ∷ ImModel → MoreMessages
+sendPost model = model { freeToPost = false, user = model.user { totalPosts = model.user.totalPosts + 1 } } /\ [ send ]
+      where
+      send = do
+            void <<< CCN.silentResponse $ request.posts.post { body: { content: SU.fromJust model.postContent } }
+            pure <<< Just $ SetPostContent Nothing

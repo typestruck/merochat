@@ -1,19 +1,9 @@
 module Server.Database.Posts where
 
-import Droplet.Language
-import Prelude hiding (join)
-import Server.Database.KarmaLeaderboard
-
-import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe)
-import Data.Maybe as DM
 import Data.Tuple.Nested (type (/\))
-import Droplet.Driver (Pool)
-import Server.Database as SD
-import Server.Database.Fields (c)
-import Server.Effect (ServerEffect, BaseEffect)
-import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Privilege (Privilege)
+import Droplet.Language (Column, Default, Identity, PrimaryKey, Table(..))
+import Shared.DateTime (DateTimeWrapper)
 import Type.Proxy (Proxy(..))
 
 type Posts =
@@ -21,7 +11,7 @@ type Posts =
       , expires ∷ Maybe DateTimeWrapper
       , poster ∷ Int
       , content ∷ String
-      , date ∷ DateTimeWrapper
+      , date ∷ Column DateTimeWrapper Default
       )
 
 type PostsTable = Table "posts" Posts

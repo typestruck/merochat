@@ -53,15 +53,16 @@ template payload = do
                     , suggestionsFrom: ThisWeek
                     , showSuggestionChatInput: Nothing
                     , lastTyping: DateTimeWrapper lt
-                    , showBuildProfile: DA.length payload.user.completedFields  < 3
+                    , showBuildProfile: DA.length payload.user.completedFields < 3
                     , smallScreen: false
                     , showMiniChatInput: false
                     , initialScreen: true
                     , temporaryEmail: Nothing
-                    , freeToFetchPosts : true
-                    , changelogs : []
-                    , showChangelogs : false
+                    , freeToFetchPosts: true
+                    , changelogs: []
+                    , showChangelogs: false
                     , showCollapsedMiniSuggestions: false
+                    , showPostForm: if payload.user.totalPosts == 0 then SuggestionsPostForm else NoPostForm
                     , temporaryPassword: Nothing
                     , enableNotificationsVisible: false
                     , messageEnter: true
@@ -72,6 +73,7 @@ template payload = do
                     , webSocketMessages: []
                     , fullContactProfileVisible: false
                     , freeToFetchContactList: true
+                    , freeToPost: true
                     , erroredFields: []
                     , fortune: Nothing
                     , toggleContextMenu: HideContextMenu
@@ -80,6 +82,7 @@ template payload = do
                     , reportReason: Nothing
                     , reportComment: Nothing
                     , imUpdated: false
+                    , postContent: Nothing
                     , webSocketStatus: Closed
                     , failedRequests: []
                     , modalsLoaded: []

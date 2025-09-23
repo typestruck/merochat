@@ -119,6 +119,7 @@ type Im =
       , freeToFetchChatHistory ∷ Boolean
       , freeToFetchContactList ∷ Boolean
       , freeToFetchSuggestions ∷ Boolean
+      , freeToPost :: Boolean
       , freeToFetchPosts :: Boolean
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
@@ -146,6 +147,7 @@ type Im =
       , showMiniChatInput ∷ Boolean
       , showCollapsedMiniSuggestions ∷ Boolean
       , editing ∷ Maybe Int
+      , postContent :: Maybe String
       --used to signal that the page should be reloaded
       , hash ∷ String
       --visibility switches
@@ -157,6 +159,7 @@ type Im =
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
       , showChangelogs :: Boolean
+      , showPostForm :: ShowPostForm
       , toggleContextMenu ∷ ShowContextMenu
       , modal ∷ Modal
       )
@@ -231,6 +234,8 @@ data ReportReason
 
 type Touch = { startX ∷ Int, endX ∷ Int, startY ∷ Int, endY ∷ Int }
 
+data ShowPostForm = NoPostForm | SuggestionsPostForm | PostForm
+
 data ImMessage
       =
         --history
@@ -295,6 +300,9 @@ data ImMessage
 
       --posts
       | DisplayPosts Int (Array Post)
+      | TogglePostForm ShowPostForm
+      | SetPostContent (Maybe String)
+      | SendPost
    --   | CheckFetchPosts Int Event
 
       --main
@@ -419,7 +427,7 @@ instance DecodeQueryParam SuggestionsFrom where
 derive instance Eq SuggestionsFrom
 derive instance Eq FocusEvent
 derive instance Eq When
-
+derive instance Eq ShowPostForm
 derive instance Eq WebSocketConnectionStatus
 
 derive instance Ord ReportReason
@@ -550,6 +558,9 @@ instance DecodeJson TimeoutIdWrapper where
 instance DecodeJson SuggestionsFrom where
       decodeJson = DADGR.genericDecodeJson
 
+instance DecodeJson ShowPostForm where
+      decodeJson = DADGR.genericDecodeJson
+
 instance DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
 
@@ -578,6 +589,9 @@ instance DecodeJson WebSocketConnectionStatus where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson WebSocketConnectionStatus where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson ShowPostForm where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson TimeoutIdWrapper where
@@ -648,6 +662,7 @@ derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
 derive instance Generic WebSocketConnectionStatus _
+derive instance Generic ShowPostForm _
 derive instance Generic SuggestionsFrom _
 derive instance Generic AfterLogout _
 derive instance Generic ReportReason _

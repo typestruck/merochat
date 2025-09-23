@@ -11,3 +11,7 @@ type Post = {
     content :: String,
     expires :: Maybe DateTimeWrapper
 }
+
+type PostPayload = {
+    content :: String
+}

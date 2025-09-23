@@ -1,15 +1,18 @@
-module Shared.Im.View.Posts where
+module Shared.Im.View.Posts  where
 
 import Prelude
 
 import Client.Common.Privilege as CCP
+import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
+import Shared.Change as SCN
 import Shared.DateTime as SDT
 import Shared.Im.Svg as SIS
-import Shared.Im.Types (ImMessage(..), RetryableRequest(..), User)
+import Shared.Im.Types (ImMessage(..), RetryableRequest(..), ShowPostForm(..), User, ImModel)
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Markdown as SM
 import Shared.Modal.Types (Modal(..), ScreenModal(..))
@@ -24,9 +27,9 @@ posted userName post = HE.div [ HA.class' "post-entry" ]
       , HE.div' [ HA.class' "post-content", HA.innerHtml $ SM.parse post.content ]
       ]
 
-postForm ∷ User → Array (Html ImMessage)
-postForm user =
-      [ SIS.closeX []
+postForm ∷ ImModel → Array (Html ImMessage)
+postForm model =
+      [ SIS.closeX [HA.onClick $ TogglePostForm NoPostForm]
       , HE.strong [ HA.class' "bottom" ] [ HE.text "Post to MeroChat" ]
       , HE.div [ HA.class' "posts-input-tab" ]
               [ HE.div [ HA.class' "regular-posts-input-tab selected-posts-input-tab" ] [ textIcont, HE.text "Text" ]
@@ -39,11 +42,19 @@ postForm user =
               , HA.placeholder ("What's in your mind?")
               , HA.maxlength maxPostCharacters
               , HA.onInput' ResizeChatInput
+              , SCN.onChange (SetPostContent <<< Just)
               , HA.autocomplete "off"
+            , HA.value $ DM.fromMaybe "" model.postContent
               ]
-      , HE.div [ HA.class' "see-profile-chat" ]
-              if SP.hasPrivilege Posts user then
-                    [ HE.input [ HA.type' "button", HA.class' "green-button post-button build", HA.value "Post" ]
+      , HE.div [ HA.class' "see-profile-chat posted" ]
+              if SP.hasPrivilege Posts model.user then
+                    [
+                        if not model.freeToPost then
+                              HE.div' [HA.class' "loading"]
+                        else if model.user.totalPosts == 0 then
+                              HE.input [ HA.disabled $ DM.isNothing model.postContent, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
+                        else
+                              HE.span_ [ HE.text "Posted!" ]
                     ]
               else
                     [ CCP.notEnoughKarma "post" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges) ]
