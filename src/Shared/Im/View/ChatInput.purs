@@ -1,7 +1,7 @@
 module Shared.Im.View.ChatInput
       ( chat
       , chatBarInput
-
+      , imageButtonElements
       ) where
 
 import Prelude
@@ -78,7 +78,7 @@ audioModal model =
                   ]
             else
                   [ CCP.notEnoughKarma "send audios" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
-                  , HE.div [ HA.class' "image-buttons" ] [HE.button [ HA.class' "green-button", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Dismiss" ]]
+                  , HE.div [ HA.class' "image-buttons" ] [ HE.button [ HA.class' "green-button", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Dismiss" ] ]
                   ]
 
 chatBarInput ∷ Either Int Int → ElementId → ImModel → Html ImMessage
@@ -88,7 +88,7 @@ chatBarInput eid elementId model = HE.fragment
               [ HE.div [ HA.class' "chat-input-options" ]
                       [ HE.div [ HA.class' "send-enter" ]
                               [ HE.input [ HA.type' "checkbox", HA.autocomplete "off", HA.checked model.messageEnter, HA.onClick ToggleMessageEnter, HA.id "message-enter" ]
-                              , HE.label [HA.for "message-enter"] [HE.text "Send message on enter"]
+                              , HE.label [ HA.for "message-enter" ] [ HE.text "Send message on enter" ]
                               ]
                       ]
               , HE.div [ HA.class' "chat-input-area" ]
@@ -138,7 +138,11 @@ emojiButton model
 
 imageButton ∷ Html ImMessage
 imageButton = HE.svg [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Chat ShowSelectedImage, HA.class' "attachment-button", HA.viewBox "0 0 16 16" ]
-      [ HE.title [ HE.text "Send image" ]
+      $ imageButtonElements "Send image"
+
+imageButtonElements ∷ String → Array (Html ImMessage)
+imageButtonElements title =
+      [ HE.title [ HE.text title ]
       , HE.path' [ HA.class' "strokeless", HA.d "M10.91,4v8.78a2.44,2.44,0,0,1-.72,1.65A3.31,3.31,0,0,1,8,15.25H7.67a2.67,2.67,0,0,1-2.58-2.48L5.26,2.9V2.82l0-.2h0a2,2,0,0,1,.19-.7v0a1.82,1.82,0,0,1,1.6-1A1.69,1.69,0,0,1,7.73,1,2.14,2.14,0,0,1,9.16,2.81h0v7.81c0,.75-.36,1.26-1.13,1.26A1.12,1.12,0,0,1,6.9,10.63V4H6.11v6.61a1.93,1.93,0,0,0,2,2,1.83,1.83,0,0,0,1.82-2l0-7.81c0-.06,0-.12,0-.18s0-.11,0-.17,0,0,0-.05a2.59,2.59,0,0,0-.32-1s0,0,0,0A3.19,3.19,0,0,0,7.77.09h0A2.41,2.41,0,0,0,7.09,0a2.56,2.56,0,0,0-1,.21H6A2.74,2.74,0,0,0,4.76,1.39h0a3,3,0,0,0-.37,1.43v10A3.41,3.41,0,0,0,7.67,16H8A4,4,0,0,0,10.69,15a3.22,3.22,0,0,0,.93-2.18V4Z" ]
       ]
 

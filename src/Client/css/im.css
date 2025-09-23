@@ -116,7 +116,7 @@ textarea {
 .big-card {
     background-color: var(--im-background-color);
     height: 88%;
-    width: 950px;
+    width: 980px;
     padding: 40px;
     display: flex;
     flex-direction: column;
@@ -511,6 +511,7 @@ blockquote {
 
 a {
     color: var(--text-color);
+    text-decoration: underline;
 }
 
 .contact-profile {
@@ -2750,6 +2751,68 @@ label {
     border-bottom: 1px dotted var(--light-color);
 }
 
+
+.posts-input-tab {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.regular-posts-input-tab {
+    padding: 0 10px;
+    border-radius: 15px;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+}
+
+.selected-posts-input-tab {
+    background: var(--light-color);
+    color: var(--im-merochat-green);
+}
+
+.post-card {
+    height: fit-content;
+    position: relative;
+}
+
+.post-input-tab-svg {
+    width: 16px;
+    padding-right: 5px;
+    height: 16px;
+}
+
+.post-button {
+    margin-left: auto;
+    border: 1px solid var(--light-color);
+    border-radius: 30px;
+}
+
+.selected-posts-input-tab svg {
+    fill: var(--im-merochat-green)
+}
+
+.post-card .attachment-button {
+    display: block;
+}
+
+.bottom {
+    padding-bottom: 15px;
+}
+
+.post-card .chat-input {
+    border: 0;
+    width: 93%;
+    border-radius: 5px;
+}
+
+.post-card .svg-55 {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    width: 45px;
+    height: 45px;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;
@@ -3464,6 +3527,14 @@ label {
 
     .big-card .see-chat {
         margin-bottom: 10px;
+    }
+
+    .post-card .svg-55 {
+        position: absolute;
+        right: 5px;
+        top: 10px;
+        width: 35px;
+        height: 35px;
     }
 }
 

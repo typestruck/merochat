@@ -280,7 +280,10 @@ suggestionCards model =
       where
       allCards
             | not model.user.temporary && model.showBuildProfile = buildProfile : map card model.suggestions <> moreCards
+            | not model.user.temporary && not model.showBuildProfile = postCard : map card model.suggestions <> moreCards
             | otherwise = map card model.suggestions <> moreCards
+
+      postCard = HE.div [ HA.class' "card build-profile post-card" ] $ SIVP.postForm model.user
 
       buildProfile =
             let
@@ -373,7 +376,7 @@ arrow svg freeTo extraClasses message = HE.div (HA.class' ("suggestion-arrow" : 
 genderAge ∷ Suggestion → Array (Html ImMessage)
 genderAge suggestion =
       case DM.maybe [] (\c → [ HE.span_ [ HE.text c ] ]) suggestion.gender <> DM.maybe [] (\c → [ HE.span_ [ HE.text $ show c ] ]) suggestion.age of
-            [ g, a ] → [ HE.div_ [ g, separator, a ] ]
+            [ g, a ] → [ HE.span_ [ g, separator, a ] ]
             ga → ga
 
 separator ∷ ∀ m. Html m
