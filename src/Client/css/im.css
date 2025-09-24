@@ -3396,6 +3396,11 @@ label {
         height: 25px;
     }
 
+    .post-modal {
+        width: calc(100vw - 40px);
+        padding: 20px;
+    }
+
     .modal-form .audio-button {
         width: 56px;
         height: 56px;
