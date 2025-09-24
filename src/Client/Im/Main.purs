@@ -168,11 +168,12 @@ update st model =
             DisplayHistory userId history → CIH.displayHistory userId history model
 
             --posts
-            DisplayPosts userId posts -> CIPS.displayPosts userId posts model
-            SpecialRequest (FetchPosts userId) -> CIPS.fetchPosts userId model
-            TogglePostForm toggle -> CIPS.togglePostForm toggle model
-            SetPostContent content -> CIPS.setPostContent content model
-            SendPost -> CIPS.sendPost model
+            DisplayPosts userId posts → CIPS.displayPosts userId posts model
+            SpecialRequest (FetchPosts userId) → CIPS.fetchPosts userId model
+            ToggleSuggestionPostForm → CIPS.togglePostForm model
+            SetPostContent content → CIPS.setPostContent content model
+            SendPost → CIPS.sendPost model
+            AfterSendPost → CIPS.afterSendPost model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
@@ -181,7 +182,7 @@ update st model =
             ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
-            ToggleShowing userId toggle -> CIS.toggleShowingSuggestion userId toggle model
+            ToggleShowing userId toggle → CIS.toggleShowingSuggestion userId toggle model
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
@@ -203,9 +204,9 @@ update st model =
             ReceiveMessage payload isFocused → CIWE.receiveMessage webSocket isFocused payload model
 
             --changelogs
-            FetchChangelog -> CICL.fetchChangelog model
-            DisplayChangelog changelogs -> CICL.displayChangelog changelogs model
-            ToggleChangelog -> CICL.toggleChangelog model
+            FetchChangelog → CICL.fetchChangelog model
+            DisplayChangelog changelogs → CICL.displayChangelog changelogs model
+            ToggleChangelog → CICL.toggleChangelog model
 
             --main
             StartPwa → CIP.startPwa model
@@ -237,7 +238,6 @@ update st model =
             SetPrivacySettings ps → setPrivacySettings ps model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
-
 
 resumeFromNotification ∷ Effect Unit
 resumeFromNotification = do

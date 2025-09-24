@@ -28,4 +28,4 @@ queryLastSeen ∷ NonEmptyArray Int → _
 queryLastSeen ids = SD.query $ select (_who /\ _date) # from last_seen # wher (_who `in_` ids)
 
 markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } _
-markdownPrivileges loggedUserId = SD.query $ select _feature # from (join privileges karma_leaderboard # on ((_feature .=. SendLinks .||. _feature .=. SendImages .||. _feature .=. SendAudios .||. _feature .=. Posts) .&&. _quantity .<=. _current_karma .&&. _ranker .=. loggedUserId))
+markdownPrivileges loggedUserId = SD.query $ select _feature # from (join privileges karma_leaderboard # on ((_feature .=. SendLinks .||. _feature .=. SendImages .||. _feature .=. SendAudios .||. _feature .=. PublishPosts) .&&. _quantity .<=. _current_karma .&&. _ranker .=. loggedUserId))

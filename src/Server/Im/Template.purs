@@ -62,7 +62,7 @@ template payload = do
                     , changelogs: []
                     , showChangelogs: false
                     , showCollapsedMiniSuggestions: false
-                    , showPostForm: if payload.user.totalPosts == 0 then SuggestionsPostForm else NoPostForm
+                    , showSuggestionsPostForm: payload.user.totalPosts == 0
                     , temporaryPassword: Nothing
                     , enableNotificationsVisible: false
                     , messageEnter: true

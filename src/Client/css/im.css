@@ -2796,6 +2796,10 @@ label {
     border-radius: 30px;
 }
 
+.post-modal .post-button {
+    border:0
+}
+
 .selected-posts-input-tab svg {
     fill: var(--im-merochat-green)
 }
@@ -2820,6 +2824,16 @@ label {
     top: 10px;
     width: 45px;
     height: 45px;
+}
+
+.post-modal {
+    width: 500px;
+    background: var(--im-background-color);
+    padding: 30px;
+    border-radius: 10px;
+    margin-top: -300px;
+    display: flex;
+    flex-direction: column;
 }
 
 .see-profile-chat.posted {

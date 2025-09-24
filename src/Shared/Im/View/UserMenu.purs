@@ -13,7 +13,9 @@ import Flame.Types (NodeData)
 import Shared.Avatar as SA
 import Shared.Im.Svg as SIS
 import Shared.Intl as SI
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Privilege (Privilege(..))
+import Shared.Privilege as SP
 
 userMenu ∷ ImModel → Html ImMessage
 userMenu model =
@@ -47,8 +49,8 @@ changelogInbox model = HE.div [ HA.class' { "changelog-inbox": true, hidden: not
       log c
             | c.read = HE.span [ HA.class' "inbox-entry" ] [ HE.text c.description ]
             | otherwise = HE.div [ HA.class' "inbox-entry unread-inbox-entry" ]
-                    [ envelope  [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox-unread" ]
-                        ,HE.text c.description
+                    [ envelope [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox-unread" ]
+                    , HE.text c.description
                     ]
 
 envelope ∷ Array (NodeData ImMessage) → Html ImMessage
@@ -60,7 +62,7 @@ envelope attrs = HE.svg attrs
 
 header ∷ ImModel → Html ImMessage
 header model = HE.fragment
-      [ HE.img [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.title "Edit your profile", HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user ]
+      [ HE.img [ HA.onClick avatarAction, HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user ]
       , HE.div [ HA.class' "settings-name" ]
               [ HE.strong [ HA.class' "contact-name" ] [ HE.text model.user.name ]
               , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]
@@ -69,3 +71,7 @@ header model = HE.fragment
                       ]
               ]
       ]
+      where
+      avatarAction
+            | SP.hasPrivilege PublishPosts model.user = SpecialRequest <<< ToggleModal $ Special ShowPostForm
+            | otherwise = SpecialRequest <<< ToggleModal $ Screen ShowProfile

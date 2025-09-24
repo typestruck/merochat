@@ -9,6 +9,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Time.Duration (Days(..))
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -16,6 +17,7 @@ import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
 import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIS
+import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Profile as CISP
 import Shared.Im.View.Retry as SIVR
 import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..), Step(..))
@@ -46,7 +48,7 @@ modals model =
                     ]
             )
       where
-      shouldShow = case model.modal of
+      shouldShow = case  model.modal of
             Chat _ → false
             HideModal → false
             _ → true
@@ -60,8 +62,12 @@ modals model =
                   ConfirmTerminationTemporaryUser → [ confirmTermination ]
             Special sp → case sp of
                   ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
+                  ShowPostForm → [ postForm model ]
 
             _ → []
+
+postForm ∷ ImModel → Html ImMessage
+postForm model = HE.div [ HA.class' "post-card post-modal" ] $ SIVP.postForm model
 
 confirmReport ∷ Int → Array String → Html ImMessage
 confirmReport id erroredFields =
@@ -87,7 +93,7 @@ confirmReport id erroredFields =
             in
                   HE.div [ HA.class' "reason" ]
                         [ HE.input [ HA.type' "radio", HA.id $ "report-" <> idName, HA.name "report-reason", HA.onInput (const (SetField (_ { reportReason = Just reason, erroredFields = [] }))) ]
-                        , HE.label [HA.for $ "report-" <> idName] [HE.text $ show reason]
+                        , HE.label [ HA.for $ "report-" <> idName ] [ HE.text $ show reason ]
                         ]
 
 confirmLogout ∷ Html ImMessage
@@ -125,18 +131,20 @@ modalMenu model =
       HE.div [ HA.class' { "modal-placeholder": true, hidden: not screenModal } ]
             ( [ HE.div [ HA.class' "modal-menu-mobile" ]
                       [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
-                      , HE.strong_ [HE.text $ case model.modal of
-                              Screen m → show m
-                              _ → ""]
+                      , HE.strong_
+                              [ HE.text $ case model.modal of
+                                      Screen m → show m
+                                      _ → ""
+                              ]
                       ]
               , HE.div [ HA.class' { "modal-menu": true, hidden: model.smallScreen && model.modal /= Screen ShowMenu } ]
-                      [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] [HE.text $ show ShowProfile]
-                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] [HE.text $ show ShowSettings]
-                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] [HE.text $ show ShowKarmaPrivileges]
-                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowExperiments, HA.class' { entry: true, selected: model.modal == Screen ShowExperiments } ] [HE.text $ show ShowExperiments]
-                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker, HA.class' { entry: true, selected: model.modal == Screen ShowBacker } ] [HE.text $ show ShowBacker]
-                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] [HE.text $ show ShowHelp]
-                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] [HE.text $ show ShowFeedback]
+                      [ HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile, HA.class' { entry: true, selected: model.modal == Screen ShowProfile } ] [ HE.text $ show ShowProfile ]
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowSettings, HA.class' { entry: true, selected: model.modal == Screen ShowSettings } ] [ HE.text $ show ShowSettings ]
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.class' { entry: true, selected: model.modal == Screen ShowKarmaPrivileges } ] [ HE.text $ show ShowKarmaPrivileges ]
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowExperiments, HA.class' { entry: true, selected: model.modal == Screen ShowExperiments } ] [ HE.text $ show ShowExperiments ]
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker, HA.class' { entry: true, selected: model.modal == Screen ShowBacker } ] [ HE.text $ show ShowBacker ]
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowHelp, HA.class' { entry: true, selected: model.modal == Screen ShowHelp } ] [ HE.text $ show ShowHelp ]
+                      , HE.div [ HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowFeedback, HA.class' { entry: true, selected: model.modal == Screen ShowFeedback } ] [ HE.text $ show ShowFeedback ]
                       , HE.div [ HA.class' "entry theme-modal" ]
                               [ SSI.sun [ HA.onClick $ SetTheme Light ]
                               , SSI.moon [ HA.onClick $ SetTheme Dark ]
@@ -182,7 +190,7 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
             [ if expired then
                     HE.div [ HA.class' "warning-temporary" ] [ HE.text "Your access has expired" ]
               else HE.fragment
-                    [ HE.div [ HA.class' "warning-temporary" ] [HE.text $ "You have " <> remainingTime <> " to create an account"]
+                    [ HE.div [ HA.class' "warning-temporary" ] [ HE.text $ "You have " <> remainingTime <> " to create an account" ]
                     , HE.div [ HA.class' "warning-temporary wall-text" ] [ HE.text "After that, all your data will be deleted and you won't be able to access the site unless you sign up again" ]
                     ]
             , HE.div [ HA.class' "duller last" ] [ HE.text "Create your account now, it is free!" ]
@@ -194,7 +202,7 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
             , HE.div_
                     [ HE.label_ [ HE.text "Password" ]
                     , HE.input [ HA.class' "modal-input", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.value $ DM.fromMaybe "" temporaryPassword, HA.onInput (SS.setJust (Proxy ∷ Proxy "temporaryPassword")) ]
-                    , HE.span [ HA.class' { "error-message": true, invisible: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryPassword")) erroredFields } ] [HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more"]
+                    , HE.span [ HA.class' { "error-message": true, invisible: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryPassword")) erroredFields } ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
                     ]
             , HE.div_
                     [ HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Create account", HA.onClick CreateUserFromTemporary ]

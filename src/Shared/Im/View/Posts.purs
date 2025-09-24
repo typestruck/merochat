@@ -2,7 +2,6 @@ module Shared.Im.View.Posts where
 
 import Prelude
 
-import Client.Common.Privilege as CCP
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Flame (Html)
@@ -12,14 +11,12 @@ import Safe.Coerce as SC
 import Shared.Change as SCN
 import Shared.DateTime as SDT
 import Shared.Im.Svg as SIS
-import Shared.Im.Types (ImMessage(..), RetryableRequest(..), ShowPostForm(..), User, ImModel)
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Markdown as SM
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal.Types (Modal(..), SpecialModal(..))
 import Shared.Options.Post (maxPostCharacters)
 import Shared.Post (Post)
-import Shared.Privilege (Privilege(..))
-import Shared.Privilege as SP
 
 posted ∷ String → Post → Html ImMessage
 posted userName post = HE.div [ HA.class' "post-entry" ]
@@ -29,7 +26,7 @@ posted userName post = HE.div [ HA.class' "post-entry" ]
 
 postForm ∷ ImModel → Array (Html ImMessage)
 postForm model =
-      [ SIS.closeX [ HA.onClick $ TogglePostForm NoPostForm ]
+      [ SIS.closeX [ HA.onClick $ if model.modal == Special ShowPostForm then SpecialRequest (ToggleModal HideModal) else ToggleSuggestionPostForm ]
       , HE.strong [ HA.class' "bottom" ] [ HE.text "Post to MeroChat" ]
       , HE.div [ HA.class' "posts-input-tab" ]
               [ HE.div [ HA.class' "regular-posts-input-tab selected-posts-input-tab" ] [ textIcont, HE.text "Text" ]
@@ -49,7 +46,7 @@ postForm model =
       , HE.div [ HA.class' "see-profile-chat posted" ]
               [ if not model.freeToPost then
                       HE.div' [ HA.class' "loading" ]
-                else if model.user.totalPosts == 0 then
+                else if not model.showSuggestionsPostForm || model.user.totalPosts == 0 then
                       HE.input [ HA.disabled $ DM.isNothing model.postContent, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
                 else
                       HE.span_ [ HE.text "Posted!" ]

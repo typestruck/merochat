@@ -1,14 +1,14 @@
 module Client.Im.ModalsMenu where
 
 import Prelude
-import Shared.Im.Types
+import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, RetryableRequest(..), ShowContextMenu(..))
 
 import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Chat as CIC
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (MoreMessages, NextMessage)
 import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
 import Client.Im.Suggestion (byAvailability)
@@ -19,14 +19,12 @@ import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Effect.Class as EC
-import Effect.Uncurried (EffectFn1)
-import Effect.Uncurried as EU
 import Flame as F
 import Flame.Subscription.Unsafe.CustomEvent as FS
 import Shared.Element (ElementId(..))
 import Shared.Im.EventTypes (modalVisible)
 import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
-import Shared.Resource (Bundle(..), ResourceType(..))
+import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
 import Shared.Unsafe as SU
 
@@ -75,8 +73,9 @@ modal toggled model =
             Screen ShowExperiments → showModal request.experiments ShowExperiments Experiments ExperimentsRoot
             Screen ShowBacker → showModal request.internalBacker ShowBacker InternalBacker BackerRoot
             Screen ShowFeedback → showModal request.feedback.get ShowFeedback Feedback FeedbackRoot
+            Special ShowPostForm → model { modal = toggled, showSuggestionsPostForm = false } /\ []
             Special (ShowSuggestionCard id) → F.noMessages model
-                  { modal = Special $ ShowSuggestionCard id
+                  { modal = toggled
                   , showCollapsedMiniSuggestions = true
                   , suggesting = Just id
                   }

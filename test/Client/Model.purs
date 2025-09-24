@@ -39,7 +39,7 @@ model =
       , showLargeAvatar: false
       , showSuggestionChatInput: Nothing
       , changelogs: []
-      , showPostForm: NoPostForm
+      , showSuggestionsPostForm: false
       , postContent: Nothing
       , showCollapsedMiniSuggestions: false
       , modalsLoaded: []

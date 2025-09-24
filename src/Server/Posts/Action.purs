@@ -22,9 +22,9 @@ post loggedUserId payload = do
       privileges ← SIDPP.markdownPrivileges loggedUserId
       let
             sanitized = payload
-                  { content = SS.sanitize payload.content
+                  { content = SS.sanitize $ DS.trim payload.content
                   }
-      if DA.any ((_ == Posts) <<< _.feature) privileges && not (DS.null sanitized.content) && DS.length sanitized.content <= maxPostCharacters then
+      if DA.any ((_ == PublishPosts) <<< _.feature) privileges && not (DS.null sanitized.content) && DS.length sanitized.content <= maxPostCharacters then
             SPD.savePost loggedUserId sanitized
       else
             RE.throw $ BadRequest { reason: "cannot post post" }

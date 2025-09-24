@@ -23,7 +23,7 @@ data Privilege
       | StartChats
       | StartChatExperiments
       | ImpersonationChatExperiment
-      | Posts
+      | PublishPosts
       | MoreTags
       | SendLinks
       | SendAudios
@@ -56,7 +56,7 @@ instance BoundedEnum Privilege where
             StartChats → 100
             StartChatExperiments → 200
             ImpersonationChatExperiment → 201
-            Posts → 202
+            PublishPosts → 202
             MoreTags → 300
             SendLinks → 400
             SendAudios → 401
@@ -67,7 +67,7 @@ instance BoundedEnum Privilege where
             100 → Just StartChats
             200 → Just StartChatExperiments
             201 → Just ImpersonationChatExperiment
-            202 -> Just Posts
+            202 -> Just PublishPosts
             300 → Just MoreTags
             400 → Just SendLinks
             401 → Just SendAudios
@@ -78,9 +78,9 @@ instance Enum Privilege where
       succ = case _ of
             ReceiveChats → Just StartChats
             StartChats → Just StartChatExperiments
-            StartChatExperiments → Just Posts
+            StartChatExperiments → Just PublishPosts
             ImpersonationChatExperiment → Nothing
-            Posts -> Just MoreTags
+            PublishPosts -> Just MoreTags
             MoreTags → Just SendLinks
             SendLinks → Just SendImages
             SendAudios → Just SendImages
@@ -91,8 +91,8 @@ instance Enum Privilege where
             StartChats → Just ReceiveChats
             StartChatExperiments → Just StartChats
             ImpersonationChatExperiment → Nothing
-            Posts → Just StartChatExperiments
-            MoreTags → Just Posts
+            PublishPosts → Just StartChatExperiments
+            MoreTags → Just PublishPosts
             SendLinks → Just MoreTags
             SendAudios → Just SendLinks
             SendImages → Just SendAudios
