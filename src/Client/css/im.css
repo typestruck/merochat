@@ -840,6 +840,10 @@ a {
     z-index: 6;
 }
 
+#confirmTermination-form .modal-placeholder-overlay {
+    position: fixed;
+}
+
 .modal-placeholder-overlay.contacts-only {
     width: 25%;
     right: unset;
@@ -1732,6 +1736,7 @@ input:not(type=button):focus {
     background-color: var(--im-second-backgorund-color);
     border: 0;
     cursor: pointer;
+    padding: 0 15px;
 }
 
 .danger {
@@ -3324,8 +3329,9 @@ label {
         width: unset;
         left: 5px;
         right: 5px;
-        margin-top: -130px;
+        height: fit-content;
         padding: 10px;
+        padding-top: 20px;
     }
 
     .message-history,

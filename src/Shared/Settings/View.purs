@@ -153,7 +153,7 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                     [ HE.div [ HA.class' "confirmation" ]
                             [ HE.span [ HA.class' "bold" ] [ HE.text "Do you really want to terminate your account? All of your data will be permanently lost." ]
                             , HE.div [ HA.class' "buttons" ]
-                                    [ HE.button [ HA.class' "cancel", HA.onClick ToggleTerminateAccount ] [ HE.text "Cancel" ]
+                                    [ HE.button [ HA.class' "cancel", HA.onClick ToggleTerminateAccount ] [ HE.text "Cancel " ]
                                     , HE.button [ HA.class' "green-button danger", HA.onClick TerminateAccount ] [ HE.text "Terminate" ]
                                     ]
                             ]
