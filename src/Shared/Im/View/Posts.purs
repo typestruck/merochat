@@ -1,4 +1,4 @@
-module Shared.Im.View.Posts  where
+module Shared.Im.View.Posts where
 
 import Prelude
 
@@ -29,7 +29,7 @@ posted userName post = HE.div [ HA.class' "post-entry" ]
 
 postForm ∷ ImModel → Array (Html ImMessage)
 postForm model =
-      [ SIS.closeX [HA.onClick $ TogglePostForm NoPostForm]
+      [ SIS.closeX [ HA.onClick $ TogglePostForm NoPostForm ]
       , HE.strong [ HA.class' "bottom" ] [ HE.text "Post to MeroChat" ]
       , HE.div [ HA.class' "posts-input-tab" ]
               [ HE.div [ HA.class' "regular-posts-input-tab selected-posts-input-tab" ] [ textIcont, HE.text "Text" ]
@@ -44,20 +44,17 @@ postForm model =
               , HA.onInput' ResizeChatInput
               , SCN.onChange (SetPostContent <<< Just)
               , HA.autocomplete "off"
-            , HA.value $ DM.fromMaybe "" model.postContent
+              , HA.value $ DM.fromMaybe "" model.postContent
               ]
       , HE.div [ HA.class' "see-profile-chat posted" ]
-              if SP.hasPrivilege Posts model.user then
-                    [
-                        if not model.freeToPost then
-                              HE.div' [HA.class' "loading"]
-                        else if model.user.totalPosts == 0 then
-                              HE.input [ HA.disabled $ DM.isNothing model.postContent, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
-                        else
-                              HE.span_ [ HE.text "Posted!" ]
-                    ]
-              else
-                    [ CCP.notEnoughKarma "post" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges) ]
+              [ if not model.freeToPost then
+                      HE.div' [ HA.class' "loading" ]
+                else if model.user.totalPosts == 0 then
+                      HE.input [ HA.disabled $ DM.isNothing model.postContent, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
+                else
+                      HE.span_ [ HE.text "Posted!" ]
+              ]
+
       ]
 
 linkIcon ∷ Html ImMessage
