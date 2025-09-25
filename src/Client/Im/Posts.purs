@@ -89,6 +89,7 @@ toggleShowingContacts userId toggle model =
       model
             { contacts = map update model.contacts
             , freeToFetchPosts = not shouldFetch
+            , fullContactProfileVisible = true
             } /\ effects
       where
       found = _.user <$> DA.find ((_ == userId) <<< _.id <<< _.user) model.contacts

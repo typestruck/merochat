@@ -93,10 +93,9 @@ compactProfile contact model =
       HE.div [ HA.class' "profile-contact" ]
             [ HE.div [ HA.class' "profile-contact-top" ]
                     [ SIA.arrow [ HA.class' "svg-back-card", HA.onClick $ ToggleInitialScreen true ]
-                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.class' "avatar-profile", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
-                    , HE.div (HA.class' "profile-contact-header" : showProfileAction)
+                    , HE.img $ [ SA.async, SA.decoding "lazy", HA.src $ SA.fromAvatar contact.user ] <> showProfileAction
+                    , HE.div (HA.class' "profile-contact-header" : [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ])
                             [ HE.div [ HA.class' "contact-name-badge" ] $ HE.h1 [ HA.class' "contact-name" ] ([ HE.text contact.user.name ]) : badges contact.user.badges
-                            , typingNotice
                             , availableStatus
                             ]
                     , HE.div [ HA.class' "profile-contact-deets" ]
@@ -107,9 +106,9 @@ compactProfile contact model =
                     ]
             ]
       where
-      showProfileAction = [ HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
-
-      typingNotice = HE.div [ HA.class' { "typing": true, hidden: not contact.typing || not model.user.typingStatus || not contact.user.typingStatus } ] [ HE.text "Typing..." ]
+      showProfileAction
+                | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
+                | otherwise =  [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
       availableStatus =
             HE.div
@@ -277,14 +276,15 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
 
             ]
 
+postsCount ∷ Suggestion → Array (Html ImMessage)
 postsCount user
         | user.totalPosts == 0 = []
         | otherwise = [ HE.span_ [ HE.text $ show user.totalPosts <> " posts" ] ]
 
+countrySeparator ∷ Suggestion → Array (Html ImMessage)
 countrySeparator user
         | DM.isJust user.country && (DM.isJust user.gender || DM.isJust user.age) = [ separator ]
         | otherwise = []
-
 
 -- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
