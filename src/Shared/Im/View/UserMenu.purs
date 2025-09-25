@@ -62,7 +62,7 @@ envelope attrs = HE.svg attrs
 
 header ∷ ImModel → Html ImMessage
 header model = HE.fragment
-      [ HE.img [ HA.onClick avatarAction, HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user ]
+      [ HE.img [ HA.onClick avatarAction, HA.class' "avatar-settings", HA.src $ SA.fromAvatar model.user, HA.title "Post to MeroChat" ]
       , HE.div [ HA.class' "settings-name" ]
               [ HE.strong [ HA.class' "contact-name" ] [ HE.text model.user.name ]
               , HE.div [ HA.class' "settings-karma", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges, HA.title "See your privileges and karma stats" ]

@@ -198,7 +198,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                     ]
             , HE.div [ HA.class' "avatar-info" ]
                     [ HE.div [ HA.class' "big-avatar-info" ]
-                            [ HE.div [ HA.class' "full" ] [ HE.img [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ] ]
+                            [ HE.div [ HA.class' "full" ] [ HE.img (if suggestion.unseenPosts > 0 then [ HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ShowPosts, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar newly-posted" ] else [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]) ]
                             , HE.div [ HA.class' "big-suggestion-info full" ]
                                     ( HE.strong [ HA.class' "big-card-name" ] [ HE.text suggestion.name ]
                                             : badges suggestion.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user suggestion ]
@@ -262,7 +262,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
             ]
       where
       countrySeparator
-            | DM.isJust suggestion.country && (DM.isJust suggestion.gender || DM.isJust suggestion.age) = [separator]
+            | DM.isJust suggestion.country && (DM.isJust suggestion.gender || DM.isJust suggestion.age) = [ separator ]
             | otherwise = []
 
       postsCount
@@ -321,7 +321,7 @@ suggestionCards model =
             HE.div [ HA.class' "card" ]
                   [ HE.div [ HA.class' "avatar-info" ]
                           [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
-                                  [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ]
+                                  [ HE.img (if suggestion.unseenPosts > 0 then [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar newly-posted", HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ShowPosts ] else [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ])
                                   , HE.div [ HA.class' "mini-suggestion-info" ]
                                           ( [ HE.div_
                                                     [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands suggestion.karma ]

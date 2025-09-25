@@ -59,6 +59,7 @@ type IU =
               , completedFields :: Array ProfileColumn
               , age ∷ Maybe Int
               , readReceipts ∷ Boolean
+              , unseenPosts :: Int
               , typingStatus ∷ Boolean
               , posts :: Array Post
               , showing :: ProfilePost

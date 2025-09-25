@@ -28,14 +28,9 @@ displayPosts userId posts model = model { freeToFetchPosts = true, suggestions =
             | otherwise = contact
 
 fetchPosts ∷ Int → ImModel → MoreMessages
-fetchPosts userId model = model { freeToFetchPosts = not arePostsVisible } /\ effects
+fetchPosts userId model = model { freeToFetchPosts = false } /\ [ fetch ]
       where
-      found = SU.fromJust (DA.find ((_ == userId) <<< _.id) model.suggestions <|> (_.user <$> DA.find ((_ == userId) <<< _.id <<< _.user) model.contacts))
-      arePostsVisible = found.postsVisibility == Everyone || (found.postsVisibility == NoTemporaryUsers && not model.user.temporary) || (found.postsVisibility == Contacts && found.isContact)
-
-      effects
-            | arePostsVisible = [ CCN.retryableResponse (FetchPosts userId) (DisplayPosts userId) $ request.posts.get { query: { poster: userId } } ]
-            | otherwise = []
+      fetch = CCN.retryableResponse (FetchPosts userId) (DisplayPosts userId) $ request.posts.get { query: { poster: userId } }
 
 togglePostForm ∷ ImModel → NoMessages
 togglePostForm model = model { showSuggestionsPostForm = not model.showSuggestionsPostForm } /\ []

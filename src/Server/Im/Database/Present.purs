@@ -19,25 +19,19 @@ import Server.Im.Database.Flat
 
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
+import Data.Time.Duration (Days(..))
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
-import Server.Database.Posts (_poster, _totalPosts, posts)
+import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
 import Server.Effect (ServerEffect)
+import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime as ST
 import Shared.Im.Types (HistoryMessage, MessageStatus(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
-
-userPresentationFields =
-      userFields
-      /\ (1 # as _bin)
-      /\ (false # as _isContact)
-      /\ completeness
-
-completeness = (select (array_agg (_completed # orderBy  _completed) # as _completedFields) # from complete_profiles # wher (_completer .=. u ... _id) # orderBy _completedFields # limit (Proxy ∷ _ 1))
-      where  _completedFields = Proxy :: Proxy "completedFields"
 
 userFields =
       (u ... _id # as _id)
@@ -51,7 +45,6 @@ userFields =
             /\ _temporary
             /\ (_postsVisibility # as postsVisibility)
             /\ _backer
-            /\ (select (count _id # as _totalPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _totalPosts # limit (Proxy :: _ 1))
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
             /\ (l ... _date # as _lastSeen)
@@ -89,7 +82,8 @@ presentUserContactFields =
       , joined
       , backer
       , completed_tutorial "completedTutorial"
-      , (select count(1) "totalPosts" from posts where poster = u.id)
+      , (select count(1) "totalPosts" from posts where poster = u.id and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
+      , (select count(1) "unseenPosts" from posts where poster = u.id and date >= @dayAgo and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
       , date_part_age ('year', birthday) age
       , name
       , 1 as bin
@@ -103,10 +97,10 @@ presentUserContactFields =
       , message_timestamps "messageTimestamps"
       , headline
       , description
-      , (SELECT name FROM countries WHERE id = u.country) country
-      , (SELECT ARRAY_AGG(l.name ORDER BY name) FROM languages l JOIN languages_users lu ON l.id = lu.language AND lu.speaker = u.id) languages
-      , (SELECT ARRAY_AGG(description) FROM badges b JOIN badges_users bu ON b.id = bu.badge AND bu.receiver = u.id) badges
-      , (SELECT ARRAY_AGG(t.name ORDER BY t.id) FROM tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
+      , (SELECT name from countries WHERE id = u.country) country
+      , (SELECT ARRAY_AGG(l.name ORDER BY name) from languages l JOIN languages_users lu ON l.id = lu.language AND lu.speaker = u.id) languages
+      , (SELECT ARRAY_AGG(description) from badges b JOIN badges_users bu ON b.id = bu.badge AND bu.receiver = u.id) badges
+      , (SELECT ARRAY_AGG(t.name ORDER BY t.id) from tags t JOIN tags_users tu ON t.id = tu.tag AND tu.creator = u.id) tags
       , k.current_karma karma
       , position "karmaPosition"
 """
@@ -134,29 +128,32 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       , status: Read
       , initialMessages: initialMessagesPerPage
       , contacts: Contacts
+      , everyone: Everyone
+      , noTemporaryUsers: NoTemporaryUsers
       , limit: n
+      , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
       , offset: skip
       }
       where
       --refactor: paginate over deleted chats in a cleaner way
       query =
-            "SELECT * FROM (SELECT" <> presentUserContactFields
+            "SELECT * from (SELECT" <> presentUserContactFields
                   <>
-                        """FROM
+                        """from
       users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
       LEFT JOIN last_seen ls ON u.id = ls.who
       WHERE visibility <= @contacts
-            AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
-            AND (h.sender = @loggedUserId AND (h.sender_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.sender_deleted_to AND (sender = @loggedUserId AND recipient = h.recipient OR sender = h.recipient AND recipient = @loggedUserId))) OR h.recipient = @loggedUserId AND (h.recipient_deleted_to IS NULL OR EXISTS(SELECT 1 FROM messages WHERE id > h.recipient_deleted_to AND (recipient = @loggedUserId AND sender = h.sender OR recipient = h.sender AND recipient = @loggedUserId))))
+            AND NOT EXISTS (SELECT 1 from blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+            AND (h.sender = @loggedUserId AND (h.sender_deleted_to IS NULL OR EXISTS(SELECT 1 from messages WHERE id > h.sender_deleted_to AND (sender = @loggedUserId AND recipient = h.recipient OR sender = h.recipient AND recipient = @loggedUserId))) OR h.recipient = @loggedUserId AND (h.recipient_deleted_to IS NULL OR EXISTS(SELECT 1 from messages WHERE id > h.recipient_deleted_to AND (recipient = @loggedUserId AND sender = h.sender OR recipient = h.sender AND recipient = @loggedUserId))))
       ORDER BY last_message_date DESC LIMIT @limit OFFSET @offset) uh
       , LATERAL (SELECT *
-                 FROM (SELECT
+                 from (SELECT
                               ROW_NUMBER() OVER (ORDER BY date DESC) n,"""
                   <> presentMessageFields
                   <>
-                        """FROM messages s
+                        """from messages s
                        WHERE (s.sender = uh."chatStarter" AND s.recipient = uh.recipient OR
                               s.sender = uh.recipient AND s.recipient = uh."chatStarter") AND
                               NOT (uh."chatStarter" = @loggedUserId AND uh.sender_deleted_to IS NOT NULL AND s.id <= uh.sender_deleted_to OR
@@ -171,12 +168,15 @@ presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
       { loggedUserId
       , userId
       , contacts: Contacts
+      , everyone: Everyone
+      , noTemporaryUsers: NoTemporaryUsers
       , messagesPerPage
+      , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
       , offset
       }
       where
-      query = "SELECT * FROM (SELECT" <> presentContactFields <>
-            """FROM users u
+      query = "SELECT * from (SELECT" <> presentContactFields <>
+            """from users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
       JOIN messages s ON s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender
@@ -185,7 +185,7 @@ WHERE visibility <= @contacts
       AND u.id = @userId
       AND NOT (h.sender = @loggedUserId AND h.sender_deleted_to IS NOT NULL AND s.id <= h.sender_deleted_to OR
                h.recipient = @loggedUserId AND h.recipient_deleted_to IS NOT NULL AND s.id <= h.recipient_deleted_to)
-      AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+      AND NOT EXISTS (SELECT 1 from blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
 ORDER BY s.date DESC
 LIMIT @messagesPerPage
 OFFSET @offset) m ORDER BY m.date"""
@@ -194,24 +194,39 @@ presentMissedContacts ∷ Int → DateTime → Maybe Int → ServerEffect (Array
 presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery query
       { loggedUserId
       , sinceMessageDate
+      , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
       , lastSentId
       , status: Read
       , contacts: Contacts
+      , everyone: Everyone
+      , noTemporaryUsers: NoTemporaryUsers
       }
       where
       query =
             "SELECT" <> presentUserContactFields <> ", " <> presentMessageFields <>
-                  """FROM users u
+                  """from users u
             JOIN karma_leaderboard k ON u.id = k.ranker
             JOIN histories h ON u.id = sender AND recipient = @loggedUserId OR u.id = recipient AND sender = @loggedUserId
             JOIN messages s ON (s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender)
             LEFT JOIN last_seen ls ON u.id = ls.who
             WHERE visibility <= @contacts
                   AND (last_message_date > @sinceMessageDate AND status < @status OR s.id > @lastSentId AND s.sender = @loggedUserId)
-                  AND NOT EXISTS (SELECT 1 FROM blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
+                  AND NOT EXISTS (SELECT 1 from blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
                   AND NOT (h.sender = @loggedUserId AND h.sender_deleted_to IS NOT NULL AND s.id <= h.sender_deleted_to OR
                         h.recipient = @loggedUserId AND h.recipient_deleted_to IS NOT NULL AND s.id <= h.recipient_deleted_to)
             ORDER BY last_message_date DESC, s.date"""
 
+completeness = (select (array_agg (_completed # orderBy _completed) # as _completedFields) # from complete_profiles # wher (_completer .=. u ... _id) # orderBy _completedFields # limit (Proxy ∷ _ 1))
+      where
+      _completedFields = Proxy ∷ Proxy "completedFields"
+
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
-presentUser loggedUserId = SD.single $ select userPresentationFields  # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
+presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
+      where
+      userPresentationFields =
+            userFields
+                  /\ (1 # as _bin)
+                  /\ (false # as _isContact)
+                  /\ (select (count _id # as _totalPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _totalPosts # limit (Proxy ∷ _ 1))
+                  /\ (select (count _id # as _unseenPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _unseenPosts # limit (Proxy ∷ _ 1))
+                  /\ completeness

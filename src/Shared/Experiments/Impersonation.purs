@@ -128,6 +128,7 @@ batman =
       , totalPosts : 0
       , badges: []
       , completedFields : []
+      , unseenPosts : 0
       , temporary: false
       , country: Just "Gotham"
       , languages: []
@@ -143,6 +144,7 @@ socrates =
       , headline: "I know that I know nothing"
       , profileVisibility: Everyone
       , bin: 1
+      , unseenPosts : 0
       , showing: ShowInfo
       , availability: None
       , totalPosts : 0
@@ -191,6 +193,7 @@ nicolasCage =
       , privileges: []
       , totalPosts : 0
       , postsVisibility : Everyone
+      , unseenPosts : 0
       , isContact : false
       , badges: []
       , bin: 1

@@ -23,7 +23,7 @@ import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfilePost(..))
@@ -176,7 +176,7 @@ toggleSuggestionsFromOnline model = fetchMoreSuggestions model
       }
 
 toggleShowingSuggestion ∷ Int → ProfilePost → ImModel → MoreMessages
-toggleShowingSuggestion userId toggle model = model { suggestions = map update model.suggestions, freeToFetchPosts = not shouldFetch } /\ effects
+toggleShowingSuggestion userId toggle model = model { suggestions = map update model.suggestions, modal = Special $ ShowSuggestionCard userId, freeToFetchPosts = not shouldFetch } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
       shouldFetch = toggle == ShowPosts && Just ShowInfo == (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)

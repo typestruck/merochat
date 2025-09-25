@@ -203,6 +203,9 @@ derive instance Generic DateTimeWrapper _
 instance FromValue DateTimeWrapper where
       fromValue v = map DateTimeWrapper (DL.fromValue v ∷ Either String DateTime)
 
+instance ToValue DateTimeWrapper where
+      toValue (DateTimeWrapper v) = DL.toValue v
+
 derive instance Eq DateTimeWrapper
 
 instance WriteForeign DateWrapper where

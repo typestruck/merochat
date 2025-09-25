@@ -43,6 +43,7 @@ backerUser =
       , showing : ShowInfo
       , messageTimestamps: true
       , postsVisibility : Everyone
+      , unseenPosts : 0
       , isContact : false
       , totalPosts: 0
       , typingStatus: true

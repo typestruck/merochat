@@ -86,6 +86,7 @@ imUser =
       { karmaPosition: 1
       , age: Nothing
       , name: "test"
+      , unseenPosts : 0
       , id: imUserId
       , showing: ShowInfo
       , profileVisibility: Everyone
