@@ -2841,7 +2841,7 @@ label {
     justify-content: flex-end;
 }
 
-.avatar-profile.newly-posted, .suggestion-avatar.newly-posted {
+.newly-posted {
     padding: 8px;
     background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='100' ry='100' stroke='%23FBFEFB' stroke-width='9' stroke-dasharray='70%25%2c 5%25' stroke-dashoffset='96' stroke-linecap='butt'/%3e%3c/svg%3e");
     border-radius: 100px;
@@ -2853,11 +2853,19 @@ label {
     border-radius: 100px;
 }
 
+.collapsed.taller {
+    height: 97px;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;
         overflow-x: hidden;
         height: unset;
+    }
+
+    .avatar-contact-list.newly-posted {
+        padding: 6px;
     }
 
     .back-filter .svg-back-profile {

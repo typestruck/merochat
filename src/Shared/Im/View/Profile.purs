@@ -107,8 +107,8 @@ compactProfile contact model =
             ]
       where
       showProfileAction
-                | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
-                | otherwise =  [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
+            | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
+            | otherwise = [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]
 
       availableStatus =
             HE.div
@@ -142,7 +142,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
             else
                   [ HE.div [ HA.class' "avatar-info" ]
                           [ HE.div [ HA.class' "big-avatar-info" ]
-                                  [ HE.img [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ]
+                                  [ HE.img (if user.unseenPosts > 0 then [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar newly-posted", HA.onClick $ ToggleShowing user.id ForContacts ShowPosts ] else [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ])
                                   , HE.div [ HA.class' "big-suggestion-info" ]
                                           ( HE.strong [ HA.class' "big-card-name" ] [ HE.text user.name ]
                                                   : badges user.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user user ]
@@ -278,13 +278,13 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
 
 postsCount ∷ Suggestion → Array (Html ImMessage)
 postsCount user
-        | user.totalPosts == 0 = []
-        | otherwise = [ HE.span_ [ HE.text $ show user.totalPosts <> " posts" ] ]
+      | user.totalPosts == 0 = []
+      | otherwise = [ HE.span_ [ HE.text $ show user.totalPosts <> " posts" ] ]
 
 countrySeparator ∷ Suggestion → Array (Html ImMessage)
 countrySeparator user
-        | DM.isJust user.country && (DM.isJust user.gender || DM.isJust user.age) = [ separator ]
-        | otherwise = []
+      | DM.isJust user.country && (DM.isJust user.gender || DM.isJust user.age) = [ separator ]
+      | otherwise = []
 
 -- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
@@ -515,7 +515,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                           [ HE.div [ HA.class' "mini-avatar-info-arrows" ]
                                   [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
                                   , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
-                                          [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
+                                          [ avatar suggestion
                                           , HE.div [ HA.class' "mini-suggestion-info" ]
                                                   ( [ HE.div_
                                                             [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands suggestion.karma ]
@@ -556,11 +556,11 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                           , HE.path' [ HA.d "M18 12L12 6L6 12", HA.stroke "#EFE5DC", HA.strokeWidth "2" ]
                           ]
                   , seeAllSuggestions
-                  , HE.div [ HA.class' "mini-suggestion-cards collapsed" ]
+                  , HE.div [ HA.class' { "mini-suggestion-cards collapsed": true, taller : suggestion.unseenPosts > 0 } ]
                           [ HE.div [ HA.class' "mini-avatar-info-arrows" ]
                                   [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
                                   , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
-                                          [ HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
+                                          [ avatar suggestion
                                           , HE.div [ HA.class' "mini-suggestion-info" ]
                                                   ( [ HE.strong [ HA.class' "collapsed-name" ] [ HE.text suggestion.name ]
 
@@ -572,6 +572,10 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                           ]
                   ]
             _ → []
+      where
+      avatar suggestion
+            | suggestion.unseenPosts > 0 = HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar newly-posted", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts ]
+            | otherwise = HE.img [ HA.src $ SA.fromAvatar suggestion, HA.class' "mini-suggestion-avatar" ]
 
 seeAllSuggestions ∷ Html ImMessage
 seeAllSuggestions = HE.div [ HA.class' "see-all-suggestions" ]
