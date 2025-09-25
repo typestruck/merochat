@@ -48,7 +48,7 @@ modals model =
                     ]
             )
       where
-      shouldShow = case model.modal of
+      shouldShow = case  model.modal of
             Chat _ → false
             HideModal → false
             _ → true
@@ -61,7 +61,8 @@ modals model =
                   ConfirmBlockUser id → [ confirmBlockUser id ]
                   ConfirmTerminationTemporaryUser → [ confirmTermination ]
             Special sp → case sp of
-                  ShowSuggestionCard userId → [ CISP.individualSuggestion (SU.fromJust $ DA.find ((userId == _) <<< _.id) model.suggestions) model ]
+                  -- _ should be synced to model.suggesting
+                  ShowSuggestionCard _ → [ CISP.individualSuggestion (SU.fromJust (model.suggesting >>= (\sid → DA.find ((sid == _) <<< _.id) model.suggestions))) model ]
                   ShowPostForm → [ postForm model ]
 
             _ → []

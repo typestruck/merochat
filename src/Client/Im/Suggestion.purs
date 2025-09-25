@@ -176,7 +176,14 @@ toggleSuggestionsFromOnline model = fetchMoreSuggestions model
       }
 
 toggleShowingSuggestion ∷ Int → ProfilePost → ImModel → MoreMessages
-toggleShowingSuggestion userId toggle model = model { suggestions = map update model.suggestions, modal = Special $ ShowSuggestionCard userId, freeToFetchPosts = not shouldFetch } /\ effects
+toggleShowingSuggestion userId toggle model =
+      model
+            { suggestions = map update model.suggestions
+            --we need this bookkeeping for big suggestion cards
+            , suggesting = Just userId
+            , modal = Special $ ShowSuggestionCard userId
+            , freeToFetchPosts = not shouldFetch
+            } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
       shouldFetch = toggle == ShowPosts && Just ShowInfo == (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
