@@ -15,7 +15,7 @@ import Data.BigInt as DB
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Time.Duration (Days(..), Minutes(..))
+import Data.Time.Duration (Days(..), Hours(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
@@ -31,8 +31,8 @@ import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
 import Server.Database.LastSeen (_who, last_seen)
 import Server.Database.Messages (_content, _status, messages, _edited)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts)
-import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Posts (posts)
+import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
@@ -77,7 +77,7 @@ suggestBaseQuery loggedUserId filter =
                     /\ completeness
                     /\ (isNotNull _sender # as _isContact)
                     /\ ((select (count _id # as _totalPosts) # from posts  # wher (postsFilter loggedUserId) # orderBy _totalPosts # limit (Proxy ∷ _ 1)) # as _totalPosts)
-                    /\ ((select (count _id # as _unseenPosts) # from posts # wher (( postsFilter loggedUserId  .&&._date .>=. DateTimeWrapper (ST.unsafeAdjustFromNow (Days (-1.0))))) # orderBy _unseenPosts # limit (Proxy ∷ _ 1)) # as _unseenPosts)
+                    /\ ((select (count _id # as _unseenPosts) # from posts # wher (( postsFilter loggedUserId  .&&._date .>=. DateTimeWrapper (ST.unsafeAdjustFromNow (Hours (-24.0))))) # orderBy _unseenPosts # limit (Proxy ∷ _ 1)) # as _unseenPosts)
             )
             # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) (histories # as h) # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
             # wher filter

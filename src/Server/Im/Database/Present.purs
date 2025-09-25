@@ -19,7 +19,7 @@ import Server.Im.Database.Flat
 
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
-import Data.Time.Duration (Days(..))
+import Data.Time.Duration (Days(..), Hours(..))
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
@@ -131,7 +131,7 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
       , limit: n
-      , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
+      , dayAgo: ST.unsafeAdjustFromNow $ Hours (-24.0)
       , offset: skip
       }
       where
