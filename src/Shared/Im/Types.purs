@@ -260,7 +260,7 @@ data ImMessage
       | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
-      | ToggleShowing Int ProfilePost
+
       | ToggleSuggestionsFromOnline
       | ResumeSuggestionChat Int
       | ToggleSuggestionChatInput Int
@@ -301,6 +301,7 @@ data ImMessage
       | ToggleSuggestionPostForm
       | SetPostContent (Maybe String)
       | SendPost
+      | ToggleShowing Int For ProfilePost
       | AfterSendPost
       --   | CheckFetchPosts Int Event
 
@@ -336,6 +337,8 @@ data ImMessage
       | CreateUserFromTemporary
       | FinishTutorial
       | SetRegistered
+
+data For = ForSuggestions | ForContacts
 
 data Theme = Light | Dark
 

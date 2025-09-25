@@ -1922,7 +1922,7 @@ input:not(type=button):focus {
     margin: 10px 0;
 }
 
-.contact-box .retry.invisible {
+.contact-box .retry.invisible, .posts .retry.invisible {
     display: none;
 }
 
@@ -2590,7 +2590,8 @@ input:not(type=button):focus {
 
 .full-card-headline-tags,
 .contact-full-profile .avatar-info,
-.contact-full-profile .card-description {
+.contact-full-profile .card-description,
+.contact-full-profile .posts {
     width: 950px;
 }
 
@@ -3327,6 +3328,10 @@ label {
 
     .contact-full-profile .card-description {
         margin-bottom: 15px;
+    }
+
+    .contact-full-profile .posts {
+        width: auto;
     }
 
     .contact-full-profile {

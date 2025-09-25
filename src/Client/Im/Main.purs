@@ -174,6 +174,7 @@ update st model =
             SetPostContent content → CIPS.setPostContent content model
             SendPost → CIPS.sendPost model
             AfterSendPost → CIPS.afterSendPost model
+            ToggleShowing userId for toggle → CIPS.toggleShowing userId toggle for model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model
@@ -182,7 +183,6 @@ update st model =
             ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
-            ToggleShowing userId toggle → CIS.toggleShowingSuggestion userId toggle model
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model

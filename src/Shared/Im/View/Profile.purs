@@ -163,14 +163,30 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                                           )
                                   ]
                           ]
-                  , HE.div [ HA.class' "full-card-headline-tags" ]
+
+                  , HE.div [ HA.class' "green-tab" ]
+                          [ HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowInfo } ] [ HE.text "Info" ]
+                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPosts } ] [ HE.text "Posts" ]
+                          ]
+
+                  , HE.div [ HA.class' { "full-card-headline-tags": true, hidden: user.showing == ShowPosts } ]
                           ( [ HE.div [ HA.class' "card-headline" ] [ HE.text user.headline ]
                             , HE.hr' [ HA.class' "tag-ruler" ]
                             ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) user.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
                           )
-                  , HE.div [ HA.class' "card-description", HA.title "See full profile" ]
+                  , HE.div [ HA.class' { "card-description": true, hidden: user.showing == ShowPosts }, HA.title "See full profile" ]
                           [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                           , HE.div' [ HA.innerHtml $ SM.parse user.description ]
+                          ]
+
+                  , HE.div [ HA.class' { posts: true, hidden: user.showing == ShowInfo } ]
+                          [ SIVR.retry "Failed to load posts" (FetchPosts user.id) model.failedRequests
+                          , if model.freeToFetchPosts && DA.null user.posts then
+                                  HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
+                            else if model.freeToFetchPosts then
+                                  HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
+                            else
+                                  HE.div' [ HA.class' "loading" ]
                           ]
                   ]
 
@@ -198,7 +214,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                     ]
             , HE.div [ HA.class' "avatar-info" ]
                     [ HE.div [ HA.class' "big-avatar-info" ]
-                            [ HE.div [ HA.class' "full" ] [ HE.img (if suggestion.unseenPosts > 0 then [ HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ShowPosts, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar newly-posted" ] else [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]) ]
+                            [ HE.div [ HA.class' "full" ] [ HE.img (if suggestion.unseenPosts > 0 then [ HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar newly-posted" ] else [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]) ]
                             , HE.div [ HA.class' "big-suggestion-info full" ]
                                     ( HE.strong [ HA.class' "big-card-name" ] [ HE.text suggestion.name ]
                                             : badges suggestion.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user suggestion ]
@@ -226,8 +242,8 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                     ]
 
             , HE.div [ HA.class' "green-tab" ]
-                    [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
-                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
+                    [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
+                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
                     ]
 
             , HE.div [ HA.class' { hidden: suggestion.showing == ShowPosts } ]
@@ -321,7 +337,7 @@ suggestionCards model =
             HE.div [ HA.class' "card" ]
                   [ HE.div [ HA.class' "avatar-info" ]
                           [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
-                                  [ HE.img (if suggestion.unseenPosts > 0 then [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar newly-posted", HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ShowPosts ] else [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ])
+                                  [ HE.img (if suggestion.unseenPosts > 0 then [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar newly-posted", HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts ] else [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ])
                                   , HE.div [ HA.class' "mini-suggestion-info" ]
                                           ( [ HE.div_
                                                     [ HE.strong [ HA.class' "mini-suggestion-karma" ] [ HE.text $ SI.thousands suggestion.karma ]
