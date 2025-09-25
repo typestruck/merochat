@@ -157,14 +157,14 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                                                           , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show user.karmaPosition ]
                                                           ]
                                             ]
-                                                  <> genderAge user
-                                                  <> from user
+                                                  <> [ HE.div_ $ genderAge user <> countrySeparator user <> from user ]
                                                   <> speaks user
+                                                  <> postsCount user
                                           )
                                   ]
                           ]
 
-                  , HE.div [ HA.class' "green-tab" ]
+                  , HE.div [ HA.class' { "green-tab": true, hidden: user.temporary } ]
                           [ HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowInfo } ] [ HE.text "Info" ]
                           , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPosts } ] [ HE.text "Posts" ]
                           ]
@@ -228,9 +228,9 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                                                     , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show suggestion.karmaPosition ]
                                                     ]
                                       ]
-                                            <> [ HE.div_ $ genderAge suggestion <> countrySeparator <> from suggestion ]
+                                            <> [ HE.div_ $ genderAge suggestion <> countrySeparator suggestion <> from suggestion ]
                                             <> speaks suggestion
-                                            <> postsCount
+                                            <> postsCount suggestion
 
                                     )
                             , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIA.contextMenu $ show FullProfileContextMenu ]
@@ -241,7 +241,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                             ]
                     ]
 
-            , HE.div [ HA.class' "green-tab" ]
+            , HE.div [ HA.class' { "green-tab": true, hidden: suggestion.temporary } ]
                     [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
                     , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
                     ]
@@ -276,14 +276,15 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
                                 [ SIVC.chatBarInput (Left suggestion.id) ChatInputBigSuggestion model ]
 
             ]
-      where
-      countrySeparator
-            | DM.isJust suggestion.country && (DM.isJust suggestion.gender || DM.isJust suggestion.age) = [ separator ]
-            | otherwise = []
 
-      postsCount
-            | suggestion.totalPosts == 0 = []
-            | otherwise = [ HE.span_ [ HE.text $ show suggestion.totalPosts <> " posts" ] ]
+postsCount user
+        | user.totalPosts == 0 = []
+        | otherwise = [ HE.span_ [ HE.text $ show user.totalPosts <> " posts" ] ]
+
+countrySeparator user
+        | DM.isJust user.country && (DM.isJust user.gender || DM.isJust user.age) = [ separator ]
+        | otherwise = []
+
 
 -- | Suggestions are shown as a card list
 suggestionCards ∷ ImModel → Html ImMessage
