@@ -14,7 +14,7 @@ import Shared.Account (EmailCaptcha, EmailPasswordCaptcha, RegisterTemporary, Re
 import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper, DateWrapper)
 import Shared.Html (Html)
-import Shared.Post (Post, PostPayload)
+import Shared.Post (PostPayload, Post)
 import Shared.Profile.Types (SavedFields)
 import Shared.Settings.Types (PrivacySettings)
 
@@ -165,6 +165,11 @@ spec ∷
                                   , get ∷
                                           GET "/"
                                                 { response ∷ String
+                                                }
+                                  , posts ∷
+                                          GET "/posts?after=<after>"
+                                                { query ∷ { after ∷ Maybe Int }
+                                                , response ∷ Array Post
                                                 }
                                   , generated ∷
                                           POST "/generated"

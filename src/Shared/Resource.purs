@@ -142,8 +142,8 @@ resourceName = case _ of
       Left Avatar → "avatar"
       Left NicolasCageHiclipart → "nicolas_cage_hiclipart"
       Left BatmanNounProjectAnushaNarvekar → "batman_noun_project_Anusha_Narvekar"
-      Left SocratesStingWikimedia → "socrates_Sting_wikimedia"
       Left Loading → "loading"
+      Left SocratesStingWikimedia → "socrates_Sting_wikimedia"
       Left (Upload up) → up
 
 resourceType ∷ ResourceType → String

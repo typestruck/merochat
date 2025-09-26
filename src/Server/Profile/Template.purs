@@ -13,7 +13,7 @@ import Shared.Profile.Types (ProfileMode(..))
 import Shared.Profile.View as SPV
 
 template ∷ Payload → Effect String
-template { user: user, countries, languages } = do
+template { user, countries, languages, posts } = do
       F.preMount (QuerySelector ("#" <> show ProfileEditionForm))
             { view: SPV.view
             , model:
@@ -24,6 +24,7 @@ template { user: user, countries, languages } = do
                     , mode : Edit
                     , fromTemporary : false
                     , countryInputed: user.country
+                    , posts
                     , languagesInputed: user.languages
                     , visible: true
                     , generated : []

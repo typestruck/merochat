@@ -20,6 +20,7 @@ import Server.Profile.Types (Payload)
 import Server.Response as SR
 import Server.ThreeK as ST
 import Shared.DateTime as SDT
+import Shared.Post (Post)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (SavedFields)
 import Shared.Profile.Types as SPT
@@ -34,11 +35,13 @@ fieldTooBigMessage = "Field exceeded max value"
 profile ∷ Int → ServerEffect Payload
 profile loggedUserId = do
       profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserId
+      posts ← SPD.presentPosts loggedUserId Nothing
       countries ← SPD.presentCountries
       languages ← SPD.presentLanguages
       pure
             { user: profileUser
             , countries
+            , posts
             , languages
             }
 
@@ -48,6 +51,9 @@ generateField field = do
             SPT.Name → ST.generateName
             SPT.Headline → ST.generateHeadline
             SPT.Description → ST.generateDescription
+
+refreshPosts :: Int -> Maybe Int -> ServerEffect (Array Post)
+refreshPosts loggedUserId id = SPD.presentPosts loggedUserId id
 
 data SaveAvatar = Ignore | Save (Maybe String)
 

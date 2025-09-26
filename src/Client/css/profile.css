@@ -55,6 +55,10 @@
     width: 47em;
 }
 
+.profile-edition .posts {
+    width: 850px;
+}
+
 .profile-edition .request-error-message {
     padding: 0 10px;
 }
@@ -86,6 +90,10 @@
     .margined {
         margin: 0;
         margin-bottom: 10px;
+    }
+
+    .profile-edition .posts {
+       width: auto;
     }
 
     .profile-section .profile-section-wedge .modal-input, .profile-section .profile-section-wedge .modal-select, .profile-section .modal-input, .profile-section .modal-select, .profile-edition .full-card-headline-tags, .profile-edition .card-description  {

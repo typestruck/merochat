@@ -29,14 +29,14 @@ import Record as R
 import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ImMessage(..))
+import Shared.Im.Types (ImMessage(..), RetryableRequest(..))
 import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Options.MountPoint (imId)
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
-import Shared.Profile.Types (PM, ProfileMessage(..), ProfileModel, What(..))
+import Shared.Profile.Types (PM, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
 import Shared.ProfileColumn as SP
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
@@ -48,6 +48,7 @@ update ∷ Update ProfileModel ProfileMessage
 update model = case _ of
       SetPField upd → setField model upd
       SelectAvatar → selectAvatar model
+      RefreshPosts → refreshPosts model
       SetCountry value → setCountry value model
       SetAge value → setAge value model
       SetGender value → setGender value model
@@ -59,6 +60,15 @@ update model = case _ of
       Save → save model
       AfterRegistration → setFromTemporary model
       UpdatePrivileges _ → model /\ []
+
+refreshPosts ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+refreshPosts model = model { mode = OwnPosts } /\ [ fetch ]
+      where
+      fetch = do
+            result ← request.profile.posts { query: { after: _.id <$> DA.head model.posts } }
+            case result of
+                  Right (Response response) → pure <<< Just <<< SetPField $ _ { posts = response.body <> model.posts }
+                  _ → pure Nothing
 
 clear ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 clear model =

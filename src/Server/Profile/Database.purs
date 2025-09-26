@@ -14,15 +14,18 @@ import Droplet.Driver.Internal.Query (Connection(..))
 import Prelude as P
 import Server.Database as SD
 import Server.Database.Countries (countries)
-import Server.Database.Fields (_id, _name, b, bu, k, l, lu, onlineStatus, tu, u)
+import Server.Database.Fields (_date, _id, _name, b, bu, k, l, lu, onlineStatus, tu, u)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
+import Server.Database.Messages (_content)
+import Server.Database.Posts (_expires, _poster, posts)
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, _onlineStatus, users)
 import Server.Effect (ServerEffect)
 import Server.Profile.Database.Flat (FlatProfileUser)
+import Shared.Post (Post)
 import Shared.ProfileColumn as CP
 import Shared.Unsafe as SU
 import Simple.JSON as SJ
@@ -52,11 +55,17 @@ presentProfile loggedUserId = map SU.fromJust <<< SD.single $ select profilePres
 presentCountries ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentCountries = SD.query $ select (_id /\ _name) # from countries # orderBy _name
 
+presentPosts ∷ Int → Maybe Int → ServerEffect (Array Post)
+presentPosts loggedUserId after =
+      case after of
+            Just id → SD.query $ select (_id /\ _date /\ _expires /\ _content) # from posts # wher (_poster .=. loggedUserId .&&. _id .>. id) # orderBy (_date # desc) # limit (Proxy ∷ _ 8)
+            Nothing → SD.query $ select (_id /\ _date /\ _expires /\ _content) # from posts # wher (_poster .=. loggedUserId) # orderBy (_date # desc) # limit (Proxy ∷ _ 8)
+
 presentLanguages ∷ ServerEffect (Array { id ∷ Int, name ∷ String })
 presentLanguages = SD.query $ select (_id /\ _name) # from languages # orderBy _name
 
-presentGeneratedFields :: Connection -> Int -> _
-presentGeneratedFields connection loggedUserId = map SU.fromJust <<< SD.singleWith connection $ select (_name /\ _headline /\ _description ) # from users # wher (_id .=. loggedUserId)
+presentGeneratedFields ∷ Connection → Int → _
+presentGeneratedFields connection loggedUserId = map SU.fromJust <<< SD.singleWith connection $ select (_name /\ _headline /\ _description) # from users # wher (_id .=. loggedUserId)
 
 upsertCompletness ∷ Connection → Int → CP.ProfileColumn → _
 upsertCompletness connection loggedUserId field = SD.unsafeExecuteWith connection "INSERT INTO complete_profiles(completer, completed) values(@loggedUserId, @field) ON CONFLICT (completer, completed) DO NOTHING" { loggedUserId, field }
@@ -64,16 +73,16 @@ upsertCompletness connection loggedUserId field = SD.unsafeExecuteWith connectio
 removeCompletness ∷ Connection → Int → CP.ProfileColumn → _
 removeCompletness connection loggedUserId field = SD.executeWith connection $ delete # from complete_profiles # wher (_completer .=. loggedUserId .&&. _completed .=. field)
 
-saveRequiredField ∷ ∀ t. ToValue t ⇒ Connection -> Int → CP.ProfileColumn →  t -> Boolean  → _
-saveRequiredField connection loggedUserId field value generated  =  do
+saveRequiredField ∷ ∀ t. ToValue t ⇒ Connection → Int → CP.ProfileColumn → t → Boolean → _
+saveRequiredField connection loggedUserId field value generated = do
       SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
       if generated then
             removeCompletness connection loggedUserId field
       else
             upsertCompletness connection loggedUserId field
 
-saveField ∷ ∀ t. ToValue t ⇒ Connection -> Int → CP.ProfileColumn → Maybe t → _
-saveField connection loggedUserId field value =  do
+saveField ∷ ∀ t. ToValue t ⇒ Connection → Int → CP.ProfileColumn → Maybe t → _
+saveField connection loggedUserId field value = do
       SD.unsafeExecuteWith connection ("UPDATE users SET " <> show field <> " = @value WHERE id = @loggedUserId") { value, loggedUserId }
       case value of
             Just _ → upsertCompletness connection loggedUserId field
@@ -87,7 +96,7 @@ saveLanguages connection loggedUserId languages = void do
             upsertCompletness connection loggedUserId CP.Languages
             SD.executeWith connection $ insert # into languages_users (_speaker /\ _language) # values (map (loggedUserId /\ _) languages)
 
-saveTags connection loggedUserId tags =  void do
+saveTags connection loggedUserId tags = void do
       SD.executeWith connection $ delete # from tags_users # wher (_creator .=. loggedUserId)
       if DA.null tags then
             removeCompletness connection loggedUserId CP.Tags
