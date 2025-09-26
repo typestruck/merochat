@@ -180,9 +180,9 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
 
                   , HE.div [ HA.class' { posts: true, hidden: user.showing == ShowInfo } ]
                           [ SIVR.retry "Failed to load posts" (FetchPosts user.id) model.failedRequests
-                          , if model.freeToFetchPosts && DA.null user.posts then
+                          , if model.posts.freeToFetch && DA.null user.posts then
                                   HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
-                            else if model.freeToFetchPosts then
+                            else if model.posts.freeToFetch then
                                   HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
                             else
                                   HE.div' [ HA.class' "loading" ]
@@ -257,9 +257,9 @@ individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
 
             , HE.div [ HA.class' { posts: true, hidden: suggestion.showing == ShowInfo } ]
                     [ SIVR.retry "Failed to load posts" (FetchPosts suggestion.id) model.failedRequests
-                    , if model.freeToFetchPosts && DA.null suggestion.posts then
+                    , if model.posts.freeToFetch && DA.null suggestion.posts then
                             HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
-                      else if model.freeToFetchPosts then
+                      else if model.posts.freeToFetch then
                             HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
                       else
                             HE.div' [ HA.class' "loading" ]

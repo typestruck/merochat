@@ -171,7 +171,10 @@ update st model =
             DisplayPosts userId posts → CIPS.displayPosts userId posts model
             SpecialRequest (FetchPosts userId) → CIPS.fetchPosts userId model
             ToggleSuggestionPostForm → CIPS.togglePostForm model
-            SetPostContent content → CIPS.setPostContent content model
+            SetPostMode mode → CIPS.setPostMode mode model
+            SetPostText content → CIPS.setPostText content model
+            SetPostLink content → CIPS.setPostLink content model
+            SetPostCaption content → CIPS.setPostCaption content model
             SendPost → CIPS.sendPost model
             AfterSendPost → CIPS.afterSendPost model
             ToggleShowing userId for toggle → CIPS.toggleShowing userId toggle for model

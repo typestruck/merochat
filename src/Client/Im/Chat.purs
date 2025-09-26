@@ -40,6 +40,7 @@ import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame as F
 import Node.URL as NU
+import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
@@ -110,7 +111,7 @@ messageContent elementId model = do
             resizeTextarea input
 
 -- | Prepare and send a message via web socket
-prepareSendMessage ∷ ElementId → MessageContent → DateTimeWrapper → WebSocket → ImModel → MoreMessages
+prepareSendMessage ∷ ElementId → Content → DateTimeWrapper → WebSocket → ImModel → MoreMessages
 prepareSendMessage elementId content dt webSocket model = case content of
       Text message | DS.null $ DS.trim message → F.noMessages model
       _ → sendMessage (SU.fromJust updatedModel.chatting) model.user.name shouldFetchHistory content dt webSocket updatedModel
@@ -137,7 +138,7 @@ prepareSendMessage elementId content dt webSocket model = case content of
                                           , suggesting = SIS.moveSuggestion model 1 --move it along so mini suggestions dont disappear
                                           }
 
-sendMessage ∷ Int → String → Boolean → MessageContent → DateTimeWrapper → WebSocket → ImModel → NoMessages
+sendMessage ∷ Int → String → Boolean → Content → DateTimeWrapper → WebSocket → ImModel → NoMessages
 sendMessage userId userName shouldFetchHistory contentMessage date webSocket model =
       model
             { temporaryId = newTemporaryId
@@ -184,6 +185,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
                   Text txt → txt
                   Image caption width height base64File → asMarkdownImage caption width height base64File
                   Audio base64 → asAudioMessage base64
+                  _ -> ""
       updateContact contact
             | contact.user.id == userId =
                     contact

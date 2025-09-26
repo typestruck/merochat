@@ -109,8 +109,8 @@ resourcePath res tp = path <> named <> replaced <> resourceType tp
 resourceName ∷ Either Media Bundle → String
 resourceName = case _ of
       Right Common → "common"
-      Right Emoji → "emoji"
       Right Experiments → "experiments"
+      Right Emoji → "emoji"
       Right Backer → "backer"
       Right Base → "base"
       Right Help → "help"
@@ -137,8 +137,8 @@ resourceName = case _ of
       Left Favicon8 → "favicon-8"
       Left Favicon9 → "favicon-9"
       Left Favicon10 → "favicon-10"
-      Left Favicon10Plus → "favicon-10-plus"
       Left BackerAvatar → "backer-avatar"
+      Left Favicon10Plus → "favicon-10-plus"
       Left Avatar → "avatar"
       Left NicolasCageHiclipart → "nicolas_cage_hiclipart"
       Left BatmanNounProjectAnushaNarvekar → "batman_noun_project_Anusha_Narvekar"

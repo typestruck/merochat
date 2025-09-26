@@ -9,16 +9,23 @@ import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
-import Shared.Im.Types (For(..), ImMessage(..), ImModel, RetryableRequest(..))
+import Shared.Content (Content(..))
+import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..))
 import Shared.Modal.Types (Modal(..), SpecialModal(..))
 import Shared.Post (Post)
 import Shared.Unsafe as SU
 import Shared.User (ProfilePost(..), ProfileVisibility(..))
 
 displayPosts ∷ Int → Array Post → ImModel → NoMessages
-displayPosts userId posts model = model { freeToFetchPosts = true, suggestions = map updateSuggestion model.suggestions, contacts = map updateContact model.contacts } /\ []
+displayPosts userId posts model =
+      model
+            { posts = model.posts { freeToFetch = true }
+            , suggestions = map updateSuggestion model.suggestions
+            , contacts = map updateContact model.contacts
+            } /\ []
       where
       updateSuggestion suggestion
             | suggestion.id == userId = suggestion { posts = suggestion.posts <> posts }
@@ -28,34 +35,61 @@ displayPosts userId posts model = model { freeToFetchPosts = true, suggestions =
             | otherwise = contact
 
 fetchPosts ∷ Int → ImModel → MoreMessages
-fetchPosts userId model = model { freeToFetchPosts = false } /\ [ fetch ]
+fetchPosts userId model = model { posts = model.posts { freeToFetch = false } } /\ [ fetch ]
       where
       fetch = CCN.retryableResponse (FetchPosts userId) (DisplayPosts userId) $ request.posts.get { query: { poster: userId } }
 
 togglePostForm ∷ ImModel → NoMessages
 togglePostForm model = model { showSuggestionsPostForm = not model.showSuggestionsPostForm } /\ []
 
-setPostContent ∷ Maybe String → ImModel → NoMessages
-setPostContent content model =
+setPostText ∷ Maybe String → ImModel → NoMessages
+setPostText content model =
       model
-            { postContent = if content == Just "" then Nothing else content
+            { posts = model.posts { text = content }
+            } /\ []
+
+setPostLink ∷ Maybe String → ImModel → NoMessages
+setPostLink content model =
+      model
+            { posts = model.posts { link = content }
+            } /\ []
+
+setPostCaption ∷ Maybe String → ImModel → NoMessages
+setPostCaption content model =
+      model
+            { posts = model.posts { caption = content }
             } /\ []
 
 afterSendPost ∷ ImModel → NoMessages
 afterSendPost model =
       model
             { user = model.user { totalPosts = model.user.totalPosts + 1 }
-            , freeToPost = true
-            , postContent = Nothing
+            , posts = model.posts
+                    { freeToSend = true
+                    , mode = TextOnly
+                    , link = Nothing
+                    , caption = Nothing
+                    , text = Nothing
+                    }
             , modal = HideModal
             } /\ []
 
 sendPost ∷ ImModel → MoreMessages
-sendPost model = model { freeToPost = false } /\ [ send ]
+sendPost model = model { posts = model.posts { freeToSend = not maySend } } /\ effects
       where
+      maySend = model.posts.mode == TextOnly && DM.isJust model.posts.text || model.posts.mode == LinkOnly && DM.isJust model.posts.link
       send = do
-            void <<< CCN.silentResponse $ request.posts.post { body: { content: SU.fromJust model.postContent } }
+            void <<< CCN.silentResponse $ request.posts.post
+                  { body:
+                          { content: case model.posts.mode of
+                                  LinkOnly → Link (SU.fromJust model.posts.link) model.posts.caption
+                                  _ → Text $ SU.fromJust model.posts.text
+                          }
+                  }
             pure $ Just AfterSendPost
+      effects
+            | maySend = [ send ]
+            | otherwise = []
 
 toggleShowing ∷ Int → ProfilePost → For → ImModel → MoreMessages
 toggleShowing userId toggle for model =
@@ -70,7 +104,7 @@ toggleShowingSuggestions userId toggle model =
             --we need this bookkeeping for big suggestion cards
             , suggesting = Just userId
             , modal = Special $ ShowSuggestionCard userId
-            , freeToFetchPosts = not shouldFetch
+            , posts = model.posts { freeToFetch = not shouldFetch }
             } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
@@ -88,7 +122,7 @@ toggleShowingContacts ∷ Int → ProfilePost → ImModel → MoreMessages
 toggleShowingContacts userId toggle model =
       model
             { contacts = map update model.contacts
-            , freeToFetchPosts = not shouldFetch
+            , posts = model.posts { freeToFetch = not shouldFetch }
             , fullContactProfileVisible = true
             } /\ effects
       where
@@ -102,3 +136,6 @@ toggleShowingContacts userId toggle model =
       effects
             | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId ]
             | otherwise = []
+
+setPostMode ∷ PostMode → ImModel → NoMessages
+setPostMode mode model = model { posts = model.posts { mode = mode } } /\ []

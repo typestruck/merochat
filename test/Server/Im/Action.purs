@@ -39,6 +39,7 @@ import Server.Landing.Database as SLD
 import Server.Settings.Action as SSA
 import Shared.Privilege (Privilege(..))
 import Shared.Resource (maxImageSize)
+import Shared.Content
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))

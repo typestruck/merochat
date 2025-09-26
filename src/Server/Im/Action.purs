@@ -34,6 +34,7 @@ import Server.Im.Database.Permission as SIDPP
 import Server.Im.Database.Present as SIDP
 import Server.Im.Database.Suggest as SIDS
 import Server.Im.Types (Payload)
+import Shared.Content
 import Server.Sanitize as SS
 import Server.ThreeK as ST
 import Server.Wheel as SW
@@ -89,7 +90,7 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
 subscribe ∷ Int → ServerEffect Unit
 subscribe loggedUserId = SIDE.subscribe loggedUserId
 
-processMessage ∷ ∀ r. Int → Int → MessageContent → BaseEffect { pool ∷ Pool | r } (Either MessageError (Int /\ String))
+processMessage ∷ ∀ r. Int → Int → Content → BaseEffect { pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do
       isIt ← SIDE.isRecipientVisible loggedUserId userId
       if isIt then do
@@ -109,7 +110,7 @@ listChangelogs loggedUserId id = SIDC.listChangelogs loggedUserId id
 markRead :: Int -> Array Int -> ServerEffect Unit
 markRead loggedUserId ids = SIDC.markRead loggedUserId ids
 
-editMessage ∷ ∀ r. Int → Int → Int → MessageContent → BaseEffect {  pool ∷ Pool | r } (Either MessageError String)
+editMessage ∷ ∀ r. Int → Int → Int → Content → BaseEffect {  pool ∷ Pool | r } (Either MessageError String)
 editMessage loggedUserId userId messageId content = do
       isVisible ← SIDE.isRecipientVisible loggedUserId userId
       canEdit ← if isVisible then SIDPP.canEditMessage loggedUserId messageId else pure false
@@ -131,7 +132,7 @@ markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Priv
 markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SIDPP.markdownPrivileges loggedUserId
 
 -- | Sanitizes markdown and handle image uploads
-processMessageContent ∷ ∀ r. MessageContent → Set Privilege → BaseEffect {  pool ∷ Pool | r } String
+processMessageContent ∷ ∀ r. Content → Set Privilege → BaseEffect {  pool ∷ Pool | r } String
 processMessageContent content privileges = do
       message ← case content of
             Text m | allowed m → pure m

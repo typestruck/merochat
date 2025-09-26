@@ -10,10 +10,11 @@ import Data.String as DS
 import Data.Tuple as DT
 import Effect.Class (liftEffect)
 import Effect.Now as EN
+import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (MessageContent(..), MessageStatus(..))
+import Shared.Im.Types (MessageStatus(..))
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SN

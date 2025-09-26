@@ -5,6 +5,7 @@ import Shared.Im.Types
 
 import Data.Array ((:))
 import Data.Array as DA
+import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
@@ -39,60 +40,67 @@ template payload = do
                     , javascript = javascript
                     , css = css
                     }
-            , model:
-                    { chatting: Nothing
-                    , freeToFetchSuggestions: true
-                    , temporaryId: 0
-                    , typingIds: []
-                    , suggesting:
-                            if DA.null payload.suggestions then Nothing
-                            else map _.id $ DA.head payload.suggestions
-                    , freeToFetchChatHistory: true
-                    , suggestionsPage: 1
-                    , errorMessage: ""
-                    , suggestionsFrom: ThisWeek
-                    , showSuggestionChatInput: Nothing
-                    , lastTyping: DateTimeWrapper lt
-                    , showBuildProfile: DA.length payload.user.completedFields < 3
-                    , smallScreen: false
-                    , showMiniChatInput: false
-                    , initialScreen: true
-                    , temporaryEmail: Nothing
-                    , freeToFetchPosts: true
-                    , changelogs: []
-                    , showChangelogs: false
-                    , showCollapsedMiniSuggestions: false
-                    , showSuggestionsPostForm: payload.user.totalPosts == 0
-                    , temporaryPassword: Nothing
-                    , enableNotificationsVisible: false
-                    , messageEnter: true
-                    , editing: Nothing
-                    , showLargeAvatar: false
-                    , imageCaption: Nothing
-                    , selectedImage: Nothing
-                    , webSocketMessages: []
-                    , fullContactProfileVisible: false
-                    , freeToFetchContactList: true
-                    , freeToPost: true
-                    , erroredFields: []
-                    , fortune: Nothing
-                    , toggleContextMenu: HideContextMenu
-                    , modal: HideModal
-                    , blockedUsers: []
-                    , reportReason: Nothing
-                    , reportComment: Nothing
-                    , imUpdated: false
-                    , postContent: Nothing
-                    , webSocketStatus: Closed
-                    , failedRequests: []
-                    , modalsLoaded: []
-                    , hash: updateHash
-                    , contacts: payload.contacts
-                    , suggestions: payload.suggestions
-                    , user: payload.user
-                    }
+            , model : model lt
             }
       where
+      model ∷ DateTime -> ImModel
+      model lt =
+            { chatting: Nothing
+            , freeToFetchSuggestions: true
+            , temporaryId: 0
+            , typingIds: []
+            , suggesting:
+                    if DA.null payload.suggestions then Nothing
+                    else map _.id $ DA.head payload.suggestions
+            , freeToFetchChatHistory: true
+            , suggestionsPage: 1
+            , errorMessage: ""
+            , suggestionsFrom: ThisWeek
+            , showSuggestionChatInput: Nothing
+            , lastTyping: DateTimeWrapper lt
+            , showBuildProfile: DA.length payload.user.completedFields < 3
+            , smallScreen: false
+            , showMiniChatInput: false
+            , initialScreen: true
+            , temporaryEmail: Nothing
+            , changelogs: []
+            , showChangelogs: false
+            , showCollapsedMiniSuggestions: false
+            , showSuggestionsPostForm: payload.user.totalPosts == 0
+            , temporaryPassword: Nothing
+            , enableNotificationsVisible: false
+            , messageEnter: true
+            , editing: Nothing
+            , showLargeAvatar: false
+            , imageCaption: Nothing
+            , selectedImage: Nothing
+            , webSocketMessages: []
+            , fullContactProfileVisible: false
+            , freeToFetchContactList: true
+            , erroredFields: []
+            , fortune: Nothing
+            , toggleContextMenu: HideContextMenu
+            , modal: HideModal
+            , blockedUsers: []
+            , reportReason: Nothing
+            , reportComment: Nothing
+            , imUpdated: false
+            , posts:
+                    { freeToFetch: true
+                    , freeToSend: true
+                    , mode: TextOnly
+                    , text: Nothing
+                    , link: Nothing
+                    , caption: Nothing
+                    }
+            , webSocketStatus: Closed
+            , failedRequests: []
+            , modalsLoaded: []
+            , hash: updateHash
+            , contacts: payload.contacts
+            , suggestions: payload.suggestions
+            , user: payload.user
+            }
       modals =
             HE.div [ HA.id "modal-root" ]
                   [ HE.div' [ HA.id $ show SE.ProfileEditionRoot ]

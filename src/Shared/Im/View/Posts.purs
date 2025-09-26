@@ -2,8 +2,10 @@ module Shared.Im.View.Posts where
 
 import Prelude
 
+import Client.Common.Privilege as CCP
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -11,14 +13,16 @@ import Safe.Coerce as SC
 import Shared.Change as SCN
 import Shared.DateTime as SDT
 import Shared.Im.Svg as SIS
-import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
+import Shared.Im.Types (ImMessage(..), ImModel, PostMode(..), RetryableRequest(..))
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Markdown as SM
-import Shared.Modal.Types (Modal(..), SpecialModal(..))
+import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Post (maxPostCharacters)
 import Shared.Post (Post)
+import Shared.Privilege (Privilege(..))
+import Shared.Privilege as SP
 
-posted ∷ forall message. String → Post → Html message
+posted ∷ ∀ message. String → Post → Html message
 posted userName post = HE.div [ HA.class' "post-entry" ]
       [ HE.div [ HA.class' "post-header" ] [ HE.div_ [ HE.text userName ], HE.div [ HA.class' "post-header-separator duller" ] [ HE.text " • " ], HE.div [ HA.class' "duller" ] [ HE.text <<< SDT.ago $ SC.coerce post.date ] ]
       , HE.div' [ HA.class' "post-content", HA.innerHtml $ SM.parse post.content ]
@@ -29,30 +33,58 @@ postForm model =
       [ SIS.closeX [ HA.onClick $ if model.modal == Special ShowPostForm then SpecialRequest (ToggleModal HideModal) else ToggleSuggestionPostForm ]
       , HE.strong [ HA.class' "bottom" ] [ HE.text "Post to MeroChat" ]
       , HE.div [ HA.class' "posts-input-tab" ]
-              [ HE.div [ HA.class' "regular-posts-input-tab selected-posts-input-tab" ] [ textIcont, HE.text "Text" ]
-              , HE.div [ HA.class' "regular-posts-input-tab" ] [ linkIcon, HE.text "Link" ]
-              , HE.div [ HA.class' "regular-posts-input-tab" ] [ HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 16 16" ] $ SIVC.imageButtonElements "", HE.text " Image" ]
+              [ HE.div [ HA.onClick $ SetPostMode TextOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == TextOnly } ] [ textIcont, HE.text "Text" ]
+              , HE.div [ HA.onClick $ SetPostMode LinkOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == LinkOnly } ] [ linkIcon, HE.text "Link" ]
+              , HE.div [ HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == ImageOnly } ] [ HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 16 16" ] $ SIVC.imageButtonElements "", HE.text " Image" ]
               ]
 
-      , HE.textarea'
-              [ HA.class' "chat-input"
-              , HA.placeholder ("What's in your mind?")
-              , HA.maxlength maxPostCharacters
-              , HA.onInput' ResizeChatInput
-              , SCN.onChange (SetPostContent <<< Just)
-              , HA.autocomplete "off"
-              , HA.value $ DM.fromMaybe "" model.postContent
-              ]
+      , case model.posts.mode of
+              TextOnly → HE.textarea'
+                    [ HA.class' "chat-input"
+                    , HA.placeholder ("What's in your mind?")
+                    , HA.maxlength maxPostCharacters
+                    , HA.onInput' ResizeChatInput
+                    , SCN.onChange (SetPostText <<< toMaybe)
+                    , HA.autocomplete "off"
+                    , HA.value $ DM.fromMaybe "" model.posts.text
+                    ]
+              LinkOnly → HE.div []
+                    [ if SP.hasPrivilege SendLinks model.user then
+                            HE.div [ HA.class' "post-links" ]
+                                  [ HE.input
+                                          [ HA.class' "chat-input"
+                                          , HA.maxlength maxPostCharacters
+                                          , SCN.onChange (SetPostLink <<< toMaybe)
+                                          , HA.value $ DM.fromMaybe "" model.posts.link
+                                          , HA.placeholder "Link (required)"
+                                          ]
+                                  , HE.input
+                                          [ HA.class' "chat-input"
+                                          , HA.value $ DM.fromMaybe "" model.posts.caption
+                                          , HA.placeholder "Caption"
+                                          , HA.maxlength maxPostCharacters
+                                          , SCN.onChange (SetPostCaption <<< toMaybe)
+                                          ]
+                                  ]
+                      else
+                            CCP.notEnoughKarma "post links" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                    ]
+              ImageOnly → HE.div [] []
       , HE.div [ HA.class' "see-profile-chat posted" ]
-              [ if not model.freeToPost then
+              [ if not model.posts.freeToSend then
                       HE.div' [ HA.class' "loading" ]
                 else if not model.showSuggestionsPostForm || model.user.totalPosts == 0 then
-                      HE.input [ HA.disabled $ DM.isNothing model.postContent, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
+                      HE.input [ HA.disabled $ DM.isNothing model.posts.text && DM.isNothing model.posts.link, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
                 else
                       HE.span_ [ HE.text "Posted!" ]
               ]
 
       ]
+
+toMaybe ∷ String → Maybe String
+toMaybe s = if DS.null trimmed then Nothing else Just trimmed
+      where
+      trimmed = DS.trim s
 
 linkIcon ∷ Html ImMessage
 linkIcon = HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 1024 1024" ]

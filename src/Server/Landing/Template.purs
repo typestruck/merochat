@@ -131,7 +131,7 @@ template = do
                             , HE.div [HA.class' "feature-blurb"]
                                     [ HE.div [HA.class' "feature-blurb-left"]
                                             [ HE.h1_ [HE.text "Privileged features"]
-                                            , HE.span_ [HE.text "Images, audio, and experimental"]
+                                            , HE.span_ [HE.text "ImageOnly, audio, and experimental"]
                                             , HE.br
                                             , HE.span_ [HE.text "features for trusted users!"]
                                             ]

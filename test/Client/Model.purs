@@ -30,17 +30,14 @@ model ∷ ImModel
 model =
       { freeToFetchSuggestions: true
       , typingIds: []
-      , freeToFetchPosts: true
       , showBuildProfile: true
       , showChangelogs: false
       , initialScreen: true
-      , freeToPost: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
       , showSuggestionChatInput: Nothing
       , changelogs: []
       , showSuggestionsPostForm: false
-      , postContent: Nothing
       , showCollapsedMiniSuggestions: false
       , modalsLoaded: []
       , showMiniChatInput: false
@@ -69,6 +66,14 @@ model =
       , modal: HideModal
       , enableNotificationsVisible: false
       , user: imUser
+      , posts:
+              { mode: TextOnly
+              , freeToFetch: true
+              , freeToSend: true
+              , text: Nothing
+              , link: Nothing
+              , caption: Nothing
+              }
       , suggestions: [ suggestion ]
       , temporaryId: 0
       , suggesting: Just 0
@@ -86,7 +91,7 @@ imUser =
       { karmaPosition: 1
       , age: Nothing
       , name: "test"
-      , unseenPosts : 0
+      , unseenPosts: 0
       , id: imUserId
       , showing: ShowInfo
       , profileVisibility: Everyone

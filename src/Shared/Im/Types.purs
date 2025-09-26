@@ -8,6 +8,7 @@ import Shared.Modal.Types
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
+import Shared.Content (Content(..))
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
@@ -119,8 +120,7 @@ type Im =
       , freeToFetchChatHistory ∷ Boolean
       , freeToFetchContactList ∷ Boolean
       , freeToFetchSuggestions ∷ Boolean
-      , freeToPost ∷ Boolean
-      , freeToFetchPosts ∷ Boolean
+
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
       , suggestionsFrom ∷ SuggestionsFrom
@@ -147,7 +147,6 @@ type Im =
       , showMiniChatInput ∷ Boolean
       , showCollapsedMiniSuggestions ∷ Boolean
       , editing ∷ Maybe Int
-      , postContent ∷ Maybe String
       --used to signal that the page should be reloaded
       , hash ∷ String
       --visibility switches
@@ -162,6 +161,14 @@ type Im =
       , showSuggestionsPostForm ∷ Boolean
       , toggleContextMenu ∷ ShowContextMenu
       , modal ∷ Modal
+      , posts ∷
+              { freeToSend ∷ Boolean
+              , freeToFetch ∷ Boolean
+              , text ∷ Maybe String
+              , mode ∷ PostMode
+              , link ∷ Maybe String
+              , caption ∷ Maybe String
+              }
       )
 
 type ImModel = Record Im
@@ -202,10 +209,6 @@ type Turn =
       , chatAge ∷ Number -- Days
       }
 
-data MessageContent
-      = Image String Int Int String
-      | Text String
-      | Audio String
 
 type RequestFailure =
       { request ∷ RetryableRequest
@@ -282,7 +285,7 @@ data ImMessage
       | EnterSendMessage ElementId Event
       | ForceSendMessage ElementId
       | ResizeChatInput Event
-      | SendMessage ElementId MessageContent DateTimeWrapper
+      | SendMessage ElementId Content DateTimeWrapper
       | SetEmoji ElementId Event
       | BeforeAudioMessage
       | AudioMessage Touch
@@ -299,9 +302,12 @@ data ImMessage
       --posts
       | DisplayPosts Int (Array Post)
       | ToggleSuggestionPostForm
-      | SetPostContent (Maybe String)
+      | SetPostText (Maybe String)
+      | SetPostLink (Maybe String)
+      | SetPostCaption (Maybe String)
       | SendPost
       | ToggleShowing Int For ProfilePost
+      | SetPostMode PostMode
       | AfterSendPost
       --   | CheckFetchPosts Int Event
 
@@ -340,6 +346,8 @@ data ImMessage
 
 data For = ForSuggestions | ForContacts
 
+data PostMode = TextOnly | LinkOnly | ImageOnly
+
 data Theme = Light | Dark
 
 data When = Always | Desktop
@@ -367,7 +375,7 @@ type OutgoingRecord =
       BasicMessage
             ( userId ∷ Int
             , userName ∷ String
-            , content ∷ MessageContent
+            , content ∷ Content
             , turn ∷ Maybe Turn
             )
 
@@ -379,7 +387,7 @@ type Challenge =
       , signature ∷ String
       }
 
-type EditedRecord = { id ∷ Int, userId ∷ Int, content ∷ MessageContent }
+type EditedRecord = { id ∷ Int, userId ∷ Int, content ∷ Content }
 
 type DeletedRecord = { id ∷ Int, userId ∷ Int }
 
@@ -428,10 +436,12 @@ instance DecodeQueryParam SuggestionsFrom where
 
 derive instance Eq SuggestionsFrom
 derive instance Eq FocusEvent
+derive instance Eq PostMode
 derive instance Eq When
 derive instance Eq WebSocketConnectionStatus
 
 derive instance Ord ReportReason
+derive instance Ord PostMode
 derive instance Ord MessageStatus
 derive instance Ord SuggestionsFrom
 
@@ -562,10 +572,10 @@ instance DecodeJson SuggestionsFrom where
 instance DecodeJson WebSocketPayloadServer where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson MessageContent where
+instance DecodeJson AfterLogout where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson AfterLogout where
+instance DecodeJson PostMode where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson WebSocketPayloadClient where
@@ -601,10 +611,11 @@ instance EncodeJson AfterLogout where
 instance EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
 
-instance EncodeJson MessageContent where
-      encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson WebSocketPayloadClient where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson PostMode where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson ShowContextMenu where
@@ -636,9 +647,6 @@ instance Show ReportReason where
             Spam → "Spam/Product placement"
             OtherReason → "Other"
 
-instance Show MessageContent where
-      show = DGRS.genericShow
-
 instance Show WebSocketPayloadClient where
       show = DGRS.genericShow
 
@@ -657,10 +665,10 @@ derive instance Eq MessageStatus
 
 derive instance Generic MessageStatus _
 derive instance Generic WebSocketConnectionStatus _
+derive instance Generic PostMode _
 derive instance Generic SuggestionsFrom _
 derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
-derive instance Generic MessageContent _
 derive instance Generic MessageError _
 derive instance Generic WebSocketPayloadClient _
 derive instance Generic FullWebSocketPayloadClient _

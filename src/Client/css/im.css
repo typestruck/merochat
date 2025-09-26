@@ -2588,6 +2588,15 @@ input:not(type=button):focus {
     align-items: center;
 }
 
+.post-links {
+    display: flex;
+    flex-direction: column;
+}
+
+.post-links .chat-input:last-child {
+    margin-top: 10px;
+}
+
 .full-card-headline-tags,
 .contact-full-profile .avatar-info,
 .contact-full-profile .card-description,

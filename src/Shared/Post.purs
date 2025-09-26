@@ -4,6 +4,7 @@ import Prelude
 
 import Data.Maybe (Maybe)
 import Shared.DateTime (DateTimeWrapper(..))
+import Shared.Content (Content)
 
 type Post = {
     id :: Int,
@@ -13,5 +14,5 @@ type Post = {
 }
 
 type PostPayload = {
-    content :: String
+    content :: Content
 }

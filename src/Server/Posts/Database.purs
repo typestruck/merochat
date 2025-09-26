@@ -42,5 +42,5 @@ postsFilter loggedUserId userId =
 p ∷ Proxy "p"
 p = Proxy
 
-savePost ∷ Int → PostPayload → ServerEffect Unit
-savePost loggedUserId payload = SD.execute $ insert # into posts (_content /\ _poster) # values (payload.content /\ loggedUserId)
+savePost ∷ Int → String → ServerEffect Unit
+savePost loggedUserId content = SD.execute $ insert # into posts (_content /\ _poster) # values (content /\ loggedUserId)
