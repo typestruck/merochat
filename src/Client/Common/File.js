@@ -1,7 +1,7 @@
 let maxWidth = typeof window !== "undefined" && window.matchMedia('(max-width:1279px)').matches ?
     parseInt(getComputedStyle(document.querySelector('#im')).width) - 20 :
     50 * 16, // max width of messages times font size
-    quality = 0.99;
+    quality = 0.93;
 
 export async function resizeAndSendFile_(file, cb) {
     let bitmap = await window.createImageBitmap(file),
@@ -27,4 +27,8 @@ function calculateSize(bitmap) {
     }
 
     return [width, height];
+}
+
+export function fileSize(base64) {
+    return Uint8Array.fromBase64(base64.substr(base64.indexOf(',') + 1)).length;
 }

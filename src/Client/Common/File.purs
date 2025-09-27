@@ -1,4 +1,4 @@
-module Client.Common.File (setUpFileChange, resizeAndSendFirstFile, triggerFileSelect) where
+module Client.Common.File (setUpFileChange, resizeAndSendFirstFile, triggerFileSelect, fileSize) where
 
 import Prelude
 
@@ -22,6 +22,8 @@ import Web.HTML.HTMLInputElement as WHI
 
 foreign import resizeAndSendFile_ ∷ EffectFn2 File (Int → Int → String → Effect Unit) Unit
 
+foreign import fileSize :: String -> Int
+
 resizeAndSendFile ∷ File → (Int → Int → String → Effect Unit) → Effect Unit
 resizeAndSendFile = EU.runEffectFn2 resizeAndSendFile_
 
@@ -40,3 +42,6 @@ resizeAndSendFirstFile maybeFileList appId message =
       case maybeFileList >>= WFL.item 0 of
             Nothing → pure  unit
             Just file → resizeAndSendFile file (\w h b → FS.send  appId $ message w h b)
+
+
+

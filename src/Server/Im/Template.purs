@@ -91,6 +91,7 @@ template payload = do
                     , mode: TextOnly
                     , text: Nothing
                     , link: Nothing
+                    , image :Nothing
                     , caption: Nothing
                     }
             , webSocketStatus: Closed

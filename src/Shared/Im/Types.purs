@@ -120,7 +120,6 @@ type Im =
       , freeToFetchChatHistory ∷ Boolean
       , freeToFetchContactList ∷ Boolean
       , freeToFetchSuggestions ∷ Boolean
-
       , temporaryEmail ∷ Maybe String
       , temporaryPassword ∷ Maybe String
       , suggestionsFrom ∷ SuggestionsFrom
@@ -168,6 +167,7 @@ type Im =
               , mode ∷ PostMode
               , link ∷ Maybe String
               , caption ∷ Maybe String
+              , image :: SelectedImage
               }
       )
 
@@ -306,8 +306,10 @@ data ImMessage
       | SetPostLink (Maybe String)
       | SetPostCaption (Maybe String)
       | SendPost
+      | SetPostImage SelectedImage
       | ToggleShowing Int For ProfilePost
       | SetPostMode PostMode
+      | PreparePostImage Event
       | AfterSendPost
       --   | CheckFetchPosts Int Event
 

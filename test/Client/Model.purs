@@ -73,6 +73,7 @@ model =
               , text: Nothing
               , link: Nothing
               , caption: Nothing
+              , image : Nothing
               }
       , suggestions: [ suggestion ]
       , temporaryId: 0

@@ -328,7 +328,7 @@ setSelectedImage selected model =
                           []
             } /\ (if model.smallScreen then [] else [ pure <<< Just $ FocusInput ImageFormCaption ])
       where
-      isTooLarge contents = maxImageSize < 3 * DI.ceil (DI.toNumber (DS.length contents) / 4.0)
+      isTooLarge contents = maxImageSize < CCF.fileSize contents
 
 -- | Insert an emoji into the chatting textarea
 setEmoji ∷ ElementId → Event → ImModel → NextMessage

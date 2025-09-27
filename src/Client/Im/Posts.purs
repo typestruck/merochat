@@ -2,22 +2,33 @@ module Client.Im.Posts where
 
 import Prelude
 
+import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Flame (MoreMessages, NoMessages)
 import Control.Alt ((<|>))
 import Data.Array as DA
+import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
+import Data.Symbol as TDS
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
+import Effect.Class as EC
 import Shared.Content (Content(..))
-import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..))
+import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage)
 import Shared.Modal.Types (Modal(..), SpecialModal(..))
+import Shared.Options.MountPoint (imId)
 import Shared.Post (Post)
+import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
 import Shared.User (ProfilePost(..), ProfileVisibility(..))
+import Type.Proxy (Proxy(..))
+import Web.Event.Event as WEE
+import Web.Event.Internal.Types (Event)
+import Web.HTML.HTMLInputElement as WDE
+import Web.HTML.HTMLInputElement as WHI
 
 displayPosts ∷ Int → Array Post → ImModel → NoMessages
 displayPosts userId posts model =
@@ -77,12 +88,13 @@ afterSendPost model =
 sendPost ∷ ImModel → MoreMessages
 sendPost model = model { posts = model.posts { freeToSend = not maySend } } /\ effects
       where
-      maySend = model.posts.mode == TextOnly && DM.isJust model.posts.text || model.posts.mode == LinkOnly && DM.isJust model.posts.link
+      maySend = model.posts.mode == TextOnly && DM.isJust model.posts.text || model.posts.mode == LinkOnly && DM.isJust model.posts.link || model.posts.mode == ImageOnly && DM.isJust model.posts.image
       send = do
             void <<< CCN.silentResponse $ request.posts.post
                   { body:
                           { content: case model.posts.mode of
                                   LinkOnly → Link (SU.fromJust model.posts.link) model.posts.caption
+                                  ImageOnly → let s = SU.fromJust model.posts.image in Image (DM.fromMaybe "" model.posts.caption) s.width s.height s.base64
                                   _ → Text $ SU.fromJust model.posts.text
                           }
                   }
@@ -139,3 +151,29 @@ toggleShowingContacts userId toggle model =
 
 setPostMode ∷ PostMode → ImModel → NoMessages
 setPostMode mode model = model { posts = model.posts { mode = mode } } /\ []
+
+preparePostImage ∷ Event → ImModel → MoreMessages
+preparePostImage event model = model /\ [ before ]
+      where
+      before = do
+            let
+                  input = SU.fromJust do
+                        target ← WEE.target event
+                        WDE.fromEventTarget target
+            EC.liftEffect do
+                  maybeFileList ← WHI.files input
+                  CCF.resizeAndSendFirstFile maybeFileList imId (\width height base64 → SetPostImage $ Just { width, height, base64 })
+            pure Nothing
+
+setPostImage ∷ SelectedImage → ImModel → NoMessages
+setPostImage selected model =
+      if isTooLarge $ DM.maybe "" _.base64 selected then
+            model
+                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "posts") ]
+                  } /\ []
+      else
+            model
+                  { posts = model.posts { image = selected }
+                  } /\ []
+      where
+      isTooLarge contents = maxImageSize < CCF.fileSize contents

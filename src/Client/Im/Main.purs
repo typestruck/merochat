@@ -174,6 +174,8 @@ update st model =
             SetPostMode mode → CIPS.setPostMode mode model
             SetPostText content → CIPS.setPostText content model
             SetPostLink content → CIPS.setPostLink content model
+            PreparePostImage event → CIPS.preparePostImage event model
+            SetPostImage selected → CIPS.setPostImage selected  model
             SetPostCaption content → CIPS.setPostCaption content model
             SendPost → CIPS.sendPost model
             AfterSendPost → CIPS.afterSendPost model

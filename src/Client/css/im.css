@@ -2844,6 +2844,8 @@ label {
     margin-top: -300px;
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top:20px
 }
 
 .see-profile-chat.posted {
@@ -2864,6 +2866,11 @@ label {
 
 .collapsed.taller {
     height: 97px;
+}
+
+.post-links .error-message {
+    display: block;
+    visibility: visible;
 }
 
 @media (max-width:1279px) {

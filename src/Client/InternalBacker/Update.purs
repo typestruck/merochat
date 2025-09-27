@@ -10,4 +10,4 @@ import Shared.Modal.Types (ScreenModal(..))
 update ∷ Update BackerModel BackerMessage
 update model =
       case _ of
-            ToggleVisibility modal → model { visible = spy "backed" modal == ShowBacker } /\ []
+            ToggleVisibility modal → model { visible = modal == ShowBacker } /\ []

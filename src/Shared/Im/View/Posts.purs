@@ -3,9 +3,11 @@ module Shared.Im.View.Posts where
 import Prelude
 
 import Client.Common.Privilege as CCP
+import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
+import Data.Symbol as TDS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -21,6 +23,8 @@ import Shared.Options.Post (maxPostCharacters)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
+import Shared.Resource (maxImageSizeKB)
+import Type.Proxy (Proxy(..))
 
 posted ∷ ∀ message. String → Post → Html message
 posted userName post = HE.div [ HA.class' "post-entry" ]
@@ -35,7 +39,7 @@ postForm model =
       , HE.div [ HA.class' "posts-input-tab" ]
               [ HE.div [ HA.onClick $ SetPostMode TextOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == TextOnly } ] [ textIcont, HE.text "Text" ]
               , HE.div [ HA.onClick $ SetPostMode LinkOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == LinkOnly } ] [ linkIcon, HE.text "Link" ]
-              , HE.div [ HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == ImageOnly } ] [ HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 16 16" ] $ SIVC.imageButtonElements "", HE.text " Image" ]
+              , HE.div [ HA.onClick $ SetPostMode ImageOnly, HA.class' { "regular-posts-input-tab": true, "selected-posts-input-tab": model.posts.mode == ImageOnly } ] [ HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 16 16" ] $ SIVC.imageButtonElements "", HE.text " Image" ]
               ]
 
       , case model.posts.mode of
@@ -69,12 +73,36 @@ postForm model =
                       else
                             CCP.notEnoughKarma "post links" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
                     ]
-              ImageOnly → HE.div [] []
+              ImageOnly → HE.div []
+                    [ if SP.hasPrivilege SendImages model.user then
+                            HE.div [ HA.class' "post-links" ]
+                                  [ if DA.elem (TDS.reflectSymbol (Proxy ∷ _ "posts")) model.erroredFields then
+                                          HE.div [ HA.class' "error-message" ] [ HE.text $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file" ]
+                                    else if DM.isJust model.posts.image then
+                                          HE.img [ HA.src $ DM.maybe "" _.base64 model.posts.image ]
+                                    else
+                                          HE.input
+                                                [ HA.onChange' PreparePostImage
+                                                , HA.type' "file"
+                                                , HA.value ""
+                                                , HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"
+                                                ]
+                                  , HE.input
+                                          [ HA.class' "chat-input"
+                                          , HA.value $ DM.fromMaybe "" model.posts.caption
+                                          , HA.placeholder "Caption"
+                                          , HA.maxlength maxPostCharacters
+                                          , SCN.onChange (SetPostCaption <<< toMaybe)
+                                          ]
+                                  ]
+                      else
+                            CCP.notEnoughKarma "post images" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                    ]
       , HE.div [ HA.class' "see-profile-chat posted" ]
               [ if not model.posts.freeToSend then
                       HE.div' [ HA.class' "loading" ]
                 else if not model.showSuggestionsPostForm || model.user.totalPosts == 0 then
-                      HE.input [ HA.disabled $ DM.isNothing model.posts.text && DM.isNothing model.posts.link, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
+                      HE.input [ HA.disabled $ DM.isNothing model.posts.text && DM.isNothing model.posts.link && DM.isNothing model.posts.image, HA.type' "button", HA.class' "green-button post-button build", HA.value "Post", HA.onClick SendPost ]
                 else
                       HE.span_ [ HE.text "Posted!" ]
               ]

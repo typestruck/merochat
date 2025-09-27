@@ -1,7 +1,6 @@
 module Client.Im.ModalsMenu where
 
 import Prelude
-import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, RetryableRequest(..), ShowContextMenu(..))
 
 import Client.Common.Dom as CCD
 import Client.Common.Location as CCL
@@ -23,6 +22,7 @@ import Flame as F
 import Flame.Subscription.Unsafe.CustomEvent as FS
 import Shared.Element (ElementId(..))
 import Shared.Im.EventTypes (modalVisible)
+import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))
 import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
@@ -84,6 +84,7 @@ modal toggled model =
                   model
                         { modal = t
                         , erroredFields = []
+                        , posts = model.posts { image = Nothing, mode = TextOnly }
                         , toggleContextMenu = HideContextMenu
                         } /\ [ visible ShowMenu ]
       where
