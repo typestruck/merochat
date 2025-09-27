@@ -5,7 +5,7 @@ import Prelude
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
-import Client.Im.Flame (MoreMessages, NoMessages)
+import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Int as DI
@@ -23,27 +23,35 @@ import Shared.Options.MountPoint (imId)
 import Shared.Post (Post)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
-import Shared.User (ProfilePost(..), ProfileVisibility(..))
+import Shared.User (ProfilePost(..))
 import Type.Proxy (Proxy(..))
 import Web.Event.Event as WEE
 import Web.Event.Internal.Types (Event)
 import Web.HTML.HTMLInputElement as WDE
 import Web.HTML.HTMLInputElement as WHI
 
-displayPosts ∷ Int → Array Post → ImModel → NoMessages
+displayPosts ∷ Int → Array Post → ImModel → NextMessage
 displayPosts userId posts model =
       model
             { posts = model.posts { freeToFetch = true }
             , suggestions = map updateSuggestion model.suggestions
             , contacts = map updateContact model.contacts
-            } /\ []
+            } /\ effects
       where
       updateSuggestion suggestion
-            | suggestion.id == userId = suggestion { posts = suggestion.posts <> posts }
+            | suggestion.id == userId = suggestion { posts = suggestion.posts <> posts, unseenPosts = 0 }
             | otherwise = suggestion
       updateContact contact
-            | contact.user.id == userId = contact { user = contact.user { posts = contact.user.posts <> posts } }
+            | contact.user.id == userId = contact { user = contact.user { posts = contact.user.posts <> posts, unseenPosts = 0 } }
             | otherwise = contact
+
+      effects
+            | DA.null posts = []
+            | otherwise =
+                    [ do
+                            void <<< CCN.silentResponse $ request.posts.seen { body: { id: (SU.fromJust $ DA.head posts).id, poster: userId } }
+                            pure Nothing
+                    ]
 
 fetchPosts ∷ Int → ImModel → MoreMessages
 fetchPosts userId model = model { posts = model.posts { freeToFetch = false } } /\ [ fetch ]

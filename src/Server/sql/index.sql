@@ -379,6 +379,18 @@ create table posts (
     constraint post_poster foreign key (poster) references users(id) on delete cascade
 );
 
+create table posts_seen (
+    id integer generated always as identity primary key,
+    poster integer not null,
+    reader integer not null,
+    until integer not null,
+
+    constraint seen_poster foreign key (poster) references users(id) on delete cascade,
+    constraint seen_reader foreign key (reader) references users(id) on delete cascade,
+    constraint seen_until foreign key (until) references posts(id) on delete cascade,
+    constraint unique_sight unique(poster, reader)
+);
+
 -- when users first edit new field in their profile, place them higher in the suggestions list if have filled 3 or more profile fields
 create or replace function temporarily_place_at_top() returns trigger as
 $$

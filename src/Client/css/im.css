@@ -2858,6 +2858,12 @@ label {
     border-radius: 100px;
 }
 
+.avatar-contact-list.newly-posted {
+    padding: 8px;
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='100' ry='100' stroke='%23FBFEFB' stroke-width='6' stroke-dasharray='70%25%2c 5%25' stroke-dashoffset='96' stroke-linecap='butt'/%3e%3c/svg%3e");
+    border-radius: 100px;
+}
+
 .big-suggestion-avatar.newly-posted {
     padding: 8px;
     background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='100' ry='100' stroke='%23FBFEFB' stroke-width='9' stroke-dasharray='70%25%2c 5%25' stroke-dashoffset='76' stroke-linecap='butt'/%3e%3c/svg%3e");

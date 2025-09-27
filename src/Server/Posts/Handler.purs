@@ -30,3 +30,8 @@ post request = do
     SPA.post request.guards.loggedUserId request.body
     pure ok
 
+seen ∷ { guards ∷ { loggedUserId ∷ Int }, body :: { poster:: Int, id :: Int } } → ServerEffect Ok
+seen request = do
+    SPA.markSeen request.guards.loggedUserId request.body.poster request.body.id
+    pure ok
+

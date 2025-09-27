@@ -83,7 +83,7 @@ presentUserContactFields =
       , backer
       , completed_tutorial "completedTutorial"
       , (select count(1) "totalPosts" from posts where poster = u.id and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
-      , (select count(1) "unseenPosts" from posts where poster = u.id and date >= @dayAgo and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
+      , (select count(1) "unseenPosts" from posts p where poster = u.id and date >= @dayAgo and not (exists(select 1 from posts_seen where poster = u.id and reader = @loggedUserId and until >= p.id)) and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
       , date_part_age ('year', birthday) age
       , name
       , 1 as bin

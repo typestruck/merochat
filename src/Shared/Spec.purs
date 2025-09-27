@@ -75,6 +75,15 @@ spec ∷
                                                 { body ∷ PostPayload
                                                 , response ∷ Ok
                                                 }
+                                  , seen ∷
+                                          POST "/seen"
+                                                { body ∷
+                                                        { id ∷ Int
+                                                        , poster ∷ Int
+
+                                                        }
+                                                , response ∷ Ok
+                                                }
                                   }
                     , im ∷
                             Routes "/im"

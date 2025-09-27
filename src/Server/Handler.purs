@@ -52,8 +52,9 @@ handlers reading =
       , temporary: runJson reading SLH.temporary
       , unsubscribe: runHtml reading SUH.unsubscribe
       , posts:
-              { get: runJson reading SPSH.posts,
-              post: runJson reading SPSH.post
+              { get: runJson reading SPSH.posts
+              , post: runJson reading SPSH.post
+              , seen : runJson reading SPSH.seen
               }
       , im:
               { get: runHtml reading SIH.im

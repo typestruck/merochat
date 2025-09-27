@@ -41,6 +41,9 @@ l = Proxy
 lu ∷ Proxy "lu"
 lu = Proxy
 
+p ∷ Proxy "p"
+p = Proxy
+
 tu ∷ Proxy "tu"
 tu = Proxy
 
