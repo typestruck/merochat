@@ -7,7 +7,7 @@ import Client.Common.Network (request)
 import Client.Common.Network as CCNT
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.Notification as CIUC
 import Client.Im.Scroll as CISM
 import Client.Im.WebSocket as CIW
@@ -39,9 +39,10 @@ import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..))
+import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..), ImModel)
 import Shared.Json as SJ
 import Shared.Options.MountPoint (experimentsId, imId, profileId)
+import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.Profile.Types as SPT
 import Shared.ResponseError (DatabaseError(..))
@@ -165,12 +166,25 @@ receiveMessage webSocket isFocused payload model = case payload of
       NewEditedMessage ni → receiveEditedMessage webSocket isFocused ni model
       NewDeletedMessage nd → receiveDeletedMessage nd model
       ContactTyping tp → receiveTyping tp model
+      NewPost p → receivePost p model
       CurrentPrivileges kp → receivePrivileges kp model
       TrackedAvailability ta → receiveAvailability ta model
       CurrentHash newHash → receiveHash newHash model
       ContactUnavailable cu → receiveUnavailable cu model
       BadMessage bm → receiveBadMessage bm model
       PayloadError p → receivePayloadError p model
+
+receivePost ∷ {post :: Post, userId :: Int } → ImModel → NoMessages
+receivePost p model = model { suggestions = map updateSuggestion model.suggestions, contacts = map updateContact model.contacts } /\ []
+      where
+      alreadyReceived = DA.any ((p.post.id == _) <<< _.id)
+
+      updateSuggestion suggestion
+            | suggestion.id == p.userId && not (alreadyReceived suggestion.posts) = suggestion { posts = p.post : suggestion.posts, unseenPosts = suggestion.unseenPosts + 1 }
+            | otherwise = suggestion
+      updateContact contact
+            | contact.user.id == p.userId && not (alreadyReceived contact.user.posts) = contact { user = contact.user { posts = p.post : contact.user.posts, unseenPosts = contact.user.unseenPosts + 1 } }
+            | otherwise = contact
 
 receiveAvailability ∷ { id ∷ Int, availability ∷ Availability } → ImModel → NoMessages
 receiveAvailability received model =
@@ -418,7 +432,7 @@ updateWebSocketStatus status model =
       missedContacts = pure <<< Just $ SpecialRequest FetchMissedContacts
       reconnect = do
             when (model.webSocketStatus == Reconnect) do
-                  ms <- EC.liftEffect $ ERN.randomRange 300.0 1000.0
+                  ms ← EC.liftEffect $ ERN.randomRange 300.0 1000.0
                   EA.delay $ Milliseconds ms
             --for mobile, we only try to reconnect if the page is active as the browser will kill the connection anyway
             -- the focus event for the document also checks if the connection is open

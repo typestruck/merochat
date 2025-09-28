@@ -1,9 +1,17 @@
 module Server.Database.Posts where
 
+import Droplet.Language
+import Prelude
+
 import Data.Maybe (Maybe)
-import Data.Tuple.Nested (type (/\))
-import Droplet.Language (Column, Default, Identity, PrimaryKey, Table(..))
+import Data.Tuple.Nested (type (/\), (/\))
+import Droplet.Driver (Pool)
+import Server.Database as SD
+import Server.Database.Fields (_date, _id)
+import Server.Database.Messages (_content)
+import Server.Effect (BaseEffect)
 import Shared.DateTime (DateTimeWrapper)
+import Shared.Post (Post)
 import Type.Proxy (Proxy(..))
 
 type Posts =
@@ -30,3 +38,6 @@ _totalPosts = Proxy
 
 _unseenPosts ∷ Proxy "unseenPosts"
 _unseenPosts = Proxy
+
+fetchPost ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Maybe Post)
+fetchPost id = SD.single $ select (_id /\ _content /\ _date /\ _expires) # from posts # wher (_id .=. id)

@@ -13,6 +13,7 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_postsVisibility, _temporary, users)
 import Server.Effect (ServerEffect)
 import Shared.Post (Post, PostPayload)
+import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
@@ -39,8 +40,8 @@ postsFilter loggedUserId userId =
               )
       )
 
-savePost ∷ Int → String → ServerEffect Unit
-savePost loggedUserId content = SD.execute $ insert # into posts (_content /\ _poster) # values (content /\ loggedUserId)
+savePost ∷ Int → String → ServerEffect { id :: Int }
+savePost loggedUserId content = map SU.fromJust $ SD.single $ insert # into posts (_content /\ _poster) # values (content /\ loggedUserId) # returning _id
 
 markSeen ∷ Int → Int → Int → ServerEffect Unit
 markSeen loggedUserId poster id = SD.unsafeExecute "insert into posts_seen (poster, reader, until) values (@poster, @reader, @until) on conflict (poster, reader) do update set until = greatest(posts_seen.until, excluded.until)" { poster, until: id, reader: loggedUserId }

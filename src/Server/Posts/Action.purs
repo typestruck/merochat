@@ -27,7 +27,7 @@ import Shared.ResponseError (ResponseError(..))
 posts ∷ Int → Int → ServerEffect (Array Post)
 posts loggedUserId userId = SPD.presentPosts loggedUserId userId
 
-post ∷ Int → PostPayload → ServerEffect Unit
+post ∷ Int → PostPayload → ServerEffect {id :: Int }
 post loggedUserId payload = do
       privileges ← SIDPP.markdownPrivileges loggedUserId
       content ← case payload.content of

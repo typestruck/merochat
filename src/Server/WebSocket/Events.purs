@@ -45,6 +45,7 @@ import Run.Reader as RR
 import Server.Cookies (cookieName)
 import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.LastSeen (LastSeen)
+import Server.Database.Posts as SDP
 import Server.Database.Privileges as SIP
 import Server.Database.Users as SDU
 import Server.Effect (BaseEffect, BaseReader)
@@ -100,8 +101,8 @@ inactiveInterval = 1000 * 60 * inactiveMinutes
 inactiveMinutes ∷ Int
 inactiveMinutes = 30
 
-handleConnection ∷  Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
-handleConnection  pool allUsersAvailabilityRef connection request = EA.launchAff_ do
+handleConnection ∷ Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
+handleConnection pool allUsersAvailabilityRef connection request = EA.launchAff_ do
       userId ← SE.poolEffect pool Nothing $ ST.userIdFromToken tokenSecret token
       case userId of
             Nothing → EC.liftEffect do
@@ -182,10 +183,25 @@ handleMessage payload = do
             ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
             Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
             UpdateAvailability flags → updateAvailability context.token context.loggedUserId context.allUsersAvailabilityRef flags
+            Posted { id } → sharePost context.loggedUserId context.allUsersAvailabilityRef id
             UpdatePrivileges → sendUpdatedPrivileges context.loggedUserId allUsersAvailability
             UpdateHash → sendUpdatedHash context.loggedUserId allUsersAvailability
             UnavailableFor { id } → sendUnavailability context.loggedUserId allUsersAvailability id
             Ban { id } → sendBan allUsersAvailability id
+
+sharePost ∷ Int → Ref (HashMap Int UserAvailability) → Int → WebSocketEffect
+sharePost loggedUserId allUsersAvailabilityRef id = do
+      record ← SDP.fetchPost id
+      case record of
+            Nothing → pure unit
+            Just post → do
+                  allUsersAvailability ← EC.liftEffect $ ER.read allUsersAvailabilityRef
+                  let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
+                  DF.traverse_ (share allUsersAvailability post) userAvailability.trackedBy
+      where
+      share allUsersAvailability post userId = case DH.lookup userId allUsersAvailability of
+            Just found → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ NewPost { userId: loggedUserId, post }) found.connections
+            Nothing → pure unit
 
 updateAvailability ∷ String → Int → Ref (HashMap Int UserAvailability) → { online ∷ Boolean } → WebSocketEffect
 updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
@@ -225,7 +241,7 @@ sendBan allUsersAvailability userId = do
             , onlineStatus: true
             , readReceipts: true
             , typingStatus: true
-            , postsVisibility : TemporarilyBanned
+            , postsVisibility: TemporarilyBanned
             , profileVisibility: TemporarilyBanned
             }
       withConnections userAvailability send

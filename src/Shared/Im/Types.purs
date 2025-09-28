@@ -8,7 +8,6 @@ import Shared.Modal.Types
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode (class EncodeJson)
-import Shared.Content (Content(..))
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Either (Either(..))
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
@@ -28,6 +27,7 @@ import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.Changelog (Changelog)
+import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege)
@@ -167,7 +167,7 @@ type Im =
               , mode ∷ PostMode
               , link ∷ Maybe String
               , caption ∷ Maybe String
-              , image :: SelectedImage
+              , image ∷ SelectedImage
               }
       )
 
@@ -208,7 +208,6 @@ type Turn =
       , recipientStats ∷ Stats
       , chatAge ∷ Number -- Days
       }
-
 
 type RequestFailure =
       { request ∷ RetryableRequest
@@ -310,7 +309,7 @@ data ImMessage
       | ToggleShowing Int For ProfilePost
       | SetPostMode PostMode
       | PreparePostImage Event
-      | AfterSendPost
+      | AfterSendPost Int
       --   | CheckFetchPosts Int Event
 
       --main
@@ -363,6 +362,7 @@ data WebSocketPayloadServer
       = UpdateHash
       | UpdatePrivileges
       | UpdateAvailability { online ∷ Boolean }
+      | Posted { id ∷ Int }
       | TrackAvailabilityFor { ids ∷ Array Int }
       | Ping
       | Typing { id ∷ Int }
@@ -403,6 +403,7 @@ data WebSocketPayloadClient
       | CurrentPrivileges { karma ∷ Int, privileges ∷ Array Privilege }
       | NewIncomingMessage ClientMessagePayload
       | NewEditedMessage EditedMessagePayload
+      | NewPost { userId ∷ Int, post ∷ Post }
       | NewDeletedMessage DeletedMessagePayload
       | TrackedAvailability { id ∷ Int, availability ∷ Availability }
       | ContactTyping { id ∷ Int }
@@ -612,7 +613,6 @@ instance EncodeJson AfterLogout where
 
 instance EncodeJson WebSocketPayloadServer where
       encodeJson = DAEGR.genericEncodeJson
-
 
 instance EncodeJson WebSocketPayloadClient where
       encodeJson = DAEGR.genericEncodeJson

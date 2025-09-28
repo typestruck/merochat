@@ -6,6 +6,7 @@ import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))
 import Data.Array as DA
 import Data.Int as DI
@@ -17,7 +18,7 @@ import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect.Class as EC
 import Shared.Content (Content(..))
-import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage)
+import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage, WebSocketPayloadServer(..))
 import Shared.Modal.Types (Modal(..), SpecialModal(..))
 import Shared.Options.MountPoint (imId)
 import Shared.Post (Post)
@@ -29,6 +30,7 @@ import Web.Event.Event as WEE
 import Web.Event.Internal.Types (Event)
 import Web.HTML.HTMLInputElement as WDE
 import Web.HTML.HTMLInputElement as WHI
+import Web.Socket.WebSocket (WebSocket)
 
 displayPosts ∷ Int → Array Post → ImModel → NextMessage
 displayPosts userId posts model =
@@ -79,8 +81,8 @@ setPostCaption content model =
             { posts = model.posts { caption = content }
             } /\ []
 
-afterSendPost ∷ ImModel → NoMessages
-afterSendPost model =
+afterSendPost ∷ Int → WebSocket → ImModel → NoMessages
+afterSendPost id webSocket model =
       model
             { user = model.user { totalPosts = model.user.totalPosts + 1 }
             , posts = model.posts
@@ -91,14 +93,18 @@ afterSendPost model =
                     , text = Nothing
                     }
             , modal = HideModal
-            } /\ []
+            } /\ [ alert ]
+      where
+      alert = EC.liftEffect do
+            CIW.sendPayload webSocket $ Posted { id }
+            pure Nothing
 
 sendPost ∷ ImModel → MoreMessages
 sendPost model = model { posts = model.posts { freeToSend = not maySend } } /\ effects
       where
       maySend = model.posts.mode == TextOnly && DM.isJust model.posts.text || model.posts.mode == LinkOnly && DM.isJust model.posts.link || model.posts.mode == ImageOnly && DM.isJust model.posts.image
       send = do
-            void <<< CCN.silentResponse $ request.posts.post
+            response ← CCN.silentResponse $ request.posts.post
                   { body:
                           { content: case model.posts.mode of
                                   LinkOnly → Link (SU.fromJust model.posts.link) model.posts.caption
@@ -106,7 +112,7 @@ sendPost model = model { posts = model.posts { freeToSend = not maySend } } /\ e
                                   _ → Text $ SU.fromJust model.posts.text
                           }
                   }
-            pure $ Just AfterSendPost
+            pure <<< Just $ AfterSendPost response.id
       effects
             | maySend = [ send ]
             | otherwise = []

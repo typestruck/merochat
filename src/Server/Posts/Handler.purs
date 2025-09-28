@@ -22,16 +22,14 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
 import Shared.Post (Post, PostPayload)
 
-posts ∷ { guards ∷ { loggedUserId ∷ Int }, query :: { poster :: Int } } → ServerEffect (Array Post)
+posts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { poster ∷ Int } } → ServerEffect (Array Post)
 posts request = SPA.posts request.guards.loggedUserId request.query.poster
 
-post ∷ { guards ∷ { loggedUserId ∷ Int }, body :: PostPayload } → ServerEffect Ok
-post request = do
-    SPA.post request.guards.loggedUserId request.body
-    pure ok
+post ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ PostPayload } → ServerEffect { id ∷ Int }
+post request =  SPA.post request.guards.loggedUserId request.body
 
-seen ∷ { guards ∷ { loggedUserId ∷ Int }, body :: { poster:: Int, id :: Int } } → ServerEffect Ok
+seen ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { poster ∷ Int, id ∷ Int } } → ServerEffect Ok
 seen request = do
-    SPA.markSeen request.guards.loggedUserId request.body.poster request.body.id
-    pure ok
+      SPA.markSeen request.guards.loggedUserId request.body.poster request.body.id
+      pure ok
 

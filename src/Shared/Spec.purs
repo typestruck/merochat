@@ -73,14 +73,13 @@ spec ∷
                                   , post ∷
                                           POST "/post"
                                                 { body ∷ PostPayload
-                                                , response ∷ Ok
+                                                , response ∷ { id ∷ Int }
                                                 }
                                   , seen ∷
                                           POST "/seen"
                                                 { body ∷
                                                         { id ∷ Int
                                                         , poster ∷ Int
-
                                                         }
                                                 , response ∷ Ok
                                                 }

@@ -178,7 +178,7 @@ update st model =
             SetPostImage selected → CIPS.setPostImage selected  model
             SetPostCaption content → CIPS.setPostCaption content model
             SendPost → CIPS.sendPost model
-            AfterSendPost → CIPS.afterSendPost model
+            AfterSendPost id → CIPS.afterSendPost id webSocket model
             ToggleShowing userId for toggle → CIPS.toggleShowing userId toggle for model
 
             --suggestion
