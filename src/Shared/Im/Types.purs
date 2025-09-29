@@ -26,7 +26,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
-import Shared.Changelog (Changelog)
+import Shared.Changelog (Changelog, ChangelogAction)
 import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Post (Post)
@@ -296,6 +296,7 @@ data ImMessage
       --changelog
       | DisplayChangelog (Array Changelog)
       | FetchChangelog
+      | PerformChangelogAction (Maybe ChangelogAction)
       | ToggleChangelog
 
       --posts

@@ -5,12 +5,13 @@ import Prelude
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Common.Network as CNN
-import Client.Im.Flame (NextMessage, NoMessages)
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import Shared.Changelog (Changelog)
-import Shared.Im.Types (ImMessage(..), ImModel)
+import Shared.Changelog (Changelog, ChangelogAction(..))
+import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
+import Shared.Modal.Types (Modal(..), ScreenModal(..))
 
 fetchChangelog ∷ ImModel → NextMessage
 fetchChangelog model = model /\ [ fetchIt ]
@@ -21,6 +22,13 @@ fetchChangelog model = model /\ [ fetchIt ]
 
 displayChangelog ∷ Array Changelog → ImModel → NoMessages
 displayChangelog changelogs model = model { changelogs = changelogs } /\ []
+
+performChangelogAction ∷ Maybe ChangelogAction → ImModel → MoreMessages
+performChangelogAction action model = model /\ effects
+      where
+      effects = case action of
+            Nothing → []
+            Just OpenBackerPage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
 
 toggleChangelog ∷ ImModel → NoMessages
 toggleChangelog model =

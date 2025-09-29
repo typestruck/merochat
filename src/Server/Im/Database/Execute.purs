@@ -2,16 +2,22 @@ module Server.Im.Database.Execute where
 
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime)
+import Data.DateTime as DD
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Time.Duration (Days(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver (Pool)
 import Droplet.Language (as, delete, exists, from, in_, insert, into, isNotNull, leftJoin, not, on, returning, select, set, update, values, wher, (.&&.), (...), (.=.), (.>=.), (.||.))
+import Effect.Class as ER
+import Effect.Now as EN
 import Prelude (Unit, bind, discard, map, otherwise, pure, unit, void, when, (#), ($), (&&), (<$>), (<<<), (<=), (>))
 import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
-import Server.Database.Fields (_id, _recipient, _sender, c, h, u)
+import Server.Database.Changelogs (_action, _changed, changelogs)
+import Server.Database.Experiments (_description)
+import Server.Database.Fields (_date, _id, _recipient, _sender, c, h, u)
 import Server.Database.Functions (insert_history)
 import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
 import Server.Database.KarmaHistories (_amount, _target, karma_histories)
@@ -21,6 +27,7 @@ import Server.Database.Types (Checked(..))
 import Server.Database.Users (_completedTutorial, _email, _password, _pwa, _temporary, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Present (senderRecipientFilter)
+import Shared.Changelog (ChangelogAction(..))
 import Shared.Im.Types (MessageStatus, Report)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
@@ -91,7 +98,11 @@ chatHistoryEntry ∷ Int → Int → ServerEffect _
 chatHistoryEntry loggedUserId otherId = SD.single $ select (_sender /\ _recipient) # from histories # senderRecipientFilter loggedUserId otherId
 
 registerUser ∷ Int → String → String → ServerEffect Unit
-registerUser loggedUserId email password = SD.execute $ update users # set ((_email .=. Just email) /\ (_password .=. Just password) /\ (_temporary .=. Checked false)) # wher (_id .=. loggedUserId)
+registerUser loggedUserId email password = do
+      threeDaysIn ← SU.fromJust <<< DD.adjust (Days 3.0) <$> ER.liftEffect EN.nowDateTime
+      SD.withTransaction $ \connection → do
+            SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _date /\ _action) # values (Just loggedUserId /\ "Support Merochat ❤️" /\ threeDaysIn /\ Just OpenBackerPage)
+            SD.executeWith connection $ update users # set ((_email .=. Just email) /\ (_password .=. Just password) /\ (_temporary .=. Checked false)) # wher (_id .=. loggedUserId)
 
 upsertLastSeen ∷ ∀ r. Int → DateTime → BaseEffect { pool ∷ Pool | r } Unit
 upsertLastSeen who date = void $ SD.unsafeExecute "INSERT INTO last_seen(who, date) values(@who, @date) ON CONFLICT (who) DO UPDATE SET date = excluded.date" { who, date }

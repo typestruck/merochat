@@ -2879,6 +2879,16 @@ label {
     visibility: visible;
 }
 
+.inbox-entry-action {
+    cursor: pointer;
+    text-decoration: underline;
+    color: var(--im-merochat-green);
+}
+
+.inbox-entry-action .svg-inbox-unread {
+    fill: var(--im-merochat-green);
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;

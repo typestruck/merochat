@@ -355,6 +355,7 @@ create table changelogs(
     id integer generated always as identity primary key,
     changed integer,
     description text not null,
+    action integer,
     date timestamptz not null default (utc_now()),
 
     constraint changes_for foreign key (changed) references users(id) on delete cascade

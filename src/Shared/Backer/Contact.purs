@@ -34,7 +34,7 @@ backerContact userId = (SC.defaultContact backerId backerUser)
 backerUser ∷ User
 backerUser =
       { id: backerId
-      , name: "Donate to MeroChat!"
+      , name: "Support MeroChat!"
       , availability: Online
       , backer: false
       , joined: DateTimeWrapper epoch

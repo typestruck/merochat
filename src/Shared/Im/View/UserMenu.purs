@@ -5,6 +5,7 @@ import Shared.Experiments.Types
 import Shared.Im.Types
 
 import Data.Array as DA
+import Data.Maybe as DM
 import Droplet.Language (count)
 import Flame (Html)
 import Flame.Html.Attribute as HA
@@ -47,8 +48,8 @@ changelogInbox model = HE.div [ HA.class' { "changelog-inbox": true, hidden: not
       ]
       where
       log c
-            | c.read = HE.span [ HA.class' "inbox-entry" ] [ HE.text c.description ]
-            | otherwise = HE.div [ HA.class' "inbox-entry unread-inbox-entry" ]
+            | c.read = HE.span [ HA.onClick $ PerformChangelogAction c.action, HA.class' { "inbox-entry": true, "inbox-entry-action": DM.isJust c.action } ] [ HE.text c.description ]
+            | otherwise = HE.div [ HA.class' { "inbox-entry unread-inbox-entry": true, "inbox-entry-action": DM.isJust c.action }, HA.onClick $ PerformChangelogAction c.action ]
                     [ envelope [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox-unread" ]
                     , HE.text c.description
                     ]

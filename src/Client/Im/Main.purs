@@ -212,6 +212,7 @@ update st model =
             FetchChangelog → CICL.fetchChangelog model
             DisplayChangelog changelogs → CICL.displayChangelog changelogs model
             ToggleChangelog → CICL.toggleChangelog model
+            PerformChangelogAction action → CICL.performChangelogAction action model
 
             --main
             StartPwa → CIP.startPwa model
