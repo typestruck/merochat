@@ -12,10 +12,8 @@ template payload = F.preMount (QuerySelector "#chat-experiments")
       { view: SEV.view
       , model:
               { experiments: payload.experiments
-              , current: Nothing
               , visible: true
-              , confirming: Nothing
               , user: payload.user
-              , section: HideSections
+              , section: HideExperiments
               }
       }

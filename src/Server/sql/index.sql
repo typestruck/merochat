@@ -786,7 +786,6 @@ values
     ('Zimbabwe');
 
 insert into experiments (code, name, description) values
-    (0, 'Impersonation', 'Temporarily change your profile to a character, famous person or historical figure so you can chat as if it was the same person typing it'),
     (10, 'Word chain', 'Play Word Chain with other users'),
     (20, 'Doppelganger', 'Answer 9 questions and find out if anyone matches you');
 
@@ -994,7 +993,6 @@ insert into privileges (feature, name, description, quantity) values
     (0, 'Receive chats', 'Access basic chat features, edit your profile and settings', 1),
     (100, 'Start chats', 'View new chat suggetions, and start new chats', 25),
     (200, 'Participate in chat experiments', 'Take part in chat experiments. Some experiments may require more karma', 50),
-    (201, 'Impersonation', 'Start Impersonation chat experiment', 4000),
     (202, 'Posts', 'Post to your profile feed', 200),
     (300, 'More tags', 'Increased number of max profile tags', 250),
     (400, 'Send links', 'Use markdown links in chats or posts', 1000),

@@ -16,7 +16,6 @@ import Foreign as F
 import Shared.Modal.Types (ScreenModal)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
-import Shared.User (IU)
 import Simple.JSON (class ReadForeign, class WriteForeign)
 
 type ChatExperiment =
@@ -29,70 +28,73 @@ type ChatExperiment =
 type ChatExperimentUser = { privileges ∷ Array Privilege }
 
 data ChatExperimentMessage
-      = QuitExperiment
-      | JoinExperiment ChatExperiment
-      | ConfirmExperiment (Maybe Experiment)
-      | ToggleVisibility ScreenModal
+      = ToggleVisibility ScreenModal
       | RedirectKarma
-      | ToggleSection ImpersonationSection
+      | ToggleSection ShowingExperiment
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
 type ChatExperimentModel =
       { experiments ∷ Array ChatExperiment
-      , confirming ∷ Maybe Experiment
-      , current ∷ Maybe Experiment
       , user ∷ ChatExperimentUser
       , visible ∷ Boolean
-      , section ∷ ImpersonationSection
+      , section ∷ ShowingExperiment
       }
 
-data Experiment = Impersonation (Maybe ImpersonationProfile) | WordChain | Doppelganger
+data Experiment = WordChain | Doppelganger
 
-type ImpersonationProfile = Record IU
+data ShowingExperiment = HideExperiments | ShowingDoppelganger DoppelgangerSection
 
-data ImpersonationSection
-      = HideSections
-      | Characters
-      | HistoricalFigures
-      | Celebrities
+data DoppelgangerSection
+      = HideDoppelganger
+      | ShowDoppelganger
+      | ShowQuestion Int
 
 derive instance Eq Experiment
-derive instance Eq ImpersonationSection
 
 derive instance Ord Experiment
 
 instance Bounded Experiment where
-      bottom = Impersonation Nothing
+      bottom = WordChain
       top = Doppelganger
 
 instance BoundedEnum Experiment where
       cardinality = Cardinality 1
       fromEnum = case _ of
-            Impersonation _ → 0
             WordChain → 10
             Doppelganger → 20
       toEnum = case _ of
-            0 → Just (Impersonation Nothing)
             10 → Just WordChain
             20 → Just Doppelganger
             _ → Nothing
 
 instance Enum Experiment where
       succ = case _ of
-            Impersonation _ → Just WordChain
             WordChain → Just Doppelganger
             Doppelganger → Nothing
       pred = case _ of
-            Impersonation _ → Nothing
-            WordChain → Just (Impersonation Nothing)
+            WordChain → Nothing
             Doppelganger → Just WordChain
 
 derive instance Generic Experiment _
+derive instance Generic ShowingExperiment _
+derive instance Generic DoppelgangerSection _
+
+instance DecodeJson ShowingExperiment where
+      decodeJson = DADGR.genericDecodeJson
+
+instance DecodeJson DoppelgangerSection where
+      decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Experiment where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson Experiment where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson ShowingExperiment where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson DoppelgangerSection where
       encodeJson = DAEGR.genericEncodeJson
 
 instance ReadForeign Experiment where
@@ -106,11 +108,3 @@ instance ToValue Experiment where
 
 instance FromValue Experiment where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
-
-derive instance Generic ImpersonationSection _
-
-instance EncodeJson ImpersonationSection where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance DecodeJson ImpersonationSection where
-      decodeJson = DADGR.genericDecodeJson

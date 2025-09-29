@@ -16,7 +16,7 @@ import Shared.Unsafe as SU
 
 --could also order by popularity
 fetchExperiments ∷ ServerEffect (Array ChatExperiment)
-fetchExperiments = SD.query $ select (_id /\ _code /\ _name /\ _description) # from experiments # orderBy (_added # desc)
+fetchExperiments = SD.query $ select (_id /\ _code /\ _name /\ _description) # from experiments # orderBy (_code # desc)
 
 fetchExperimentUser ∷ Int → ServerEffect ChatExperimentUser
 fetchExperimentUser loggedUserId = do
