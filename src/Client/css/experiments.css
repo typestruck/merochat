@@ -59,4 +59,12 @@
         width: auto;
         max-width: unset;
     }
+
+    #chat-experiments .modal-section {
+        width: auto;
+    }
+
+    .word-chain {
+        margin-left: 0;
+    }
 }

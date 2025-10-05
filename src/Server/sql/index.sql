@@ -1015,7 +1015,7 @@ insert into doppelganger_questions (id, question) values
     (8, 'Why didn''t you ask me which laptop I bought?'),
     (9, 'Which saying do you relate the most?');
 
-insert into doppelganger_choices (question, choice) values
+insert into doppelganger_choices (asked, choice) values
     (1, '37'),
     (1, '26'),
     (2, 'A soft drink'),
