@@ -41,7 +41,7 @@ type Users =
       , online_status ∷ Column Checked Default
       , message_timestamps ∷ Column Checked Default
       , visibility ∷ Column ProfileVisibility Default
-      , posts_visibility :: Column ProfileVisibility Default
+      , posts_visibility ∷ Column ProfileVisibility Default
       , visibility_last_updated ∷ Column DateTime Default
       )
 
@@ -62,7 +62,7 @@ _password = Proxy
 _temporary ∷ Proxy "temporary"
 _temporary = Proxy
 
-_isContact :: Proxy "isContact"
+_isContact ∷ Proxy "isContact"
 _isContact = Proxy
 
 _headline ∷ Proxy "headline"
@@ -98,7 +98,7 @@ _country = Proxy
 _visibility ∷ Proxy "visibility"
 _visibility = Proxy
 
-_postsVisibility :: Proxy "posts_visibility"
+_postsVisibility ∷ Proxy "posts_visibility"
 _postsVisibility = Proxy
 
 _visibility_last_updated ∷ Proxy "visibility_last_updated"
@@ -120,11 +120,11 @@ data By
       = Id Int
       | Email String
 
-type UserAccount = {
-      id :: Int
+type UserAccount =
+      { id ∷ Int
       , email ∷ Maybe String
       , password ∷ Maybe String
-}
+      }
 
 userBy ∷ By → ServerEffect (Maybe UserAccount)
 userBy = case _ of

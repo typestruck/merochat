@@ -29,6 +29,7 @@ import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
 import Shared.Changelog (Changelog, ChangelogAction)
 import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper)
+import Shared.Experiments.Types (ExperimentsMessage(..))
 import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
@@ -292,11 +293,12 @@ data ImMessage
       | SetTyping String
       | NoTyping Int
       | TypingId TimeoutId
+      | MessageDoppelganger Int
 
       --changelog
       | DisplayChangelog (Array Changelog)
       | FetchChangelog
-      | PerformChangelogAction (Maybe ChangelogAction)
+      | PerformChangelogAction (Maybe ChangelogAction) (Maybe Int)
       | ToggleChangelog
 
       --posts

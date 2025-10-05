@@ -25,5 +25,5 @@ changePassword loggedUserId password = do
 terminateAccount ∷ Int → ServerEffect Unit
 terminateAccount loggedUserId = SSD.terminateAccount loggedUserId
 
-changePrivacySettings ∷ ∀ r. Int → PrivacySettings → BaseEffect {  pool ∷ Pool | r } Unit
+changePrivacySettings ∷ ∀ r. Int → PrivacySettings → BaseEffect { pool ∷ Pool | r } Unit
 changePrivacySettings loggedUserId ps = SSD.changePrivacySettings loggedUserId ps

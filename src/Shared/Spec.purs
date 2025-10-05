@@ -1,18 +1,18 @@
 module Shared.Spec where
 
 import Prelude
-import Server.Ok
-import Shared.Im.Types
-import Shared.Profile.Types
-import Shared.User
+import Server.Ok (Ok)
+import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
+import Shared.Profile.Types (GeneratedInput, SavedFields)
 
 import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
-import Shared.Account (EmailCaptcha, EmailPasswordCaptcha, RegisterTemporary, ResetPassword, EmailPassword)
+import Shared.Account (EmailCaptcha, EmailPassword, EmailPasswordCaptcha, ResetPassword)
 import Shared.Changelog (Changelog)
-import Shared.DateTime (DateTimeWrapper, DateWrapper)
+import Shared.DateTime (DateTimeWrapper)
+import Shared.Experiments.Types (Question, Match)
 import Shared.Html (Html)
 import Shared.Post (PostPayload, Post)
 import Shared.Profile.Types (SavedFields)
@@ -274,9 +274,28 @@ spec ∷
                                   , response ∷ String
                                   }
                     , experiments ∷
-                            GET "/experiments"
-                                  { guards ∷ Guards ("loggedUserId" : Nil)
-                                  , response ∷ String
+                            Routes "/experiments"
+                                  { get ∷
+                                          GET "/"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , response ∷ String
+                                                }
+                                  , questions ∷
+                                          GET "/questions"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , response ∷ Array Question
+                                                }
+                                  , matches ∷
+                                          GET "/matches"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , response ∷ Array Match
+                                                }
+                                  , answer ∷
+                                          POST "/answer"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , body ∷ { choice ∷ Int }
+                                                , response ∷ Ok
+                                                }
                                   }
                     , backer ∷
                             GET "/backer"

@@ -14,10 +14,10 @@ import Server.Response as SR
 import Shared.Account (EmailPassword)
 import Shared.Html (Html)
 
-login ∷  { guards ∷ { checkAnonymous ∷ Unit }  } → ServerEffect Html
+login ∷ { guards ∷ { checkAnonymous ∷ Unit } } → ServerEffect Html
 login _ = SR.serveTemplate SLT.template
 
-logon ∷ { guards ∷ { checkAnonymous ∷ Unit }, body ∷ EmailPassword  } → ServerEffect (Response Ok)
+logon ∷ { guards ∷ { checkAnonymous ∷ Unit }, body ∷ EmailPassword } → ServerEffect (Response Ok)
 logon { body } = do
       token ← SLA.login body
       cookieHeader ← SC.makeCookieHeader token

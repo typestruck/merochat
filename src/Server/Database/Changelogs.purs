@@ -12,8 +12,9 @@ type Changelogs =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
       , changed ∷ Maybe Int
       , description ∷ String
-      , action :: Maybe ChangelogAction
-      , date :: Column DateTime Default
+      , action ∷ Maybe ChangelogAction
+      , value ∷ Maybe Int
+      , date ∷ Column DateTime Default
       )
 
 type ChangelogsTable = Table "changelogs" Changelogs
@@ -24,5 +25,8 @@ changelogs = Table
 _changed ∷ Proxy "changed"
 _changed = Proxy
 
-_action :: Proxy "action"
+_action ∷ Proxy "action"
 _action = Proxy
+
+_value ∷ Proxy "value"
+_value = Proxy

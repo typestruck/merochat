@@ -65,7 +65,7 @@ t = Proxy
 profileVisibility ∷ Proxy "profileVisibility"
 profileVisibility = Proxy
 
-postsVisibility :: Proxy "postsVisibility"
+postsVisibility ∷ Proxy "postsVisibility"
 postsVisibility = Proxy
 
 readReceipts ∷ Proxy "readReceipts"

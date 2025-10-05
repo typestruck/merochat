@@ -3,7 +3,7 @@ module Shared.Options.MountPoint where
 import Prelude
 
 import Flame (AppId(..))
-import Shared.Experiments.Types (ChatExperimentMessage)
+import Shared.Experiments.Types (ExperimentsMessage)
 import Shared.Feedback.Types (FeedbackMessage)
 import Shared.Im.Types (ImMessage)
 import Shared.KarmaPrivileges.Types (KarmaPrivilegesMessage)
@@ -14,7 +14,7 @@ data MountPoint = Im | Profile | Feedback | Experiments | KarmaPrivileges
 profileId ∷ AppId MountPoint ProfileMessage
 profileId = AppId Profile
 
-experimentsId ∷ AppId MountPoint ChatExperimentMessage
+experimentsId ∷ AppId MountPoint ExperimentsMessage
 experimentsId = AppId Experiments
 
 imId ∷ AppId MountPoint ImMessage

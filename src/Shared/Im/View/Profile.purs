@@ -556,7 +556,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                           , HE.path' [ HA.d "M18 12L12 6L6 12", HA.stroke "#EFE5DC", HA.strokeWidth "2" ]
                           ]
                   , seeAllSuggestions
-                  , HE.div [ HA.class' { "mini-suggestion-cards collapsed": true, taller : suggestion.unseenPosts > 0 } ]
+                  , HE.div [ HA.class' { "mini-suggestion-cards collapsed": true, taller: suggestion.unseenPosts > 0 } ]
                           [ HE.div [ HA.class' "mini-avatar-info-arrows" ]
                                   [ arrow backArrow model.freeToFetchSuggestions [] $ SpecialRequest PreviousSuggestion
                                   , HE.div [ HA.class' "mini-avatar-info", HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]

@@ -56,21 +56,21 @@ type IU =
               ( gender ∷ Maybe String
               , country ∷ Maybe String
               , languages ∷ Array String
-              , completedFields :: Array ProfileColumn
+              , completedFields ∷ Array ProfileColumn
               , age ∷ Maybe Int
               , readReceipts ∷ Boolean
-              , unseenPosts :: Int
+              , unseenPosts ∷ Int
               , typingStatus ∷ Boolean
-              , posts :: Array Post
-              , showing :: ProfilePost
+              , posts ∷ Array Post
+              , showing ∷ ProfilePost
               , profileVisibility ∷ ProfileVisibility
               , postsVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
-              , isContact :: Boolean
+              , isContact ∷ Boolean
               , temporary ∷ Boolean
               , backer ∷ Boolean
               , messageTimestamps ∷ Boolean
-              , totalPosts :: Int
+              , totalPosts ∷ Int
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
               , bin ∷ Int

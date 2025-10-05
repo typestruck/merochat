@@ -40,10 +40,10 @@ template payload = do
                     , javascript = javascript
                     , css = css
                     }
-            , model : model lt
+            , model: model lt
             }
       where
-      model ∷ DateTime -> ImModel
+      model ∷ DateTime → ImModel
       model lt =
             { chatting: Nothing
             , freeToFetchSuggestions: true
@@ -91,7 +91,7 @@ template payload = do
                     , mode: TextOnly
                     , text: Nothing
                     , link: Nothing
-                    , image :Nothing
+                    , image: Nothing
                     , caption: Nothing
                     }
             , webSocketStatus: Closed

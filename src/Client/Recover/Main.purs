@@ -13,12 +13,12 @@ import Effect.Class (liftEffect)
 import Shared.Network (RequestStatus(..))
 import Shared.Routes (routes)
 
-recover ∷  Effect Unit
+recover ∷ Effect Unit
 recover = do
       inputed ← CCA.validateEmail
       case inputed of
             Nothing → pure unit
-            Just email → EA.launchAff_ <<< void <<< CCA.formRequest $ request.recover.post { body: { email, captchaResponse : "" } }
+            Just email → EA.launchAff_ <<< void <<< CCA.formRequest $ request.recover.post { body: { email, captchaResponse: "" } }
 
 reset ∷ String → Effect Unit
 reset token = do

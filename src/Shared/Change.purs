@@ -10,7 +10,7 @@ import Shared.Unsafe as SU
 import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 
-onChange ∷ forall m.  (String → m) → NodeData m
+onChange ∷ ∀ m. (String → m) → NodeData m
 onChange message = HA.createRawEvent "change" handler
       where
       handler event = do

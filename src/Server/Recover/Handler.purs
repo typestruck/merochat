@@ -14,12 +14,12 @@ import Shared.Html (Html(..))
 recover ∷ ∀ r. { guards ∷ { checkAnonymous ∷ Unit }, query ∷ { token ∷ Maybe String } | r } → ServerEffect Html
 recover { query: { token } } = SR.serveTemplate $ SRT.template token
 
-recoverAccount ∷ { guards ∷ { checkAnonymous ∷ Unit }, body ∷ EmailCaptcha  } → ServerEffect Ok
+recoverAccount ∷ { guards ∷ { checkAnonymous ∷ Unit }, body ∷ EmailCaptcha } → ServerEffect Ok
 recoverAccount { body } = do
       SRA.recover body
       pure ok
 
-reset ∷ { guards ∷ { checkAnonymous ∷ Unit },  body ∷ ResetPassword } → ServerEffect Ok
+reset ∷ { guards ∷ { checkAnonymous ∷ Unit }, body ∷ ResetPassword } → ServerEffect Ok
 reset { body } = do
       SRA.reset body
       pure ok

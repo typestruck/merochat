@@ -30,7 +30,7 @@ type FlatFields rest =
       , headline ∷ String
       , id ∷ Int
       , bin ∷ Int
-      , unseenPosts :: Maybe BigInt
+      , unseenPosts ∷ Maybe BigInt
       , karma ∷ Int
       , karmaPosition ∷ Int
       , postsVisibility ∷ ProfileVisibility
@@ -85,7 +85,7 @@ fromFlatUser fc =
       , name: fc.name
       , headline: fc.headline
       , posts: []
-      , unseenPosts : DM.fromMaybe 0 (fc.unseenPosts >>= BI.toInt)
+      , unseenPosts: DM.fromMaybe 0 (fc.unseenPosts >>= BI.toInt)
       , postsVisibility: fc.postsVisibility
       , isContact: fc.isContact
       , showing: ShowInfo

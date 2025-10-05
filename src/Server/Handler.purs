@@ -54,7 +54,7 @@ handlers reading =
       , posts:
               { get: runJson reading SPSH.posts
               , post: runJson reading SPSH.post
-              , seen : runJson reading SPSH.seen
+              , seen: runJson reading SPSH.seen
               }
       , im:
               { get: runHtml reading SIH.im
@@ -112,7 +112,12 @@ handlers reading =
               , send: runJson reading SFH.send
               }
       , internalBacker: runJson reading SIBH.internalBacker
-      , experiments: runJson reading SEH.experiments
+      , experiments:
+              { get: runJson reading SEH.experiments
+              , questions: runJson reading SEH.questions
+              , matches: runJson reading SEH.matches
+              , answer: runJson reading SEH.answer
+              }
       , sw
       , developmentFiles
       , topic

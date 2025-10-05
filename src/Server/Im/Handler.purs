@@ -54,10 +54,10 @@ subscribe { guards } = do
       SIA.subscribe guards.loggedUserId
       pure ok
 
-changelogs :: { query ∷ { before ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Changelog)
+changelogs ∷ { query ∷ { before ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Changelog)
 changelogs request = SIA.listChangelogs request.guards.loggedUserId request.query.before
 
-changelog :: { body ∷ { ids ∷ Array Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+changelog ∷ { body ∷ { ids ∷ Array Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
 changelog request = do
       SIA.markRead request.guards.loggedUserId request.body.ids
       pure ok

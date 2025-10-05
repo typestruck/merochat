@@ -18,21 +18,21 @@ template = do
       FRS.render contents
       where
       content =
-            [ HE.div [HA.class' "pastel-area"]
-                    [ HE.h2 [HA.class' "ext-heading"] [HE.text "Temporarily banned"]
-                    , HE.p_ [HE.text "You have been temporarily banned from MeroChat. Remember, MeroChat is not"]
+            [ HE.div [ HA.class' "pastel-area" ]
+                    [ HE.h2 [ HA.class' "ext-heading" ] [ HE.text "Temporarily banned" ]
+                    , HE.p_ [ HE.text "You have been temporarily banned from MeroChat. Remember, MeroChat is not" ]
                     , HE.div_
-                            [ HE.div_ [HE.text " a dating site"]
-                            , HE.div_ [HE.text " a place to spread hate speech"]
-                            , HE.div_ [HE.text " a marketplace"]
+                            [ HE.div_ [ HE.text " a dating site" ]
+                            , HE.div_ [ HE.text " a place to spread hate speech" ]
+                            , HE.div_ [ HE.text " a marketplace" ]
                             ]
                     , HE.p_
                             [ HE.text "To restore your account, please reach us at "
-                            , HE.a [HA.href "mailto:contact@mero.chat"] [HE.text "contact@mero.chat"]
+                            , HE.a [ HA.href "mailto:contact@mero.chat" ] [ HE.text "contact@mero.chat" ]
                             , HE.text ", "
-                            , HE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] [HE.text "r/MeroChat"]
+                            , HE.a [ HA.href "https://reddit.com/r/MeroChat", HA.target "_blank" ] [ HE.text "r/MeroChat" ]
                             , HE.text " or "
-                            , HE.a [ HA.href "https://twitter.com/MeroChat", HA.target "_blank" ] [HE.text "@MeroChat"]
+                            , HE.a [ HA.href "https://twitter.com/MeroChat", HA.target "_blank" ] [ HE.text "@MeroChat" ]
                             ]
                     ]
             ]

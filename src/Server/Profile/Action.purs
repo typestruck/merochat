@@ -52,7 +52,7 @@ generateField field = do
             SPT.Headline → ST.generateHeadline
             SPT.Description → ST.generateDescription
 
-refreshPosts :: Int -> Maybe Int -> ServerEffect (Array Post)
+refreshPosts ∷ Int → Maybe Int → ServerEffect (Array Post)
 refreshPosts loggedUserId id = SPD.presentPosts loggedUserId id
 
 data SaveAvatar = Ignore | Save (Maybe String)
@@ -68,12 +68,12 @@ save loggedUserId fields = do
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
       --keep the old logic to save fields individually in case we need to do it again
       SD.withTransaction $ \connection → do
-            current <- SPD.presentGeneratedFields connection loggedUserId
-            let name = DS.take nameMaxCharacters fields.name.value
+            current ← SPD.presentGeneratedFields connection loggedUserId
+            let name = DS.take nameMaxCharacters $ DS.trim fields.name.value
             unless (name == current.name) $ SPD.saveRequiredField connection loggedUserId Name name fields.name.generated
-            let headline = DS.take headlineMaxCharacters fields.headline.value
+            let headline = DS.take headlineMaxCharacters $ DS.trim fields.headline.value
             unless (headline == current.headline) $ SPD.saveRequiredField connection loggedUserId Headline headline fields.headline.generated
-            let description = DS.take descriptionMaxCharacters fields.description.value
+            let description = DS.take descriptionMaxCharacters $ DS.trim fields.description.value
             unless (description == current.description) $ SPD.saveRequiredField connection loggedUserId Description description fields.description.generated
             case avatar of
                   Save a → SPD.saveField connection loggedUserId Avatar a
@@ -88,7 +88,7 @@ save loggedUserId fields = do
                         | otherwise = maxStartingTags
             SPD.saveTags connection loggedUserId <<< DA.take numberTags $ map (DS.take tagMaxCharacters) fields.tags
       pure $ case avatar of
-            Save a → { avatar : a }
-            Ignore -> { avatar : fields.avatar }
-            _ → { avatar : Nothing }
+            Save a → { avatar: a }
+            Ignore → { avatar: fields.avatar }
+            _ → { avatar: Nothing }
 

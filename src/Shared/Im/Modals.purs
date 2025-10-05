@@ -48,7 +48,7 @@ modals model =
                     ]
             )
       where
-      shouldShow = case  model.modal of
+      shouldShow = case model.modal of
             Chat _ → false
             HideModal → false
             _ → true

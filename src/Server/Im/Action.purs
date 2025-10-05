@@ -104,13 +104,13 @@ processMessage loggedUserId userId content = do
       else
             pure $ Left UserUnavailable
 
-listChangelogs :: Int -> Maybe Int -> ServerEffect (Array Changelog)
+listChangelogs ∷ Int → Maybe Int → ServerEffect (Array Changelog)
 listChangelogs loggedUserId id = SIDC.listChangelogs loggedUserId id
 
-markRead :: Int -> Array Int -> ServerEffect Unit
+markRead ∷ Int → Array Int → ServerEffect Unit
 markRead loggedUserId ids = SIDC.markRead loggedUserId ids
 
-editMessage ∷ ∀ r. Int → Int → Int → Content → BaseEffect {  pool ∷ Pool | r } (Either MessageError String)
+editMessage ∷ ∀ r. Int → Int → Int → Content → BaseEffect { pool ∷ Pool | r } (Either MessageError String)
 editMessage loggedUserId userId messageId content = do
       isVisible ← SIDE.isRecipientVisible loggedUserId userId
       canEdit ← if isVisible then SIDPP.canEditMessage loggedUserId messageId else pure false
@@ -125,14 +125,14 @@ editMessage loggedUserId userId messageId content = do
       else
             pure $ Left UserUnavailable
 
-unsendMessage ∷ ∀ r. Int → Int → Int → BaseEffect {  pool ∷ Pool | r } Unit
+unsendMessage ∷ ∀ r. Int → Int → Int → BaseEffect { pool ∷ Pool | r } Unit
 unsendMessage loggedUserId userId messageId = SIDE.deleteMessage loggedUserId userId messageId
 
 markdownPrivileges ∷ ∀ r. Int → BaseEffect { pool ∷ Pool | r } (Set Privilege)
 markdownPrivileges loggedUserId = (DST.fromFoldable <<< map _.feature) <$> SIDPP.markdownPrivileges loggedUserId
 
 -- | Sanitizes markdown and handle image uploads
-processMessageContent ∷ ∀ r. Content → Set Privilege → BaseEffect {  pool ∷ Pool | r } String
+processMessageContent ∷ ∀ r. Content → Set Privilege → BaseEffect { pool ∷ Pool | r } String
 processMessageContent content privileges = do
       message ← case content of
             Text m | allowed m → pure m
@@ -185,7 +185,7 @@ greet ∷ Int → ServerEffect Unit
 greet loggedUserId =
       if production then do
             starter ← ST.generateConversationStarter
-            void $ SIDE.insertMessage sender loggedUserId ( "hey there! " <> starter)
+            void $ SIDE.insertMessage sender loggedUserId ("hey there! " <> starter)
       else
             pure unit
       where

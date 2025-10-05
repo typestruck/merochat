@@ -28,21 +28,20 @@ data ProfileColumn
       | Languages
       | Tags
 
-displayColumn :: ProfileColumn -> String
+displayColumn ∷ ProfileColumn → String
 displayColumn = case _ of
-            Name -> "Display name"
-            Headline -> "Headline"
-            Description -> "Description"
-            Avatar -> "Profile picture"
-            Birthday -> "Age"
-            Gender -> "Gender"
-            Country -> "Country"
-            Languages -> "Language"
-            Tags -> "Tags"
+      Name → "Display name"
+      Headline → "Headline"
+      Description → "Description"
+      Avatar → "Profile picture"
+      Birthday → "Age"
+      Gender → "Gender"
+      Country → "Country"
+      Languages → "Language"
+      Tags → "Tags"
 
 instance Show ProfileColumn where
       show = DSG.genericShow
-
 
 derive instance Generic ProfileColumn _
 

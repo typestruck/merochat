@@ -48,8 +48,8 @@ changelogInbox model = HE.div [ HA.class' { "changelog-inbox": true, hidden: not
       ]
       where
       log c
-            | c.read = HE.span [ HA.onClick $ PerformChangelogAction c.action, HA.class' { "inbox-entry": true, "inbox-entry-action": DM.isJust c.action } ] [ HE.text c.description ]
-            | otherwise = HE.div [ HA.class' { "inbox-entry unread-inbox-entry": true, "inbox-entry-action": DM.isJust c.action }, HA.onClick $ PerformChangelogAction c.action ]
+            | c.read = HE.span [ HA.onClick $ PerformChangelogAction c.action c.value, HA.class' { "inbox-entry": true, "inbox-entry-action": DM.isJust c.action } ] [ HE.text c.description ]
+            | otherwise = HE.div [ HA.class' { "inbox-entry unread-inbox-entry": true, "inbox-entry-action": DM.isJust c.action }, HA.onClick $ PerformChangelogAction c.action c.value ]
                     [ envelope [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox-unread" ]
                     , HE.text c.description
                     ]

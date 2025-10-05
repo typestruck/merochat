@@ -339,8 +339,8 @@ create table doppelganger_questions(
 create table doppelganger_choices(
     id integer generated always as identity primary key,
     choice text not null,
-    question integer not null,
-    constraint choice_quesiton foreign key (question) references doppelganger_questions(id) on delete cascade
+    asked integer not null,
+    constraint choice_quesiton foreign key (asked) references doppelganger_questions(id) on delete cascade
 );
 
 create table doppelganger_answers(
@@ -356,6 +356,7 @@ create table changelogs(
     changed integer,
     description text not null,
     action integer,
+    value integer,
     date timestamptz not null default (utc_now()),
 
     constraint changes_for foreign key (changed) references users(id) on delete cascade
@@ -787,7 +788,7 @@ values
 
 insert into experiments (code, name, description) values
     (10, 'Word chain', 'Play Word Chain with other users'),
-    (20, 'Doppelganger', 'Answer 9 questions and find out if anyone matches you');
+    (20, 'Doppelganger', 'Answer 9 questions and find your evil clone');
 
 insert into stock_text (contents, text_type) values
     ('I stayed up all night wondering where the sun went, then it dawned on me', 0),

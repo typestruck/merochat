@@ -10,6 +10,7 @@ import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
 import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
@@ -27,17 +28,46 @@ type ChatExperiment =
 
 type ChatExperimentUser = { privileges ∷ Array Privilege }
 
-data ChatExperimentMessage
+data ExperimentsMessage
       = ToggleVisibility ScreenModal
       | RedirectKarma
       | ToggleSection ShowingExperiment
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
+      | ResumeQuestions
+      | SelectChoice Int Int
+      | AnswerQuestion
+      | AfterAnswerQuestion
+      | DisplayQuestions (Array Question)
+      | FetchMatches
+      | DisplayMatches (Array Match)
+      | MessageDoppelganger Int
 
-type ChatExperimentModel =
+type Match = { name ∷ String, id ∷ Int }
+
+type ExperimentsModel =
       { experiments ∷ Array ChatExperiment
       , user ∷ ChatExperimentUser
       , visible ∷ Boolean
       , section ∷ ShowingExperiment
+      , doppelganger ∷
+              { questions ∷ Array Question
+              , loading ∷ Boolean
+              , selectedChoice ∷ Maybe { question ∷ Int, choice ∷ Int }
+              , matches ∷ Array Match
+              , completed ∷ Boolean
+              }
+      }
+
+type Choice =
+      { id ∷ Int
+      , description ∷ String
+      , chosen ∷ Boolean
+      }
+
+type Question =
+      { id ∷ Int
+      , description ∷ String
+      , choices ∷ Array Choice
       }
 
 data Experiment = WordChain | Doppelganger
@@ -45,9 +75,9 @@ data Experiment = WordChain | Doppelganger
 data ShowingExperiment = HideExperiments | ShowingDoppelganger DoppelgangerSection
 
 data DoppelgangerSection
-      = HideDoppelganger
-      | ShowDoppelganger
-      | ShowQuestion Int
+      = ShowDoppelganger
+      | ShowNextQuestion
+      | ShowMatches
 
 derive instance Eq Experiment
 

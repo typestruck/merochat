@@ -8,7 +8,7 @@ import Type.Proxy (Proxy(..))
 
 type Posts =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
-      , until :: Int
+      , until ∷ Int
       , poster ∷ Int
       , reader ∷ Int
       )

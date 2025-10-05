@@ -65,7 +65,7 @@ chatHistory model =
                               let
                                     entries = retryOrWarning chatting.user.id : temporaryChatWarning <> displayChatHistory chatting
                               in
-                                    if chatting.shouldFetchChatHistory || not model.freeToFetchChatHistory then HE.div' [HA.class' "loading"] : entries
+                                    if chatting.shouldFetchChatHistory || not model.freeToFetchChatHistory then HE.div' [ HA.class' "loading" ] : entries
                                     else entries
             Nothing → HE.div'
                   [ HA.id $ show MessageHistory
@@ -88,9 +88,9 @@ chatHistory model =
                                   [ HE.div [ HA.class' "message-content-in" ]
                                           [ HE.div' [ HA.innerHtml $ SM.parse entry.content ]
                                           ]
-                                  , HE.div [HA.class' "message-status error-message"]
-                                          [ HE.span [HA.class' { hidden: not model.user.messageTimestamps || not contact.user.messageTimestamps }] [HE.text <<< SD.agoWithTime $ DN.unwrap entry.date]
-                                          , HE.span_ [HE.text " - Failed to send"]
+                                  , HE.div [ HA.class' "message-status error-message" ]
+                                          [ HE.span [ HA.class' { hidden: not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.agoWithTime $ DN.unwrap entry.date ]
+                                          , HE.span_ [ HE.text " - Failed to send" ]
                                           ]
                                   ]
                           ]
@@ -113,23 +113,23 @@ chatHistory model =
                                         [ HA.class' { "message-content": true, "editing-message": Just entry.id == model.editing }, HA.id $ "m" <> show entry.id, CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage entry.content <<< Left) ] -- id is used to scroll into view
                                         [ HE.div [ HA.class' "message-content-in" ]
                                                 [ HE.div' [ HA.innerHtml $ SM.parse entry.content ]
-                                                , HE.div [HA.class' "message-context-options"]
+                                                , HE.div [ HA.class' "message-context-options" ]
                                                         [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
                                                                 [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
                                                                         [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
                                                                         ]
                                                                 , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
-                                                                        [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.content (Right Nothing)) ] [HE.text "Reply"]
-                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] [HE.text "Edit"]
-                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] [HE.text "Unsend"]
+                                                                        [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.content (Right Nothing)) ] [ HE.text "Reply" ]
+                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] [ HE.text "Edit" ]
+                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] [ HE.text "Unsend" ]
                                                                         ]
                                                                 ]
                                                         ]
                                                 ]
-                                        , HE.div [HA.class' "message-status"]
-                                                [ HE.span [HA.class' { hidden: not entry.edited }] [HE.text "Edited - "]
-                                                , HE.span [HA.class' { hidden: noTimestamps }] [HE.text <<< SD.agoWithTime $ DN.unwrap entry.date]
-                                                , HE.span [HA.class' { hidden: incomingMessage || noReadReceipts }] [HE.text $ " - " <> show entry.status]
+                                        , HE.div [ HA.class' "message-status" ]
+                                                [ HE.span [ HA.class' { hidden: not entry.edited } ] [ HE.text "Edited - " ]
+                                                , HE.span [ HA.class' { hidden: noTimestamps } ] [ HE.text <<< SD.agoWithTime $ DN.unwrap entry.date ]
+                                                , HE.span [ HA.class' { hidden: incomingMessage || noReadReceipts } ] [ HE.text $ " - " <> show entry.status ]
                                                 ]
                                         ]
                                 ]

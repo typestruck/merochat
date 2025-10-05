@@ -85,17 +85,19 @@ suggestBaseQuery loggedUserId filter =
 
 postsFilter ∷ Int → _
 postsFilter loggedUserId =
-      ( _poster .=. u ... _id .&&.
-              ( u ... _postsVisibility .=. Everyone
-                      .||. u
-                      ... _postsVisibility
-                      .=. NoTemporaryUsers
-                      .&&. not (exists $ select (1 # as l) # from (users # as s) # wher (s ... _id .=. loggedUserId .&&. _temporary .=. Checked true))
-                      .||. u
-                      ... _postsVisibility
-                      .=. Contacts
-                      .&&. isNotNull (h ... _sender)
-              ) .&&. (not (exists $ select (1 # as u) # from posts_seen # wher (_poster .=. u ... _id .&&. _reader .=. loggedUserId .&&. _until .>=. p ... _id)))
+      ( _poster .=. u ... _id
+              .&&.
+                    ( u ... _postsVisibility .=. Everyone
+                            .||. u
+                            ... _postsVisibility
+                            .=. NoTemporaryUsers
+                            .&&. not (exists $ select (1 # as l) # from (users # as s) # wher (s ... _id .=. loggedUserId .&&. _temporary .=. Checked true))
+                            .||. u
+                            ... _postsVisibility
+                            .=. Contacts
+                            .&&. isNotNull (h ... _sender)
+                    )
+              .&&. (not (exists $ select (1 # as u) # from posts_seen # wher (_poster .=. u ... _id .&&. _reader .=. loggedUserId .&&. _until .>=. p ... _id)))
       )
 
 suggestMainQuery loggedUserId skip filter =

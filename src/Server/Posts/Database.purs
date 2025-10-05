@@ -40,7 +40,7 @@ postsFilter loggedUserId userId =
               )
       )
 
-savePost ∷ Int → String → ServerEffect { id :: Int }
+savePost ∷ Int → String → ServerEffect { id ∷ Int }
 savePost loggedUserId content = map SU.fromJust $ SD.single $ insert # into posts (_content /\ _poster) # values (content /\ loggedUserId) # returning _id
 
 markSeen ∷ Int → Int → Int → ServerEffect Unit

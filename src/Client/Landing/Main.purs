@@ -25,14 +25,14 @@ registerRegularUser = do
       case registerLogin of
             Nothing → pure unit
             Just rl → EA.launchAff_ do
-                  status ← CCA.formRequest $ request.register { body:  { email : rl.email, password : rl.password, captchaResponse : "" } }
+                  status ← CCA.formRequest $ request.register { body: { email: rl.email, password: rl.password, captchaResponse: "" } }
                   liftEffect $ case status of
                         Success → CCL.setLocation $ routes.im.get {}
                         Failure _ → pure unit
 
 registerTemporaryUser ∷ Effect Unit
-registerTemporaryUser  =  EA.launchAff_ do
-      status ← CCA.formRequest $ request.temporary {  }
+registerTemporaryUser = EA.launchAff_ do
+      status ← CCA.formRequest $ request.temporary {}
       liftEffect $ case status of
             Success → CCL.setLocation $ routes.im.get {}
             Failure _ → pure unit

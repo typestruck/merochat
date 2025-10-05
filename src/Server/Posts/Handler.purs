@@ -26,7 +26,7 @@ posts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { poster ∷ Int } } 
 posts request = SPA.posts request.guards.loggedUserId request.query.poster
 
 post ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ PostPayload } → ServerEffect { id ∷ Int }
-post request =  SPA.post request.guards.loggedUserId request.body
+post request = SPA.post request.guards.loggedUserId request.body
 
 seen ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { poster ∷ Int, id ∷ Int } } → ServerEffect Ok
 seen request = do

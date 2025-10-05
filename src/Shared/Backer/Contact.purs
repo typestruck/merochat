@@ -39,12 +39,12 @@ backerUser =
       , backer: false
       , joined: DateTimeWrapper epoch
       , readReceipts: true
-      , posts : []
-      , showing : ShowInfo
+      , posts: []
+      , showing: ShowInfo
       , messageTimestamps: true
-      , postsVisibility : Everyone
-      , unseenPosts : 0
-      , isContact : false
+      , postsVisibility: Everyone
+      , unseenPosts: 0
+      , isContact: false
       , totalPosts: 0
       , typingStatus: true
       , onlineStatus: true

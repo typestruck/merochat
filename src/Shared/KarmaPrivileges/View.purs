@@ -72,7 +72,7 @@ view model@{ top10, inBetween10, userPosition, toggleBoard, privileges, stats: {
             [ HE.div [ HA.class' "privilege-body" ]
                     [ HE.div [ HA.class' "privilege-quantity" ]
                             [ if got then
-                                SS.checked "You have unlocked this feature"
+                                    SS.checked "You have unlocked this feature"
                               else
                                     HE.div [ HA.title $ "You need " <> show quantity <> " karma to unlock this feature" ] [ HE.text $ show quantity ]
                             ]

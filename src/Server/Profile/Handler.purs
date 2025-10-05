@@ -26,11 +26,11 @@ profile { guards: { loggedUserId } } = do
             , languages
             }
 
-generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What} } → ServerEffect String
+generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What } } → ServerEffect String
 generated { body } = SPA.generateField body.field
 
-posts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { after ∷ Maybe Int} } → ServerEffect (Array Post)
+posts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { after ∷ Maybe Int } } → ServerEffect (Array Post)
 posts request = SPA.refreshPosts request.guards.loggedUserId request.query.after
 
-save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect {avatar :: Maybe String }
-save request =  SPA.save request.guards.loggedUserId request.body
+save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect { avatar ∷ Maybe String }
+save request = SPA.save request.guards.loggedUserId request.body

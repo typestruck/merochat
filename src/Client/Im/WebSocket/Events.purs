@@ -174,7 +174,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       BadMessage bm → receiveBadMessage bm model
       PayloadError p → receivePayloadError p model
 
-receivePost ∷ {post :: Post, userId :: Int } → ImModel → NoMessages
+receivePost ∷ { post ∷ Post, userId ∷ Int } → ImModel → NoMessages
 receivePost p model = model { suggestions = map updateSuggestion model.suggestions, contacts = map updateContact model.contacts } /\ []
       where
       alreadyReceived = DA.any ((p.post.id == _) <<< _.id)

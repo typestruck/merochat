@@ -31,9 +31,10 @@ onEnter message = HA.createRawEvent "keydown" handler
       handler event = do
             let key = WUK.key <<< SU.fromJust $ WUK.fromEvent event
             if key == "Enter" then do
-                  let element = SU.fromJust do
-                        target ← WEE.target event
-                        WDE.fromEventTarget target
+                  let
+                        element = SU.fromJust do
+                              target ← WEE.target event
+                              WDE.fromEventTarget target
                   v ← CCD.value element
                   CCD.setValue element ""
                   pure <<< Just $ message v

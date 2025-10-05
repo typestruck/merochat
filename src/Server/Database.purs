@@ -141,7 +141,7 @@ hoistTransaction action = do
             Right r → pure r
             Left l → RE.throw l
 
-newPool ∷  Effect Pool
+newPool ∷ Effect Pool
 newPool =
       DD.newPool $ (DD.defaultConfiguration "merochat")
             { user = Just "merochat"

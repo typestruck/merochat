@@ -5,7 +5,10 @@ import Shared.Im.Types
 
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Common.Network (request)
+import Client.Common.Network as CCNT
+import Client.Experiments.Update (messageDoppelganger)
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.Suggestion as SIS
@@ -48,6 +51,7 @@ import Shared.Im.Contact as SIC
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal.Types (ChatModal(..), Modal(..), SpecialModal(..))
+import Shared.Options.Doppelganger (message)
 import Shared.Options.MountPoint (imId)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
@@ -144,7 +148,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
             { temporaryId = newTemporaryId
             , contacts = map updateContact model.contacts
             , imageCaption = Nothing
-            , modal =  HideModal
+            , modal = HideModal
             , selectedImage = Nothing
             , showMiniChatInput = false
             , editing = Nothing
@@ -185,7 +189,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
                   Text txt → txt
                   Image caption width height base64File → asMarkdownImage caption width height base64File
                   Audio base64 → asAudioMessage base64
-                  _ -> ""
+                  _ → ""
       updateContact contact
             | contact.user.id == userId =
                     contact
@@ -475,3 +479,29 @@ deleteMessage id webSocket model =
             EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId: SU.fromJust model.chatting }
             pure Nothing
 
+messageDoppelganger ∷ Int → WebSocket → ImModel → MoreMessages
+messageDoppelganger userId webSocket model =
+      if isContact then
+            model /\ [ hide, resume, send ]
+      else if isSuggestion then
+            model { suggesting = Just userId } /\ [ hide, send ]
+      else
+            model { temporaryId = model.temporaryId + 1 } /\ [ hide, sendFetch, resume ]
+      where
+      isContact = DA.any ((userId == _) <<< _.id <<< _.user) model.contacts
+      isSuggestion = DA.any ((userId == _) <<< _.id) model.suggestions
+
+      hide = pure <<< Just <<< SpecialRequest $ ToggleModal HideModal
+      resume = pure <<< Just $ ResumeChat userId
+      send = do
+            dt ← EC.liftEffect EN.nowDateTime
+            pure <<< Just $ SendMessage (if isContact then ChatInput else ExperimentsRoot) (Text message) (DateTimeWrapper dt)
+      sendFetch = do
+            EC.liftEffect <<< CIW.sendPayload webSocket $ OutgoingMessage
+                  { id: model.temporaryId + 1
+                  , userId
+                  , userName: model.user.name
+                  , content: Text message
+                  , turn: Nothing
+                  }
+            CCNT.retryableResponse FetchMissedContacts DisplayNewContacts $ request.im.contact { query: { id: userId } }

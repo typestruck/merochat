@@ -57,7 +57,7 @@ instance Show ElementId where
             CompactProfileContextMenu → "compact-profile-context-menu"
             FullProfileContextMenu → "full-profile-context-menu"
             ImageFileInput → "image-file-input"
-            CreateAccount -> "create-account"
+            CreateAccount → "create-account"
             ConfirmAccountTerminationForm → "confirm-account-termination-form"
             LinkFormUrl → "link-form-url"
             ProfileEditionForm → "profile-edition-form"

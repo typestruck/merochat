@@ -33,7 +33,7 @@ guards reading =
       }
 
 checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
-checkLoggedUser {  pool } request = do
+checkLoggedUser { pool } request = do
       cookies ← PSG.cookies request
       maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of
@@ -48,7 +48,7 @@ checkLoggedUser {  pool } request = do
       redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
 
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
-checkAnonymous {  pool } request = do
+checkAnonymous { pool } request = do
       cookies ← PSG.cookies request
       maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
       case maybeUserId of

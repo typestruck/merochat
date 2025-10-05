@@ -12,6 +12,7 @@ import Data.Tuple.Nested ((/\))
 import Shared.Changelog (Changelog, ChangelogAction(..))
 import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Unsafe as SU
 
 fetchChangelog ∷ ImModel → NextMessage
 fetchChangelog model = model /\ [ fetchIt ]
@@ -23,12 +24,13 @@ fetchChangelog model = model /\ [ fetchIt ]
 displayChangelog ∷ Array Changelog → ImModel → NoMessages
 displayChangelog changelogs model = model { changelogs = changelogs } /\ []
 
-performChangelogAction ∷ Maybe ChangelogAction → ImModel → MoreMessages
-performChangelogAction action model = model /\ effects
+performChangelogAction ∷ Maybe ChangelogAction → Maybe Int → ImModel → MoreMessages
+performChangelogAction action value model = model /\ effects
       where
       effects = case action of
             Nothing → []
             Just OpenBackerPage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
+            Just SendDoppelgangerMessage → [ pure <<< Just <<< MessageDoppelganger $ SU.fromJust value ]
 
 toggleChangelog ∷ ImModel → NoMessages
 toggleChangelog model =

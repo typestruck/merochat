@@ -29,8 +29,8 @@ registerRegularUser epc = do
             }
       ST.createToken id
 
-registerTemporaryUser ∷  ServerEffect String
-registerTemporaryUser  = do
+registerTemporaryUser ∷ ServerEffect String
+registerTemporaryUser = do
       name ← SB.generateName
       headline ← SB.generateHeadline
       description ← SB.generateDescription

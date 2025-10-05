@@ -90,7 +90,7 @@ account model@{ erroredFields, confirmTermination, hideSuccessMessage, profileVi
                     NoTemporaryUsers → [ HE.text "All users (excluding quick sign up users) can see your posts" ]
                     Contacts → [ HE.text "Only users you have previously messaged can see your posts" ]
                     Nobody → [ HE.text "No one can see your profile or message you" ]
-                    TemporarilyBanned -> []
+                    TemporarilyBanned → []
 
             , HE.label_ [ HE.text "Chat display settings" ]
             , HE.div_

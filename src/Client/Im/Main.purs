@@ -69,6 +69,7 @@ import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User as SUR
+import Test.Client.Model (webSocket)
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
@@ -149,6 +150,7 @@ update st model =
             SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
             NoTyping id → F.noMessages $ CIC.toggleTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
+            MessageDoppelganger userId → CIC.messageDoppelganger userId webSocket model
 
             --contacts
             ResumeChat userId → CICN.resumeChat userId model
@@ -175,7 +177,7 @@ update st model =
             SetPostText content → CIPS.setPostText content model
             SetPostLink content → CIPS.setPostLink content model
             PreparePostImage event → CIPS.preparePostImage event model
-            SetPostImage selected → CIPS.setPostImage selected  model
+            SetPostImage selected → CIPS.setPostImage selected model
             SetPostCaption content → CIPS.setPostCaption content model
             SendPost → CIPS.sendPost model
             AfterSendPost id → CIPS.afterSendPost id webSocket model
@@ -212,7 +214,7 @@ update st model =
             FetchChangelog → CICL.fetchChangelog model
             DisplayChangelog changelogs → CICL.displayChangelog changelogs model
             ToggleChangelog → CICL.toggleChangelog model
-            PerformChangelogAction action → CICL.performChangelogAction action model
+            PerformChangelogAction action value → CICL.performChangelogAction action value model
 
             --main
             StartPwa → CIP.startPwa model

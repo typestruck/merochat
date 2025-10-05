@@ -10,7 +10,7 @@ import Flame.Html.Element as HE
 import Shared.Experiments.WordChain as SEW
 import Shared.Experiments.Doppelganger as SED
 
-view ∷ ChatExperimentModel → Html ChatExperimentMessage
+view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.visible } ]
       [ HE.div [ HA.class' "modal-section" ] $ map toDiv model.experiments
       ]
@@ -23,7 +23,7 @@ view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.vi
             , HE.fragment [ extra model experiment.code ]
             ]
 
-extra ∷ ChatExperimentModel → Experiment → Html ChatExperimentMessage
+extra ∷ ExperimentsModel → Experiment → Html ExperimentsMessage
 extra model = case _ of
       WordChain → SEW.view model
       Doppelganger → SED.view model

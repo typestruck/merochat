@@ -71,7 +71,7 @@ resumeChat userId model =
                   pure <<< Just $ UpdateDraft (SU.fromJust model.chatting) previousDraft
 
       updateReadCountEffect ui = pure <<< Just <<< SetReadStatus $ Just ui
-      fetchHistoryEffect chatting =  pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
+      fetchHistoryEffect chatting = pure <<< Just <<< SpecialRequest $ FetchHistory chatting.user.id chatting.shouldFetchChatHistory
       removeNotifications chatting = do
             EC.liftEffect <<< CIP.postMessage $ OpenChat chatting.user.id
             pure Nothing
@@ -176,7 +176,8 @@ displayContacts newContacts model = updateDisplayContacts newContacts [] model
 --contact from open chat button in suggestions
 displaySuggestionContact ∷ Array Contact → ImModel → MoreMessages
 displaySuggestionContact contacts model = model { contacts = model.contacts <> contacts } /\ [ resume ]
-      where resume = pure (ResumeChat <<< _.id <<< _.user <$> DA.head contacts)
+      where
+      resume = pure (ResumeChat <<< _.id <<< _.user <$> DA.head contacts)
 
 --new chats
 displayNewContacts ∷ Array Contact → ImModel → MoreMessages

@@ -19,18 +19,18 @@ template { user, countries, languages, posts } = do
             , model:
                     { nameInputed: Just user.name
                     , headlineInputed: Just user.headline
-                    , ageInputed:  user.age
+                    , ageInputed: user.age
                     , genderInputed: user.gender
-                    , mode : Edit
-                    , fromTemporary : false
+                    , mode: Edit
+                    , fromTemporary: false
                     , countryInputed: user.country
                     , posts
                     , languagesInputed: user.languages
                     , visible: true
-                    , generated : []
-                    , avatarInputed : user.avatar
+                    , generated: []
+                    , avatarInputed: user.avatar
                     , tagsInputed: user.tags
-                    , descriptionInputed:  Just user.description
+                    , descriptionInputed: Just user.description
                     , loading: false
                     , registrationMessage: false
                     , updateRequestStatus: Nothing

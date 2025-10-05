@@ -60,7 +60,7 @@ saveBase64File input = case fromBase64File input of
       where
       invalidImage = SR.throwBadRequest invalidImageMessage
 
-fromBase64File :: String -> Maybe (String /\ String)
+fromBase64File ∷ String → Maybe (String /\ String)
 fromBase64File input = case DS.split (Pattern ",") input of
       [ mediaType, base64 ] → Just (mediaType /\ base64)
       _ → Nothing
