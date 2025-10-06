@@ -78,7 +78,7 @@ suggestBaseQuery loggedUserId filter =
                     /\ completeness
                     /\ (isNotNull _sender # as _isContact)
                     /\ ((select (count _id # as _totalPosts) # from (posts # as p) # wher (postsFilter loggedUserId) # orderBy _totalPosts # limit (Proxy ∷ _ 1)) # as _totalPosts)
-                    /\ ((select (count _id # as _unseenPosts) # from (posts # as p) # wher ((postsFilter loggedUserId .&&. _date .>=. DateTimeWrapper (ST.unsafeAdjustFromNow (Hours (-24.0))))) # orderBy _unseenPosts # limit (Proxy ∷ _ 1)) # as _unseenPosts)
+                    /\ ((select (count _id # as _unseenPosts) # from (posts # as p) # wher ((postsFilterUnseen loggedUserId .&&. _date .>=. DateTimeWrapper (ST.unsafeAdjustFromNow (Hours (-24.0))))) # orderBy _unseenPosts # limit (Proxy ∷ _ 1)) # as _unseenPosts)
             )
             # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) (histories # as h) # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))
             # wher filter
@@ -97,8 +97,10 @@ postsFilter loggedUserId =
                             .=. Contacts
                             .&&. isNotNull (h ... _sender)
                     )
-              .&&. (not (exists $ select (1 # as u) # from posts_seen # wher (_poster .=. u ... _id .&&. _reader .=. loggedUserId .&&. _until .>=. p ... _id)))
       )
+
+postsFilterUnseen :: Int -> _
+postsFilterUnseen loggedUserId = postsFilter loggedUserId .&&. (not (exists $ select (1 # as u) # from posts_seen # wher (_poster .=. u ... _id .&&. _reader .=. loggedUserId .&&. _until .>=. p ... _id)))
 
 suggestMainQuery loggedUserId skip filter =
       suggestBaseQuery loggedUserId filter
