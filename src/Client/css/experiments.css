@@ -39,7 +39,7 @@
 }
 
 .matches a {
-    color: var(--im-merochat-green);
+    color: var(--merochat-green);
 }
 
 .word-chain .green-button {

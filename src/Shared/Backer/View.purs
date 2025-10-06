@@ -10,7 +10,7 @@ import Shared.Backer.Types (BackerMessage, BackerModel)
 view ∷ BackerModel → Html BackerMessage
 view model = HE.div [ HA.id "backer" ]
       [ HE.div [ HA.class' { "backer": true, hidden: not model.visible } ]
-              [ HE.h3 [ HA.class' "initial bottom" ] [ HE.text "MeroChat depends on people like you to keep running" ]
+              [ HE.h3 [ HA.class' "bottom initial" ] [ HE.text "MeroChat depends on people like you to keep running" ]
               , HE.p_ [ HE.text "We will never show ads, charge for subscriptions, sell cosmetics or anything that would stand in the way of being the best place ever to chat" ]
               , HE.p_ [ HE.text "At the same time: apps have costs. Servers, domains, marketing campaigns, design and development time, etc. quickly become expensive. All the more for a passion project like MeroChat that is not tied to any big corporations or VC money" ]
               , HE.p_ [ HE.text "So why not pitch in if you can? All proceeds go straight into making this place even better :)" ]

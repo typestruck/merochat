@@ -56,14 +56,14 @@
     padding-right: 40px;
     align-self: center;
     min-width: 55px;
-    color: var(--im-merochat-green)
+    color: var(--merochat-green)
 }
 
 .privilege-quantity svg {
     width: 30px;
     height: 30px;
-    stroke: var(--im-merochat-green);
-    fill: var(--im-merochat-green);
+    stroke: var(--merochat-green);
+    fill: var(--merochat-green);
     cursor: initial;
 }
 
@@ -94,12 +94,12 @@
 }
 
 .user .name-karma {
-    background: var(--im-merochat-green);
+    background: var(--merochat-green);
 }
 
 .user .avatar-leaderboard {
-    border-color: var(--im-merochat-green);
-    background: var(--im-merochat-green)
+    border-color: var(--merochat-green);
+    background: var(--merochat-green)
 }
 
 .center {

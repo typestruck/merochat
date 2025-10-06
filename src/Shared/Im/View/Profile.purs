@@ -190,7 +190,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                   ]
 
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
-individualSuggestion suggestion model = HE.div [ HA.class' "big-card" ] $
+individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "backing-card": suggestion.id == backerId } ] $
       if model.showLargeAvatar then
             [ HE.div [ HA.class' "avatar-info" ]
                     [ HE.div [ HA.class' "big-suggestion-header" ]
@@ -335,7 +335,7 @@ suggestionCards model =
                     ]
             ]
       card suggestion =
-            HE.div [ HA.class' "card" ]
+            HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId } ]
                   [ HE.div [ HA.class' "avatar-info" ]
                           [ HE.div (HA.class' "mini-avatar-info" : showProfile suggestion.id)
                                   [ HE.img (if suggestion.unseenPosts > 0 then [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar newly-posted", HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts ] else [ HA.src $ SA.fromAvatar suggestion, HA.class' "suggestion-avatar" ])
