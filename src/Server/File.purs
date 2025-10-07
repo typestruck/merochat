@@ -24,7 +24,7 @@ import Node.FS.Aff as NFA
 import Run as R
 import Server.Effect (BaseEffect)
 import Server.Response as SR
-import Shared.Resource (allowedExtensions, allowedMediaTypes, localBasePath, maxImageSize, maxImageSizeKB, uploadFolder)
+import Shared.Resource (allowedExtensions, allowedMediaTypes, audioMediaType, localBasePath, maxImageSize, maxImageSizeKB, uploadFolder, videoMediaType)
 
 foreign import realFileExtension_ ∷ Buffer → Effect (Promise String)
 
@@ -32,20 +32,20 @@ realFileExtension ∷ Buffer → Aff String
 realFileExtension buffer = CP.toAffE $ realFileExtension_ buffer
 
 invalidImageMessage ∷ String
-invalidImageMessage = "Invalid image"
+invalidImageMessage = "Invalid file"
 
 imageTooBigMessage ∷ String
-imageTooBigMessage = "Max allowed size for pictures is " <> maxImageSizeKB
+imageTooBigMessage = "Max allowed size for files is " <> maxImageSizeKB
 
 saveBase64File ∷ ∀ r. String → BaseEffect r String
 saveBase64File input = case fromBase64File input of
       Just (mediaType /\ base64) →
             case DH.lookup (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" mediaType) allowedMediaTypes of
                   Nothing → invalidImage
-                  Just _ → do
+                  Just mt → do
                         buffer ← R.liftEffect $ NB.fromString base64 Base64
                         bufferSize ← R.liftEffect $ NB.size buffer
-                        if bufferSize > maxImageSize then
+                        if bufferSize > (maxImageSize * (if mt == audioMediaType || mt == videoMediaType then 4 else 1)) then
                               SR.throwBadRequest imageTooBigMessage
                         else do
                               extension ← map ("." <> _) <<< R.liftAff $ realFileExtension buffer

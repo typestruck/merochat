@@ -8,12 +8,12 @@ function webm(buffer) {
         buffer[3] === 163 ? 'webm' : '';
 }
 
-//apple shit
+//apple (and chrome?) shit
 function mp4(buffer) {
     return buffer[0] === 0 &&
         buffer[1] === 0 &&
         buffer[2] === 0 &&
-        buffer[3] === 32 &&
+        (buffer[3] === 32 || buffer[3] === 36) &&
         buffer[4] === 102 &&
         buffer[5] === 116 &&
         buffer[6] === 121 &&

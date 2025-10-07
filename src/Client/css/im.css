@@ -2925,6 +2925,10 @@ label {
     margin-bottom: 20px;
 }
 
+.image-form .cancel {
+    margin-left: auto;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;

@@ -84,6 +84,7 @@ modal toggled model =
                   model
                         { modal = t
                         , erroredFields = []
+                        , selectedImage = Nothing
                         , posts = model.posts { image = Nothing, mode = TextOnly }
                         , toggleContextMenu = HideContextMenu
                         } /\ [ visible ShowMenu ]
