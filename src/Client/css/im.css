@@ -2086,7 +2086,6 @@ input:not(type=button):focus {
 
 .big-avatar-center {
     justify-content: center;
-    height: 75%;
 }
 
 .big-suggestion-header {
@@ -2929,6 +2928,10 @@ label {
     margin-left: auto;
 }
 
+ .avatar-info.full {
+    overflow-y: scroll;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;
@@ -3531,6 +3534,9 @@ label {
         align-items: center;
         font-size: 0.9em
     }
+ .big-card .avatar-info {
+    overflow-y: unset;
+ }
 
     .settings {
         border-top-right-radius: 0;
@@ -3652,6 +3658,13 @@ label {
     .big-card .big-avatar-info {
         margin-top: -71px
     }
+    .big-card .big-avatar-info.big-avatar-center {
+        margin-top: unset;
+    }
+
+.big-suggestion-header .close-cards {
+    display: block;
+}
 
     .big-card .see-profile-chat {
         bottom: 0;

@@ -130,7 +130,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
 
       profile =
             if model.showLargeAvatar then
-                  [ HE.div [ HA.class' "avatar-info" ]
+                  [ HE.div [ HA.class' "avatar-info full" ]
                           [ HE.div [ HA.class' "big-suggestion-info" ]
                                   [ HE.strong [ HA.class' "big-card-name big-name-avatar" ] [ HE.text user.name ]
                                   ]
@@ -192,7 +192,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
 individualSuggestion ∷ Suggestion → ImModel → Html ImMessage
 individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "backing-card": suggestion.id == backerId } ] $
       if model.showLargeAvatar then
-            [ HE.div [ HA.class' "avatar-info" ]
+            [ HE.div [ HA.class' "avatar-info full" ]
                     [ HE.div [ HA.class' "big-suggestion-header" ]
                             [ HE.strong [ HA.class' "big-card-name grown" ] [ HE.text suggestion.name ]
                             , HE.div [ HA.class' "close-cards", HA.title "Close avatar", HA.onClick ToggleLargeAvatar ]
