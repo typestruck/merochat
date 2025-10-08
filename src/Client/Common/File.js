@@ -30,5 +30,7 @@ function calculateSize(bitmap) {
 }
 
 export function fileSize(base64) {
-    return Uint8Array.fromBase64(base64.substr(base64.indexOf(',') + 1)).length;
+    let str = base64.substr(base64.indexOf(',') + 1);
+
+    return ('fromBase64' in Uint8Array ? Uint8Array.fromBase64(str) : new Uint8Array(Buffer.from(str, 'base64'))).length;
 }

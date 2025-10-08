@@ -10,6 +10,7 @@ import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
 import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
+import Environment (production)
 import Foreign (Foreign)
 import Foreign as FO
 import Server.Effect (ServerEffect)
@@ -26,7 +27,7 @@ url ∷ String
 url = "http://localhost:4000/"
 
 sendEmail ∷ Email → ServerEffect Unit
-sendEmail email = EC.liftEffect $ EU.runEffectFn2 sendEmail_ (url <> route) payload
+sendEmail email = when production <<< EC.liftEffect $ EU.runEffectFn2 sendEmail_ (url <> route) payload
       where
       route /\ payload = case email of
             Feedback f → "/feedback" /\ FO.unsafeToForeign f

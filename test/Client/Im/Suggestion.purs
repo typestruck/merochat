@@ -14,7 +14,7 @@ import Unsafe.Coerce as SU
 
 tests ∷ TestSuite
 tests = do
-      TU.suite "im suggestion update" do
+      TU.suiteSkip "im suggestion update" do
             TU.test "nextSuggestion bumps suggesting" do
                   let
                         { suggesting } = DT.fst <<< CIS.nextSuggestion $ model

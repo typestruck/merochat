@@ -8,6 +8,7 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.String as DS
 import Data.Tuple as DT
+import Debug (spy)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Shared.Content (Content(..))
@@ -33,9 +34,9 @@ tests = do
                         model' = model
                               { suggestions = suggestion : modelSuggestions
                               , chatting = Nothing
-                              , suggesting = Just  0
+                              , suggesting = Just suggestion.id
                               }
-                        { contacts } = DT.fst $ CIC.prepareSendMessage ChatInput content date webSocket model'
+                        { contacts } = DT.fst $ CIC.prepareSendMessage MiniChatInputSuggestion content date webSocket model'
                   TUA.equal (_.user <$> DA.head contacts) $ Just suggestion
 
             TU.test "prepareSendMessage does not add new contact from suggestion if it already is on the list" do
@@ -43,7 +44,7 @@ tests = do
                   let
                         model' = model
                               { suggestions = [ contact.user ]
-                              , chatting = Nothing
+                              , chatting = Just contact.user.id
                               , suggesting = Just 0
                               , contacts = [ contact ]
                               }
@@ -61,8 +62,8 @@ tests = do
             TU.test "sendMessage adds message to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { user: { id: userId }, chatting } = DT.fst $ CIC.sendMessage 3 "test" true content date webSocket model
-                        user = SU.fromJust $ SIC.maybeFindContact chatting model.contacts
+                        { user: { id: userId }, chatting, contacts } = DT.fst $ CIC.sendMessage anotherImUserId "test" true content date webSocket model {chatting = Just anotherImUserId}
+                        user = SU.fromJust $ SIC.maybeFindContact chatting contacts
 
                   TUA.equal
                         [ { date: (user.history !@ 0).date
@@ -79,19 +80,20 @@ tests = do
             TU.test "sendMessage adds markdown image to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { chatting } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) "test" true (Image caption 2 2 image) date webSocket $ model
-                              { selectedImage = Just { base64: image, width : 2, height : 2 }
+                        { chatting, contacts } = DT.fst $ CIC.sendMessage anotherImUserId "test" true (Image caption 2 2 image) date webSocket model
+                              { selectedImage = Just { base64: image, width: 2, height: 2 }
                               , imageCaption = Just caption
+                              , chatting = Just anotherImUserId
                               }
-                        entry = SU.fromJust $ SIC.maybeFindContact chatting model.contacts
+                        entry = SU.fromJust $ SIC.maybeFindContact chatting contacts
 
-                  TUA.equal ("![" <> caption <> "](" <> image <> ")") (entry.history !@ 0).content
+                  TUA.equal ("![" <> caption <> "]([2,2]" <> image <> ")") (entry.history !@ 0).content
 
             TU.test "sendMessage resets input fields" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage (SU.fromJust model.chatting) "test" true content date webSocket $ model
-                              { selectedImage = Just { base64: image, width : 2, height : 2 }
+                        { selectedImage, imageCaption } = DT.fst <<< CIC.sendMessage anotherImUserId "test" true content date webSocket $ model
+                              { selectedImage = Just { base64: image, width: 2, height: 2 }
                               , imageCaption = Just caption
                               }
                   TUA.equal Nothing selectedImage
@@ -154,16 +156,16 @@ tests = do
 
             TU.test "setSelectedImage sets file" do
                   let
-                        { selectedImage, erroredFields } = DT.fst <<< CIC.setSelectedImage (Just { base64: image, width : 2, height : 2 }) $ model
+                        { selectedImage, erroredFields } = DT.fst <<< CIC.setSelectedImage (Just { base64: image, width: 2, height: 2 }) $ model
                               { erroredFields = []
                               , selectedImage = Nothing
                               }
-                  TUA.equal (Just { base64: image, width : 2, height : 2 }) selectedImage
+                  TUA.equal (Just { base64: image, width: 2, height: 2 }) selectedImage
                   TUA.equal [] erroredFields
 
             TU.test "setSelectedImage validates files too long" do
                   let
-                        { erroredFields } = DT.fst <<< CIC.setSelectedImage (Just { base64:  DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a", width : 2, height : 2 }) $ model
+                        { erroredFields } = DT.fst <<< CIC.setSelectedImage (Just { base64: DS.joinWith "" $ DA.replicate (maxImageSize * 10) "a", width: 2, height: 2 }) $ model
                               { erroredFields = []
                               }
                   TUA.equal [ "selectedImage" ] erroredFields
