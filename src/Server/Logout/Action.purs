@@ -5,5 +5,5 @@ import Prelude
 import Server.Effect (ServerEffect)
 import Server.Logout.Database as SLD
 
-logout ∷ Int → ServerEffect Unit
-logout loggedUserId = SLD.logout loggedUserId
+logout ∷ Int → String -> ServerEffect Unit
+logout loggedUserId loggedUserToken = SLD.deleteToken loggedUserId loggedUserToken

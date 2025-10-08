@@ -179,6 +179,11 @@ svg {
     color: var(--text-color) !important;
 }
 
+.backer a {
+    text-decoration: underline;
+    color: var(--light-color)
+}
+
 
 .pastel-area {
     background-color: var(--external-accent);

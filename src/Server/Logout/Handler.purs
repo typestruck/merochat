@@ -9,7 +9,7 @@ import Shared.Routes (routes)
 import Server.Logout.Action as SLA
 import Server.Ok
 
-logout ∷ ∀ r. { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Response Ok)
-logout { guards: { loggedUserId } } = do
-      SLA.logout loggedUserId
+logout ∷ { guards ∷ { loggedUserId ∷ Int, loggedUserToken ∷ String } } → ServerEffect (Response Ok)
+logout request = do
+      SLA.logout request.guards.loggedUserId request.guards.loggedUserToken
       pure $ SL.logout (routes.login.get {}) ok

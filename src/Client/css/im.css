@@ -2904,7 +2904,7 @@ label {
 }
 
 .backing-card .see-profile-button.see-profile {
-    background-color: var(--merochat-green) ;
+    background-color: var(--merochat-green);
     color: var(--light-color);
 }
 
@@ -2928,7 +2928,7 @@ label {
     margin-left: auto;
 }
 
- .avatar-info.full {
+.avatar-info.full {
     overflow-y: scroll;
 }
 
@@ -3154,6 +3154,18 @@ label {
     .backing-suggestion-call,
     .suggestion.old {
         padding: 10px 10px;
+
+    }
+
+    #profile-edition-form,
+    #settings-edition,
+    #karma-leaderboard,
+    #chat-experiments,
+    #backer .backer,
+    #internal-help,
+    #feedback-form {
+        padding-top: 0;
+        margin-top: 10px;
     }
 
     .card-top-welcome-filter {
@@ -3277,6 +3289,7 @@ label {
     #modal-root {
         display: block;
         overflow-y: auto;
+        top: 45px;
     }
 
     #modal-root .backer,
@@ -3534,9 +3547,10 @@ label {
         align-items: center;
         font-size: 0.9em
     }
- .big-card .avatar-info {
-    overflow-y: unset;
- }
+
+    .big-card .avatar-info {
+        overflow-y: unset;
+    }
 
     .settings {
         border-top-right-radius: 0;
@@ -3658,13 +3672,14 @@ label {
     .big-card .big-avatar-info {
         margin-top: -71px
     }
+
     .big-card .big-avatar-info.big-avatar-center {
         margin-top: unset;
     }
 
-.big-suggestion-header .close-cards {
-    display: block;
-}
+    .big-suggestion-header .close-cards {
+        display: block;
+    }
 
     .big-card .see-profile-chat {
         bottom: 0;

@@ -54,6 +54,10 @@ svg {
     background: rgb(255, 66, 77)
 }
 
+.backer a {
+    color: var(--merochat-green);
+}
+
 @media (max-width:1279px) {
     .backer {
         max-width: 95%;

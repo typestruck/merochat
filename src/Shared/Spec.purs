@@ -15,7 +15,6 @@ import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (Question, Match)
 import Shared.Html (Html)
 import Shared.Post (PostPayload, Post)
-import Shared.Profile.Types (SavedFields)
 import Shared.Settings.Types (PrivacySettings)
 
 spec ∷
@@ -23,6 +22,7 @@ spec ∷
             { guards ∷
                     { loggedUserId ∷ Int
                     , checkAnonymous ∷ Unit
+                    , loggedUserToken :: String
                     }
             , routes ∷
                     { landing ∷
@@ -241,8 +241,7 @@ spec ∷
                                   }
                     , logout ∷
                             POST "/logout"
-                                  { guards ∷ Guards ("loggedUserId" : Nil)
-
+                                  { guards ∷ Guards ("loggedUserId" : "loggedUserToken" : Nil)
                                   , response ∷ Ok
                                   }
                     , leaderboard ∷

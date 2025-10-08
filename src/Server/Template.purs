@@ -56,7 +56,7 @@ externalDefaultParameters =
                               [ HE.div [ HA.class' "menu" ]
                                       [ HE.a [ HA.href $ routes.landing {} ] [ HE.text "Home" ]
                                       , HE.a [ HA.href $ routes.help {} <> "#faq" ] [ HE.text "FAQ" ]
-                                      , HE.a [ HA.href $ routes.backer {} ] [ HE.text "Donate" ]
+                                      , HE.a [ HA.href $ routes.backer {} ] [ HE.text "Support us" ]
                                       , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] [ HE.text "Login" ]
                                       , HE.div [ HA.class' "theme-switcher" ]
                                               [ SS.sun []

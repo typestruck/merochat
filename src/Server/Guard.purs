@@ -29,13 +29,14 @@ import Shared.Routes (routes)
 guards ∷ ServerReader → _
 guards reading =
       { loggedUserId: checkLoggedUser reading
+      , loggedUserToken: checkLoggedUserToken
       , checkAnonymous: checkAnonymous reading
       }
 
 checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { pool } request = do
-      cookies ← PSG.cookies request
-      maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
+      token <- checkLoggedUserToken request
+      maybeUserId ← SE.poolEffect pool Nothing $ ST.userIdFromToken tokenSecret token
       case maybeUserId of
             Just userId → pure $ Right userId
             _ →
@@ -46,6 +47,11 @@ checkLoggedUser { pool } request = do
       where
       isPost = NH.requestMethod request == "POST"
       redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
+
+checkLoggedUserToken ∷  Request → Aff String
+checkLoggedUserToken request = do
+      cookies ← PSG.cookies request
+      pure <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
 
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { pool } request = do
