@@ -112,6 +112,7 @@ presentMessageFields =
       , s.sender
       , s.recipient
       , s.date
+      , s.reaction
       , s.edited
       , s.content
       , s.status """

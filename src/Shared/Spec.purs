@@ -1,20 +1,20 @@
 module Shared.Spec where
 
 import Prelude
-import Server.Ok (Ok)
-import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
-import Shared.Profile.Types (GeneratedInput, SavedFields)
 
 import Data.List (List)
 import Data.Maybe (Maybe)
 import Payload.Server.Handlers (File)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
+import Server.Ok (Ok)
 import Shared.Account (EmailCaptcha, EmailPassword, EmailPasswordCaptcha, ResetPassword)
 import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (Question, Match)
 import Shared.Html (Html)
+import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
+import Shared.Profile.Types (GeneratedInput, SavedFields)
 import Shared.Settings.Types (PrivacySettings)
 
 spec ∷
@@ -22,7 +22,7 @@ spec ∷
             { guards ∷
                     { loggedUserId ∷ Int
                     , checkAnonymous ∷ Unit
-                    , loggedUserToken :: String
+                    , loggedUserToken ∷ String
                     }
             , routes ∷
                     { landing ∷
@@ -99,6 +99,11 @@ spec ∷
                                           POST "/register"
                                                 { body ∷ EmailPassword
                                                 , response ∷ Ok
+                                                }
+                                  , react ∷
+                                          POST "/react"
+                                                { body ∷ { id ∷ Int, reaction ∷ String }
+                                                 , response ∷ Ok
                                                 }
                                   , contacts ∷
                                           GET "/contacts?skip=<skip>"

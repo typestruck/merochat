@@ -122,6 +122,7 @@ fromFlatMessage fm =
       , recipient: fm.recipient
       , edited: fm.edited
       , date: fm.date
+      , reaction : fm.reaction
       , content: fm.content
       , status: fm.status
       }

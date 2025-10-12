@@ -48,6 +48,7 @@ create table messages
     sender integer not null,
     recipient integer not null,
     date timestamptz not null default (utc_now()),
+    reaction text,
     content text not null,
     edited boolean not null default false,
     status smallint not null default 1,
@@ -270,14 +271,6 @@ create table badges_users
     constraint badge_user_badge foreign key (badge) references badges(id) on delete cascade
 );
 
--- create table reactions
--- (
---     id integer generated always as identity primary key,
---     reward integer not null,
---     kind smallint not null,
---     description text
--- );
-
 create table privileges
 (
     id integer generated always as identity primary key,
@@ -286,24 +279,6 @@ create table privileges
     description text,
     quantity integer not null
 );
-
--- create table reactions_messages
--- (
---     id integer generated always as identity primary key,
---     reaction integer not null,
---     message bigint not null,
---     constraint reaction_message_message foreign key (message) references messages(id) on delete cascade,
---     constraint reaction_message_reaction foreign key (reaction) references reactions(id) on delete cascade
--- );
-
--- create table reactions_users
--- (
---     id integer generated always as identity primary key,
---     bearer integer not null,
---     reaction integer not null,
---     constraint reaction_user_user foreign key (bearer) references users(id) on delete cascade,
---     constraint reaction_user_reaction foreign key (reaction) references reactions(id) on delete cascade
--- );
 
 create table experiments
 (

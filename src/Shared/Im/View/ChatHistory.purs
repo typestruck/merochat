@@ -10,6 +10,7 @@ import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Newtype as DN
 import Effect (Effect)
 import Effect.Uncurried (EffectFn5)
@@ -21,11 +22,13 @@ import Flame.Types (NodeData)
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Im.View.Retry as SIVR
-import Shared.Im.View.Profile as SIVP
-import Shared.Markdown as SM
-import Shared.Unsafe as SU
 import Shared.Im.Scroll as SIS
+import Shared.Im.View.ChatInput as SICI
+import Shared.Im.View.Profile as SIVP
+import Shared.Im.View.Retry as SIVR
+import Shared.Markdown as SM
+import Shared.Options.Reaction (maxReactionCharacters)
+import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 
 data ScrollAction = ResetScrollDown | SetScrollDown | Fetch | None
@@ -99,7 +102,11 @@ chatHistory model =
                           incomingMessage = entry.recipient == model.user.id
                           noTimestamps = not model.user.messageTimestamps || not contact.user.messageTimestamps
                           noReadReceipts = not model.user.readReceipts || not contact.user.readReceipts
+                          reactionTextId = "reaction-text-" <> show entry.id
                           isContextMenuVisible = model.toggleContextMenu == ShowMessageContextMenu entry.id
+                          mobileEvents
+                                | model.smallScreen = [ CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage entry.content <<< Left), HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
+                                | otherwise = []
                     in
                           HE.div
                                 [ HA.class'
@@ -109,28 +116,57 @@ chatHistory model =
                                         }
                                 , HA.onDblclick' (QuoteMessage entry.content <<< Right <<< Just)
                                 ]
-                                [ HE.div
-                                        [ HA.class' { "message-content": true, "editing-message": Just entry.id == model.editing }, HA.id $ "m" <> show entry.id, CIT.onTouchStart Nothing, CIT.onTouchEnd (QuoteMessage entry.content <<< Left) ] -- id is used to scroll into view
-                                        [ HE.div [ HA.class' "message-content-in" ]
-                                                [ HE.div' [ HA.innerHtml $ SM.parse entry.content ]
-                                                , HE.div [ HA.class' "message-context-options" ]
-                                                        [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
-                                                                [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
-                                                                        [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
+                                ( [ HE.div
+                                          ([ HA.class' { "message-content": true, "editing-message": Just entry.id == model.editing }, HA.id $ "m" <> show entry.id ] <> mobileEvents) -- id is used to scroll into view
+                                          [ HE.div [ HA.class' "message-content-in" ]
+                                                  [ HE.div [ HA.class' { "user-menu in-message reactions-menu": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
+                                                          [ if model.react == WithEmoji then
+                                                                  HE.div [ HA.class' "reaction-emojis" ]
+                                                                        [ HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "👍") ] [ HE.text "👍" ]
+                                                                        , HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "❤️") ] [ HE.text "❤️" ]
+                                                                        , HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "😂") ] [ HE.text "😂" ]
+                                                                        , HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "😮") ] [ HE.text "😮" ]
+                                                                        , HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "👾") ] [ HE.text "👾" ]
+                                                                        , HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "😡") ] [ HE.text "😡" ]
+                                                                        , HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "👀") ] [ HE.text "👀" ]
+                                                                        , HE.div [ HA.onClick' (React contact.user.id entry.id $ Right "🤔") ] [ HE.text "🤔" ]
+                                                                        , HE.div [ HA.onClick' (SetReactWithText reactionTextId), HA.class' "reaction-add-text", HA.placeholder "React with text" ] [ HE.text "+" ]
                                                                         ]
-                                                                , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
-                                                                        [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.content (Right Nothing)) ] [ HE.text "Reply" ]
-                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] [ HE.text "Edit" ]
-                                                                        , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] [ HE.text "Unsend" ]
+                                                            else
+                                                                  HE.div [ HA.class' "reaction-text" ]
+                                                                        [ HE.input [ HA.id reactionTextId, HA.placeholder $ "Max " <> show maxReactionCharacters <> " characters", HA.maxlength maxReactionCharacters, HA.type' "text", HA.class' "reaction-input" ]
+                                                                        , HE.svg [ HA.class' "send-button", HA.onClick' (React contact.user.id entry.id $ Left reactionTextId), HA.viewBox "0 0 16 16" ] $ SICI.sendButtonElements "React with text"
                                                                         ]
-                                                                ]
-                                                        ]
-                                                ]
-                                        , HE.div [ HA.class' "message-status" ]
-                                                [ HE.span [ HA.class' { hidden: not entry.edited } ] [ HE.text "Edited - " ]
-                                                , HE.span [ HA.class' { hidden: noTimestamps } ] [ HE.text <<< SD.agoWithTime $ DN.unwrap entry.date ]
-                                                , HE.span [ HA.class' { hidden: incomingMessage || noReadReceipts } ] [ HE.text $ " - " <> show entry.status ]
-                                                ]
-                                        ]
-                                ]
+
+                                                          ]
+                                                  , HE.div' [ HA.innerHtml $ SM.parse entry.content ]
+                                                  , HE.div [ HA.class' "message-context-options" ]
+                                                          [ HE.div [ HA.class' { "message-context-menu outer-user-menu": true, visible: isContextMenuVisible }, HA.onClick <<< SetContextMenuToggle $ ShowMessageContextMenu entry.id ]
+                                                                  [ HE.svg [ HA.class' "svg-32 svg-duller", HA.viewBox "0 0 16 16" ]
+                                                                          [ HE.polygon' [ HA.transform "rotate(90,7.6,8)", HA.points "11.02 7.99 6.53 3.5 5.61 4.42 9.17 7.99 5.58 11.58 6.5 12.5 10.09 8.91 10.1 8.91 11.02 7.99" ]
+                                                                          ]
+                                                                  , HE.div [ HA.class' { "user-menu in-message": true, visible: isContextMenuVisible, "menu-up": isContextMenuVisible && isBottomMessage contact.history entry.id } ]
+                                                                          [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick (QuoteMessage entry.content (Right Nothing)) ] [ HE.text "Reply" ]
+                                                                          , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ EditMessage entry.content entry.id ] [ HE.text "Edit" ]
+                                                                          , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "hidden": incomingMessage || entry.status < Received }, HA.onClick $ DeleteMessage entry.id ] [ HE.text "Unsend" ]
+                                                                          ]
+                                                                  ]
+                                                          ]
+                                                  ]
+                                          , HE.div [ HA.class' "message-status" ]
+                                                  [ HE.span [ HA.class' { hidden: not entry.edited } ] [ HE.text "Edited - " ]
+                                                  , HE.span [ HA.class' { hidden: noTimestamps } ] [ HE.text <<< SD.agoWithTime $ DN.unwrap entry.date ]
+                                                  , HE.span [ HA.class' { hidden: incomingMessage || noReadReceipts } ] [ HE.text $ " - " <> show entry.status ]
+                                                  ]
+
+                                          ]
+
+                                  ] <> case entry.reaction of
+                                        Nothing → []
+                                        Just r →
+                                              [ HE.div [ HA.class' "reactions" ]
+                                                      [ HE.text r
+                                                      ]
+                                              ]
+                                )
 

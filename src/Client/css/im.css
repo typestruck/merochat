@@ -794,7 +794,6 @@ a {
     flex-direction: column;
     display: flex;
     margin: 2px 0px;
-    min-width: 100%;
 }
 
 .message.outgoing-message+.message.incoming-message {
@@ -802,7 +801,6 @@ a {
 }
 
 .incoming-message {
-    flex-flow: row;
     align-self: flex-start;
 }
 
@@ -818,7 +816,6 @@ a {
 }
 
 .outgoing-message {
-    flex-flow: row-reverse;
     align-self: flex-end;
 }
 
@@ -2932,6 +2929,74 @@ label {
     overflow-y: scroll;
 }
 
+.reaction-emojis {
+    display: flex;
+    cursor: pointer;
+    font-size: 1.3em;
+    justify-content: space-evenly;
+}
+
+.incoming-message .user-menu.in-message.reactions-menu {
+    left: 0;
+}
+
+.user-menu.in-message.reactions-menu {
+    top: -61px;
+    padding: 10px;
+}
+
+.reaction-add-text {
+    background: var(--im-background-color);
+    border-radius: 50%;
+    padding: 0px 9px;
+    font-weight: bold
+}
+
+.user-menu.in-message.reactions-menu.menu-up {
+    top: -161px;
+}
+
+.reactions-menu {
+    width: 370px;
+}
+
+.reaction-input {
+    border: 1px solid var(--light-color);
+    border-radius: 20px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    flex-grow: 1;
+    background-color: var(--im-background-color);
+}
+
+.reaction-text {
+    display: flex;
+}
+
+.reaction-text svg {
+    margin-left: 10px;
+}
+
+.reactions {
+    margin-top: -4px;
+    width: fit-content;
+    border-radius: 50%;
+    padding: 4px 7px;
+    z-index: 2;
+
+}
+
+.incoming-message .reactions {
+    margin-left: 20px;
+    background: var(--im-background-color);
+}
+
+.outgoing-message .reactions {
+
+    background: var(--im-second-background-color);
+}
+
+
 @media (max-width:1279px) {
     #im {
         display: flex;
@@ -3069,8 +3134,7 @@ label {
 
     .side-suggestions-container,
     .logo-contact-list,
-    .fortune,
-    .message-context-options {
+    .fortune {
         display: none;
         content-visibility: hidden;
     }
@@ -3238,7 +3302,7 @@ label {
     .message {
         margin: 0;
         margin-bottom: 2px;
-        width: 85%;
+
     }
 
     .message div {
@@ -3502,6 +3566,15 @@ label {
     .svg-user-menu-context {
         width: 24px;
         height: 24px;
+    }
+
+    .user-menu.in-message.visible {
+        max-width: unset;
+        width: fit-content;
+    }
+
+    .reaction-emojis div {
+        padding: 0 5px;
     }
 
     .svg-suggestion-button {

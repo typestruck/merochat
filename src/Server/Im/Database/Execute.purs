@@ -21,7 +21,7 @@ import Server.Database.Fields (_date, _id, _recipient, _sender, c, h, u)
 import Server.Database.Functions (insert_history)
 import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
 import Server.Database.KarmaHistories (_amount, _target, karma_histories)
-import Server.Database.Messages (_content, _edited, _status, messages)
+import Server.Database.Messages (_content, _edited, _reaction, _status, messages)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_completedTutorial, _email, _password, _pwa, _temporary, _visibility, _visibility_last_updated, users)
@@ -76,6 +76,9 @@ changeStatus loggedUserId status = case _ of
 
 insertBlock ∷ Int → Int → ServerEffect Unit
 insertBlock loggedUserId blocked = SD.execute $ blockQuery loggedUserId blocked
+
+updateReaction :: Int -> Int -> String -> ServerEffect Unit
+updateReaction loggedUserId messageId reaction = SD.execute $ update messages # set (_reaction .=. Just reaction) # wher (_id .=. messageId .&&.( _sender .=. loggedUserId .||. _recipient .=. loggedUserId))
 
 markAsDeleted ∷ Boolean → Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit
 markAsDeleted isSender loggedUserId { userId, messageId }

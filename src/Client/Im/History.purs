@@ -5,17 +5,25 @@ import Debug
 import Prelude
 import Shared.Im.Types
 
+import Client.Common.Dom as CCD
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
 import Client.Im.Scroll as CIS
 import Data.Array as DA
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
+import Effect.Class as EC
 import Flame as F
 import Shared.Im.Contact as SIC
+import Shared.Modal.Types (Modal(..))
 import Shared.Unsafe as SU
+import Unsafe.Coerce as UC
+import Web.Event.Event as WEE
+import Web.Event.Internal.Types (Event)
+import Web.HTML.HTMLElement as WHH
 
 --to avoid issues with older missed unread messages just get the whole chat history on first load
 fetchHistory ∷ Int → Boolean → ImModel → MoreMessages
@@ -66,3 +74,33 @@ fixHistory ∷ Array HistoryMessage → Array HistoryMessage
 fixHistory = DA.sortWith _.date <<< DA.nubByEq dedup
       where
       dedup entry anotherEntry = entry.id == anotherEntry.id
+
+setReacWithText ∷ String → Event → ImModel → NoMessages
+setReacWithText id event model = model { react = WithText } /\ [ stop ]
+      where
+      stop = EC.liftEffect do
+            WEE.stopPropagation event
+            element ← CCD.unsafeQuerySelector $ "#" <> id
+            WHH.focus $ UC.unsafeCoerce element
+            pure Nothing
+
+react ∷ Int → Int → Either String String → Event → ImModel → NoMessages
+react userId messageId value event model = model /\ [ save ]
+      where
+      save = do
+            EC.liftEffect $ WEE.stopPropagation event
+            reaction ← EC.liftEffect case value of
+                  Right text → pure text
+                  Left id → CCD.unsafeQuerySelector ("#" <> id) >>= CCD.value
+            void <<< CCN.silentResponse $ request.im.react { body: { id: messageId, reaction } }
+            pure <<< Just $ DisplayReaction userId messageId reaction
+
+displayReaction ∷ Int → Int → String → ImModel → NoMessages
+displayReaction userId messageId reaction model = model { react = WithEmoji, toggleContextMenu = HideContextMenu, contacts = map updateContact model.contacts } /\ []
+      where
+      updateHistory message
+            | message.id == messageId = message { reaction = Just reaction }
+            | otherwise = message
+      updateContact contact
+            | contact.user.id == userId = contact { history = map updateHistory contact.history }
+            | otherwise = contact

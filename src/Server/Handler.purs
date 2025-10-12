@@ -62,6 +62,7 @@ handlers reading =
               , contact: runJson reading SIH.contact
               , history: runJson reading SIH.history
               , suggestions: runJson reading SIH.suggestions
+              , react : runJson reading SIH.react
               , block: runJson reading SIH.block
               , delete: runJson reading SIH.deleteChat
               , missedContacts: runJson reading SIH.missedContacts

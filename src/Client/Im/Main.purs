@@ -167,6 +167,9 @@ update st model =
             --history
             SpecialRequest (FetchHistory userId shouldFetch) → CIH.fetchHistory userId shouldFetch model
             DisplayHistory userId history → CIH.displayHistory userId history model
+            SetReactWithText id event → CIH.setReacWithText id event model
+            React userId messageId value event → CIH.react userId messageId value event model
+            DisplayReaction userId messageId reaction → CIH.displayReaction userId messageId reaction model
 
             --posts
             DisplayPosts userId posts → CIPS.displayPosts userId posts model

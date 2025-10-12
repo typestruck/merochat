@@ -39,6 +39,11 @@ history { guards: { loggedUserId }, query: { with, skip } } = SIA.resumeChatHist
 suggestions ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int, sg ∷ SuggestionsFrom } } → ServerEffect (Array Suggestion)
 suggestions { guards: { loggedUserId }, query } = SIA.suggest loggedUserId query.skip query.sg
 
+react ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int, reaction ∷ String } } → ServerEffect Ok
+react request = do
+      SIA.react request.guards.loggedUserId request.body.id request.body.reaction
+      pure ok
+
 block ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Ok
 block { guards: { loggedUserId }, body: { id } } = do
       SIA.blockUser loggedUserId id

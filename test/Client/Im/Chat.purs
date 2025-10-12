@@ -62,7 +62,7 @@ tests = do
             TU.test "sendMessage adds message to history" do
                   date ← liftEffect $ map DateTimeWrapper EN.nowDateTime
                   let
-                        { user: { id: userId }, chatting, contacts } = DT.fst $ CIC.sendMessage anotherImUserId "test" true content date webSocket model {chatting = Just anotherImUserId}
+                        { user: { id: userId }, chatting, contacts } = DT.fst $ CIC.sendMessage anotherImUserId "test" true content date webSocket model { chatting = Just anotherImUserId }
                         user = SU.fromJust $ SIC.maybeFindContact chatting contacts
 
                   TUA.equal
@@ -72,6 +72,7 @@ tests = do
                           , id: 1
                           , edited: false
                           , content: "test"
+                          , reaction: Nothing
                           , sender: userId
                           }
                         ]

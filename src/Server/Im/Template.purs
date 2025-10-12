@@ -53,6 +53,7 @@ template payload = do
                     if DA.null payload.suggestions then Nothing
                     else map _.id $ DA.head payload.suggestions
             , freeToFetchChatHistory: true
+            , react : WithEmoji
             , suggestionsPage: 1
             , errorMessage: ""
             , suggestionsFrom: ThisWeek

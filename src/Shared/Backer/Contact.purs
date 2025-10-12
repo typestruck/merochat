@@ -24,6 +24,7 @@ backerContact userId = (SC.defaultContact backerId backerUser)
                 , recipient: userId
                 , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
                 , edited: false
+                , reaction : Nothing
                 , content: "MeroChat depends on you to keep running"
                 , status: Read
                 , id: 0

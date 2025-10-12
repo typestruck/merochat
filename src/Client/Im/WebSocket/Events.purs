@@ -405,6 +405,7 @@ fromIncomingMessage payload model =
                             , recipient: payload.recipientId
                             , id: payload.id
                             , edited: false
+                            , reaction: Nothing
                             , content: payload.content
                             , date: payload.date
                             }

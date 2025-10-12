@@ -203,6 +203,7 @@ sendMessage userId userName shouldFetchHistory contentMessage date webSocket mod
                                                     , status: Sent
                                                     , sender: model.user.id
                                                     , edited: false
+                                                    , reaction: Nothing
                                                     , recipient: userId
                                                     , content: markdown
                                                     , date

@@ -39,6 +39,7 @@ model =
       , changelogs: []
       , showSuggestionsPostForm: false
       , showCollapsedMiniSuggestions: false
+      , react : WithEmoji
       , modalsLoaded: []
       , showMiniChatInput: false
       , temporaryEmail: Nothing
@@ -149,6 +150,7 @@ historyMessage =
       , recipient: contactId
       , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , content: "test"
+      , reaction : Nothing
       , status: Received
       }
 

@@ -2,6 +2,7 @@ module Server.Im.Action where
 
 import Debug
 import Prelude
+import Shared.Content
 import Shared.Im.Types
 import Shared.Privilege
 
@@ -34,7 +35,6 @@ import Server.Im.Database.Permission as SIDPP
 import Server.Im.Database.Present as SIDP
 import Server.Im.Database.Suggest as SIDS
 import Server.Im.Types (Payload)
-import Shared.Content
 import Server.Sanitize as SS
 import Server.ThreeK as ST
 import Server.Wheel as SW
@@ -45,6 +45,7 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
+import Shared.Options.Reaction (maxReactionCharacters)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
@@ -159,6 +160,14 @@ processKarma loggedUserId userId turn = SIDE.insertKarma loggedUserId userId $ S
 
 blockUser ∷ Int → Int → ServerEffect Unit
 blockUser loggedUserId userId = SIDE.insertBlock loggedUserId userId
+
+react ∷ Int → Int → String -> ServerEffect Unit
+react loggedUserId messageId reaction = do
+      let sanitized = SS.sanitize $ DS.trim reaction
+      if DS.length sanitized <= maxReactionCharacters then
+            SIDE.updateReaction loggedUserId messageId sanitized
+      else
+            RE.throw $ BadRequest { reason : "invalid reaction"}
 
 deleteChat ∷ Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit
 deleteChat loggedUserId ids@{ userId } = do

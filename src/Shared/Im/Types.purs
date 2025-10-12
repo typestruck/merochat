@@ -96,6 +96,7 @@ type HM r =
       , recipient ∷ Int
       , date ∷ DateTimeWrapper
       , edited ∷ Boolean
+      , reaction :: Maybe String
       , content ∷ String
       , status ∷ MessageStatus
       | r
@@ -155,6 +156,7 @@ type Im =
       , showLargeAvatar ∷ Boolean
       , modalsLoaded ∷ Array ScreenModal
       , imUpdated ∷ Boolean
+      , react :: ReactWith
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
       , showChangelogs ∷ Boolean
@@ -187,6 +189,8 @@ type SelectedImage = Maybe
       , height ∷ Int
       , base64 ∷ String
       }
+
+data ReactWith = WithEmoji | WithText
 
 data ShowContextMenu
       = HideContextMenu
@@ -241,6 +245,9 @@ data ImMessage
       =
         --history
         DisplayHistory Int (Array HistoryMessage)
+        | SetReactWithText String Event
+        | React Int Int (Either String String) Event
+        | DisplayReaction Int Int String
 
       --user menu
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
@@ -442,6 +449,7 @@ instance DecodeQueryParam SuggestionsFrom where
 
 derive instance Eq SuggestionsFrom
 derive instance Eq FocusEvent
+derive instance Eq ReactWith
 derive instance Eq PostMode
 derive instance Eq When
 derive instance Eq WebSocketConnectionStatus
@@ -602,7 +610,13 @@ instance DecodeJson MessageStatus where
 instance DecodeJson WebSocketConnectionStatus where
       decodeJson = DADGR.genericDecodeJson
 
+instance DecodeJson ReactWith where
+      decodeJson = DADGR.genericDecodeJson
+
 instance EncodeJson WebSocketConnectionStatus where
+      encodeJson = DAEGR.genericEncodeJson
+
+instance EncodeJson ReactWith where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson TimeoutIdWrapper where
@@ -675,6 +689,7 @@ derive instance Generic SuggestionsFrom _
 derive instance Generic AfterLogout _
 derive instance Generic ReportReason _
 derive instance Generic MessageError _
+derive instance Generic ReactWith _
 derive instance Generic WebSocketPayloadClient _
 derive instance Generic FullWebSocketPayloadClient _
 derive instance Generic WebSocketPayloadServer _

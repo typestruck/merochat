@@ -2,6 +2,7 @@ module Shared.Im.View.ChatInput
       ( chat
       , chatBarInput
       , imageButtonElements
+      , sendButtonElements
       ) where
 
 import Prelude
@@ -11,14 +12,12 @@ import Shared.Im.Types
 import Client.Common.Dom as CCD
 import Client.Common.Privilege as CCP
 import Client.Im.Swipe as CIT
-import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol as TDS
 import Data.Tuple (Tuple(..))
-import Data.Tuple as DT
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE

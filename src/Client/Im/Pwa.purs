@@ -115,6 +115,7 @@ receiveMessageFromPush payload model = model { contacts = map update model.conta
             , recipient: message.recipientId
             , id: message.id
             , edited: false
+            , reaction : Nothing
             , content: message.content
             , date: message.date
             }

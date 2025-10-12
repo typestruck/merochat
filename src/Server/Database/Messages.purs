@@ -18,6 +18,7 @@ type Messages =
       , recipient ∷ Column Int (Constraint "to_user_message" (ForeignKey "id" UsersTable))
       , date ∷ Column DateTimeWrapper Default
       , content ∷ String
+      , reaction :: Maybe String
       , edited ∷ Column Checked Default
       , status ∷ Column MessageStatus Default
       , visualized ∷ Maybe DateTime
@@ -28,6 +29,9 @@ messages = Table
 
 _content ∷ Proxy "content"
 _content = Proxy
+
+_reaction :: Proxy "reaction"
+_reaction = Proxy
 
 _status ∷ Proxy "status"
 _status = Proxy
