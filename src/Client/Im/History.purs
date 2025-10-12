@@ -13,6 +13,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Tuple.Nested ((/\))
 import Effect.Class (liftEffect)
 import Effect.Class as EC
@@ -91,7 +92,7 @@ react userId messageId value event model = model /\ [ save ]
             EC.liftEffect $ WEE.stopPropagation event
             reaction ← EC.liftEffect case value of
                   Right text → pure text
-                  Left id → CCD.unsafeQuerySelector ("#" <> id) >>= CCD.value
+                  Left id → CCD.unsafeQuerySelector ("#" <> id) >>= CCD.value >>= (pure <<< DS.toUpper)
             void <<< CCN.silentResponse $ request.im.react { body: { id: messageId, reaction } }
             pure <<< Just $ DisplayReaction userId messageId reaction
 

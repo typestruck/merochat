@@ -6,6 +6,7 @@ import Shared.Availability
 import Shared.Im.Types
 import Shared.User
 
+import Client.AppId (imAppId, profileAppId)
 import Client.Common.Dom as CCD
 import Client.Common.File as CCF
 import Client.Common.Location as CCL
@@ -57,11 +58,11 @@ import Safe.Coerce as SC
 import Shared.Backer.Contact (backerId)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
+import Shared.Element as SE
 import Shared.Im.Contact as SCN
 import Shared.Im.View as SIV
 import Shared.Modal.Types (Modal(..), ScreenModal(..))
 import Shared.Network (RequestStatus(..))
-import Shared.Options.MountPoint (imId, profileId)
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT
 import Shared.ProfileColumn (ProfileColumn)
@@ -72,7 +73,6 @@ import Shared.User as SUR
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
-import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Event as WEE
 import Web.Event.EventTarget as WET
 import Web.Event.Internal.Types (Event)
@@ -87,7 +87,7 @@ main = do
       webSocketRef ← CIWE.startWebSocket
       lastActiveRef ← ER.new true
       --im is server side rendered
-      model ← F.resumeMount (QuerySelector $ "#" <> show Im) imId
+      model ← F.resumeMount (SE.toQuerySelector Im) imAppId
             { view: SIV.view true
             , subscribe:
                     [ FSD.onClick' ToggleUserContextMenu
@@ -107,7 +107,7 @@ main = do
 
       when smallScreen CISS.sendSmallScreen
       when (pwa || not smallScreen) CIN.checkNotifications
-      when pwa $ FS.send imId StartPwa
+      when pwa $ FS.send imAppId StartPwa
 
       --when the pwa is opened from a chat notification
       resumeFromNotification
@@ -118,10 +118,10 @@ main = do
 
       --image upload
       input ← CCD.unsafeGetElementById ImageFileInput
-      CCF.setUpFileChange (\width height base64 → SetSelectedImage $ Just { width, height, base64 }) input imId
+      CCF.setUpFileChange (\width height base64 → SetSelectedImage $ Just { width, height, base64 }) input imAppId
 
       --greet new users after they have created an account
-      unless (model.user.completedTutorial) $ FS.send imId FinishTutorial
+      unless (model.user.completedTutorial) $ FS.send imAppId FinishTutorial
 
 update ∷ _ → Update ImModel ImMessage
 update st model =
@@ -253,7 +253,7 @@ resumeFromNotification ∷ Effect Unit
 resumeFromNotification = do
       raw ← CCL.queryParameter "resume"
       case raw >>= DI.fromString of
-            Just userId → FS.send imId $ ResumeChat userId
+            Just userId → FS.send imAppId $ ResumeChat userId
             _ → pure unit
 
 toggleContextMenu ∷ ShowContextMenu → ImModel → NoMessages
@@ -264,7 +264,7 @@ setRegistered model = model { user { temporary = false } } /\
       [ pure <<< Just <<< SpecialRequest <<< ToggleModal $ Screen ShowProfile
       , do
               EA.delay $ Milliseconds 1000.0
-              EC.liftEffect $ FS.send profileId SPT.AfterRegistration
+              EC.liftEffect $ FS.send profileAppId SPT.AfterRegistration
               pure Nothing
       ]
 
@@ -523,7 +523,7 @@ historyChange smallScreen = do
       where
       handler = do
             CCD.pushState $ routes.im.get {}
-            when smallScreen <<< FS.send imId $ ToggleInitialScreen true
+            when smallScreen <<< FS.send imAppId $ ToggleInitialScreen true
 
 onVisibilityChange ∷ ∀ message. message → Subscription message
 onVisibilityChange = FSIC.createSubscription Document "visibilitychange"

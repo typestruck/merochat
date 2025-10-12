@@ -41,7 +41,7 @@ import Shared.Experiments.Types as SET
 import Shared.Im.Contact as SIC
 import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..), ImModel)
 import Shared.Json as SJ
-import Shared.Options.MountPoint (experimentsId, imId, profileId)
+import Client.AppId (experimentsAppId, imAppId, profileAppId)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.Profile.Types as SPT
@@ -118,7 +118,7 @@ handleOpen webSocketStateRef _ = do
       newPrivilegesId ← ET.setInterval privilegeDelay (pollPrivileges state.webSocket)
       newPingId ← ET.setInterval pingDelay (ping state.webSocket)
       ER.modify_ (_ { pingId = Just newPingId, privilegesId = Just newPrivilegesId }) webSocketStateRef
-      FS.send imId $ UpdateWebSocketStatus Connected
+      FS.send imAppId $ UpdateWebSocketStatus Connected
       --check if the page needs to be reloaded
       CIW.sendPayload state.webSocket UpdateHash
       --when the connection is open and the user is on the page serialize their availability
@@ -141,14 +141,14 @@ handleMessage event = do
       let message = SU.fromRight $ SJ.fromJson payload
       case message of
             Pong → pure unit
-            CloseConnection cc → FS.send imId $ Logout cc --user has been banned or server is on fire
+            CloseConnection cc → FS.send imAppId $ Logout cc --user has been banned or server is on fire
             Content c → do
                   focused ← CCD.documentHasFocus
-                  FS.send imId $ ReceiveMessage c focused --actual site events, like new messages or status updates
+                  FS.send imAppId $ ReceiveMessage c focused --actual site events, like new messages or status updates
 
 -- | Clear intervals and set up new web socket connection after a random timeout
 handleCloseError ∷ Event → Effect Unit
-handleCloseError _ = FS.send imId $ UpdateWebSocketStatus Reconnect
+handleCloseError _ = FS.send imAppId $ UpdateWebSocketStatus Reconnect
 
 clearIntervals ∷ Ref WebSocketState → Effect Unit
 clearIntervals webSocketStateRef = do
@@ -290,7 +290,7 @@ receiveTyping ∷ { id ∷ Int } → ImModel → MoreMessages
 receiveTyping received model = CIC.toggleTyping received.id true model /\
       [ liftEffect do
               DT.traverse_ (ET.clearTimeout <<< SC.coerce) model.typingIds
-              newId ← ET.setTimeout 1000 <<< FS.send imId $ NoTyping received.id
+              newId ← ET.setTimeout 1000 <<< FS.send imAppId $ NoTyping received.id
               pure <<< Just $ TypingId newId
       ]
 
@@ -305,8 +305,8 @@ receivePrivileges received model =
             } /\
             [ do
                     liftEffect do
-                          FS.send profileId $ SPT.UpdatePrivileges received
-                          FS.send experimentsId $ SET.UpdatePrivileges received
+                          FS.send profileAppId $ SPT.UpdatePrivileges received
+                          FS.send experimentsAppId $ SET.UpdatePrivileges received
                     pure Nothing
             ]
 

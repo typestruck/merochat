@@ -24,7 +24,7 @@ import Flame.Subscription as FS
 import Foreign (Foreign)
 import Foreign as F
 import Shared.Im.Types (ClientMessagePayload, ImMessage(..), ImModel, MessageStatus(..), WebSocketPayloadClient(..))
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Shared.Options.Topic as SOT
 import Shared.Unsafe as SU
 import Web.HTML (Navigator)
@@ -99,8 +99,8 @@ registerServiceWorker id = do
       receiveMessage handler
       where
       handler message payload
-            | message == "resume" = FS.send imId <<< ResumeChat $ F.unsafeFromForeign payload
-            | message == "pushed" = FS.send imId <<< PushedMessages $ F.unsafeFromForeign payload
+            | message == "resume" = FS.send imAppId <<< ResumeChat $ F.unsafeFromForeign payload
+            | message == "pushed" = FS.send imAppId <<< PushedMessages $ F.unsafeFromForeign payload
             | otherwise = pure unit
 
 --when messages are received by the service, we update the chat history for a snappier feel

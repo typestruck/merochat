@@ -19,7 +19,7 @@ import Effect.Uncurried as EU
 import Flame.Subscription as FS
 import Shared.Element as SE
 import Shared.Im.Unread as SIU
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Unsafe as SU
@@ -56,7 +56,7 @@ notify model userIds = do
       createNotification' { user } = createNotification
             { body: "New message from " <> user.name
             , icon: SP.resourcePath (Left Loading) Png
-            , handler: FS.send imId $ ResumeChat user.id --move to given chat when clicking on system notification
+            , handler: FS.send imAppId $ ResumeChat user.id --move to given chat when clicking on system notification
             }
 
 notify' ∷ ImModel → Array Int → Aff (Maybe ImMessage)
@@ -76,4 +76,4 @@ updateTabCount model contacts = do
 checkNotifications ∷ Effect Unit
 checkNotifications = do
       status ← CCD.notificationPermission
-      when (status == "default") $ FS.send imId ToggleAskNotification
+      when (status == "default") $ FS.send imAppId ToggleAskNotification

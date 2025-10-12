@@ -20,7 +20,7 @@ import Effect.Class as EC
 import Shared.Content (Content(..))
 import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage, WebSocketPayloadServer(..))
 import Shared.Modal.Types (Modal(..), SpecialModal(..))
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Shared.Post (Post)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
@@ -176,7 +176,7 @@ preparePostImage event model = model /\ [ before ]
                         WDE.fromEventTarget target
             EC.liftEffect do
                   maybeFileList ← WHI.files input
-                  CCF.resizeAndSendFirstFile maybeFileList imId (\width height base64 → SetPostImage $ Just { width, height, base64 })
+                  CCF.resizeAndSendFirstFile maybeFileList imAppId (\width height base64 → SetPostImage $ Just { width, height, base64 })
             pure Nothing
 
 setPostImage ∷ SelectedImage → ImModel → NoMessages

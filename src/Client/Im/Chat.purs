@@ -52,7 +52,7 @@ import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal.Types (ChatModal(..), Modal(..), SpecialModal(..))
 import Shared.Options.Doppelganger (message)
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -316,7 +316,7 @@ catchFile ∷ Event → ImModel → NoMessages
 catchFile event model = model /\ [ catchIt ]
       where
       catchIt = EC.liftEffect do
-            CCF.resizeAndSendFirstFile (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imId (\width height base64 → SetSelectedImage $ Just { width, height, base64 })
+            CCF.resizeAndSendFirstFile (WHEDT.files <<< WHED.dataTransfer <<< SU.fromJust $ WHED.fromEvent event) imAppId (\width height base64 → SetSelectedImage $ Just { width, height, base64 })
             CCD.preventStop event
             pure Nothing
 

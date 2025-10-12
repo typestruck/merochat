@@ -9,7 +9,7 @@ import Flame as F
 import Flame.Subscription as FS
 import Shared.Breakpoint (mobileBreakpoint)
 import Shared.Im.Types
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 
 -- | Keep track of mobile (-like) screens for things that cannot be done with media queries
 checkSmallScreen ∷ Effect Boolean
@@ -18,7 +18,7 @@ checkSmallScreen = do
       pure $ width < mobileBreakpoint
 
 sendSmallScreen ∷ Effect Unit
-sendSmallScreen = FS.send imId SetSmallScreen
+sendSmallScreen = FS.send imAppId SetSmallScreen
 
 setSmallScreen ∷ ImModel → NoMessages
 setSmallScreen model = F.noMessages model

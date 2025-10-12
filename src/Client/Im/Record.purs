@@ -7,7 +7,7 @@ import Effect.Uncurried (EffectFn1, EffectFn3)
 import Effect.Uncurried as EU
 import Flame.Subscription as FS
 import Shared.Im.Types (ImMessage)
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Type.Row.Homogeneous (class Homogeneous)
 
 foreign import data Recorder ∷ Type
@@ -19,7 +19,7 @@ foreign import stop_ ∷ Effect Unit
 start ∷ ∀ r s. Homogeneous r Boolean ⇒ Homogeneous s String ⇒ Record r → Record s → (String → ImMessage) → Effect Unit
 start constraints options message = EU.runEffectFn3 start_ constraints options (EU.mkEffectFn1 handler)
       where
-      handler s = FS.send imId (message s)
+      handler s = FS.send imAppId (message s)
 
 stop ∷ Effect Unit
 stop = stop_

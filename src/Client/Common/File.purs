@@ -10,7 +10,7 @@ import Effect.Uncurried (EffectFn2)
 import Effect.Uncurried as EU
 import Flame (AppId)
 import Flame.Subscription as FS
-import Shared.Options.MountPoint (MountPoint)
+import Client.AppId (ClientAppId)
 import Shared.Unsafe as SU
 import Web.DOM (Element)
 import Web.File.File (File)
@@ -30,14 +30,14 @@ resizeAndSendFile = EU.runEffectFn2 resizeAndSendFile_
 triggerFileSelect ∷ Element → Effect Unit
 triggerFileSelect = WHH.click <<< SU.fromJust <<< WHH.fromElement
 
-setUpFileChange ∷ ∀ message. (Int → Int → String → message) → Element → AppId MountPoint message → Effect Unit
+setUpFileChange ∷ ∀ message. (Int → Int → String → message) → Element → AppId ClientAppId message → Effect Unit
 setUpFileChange message input appId = do
       CCD.addEventListener input change $ \_ → do
             let htmlInput = SU.fromJust $ WHI.fromElement input
             maybeFileList ← WHI.files htmlInput
             resizeAndSendFirstFile maybeFileList appId message
 
-resizeAndSendFirstFile ∷ ∀ message. Maybe FileList → AppId MountPoint message → (Int → Int → String → message) → Effect Unit
+resizeAndSendFirstFile ∷ ∀ message. Maybe FileList → AppId ClientAppId message → (Int → Int → String → message) → Effect Unit
 resizeAndSendFirstFile maybeFileList appId message =
       case maybeFileList >>= WFL.item 0 of
             Nothing → pure unit

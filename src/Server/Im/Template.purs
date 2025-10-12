@@ -5,7 +5,7 @@ import Shared.Im.Types
 
 import Data.Array ((:))
 import Data.Array as DA
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Now as EN
@@ -23,20 +23,19 @@ import Shared.Im.View as SIV
 import Shared.Modal.Types (Modal(..))
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
-import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ Payload → Effect String
 template payload = do
       lt ← EN.nowDateTime
-      F.preMount (QuerySelector $ "#" <> show SE.Im)
-            { view: \model → ST.templateWith defaultParameters
+      F.preMount (SE.toQuerySelector SE.Im)
+            { view: \m → ST.templateWith defaultParameters
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
                     , header =
                             [ if production then HE.script' [ HA.type' "text/javascript", HA.innerHtml "666 theme-switcher.js 666" ] --used to inline theme switcher
                               else HE.script' [ HA.type' "text/javascript", HA.src $ "/file/default/theme-switcher.js" ]
                             ]
-                    , content = modals : [ SIV.view false model ]
+                    , content = modals : [ SIV.view false m ]
                     , javascript = javascript
                     , css = css
                     }

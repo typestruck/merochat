@@ -33,7 +33,7 @@ import Shared.Im.Types (ImMessage(..), RetryableRequest(..))
 import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (PM, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
@@ -105,9 +105,9 @@ save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
             case result of
                   Right (Response response) → do
                         EC.liftEffect do
-                              FS.send imId $ SetNameFromProfile fields.name.value
-                              FS.send imId $ SetAvatarFromProfile response.body.avatar
-                              FS.send imId $ SetCompletedFields
+                              FS.send imAppId $ SetNameFromProfile fields.name.value
+                              FS.send imAppId $ SetAvatarFromProfile response.body.avatar
+                              FS.send imAppId $ SetCompletedFields
                                     ( (if DA.elem Name model.generated || model.nameInputed == Just model.user.name then [ SP.Name ] else [])
                                             <>
                                                   (if DA.elem Headline model.generated || model.headlineInputed == Just model.user.headline then [] else [ SP.Headline ])

@@ -1,9 +1,14 @@
-module Shared.Element where
+module Shared.Element
+  ( ElementId(..)
+  , toQuerySelector
+  )
+  where
 
 import Prelude
 
 import Data.Hashable (class Hashable)
 import Data.Hashable as HS
+import Web.DOM.ParentNode (QuerySelector(..))
 
 data ElementId
       = SuggestionContextMenu
@@ -47,6 +52,9 @@ data ElementId
       | AvatarFileInput
       | TemporaryUserSignUpForm
       | KarmaPrivilegesRoot
+
+toQuerySelector :: ElementId -> QuerySelector
+toQuerySelector id = QuerySelector $ "#" <> show id
 
 instance Hashable ElementId where
       hash = HS.hash <<< show

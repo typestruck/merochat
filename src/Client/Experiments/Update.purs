@@ -19,7 +19,7 @@ import Flame.Subscription as FS
 import Shared.Im.Types (RetryableRequest(..))
 import Shared.Im.Types as SIT
 import Shared.Modal.Types (Modal(..), ScreenModal(..))
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Shared.Unsafe as SU
 
 update ∷ Update ExperimentsModel ExperimentsMessage
@@ -29,7 +29,7 @@ update model =
             ToggleSection section → F.noMessages model { section = section }
             RedirectKarma → model /\
                   [ do
-                          liftEffect <<< FS.send imId <<< SIT.SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
+                          liftEffect <<< FS.send imAppId <<< SIT.SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
                           pure Nothing
                   ]
             UpdatePrivileges { privileges } → F.noMessages model { user { privileges = privileges } }
@@ -101,5 +101,5 @@ messageDoppelganger ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array 
 messageDoppelganger userId model = model /\ [ send ]
       where
       send = EC.liftEffect do
-            FS.send imId $ SIT.MessageDoppelganger userId
+            FS.send imAppId $ SIT.MessageDoppelganger userId
             pure Nothing

@@ -5,14 +5,15 @@ import Server.Effect
 
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Shared.Element (ElementId(..))
+import Shared.Element as SE
 import Shared.Feedback.View as SFV
+import Web.DOM.ParentNode (QuerySelector(..))
 
 template ∷ Effect String
 template =
-      F.preMount (QuerySelector $ "#" <> show FeedbackForm)
+      F.preMount (SE.toQuerySelector FeedbackForm)
             { view: SFV.view
             , model:
                     { feedbackStatus: Nothing

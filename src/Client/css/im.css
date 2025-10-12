@@ -2963,7 +2963,6 @@ label {
 .reaction-input {
     border: 1px solid var(--light-color);
     border-radius: 20px;
-    text-transform: uppercase;
     padding: 4px 10px;
     flex-grow: 1;
     background-color: var(--im-background-color);
@@ -2983,7 +2982,6 @@ label {
     border-radius: 50%;
     padding: 4px 7px;
     z-index: 2;
-
 }
 
 .incoming-message .reactions {

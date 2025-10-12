@@ -10,11 +10,11 @@ import Flame.Subscription as FS
 import Shared.Experiments.Types (ExperimentsMessage(..))
 import Shared.Experiments.View as SEV
 import Shared.Im.EventTypes (modalVisible)
-import Shared.Options.MountPoint (experimentsId)
+import Client.AppId (experimentsAppId)
 
 main ∷ Effect Unit
 main =
-      void $ F.resumeMount (QuerySelector "#chat-experiments") experimentsId
+      void $ F.resumeMount (QuerySelector "#chat-experiments") experimentsAppId
             { view: SEV.view
             , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
             , update: CEU.update

@@ -17,7 +17,7 @@ import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
-import Shared.Options.MountPoint (imId)
+import Client.AppId (imAppId)
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettingsId(..), SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
@@ -47,7 +47,7 @@ changePrivacySettings model = model /\ [ change ]
             case status of
                   Success → do
                         --let im know that the settings has changed
-                        EC.liftEffect <<< FS.send imId $ SetPrivacySettings payload
+                        EC.liftEffect <<< FS.send imAppId $ SetPrivacySettings payload
                         pure $ Just ShowSuccess
                   _ → pure Nothing
 
