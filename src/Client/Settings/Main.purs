@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Flame as F
 import Flame.Subscription as FS
-import Shared.Im.EventTypes (modalVisible)
+import Client.EventTypes (modalVisible)
 import Shared.Settings.Types (SettingsMessage(..))
 import Shared.Settings.View as SSV
 import Web.DOM.ParentNode (QuerySelector(..))

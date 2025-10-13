@@ -7,7 +7,7 @@ import Effect (Effect)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Flame.Subscription as FS
-import Shared.Im.EventTypes (modalVisible)
+import Client.EventTypes (modalVisible)
 import Shared.InternalHelp.Types (InternalHelpMessage(..))
 import Shared.InternalHelp.View as SIHV
 

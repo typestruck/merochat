@@ -21,7 +21,7 @@ import Effect.Class as EC
 import Flame as F
 import Flame.Subscription.Unsafe.CustomEvent as FS
 import Shared.Element (ElementId(..))
-import Shared.Im.EventTypes (modalVisible)
+import Client.EventTypes (modalVisible)
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))
 import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..))

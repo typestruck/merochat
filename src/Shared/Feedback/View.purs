@@ -1,7 +1,7 @@
 module Shared.Feedback.View where
 
 import Prelude
-import Shared.Feedback.Types
+import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 
 import Data.Maybe (Maybe(..))
 import Flame (Html)
@@ -11,7 +11,7 @@ import Shared.Element (ElementId(..))
 import Shared.Network (RequestStatus(..))
 
 view ∷ FeedbackModel → Html FeedbackMessage
-view model@{ feedbackStatus, loading, comments } =
+view model =
       HE.div [ HA.id $ show FeedbackForm, HA.class' { hidden: not model.visible } ]
             [ HE.div [ HA.class' "center duller" ]
                     [ HE.span_ [ HE.text "Use the form bellow to report any issues," ]
@@ -20,20 +20,20 @@ view model@{ feedbackStatus, loading, comments } =
                     ]
             , HE.div [ HA.class' "extra-padding" ]
                     [ HE.label_ [ HE.text "What would you like to say?" ]
-                    , HE.textarea' [ HA.class' "comments modal-input", HA.onInput SetComments, HA.value comments ]
-                    , HE.div [ HA.class' { "error-message": true, hidden: feedbackStatus /= Just NoComments } ] [ HE.text "Field is mandatory" ]
+                    , HE.textarea' [ HA.class' "comments modal-input", HA.onInput SetComments, HA.value model.comments ]
+                    , HE.div [ HA.class' { "error-message": true, hidden: model.feedbackStatus /= Just NoComments } ] [ HE.text "Field is mandatory" ]
                     ]
             , HE.div_
                     [ HE.label_ [ HE.text "Optionally, include a screenshot" ]
-                    , HE.input [ HA.id $ show ScreenshotInput, HA.type' "file", HA.class' "modal-input", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
+                    , HE.input [ HA.onChange' BeforeSetScreenshot, HA.type' "file", HA.class' "modal-input", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                     ]
             , HE.div [ HA.class' "buttons" ]
-                    [ if loading then
+                    [ if model.loading then
                             HE.div' [ HA.class' "loading" ]
                       else
                             HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Send", HA.onClick SendFeedback ]
                     , HE.div [ HA.class' { "error-message": true, hidden: not isFailure } ] [ HE.text "Could not send feedback. Please try again" ]
-                    , HE.div [ HA.class' { "success-message": true, hidden: feedbackStatus /= Just (Request Success) } ] [ HE.text "Feedback sent!" ]
+                    , HE.div [ HA.class' { "success-message": true, hidden: model.feedbackStatus /= Just (Request Success) } ] [ HE.text "Feedback sent!" ]
                     ]
             , HE.div [ HA.class' "duller center" ]
                     [ HE.br
@@ -44,6 +44,6 @@ view model@{ feedbackStatus, loading, comments } =
                     ]
             ]
       where
-      isFailure = case feedbackStatus of
+      isFailure = case model.feedbackStatus of
             Just (Request (Failure _)) → true
             _ → false

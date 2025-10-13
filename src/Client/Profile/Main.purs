@@ -11,7 +11,7 @@ import Flame as F
 import Flame.Subscription as FS
 import Shared.Element (ElementId(..))
 import Shared.Element as SE
-import Shared.Im.EventTypes (modalVisible)
+import Client.EventTypes (modalVisible)
 import Shared.Profile.Types (ProfileMessage(..))
 import Shared.Profile.View as SPV
 

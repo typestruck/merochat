@@ -9,7 +9,9 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Shared.Modal.Types (ScreenModal)
 import Shared.Network (RequestStatus)
+import Web.Event.Internal.Types (Event)
 
+-- | Used for validation / error and success messages
 data Status
       = NoComments
       | Request RequestStatus
@@ -24,10 +26,11 @@ type FeedbackModel =
 
 data FeedbackMessage
       = SetComments String
+      | BeforeSetScreenshot Event
       | SetScreenshot String
       | ToggleVisibility ScreenModal
-      | SetFeedbackStatus (Maybe RequestStatus)
       | SendFeedback
+      | AfterSendFeedback (Maybe RequestStatus)
 
 derive instance Eq Status
 

@@ -7,7 +7,7 @@ import Effect (Effect)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Flame.Subscription as FS
-import Shared.Im.EventTypes (modalVisible)
+import Client.EventTypes (modalVisible)
 import Shared.KarmaPrivileges.Types (KarmaPrivilegesMessage(..))
 import Shared.KarmaPrivileges.View as SLV
 import Client.AppId (karmaPrivilegesAppId)

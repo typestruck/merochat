@@ -15,6 +15,7 @@ export async function resizeAndSendFile_(file, cb) {
 
     ctx.drawImage(bitmap, 0, 0, newWidth, newHeight);
     cb(newWidth)(newHeight)(canvas.toDataURL(file.type, quality))();
+
 }
 
 function calculateSize(bitmap) {

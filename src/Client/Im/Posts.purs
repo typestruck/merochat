@@ -2,6 +2,7 @@ module Client.Im.Posts where
 
 import Prelude
 
+import Client.AppId (imAppId)
 import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Client.Common.Network as CCN
@@ -20,7 +21,6 @@ import Effect.Class as EC
 import Shared.Content (Content(..))
 import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage, WebSocketPayloadServer(..))
 import Shared.Modal.Types (Modal(..), SpecialModal(..))
-import Client.AppId (imAppId)
 import Shared.Post (Post)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
@@ -170,13 +170,7 @@ preparePostImage ∷ Event → ImModel → MoreMessages
 preparePostImage event model = model /\ [ before ]
       where
       before = do
-            let
-                  input = SU.fromJust do
-                        target ← WEE.target event
-                        WDE.fromEventTarget target
-            EC.liftEffect do
-                  maybeFileList ← WHI.files input
-                  CCF.resizeAndSendFirstFile maybeFileList imAppId (\width height base64 → SetPostImage $ Just { width, height, base64 })
+            CCF.resizePicture imAppId event $ \width height base64 → SetPostImage $ Just { width, height, base64 }
             pure Nothing
 
 setPostImage ∷ SelectedImage → ImModel → NoMessages

@@ -1,65 +1,80 @@
-module Client.Feedback.Update where
+module Client.Feedback.Update (update) where
 
 import Prelude
-import Shared.Feedback.Types
+import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 
-import Client.Common.Dom as CCD
+import Client.AppId (feedbackAppId)
+import Client.Common.File as CCF
 import Client.Common.Network (request)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String as DS
-import Data.Tuple.Nested ((/\))
-import Debug (spy)
-import Effect (Effect)
-import Effect.Aff (Milliseconds(..))
+import Data.Tuple.Nested (type (/\), (/\))
+import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
-import Effect.Class (liftEffect)
 import Flame (Update)
-import Flame as F
-import Shared.Element (ElementId(..))
 import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
-import Shared.Unsafe as SU
-import Web.DOM (Element)
-import Web.HTML.HTMLInputElement as WHI
+import Web.Event.Internal.Types (Event)
 
 update ∷ Update FeedbackModel FeedbackMessage
-update model@{ comments, screenshot } =
+update model =
       case _ of
-            ToggleVisibility modal → model { visible = modal == ShowFeedback } /\ []
-            SetComments input → F.noMessages $ model
-                  { comments = input
-                  }
-            SetScreenshot input → F.noMessages $ model
-                  { screenshot = Just input
-                  }
-            SetFeedbackStatus status → case status of
-                  Just (Failure _) → F.noMessages model { loading = false, feedbackStatus = Request <$> status }
-                  Just Success →
-                        model
-                              { loading = false
-                              , feedbackStatus = Request <$> status
-                              , comments = ""
-                              , screenshot = Nothing
-                              } /\
-                              [ do
-                                      liftEffect do
-                                            input ← getFileInput
-                                            WHI.setValue "" <<< SU.fromJust $ WHI.fromElement input
-                                      EA.delay $ Milliseconds 4000.0
-                                      pure <<< Just $ SetFeedbackStatus Nothing
-                              ]
-                  Nothing → F.noMessages model { feedbackStatus = Nothing }
-            SendFeedback → case DS.trim comments of
-                  "" → F.noMessages model { feedbackStatus = Just NoComments }
-                  trimmed → model { loading = true } /\
-                        [ do
-                                response ← request.feedback.send { body: { comments: trimmed, screenshot } }
-                                case response of
-                                      Right _ → pure <<< Just <<< SetFeedbackStatus $ Just Success
-                                      Left err → pure <<< Just <<< SetFeedbackStatus <<< Just <<< Failure $ SN.errorMessage err
-                        ]
+            ToggleVisibility modal → toggleVisibility modal model
+            SetComments input → setComments input model
+            BeforeSetScreenshot event -> beforeSetScreenshot event model
+            SetScreenshot base64 → setScreenshot base64 model
+            SendFeedback → sendFeedback model
+            AfterSendFeedback status → afterSendFeedback status model
 
-getFileInput ∷ Effect Element
-getFileInput = CCD.unsafeGetElementById ScreenshotInput
+toggleVisibility ∷ ScreenModal → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+toggleVisibility modal model = model { visible = modal == ShowFeedback } /\ []
+
+setComments :: String -> FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+setComments input model =
+      model
+            { comments = input
+            } /\ []
+
+beforeSetScreenshot ∷ Event → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+beforeSetScreenshot event model = model /\ [ before ]
+      where
+      before = do
+            CCF.resizePicture feedbackAppId event (\_ _ b → SetScreenshot b)
+            pure Nothing
+
+setScreenshot :: String -> FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+setScreenshot base64 model =
+      model
+            { screenshot = Just base64
+            } /\ []
+
+sendFeedback :: FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+sendFeedback model = case DS.trim model.comments of
+      "" → model { feedbackStatus = Just NoComments } /\ []
+      trimmed → model { loading = true } /\ [ send trimmed ]
+      where
+      send trimmed = do
+            response ← request.feedback.send { body: { comments: trimmed, screenshot: model.screenshot } }
+            case response of
+                  Right _ → pure <<< Just <<< AfterSendFeedback $ Just Success
+                  Left err → pure <<< Just <<< AfterSendFeedback <<< Just <<< Failure $ SN.errorMessage err
+
+afterSendFeedback :: Maybe RequestStatus -> FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+afterSendFeedback status model = case status of
+      Nothing → model { feedbackStatus = Nothing } /\ []
+      Just (Failure _) → model { loading = false, feedbackStatus = Request <$> status } /\ []
+      Just Success →
+            model
+                  { loading = false
+                  , feedbackStatus = Request <$> status
+                  , comments = ""
+                  , screenshot = Nothing
+                  } /\
+                  [ after
+                  ]
+      where
+      after = do
+            EA.delay $ Milliseconds 4000.0
+            pure <<< Just $ AfterSendFeedback Nothing

@@ -43,7 +43,6 @@ data ElementId
       | EmailInput
       | BackerRoot
       | FeedbackRoot
-      | ScreenshotInput
       | FaqLink
       | CaptchaUser
       | TemporaryUserSignUp
@@ -72,7 +71,6 @@ instance Show ElementId where
             MiniSuggestionContextMenu → "mini-suggestion-context-menu"
             Cards → "cards"
             ChatInput → "chat-input"
-            ScreenshotInput → "screenshot-input"
             ChatInputSuggestion → "chat-input-suggestion"
             ChatInputContact → "chat-input-contact"
             MiniChatInputSuggestion → "mini-chat-input-suggestion"
