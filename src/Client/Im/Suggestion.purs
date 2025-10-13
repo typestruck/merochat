@@ -3,10 +3,10 @@ module Client.Im.Suggestion where
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
-import Client.Common.Network as CCNT
+import Client.Dom as CCD
+import Client.Network (request)
+import Client.Network as CCN
+import Client.Network as CCNT
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Data.Array ((!!))
 import Data.Array as DA

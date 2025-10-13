@@ -4,8 +4,8 @@ import Prelude
 import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 
 import Client.AppId (feedbackAppId)
-import Client.Common.File as CCF
-import Client.Common.Network (request)
+import Client.File as CCF
+import Client.Network (request)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String as DS

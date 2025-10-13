@@ -1,9 +1,9 @@
-module Client.Common.File (setUpFileChange, resizeAndSendFirstFile, resizePicture, triggerFileSelect, fileSize) where
+module Client.File (setUpFileChange, resizeAndSendFirstFile, resizePicture, triggerFileSelect, fileSize) where
 
 import Prelude
 
 import Client.AppId (ClientAppId)
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)

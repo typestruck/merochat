@@ -3,10 +3,10 @@ module Client.Im.Chat where
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
-import Client.Common.File as CCF
-import Client.Common.Network (request)
-import Client.Common.Network as CCNT
+import Client.Dom as CCD
+import Client.File as CCF
+import Client.Network (request)
+import Client.Network as CCNT
 import Client.Experiments.Update (messageDoppelganger)
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Record as CIR

@@ -1,4 +1,4 @@
-module Client.Common.Privilege where
+module Client.Privilege where
 
 import Prelude
 

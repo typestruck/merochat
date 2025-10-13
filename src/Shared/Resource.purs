@@ -1,26 +1,4 @@
-module Shared.Resource
-  ( Bundle(..)
-  , Media(..)
-  , ResourceType(..)
-  , allowedMediaTypes
-  , audioMediaType
-  , bundleFolder
-  , bundlePath
-  , defaultFolder
-  , kb
-  , localBasePath
-  , maxImageSize
-  , maxImageSizeKB
-  , onlineBasePath
-  , replacement
-  , resourceName
-  , resourcePath
-  , resourceType
-  , updateHash
-  , uploadFolder
-  , videoMediaType
-  )
-  where
+module Shared.Resource where
 
 import Prelude
 
@@ -35,7 +13,6 @@ import Environment (production)
 
 allowedMediaTypes ∷ HashMap String String
 allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64", audioMediaType, videoMediaType  ] $ DS.toUnfoldable allowedExtensions
-
 
 audioMediaType :: String
 audioMediaType = "data:audio/webm;base64"

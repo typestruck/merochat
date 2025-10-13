@@ -2,7 +2,7 @@ module Shared.Change where
 
 import Prelude
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Data.Maybe (Maybe(..))
 import Flame.Html.Event as HA
 import Flame.Types (NodeData)

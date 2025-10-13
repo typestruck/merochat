@@ -2,10 +2,10 @@ module Client.Im.ModalsMenu where
 
 import Prelude
 
-import Client.Common.Dom as CCD
-import Client.Common.Location as CCL
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
+import Client.Dom as CCD
+import Client.Location as CCL
+import Client.Network (request)
+import Client.Network as CCN
 import Client.Im.Chat as CIC
 import Client.Im.Flame (MoreMessages, NextMessage)
 import Client.Im.Pwa (SwMessage(..))

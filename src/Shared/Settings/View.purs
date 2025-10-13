@@ -2,7 +2,7 @@ module Shared.Settings.View where
 
 import Prelude
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Enum as DE

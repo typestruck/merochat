@@ -2,9 +2,9 @@ module Client.Im.Pwa where
 
 import Prelude
 
-import Client.Common.Dom as CCD
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
+import Client.Dom as CCD
+import Client.Network (request)
+import Client.Network as CCN
 import Client.Im.Flame (NoMessages)
 import Client.Im.History as CIH
 import Data.Array as DA

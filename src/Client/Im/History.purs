@@ -5,9 +5,9 @@ import Debug
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
+import Client.Dom as CCD
+import Client.Network (request)
+import Client.Network as CCN
 import Client.Im.Scroll as CIS
 import Data.Array as DA
 import Data.Either (Either(..))

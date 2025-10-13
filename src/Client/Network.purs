@@ -1,9 +1,9 @@
-module Client.Common.Network where
+module Client.Network where
 
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Control.Monad.Error.Class as CMEC
 import Data.Array as DA
 import Data.Either (Either(..))

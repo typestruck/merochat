@@ -1,4 +1,4 @@
-module Client.Common.Location where
+module Client.Location where
 
 import Prelude
 

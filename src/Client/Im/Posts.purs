@@ -3,9 +3,9 @@ module Client.Im.Posts where
 import Prelude
 
 import Client.AppId (imAppId)
-import Client.Common.File as CCF
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
+import Client.File as CCF
+import Client.Network (request)
+import Client.Network as CCN
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.WebSocket as CIW
 import Control.Alt ((<|>))

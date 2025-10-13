@@ -2,7 +2,7 @@ module Shared.Profile.View where
 
 import Prelude
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))

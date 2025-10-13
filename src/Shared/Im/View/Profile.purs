@@ -7,7 +7,7 @@ import Shared.Experiments.Types
 import Shared.Im.Types
 import Shared.User
 
-import Client.Common.Privilege as CCP
+import Client.Privilege as CCP
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))

@@ -2,7 +2,7 @@ module Shared.Keydown where
 
 import Prelude
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Data.Maybe (Maybe(..))
 import Flame (Key)
 import Flame.Html.Event as HA

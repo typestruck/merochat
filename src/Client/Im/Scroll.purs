@@ -2,7 +2,7 @@ module Client.Im.Scroll where
 
 import Prelude
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Data.Maybe (Maybe(..))
 import Debug (spy)
 import Effect (Effect)

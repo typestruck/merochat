@@ -3,9 +3,9 @@ module Client.Experiments.Update where
 import Prelude
 import Shared.Experiments.Types
 
-import Client.Common.Location as CCL
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
+import Client.Location as CCL
+import Client.Network (request)
+import Client.Network as CCN
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM

@@ -3,9 +3,9 @@ module Client.Settings.Account where
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Location as CCL
-import Client.Common.Network (request)
-import Client.Common.Network as CNN
+import Client.Location as CCL
+import Client.Network (request)
+import Client.Network as CNN
 import Data.Maybe (Maybe(..))
 import Data.Symbol (class IsSymbol)
 import Data.Tuple.Nested (type (/\), (/\))

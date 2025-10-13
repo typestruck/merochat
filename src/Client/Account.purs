@@ -1,9 +1,9 @@
-module Client.Common.Account where
+module Client.Account where
 
 import Prelude
 
-import Client.Common.Dom as CCD
-import Client.Common.Network as CNN
+import Client.Dom as CCD
+import Client.Network as CNN
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..))
 import Data.String as DS

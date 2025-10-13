@@ -2,11 +2,11 @@ module Client.Login.Main where
 
 import Prelude
 
-import Client.Common.Account as CCA
-import Client.Common.Dom as CCD
-import Client.Common.Location as CCL
-import Client.Common.Network (request)
-import Client.Common.Network as CCNT
+import Client.Account as CCA
+import Client.Dom as CCD
+import Client.Location as CCL
+import Client.Network (request)
+import Client.Network as CCNT
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Effect (Effect)

@@ -2,9 +2,9 @@ module Client.Im.Changelog where
 
 import Prelude
 
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
-import Client.Common.Network as CNN
+import Client.Network (request)
+import Client.Network as CCN
+import Client.Network as CNN
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Data.Array as DA
 import Data.Maybe (Maybe(..))

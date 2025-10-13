@@ -2,7 +2,7 @@ module Client.Im.WebSocket where
 
 import Prelude
 
-import Client.Common.Location as CCD
+import Client.Location as CCD
 import Effect (Effect)
 import Environment (production)
 import Shared.Im.Types (WebSocketPayloadServer)

@@ -3,9 +3,9 @@ module Client.Im.Contacts where
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
+import Client.Dom as CCD
+import Client.Network (request)
+import Client.Network as CCN
 import Client.Im.Flame (NoMessages, MoreMessages)
 import Client.Im.History as CIH
 import Client.Im.Notification as CIU

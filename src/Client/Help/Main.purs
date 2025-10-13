@@ -3,8 +3,8 @@ module Client.Help.Main where
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
-import Client.Common.Location as CCL
+import Client.Dom as CCD
+import Client.Location as CCL
 import Data.Traversable as DT
 import Effect (Effect)
 import Shared.Element (ElementId(..))

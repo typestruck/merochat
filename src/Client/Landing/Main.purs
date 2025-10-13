@@ -2,10 +2,10 @@ module Client.Landing.Main where
 
 import Prelude
 
-import Client.Common.Account as CCA
-import Client.Common.Dom as CCD
-import Client.Common.Location as CCL
-import Client.Common.Network (request)
+import Client.Account as CCA
+import Client.Dom as CCD
+import Client.Location as CCL
+import Client.Network (request)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable)
 import Data.Nullable as DN

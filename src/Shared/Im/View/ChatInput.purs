@@ -9,8 +9,8 @@ import Prelude
 import Shared.Availability
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
-import Client.Common.Privilege as CCP
+import Client.Dom as CCD
+import Client.Privilege as CCP
 import Client.Im.Swipe as CIT
 import Data.Array as DA
 import Data.Either (Either(..))

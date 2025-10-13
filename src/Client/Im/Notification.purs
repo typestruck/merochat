@@ -3,7 +3,7 @@ module Client.Im.Notification where
 import Prelude
 import Shared.Im.Types
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Client.Im.Flame (NextMessage)
 import Data.Array as DA
 import Data.Either (Either(..))

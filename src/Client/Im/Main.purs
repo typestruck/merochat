@@ -7,13 +7,13 @@ import Shared.Im.Types
 import Shared.User
 
 import Client.AppId (imAppId, profileAppId)
-import Client.Common.Dom as CCD
-import Client.Common.File as CCF
-import Client.Common.Location as CCL
-import Client.Common.Network (request)
-import Client.Common.Network as CCN
-import Client.Common.Network as CCNT
-import Client.Common.Network as CNN
+import Client.Dom as CCD
+import Client.File as CCF
+import Client.Location as CCL
+import Client.Network (request)
+import Client.Network as CCN
+import Client.Network as CCNT
+import Client.Network as CNN
 import Client.Im.Changelog as CICL
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN

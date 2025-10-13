@@ -3,7 +3,7 @@ module Client.Profile.Main where
 import Prelude
 
 import Client.AppId (profileAppId)
-import Client.Common.File as CCF
+import Client.File as CCF
 import Client.Profile.Update as CPU
 import Data.Maybe (Maybe(..))
 import Effect (Effect)

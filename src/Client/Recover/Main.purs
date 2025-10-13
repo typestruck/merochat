@@ -2,9 +2,9 @@ module Client.Recover.Main where
 
 import Prelude
 
-import Client.Common.Account as CCA
-import Client.Common.Location as CCL
-import Client.Common.Network (request)
+import Client.Account as CCA
+import Client.Location as CCL
+import Client.Network (request)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))

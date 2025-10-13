@@ -2,7 +2,7 @@ module Client.Im.SmallScreen where
 
 import Prelude
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Client.Im.Flame (NoMessages)
 import Effect (Effect)
 import Flame as F

@@ -2,7 +2,7 @@ module Shared.Im.View.Posts where
 
 import Prelude
 
-import Client.Common.Privilege as CCP
+import Client.Privilege as CCP
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM

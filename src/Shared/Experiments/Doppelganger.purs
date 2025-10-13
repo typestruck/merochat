@@ -2,7 +2,7 @@ module Shared.Experiments.Doppelganger where
 
 import Prelude
 
-import Client.Common.Dom as CCD
+import Client.Dom as CCD
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM

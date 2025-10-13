@@ -2,9 +2,9 @@ module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, receiv
 
 import Prelude
 
-import Client.Common.Dom as CCD
-import Client.Common.Network (request)
-import Client.Common.Network as CCNT
+import Client.Dom as CCD
+import Client.Network (request)
+import Client.Network as CCNT
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)

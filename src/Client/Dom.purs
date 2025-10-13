@@ -1,5 +1,5 @@
 --this can be broken down into modules
-module Client.Common.Dom where
+module Client.Dom where
 
 import Prelude
 import Shared.Im.Types

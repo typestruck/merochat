@@ -2,9 +2,9 @@ module Client.Profile.Update where
 
 import Prelude
 
-import Client.Common.Dom as CCD
-import Client.Common.File as CCF
-import Client.Common.Network (request)
+import Client.Dom as CCD
+import Client.File as CCF
+import Client.Network (request)
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
