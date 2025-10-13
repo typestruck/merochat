@@ -1,4 +1,26 @@
-module Shared.Resource where
+module Shared.Resource
+  ( Bundle(..)
+  , Media(..)
+  , ResourceType(..)
+  , allowedMediaTypes
+  , audioMediaType
+  , bundleFolder
+  , bundlePath
+  , defaultFolder
+  , kb
+  , localBasePath
+  , maxImageSize
+  , maxImageSizeKB
+  , onlineBasePath
+  , replacement
+  , resourceName
+  , resourcePath
+  , resourceType
+  , updateHash
+  , uploadFolder
+  , videoMediaType
+  )
+  where
 
 import Prelude
 
