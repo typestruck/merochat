@@ -74,6 +74,9 @@ readReceipts = Proxy
 typingStatus ∷ Proxy "typingStatus"
 typingStatus = Proxy
 
+chatBackground :: Proxy "chatBackground"
+chatBackground = Proxy
+
 onlineStatus ∷ Proxy "onlineStatus"
 onlineStatus = Proxy
 

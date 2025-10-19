@@ -61,6 +61,7 @@ type IU =
               , readReceipts ∷ Boolean
               , unseenPosts ∷ Int
               , typingStatus ∷ Boolean
+              , chatBackground :: Maybe String
               , posts ∷ Array Post
               , showing ∷ ProfilePost
               , profileVisibility ∷ ProfileVisibility

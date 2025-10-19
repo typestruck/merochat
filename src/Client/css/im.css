@@ -385,6 +385,12 @@ textarea {
     font-size: 1.2em;
 }
 
+.with-chat-background {
+background-repeat: repeat;
+    background-size: contain;
+    background-blend-mode: unset;
+}
+
 .avatar-contact-list-div {
     min-width: 54px;
     min-height: 54px;
@@ -479,6 +485,7 @@ blockquote {
 .message-content-in {
     position: relative;
 }
+
 
 .message-content-in .message-context-menu.outer-user-menu {
     position: absolute;
@@ -2994,10 +3001,8 @@ label {
 }
 
 .outgoing-message .reactions {
-
     background: var(--im-second-background-color);
 }
-
 
 @media (max-width:1279px) {
     #im {

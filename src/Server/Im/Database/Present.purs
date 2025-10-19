@@ -42,6 +42,7 @@ userFields =
             /\ (_visibility # as profileVisibility)
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
+            /\ (_chatBackground # as chatBackground)
             /\ _temporary
             /\ (_postsVisibility # as postsVisibility)
             /\ _backer
@@ -78,6 +79,7 @@ presentUserContactFields =
       , u.id
       , avatar
       , gender
+      , chat_background as "chatBackground"
       , temporary
       , joined
       , backer

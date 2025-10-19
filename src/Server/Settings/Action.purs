@@ -42,4 +42,4 @@ saveChatBackground loggedUserId base64 = do
       when (DS.null sanitized) <<< RE.throw $ BadRequest { reason: "invalid image" }
       fileName ← SF.saveBase64File sanitized
       SSD.saveChatBackground loggedUserId fileName
-      pure $ SP.resourcePath (Left $ Upload fileName) Ignore
+      pure fileName

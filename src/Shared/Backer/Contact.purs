@@ -24,7 +24,7 @@ backerContact userId = (SC.defaultContact backerId backerUser)
                 , recipient: userId
                 , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
                 , edited: false
-                , reaction : Nothing
+                , reaction: Nothing
                 , content: "MeroChat depends on you to keep running"
                 , status: Read
                 , id: 0
@@ -41,6 +41,7 @@ backerUser =
       , joined: DateTimeWrapper epoch
       , readReceipts: true
       , posts: []
+      , chatBackground: Nothing
       , showing: ShowInfo
       , messageTimestamps: true
       , postsVisibility: Everyone

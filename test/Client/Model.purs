@@ -98,6 +98,7 @@ imUser =
       , showing: ShowInfo
       , profileVisibility: Everyone
       , backer: false
+      , chatBackground : Nothing
       , posts: []
       , totalPosts: 0
       , completedFields: []

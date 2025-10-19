@@ -25,6 +25,7 @@ type FlatFields rest =
       , country ∷ Maybe String
       , description ∷ String
       , gender ∷ Maybe Gender
+      , chatBackground :: Maybe String
       , backer ∷ Checked
       , totalPosts ∷ Maybe BigInt
       , headline ∷ String
@@ -87,6 +88,7 @@ fromFlatUser fc =
       , posts: []
       , unseenPosts: DM.fromMaybe 0 (fc.unseenPosts >>= BI.toInt)
       , postsVisibility: fc.postsVisibility
+      , chatBackground : fc.chatBackground
       , isContact: fc.isContact
       , showing: ShowInfo
       , totalPosts: DM.fromMaybe 0 (fc.totalPosts >>= BI.toInt)

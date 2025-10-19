@@ -28,6 +28,8 @@ import Shared.Im.View.Profile as SIVP
 import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Options.Reaction (maxReactionCharacters)
+import Shared.Resource (Media(..), ResourceType(..))
+import Shared.Resource as SP
 import Shared.Unsafe as SU
 import Web.Event.Internal.Types (Event)
 
