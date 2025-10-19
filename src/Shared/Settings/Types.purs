@@ -45,6 +45,7 @@ data SettingsMessage
       | ShowSuccess
       | ChangePassword
       | BeforeSetChatBackground Event
+      | SetChatBackground (Maybe String)
       | SaveChatBackground
       | ToggleVisibility ScreenModal
       | ToggleTerminateAccount

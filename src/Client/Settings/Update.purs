@@ -4,6 +4,7 @@ import Prelude
 import Shared.Im.Types
 
 import Client.AppId (imAppId, settingsAppId)
+import Client.File as CCF
 import Client.File as CF
 import Client.Location as CCL
 import Client.Network (request)
@@ -11,6 +12,7 @@ import Client.Network as CNN
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Symbol (class IsSymbol)
+import Data.Symbol as TDS
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
@@ -21,6 +23,7 @@ import Payload.Client (ClientResponse)
 import Shared.Element (ElementId(..))
 import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
+import Shared.Resource (maxImageSize)
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings(..), SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
@@ -36,6 +39,7 @@ update model message =
             ToggleTerminateAccount → toggleTerminateAccount model
             ShowSuccess → showSuccess model
             BeforeSetChatBackground event → beforeSetChatBackground event model
+            SetChatBackground image -> setChatBackground image model
             TerminateAccount → terminateAccount model
             SaveChatBackground → saveChatBackground model
             ChangePrivacySettings → changePrivacySettings model
@@ -88,14 +92,28 @@ beforeSetChatBackground ∷ Event → SettingsModel → SettingsModel /\ Array (
 beforeSetChatBackground event model = model /\ [ before ]
       where
       before = do
-            CF.resizePicture settingsAppId event (\_ _ b → SetSField $ _ { chatBackground = Just b })
+            CF.resizePicture settingsAppId event (\_ _ b → SetChatBackground $ Just b)
             pure Nothing
 
+setChatBackground ∷ Maybe String → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+setChatBackground image model =
+      if isTooLarge $ DM.fromMaybe "" image then
+            model
+                  { erroredFields = [ TDS.reflectSymbol (Proxy ∷ Proxy "chatBackground") ]
+                  } /\ []
+      else
+            model
+                  { chatBackground = image
+                  } /\ []
+      where
+      isTooLarge contents = maxImageSize < CCF.fileSize contents
+
 saveChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-saveChatBackground model = model /\ [save]
-      where save = do
-                  status ← CNN.formRequest (show ChatSettings) $ request.settings.chat.background { body: { image : DM.fromMaybe "" model.chatBackground } }
-                  case status of
-                        Success → do
-                              pure $ Just ShowSuccess
-                        _ → pure Nothing
+saveChatBackground model = model /\ [ save ]
+      where
+      save = do
+            status ← CNN.formRequest (show ChatSettings) $ request.settings.chat.background { body: { image: DM.fromMaybe "" model.chatBackground } }
+            case status of
+                  Success → do
+                        pure $ Just ShowSuccess
+                  _ → pure Nothing
