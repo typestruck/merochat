@@ -3,7 +3,8 @@
     width: 500px;
 }
 
-.section-buttons .success-message, .section-buttons .error-message {
+.section-buttons .success-message,
+.section-buttons .error-message {
     padding-left: 10px;
 }
 
@@ -14,6 +15,19 @@
 #settings-edition .modal-section .error-message {
     visibility: unset;
     display: none;
+}
+
+.chat-background-input {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.chat-background-save {
+    position: sticky;
+    bottom: 0;
+    background: var(--im-background-color);
+    width: 100%;
+    padding-top: 20px;
 }
 
 #settings-edition .modal-section .errored .error-message {

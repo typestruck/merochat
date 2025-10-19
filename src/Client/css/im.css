@@ -1198,6 +1198,10 @@ svg.toolbar-action {
     overflow-y: auto;
 }
 
+#settings-edition {
+    margin-top: 20px;
+}
+
 #profile-edition-form {
     margin-top: 20px;
     height: 95%;
@@ -3954,5 +3958,9 @@ label {
 
     .settings .outer-user-menu {
         min-width: 60px;
+    }
+
+    #settings-edition {
+        width: 900px;
     }
 }

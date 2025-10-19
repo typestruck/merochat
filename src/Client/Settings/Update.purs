@@ -1,12 +1,15 @@
-module Client.Settings.Account where
+module Client.Settings.Update where
 
 import Prelude
 import Shared.Im.Types
 
+import Client.AppId (imAppId, settingsAppId)
+import Client.File as CF
 import Client.Location as CCL
 import Client.Network (request)
 import Client.Network as CNN
 import Data.Maybe (Maybe(..))
+import Data.Maybe as DM
 import Data.Symbol (class IsSymbol)
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
@@ -15,13 +18,14 @@ import Effect.Class as EC
 import Flame (Update)
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
+import Shared.Element (ElementId(..))
 import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
-import Client.AppId (imAppId)
 import Shared.Routes (routes)
-import Shared.Settings.Types (PrivacySettingsId(..), SettingsMessage(..), SettingsModel)
+import Shared.Settings.Types (PrivacySettings(..), SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
 import Type.Proxy (Proxy(..))
+import Web.Event.Internal.Types (Event)
 
 update ∷ Update SettingsModel SettingsMessage
 update model message =
@@ -31,7 +35,9 @@ update model message =
             ChangePassword → changePassword model
             ToggleTerminateAccount → toggleTerminateAccount model
             ShowSuccess → showSuccess model
+            BeforeSetChatBackground event → beforeSetChatBackground event model
             TerminateAccount → terminateAccount model
+            SaveChatBackground → saveChatBackground model
             ChangePrivacySettings → changePrivacySettings model
             ToggleVisibility modal → setIt (_ { visible = modal == ShowSettings }) model
 
@@ -43,7 +49,7 @@ changePrivacySettings model = model /\ [ change ]
       where
       payload = { postsVisibility: model.postsVisibility, profileVisibility: model.profileVisibility, readReceipts: model.readReceipts, typingStatus: model.typingStatus, onlineStatus: model.onlineStatus, messageTimestamps: model.messageTimestamps }
       change = do
-            status ← CNN.formRequest (show PrivacySettingsId) $ request.settings.account.privacy { body: payload }
+            status ← CNN.formRequest (show PrivacySettings) $ request.settings.account.privacy { body: payload }
             case status of
                   Success → do
                         --let im know that the settings has changed
@@ -77,3 +83,19 @@ requestAndLogout field aff = do
 
 terminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 terminateAccount model = model /\ [ requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ request.settings.account.terminate { body: {} } ]
+
+beforeSetChatBackground ∷ Event → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+beforeSetChatBackground event model = model /\ [ before ]
+      where
+      before = do
+            CF.resizePicture settingsAppId event (\_ _ b → SetSField $ _ { chatBackground = Just b })
+            pure Nothing
+
+saveChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+saveChatBackground model = model /\ [save]
+      where save = do
+                  status ← CNN.formRequest (show ChatSettings) $ request.settings.chat.background { body: { image : DM.fromMaybe "" model.chatBackground } }
+                  case status of
+                        Success → do
+                              pure $ Just ShowSuccess
+                        _ → pure Nothing

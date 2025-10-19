@@ -36,3 +36,6 @@ changePrivacy ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ PrivacySetting
 changePrivacy { guards: { loggedUserId }, body } = do
       SSA.changePrivacySettings loggedUserId body
       pure ok
+
+background ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { image ∷ String } } → ServerEffect String
+background request = SSA.saveChatBackground request.guards.loggedUserId request.body.image

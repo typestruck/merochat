@@ -103,7 +103,7 @@ spec ∷
                                   , react ∷
                                           POST "/react"
                                                 { body ∷ { id ∷ Int, reaction ∷ String }
-                                                 , response ∷ Ok
+                                                , response ∷ Ok
                                                 }
                                   , contacts ∷
                                           GET "/contacts?skip=<skip>"
@@ -201,6 +201,14 @@ spec ∷
                                   , get ∷
                                           GET "/"
                                                 { response ∷ String
+                                                }
+                                  , chat ∷
+                                          Routes "/chat"
+                                                { background ∷
+                                                        POST "background"
+                                                              { body ∷ { image ∷ String }
+                                                              , response ∷ String
+                                                              }
                                                 }
                                   , account ∷
                                           Routes "/account"

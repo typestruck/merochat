@@ -40,6 +40,7 @@ type Users =
       , temporary ∷ Column Checked Default
       , online_status ∷ Column Checked Default
       , message_timestamps ∷ Column Checked Default
+      , chat_background :: Maybe String
       , visibility ∷ Column ProfileVisibility Default
       , posts_visibility ∷ Column ProfileVisibility Default
       , visibility_last_updated ∷ Column DateTime Default
@@ -55,6 +56,9 @@ _pwa = Proxy
 
 _backer ∷ Proxy "backer"
 _backer = Proxy
+
+_chatBackground :: Proxy "chat_background"
+_chatBackground = Proxy
 
 _password ∷ Proxy "password"
 _password = Proxy

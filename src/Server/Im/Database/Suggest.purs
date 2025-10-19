@@ -65,7 +65,7 @@ suggest loggedUserId skip =
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))
 
-      baseFilter = u ... _id .<>. loggedUserId .&&. visibilityFilter .&&. blockedFilter
+      baseFilter = u ... _id .<>. loggedUserId .&&. (u ... _id .<>. 6761) .&&. visibilityFilter .&&. blockedFilter
       visibilityFilter =
             _visibility .=. Everyone .&&. _temporary .=. Checked false .||. _visibility .=. NoTemporaryUsers .&&. not (exists $ select (1 # as u) # from users # wher (_id .=. loggedUserId .&&. _temporary .=. Checked true))
       blockedFilter = not (exists $ select (1 # as u) # from blocks # wher (_blocker .=. loggedUserId .&&. _blocked .=. u ... _id .||. _blocker .=. u ... _id .&&. _blocked .=. loggedUserId))

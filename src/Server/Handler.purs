@@ -62,7 +62,7 @@ handlers reading =
               , contact: runJson reading SIH.contact
               , history: runJson reading SIH.history
               , suggestions: runJson reading SIH.suggestions
-              , react : runJson reading SIH.react
+              , react: runJson reading SIH.react
               , block: runJson reading SIH.block
               , delete: runJson reading SIH.deleteChat
               , missedContacts: runJson reading SIH.missedContacts
@@ -89,6 +89,9 @@ handlers reading =
               }
       , settings:
               { get: runJson reading SSH.settings
+              , chat:
+                      { background: runJson reading SSH.background
+                      }
               , account:
                       { email: runJson reading SSH.accountEmail
                       , password: runJson reading SSH.accountPassword

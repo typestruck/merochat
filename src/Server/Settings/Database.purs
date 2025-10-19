@@ -7,17 +7,15 @@ import Server.Database.Users
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import Droplet.Driver (Configuration, Pool)
+import Droplet.Driver (Pool)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Types (Checked(..))
-import Server.Effect (ServerEffect, BaseEffect)
+import Server.Effect (BaseEffect, ServerEffect)
 import Server.Settings.Database.Flat as SSDF
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
-import Shared.User (ProfileVisibility)
-import Type.Proxy (Proxy(..))
 
 changeEmail ∷ Int → String → ServerEffect Unit
 changeEmail loggedUserId email = SD.execute $ update users # set (_email .=. Just email) # wher (_id .=. loggedUserId)
@@ -55,3 +53,6 @@ changePrivacySettings loggedUserId ps = do
                             /\ (_postsVisibility .=. ps.postsVisibility)
                     )
             # wher (_id .=. loggedUserId)
+
+saveChatBackground ∷ Int → String → ServerEffect Unit
+saveChatBackground loggedUserId fileName = SD.execute $ update users # set (_chatBackground .=. Just fileName) # wher (_id .=. loggedUserId)

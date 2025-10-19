@@ -1,10 +1,10 @@
 module Server.Settings.Template where
 
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
 import Record as R
-import Shared.Settings.Types (PrivacySettings)
+import Shared.Settings.Types (PrivacySettings, Tab(..))
 import Shared.Settings.View as SSV
 import Web.DOM.ParentNode (QuerySelector(..))
 
@@ -20,6 +20,8 @@ template settings =
                           , passwordConfirmation: ""
                           , confirmTermination: false
                           , visible: true
+                          , chatBackground: Nothing
+                          , tab : Privacy
                           , erroredFields: []
                           , hideSuccessMessage: true
                           }
