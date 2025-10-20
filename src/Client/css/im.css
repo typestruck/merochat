@@ -2882,7 +2882,7 @@ label {
     height: 97px;
 }
 
-.post-links .error-message{
+.post-links .error-message {
     display: block;
     visibility: visible;
 }
@@ -3672,6 +3672,11 @@ label {
 
     .suggestion-box {
         background-size: 90%;
+    }
+
+    .suggestion-box.with-chat-background {
+        background-size: cover;
+        background-position: center;
     }
 
     .changelog-inbox {

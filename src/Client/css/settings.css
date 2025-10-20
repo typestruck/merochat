@@ -44,6 +44,11 @@
 
 @media (max-width:1279px) {
     #settings-edition {
-        width: 100%;
+        width: calc(100% - 40px);
+    }
+
+    .chat-background-save {
+        display: flex;
+        flex-flow: column;
     }
 }
