@@ -30,6 +30,10 @@
     padding-top: 20px;
 }
 
+.chat-background-preview {
+    max-width: 100%;
+}
+
 #settings-edition .modal-section .errored .error-message {
     display: block;
 }

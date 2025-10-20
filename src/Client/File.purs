@@ -1,4 +1,4 @@
-module Client.File (setUpFileChange, resizeAndSendFirstFile, resizePicture, triggerFileSelect, fileSize) where
+module Client.File (setUpFileChange, compressImageFromFileList, compressImage, triggerFileSelect, fileSize) where
 
 import Prelude
 
@@ -8,7 +8,7 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
-import Effect.Uncurried (EffectFn2)
+import Effect.Uncurried (EffectFn3)
 import Effect.Uncurried as EU
 import Flame (AppId)
 import Flame.Subscription as FS
@@ -26,25 +26,22 @@ import Web.HTML.HTMLInputElement as WHI
 
 foreign import fileSize ∷ String → Int
 
-resizePicture ∷ forall message. AppId ClientAppId message → Event → (Int → Int → String → message) → Aff Unit
-resizePicture appId event message = EC.liftEffect do
+compressImage ∷ forall message. AppId ClientAppId message → Event → Boolean -> (Int → Int → String → message) → Aff Unit
+compressImage appId event preserveSize message = EC.liftEffect do
       maybeFileList ← WHI.files input
-      resizeAndSendFirstFile maybeFileList appId message
+      compressImageFromFileList maybeFileList appId preserveSize message
       where
       input = SU.fromJust do
             target ← WEE.target event
             WHI.fromEventTarget target
 
-resizeAndSendFirstFile ∷ ∀ message. Maybe FileList → AppId ClientAppId message → (Int → Int → String → message) → Effect Unit
-resizeAndSendFirstFile maybeFileList appId message =
+compressImageFromFileList ∷ ∀ message. Maybe FileList → AppId ClientAppId message → Boolean -> (Int → Int → String → message) → Effect Unit
+compressImageFromFileList maybeFileList appId preserveSize message =
       case maybeFileList >>= WFL.item 0 of
             Nothing → pure unit
-            Just file → resizeAndSendFile file (\w h b → FS.send appId $ message w h b)
+            Just file → EU.runEffectFn3 compressImage_ file preserveSize (\w h b → FS.send appId $ message w h b)
 
-resizeAndSendFile ∷ File → (Int → Int → String → Effect Unit) → Effect Unit
-resizeAndSendFile = EU.runEffectFn2 resizeAndSendFile_
-
-foreign import resizeAndSendFile_ ∷ EffectFn2 File (Int → Int → String → Effect Unit) Unit
+foreign import compressImage_ ∷ EffectFn3 File Boolean (Int → Int → String → Effect Unit) Unit
 
 triggerFileSelect ∷ Element → Effect Unit
 triggerFileSelect = WHH.click <<< SU.fromJust <<< WHH.fromElement
@@ -54,5 +51,5 @@ setUpFileChange message input appId = do
       CCD.addEventListener input change $ \_ → do
             let htmlInput = SU.fromJust $ WHI.fromElement input
             maybeFileList ← WHI.files htmlInput
-            resizeAndSendFirstFile maybeFileList appId message
+            compressImageFromFileList maybeFileList appId false message
 

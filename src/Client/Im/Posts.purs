@@ -170,7 +170,7 @@ preparePostImage ∷ Event → ImModel → MoreMessages
 preparePostImage event model = model /\ [ before ]
       where
       before = do
-            CCF.resizePicture imAppId event $ \width height base64 → SetPostImage $ Just { width, height, base64 }
+            CCF.compressImage imAppId event false $ \width height base64 → SetPostImage $ Just { width, height, base64 }
             pure Nothing
 
 setPostImage ∷ SelectedImage → ImModel → NoMessages

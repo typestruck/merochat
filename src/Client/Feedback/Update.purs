@@ -41,7 +41,7 @@ beforeSetScreenshot ∷ Event → FeedbackModel → FeedbackModel /\ Array (Aff 
 beforeSetScreenshot event model = model /\ [ before ]
       where
       before = do
-            CCF.resizePicture feedbackAppId event (\_ _ b → SetScreenshot b)
+            CCF.compressImage feedbackAppId event false (\_ _ b → SetScreenshot b)
             pure Nothing
 
 setScreenshot :: String -> FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))

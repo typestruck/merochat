@@ -386,7 +386,7 @@ textarea {
 }
 
 .with-chat-background {
-background-repeat: repeat;
+    background-repeat: repeat;
     background-size: contain;
     background-blend-mode: unset;
 }
@@ -2882,7 +2882,7 @@ label {
     height: 97px;
 }
 
-.post-links .error-message {
+.post-links .error-message{
     display: block;
     visibility: visible;
 }
@@ -3002,6 +3002,10 @@ label {
 
 .outgoing-message .reactions {
     background: var(--im-second-background-color);
+}
+
+.with-chat-background .outgoing-message .message-content {
+    background-color: var(--background-color);
 }
 
 @media (max-width:1279px) {

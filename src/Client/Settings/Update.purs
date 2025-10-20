@@ -39,7 +39,7 @@ update model message =
             ToggleTerminateAccount → toggleTerminateAccount model
             ShowSuccess → showSuccess model
             BeforeSetChatBackground event → beforeSetChatBackground event model
-            SetChatBackground image -> setChatBackground image model
+            SetChatBackground image → setChatBackground image model
             TerminateAccount → terminateAccount model
             SaveChatBackground → saveChatBackground model
             ChangePrivacySettings → changePrivacySettings model
@@ -92,7 +92,7 @@ beforeSetChatBackground ∷ Event → SettingsModel → SettingsModel /\ Array (
 beforeSetChatBackground event model = model /\ [ before ]
       where
       before = do
-            CF.resizePicture settingsAppId event (\_ _ b → SetChatBackground $ Just b)
+            CF.compressImage settingsAppId event true (\_ _ b → SetChatBackground $ Just b)
             pure Nothing
 
 setChatBackground ∷ Maybe String → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))

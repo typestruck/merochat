@@ -48,7 +48,8 @@ view model =
                             ]
                     ]
             ]
-        where setTab t = SetSField $ _ { tab = t }
+      where
+      setTab t = SetSField $ _ { tab = t }
 
 privacySection ∷ SettingsModel → Html SettingsMessage
 privacySection model = HE.div [ HA.id $ show PrivacySettings ]
@@ -150,18 +151,21 @@ accountSection model = HE.div_
 
 chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
-      [ HE.div_ [HE.text "Chat background"]
-        ,if DA.elem (TDS.reflectSymbol (Proxy ∷ _ "chatBackground")) model.erroredFields then
-              HE.div [ HA.class' "error-message" ] [ HE.text $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file" ]
-        else if DM.isJust model.chatBackground then
-              HE.img [ HA.src $ DM.fromMaybe "" model.chatBackground ]
+      [ HE.div_ [ HE.text "Chat background" ]
+      , if DM.isJust model.chatBackground then
+              HE.img [ HA.class' "chat-background-preview", HA.src $ DM.fromMaybe "" model.chatBackground ]
         else
-              HE.input
-                    [ HA.onChange' BeforeSetChatBackground
-                    , HA.type' "file"
-                    , HA.class' "chat-background-input"
-                    , HA.value ""
-                    , HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"
+              HE.div []
+                    [ HE.div [ HA.class' { errored: true, hidden: not (DA.elem (TDS.reflectSymbol (Proxy ∷ _ "chatBackground")) model.erroredFields) } ]
+                            [ HE.div [ HA.class' "error-message" ] [ HE.text $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file" ]
+                            ]
+                    , HE.input
+                            [ HA.onChange' BeforeSetChatBackground
+                            , HA.type' "file"
+                            , HA.class' "chat-background-input"
+                            , HA.value ""
+                            , HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"
+                            ]
                     ]
 
       , HE.div [ HA.class' "section-buttons privacy chat-background-save" ]

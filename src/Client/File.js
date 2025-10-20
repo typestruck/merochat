@@ -3,9 +3,9 @@ let maxWidth = typeof window !== "undefined" && window.matchMedia('(max-width:12
     50 * 16, // max width of messages times font size
     quality = 0.94;
 
-export async function resizeAndSendFile_(file, cb) {
+export async function compressImage_(file, preserveSize, cb) {
     let bitmap = await window.createImageBitmap(file),
-        [newWidth, newHeight] = calculateSize(bitmap),
+        [newWidth, newHeight] = calculateSize(bitmap, preserveSize),
         canvas = document.createElement("canvas");
 
     canvas.width = newWidth;
@@ -15,14 +15,13 @@ export async function resizeAndSendFile_(file, cb) {
 
     ctx.drawImage(bitmap, 0, 0, newWidth, newHeight);
     cb(newWidth)(newHeight)(canvas.toDataURL(file.type, quality))();
-
 }
 
-function calculateSize(bitmap) {
+function calculateSize(bitmap, preserveSize) {
     let width = bitmap.width,
         height = bitmap.height;
 
-    if (width > maxWidth) {
+    if (!preserveSize && width > maxWidth) {
         height = Math.round((height * maxWidth) / width);
         width = maxWidth;
     }
