@@ -222,6 +222,7 @@ update st model =
             StartPwa → CIP.startPwa model
             SetContextMenuToggle toggle → toggleContextMenu toggle model
             ReloadPage → reloadPage model
+            RemoveChatBackground → removeChatBackground model
             PushedMessages payload → CIP.receiveMessageFromPush payload model
             HideBuildProfile → hideBuildProfile model
             SetNameFromProfile name → setName name model
@@ -249,6 +250,13 @@ update st model =
             SetPrivacySettings ps → setPrivacySettings ps model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
+
+removeChatBackground ∷ ImModel → NoMessages
+removeChatBackground model = model { toggleContextMenu = HideContextMenu, user { ownBackground = true } } /\ [ save ]
+      where
+      save = do
+            void <<< CNN.silentResponse $ request.settings.chat.background { body: { ownBackground: true, image: model.user.chatBackground } }
+            pure Nothing
 
 setChatBackgroundFromProfile ∷ Boolean → Maybe String → ImModel → NoMessages
 setChatBackgroundFromProfile toggle url model = model { user { ownBackground = toggle, chatBackground = url } } /\ []

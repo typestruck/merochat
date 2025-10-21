@@ -27,6 +27,7 @@ import Shared.Badge (Badge)
 import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
+import Shared.Im.Contact as SCN
 import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, home, nextArrow)
 import Shared.Im.Svg as SIA
@@ -101,11 +102,18 @@ compactProfile contact model =
                     , HE.div [ HA.class' "profile-contact-deets" ]
                             [ HE.div [ HA.class' "outer-user-menu" ] [ SIA.contextMenu $ show CompactProfileContextMenu ]
                             ]
-                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] $ profileContextMenu contact.user.id true
+                    , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowCompactProfileContextMenu } ] contextMenu
                     , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick ResumeSuggesting ]
                     ]
             ]
       where
+      contextMenu =
+            ( if not model.user.ownBackground && DM.isJust contact.user.chatBackground then
+                    [HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick RemoveChatBackground ] [ HE.text "Remove chat background" ]]
+              else
+                    []
+            ) <> profileContextMenu contact.user.id true
+
       showProfileAction
             | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
             | otherwise = [ HA.class' "avatar-profile", HA.title "Click to see full profile", HA.onClick ToggleContactProfile ]

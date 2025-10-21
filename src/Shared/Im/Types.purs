@@ -329,6 +329,7 @@ data ImMessage
       | ToggleScrollChatDown Boolean Int
       | SetTheme Theme
       | SpecialRequest RetryableRequest
+      | RemoveChatBackground
       | ReconnectWebSocket
       | PushedMessages (Array ClientMessagePayload)
       | SetSmallScreen
