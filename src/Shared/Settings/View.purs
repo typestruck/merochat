@@ -22,6 +22,7 @@ import Prim.Symbol (class Append)
 import Record as R
 import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
+import Shared.File as SF
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (maxImageSizeKB)
 import Shared.Settings.Types (SM, SettingsMessage(..), SettingsModel, Tab(..))
@@ -152,10 +153,9 @@ accountSection model = HE.div_
 
 chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
-      [ HE.div_ [ HE.text "Show chat background:" ]
-      , HE.div_
+      [ HE.div_
               [ HE.input [ HA.id "background-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.ownBackground, HA.onChange (SetSField (_ { ownBackground = not model.ownBackground })) ]
-              , HE.label [ HA.for "background-toggle", HA.class' "inline" ] [ HE.text $ if DM.isJust model.chatBackground then "Prefer my chat background over contact's background" else "No chat backgrounds" ]
+              , HE.label [ HA.for "background-toggle", HA.class' "inline" ] [ HE.text $ if DM.isJust model.chatBackground then "Use this background instead of contacts'" else "No chat backgrounds" ]
               ]
       , if DM.isJust model.chatBackground then
               HE.img [ HA.class' "chat-background-preview", HA.src <<< DM.fromMaybe "" $ SA.fromAvatarPath model.chatBackground ]
@@ -174,13 +174,20 @@ chatsSection model = HE.div [ HA.id $ show ChatSettings ]
                     ]
 
       , HE.div [ HA.class' "section-buttons privacy chat-background-save" ]
-              [ HE.input
-                      [ HA.type' "button"
-                      , HA.class' "green-button"
-                      , HA.disabled $ DM.isNothing model.chatBackground
-                      , HA.value "Set chat background"
-                      , HA.onClick SaveChatBackground
-                      ]
+              [ if DM.isJust model.chatBackground && DM.isNothing (model.chatBackground >>= SF.fromBase64File) then
+                      HE.input
+                            [ HA.type' "button"
+                            , HA.class' "green-button danger"
+                            , HA.value "Remove chat background"
+                            , HA.onClick RemoveChatBackground
+                            ]
+                else
+                      HE.input
+                            [ HA.type' "button"
+                            , HA.class' "green-button"
+                            , HA.value "Set chat background"
+                            , HA.onClick SaveChatBackground
+                            ]
               , HE.span' [ HA.class' "request-error-message" ]
               , HE.div [ HA.class' "success" ]
                       [ HE.span [ HA.class' { "success-message": true, hidden: model.hideSuccessMessage } ]

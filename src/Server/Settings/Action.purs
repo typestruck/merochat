@@ -12,6 +12,7 @@ import Server.AccountValidation as SA
 import Server.File as SF
 import Server.Sanitize as SS
 import Server.Settings.Database as SSD
+import Shared.File as SSF
 import Shared.ResponseError (ResponseError(..))
 import Shared.Settings.Types (PrivacySettings)
 
@@ -35,7 +36,7 @@ changePrivacySettings loggedUserId ps = SSD.changePrivacySettings loggedUserId p
 saveChatBackground ∷ Int → Boolean → Maybe String → ServerEffect String
 saveChatBackground loggedUserId ownBackground image = do
       fileName ← case image of
-            Just base64 | DM.isJust (SF.fromBase64File base64) → do
+            Just base64 | DM.isJust (SSF.fromBase64File base64) → do
                   let sanitized = SS.sanitize $ DS.trim base64
                   when (DS.null sanitized) <<< RE.throw $ BadRequest { reason: "invalid image" }
                   fileName ← SF.saveBase64File sanitized

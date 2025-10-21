@@ -24,6 +24,7 @@ import Node.FS.Aff as NFA
 import Run as R
 import Server.Effect (BaseEffect)
 import Server.Response as SR
+import Shared.File as SF
 import Shared.Resource (allowedExtensions, allowedMediaTypes, audioMediaType, localBasePath, maxImageSize, maxImageSizeKB, uploadFolder, videoMediaType)
 
 foreign import realFileExtension_ ∷ Buffer → Effect (Promise String)
@@ -38,7 +39,7 @@ imageTooBigMessage ∷ String
 imageTooBigMessage = "Max allowed size for files is " <> maxImageSizeKB
 
 saveBase64File ∷ ∀ r. String → BaseEffect r String
-saveBase64File input = case fromBase64File input of
+saveBase64File input = case SF.fromBase64File input of
       Just (mediaType /\ base64) →
             case DH.lookup (DSR.replace (DSRU.unsafeRegex "\\s*?codecs=.+;" noFlags) "" mediaType) allowedMediaTypes of
                   Nothing → invalidImage
@@ -60,7 +61,3 @@ saveBase64File input = case fromBase64File input of
       where
       invalidImage = SR.throwBadRequest invalidImageMessage
 
-fromBase64File ∷ String → Maybe (String /\ String)
-fromBase64File input = case DS.split (Pattern ",") input of
-      [ mediaType, base64 ] → Just (mediaType /\ base64)
-      _ → Nothing

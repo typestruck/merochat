@@ -49,6 +49,7 @@ data SettingsMessage
       | ChangePassword
       | BeforeSetChatBackground Event
       | SetChatBackground (Maybe String)
+      | RemoveChatBackground
       | SaveChatBackground
       | AfterSaveChatBackground (Maybe String)
       | ToggleVisibility ScreenModal

@@ -36,6 +36,7 @@ create table users
     online_status boolean not null default true,
     posts_visibility smallint not null default 0,
     chat_background text,
+    own_background boolean default false,
     message_timestamps boolean not null default true,
     completed_tutorial boolean not null default false,
     temporary boolean not null default false,

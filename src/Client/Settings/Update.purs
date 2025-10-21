@@ -28,7 +28,7 @@ import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Resource (maxImageSize)
 import Shared.Routes (routes)
-import Shared.Settings.Types (PrivacySettings(..), SettingsMessage(..), SettingsModel)
+import Shared.Settings.Types (SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
 import Type.Proxy (Proxy(..))
 import Web.Event.Internal.Types (Event)
@@ -45,6 +45,7 @@ update model message =
             SetChatBackground image → setChatBackground image model
             AfterSaveChatBackground url → afterSaveChatBackground url model
             TerminateAccount → terminateAccount model
+            RemoveChatBackground -> removeChatBackground model
             SaveChatBackground → saveChatBackground model
             ChangePrivacySettings → changePrivacySettings model
             ToggleVisibility modal → setIt (_ { visible = modal == ShowSettings }) model
@@ -112,8 +113,13 @@ setChatBackground image model =
       where
       isTooLarge contents = maxImageSize < CCF.fileSize contents
 
+removeChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+removeChatBackground model = model { chatBackground = Nothing } /\ [ save ]
+      where
+      save = pure $ Just SaveChatBackground
+
 saveChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-saveChatBackground model = model  /\ [ save ]
+saveChatBackground model = model /\ [ save ]
       where
       save = do
             response ← request.settings.chat.background { body: { ownBackground: model.ownBackground, image: model.chatBackground } }
@@ -122,6 +128,9 @@ saveChatBackground model = model  /\ [ save ]
                   _ → pure Nothing
 
 afterSaveChatBackground ∷ Maybe String → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-afterSaveChatBackground url model = model { chatBackground = url } /\ [ success ]
+afterSaveChatBackground url model = model { chatBackground = url } /\ [ success, notify ]
       where
       success = pure $ Just ShowSuccess
+      notify = EC.liftEffect do
+            FS.send imAppId $ SetChatBackgroundFromProfile model.ownBackground url
+            pure Nothing

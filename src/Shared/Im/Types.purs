@@ -96,7 +96,7 @@ type HM r =
       , recipient ∷ Int
       , date ∷ DateTimeWrapper
       , edited ∷ Boolean
-      , reaction :: Maybe String
+      , reaction ∷ Maybe String
       , content ∷ String
       , status ∷ MessageStatus
       | r
@@ -156,7 +156,7 @@ type Im =
       , showLargeAvatar ∷ Boolean
       , modalsLoaded ∷ Array ScreenModal
       , imUpdated ∷ Boolean
-      , react :: ReactWith
+      , react ∷ ReactWith
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
       , showChangelogs ∷ Boolean
@@ -245,9 +245,9 @@ data ImMessage
       =
         --history
         DisplayHistory Int (Array HistoryMessage)
-        | SetReactWithText String Event
-        | React Int Int (Either String String) Event
-        | DisplayReaction Int Int String
+      | SetReactWithText String Event
+      | React Int Int (Either String String) Event
+      | DisplayReaction Int Int String
 
       --user menu
       | ToggleInitialScreen Boolean -- | Mobile screen navigation
@@ -339,6 +339,7 @@ data ImMessage
       | ToggleAskNotification
       | CloseWebSocket When
       | SetNameFromProfile String
+      | SetChatBackgroundFromProfile Boolean (Maybe String)
       | SetAvatarFromProfile (Maybe String)
       | SetCompletedFields (Array ProfileColumn)
       | CheckUserExpiration

@@ -9,15 +9,10 @@ import Shared.User
 import Client.AppId (imAppId, profileAppId)
 import Client.Dom as CCD
 import Client.File as CCF
-import Client.Location as CCL
-import Client.Network (request)
-import Client.Network as CCN
-import Client.Network as CCNT
-import Client.Network as CNN
 import Client.Im.Changelog as CICL
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Im.History as CIH
 import Client.Im.ModalsMenu as CIU
 import Client.Im.Notification as CIN
@@ -28,6 +23,11 @@ import Client.Im.Suggestion as CIS
 import Client.Im.Theme as CIT
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
+import Client.Location as CCL
+import Client.Network (request)
+import Client.Network as CCN
+import Client.Network as CCNT
+import Client.Network as CNN
 import Data.Array ((:))
 import Data.Array as DA
 import Data.DateTime as DDT
@@ -234,6 +234,7 @@ update st model =
             PreventStop event → preventStop event model
             CheckUserExpiration → checkUserExpiration model
             Refocus e → refocus e st.lastActiveRef webSocket model
+            SetChatBackgroundFromProfile toggle url → setChatBackgroundFromProfile toggle url model
             SetTheme theme → CIT.setTheme theme model
             TerminateTemporaryUser → terminateAccount model
             SpecialRequest FetchMissedContacts → fetchMissedContacts model
@@ -248,6 +249,9 @@ update st model =
             SetPrivacySettings ps → setPrivacySettings ps model
       where
       { webSocket } = EU.unsafePerformEffect $ ER.read st.webSocketRef -- u n s a f e
+
+setChatBackgroundFromProfile ∷ Boolean → Maybe String → ImModel → NoMessages
+setChatBackgroundFromProfile toggle url model = model { user { ownBackground = toggle, chatBackground = url } } /\ []
 
 resumeFromNotification ∷ Effect Unit
 resumeFromNotification = do

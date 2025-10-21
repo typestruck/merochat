@@ -20,6 +20,7 @@ import Server.Profile.Types (Payload)
 import Server.Response as SR
 import Server.ThreeK as ST
 import Shared.DateTime as SDT
+import Shared.File as SSF
 import Shared.Post (Post)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (SavedFields)
@@ -61,7 +62,7 @@ save ∷ Int → SavedFields → _
 save loggedUserId fields = do
       avatar ← case fields.avatar of
             Nothing → pure $ Save Nothing
-            Just base64 | DM.isJust (SF.fromBase64File base64) → Save <<< Just <$> SF.saveBase64File base64
+            Just base64 | DM.isJust (SSF.fromBase64File base64) → Save <<< Just <$> SF.saveBase64File base64
             _ → pure Ignore
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map DN.unwrap fields.age > eighteen) $ SR.throwBadRequest tooYoungMessage
@@ -90,5 +91,4 @@ save loggedUserId fields = do
       pure $ case avatar of
             Save a → { avatar: a }
             Ignore → { avatar: fields.avatar }
-            _ → { avatar: Nothing }
 
