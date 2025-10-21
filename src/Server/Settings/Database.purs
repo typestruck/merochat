@@ -14,7 +14,7 @@ import Server.Database as SD
 import Server.Database.Types (Checked(..))
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Settings.Database.Flat as SSDF
-import Shared.Settings.Types (PrivacySettings)
+import Shared.Settings.Types (PrivacySettings, UserSettings)
 import Shared.Unsafe as SU
 
 changeEmail ∷ Int → String → ServerEffect Unit
@@ -26,11 +26,13 @@ changePassword loggedUserId password = SD.execute $ update users # set (_passwor
 terminateAccount ∷ Int → ServerEffect Unit
 terminateAccount loggedUserId = SD.execute $ delete # from users # wher (_id .=. loggedUserId) --cascades
 
-privacySettings ∷ Int → ServerEffect PrivacySettings
-privacySettings loggedUserId = SSDF.toPrivacySettings <<< SU.fromJust <$>
+userSettings ∷ Int → ServerEffect UserSettings
+userSettings loggedUserId = SSDF.toUserSettings <<< SU.fromJust <$>
       ( SD.single $
               select
                     ( (_visibility # as profileVisibility)
+                            /\ (_ownBackground # as ownBackground)
+                            /\ (_chatBackground # as chatBackground)
                             /\ (_readReceipts # as readReceipts)
                             /\ (_typingStatus # as typingStatus)
                             /\ (_onlineStatus # as onlineStatus)
@@ -54,5 +56,5 @@ changePrivacySettings loggedUserId ps = do
                     )
             # wher (_id .=. loggedUserId)
 
-saveChatBackground ∷ Int → String → ServerEffect Unit
-saveChatBackground loggedUserId fileName = SD.execute $ update users # set (_chatBackground .=. Just fileName) # wher (_id .=. loggedUserId)
+saveChatBackground ∷ Int → Boolean → Maybe String → ServerEffect Unit
+saveChatBackground loggedUserId ownBackground fileName = SD.execute $ update users # set ((_chatBackground .=. fileName) /\ (_ownBackground .=. Checked ownBackground)) # wher (_id .=. loggedUserId)

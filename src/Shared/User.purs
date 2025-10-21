@@ -62,6 +62,7 @@ type IU =
               , unseenPosts ∷ Int
               , typingStatus ∷ Boolean
               , chatBackground :: Maybe String
+              , ownBackground :: Boolean
               , posts ∷ Array Post
               , showing ∷ ProfilePost
               , profileVisibility ∷ ProfileVisibility

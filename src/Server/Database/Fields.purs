@@ -77,6 +77,9 @@ typingStatus = Proxy
 chatBackground :: Proxy "chatBackground"
 chatBackground = Proxy
 
+ownBackground :: Proxy "ownBackground"
+ownBackground = Proxy
+
 onlineStatus ∷ Proxy "onlineStatus"
 onlineStatus = Proxy
 

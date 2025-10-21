@@ -3,6 +3,7 @@ module Server.Settings.Handler where
 import Prelude
 import Server.Effect
 
+import Data.Maybe (Maybe)
 import Payload.ResponseTypes (Response)
 import Run as R
 import Server.Logout as SL
@@ -14,8 +15,8 @@ import Shared.Settings.Types (PrivacySettings)
 
 settings ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
 settings { guards: { loggedUserId } } = do
-      privacySettings ← SSD.privacySettings loggedUserId
-      R.liftEffect $ SST.template privacySettings
+      userSettings ← SSD.userSettings loggedUserId
+      R.liftEffect $ SST.template userSettings
 
 accountEmail ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { email ∷ String } } → ServerEffect (Response Ok)
 accountEmail { guards: { loggedUserId }, body: { email } } = do
@@ -37,5 +38,5 @@ changePrivacy { guards: { loggedUserId }, body } = do
       SSA.changePrivacySettings loggedUserId body
       pure ok
 
-background ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { image ∷ String } } → ServerEffect String
-background request = SSA.saveChatBackground request.guards.loggedUserId request.body.image
+background ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { ownBackground :: Boolean, image ∷ Maybe String } } → ServerEffect String
+background request = SSA.saveChatBackground request.guards.loggedUserId request.body.ownBackground request.body.image

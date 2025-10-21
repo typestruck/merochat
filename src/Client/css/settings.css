@@ -30,6 +30,11 @@
     padding-top: 20px;
 }
 
+#background-toggle {
+    margin: 15px 5px;
+    margin-left: 0;
+}
+
 .chat-background-preview {
     max-width: 100%;
 }

@@ -99,6 +99,7 @@ imUser =
       , profileVisibility: Everyone
       , backer: false
       , chatBackground : Nothing
+      , ownBackground : false
       , posts: []
       , totalPosts: 0
       , completedFields: []

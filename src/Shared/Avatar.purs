@@ -3,8 +3,10 @@ module Shared.Avatar where
 import Prelude
 
 import Data.Either (Either(..))
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String (Pattern(..))
+import Data.String as DS
 import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -28,6 +30,12 @@ fromAvatar user
       | otherwise = DM.fromMaybe defaultAvatar $ map uploaded user.avatar
               where
               uploaded a = SP.resourcePath (Left $ Upload a) Ignore
+
+fromAvatarPath ∷ Maybe String → Maybe String
+fromAvatarPath = case _ of
+      Just a | DS.contains (Pattern "data:image") a → Just a
+      Just aa → Just $ SP.resourcePath (Left $ Upload aa) Ignore
+      aaa → aaa
 
 async ∷ ∀ message. NodeData message
 async = HA.createAttribute "async" ""

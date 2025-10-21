@@ -20,6 +20,7 @@ import Flame.Html.Element as HE
 import Prim.Row (class Cons)
 import Prim.Symbol (class Append)
 import Record as R
+import Shared.Avatar as SA
 import Shared.Element (ElementId(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (maxImageSizeKB)
@@ -151,9 +152,13 @@ accountSection model = HE.div_
 
 chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
-      [ HE.div_ [ HE.text "Chat background" ]
+      [ HE.div_ [ HE.text "Show chat background:" ]
+      , HE.div_
+              [ HE.input [ HA.id "background-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.ownBackground, HA.onChange (SetSField (_ { ownBackground = not model.ownBackground })) ]
+              , HE.label [ HA.for "background-toggle", HA.class' "inline" ] [ HE.text $ if DM.isJust model.chatBackground then "Prefer my chat background over contact's background" else "No chat backgrounds" ]
+              ]
       , if DM.isJust model.chatBackground then
-              HE.img [ HA.class' "chat-background-preview", HA.src $ DM.fromMaybe "" model.chatBackground ]
+              HE.img [ HA.class' "chat-background-preview", HA.src <<< DM.fromMaybe "" $ SA.fromAvatarPath model.chatBackground ]
         else
               HE.div []
                     [ HE.div [ HA.class' { errored: true, hidden: not (DA.elem (TDS.reflectSymbol (Proxy ∷ _ "chatBackground")) model.erroredFields) } ]
@@ -177,8 +182,10 @@ chatsSection model = HE.div [ HA.id $ show ChatSettings ]
                       , HA.onClick SaveChatBackground
                       ]
               , HE.span' [ HA.class' "request-error-message" ]
-              , HE.span [ HA.class' { "success-message": true, hidden: model.hideSuccessMessage } ]
-                      [ HE.text "Chat background set!"
+              , HE.div [ HA.class' "success" ]
+                      [ HE.span [ HA.class' { "success-message": true, hidden: model.hideSuccessMessage } ]
+                              [ HE.text "Chat background set!"
+                              ]
                       ]
               ]
       ]

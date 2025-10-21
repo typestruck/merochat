@@ -19,11 +19,14 @@ type SM =
       , passwordConfirmation ∷ String
       , tab :: Tab
       , visible ∷ Boolean
-      , chatBackground :: Maybe String
       , hideSuccessMessage ∷ Boolean
       , confirmTermination ∷ Boolean
-      | PS
+      | US
       )
+
+type US  = (chatBackground :: Maybe String, ownBackground :: Boolean | PS)
+
+type UserSettings = Record US
 
 type PS =
       ( readReceipts ∷ Boolean
@@ -47,6 +50,7 @@ data SettingsMessage
       | BeforeSetChatBackground Event
       | SetChatBackground (Maybe String)
       | SaveChatBackground
+      | AfterSaveChatBackground (Maybe String)
       | ToggleVisibility ScreenModal
       | ToggleTerminateAccount
       | TerminateAccount --very bad

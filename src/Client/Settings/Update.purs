@@ -9,8 +9,10 @@ import Client.File as CF
 import Client.Location as CCL
 import Client.Network (request)
 import Client.Network as CNN
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Symbol (class IsSymbol)
 import Data.Symbol as TDS
 import Data.Tuple.Nested (type (/\), (/\))
@@ -20,6 +22,7 @@ import Effect.Class as EC
 import Flame (Update)
 import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
+import Payload.ResponseTypes (Response(..))
 import Shared.Element (ElementId(..))
 import Shared.Modal.Types (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
@@ -40,6 +43,7 @@ update model message =
             ShowSuccess → showSuccess model
             BeforeSetChatBackground event → beforeSetChatBackground event model
             SetChatBackground image → setChatBackground image model
+            AfterSaveChatBackground url → afterSaveChatBackground url model
             TerminateAccount → terminateAccount model
             SaveChatBackground → saveChatBackground model
             ChangePrivacySettings → changePrivacySettings model
@@ -109,11 +113,15 @@ setChatBackground image model =
       isTooLarge contents = maxImageSize < CCF.fileSize contents
 
 saveChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-saveChatBackground model = model /\ [ save ]
+saveChatBackground model = model  /\ [ save ]
       where
       save = do
-            status ← CNN.formRequest (show ChatSettings) $ request.settings.chat.background { body: { image: DM.fromMaybe "" model.chatBackground } }
-            case status of
-                  Success → do
-                        pure $ Just ShowSuccess
+            response ← request.settings.chat.background { body: { ownBackground: model.ownBackground, image: model.chatBackground } }
+            case response of
+                  Right (Response { body: url }) → pure <<< Just <<< AfterSaveChatBackground $ if DS.null url then Nothing else Just url
                   _ → pure Nothing
+
+afterSaveChatBackground ∷ Maybe String → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
+afterSaveChatBackground url model = model { chatBackground = url } /\ [ success ]
+      where
+      success = pure $ Just ShowSuccess

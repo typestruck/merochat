@@ -1,17 +1,20 @@
 module Server.Settings.Database.Flat where
 
+import Data.Maybe (Maybe)
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
-import Shared.Settings.Types (PrivacySettings)
+import Shared.Settings.Types (UserSettings)
 import Shared.User (ProfileVisibility)
 
-toPrivacySettings ∷
+toUserSettings ∷
       { readReceipts ∷ Checked
+      , chatBackground :: Maybe String
+      , ownBackground :: Checked
       , typingStatus ∷ Checked
       , profileVisibility ∷ ProfileVisibility
       , onlineStatus ∷ Checked
       , messageTimestamps ∷ Checked
       , postsVisibility ∷ ProfileVisibility
       } →
-      PrivacySettings
-toPrivacySettings p = SC.coerce p
+      UserSettings
+toUserSettings p = SC.coerce p

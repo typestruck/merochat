@@ -41,6 +41,7 @@ type Users =
       , online_status ∷ Column Checked Default
       , message_timestamps ∷ Column Checked Default
       , chat_background :: Maybe String
+      , own_background :: Column Checked Default
       , visibility ∷ Column ProfileVisibility Default
       , posts_visibility ∷ Column ProfileVisibility Default
       , visibility_last_updated ∷ Column DateTime Default
@@ -59,6 +60,9 @@ _backer = Proxy
 
 _chatBackground :: Proxy "chat_background"
 _chatBackground = Proxy
+
+_ownBackground :: Proxy "own_background"
+_ownBackground = Proxy
 
 _password ∷ Proxy "password"
 _password = Proxy

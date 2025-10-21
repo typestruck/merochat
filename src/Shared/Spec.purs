@@ -206,7 +206,7 @@ spec ∷
                                           Routes "/chat"
                                                 { background ∷
                                                         POST "background"
-                                                              { body ∷ { image ∷ String }
+                                                              { body ∷ { ownBackground ∷ Boolean, image ∷ Maybe String }
                                                               , response ∷ String
                                                               }
                                                 }

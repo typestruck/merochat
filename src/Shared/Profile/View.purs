@@ -66,7 +66,7 @@ edit model =
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Avatar" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]
               , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
-                      [ HE.img [ HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ fromAvatar model.avatarInputed ]
+                      [ HE.img [ HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
                       , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                       , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                               [ HE.title [ HE.text "Reset profile picture" ]
@@ -148,7 +148,7 @@ preview ∷ ProfileModel → Array (Html ProfileMessage)
 preview model =
       [ HE.div [ HA.class' "avatar-info" ]
               [ HE.div [ HA.class' "big-avatar-info" ]
-                      [ HE.img [ HA.src <<< DM.fromMaybe defaultAvatar $ fromAvatar model.avatarInputed, HA.class' "big-suggestion-avatar" ]
+                      [ HE.img [ HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed, HA.class' "big-suggestion-avatar" ]
                       , HE.div [ HA.class' "big-suggestion-info" ]
                               ( HE.strong [ HA.class' "big-card-name" ] [ HE.text $ DM.fromMaybe "" model.nameInputed ]
                                       : SIVP.badges model.user.badges <> [ HE.div [ HA.class' "duller" ] onlineStatus ]
@@ -190,9 +190,5 @@ preview model =
       languages = DH.fromArrayBy _.id _.name model.languages
       languageEntry id = HE.span_ [ HE.text <<< SU.fromJust $ DH.lookup id languages ]
 
-fromAvatar ∷ Maybe String → Maybe String
-fromAvatar = case _ of
-      Just a | DS.contains (Pattern "data:image") a → Just a
-      Just aa → Just $ SP.resourcePath (Left $ Upload aa) Ignore
-      aaa → aaa
+
 
