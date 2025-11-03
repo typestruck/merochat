@@ -9,12 +9,13 @@ import Flame as F
 import Server.Profile.Types (Payload)
 import Shared.Element (ElementId(..))
 import Shared.Element as SE
+import Shared.Html (Html(..))
 import Shared.Profile.Types (ProfileMode(..))
 import Shared.Profile.View as SPV
 
-template ∷ Payload → Effect String
+template ∷ Payload → Effect Html
 template { user, countries, languages, posts } = do
-      F.preMount (SE.toQuerySelector ProfileEditionForm)
+      Html <$> F.preMount (SE.toQuerySelector ProfileEditionForm)
             { view: SPV.view
             , model:
                     { nameInputed: Just user.name

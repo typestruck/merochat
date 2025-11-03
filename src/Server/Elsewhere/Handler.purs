@@ -2,10 +2,10 @@ module Server.Elsewhere.Handler where
 
 import Prelude
 
-import Server.Elsewhere.Template as SET
-import Server.Response as SR
+import Effect.Class as EC
 import Server.Effect (ServerEffect)
-import Shared.Html (Html(..))
+import Server.Elsewhere.Template as SET
+import Shared.Html (Html)
 
 elsewhere ∷ ∀ r. { | r } → ServerEffect Html
-elsewhere _ = SR.serveTemplate SET.template
+elsewhere _ = EC.liftEffect SET.template

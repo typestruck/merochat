@@ -4,26 +4,26 @@ import Prelude
 import Server.Effect
 import Shared.Im.Types
 
+import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe)
 import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
+import Effect.Class as EC
 import Payload.ContentType (html)
 import Payload.Headers as PH
-import Payload.ResponseTypes (Response)
+import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Response as PSR
 import Server.Im.Action as SIA
 import Server.Im.Template as SIT
-import Server.Ok (Ok, ok)
 import Server.Response as SR
 import Shared.Account (EmailPassword)
 import Shared.Changelog (Changelog)
-import Shared.DateTime (DateTimeWrapper(..))
-import Shared.Html (Html(..))
+import Shared.Html (Html)
 
-im ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Response String)
+im ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Response Html)
 im { guards: { loggedUserId } } = do
       payload ← SIA.im loggedUserId
-      Html contents ← SR.serveTemplate $ SIT.template payload
+      contents ← EC.liftEffect $ SIT.template payload
       pure <<< PSR.setHeaders (PH.fromFoldable [ Tuple "content-type" html, Tuple "cache-control" "no-store, max-age=0" ]) $ PSR.ok contents
 
 contacts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int } } → ServerEffect (Array Contact)
@@ -39,53 +39,53 @@ history { guards: { loggedUserId }, query: { with, skip } } = SIA.resumeChatHist
 suggestions ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int, sg ∷ SuggestionsFrom } } → ServerEffect (Array Suggestion)
 suggestions { guards: { loggedUserId }, query } = SIA.suggest loggedUserId query.skip query.sg
 
-react ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int, reaction ∷ String } } → ServerEffect Ok
+react ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int, reaction ∷ String } } → ServerEffect Empty
 react request = do
       SIA.react request.guards.loggedUserId request.body.id request.body.reaction
-      pure ok
+      pure Empty
 
-block ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Ok
+block ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Empty
 block { guards: { loggedUserId }, body: { id } } = do
       SIA.blockUser loggedUserId id
-      pure ok
+      pure Empty
 
-deleteChat ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { userId ∷ Int, messageId ∷ Int } } → ServerEffect Ok
+deleteChat ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { userId ∷ Int, messageId ∷ Int } } → ServerEffect Empty
 deleteChat { guards: { loggedUserId }, body } = do
       SIA.deleteChat loggedUserId body
-      pure ok
+      pure Empty
 
-subscribe ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+subscribe ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Empty
 subscribe { guards } = do
       SIA.subscribe guards.loggedUserId
-      pure ok
+      pure Empty
 
 changelogs ∷ { query ∷ { before ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Changelog)
 changelogs request = SIA.listChangelogs request.guards.loggedUserId request.query.before
 
-changelog ∷ { body ∷ { ids ∷ Array Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+changelog ∷ { body ∷ { ids ∷ Array Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect Empty
 changelog request = do
       SIA.markRead request.guards.loggedUserId request.body.ids
-      pure ok
+      pure Empty
 
-missedContacts ∷ { query ∷ { since ∷ DateTimeWrapper, last ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Contact)
+missedContacts ∷ { query ∷ { since ∷ DateTime, last ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Contact)
 missedContacts request = SIA.listMissedContacts request.guards.loggedUserId request.query.since request.query.last
 
-report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ Report } → ServerEffect Ok
+report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ Report } → ServerEffect Empty
 report { guards: { loggedUserId }, body } = do
       SIA.reportUser loggedUserId body
-      pure ok
+      pure Empty
 
-tutorial ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+tutorial ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Empty
 tutorial { guards: { loggedUserId } } = do
       SIA.finishTutorial loggedUserId
-      pure ok
+      pure Empty
 
-greeting ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Ok
+greeting ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Empty
 greeting { guards: { loggedUserId } } = do
       SIA.greet loggedUserId
-      pure ok
+      pure Empty
 
-register ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ EmailPassword } → ServerEffect Ok
+register ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ EmailPassword } → ServerEffect Empty
 register { guards: { loggedUserId }, body: { email, password } } = do
       SIA.registerUser loggedUserId email password
-      pure ok
+      pure Empty

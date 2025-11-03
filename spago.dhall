@@ -40,6 +40,7 @@ You can edit this file as you like.
   , "node-buffer"
   , "node-fs-aff"
   , "node-http"
+  , "node-streams"
   , "node-url"
   , "now"
   , "nullable"

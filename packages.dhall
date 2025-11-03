@@ -207,7 +207,7 @@ let additions =
           ]
         }
       , payload =
-        { version = "master"
+        { version = "5e43d5283c7b078ee7d7d9699c813743dcf9bc32"
         , repo = "https://github.com/easafe/purescript-payload"
         , dependencies =
           [ "aff"
@@ -246,6 +246,7 @@ let additions =
           , "strings"
           , "stringutils"
           , "test-unit"
+          , "web-streams"
           , "transformers"
           , "tuples"
           , "type-equality"

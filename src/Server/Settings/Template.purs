@@ -1,15 +1,18 @@
 module Server.Settings.Template where
 
+import Prelude
+
 import Effect (Effect)
 import Flame as F
 import Record as R
+import Shared.Html (Html(..))
 import Shared.Settings.Types (Tab(..), UserSettings)
 import Shared.Settings.View as SSV
 import Web.DOM.ParentNode (QuerySelector(..))
 
-template ∷ UserSettings → Effect String
+template ∷ UserSettings → Effect Html
 template settings =
-      F.preMount (QuerySelector "#settings-edition")
+      Html <$> F.preMount (QuerySelector "#settings-edition")
             { view: SSV.view
             , model:
                     R.merge

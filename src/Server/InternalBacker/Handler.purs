@@ -1,8 +1,10 @@
 module Server.InternalBacker.Handler where
 
 import Server.Effect
-import Server.InternalBacker.Template as SIBT
-import Run as R
 
-internalBacker ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
+import Run as R
+import Server.InternalBacker.Template as SIBT
+import Shared.Html (Html(..))
+
+internalBacker ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
 internalBacker _ = R.liftEffect SIBT.template

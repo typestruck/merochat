@@ -4,17 +4,16 @@ import Prelude
 
 import Data.Tuple (Tuple(..))
 import Payload.Headers as PH
-import Payload.ResponseTypes (Response)
+import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Response as PSR
 import Server.Cookies as SC
-import Server.Ok
 
 logout ∷ ∀ r. String → r → Response r
 logout route = PSR.setHeaders headers <<< PSR.found
       where
       headers = PH.fromFoldable [ Tuple "Location" route, SC.makeExpiredCookieHeader ]
 
-expireCookies ∷ Response Ok
-expireCookies = PSR.setHeaders headers $ PSR.ok ok
+expireCookies ∷ Response Empty
+expireCookies = PSR.setHeaders headers $ PSR.ok Empty
       where
       headers = PH.fromFoldable [ SC.makeExpiredCookieHeader ]

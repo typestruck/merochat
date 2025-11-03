@@ -9,10 +9,11 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Backer.View as SBV
+import Shared.Html (Html(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 
-template ∷ Effect String
+template ∷ Effect Html
 template = do
       contents ← ST.template externalDefaultParameters
             { content = externalDefaultParameters.content <> [ SBV.view { visible: true } ]
@@ -21,4 +22,4 @@ template = do
                     ]
             , title = "MeroChat - Become a backer"
             }
-      FRS.render contents
+      Html <$> FRS.render contents

@@ -8,11 +8,12 @@ import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
+import Shared.Html (Html(..))
 
-template ∷ Effect String
+template ∷ Effect Html
 template = do
       contents ← ST.template externalDefaultParameters { content = content }
-      FRS.render contents
+      Html <$> FRS.render contents
       where
       content =
             [ HE.div [ HA.class' "green-box" ]

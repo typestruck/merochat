@@ -10,6 +10,7 @@ import Data.Newtype as DN
 import Data.String as DS
 import Debug (spy)
 import Run as R
+import Safe.Coerce as SC
 import Server.Database as SD
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
@@ -65,7 +66,7 @@ save loggedUserId fields = do
             Just base64 | DM.isJust (SSF.fromBase64File base64) → Save <<< Just <$> SF.saveBase64File base64
             _ → pure Ignore
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
-      when (map DN.unwrap fields.age > eighteen) $ SR.throwBadRequest tooYoungMessage
+      when (map SC.coerce fields.age > eighteen) $ SR.throwBadRequest tooYoungMessage
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
       --keep the old logic to save fields individually in case we need to do it again
       SD.withTransaction $ \connection → do

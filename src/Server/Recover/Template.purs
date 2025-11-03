@@ -10,18 +10,19 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
+import Shared.Html (Html(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routes)
 
-template ∷ Maybe String → Effect String
+template ∷ Maybe String → Effect Html
 template token = do
       contents ← ST.template externalDefaultParameters
             { content = externalDefaultParameters.content <> content
             , javascript = javascript
             }
-      FRS.render contents
+      Html <$> FRS.render contents
       where
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Recover Js ]

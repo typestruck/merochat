@@ -1,14 +1,17 @@
 module Server.KarmaPrivileges.Template where
 
+import Prelude
+
 import Effect (Effect)
-import Web.DOM.ParentNode (QuerySelector(..))
 import Flame as F
+import Shared.Html (Html(..))
 import Shared.KarmaPrivileges.Types (ToggleBoard(..))
 import Shared.KarmaPrivileges.View as SLV
+import Web.DOM.ParentNode (QuerySelector(..))
 
-template ∷ _ → Effect String
+template ∷ _ → Effect Html
 template { top10, inBetween10, userPosition, privileges, stats } =
-      F.preMount (QuerySelector "#karma-leaderboard")
+      Html <$> F.preMount (QuerySelector "#karma-leaderboard")
             { view: SLV.view
             , model:
                     { toggleBoard: InBetween10

@@ -10,19 +10,20 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
+import Shared.Html (Html(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routes)
 
-template ∷ Effect String
+template ∷ Effect Html
 template = do
       contents ← ST.template externalDefaultParameters
             { content = externalDefaultParameters.content <> content
             , javascript = javascript
             , title = "MeroChat - Login"
             }
-      FRS.render contents
+      Html <$> FRS.render contents
       where
       javascript =
             [ HE.script' [ HA.type' "text/javascript", HA.src $ SP.bundlePath Login Js ]

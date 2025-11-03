@@ -11,10 +11,11 @@ import Server.Privacy as SP
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Server.Terms as STM
+import Shared.Html (Html(..))
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SPT
 
-template ∷ Effect String
+template ∷ Effect Html
 template = do
       contents ← ST.template externalDefaultParameters
             { css = externalDefaultParameters.css <> [ HE.link [ HA.rel "stylesheet", HA.type' "text/css", HA.href $ SPT.bundlePath Help Css ] ]
@@ -22,7 +23,7 @@ template = do
             , content = externalDefaultParameters.content <> content
             , title = "MeroChat - Help"
             }
-      FRS.render contents
+      Html <$> FRS.render contents
       where
       content =
             [ HE.div [ HA.class' "external-help" ]

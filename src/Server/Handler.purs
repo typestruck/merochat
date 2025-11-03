@@ -10,8 +10,7 @@ import Effect.Aff (Aff)
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Effect.Class.Console as EC
-import Payload.ResponseTypes (Response)
-import Payload.Server.Handlers (File)
+import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Handlers as PSH
 import Payload.Server.Response as PSR
 import Run as R
@@ -35,7 +34,6 @@ import Server.Login.Handler as SLGH
 import Server.Logout as SL
 import Server.Logout.Handler as SLOH
 import Server.NotFound.Handler as SNH
-import Server.Ok (Ok, ok)
 import Server.Posts.Handler as SPSH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
@@ -144,27 +142,26 @@ runHtml reading handler input = run `EA.catchError` catch
                         InternalError { reason } → SIEH.internalError reason
                         ExpiredSession → pure $ SL.logout (routes.login.get {}) ""
 
-runJson ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
-runJson reading handler =
-      R.runBaseAff' <<< RE.catch requestError <<< RR.runReader reading <<< map Right <<< handler
-      where
-      requestError ohno = do
-            R.liftEffect <<< EC.log $ "server error " <> show ohno
-            pure <<< Left $ case ohno of
-                  BadRequest { reason } → PSR.badRequest reason
-                  InternalError { reason } → PSR.internalError reason
-                  ExpiredSession → PSR.unauthorized ""
+runJson ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String)  b)
+runJson reading handler = R.runBaseAff' <<< RE.catch handleRequestError <<< RR.runReader reading <<< map Right <<< handler
+        where
+        handleRequestError ohno = do
+                R.liftEffect <<< EC.log $ "server error " <> show ohno
+                pure <<< Left $ case ohno of
+                        BadRequest { reason } → PSR.badRequest reason
+                        InternalError { reason } → PSR.internalError reason
+                        ExpiredSession → PSR.unauthorized ""
 
 --we need to hardcode this becuse service workers scope to their path
-sw ∷ _ → Aff File
-sw _ = PSH.file "file/default/sw.js" {}
+sw ∷ _ → Aff _
+sw _ = PSH.file "file/default/sw.js"
 
 --dummy route for ntfy
-topic ∷ _ → Aff Ok
-topic _ = pure ok
+topic ∷ _ → Aff Empty
+topic _ = pure Empty
 
-developmentFiles ∷ { params ∷ { path ∷ List String } } → Aff File
-developmentFiles { params: { path } } = PSH.file fullPath {}
+developmentFiles ∷ { params ∷ { path ∷ List String } } → Aff _
+developmentFiles { params: { path } } = PSH.file fullPath
       where
       fullPath = case path of
             Cons folder (Cons file Nil) → localBasePath <> folder <> "/" <> file

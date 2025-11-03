@@ -2,14 +2,14 @@ module Shared.Spec where
 
 import Prelude
 
+import Data.DateTime (DateTime)
 import Data.List (List)
 import Data.Maybe (Maybe)
-import Payload.Server.Handlers (File)
+import Node.Stream (Read, Stream)
+import Payload.ResponseTypes (Empty)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
-import Server.Ok (Ok)
 import Shared.Account (EmailCaptcha, EmailPassword, EmailPasswordCaptcha, ResetPassword)
 import Shared.Changelog (Changelog)
-import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (Question, Match)
 import Shared.Html (Html)
 import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
@@ -17,6 +17,7 @@ import Shared.Post (PostPayload, Post)
 import Shared.Profile.Types (GeneratedInput, SavedFields)
 import Shared.Settings.Types (PrivacySettings)
 
+-- types other than Html and Empty are serialized as json
 spec ∷
       Spec
             { guards ∷
@@ -33,13 +34,13 @@ spec ∷
                     , temporary ∷
                             POST "/temporary"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
-                                  , response ∷ Ok
+                                  , response ∷ Empty
                                   }
                     , register ∷
                             POST "/register"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
                                   , body ∷ EmailPasswordCaptcha
-                                  , response ∷ Ok
+                                  , response ∷ Empty
                                   }
                     , unsubscribe ∷
                             GET "/unsubscribe?email_id=<emailId>"
@@ -59,7 +60,7 @@ spec ∷
                                     post ∷
                                           POST "/"
                                                 { body ∷ EmailPassword
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   }
                     , posts ∷
@@ -68,12 +69,12 @@ spec ∷
                                   , get ∷
                                           GET "/?poster=<poster>"
                                                 { query ∷ { poster ∷ Int }
-                                                , response ∷ Array Post
+                                                , response ∷  (Array Post)
                                                 }
                                   , post ∷
                                           POST "/post"
                                                 { body ∷ PostPayload
-                                                , response ∷ { id ∷ Int }
+                                                , response ∷  { id ∷ Int }
                                                 }
                                   , seen ∷
                                           POST "/seen"
@@ -81,7 +82,7 @@ spec ∷
                                                         { id ∷ Int
                                                         , poster ∷ Int
                                                         }
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   }
                     , im ∷
@@ -89,69 +90,69 @@ spec ∷
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
                                           GET "/"
-                                                { response ∷ String
+                                                { response ∷ Html
                                                 }
                                   , subscribe ∷
                                           POST "/subscribe"
-                                                { response ∷ Ok
+                                                { response ∷ Empty
                                                 }
                                   , register ∷
                                           POST "/register"
                                                 { body ∷ EmailPassword
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   , react ∷
                                           POST "/react"
                                                 { body ∷ { id ∷ Int, reaction ∷ String }
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   , contacts ∷
                                           GET "/contacts?skip=<skip>"
                                                 { query ∷ { skip ∷ Int }
-                                                , response ∷ Array Contact
+                                                , response ∷  Array Contact
                                                 }
                                   , changelog ∷
                                           Routes "/changelog"
                                                 { get ∷
                                                         GET "/?before=<before>"
                                                               { query ∷ { before ∷ Maybe Int }
-                                                              , response ∷ Array Changelog
+                                                              , response ∷  Array Changelog
                                                               }
                                                 , post ∷
                                                         POST "/"
                                                               { body ∷ { ids ∷ Array Int }
-                                                              , response ∷ Ok
+                                                              , response ∷ Empty
                                                               }
                                                 }
                                   , contact ∷
                                           GET "/contact?id=<id>"
                                                 { query ∷ { id ∷ Int }
-                                                , response ∷ Array Contact
+                                                , response ∷  (Array Contact)
                                                 }
                                   , history ∷
                                           GET "/history?with=<with>&skip=<skip>"
                                                 { query ∷ { skip ∷ Int, with ∷ Int }
-                                                , response ∷ Array HistoryMessage
+                                                , response ∷  (Array HistoryMessage)
                                                 }
                                   , suggestions ∷
                                           GET "/suggestions?skip=<skip>&sg=<sg>"
                                                 { query ∷ { skip ∷ Int, sg ∷ SuggestionsFrom }
-                                                , response ∷ Array Suggestion
+                                                , response ∷  (Array Suggestion)
                                                 }
                                   , block ∷
                                           POST "/block"
                                                 { body ∷ { id ∷ Int }
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   , delete ∷
                                           POST "/delete"
                                                 { body ∷ { userId ∷ Int, messageId ∷ Int }
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   , missedContacts ∷
                                           GET "/missed?since=<since>&last=<last>"
-                                                { query ∷ { since ∷ DateTimeWrapper, last ∷ Maybe Int }
-                                                , response ∷ Array Contact
+                                                { query ∷ { since ∷ DateTime, last ∷ Maybe Int }
+                                                , response ∷  (Array Contact)
                                                 }
                                   , fortune ∷
                                           GET "/fortune"
@@ -160,16 +161,16 @@ spec ∷
                                   , report ∷
                                           POST "/report"
                                                 { body ∷ Report
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
 
                                   , tutorial ∷
                                           POST "/tutorial"
-                                                { response ∷ Ok
+                                                { response ∷ Empty
                                                 }
                                   , greeting ∷
                                           POST "/greeting"
-                                                { response ∷ Ok
+                                                { response ∷ Empty
                                                 }
                                   }
                     , profile ∷
@@ -177,22 +178,22 @@ spec ∷
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
                                           GET "/"
-                                                { response ∷ String
+                                                { response ∷ Html
                                                 }
                                   , posts ∷
                                           GET "/posts?after=<after>"
                                                 { query ∷ { after ∷ Maybe Int }
-                                                , response ∷ Array Post
+                                                , response ∷  (Array Post)
                                                 }
                                   , generated ∷
                                           POST "/generated"
                                                 { body ∷ GeneratedInput
-                                                , response ∷ String
+                                                , response ∷  String
                                                 }
                                   , save ∷
                                           POST "/save"
                                                 { body ∷ SavedFields
-                                                , response ∷ { avatar ∷ Maybe String }
+                                                , response ∷  { avatar ∷ Maybe String }
                                                 }
                                   }
                     , settings ∷
@@ -200,14 +201,14 @@ spec ∷
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
                                           GET "/"
-                                                { response ∷ String
+                                                { response ∷ Html
                                                 }
                                   , chat ∷
                                           Routes "/chat"
                                                 { background ∷
                                                         POST "background"
                                                               { body ∷ { ownBackground ∷ Boolean, image ∷ Maybe String }
-                                                              , response ∷ String
+                                                              , response ∷  String
                                                               }
                                                 }
                                   , account ∷
@@ -215,21 +216,21 @@ spec ∷
                                                 { email ∷
                                                         POST "/account/email"
                                                               { body ∷ { email ∷ String }
-                                                              , response ∷ Ok
+                                                              , response ∷ Empty
                                                               }
                                                 , password ∷
                                                         POST "/account/password"
                                                               { body ∷ { password ∷ String }
-                                                              , response ∷ Ok
+                                                              , response ∷ Empty
                                                               }
                                                 , terminate ∷
                                                         POST "/account/terminate"
-                                                              { response ∷ Ok
+                                                              { response ∷ Empty
                                                               }
                                                 , privacy ∷
                                                         POST "/account/privacy"
                                                               { body ∷ PrivacySettings
-                                                              , response ∷ Ok
+                                                              , response ∷ Empty
                                                               }
                                                 }
                                   }
@@ -244,23 +245,23 @@ spec ∷
                                   , post ∷
                                           POST "/"
                                                 { body ∷ EmailCaptcha
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   , reset ∷
                                           POST "/recover"
                                                 { body ∷ ResetPassword
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   }
                     , logout ∷
                             POST "/logout"
                                   { guards ∷ Guards ("loggedUserId" : "loggedUserToken" : Nil)
-                                  , response ∷ Ok
+                                  , response ∷ Empty
                                   }
                     , leaderboard ∷
                             GET "/leaderboard"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                  , response ∷ String
+                                  , response ∷ Html
                                   }
                     , help ∷
                             GET "/help"
@@ -271,42 +272,42 @@ spec ∷
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , get ∷
                                           GET "/"
-                                                { response ∷ String
+                                                { response ∷ Html
                                                 }
                                   , send ∷
                                           POST "/send"
                                                 { body ∷ { comments ∷ String, screenshot ∷ Maybe String }
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   }
 
                     , internalHelp ∷
                             GET "/inhelp"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                  , response ∷ String
+                                  , response ∷ Html
                                   }
                     , experiments ∷
                             Routes "/experiments"
                                   { get ∷
                                           GET "/"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
-                                                , response ∷ String
+                                                , response ∷ Html
                                                 }
                                   , questions ∷
                                           GET "/questions"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
-                                                , response ∷ Array Question
+                                                , response ∷  (Array Question)
                                                 }
                                   , matches ∷
                                           GET "/matches"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
-                                                , response ∷ Array Match
+                                                , response ∷  (Array Match)
                                                 }
                                   , answer ∷
                                           POST "/answer"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
                                                 , body ∷ { choice ∷ Int }
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   }
                     , backer ∷
@@ -317,7 +318,7 @@ spec ∷
                     , internalBacker ∷
                             GET "/inbacker"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                  , response ∷ String
+                                  , response ∷ Html
                                   }
 
                     , banned ∷
@@ -331,23 +332,23 @@ spec ∷
                                   , ban ∷
                                           POST "/ban?id=<id>&secret=<secret>"
                                                 { query ∷ { id ∷ Int, secret ∷ String }
-                                                , response ∷ Ok
+                                                , response ∷ Empty
                                                 }
                                   }
                     , topic ∷
                             POST "/topic/<..path>"
                                   { params ∷ { path ∷ List String }
                                   , body ∷ String
-                                  , response ∷ Ok
+                                  , response ∷ Empty
                                   }
                     , sw ∷
                             GET "/sw.js"
-                                  { response ∷ File
+                                  { response ∷ Stream (read :: Read)
                                   }
                     , developmentFiles ∷
                             GET "/file/<..path>"
                                   { params ∷ { path ∷ List String }
-                                  , response ∷ File
+                                  , response ∷ Stream (read :: Read)
                                   }
                     ,
                       --404 can only be matched as a catch all route

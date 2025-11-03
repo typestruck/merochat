@@ -3,14 +3,15 @@ module Client.Im.ModalsMenu where
 import Prelude
 
 import Client.Dom as CCD
-import Client.Location as CCL
-import Client.Network (request)
-import Client.Network as CCN
+import Client.EventTypes (modalVisible)
 import Client.Im.Chat as CIC
 import Client.Im.Flame (MoreMessages, NextMessage)
 import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
 import Client.Im.Suggestion (byAvailability)
+import Client.Location as CCL
+import Client.Network (request)
+import Client.Network as CCN
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
@@ -20,8 +21,9 @@ import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
 import Flame.Subscription.Unsafe.CustomEvent as FS
+import Shared.Html(Html(..))
+import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
-import Client.EventTypes (modalVisible)
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))
 import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..))
@@ -111,7 +113,7 @@ modal toggled model =
                                 [ visible toggle ]
                           else
                                 [ visible toggle
-                                , CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root) (req {})
+                                , CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req {})
                                 ]
 
 setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage

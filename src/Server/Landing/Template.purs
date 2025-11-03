@@ -11,11 +11,12 @@ import Server.Landing.Svg as SLS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Element (ElementId(..))
+import Shared.Html (Html(..))
 import Shared.Options.Profile (passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
 
-template ∷ Effect String
+template ∷ Effect Html
 template = do
       contents ← ST.template externalDefaultParameters
             { content = content
@@ -23,7 +24,7 @@ template = do
             , css = css
             , bundled = production
             }
-      FRS.render contents
+      Html <$> FRS.render contents
       where
       css
             | production = [ HE.style [ HA.type' "text/css" ] [ HE.text "666 style.css 666" ] ] --used to inline stylesheets for production

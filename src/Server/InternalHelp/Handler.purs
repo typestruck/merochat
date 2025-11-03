@@ -1,8 +1,10 @@
 module Server.InternalHelp.Handler where
 
 import Server.Effect
-import Server.InternalHelp.Template as SIHT
-import Run as R
 
-internalHelp ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
+import Run as R
+import Server.InternalHelp.Template as SIHT
+import Shared.Html (Html)
+
+internalHelp ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
 internalHelp _ = R.liftEffect SIHT.template

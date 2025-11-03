@@ -19,6 +19,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Types (NodeData)
+import Safe.Coerce as SC
 import Shared.DateTime as SD
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
@@ -94,7 +95,7 @@ chatHistory model =
                                           [ HE.div' [ HA.innerHtml $ SM.parse entry.content ]
                                           ]
                                   , HE.div [ HA.class' "message-status error-message" ]
-                                          [ HE.span [ HA.class' { hidden: not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.agoWithTime $ DN.unwrap entry.date ]
+                                          [ HE.span [ HA.class' { hidden: not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.agoWithTime $ SC.coerce entry.date ]
                                           , HE.span_ [ HE.text " - Failed to send" ]
                                           ]
                                   ]
@@ -157,7 +158,7 @@ chatHistory model =
                                                   ]
                                           , HE.div [ HA.class' "message-status" ]
                                                   [ HE.span [ HA.class' { hidden: not entry.edited } ] [ HE.text "Edited - " ]
-                                                  , HE.span [ HA.class' { hidden: noTimestamps } ] [ HE.text <<< SD.agoWithTime $ DN.unwrap entry.date ]
+                                                  , HE.span [ HA.class' { hidden: noTimestamps } ] [ HE.text <<< SD.agoWithTime $ SC.coerce entry.date ]
                                                   , HE.span [ HA.class' { hidden: incomingMessage || noReadReceipts } ] [ HE.text $ " - " <> show entry.status ]
                                                   ]
 

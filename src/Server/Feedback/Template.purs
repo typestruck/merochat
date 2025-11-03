@@ -9,11 +9,11 @@ import Flame as F
 import Shared.Element (ElementId(..))
 import Shared.Element as SE
 import Shared.Feedback.View as SFV
-import Web.DOM.ParentNode (QuerySelector(..))
+import Shared.Html (Html(..))
 
-template ∷ Effect String
+template ∷ Effect Html
 template =
-      F.preMount (SE.toQuerySelector FeedbackForm)
+      Html <$> F.preMount (SE.toQuerySelector FeedbackForm)
             { view: SFV.view
             , model:
                     { feedbackStatus: Nothing

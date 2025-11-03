@@ -9,11 +9,10 @@ import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
 import Payload.ContentType (html)
 import Payload.Headers as PH
-import Payload.ResponseTypes (Response)
+import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Response as PSR
 import Server.Im.Action as SIA
 import Server.Im.Template as SIT
-import Server.Ok (Ok, ok)
 import Server.Posts.Action as SPA
 import Server.Response as SR
 import Shared.Account (EmailPassword)
@@ -28,8 +27,8 @@ posts request = SPA.posts request.guards.loggedUserId request.query.poster
 post ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ PostPayload } → ServerEffect { id ∷ Int }
 post request = SPA.post request.guards.loggedUserId request.body
 
-seen ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { poster ∷ Int, id ∷ Int } } → ServerEffect Ok
+seen ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { poster ∷ Int, id ∷ Int } } → ServerEffect Empty
 seen request = do
       SPA.markSeen request.guards.loggedUserId request.body.poster request.body.id
-      pure ok
+      pure Empty
 

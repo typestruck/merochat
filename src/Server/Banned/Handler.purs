@@ -2,10 +2,10 @@ module Server.Banned.Handler where
 
 import Prelude
 
+import Effect.Class as EC
 import Server.Banned.Template as SBT
-import Server.Response as SR
 import Server.Effect (ServerEffect)
-import Shared.Html (Html(..))
+import Shared.Html (Html)
 
 banned ∷ ∀ r. { | r } → ServerEffect Html
-banned _ = SR.serveTemplate SBT.template
+banned _ = EC.liftEffect SBT.template

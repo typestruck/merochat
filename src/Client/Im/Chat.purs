@@ -3,16 +3,17 @@ module Client.Im.Chat where
 import Prelude
 import Shared.Im.Types
 
+import Client.AppId (imAppId)
 import Client.Dom as CCD
-import Client.File as CCF
-import Client.Network (request)
-import Client.Network as CCNT
 import Client.Experiments.Update (messageDoppelganger)
+import Client.File as CCF
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.Suggestion as SIS
 import Client.Im.WebSocket as CIW
+import Client.Network (request)
+import Client.Network as CCNT
 import Data.Array ((!!), (:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
@@ -43,6 +44,7 @@ import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame as F
 import Node.URL as NU
+import Safe.Coerce as SC
 import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
@@ -52,7 +54,6 @@ import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal.Types (ChatModal(..), Modal(..), SpecialModal(..))
 import Shared.Options.Doppelganger (message)
-import Client.AppId (imAppId)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
@@ -289,7 +290,7 @@ makeTurn user contact =
       characters = DI.toNumber <<< DA.foldl countCharacters 0 <<< DAN.toArray
       countCharacters total entry = total + DSC.length entry.content
 
-      getDate = DN.unwrap <<< _.date
+      getDate = SC.coerce <<< _.date
       accountAge { joined: DateTimeWrapper dt } = DI.toNumber $ ST.daysDiff dt
 
 -- | Find the cursor on the chatting textarea and set text at is position

@@ -35,15 +35,14 @@ import Droplet.Language as DL
 import Effect (Effect)
 import Effect.Now as EN
 import Effect.Unsafe as EU
-import Flame.Html.Attribute (d)
 import Foreign (Foreign, ForeignError(..), F)
 import Foreign as F
 import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
+import Safe.Coerce as SC
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 foreign import time ∷ Number → String
 foreign import dayOfTheWeek ∷ Number → String
@@ -74,13 +73,13 @@ latestEligibleBirthday = do
       pure <<< SU.fromJust $ DD.adjust (Days $ negate (365.0 * 18.0)) now
 
 getYear ∷ ∀ t10. Newtype t10 Date ⇒ t10 → Int
-getYear = DE.fromEnum <<< DD.year <<< DN.unwrap
+getYear = DE.fromEnum <<< DD.year <<< SC.coerce
 
 getMonth ∷ ∀ t22. Newtype t22 Date ⇒ t22 → Int
-getMonth = DE.fromEnum <<< DD.month <<< DN.unwrap
+getMonth = DE.fromEnum <<< DD.month <<< SC.coerce
 
 getDay ∷ ∀ t56. Newtype t56 Date ⇒ t56 → Int
-getDay = DE.fromEnum <<< DD.day <<< DN.unwrap
+getDay = DE.fromEnum <<< DD.day <<< SC.coerce
 
 epoch ∷ DateTime
 epoch = DateTime (DD.canonicalDate (SU.toEnum 3000) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
@@ -96,13 +95,13 @@ readDate foreignDateTime = do
             Just instant → pure $ DDI.toDateTime instant
 
 dateToNumber ∷ DateWrapper → Number
-dateToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDate <<< DN.unwrap
+dateToNumber = SC.coerce <<< DDI.unInstant <<< DDI.fromDate <<< SC.coerce
 
 dateTimeToNumber ∷ DateTimeWrapper → Number
-dateTimeToNumber = DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime <<< DN.unwrap
+dateTimeToNumber = SC.coerce <<< DDI.unInstant <<< DDI.fromDateTime <<< SC.coerce
 
 formatIsoDate ∷ DateWrapper → String
-formatIsoDate dateWrapper = formatIsoDate' $ DN.unwrap dateWrapper
+formatIsoDate dateWrapper = formatIsoDate' $ SC.coerce dateWrapper
 
 formatIsoDate' ∷ Date → String
 formatIsoDate' date = DA.intercalate "-" $ map (pad <<< show) [ DE.fromEnum $ DD.year date, DE.fromEnum $ DD.month date, DE.fromEnum $ DD.day date ]
@@ -162,7 +161,7 @@ daysDiff dt = daysInYear now - daysInYear dateTime
       where
       unsafeNow = EU.unsafePerformEffect EN.nowDateTime
       localTime = SU.fromJust <<< DT.adjust offset
-      daysInYear dtp = DI.floor $ DN.unwrap (DT.diff dtp firstDay ∷ Days)
+      daysInYear dtp = DI.floor $ SC.coerce (DT.diff dtp firstDay ∷ Days)
       firstDay = DateTime (DD.canonicalDate (DD.year $ DT.date now) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
       offset = DTD.negateDuration $ EU.unsafePerformEffect EN.getTimezoneOffset
       now = localTime unsafeNow
@@ -174,7 +173,7 @@ unsafeAdjustFromNow duration = SU.fromJust $ DT.adjust duration unsafeNow
       unsafeNow = EU.unsafePerformEffect EN.nowDateTime
 
 localDateTimeWith ∷ (Number → String) → DateTime → String
-localDateTimeWith formatter = formatter <<< DN.unwrap <<< DDI.unInstant <<< DDI.fromDateTime
+localDateTimeWith formatter = formatter <<< SC.coerce <<< DDI.unInstant <<< DDI.fromDateTime
 
 instance DecodeJson DateWrapper where
       decodeJson = DM.maybe (Left $ DAD.TypeMismatch "couldn't parse epoch") (Right <<< DateWrapper <<< DT.date <<< DDI.toDateTime) <<< DAP.caseJsonNumber (Nothing) (DDI.instant <<< DTD.Milliseconds)
@@ -192,11 +191,7 @@ derive instance Ord DateTimeWrapper
 
 derive instance Eq DateWrapper
 
-derive instance Newtype DateTimeWrapper _
-
 derive instance Generic DateWrapper _
-
-derive instance Newtype DateWrapper _
 
 derive instance Generic DateTimeWrapper _
 
@@ -207,12 +202,6 @@ instance ToValue DateTimeWrapper where
       toValue (DateTimeWrapper v) = DL.toValue v
 
 derive instance Eq DateTimeWrapper
-
-instance WriteForeign DateWrapper where
-      writeImpl = F.unsafeToForeign <<< dateToNumber
-
-instance WriteForeign DateTimeWrapper where
-      writeImpl = F.unsafeToForeign <<< dateTimeToNumber
 
 instance Show DateWrapper where
       show = DGRS.genericShow
@@ -226,26 +215,9 @@ instance FromValue DateWrapper where
 instance ToValue DateWrapper where
       toValue = F.unsafeToForeign <<< formatIsoDate
 
-instance EncodeQueryParam DateTimeWrapper where
-      encodeQueryParam = Just <<< show <<< dateTimeToNumber
+-- instance ReadForeign DateWrapper where
+--       readImpl foreignDate = DateWrapper <<< DT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
 
-instance ReadForeign DateWrapper where
-      readImpl foreignDate = DateWrapper <<< DT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
+-- instance ReadForeign DateTimeWrapper where
+--       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
 
-instance ReadForeign DateTimeWrapper where
-      readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
-
-instance DecodeQueryParam DateTimeWrapper where
-      decodeQueryParam query key =
-            case FO.lookup key query of
-                  Nothing → Left $ QueryParamNotFound { key, queryObj: query }
-                  Just [ value ] → DM.maybe (errorDecoding query key) (Right <<< DateTimeWrapper <<< DDI.toDateTime) (DDI.instant <<< DTD.Milliseconds =<< DNM.fromString value)
-                  _ → errorDecoding query key
-
-errorDecoding ∷ ∀ a. Object (Array String) → String → Either DecodeError a
-errorDecoding queryObj key = Left $ QueryDecodeError
-      { values: []
-      , message: "Could not decode parameter " <> key
-      , key
-      , queryObj
-      }

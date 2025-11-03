@@ -9,6 +9,7 @@ import Shared.Privilege
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
+import Data.DateTime (DateTime(..))
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -78,8 +79,8 @@ listSingleContact loggedUserId userId = presentContacts <$> SIDP.presentSingleCo
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
 resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SIDP.presentSingleContact loggedUserId userId skip
 
-listMissedContacts ∷ Int → DateTimeWrapper → Maybe Int → ServerEffect (Array Contact)
-listMissedContacts loggedUserId (DateTimeWrapper dt) lastSentId = presentContacts <$> SIDP.presentMissedContacts loggedUserId dt lastSentId
+listMissedContacts ∷ Int → DateTime → Maybe Int → ServerEffect (Array Contact)
+listMissedContacts loggedUserId dt lastSentId = presentContacts <$> SIDP.presentMissedContacts loggedUserId dt lastSentId
 
 presentContacts ∷ Array FlatContactHistoryMessage → Array Contact
 presentContacts = map chatHistory <<< DA.groupBy sameContact

@@ -11,9 +11,10 @@ import Server.Profile.Action as SPA
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Server.Profile.Template as SPT
+import Shared.Html (Html)
 import Shared.Post (Post)
 
-profile ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect String
+profile ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
 profile { guards: { loggedUserId } } = do
       profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserId
       countries ← SPD.presentCountries

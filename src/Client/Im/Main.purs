@@ -30,6 +30,7 @@ import Client.Network as CCNT
 import Client.Network as CNN
 import Data.Array ((:))
 import Data.Array as DA
+import Data.DateTime (DateTime(..))
 import Data.DateTime as DDT
 import Data.Either (Either(..))
 import Data.Int as DI
@@ -503,10 +504,10 @@ fetchMissedContacts model = model /\ [ fetchIt ]
             let last = (map _.history <<< DA.last <<< DA.sortWith _.lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts) >>= (map _.id <<< DA.last)
             CCNT.retryableResponse FetchMissedContacts DisplayMissedContacts $ request.im.missedContacts { query: { since, last } }
 
-sinceLastMessage ∷ ImModel → Effect DateTimeWrapper
+sinceLastMessage ∷ ImModel → Effect DateTime
 sinceLastMessage model = case _.lastMessageDate <$> DA.last model.contacts of
-      Nothing → map (DateTimeWrapper <<< SU.fromJust <<< DDT.adjust (Minutes (-1.5))) EN.nowDateTime
-      Just dt → pure dt
+      Nothing → map (SU.fromJust <<< DDT.adjust (Minutes (-1.5))) EN.nowDateTime
+      Just dt → pure $ SC.coerce dt
 
 setName ∷ String → ImModel → NoMessages
 setName name model =

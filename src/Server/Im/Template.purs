@@ -18,16 +18,17 @@ import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element as SE
+import Shared.Html (Html(..))
 import Shared.Im.Unread as SIU
 import Shared.Im.View as SIV
 import Shared.Modal.Types (Modal(..))
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 
-template ∷ Payload → Effect String
+template ∷ Payload → Effect Html
 template payload = do
       lt ← EN.nowDateTime
-      F.preMount (SE.toQuerySelector SE.Im)
+      Html <$> F.preMount (SE.toQuerySelector SE.Im)
             { view: \m → ST.templateWith defaultParameters
                     { title = SIU.title unreadChats
                     , favicon = SIU.favicon unreadChats
