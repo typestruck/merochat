@@ -5,7 +5,7 @@ import Server.Effect
 import Shared.Im.Types
 
 import Data.Maybe (Maybe)
-import Data.Newtype as DN
+
 import Data.Tuple (Tuple(..))
 import Payload.ContentType (html)
 import Payload.Headers as PH

@@ -21,7 +21,7 @@ import Data.List as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Newtype as DN
+
 import Data.Number as DNM
 import Data.Show.Generic as DGRS
 import Data.String (Pattern(..))

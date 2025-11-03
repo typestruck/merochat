@@ -6,7 +6,7 @@ import Shared.Im.Types
 
 import Data.DateTime (DateTime(..))
 import Data.Maybe (Maybe)
-import Data.Newtype as DN
+
 import Data.Tuple (Tuple(..))
 import Effect.Class as EC
 import Payload.ContentType (html)
@@ -15,7 +15,6 @@ import Payload.ResponseTypes (Empty(..), Response)
 import Payload.Server.Response as PSR
 import Server.Im.Action as SIA
 import Server.Im.Template as SIT
-import Server.Response as SR
 import Shared.Account (EmailPassword)
 import Shared.Changelog (Changelog)
 import Shared.Html (Html)

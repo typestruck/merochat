@@ -11,14 +11,14 @@ import Data.Enum as DEN
 import Data.Foldable as DF
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
+import Browser.Cookies.Data (Cookie(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Newtype (class Newtype)
-import Data.Newtype as DN
 import Data.Set (Set)
 import Data.Set as DS
-import Data.Time.Duration (Minutes)
+import Data.Time.Duration (Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Data.Tuple.Nested ((/\))
@@ -42,6 +42,7 @@ import Node.HTTP as NH
 import Run as R
 import Run.Except as RE
 import Run.Reader as RR
+import Safe.Coerce as SC
 import Server.Cookies (cookieName)
 import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.LastSeen (LastSeen)
@@ -120,7 +121,7 @@ handleConnection pool allUsersAvailabilityRef connection request = EA.launchAff_
       where
       token = DM.fromMaybe "" do
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
-            map (_.value <<< DN.unwrap) <<< DA.find ((cookieName == _) <<< _.key <<< DN.unwrap) $ BCI.bakeCookies uncooked
+            map (\(Cookie { value }) → value) <<< DA.find (\(Cookie { key }) → cookieName == key) $ BCI.bakeCookies uncooked
 
       initialAvailability hasPwa = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, hasPwa, availability: None }
       upsertUserAvailability date hasPwa =
@@ -480,7 +481,7 @@ removeInactiveConnections allUsersAvailabilityRef = do
 
       --if the connection has not pinged in 2 minutes it is likely dead
       inactiveMinutesHere = 2
-      isInactive now lastPing = inactiveMinutesHere <= DI.floor (DN.unwrap (DDT.diff now lastPing ∷ Minutes))
+      isInactive now lastPing = inactiveMinutesHere <= DI.floor (SC.coerce (DDT.diff now lastPing ∷ Minutes))
       updateConnections now connections userAvailability =
             let
                   liveConnections = DH.difference userAvailability.connections connections

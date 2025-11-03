@@ -11,7 +11,7 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype as DN
+
 import Effect (Effect)
 import Effect.Uncurried (EffectFn5)
 import Effect.Uncurried as EU

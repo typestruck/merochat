@@ -1,16 +1,18 @@
+-- we could use payload functions instead of this and remove the dependency on browser cookies data
+
 module Server.Cookies where
 
 import Prelude
 
-import Browser.Cookies.Data (Cookie(..), CookieOpts(..), SameSite(..), SetCookie(..))
+import Browser.Cookies.Data (Cookie(..), CookieOpts(..), SetCookie(..))
 import Browser.Cookies.Data as BC
 import Data.JSDate as DJ
 import Data.Maybe (Maybe(..))
-import Data.Newtype as DN
 import Data.Tuple (Tuple(..))
+import Environment (production)
+import Safe.Coerce as SC
 import Server.Effect (ServerEffect)
 import Shared.Options.Domain (domain)
-import Environment (production)
 
 cookieHeader ∷ String
 cookieHeader = "Set-Cookie"
@@ -22,13 +24,13 @@ makeExpiredCookieHeader ∷ Tuple String String
 makeExpiredCookieHeader = Tuple cookieHeader $ BC.encode expiredCookie
       where
       expiredCookie ∷ SetCookie
-      expiredCookie = DN.over SetCookie expire $ makeCookie ""
+      expiredCookie = SetCookie <<< expire $ SC.coerce makeCookie ""
       expire cookie = cookie
             { opts = map update' cookie.opts
             }
 
       update' ∷ CookieOpts → CookieOpts
-      update' = DN.over CookieOpts update
+      update' (CookieOpts opts) = CookieOpts $ update opts
       update cookie = cookie
             { maxAge = Nothing
             , expires = Just $ DJ.jsdate

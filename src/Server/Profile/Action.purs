@@ -6,7 +6,7 @@ import Shared.Options.Profile
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype as DN
+
 import Data.String as DS
 import Debug (spy)
 import Run as R

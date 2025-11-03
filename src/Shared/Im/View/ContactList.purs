@@ -10,7 +10,7 @@ import Data.Array as DA
 import Data.Enum as DE
 import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
-import Data.Newtype as DN
+
 import Data.String as DS
 import Debug (spy)
 import Flame (Html)

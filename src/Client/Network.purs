@@ -9,7 +9,6 @@ import Data.Array as DA
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype as DN
 import Data.String (Pattern(..))
 import Data.String as DS
 import Effect.Aff (Aff)
@@ -18,6 +17,10 @@ import Effect.Console as EC
 import Effect.Exception as EE
 import Payload.Client (ClientError, ClientResponse, defaultOpts)
 import Payload.Client as PC
+import Payload.Headers (Headers)
+import Payload.ResponseTypes (Response(..), HttpStatus)
+import Safe.Coerce (class Coercible)
+import Safe.Coerce as SC
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Spec (spec)
@@ -81,7 +84,7 @@ retryableResponse ∷ ∀ response. RetryableRequest → (response → ImMessage
 retryableResponse requestMessage message aff = do
       result ← aff
       case result of
-            Right r → pure <<< Just <<< message <<< _.body $ DN.unwrap r
+            Right r → pure <<< Just $ message (SC.coerce r ∷ { body ∷ response, status ∷ HttpStatus, headers ∷ Headers }).body
             Left err → do
                   logError err
                   pure <<< Just $ RequestFailed { request: requestMessage, errorMessage: Just $ SN.errorMessage err }
@@ -91,11 +94,14 @@ silentResponse ∷ ∀ a. Aff (ClientResponse a) → Aff a
 silentResponse aff = do
       result ← aff
       case result of
-            Right r → pure <<< _.body $ DN.unwrap r
+            Right r → pure (SC.coerce r ∷ { body ∷ a, status ∷ HttpStatus, headers ∷ Headers }).body
             Left err → CMEC.throwError <<< EE.error $ "Response error: " <> show err
 
 defaultResponse ∷ ∀ r. Aff (ClientResponse r) → Aff (Either ClientError r)
-defaultResponse aff = map (_.body <<< DN.unwrap) <$> aff
+defaultResponse aff = map (_.body <<< coerce) <$> aff
+      where
+      coerce :: Response r -> { body ∷ r, status ∷ HttpStatus, headers ∷ Headers }
+      coerce = SC.coerce
 
 logError ∷ ∀ e. Show e ⇒ e → Aff Unit
 logError err = liftEffect <<< EC.log $ "Response error: " <> show err

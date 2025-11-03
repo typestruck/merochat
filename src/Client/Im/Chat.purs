@@ -5,7 +5,6 @@ import Shared.Im.Types
 
 import Client.AppId (imAppId)
 import Client.Dom as CCD
-import Client.Experiments.Update (messageDoppelganger)
 import Client.File as CCF
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.Record as CIR
@@ -20,19 +19,16 @@ import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime)
 import Data.DateTime as DT
 import Data.Either (Either(..))
-import Data.Foldable as DF
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype as DN
-import Data.Nullable (null)
+
 import Data.Ord as DO
 import Data.String (Pattern(..))
 import Data.String as DS
 import Data.String.CodeUnits as DSC
-import Data.String.Regex.Unsafe as DSR
 import Data.Symbol as TDS
-import Data.Time.Duration (Milliseconds(..), Minutes)
+import Data.Time.Duration (Milliseconds(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
@@ -43,7 +39,6 @@ import Effect.Now as EN
 import Effect.Uncurried (EffectFn1)
 import Effect.Uncurried as EU
 import Flame as F
-import Node.URL as NU
 import Safe.Coerce as SC
 import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper(..))
@@ -254,9 +249,9 @@ makeTurn user contact =
                         previousRecipientCharacters = characters previousRecipientMessages
 
                         senderReplyDelay =
-                              DN.unwrap (DT.diff (getDate $ DAN.head senderMessages) (getDate $ DAN.last previousRecipientMessages) ∷ Minutes)
+                              SC.coerce (DT.diff (getDate $ DAN.head senderMessages) (getDate $ DAN.last previousRecipientMessages) ∷ Minutes)
                         recipientReplyDelay =
-                              DN.unwrap (DT.diff (getDate $ DAN.head recipientMessages) (getDate $ DAN.last senderMessages) ∷ Minutes)
+                              SC.coerce (DT.diff (getDate $ DAN.head recipientMessages) (getDate $ DAN.last senderMessages) ∷ Minutes)
                   in
                         Just
                               { senderStats:
