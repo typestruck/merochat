@@ -1,7 +1,7 @@
 module Client.Im.Chat where
 
 import Prelude
-import Shared.Im.Types
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), Touch, Turn, User, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
 
 import Client.AppId (imAppId)
 import Client.Dom as CCD
@@ -31,7 +31,6 @@ import Data.Symbol as TDS
 import Data.Time.Duration (Milliseconds(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
@@ -47,10 +46,9 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
-import Shared.Modal.Types (ChatModal(..), Modal(..), SpecialModal(..))
+import Shared.Modal.Types (ChatModal(..), Modal(..))
 import Shared.Options.Doppelganger (message)
 import Shared.Resource (maxImageSize)
-import Shared.Unsafe ((!@))
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)

@@ -17,6 +17,7 @@ import Effect.Class as ER
 import Effect.Now as EN
 import Server.Database as SD
 import Server.Database.Changelogs (_action, _changed, changelogs)
+import Server.Database.ModeratedProfileFields (_descriptioned, _headlined, _moderated, _named, moderated_profile_fields)
 import Server.Database.Types (Checked(..))
 import Shared.Changelog (ChangelogAction(..))
 import Shared.Unsafe as SU
@@ -37,6 +38,7 @@ createUser user = do
       threeDaysIn ← SU.fromJust <<< DD.adjust (Days 3.0) <$> ER.liftEffect EN.nowDateTime
       SD.withTransaction $ \connection → do
             userId ← _.id <<< SU.fromJust <$> (SD.singleWith connection (insert # into users (_name /\ _password /\ _email /\ _headline /\ _description /\ _temporary) # values (user.name /\ user.password /\ user.email /\ user.headline /\ user.description /\ Checked user.temporary) # returning _id))
+            SD.executeWith connection $ insert # into moderated_profile_fields (_named /\ _headlined /\ _descriptioned /\ _moderated) # values (user.name /\ user.headline /\ user.description /\ userId)
             SD.executeWith connection $ insert # into karma_histories (_amount /\ _target) # values (50 /\ userId)
             SD.unsafeExecuteWith connection ("insert into karma_leaderboard(ranker, current_karma, gained, position) values (@ranker, 50, 0, ((select count(1) from karma_leaderboard) + 1))") { ranker: userId }
             SD.executeWith connection $ insert # into suggestions (_suggested /\ _score) # values (userId /\ 0)

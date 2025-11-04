@@ -5,7 +5,6 @@ module Server.Email
 
 import Prelude
 
-import Data.Maybe (Maybe)
 import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
 import Effect.Uncurried (EffectFn2)
@@ -20,6 +19,7 @@ data Email
       = Feedback { feedbacker ∷ Int, comments ∷ String, file ∷ String }
       | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷ String }
       | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
+      | Approval { userId :: Int, field :: String, value :: String }
 
 foreign import sendEmail_ ∷ EffectFn2 String Foreign Unit
 
@@ -33,3 +33,4 @@ sendEmail email = when production <<< EC.liftEffect $ EU.runEffectFn2 sendEmail_
             Feedback f → "/feedback" /\ FO.unsafeToForeign f
             Report r → "/report" /\ FO.unsafeToForeign r
             Reset r → "/reset" /\ FO.unsafeToForeign r
+            Approval r → "/approval" /\ FO.unsafeToForeign r

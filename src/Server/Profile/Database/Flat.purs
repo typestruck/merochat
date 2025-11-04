@@ -9,7 +9,6 @@ import Data.Maybe as DM
 import Debug (spy)
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
-import Shared.Avatar as SA
 import Shared.Badge (Badge)
 import Shared.DateTime (DateWrapper(..))
 import Shared.Privilege (Privilege)
@@ -17,31 +16,31 @@ import Shared.Profile.Types (ProfileUser)
 import Shared.User (Gender)
 
 type FlatProfileUser =
-      { avatar ∷ Maybe String
+      { avatared ∷ Maybe String
       , birthday ∷ Maybe Date
       , country ∷ Maybe Int
-      , description ∷ String
+      , descriptioned ∷ String
       , gender ∷ Maybe Gender
       , onlineStatus ∷ Checked
-      , headline ∷ String
+      , headlined ∷ String
       , privileges ∷ Maybe (Array Privilege)
       , badges ∷ Maybe (Array Badge)
       , id ∷ Int
       , karma ∷ Int
       , karmaPosition ∷ Int
       , languages ∷ Maybe (Array Int)
-      , name ∷ String
+      , named ∷ String
       , tags ∷ Maybe (Array String)
       }
 
 fromFlatProfileUser ∷ FlatProfileUser → ProfileUser
 fromFlatProfileUser fu =
-      { avatar: fu.avatar
+      { avatar: fu.avatared
       , age: DateWrapper <$> fu.birthday
       , country: fu.country
-      , description: fu.description
+      , description: fu.descriptioned
       , gender: fu.gender
-      , headline: fu.headline
+      , headline: fu.headlined
       , availability: None
       , onlineStatus: SC.coerce fu.onlineStatus
       , id: fu.id
@@ -50,6 +49,6 @@ fromFlatProfileUser fu =
       , privileges: DM.fromMaybe [] fu.privileges
       , badges: DM.fromMaybe [] fu.badges
       , languages: DM.fromMaybe [] fu.languages
-      , name: fu.name
+      , name: fu.named
       , tags: DM.fromMaybe [] fu.tags
       }

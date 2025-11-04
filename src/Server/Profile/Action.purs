@@ -4,17 +4,24 @@ import Prelude
 import Shared.Options.Profile
 
 import Data.Array as DA
+import Data.Foldable as DF
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-
+import Data.Set as DST
+import Data.String (Pattern(..))
 import Data.String as DS
+import Data.Tuple as DT
+import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Run as R
 import Safe.Coerce as SC
 import Server.Database as SD
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
+import Server.Email (Email(..))
+import Server.Email as SE
 import Server.File as SF
+import Server.Profile.BadWords (badWords)
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Server.Profile.Types (Payload)
@@ -68,15 +75,38 @@ save loggedUserId fields = do
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map SC.coerce fields.age > eighteen) $ SR.throwBadRequest tooYoungMessage
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
-      --keep the old logic to save fields individually in case we need to do it again
-      SD.withTransaction $ \connection → do
+      badWordedFields <- SD.withTransaction $ \connection → do
             current ← SPD.presentGeneratedFields connection loggedUserId
             let name = DS.take nameMaxCharacters $ DS.trim fields.name.value
-            unless (name == current.name) $ SPD.saveRequiredField connection loggedUserId Name name fields.name.generated
+            nameHasBadWord <-
+                  if name == current.name then
+                        pure Nothing
+                  else if hasBadWords name then do
+                        SPD.saveForApproval connection loggedUserId Name name
+                        pure <<< Just $ Name /\ name
+                  else do
+                        SPD.saveRequiredField connection loggedUserId Name name fields.name.generated
+                        pure Nothing
             let headline = DS.take headlineMaxCharacters $ DS.trim fields.headline.value
-            unless (headline == current.headline) $ SPD.saveRequiredField connection loggedUserId Headline headline fields.headline.generated
+            headlineHasBadWord <-
+                  if headline == current.headline then
+                        pure Nothing
+                  else if hasBadWords headline then do
+                        SPD.saveForApproval connection loggedUserId Headline headline
+                        pure <<< Just $ Headline /\ headline
+                  else do
+                        SPD.saveRequiredField connection loggedUserId Headline headline fields.headline.generated
+                        pure Nothing
             let description = DS.take descriptionMaxCharacters $ DS.trim fields.description.value
-            unless (description == current.description) $ SPD.saveRequiredField connection loggedUserId Description description fields.description.generated
+            descriptionHasBadWord <-
+                  if description == current.description then
+                        pure Nothing
+                  else if hasBadWords description then do
+                        SPD.saveForApproval connection loggedUserId Description description
+                        pure <<< Just $ Description /\ description
+                  else  do
+                        SPD.saveRequiredField connection loggedUserId Description description fields.description.generated
+                        pure Nothing
             case avatar of
                   Save a → SPD.saveField connection loggedUserId Avatar a
                   _ → pure unit
@@ -89,7 +119,14 @@ save loggedUserId fields = do
                         | moreTags = maxFinalTags
                         | otherwise = maxStartingTags
             SPD.saveTags connection loggedUserId <<< DA.take numberTags $ map (DS.take tagMaxCharacters) fields.tags
+            pure [nameHasBadWord, headlineHasBadWord, descriptionHasBadWord]
+      --if a user inputs some bad word into their profile we save it on a different table that is shown only to that user and then needs to be approved
+      DF.traverse_ (\b -> SE.sendEmail (Approval {userId : loggedUserId, field: show $ DT.fst b, value : DT.snd b })) $ DA.catMaybes badWordedFields
       pure $ case avatar of
             Save a → { avatar: a }
             Ignore → { avatar: fields.avatar }
 
+hasBadWords ∷ String → Boolean
+hasBadWords phrase = DA.any (flip DST.member set) badWords
+      where
+      set = DST.fromFoldable $ DS.split (Pattern " ") $ DS.toLower phrase

@@ -74,6 +74,7 @@ suggest loggedUserId skip =
 suggestBaseQuery loggedUserId filter =
       select
             ( userFields
+                    /\ _name
                     /\ _bin
                     /\ completeness
                     /\ (isNotNull _sender # as _isContact)

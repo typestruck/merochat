@@ -41,7 +41,6 @@ You can edit this file as you like.
   , "node-fs-aff"
   , "node-http"
   , "node-streams"
-  , "node-url"
   , "now"
   , "nullable"
   , "numbers"

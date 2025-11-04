@@ -44,6 +44,19 @@ create table users
     constraint country_user foreign key (country) references countries(id)
 );
 
+create table moderated_profile_fields(
+    named text not null,
+    headlined text not null,
+    avatared text,
+    descriptioned text not null,
+    chat_backgrounded text,
+    moderated integer not null,
+
+    constraint mod_user foreign key  (moderated) references users(id)
+);
+
+create unique index moderated_profile_fields_user on moderated_profile_fields(moderated);
+
 create table messages
 (
     id integer generated always as identity primary key,
@@ -383,6 +396,26 @@ $$
 language plpgsql;
 
 create trigger recent_edit_boom after insert on complete_profiles for each row execute function temporarily_place_at_top();
+
+-- fields with bad words on it are saved on moderated_profile_fields to be approved (or not) later
+-- so if users is saved then there is no need to approve it anymore
+create or replace function overwrite_profile_fields() returns trigger as
+$$
+begin
+    update moderated_profile_fields p
+        set named = case when old.name = new.name then p.named else new.name end,
+        headlined = case when old.headline = new.headline then p.headlined else new.headline end,
+        avatared = case when old.avatar = new.avatar then p.avatared else new.avatar end,
+        descriptioned = case when old.description = new.description then p.descriptioned else new.description end,
+        chat_backgrounded = case when old.chat_background = new.chat_background then p.chat_backgrounded else new.chat_background end
+    where moderated = new.id;
+
+    return new;
+end;
+$$
+language plpgsql;
+
+create trigger overwrite_moderated_fields after update on users for each row execute function overwrite_profile_fields();
 
 create or replace function unread_for
 (dt timestamptz) returns int as

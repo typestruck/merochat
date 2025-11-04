@@ -24,6 +24,7 @@ import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
+import Server.Database.ModeratedProfileFields (_moderated, _named, moderated_profile_fields)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
 import Server.Effect (ServerEffect)
 import Shared.DateTime (DateTimeWrapper(..))
@@ -38,7 +39,6 @@ userFields =
             /\ _avatar
             /\ _gender
             /\ (date_part_age ("year" /\ _birthday) # as _age)
-            /\ _name
             /\ (_visibility # as profileVisibility)
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
@@ -226,10 +226,11 @@ completeness = (select (array_agg (_completed # orderBy _completed) # as _comple
       _completedFields = Proxy ∷ Proxy "completedFields"
 
 presentUser ∷ Int → ServerEffect (Maybe FlatUser)
-presentUser loggedUserId = SD.single $ select userPresentationFields # from usersSource # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
+presentUser loggedUserId = SD.single $ select userPresentationFields # from (join usersSource (moderated_profile_fields # as p) # on ((u ... _id) .=. (p ... _moderated))) # wher (u ... _id .=. loggedUserId .&&. _visibility .<>. TemporarilyBanned)
       where
       userPresentationFields =
             userFields
+                  /\ (_named # as _name)
                   /\ (1 # as _bin)
                   /\ (false # as _isContact)
                   /\ (select (count _id # as _totalPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _totalPosts # limit (Proxy ∷ _ 1))
