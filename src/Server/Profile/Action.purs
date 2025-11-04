@@ -121,7 +121,7 @@ save loggedUserId fields = do
             SPD.saveTags connection loggedUserId <<< DA.take numberTags $ map (DS.take tagMaxCharacters) fields.tags
             pure [nameHasBadWord, headlineHasBadWord, descriptionHasBadWord]
       --if a user inputs some bad word into their profile we save it on a different table that is shown only to that user and then needs to be approved
-      DF.traverse_ (\b -> SE.sendEmail (Approval {userId : loggedUserId, field: show $ DT.fst b, value : DT.snd b })) $ DA.catMaybes badWordedFields
+      DF.traverse_ (\b -> SE.sendEmail (Approve {userId : loggedUserId, field: show $ DT.fst b, value : DT.snd b })) $ DA.catMaybes badWordedFields
       pure $ case avatar of
             Save a → { avatar: a }
             Ignore → { avatar: fields.avatar }
