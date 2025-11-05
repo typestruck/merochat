@@ -52,7 +52,7 @@ create table moderated_profile_fields(
     chat_backgrounded text,
     moderated integer not null,
 
-    constraint mod_user foreign key  (moderated) references users(id)
+    constraint mod_user foreign key (moderated) references users(id) on delete cascade
 );
 
 create unique index moderated_profile_fields_user on moderated_profile_fields(moderated);

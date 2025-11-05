@@ -1,4 +1,8 @@
 import imageType from 'image-type';
+import { NsfwSpy } from '@nsfwspy/node';
+
+const nsfw = new NsfwSpy("file://./file/nsfw/model.json");
+await nsfw.load();
 
 //webm and mp4 for audio files
 function webm(buffer) {
@@ -25,5 +29,13 @@ export function realFileExtension_(buffer) {
     return async function () {
         let r = await imageType(buffer);
         return r.ext || webm(buffer) || mp4(buffer) || '';
+    }
+}
+
+export function isNsfw_(filePath) {
+    return async function () {
+        let prediction = await nsfw.classifyImageFile(filePath);
+
+        return prediction.isNsfw;
     }
 }

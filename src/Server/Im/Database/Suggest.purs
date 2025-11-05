@@ -75,6 +75,7 @@ suggestBaseQuery loggedUserId filter =
       select
             ( userFields
                     /\ _name
+                    /\ _avatar
                     /\ _bin
                     /\ completeness
                     /\ (isNotNull _sender # as _isContact)

@@ -34,6 +34,7 @@ import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (SavedFields)
 import Shared.Profile.Types as SPT
 import Shared.ProfileColumn (ProfileColumn(..))
+import Shared.Resource (localBasePath, uploadFolder)
 
 tooYoungMessage ∷ String
 tooYoungMessage = "You must be over 18 years old in order to use MeroChat"
@@ -107,9 +108,19 @@ save loggedUserId fields = do
                   else  do
                         SPD.saveRequiredField connection loggedUserId Description description fields.description.generated
                         pure Nothing
-            case avatar of
-                  Save a → SPD.saveField connection loggedUserId Avatar a
-                  _ → pure unit
+            avatarIsNaughty <- case avatar of
+                  Save (Just fileName) → do
+                        isNaughty <- R.liftAff <<< SF.isNsfw $ localBasePath <> uploadFolder <> fileName
+                        if isNaughty then do
+                              SPD.saveForApproval connection loggedUserId Avatar fileName
+                              pure <<< Just $ Avatar /\ fileName
+                        else do
+                              SPD.saveField connection loggedUserId Avatar $ Just fileName
+                              pure Nothing
+                  Save Nothing → do
+                        SPD.saveField connection loggedUserId Avatar (Nothing :: Maybe String)
+                        pure Nothing
+                  _ → pure Nothing
             SPD.saveField connection loggedUserId Birthday fields.age
             SPD.saveField connection loggedUserId Gender fields.gender
             SPD.saveField connection loggedUserId Country fields.country
@@ -119,7 +130,7 @@ save loggedUserId fields = do
                         | moreTags = maxFinalTags
                         | otherwise = maxStartingTags
             SPD.saveTags connection loggedUserId <<< DA.take numberTags $ map (DS.take tagMaxCharacters) fields.tags
-            pure [nameHasBadWord, headlineHasBadWord, descriptionHasBadWord]
+            pure [nameHasBadWord, headlineHasBadWord, descriptionHasBadWord, avatarIsNaughty]
       --if a user inputs some bad word into their profile we save it on a different table that is shown only to that user and then needs to be approved
       DF.traverse_ (\b -> SE.sendEmail (Approve {user_id : loggedUserId, field: show $ DT.fst b, value : DT.snd b })) $ DA.catMaybes badWordedFields
       pure $ case avatar of
