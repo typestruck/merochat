@@ -7,12 +7,20 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String as DS
 import Droplet.Driver (Pool)
+import Effect.Class as EC
+import Run as R
 import Run.Except as RE
 import Server.AccountValidation as SA
+import Server.Database as SD
+import Server.Email (Email(..))
+import Server.Email as SE
 import Server.File as SF
+import Server.Profile.Database as SPD
 import Server.Sanitize as SS
 import Server.Settings.Database as SSD
 import Shared.File as SSF
+import Shared.ProfileColumn (ProfileColumn(..))
+import Shared.Resource (localBasePath, uploadFolder)
 import Shared.ResponseError (ResponseError(..))
 import Shared.Settings.Types (PrivacySettings)
 
@@ -41,7 +49,12 @@ saveChatBackground loggedUserId ownBackground image = do
                   when (DS.null sanitized) <<< RE.throw $ BadRequest { reason: "invalid image" }
                   fileName ← SF.saveBase64File sanitized
                   pure $ Just fileName
-            other -> pure other
-      SSD.saveChatBackground loggedUserId ownBackground fileName
+            other → pure other
+      isNaughty ← DM.maybe (pure false) (\fn → R.liftAff (SF.isNsfw $ localBasePath <> uploadFolder <> fn)) fileName
+      if isNaughty then do
+            SD.withTransaction $ \connection → SPD.saveForApproval connection loggedUserId Avatar fileName
+            SE.sendEmail $ Approve { user_id: loggedUserId, field: show Avatar, value: DM.fromMaybe "" fileName }
+      else
+            SSD.saveChatBackground loggedUserId ownBackground fileName
       --payload bug for maybe instances
       pure $ DM.fromMaybe "" fileName

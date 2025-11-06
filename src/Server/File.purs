@@ -1,4 +1,4 @@
-module Server.File where
+module Server.File (saveBase64File, isNsfw) where
 
 import Prelude
 
@@ -7,14 +7,11 @@ import Control.Promise as CP
 import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Set (member) as DST
-import Data.String (Pattern(..))
-import Data.String as DS
 import Data.String.Regex as DSR
 import Data.String.Regex.Flags (noFlags)
 import Data.String.Regex.Unsafe as DSRU
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 import Data.UUID as DU
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Node.Buffer (Buffer)
