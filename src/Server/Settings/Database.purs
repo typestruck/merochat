@@ -1,7 +1,7 @@
 module Server.Settings.Database where
 
 import Droplet.Language
-import Prelude
+import Prelude hiding (join)
 import Server.Database.Fields
 import Server.Database.Users
 
@@ -11,6 +11,7 @@ import Droplet.Driver (Pool)
 import Effect.Class (liftEffect)
 import Effect.Now as EN
 import Server.Database as SD
+import Server.Database.ModeratedProfileFields (_chatBackgrounded, _moderated, moderated_profile_fields)
 import Server.Database.Types (Checked(..))
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Settings.Database.Flat as SSDF
@@ -32,13 +33,13 @@ userSettings loggedUserId = SSDF.toUserSettings <<< SU.fromJust <$>
               select
                     ( (_visibility # as profileVisibility)
                             /\ (_ownBackground # as ownBackground)
-                            /\ (_chatBackground # as chatBackground)
+                            /\ (_chatBackgrounded # as chatBackground)
                             /\ (_readReceipts # as readReceipts)
                             /\ (_typingStatus # as typingStatus)
                             /\ (_onlineStatus # as onlineStatus)
                             /\ (_postsVisibility # as postsVisibility)
                             /\ (_messageTimestamps # as messageTimestamps)
-                    ) # from users # wher (_id .=. loggedUserId)
+                    ) # from (join (users # as u) (moderated_profile_fields # as p) # on ( u ... _id .=. p ... _moderated)) # wher (_id .=. loggedUserId)
       )
 
 changePrivacySettings ∷ ∀ r. Int → PrivacySettings → BaseEffect { pool ∷ Pool | r } Unit

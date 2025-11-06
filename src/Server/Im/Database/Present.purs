@@ -24,7 +24,7 @@ import Data.Tuple.Nested ((/\))
 import Server.Database as SD
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
-import Server.Database.ModeratedProfileFields (_avatared, _moderated, _named, moderated_profile_fields)
+import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _moderated, _named, moderated_profile_fields)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
 import Server.Effect (ServerEffect)
 import Shared.DateTime (DateTimeWrapper(..))
@@ -42,7 +42,6 @@ userFields =
             /\ (_readReceipts # as readReceipts)
             /\ (_typingStatus # as typingStatus)
             /\ (_ownBackground # as ownBackground)
-            /\ (_chatBackground # as chatBackground)
             /\ _temporary
             /\ (_postsVisibility # as postsVisibility)
             /\ _backer
@@ -231,6 +230,7 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from (joi
             userFields
                   /\ (_named # as _name)
                   /\ (_avatared # as _avatar)
+                  /\ (_chatBackgrounded # as chatBackground)
                   /\ (1 # as _bin)
                   /\ (false # as _isContact)
                   /\ (select (count _id # as _totalPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _totalPosts # limit (Proxy ∷ _ 1))

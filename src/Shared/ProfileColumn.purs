@@ -23,6 +23,7 @@ data ProfileColumn
       | Description
       | Avatar
       | Birthday
+      | ChatBackground
       | Gender
       | Country
       | Languages
@@ -39,6 +40,7 @@ displayColumn = case _ of
       Country → "Country"
       Languages → "Language"
       Tags → "Tags"
+      ChatBackground -> "Chat background"
 
 instance Show ProfileColumn where
       show = DSG.genericShow
@@ -66,6 +68,7 @@ instance BoundedEnum ProfileColumn where
             Country → 6
             Languages → 7
             Tags → 8
+            ChatBackground -> 9
 
       toEnum = case _ of
             0 → Just Name
@@ -89,7 +92,8 @@ instance Enum ProfileColumn where
             Gender → Just Country
             Country → Just Languages
             Languages → Just Tags
-            Tags → Nothing
+            Tags → Just ChatBackground
+            ChatBackground ->  Nothing
 
       pred = case _ of
             Name → Nothing
@@ -101,6 +105,7 @@ instance Enum ProfileColumn where
             Country → Just Gender
             Languages → Just Country
             Tags → Just Languages
+            ChatBackground -> Just Tags
 
 instance FromValue ProfileColumn where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)

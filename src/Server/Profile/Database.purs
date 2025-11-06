@@ -87,6 +87,7 @@ fieldForApproval = case _ of
       CP.Description → "descriptioned"
       CP.Avatar → "avatared"
       CP.Headline → "headlined"
+      CP.ChatBackground -> "chat_backgrounded"
       _ → ""
 
 saveForApproval connection loggedUserId field value = SD.unsafeExecuteWith connection ("UPDATE moderated_profile_fields SET " <> fieldForApproval field <> " = @value WHERE moderated = @loggedUserId") { value, loggedUserId }

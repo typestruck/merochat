@@ -52,8 +52,8 @@ saveChatBackground loggedUserId ownBackground image = do
             other → pure other
       isNaughty ← DM.maybe (pure false) (\fn → R.liftAff (SF.isNsfw $ localBasePath <> uploadFolder <> fn)) fileName
       if isNaughty then do
-            SD.withTransaction $ \connection → SPD.saveForApproval connection loggedUserId Avatar fileName
-            SE.sendEmail $ Approve { user_id: loggedUserId, field: show Avatar, value: DM.fromMaybe "" fileName }
+            SD.withTransaction $ \connection → SPD.saveForApproval connection loggedUserId ChatBackground fileName
+            SE.sendEmail $ Approve { user_id: loggedUserId, field: show ChatBackground, value: DM.fromMaybe "" fileName }
       else
             SSD.saveChatBackground loggedUserId ownBackground fileName
       --payload bug for maybe instances
