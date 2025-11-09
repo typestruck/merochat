@@ -19,7 +19,9 @@ import Data.Set as DST
 import Data.String as DS
 import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
+import Effect.Aff (Milliseconds(..), delay)
 import Environment (production)
+import Run (liftAff)
 import Run.Except as RE
 import Safe.Coerce as SC
 import Server.AccountValidation as SA
@@ -162,13 +164,13 @@ processKarma loggedUserId userId turn = SIDE.insertKarma loggedUserId userId $ S
 blockUser ∷ Int → Int → ServerEffect Unit
 blockUser loggedUserId userId = SIDE.insertBlock loggedUserId userId
 
-react ∷ Int → Int → String -> ServerEffect Unit
+react ∷ Int → Int → String → ServerEffect Unit
 react loggedUserId messageId reaction = do
       let sanitized = SS.sanitize $ DS.trim reaction
       if DS.length sanitized <= maxReactionCharacters then
             SIDE.updateReaction loggedUserId messageId sanitized
       else
-            RE.throw $ BadRequest { reason : "invalid reaction"}
+            RE.throw $ BadRequest { reason: "invalid reaction" }
 
 deleteChat ∷ Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit
 deleteChat loggedUserId ids@{ userId } = do

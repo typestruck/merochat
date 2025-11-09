@@ -275,7 +275,9 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
             , HE.div [ HA.class' "see-profile-chat suggestion-input" ]
                     $
-                          if suggestion.isContact then
+                          if model.loadingContact == Just suggestion.id then
+                                [ HE.div' [ HA.class' "loading" ] ]
+                          else if suggestion.isContact then
                                 [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ] ]
                           else if suggestion.id == backerId then
                                 [ HE.input [ HA.class' "see-profile-button see-chat", HA.type' "button", HA.value "See donation options", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ] ]
@@ -384,16 +386,19 @@ suggestionCards model =
                                       ]
                           _ → HE.div [ HA.class' "see-profile-chat" ]
                                 [ HE.input [ HA.class' "see-profile-button see-profile", HA.type' "button", HA.value "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard suggestion.id ]
-                                , HE.input
-                                        ( [ HA.class' "see-profile-button see-chat", HA.type' "button" ] <>
-                                                ( if suggestion.isContact then
-                                                        [ HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ]
-                                                  else if suggestion.id == backerId then
-                                                        [ HA.value "Donate", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
-                                                  else
-                                                        [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
-                                                )
-                                        )
+                                , if model.loadingContact == Just suggestion.id then
+                                        HE.div' [ HA.class' "loading" ]
+                                  else
+                                        HE.input
+                                              ( [ HA.class' "see-profile-button see-chat", HA.type' "button" ] <>
+                                                      ( if suggestion.isContact then
+                                                              [ HA.value "Open chat", HA.onClick $ ResumeSuggestionChat suggestion.id ]
+                                                        else if suggestion.id == backerId then
+                                                              [ HA.value "Donate", HA.onClick <<< SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
+                                                        else
+                                                              [ HA.value "Chat", HA.onClick $ ToggleSuggestionChatInput suggestion.id ]
+                                                      )
+                                              )
                                 ]
                   ]
       showProfile id = [ HA.title "See full profile", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Special $ ShowSuggestionCard id ]

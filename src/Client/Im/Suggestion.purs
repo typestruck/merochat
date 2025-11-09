@@ -177,13 +177,9 @@ toggleSuggestionsFromOnline model = fetchMoreSuggestions model
 
 resumeSuggestionChat ∷ Int → ImModel → NextMessage
 resumeSuggestionChat userId model =
-      model
-            { suggestions = DA.filter ((_ /= userId) <<< _.id) model.suggestions
-            , suggesting = moveSuggestion model 1
-            }
-            /\ [ resume ]
+      model { loadingContact = Just userId } /\ [ resume ]
       where
       existing = SIC.findContact userId model.contacts
       resume = case existing of
-            Nothing → CCNT.retryableResponse (FetchContacts true) DisplaySuggestionContact $ request.im.contact { query: { id: userId } }
+            Nothing → CCNT.retryableResponse (FetchContacts true) (DisplaySuggestionContact userId) $ request.im.contact { query: { id: userId } }
             _ → pure <<< Just $ ResumeChat userId

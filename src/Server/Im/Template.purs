@@ -48,6 +48,7 @@ template payload = do
             { chatting: Nothing
             , freeToFetchSuggestions: true
             , temporaryId: 0
+            , loadingContact : Nothing
             , typingIds: []
             , suggesting:
                     if DA.null payload.suggestions then Nothing

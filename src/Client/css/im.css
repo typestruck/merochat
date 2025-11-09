@@ -2184,6 +2184,14 @@ input:not(type=button):focus {
     border: 0;
 }
 
+.see-profile-chat .loading {
+    margin: 0;
+}
+
+.see-profile-chat.suggestion-input .loading {
+    align-self: flex-end;
+}
+
 .badge {
     font-weight: normal;
     border: 1px solid var(--light-color);

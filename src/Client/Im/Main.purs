@@ -162,7 +162,7 @@ update st model =
             SpecialRequest (DeleteChat tupleId) → CICN.deleteChat tupleId model
             DisplayContacts contacts → CICN.displayContacts contacts model
             DisplayNewContacts contacts → CICN.displayNewContacts contacts model
-            DisplaySuggestionContact contacts → CICN.displaySuggestionContact contacts model
+            DisplaySuggestionContact userId contacts → CICN.displaySuggestionContact userId contacts model
             DisplayMissedContacts missed → CICN.displayMissedContacts missed model
 
             --history

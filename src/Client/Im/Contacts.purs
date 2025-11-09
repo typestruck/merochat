@@ -4,8 +4,6 @@ import Prelude
 import Shared.Im.Types
 
 import Client.Dom as CCD
-import Client.Network (request)
-import Client.Network as CCN
 import Client.Im.Flame (NoMessages, MoreMessages)
 import Client.Im.History as CIH
 import Client.Im.Notification as CIU
@@ -13,7 +11,10 @@ import Client.Im.Notification as CIUN
 import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
 import Client.Im.Scroll as CIS
+import Client.Im.Suggestion as CISN
 import Client.Im.WebSocket as CIW
+import Client.Network (request)
+import Client.Network as CCN
 import Control.Alt ((<|>))
 import Data.Array ((:))
 import Data.Array as DA
@@ -49,6 +50,7 @@ resumeChat userId model =
                         , initialScreen = false
                         , selectedImage = Nothing
                         , editing = Nothing
+                        , loadingContact = Nothing
                         , showLargeAvatar = false
                         , showChangelogs = model.showChangelogs && not model.smallScreen
                         , failedRequests = []
@@ -174,10 +176,16 @@ displayContacts ∷ Array Contact → ImModel → MoreMessages
 displayContacts newContacts model = updateDisplayContacts newContacts [] model
 
 --contact from open chat button in suggestions
-displaySuggestionContact ∷ Array Contact → ImModel → MoreMessages
-displaySuggestionContact contacts model = model { contacts = model.contacts <> contacts } /\ [ resume ]
+displaySuggestionContact ∷ Int → Array Contact → ImModel → MoreMessages
+displaySuggestionContact userId contacts model =
+      model
+            { contacts = model.contacts <> contacts
+            , loadingContact = Nothing
+            , suggestions = DA.filter ((_ /= userId) <<< _.id) model.suggestions
+            , suggesting = CISN.moveSuggestion model 1
+            } /\ [ resume ]
       where
-      resume = pure (ResumeChat <<< _.id <<< _.user <$> DA.head contacts)
+      resume = pure <<< Just $ ResumeChat userId
 
 --new chats
 displayNewContacts ∷ Array Contact → ImModel → MoreMessages
@@ -188,6 +196,7 @@ updateDisplayContacts newContacts userIds model = notifyTrack updatedModel userI
       where
       updatedModel = model
             { contacts = model.contacts <> onlyNew
+            , loadingContact = Nothing
             , freeToFetchContactList = true
             }
 

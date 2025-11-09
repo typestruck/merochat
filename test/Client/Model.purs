@@ -32,6 +32,7 @@ model =
       , typingIds: []
       , showBuildProfile: true
       , showChangelogs: false
+      , loadingContact : Nothing
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false

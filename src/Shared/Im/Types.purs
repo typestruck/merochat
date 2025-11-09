@@ -157,6 +157,7 @@ type Im =
       , modalsLoaded ∷ Array ScreenModal
       , imUpdated ∷ Boolean
       , react ∷ ReactWith
+      , loadingContact :: Maybe Int
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
       , showChangelogs ∷ Boolean
@@ -262,7 +263,7 @@ data ImMessage
       | SetDeliveredStatus
       | UpdateDraft Int String
       | DisplayContacts (Array Contact)
-      | DisplaySuggestionContact (Array Contact)
+      | DisplaySuggestionContact Int (Array Contact)
       | DisplayNewContacts (Array Contact)
       | DisplayMissedContacts (Array Contact)
 
