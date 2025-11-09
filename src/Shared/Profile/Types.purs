@@ -11,7 +11,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Foreign as F
 import Shared.DateTime (DateWrapper)
-import Shared.Modal.Types (ScreenModal)
+import Shared.Modal (ScreenModal)
 import Shared.Network (RequestStatus)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege)

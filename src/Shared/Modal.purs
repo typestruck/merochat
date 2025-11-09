@@ -1,4 +1,4 @@
-module Shared.Modal.Types where
+module Shared.Modal where
 
 import Prelude
 
@@ -7,8 +7,15 @@ import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Generic.Rep (class Generic)
 
-data Modal = HideModal | Screen ScreenModal | Confirmation ConfirmationModal | Chat ChatModal | Special SpecialModal
+--| A modal is anything that pops up only after user interaction
+data Modal
+      = HideModal
+      | Screen ScreenModal
+      | Confirmation ConfirmationModal
+      | Chat ChatModal
+      | Special SpecialModal
 
+-- | Modals that have their own mount points
 data ScreenModal
       = ShowMenu
       | ShowExperiments
@@ -35,14 +42,6 @@ data ChatModal
       | ShowAudioPrompt
       | ShowEmojis
 
-data Step
-      = Welcome
-      | ChatSuggestions
-      | Chatting
-      | BackSuggestions
-      | ChatList
-      | OptionsMenu
-
 derive instance Eq ConfirmationModal
 derive instance Eq SpecialModal
 
@@ -58,9 +57,6 @@ instance DecodeJson Modal where
 instance DecodeJson ScreenModal where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson Step where
-      decodeJson = DADGR.genericDecodeJson
-
 instance DecodeJson ChatModal where
       decodeJson = DADGR.genericDecodeJson
 
@@ -68,9 +64,6 @@ instance EncodeJson ConfirmationModal where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson SpecialModal where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance EncodeJson Step where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson Modal where
@@ -82,6 +75,7 @@ instance EncodeJson ScreenModal where
 instance EncodeJson ChatModal where
       encodeJson = DAEGR.genericEncodeJson
 
+--| Tab names for modals that have an app mount point
 instance Show ScreenModal where
       show = case _ of
             ShowProfile → "Profile"
@@ -95,10 +89,8 @@ instance Show ScreenModal where
 
 derive instance Eq ChatModal
 derive instance Eq Modal
-derive instance Eq Step
 derive instance Eq ScreenModal
 
-derive instance Generic Step _
 derive instance Generic ConfirmationModal _
 derive instance Generic SpecialModal _
 derive instance Generic ChatModal _

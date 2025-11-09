@@ -16,7 +16,7 @@ import Safe.Coerce as SC
 import Server.Database.Fields (postsVisibility)
 import Shared.Element (ElementId)
 import Shared.Im.Contact as SIC
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Unsafe.Coerce as UC
 import Web.DOM (Element)
 import Web.Socket.WebSocket (WebSocket)

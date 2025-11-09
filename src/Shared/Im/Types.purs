@@ -3,7 +3,7 @@ module Shared.Im.Types where
 import Prelude
 import Shared.Availability
 import Shared.Element
-import Shared.Modal.Types
+import Shared.Modal
 
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Generic as DADGR

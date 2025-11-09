@@ -25,7 +25,7 @@ import Shared.Html(Html(..))
 import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))
-import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..))
 import Shared.Routes (routes)
 import Shared.Unsafe as SU

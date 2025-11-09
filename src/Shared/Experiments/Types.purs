@@ -14,7 +14,7 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
-import Shared.Modal.Types (ScreenModal)
+import Shared.Modal (ScreenModal)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Simple.JSON (class ReadForeign, class WriteForeign)

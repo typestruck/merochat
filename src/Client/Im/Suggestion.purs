@@ -23,7 +23,7 @@ import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
 import Shared.User (ProfilePost(..))

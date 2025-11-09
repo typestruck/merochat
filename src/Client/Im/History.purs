@@ -19,7 +19,7 @@ import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
 import Shared.Im.Contact as SIC
-import Shared.Modal.Types (Modal(..))
+import Shared.Modal (Modal(..))
 import Shared.Unsafe as SU
 import Unsafe.Coerce as UC
 import Web.Event.Event as WEE

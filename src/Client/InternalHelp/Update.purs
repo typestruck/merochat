@@ -6,7 +6,7 @@ import Data.Tuple.Nested ((/\))
 import Flame (Update)
 import Flame as F
 import Shared.InternalHelp.Types (InternalHelpMessage(..), InternalHelpModel)
-import Shared.Modal.Types (ScreenModal(..))
+import Shared.Modal (ScreenModal(..))
 
 update ∷ Update InternalHelpModel InternalHelpMessage
 update model =

@@ -62,7 +62,7 @@ import Shared.Element (ElementId(..))
 import Shared.Element as SE
 import Shared.Im.Contact as SCN
 import Shared.Im.View as SIV
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT

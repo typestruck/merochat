@@ -30,7 +30,7 @@ import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
 import Shared.Im.Types (ImMessage(..), RetryableRequest(..))
-import Shared.Modal.Types (ScreenModal(..))
+import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Client.AppId (imAppId)

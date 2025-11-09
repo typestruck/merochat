@@ -18,7 +18,7 @@ import Shared.Im.Svg as SIS
 import Shared.Im.Types (ImMessage(..), ImModel, PostMode(..), RetryableRequest(..))
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Markdown as SM
-import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Post (maxPostCharacters)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege(..))

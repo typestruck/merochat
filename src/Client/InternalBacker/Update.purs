@@ -6,7 +6,7 @@ import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Flame (Update)
 import Shared.Backer.Types (BackerMessage(..), BackerModel)
-import Shared.Modal.Types (ScreenModal(..))
+import Shared.Modal (ScreenModal(..))
 
 update ∷ Update BackerModel BackerMessage
 update model =

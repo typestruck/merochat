@@ -2,7 +2,7 @@ module Shared.Backer.Types where
 
 import Prelude
 
-import Shared.Modal.Types (ScreenModal)
+import Shared.Modal (ScreenModal)
 
 type BackerModel =
       { visible ∷ Boolean

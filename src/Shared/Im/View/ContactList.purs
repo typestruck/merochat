@@ -22,11 +22,10 @@ import Shared.Backer.Contact (backerId)
 import Shared.DateTime as SD
 import Shared.Im.Contact as SIC
 import Shared.Im.Scroll as SIS
-import Shared.Im.Svg (backArrow, nextArrow)
 import Shared.Im.View.Profile as SIVP
 import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Unsafe as SU
 import Shared.User (ProfilePost(..), ProfileVisibility(..))
 
@@ -40,10 +39,10 @@ contactList isClientRender model =
                         [ SIS.onScrollEvent CheckFetchContacts
                         , HA.class' "contact-list"
                         ]
-                        (retryLoadingNewContact : DA.snoc displayContactList retryLoadingContacts)
+                        (retryLoadingNewContact : DA.snoc (DA.snoc contacts retryLoadingContacts) loading)
       where
       -- | Contact list sorting is only done for the dom nodes, model.contacts is left unchanged
-      displayContactList
+      contacts
             | DA.null model.contacts = [ suggestionsCall ]
             | otherwise =
                     let
@@ -106,3 +105,5 @@ contactList isClientRender model =
 
       -- | Displayed if loading contact list fails
       retryLoadingContacts = SIVR.retry "Failed to load contacts" (FetchContacts true) model.failedRequests
+
+      loading = HE.div [ HA.class' "loading-contacts" ] [ HE.div [ HA.class' { "loading": true, hidden: model.freeToFetchContactList } ] [] ]

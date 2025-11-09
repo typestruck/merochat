@@ -14,7 +14,7 @@ import Flame.Types (NodeData)
 import Shared.Avatar as SA
 import Shared.Im.Svg as SIS
 import Shared.Intl as SI
-import Shared.Modal.Types (Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 

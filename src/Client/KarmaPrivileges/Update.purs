@@ -6,7 +6,7 @@ import Shared.KarmaPrivileges.Types
 import Data.Tuple.Nested ((/\))
 import Flame (Update)
 import Flame as F
-import Shared.Modal.Types (ScreenModal(..))
+import Shared.Modal (ScreenModal(..))
 
 update ∷ Update KarmaPrivilegesModel KarmaPrivilegesMessage
 update model =

@@ -13,7 +13,7 @@ import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff, Milliseconds(..))
 import Effect.Aff as EA
 import Flame (Update)
-import Shared.Modal.Types (ScreenModal(..))
+import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Web.Event.Internal.Types (Event)

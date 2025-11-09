@@ -36,7 +36,7 @@ import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Retry as SIVR
 import Shared.Intl as SI
 import Shared.Markdown as SM
-import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.ProfileColumn (ProfileColumn(..))

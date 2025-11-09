@@ -24,7 +24,7 @@ import Flame.Subscription as FS
 import Payload.Client (ClientResponse)
 import Payload.ResponseTypes (Response(..))
 import Shared.Element (ElementId(..))
-import Shared.Modal.Types (ScreenModal(..))
+import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Resource (maxImageSize)
 import Shared.Routes (routes)

@@ -3008,6 +3008,11 @@ label {
     background-color: var(--background-color);
 }
 
+.loading-contacts {
+    display: flex;
+    justify-content: center;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;

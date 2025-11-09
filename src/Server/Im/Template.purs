@@ -21,7 +21,7 @@ import Shared.Element as SE
 import Shared.Html (Html(..))
 import Shared.Im.Unread as SIU
 import Shared.Im.View as SIV
-import Shared.Modal.Types (Modal(..))
+import Shared.Modal (Modal(..))
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 

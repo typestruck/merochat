@@ -18,7 +18,7 @@ import Flame as F
 import Flame.Subscription as FS
 import Shared.Im.Types (RetryableRequest(..))
 import Shared.Im.Types as SIT
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Client.AppId (imAppId)
 import Shared.Unsafe as SU
 

@@ -19,8 +19,7 @@ import Shared.Im.Svg as SIA
 import Shared.Im.Svg as SIS
 import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Profile as CISP
-import Shared.Im.View.Retry as SIVR
-import Shared.Modal.Types (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..), Step(..))
+import Shared.Modal (ConfirmationModal(..), Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP

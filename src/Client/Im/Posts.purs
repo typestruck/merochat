@@ -20,7 +20,7 @@ import Debug (spy)
 import Effect.Class as EC
 import Shared.Content (Content(..))
 import Shared.Im.Types (For(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), SelectedImage, WebSocketPayloadServer(..))
-import Shared.Modal.Types (Modal(..), SpecialModal(..))
+import Shared.Modal (Modal(..), SpecialModal(..))
 import Shared.Post (Post)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU

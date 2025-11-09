@@ -11,7 +11,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Shared.Changelog (Changelog, ChangelogAction(..))
 import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
-import Shared.Modal.Types (Modal(..), ScreenModal(..))
+import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Unsafe as SU
 
 fetchChangelog ∷ ImModel → NextMessage
