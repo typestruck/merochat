@@ -109,7 +109,7 @@ compactProfile contact model =
       where
       contextMenu =
             ( if not model.user.ownBackground && DM.isJust contact.user.chatBackground then
-                    [HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick RemoveChatBackground ] [ HE.text "Remove chat background" ]]
+                    [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick RemoveChatBackground ] [ HE.text "Remove chat background" ] ]
               else
                     []
             ) <> profileContextMenu contact.user.id true
@@ -337,10 +337,14 @@ suggestionCards model =
       uncheck p = HE.div_ [ HE.text $ "➡ " <> show p ]
 
       moreCards =
-            [ HE.div (HA.class' "card card-load-more" : if model.freeToFetchSuggestions then [ HA.onClick FetchMoreSuggestions ] else [])
-                    [ HE.i_ [ HE.text "Load more suggestions" ]
-                    , nextArrow
-                    ]
+            [ if model.freeToFetchSuggestions then
+                    HE.div [ HA.class' "card card-load-more", HA.onClick FetchMoreSuggestions ]
+                          [ HE.i_ [ HE.text "Load more suggestions" ]
+                          , nextArrow
+                          ]
+              else
+                    HE.div [ HA.class' "card card-load-more" ]
+                          [ HE.div' [ HA.class' "loading" ] ]
             ]
       card suggestion =
             HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId } ]
