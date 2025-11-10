@@ -5,7 +5,7 @@ import Prelude
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Server.Faq as SH
+import Shared.Faq as SH
 import Server.Privacy as SP
 
 import Server.Terms as ST

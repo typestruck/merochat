@@ -6,7 +6,7 @@ import Effect (Effect)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Flame.Renderer.String as FRS
-import Server.Faq as SA
+import Shared.Faq as SA
 import Server.Privacy as SP
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST

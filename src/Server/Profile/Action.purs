@@ -112,7 +112,7 @@ save loggedUserId fields = do
                   Save (Just fileName) → do
                         isNaughty <- R.liftAff <<< SF.isNsfw $ localBasePath <> uploadFolder <> fileName
                         if isNaughty then do
-                              SPD.saveForApproval connection loggedUserId Avatar fileName
+                              SPD.saveForApproval connection loggedUserId Avatar (spy ("naughty avatar for " <> show loggedUserId) fileName)
                               pure <<< Just $ Avatar /\ fileName
                         else do
                               SPD.saveField connection loggedUserId Avatar $ Just fileName
