@@ -16,7 +16,6 @@ import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 data Privilege
       = ReceiveChats
@@ -99,12 +98,6 @@ instance Enum Privilege where
 
 instance Show Privilege where
       show = DSG.genericShow
-
-instance ReadForeign Privilege where
-      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
-
-instance WriteForeign Privilege where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum
 
 instance ToValue Privilege where
       toValue = F.unsafeToForeign <<< DE.fromEnum

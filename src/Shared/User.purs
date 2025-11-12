@@ -35,7 +35,6 @@ import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 type BasicUser fields =
       ( id ∷ Int
@@ -139,34 +138,10 @@ instance Show ProfileVisibility where
 instance Show ProfilePost where
       show = DSG.genericShow
 
-instance ReadForeign Gender where
-      readImpl foreignGender = SU.fromJust <<< DSR.read <$> F.readString foreignGender
-
-instance ReadForeign ReceiveEmail where
-      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
-
-instance ReadForeign ProfileVisibility where
-      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
-
-instance ReadForeign ProfilePost where
-      readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
-
 derive instance Generic ReceiveEmail _
 derive instance Generic Gender _
 derive instance Generic ProfilePost _
 derive instance Generic ProfileVisibility _
-
-instance WriteForeign Gender where
-      writeImpl gender = F.unsafeToForeign $ show gender
-
-instance WriteForeign ReceiveEmail where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum
-
-instance WriteForeign ProfilePost where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum
-
-instance WriteForeign ProfileVisibility where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum
 
 instance ToValue ReceiveEmail where
       toValue = F.unsafeToForeign <<< DE.fromEnum

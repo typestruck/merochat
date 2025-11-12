@@ -11,7 +11,6 @@ import Data.Show.Generic as DGRS
 import Foreign as F
 import Shared.Json as SJ
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 data Content
       = Image String Int Int String
@@ -29,9 +28,3 @@ instance Show Content where
       show = DGRS.genericShow
 
 derive instance Generic Content _
-
-instance ReadForeign Content where
-      readImpl f = SU.fromRight <<< SJ.fromJson <$> F.readString f
-
-instance WriteForeign Content where
-      writeImpl = F.unsafeToForeign <<< SJ.toJson

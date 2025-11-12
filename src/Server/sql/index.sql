@@ -383,6 +383,17 @@ create table posts_seen (
     constraint unique_sight unique(poster, reader)
 );
 
+create table paper_planes(
+    id integer generated always as identity primary key,
+    message text not null,
+    date timestamptz not null default (utc_now()),
+    thrower integer not null,
+    status smallint not null,
+    by integer,
+
+    constraint thrower_user foreign key (thrower) references users(id) on delete cascade
+);
+
 -- when users first edit new field in their profile, place them higher in the suggestions list if have filled 3 or more profile fields
 create or replace function temporarily_place_at_top() returns trigger as
 $$
@@ -798,7 +809,8 @@ values
 
 insert into experiments (code, name, description) values
     (10, 'Word chain', 'Play Word Chain with other users'),
-    (20, 'Doppelganger', 'Answer 9 questions and find your evil clone');
+    (20, 'Doppelganger', 'Answer 9 questions and find your evil clone'),
+    (30, 'Paper plane', 'Throw or catch paper planes with messages');
 
 insert into stock_text (contents, text_type) values
     ('I stayed up all night wondering where the sun went, then it dawned on me', 0),

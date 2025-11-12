@@ -2,7 +2,7 @@ let constant = 22,
     initialHeight,
     oldScrollHeight;
 
-export function resizeTextarea_(textarea) {
+export function resizeInput(textarea) {
     if (initialHeight === undefined)
         initialHeight = textarea.clientHeight - constant;
 

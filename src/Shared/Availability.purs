@@ -12,7 +12,6 @@ import Foreign as F
 import Data.DateTime.Instant as DDI
 import Shared.DateTime as SDT
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 data Availability
       = None -- no data or private online status Online
@@ -38,12 +37,6 @@ instance Show Availability where
             LastSeen (DateTimeWrapper dt) → "Last seen " <> SDT.ago dt
             Unavailable → "Unavailable"
             None → ""
-
-instance ReadForeign Availability where
-      readImpl f = availabilityFromWire <$> F.readNumber f
-
-instance WriteForeign Availability where
-      writeImpl = F.unsafeToForeign <<< availabilityToWire
 
 availabilityToWire ∷ Availability → Number
 availabilityToWire = case _ of

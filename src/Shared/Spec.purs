@@ -309,6 +309,12 @@ spec ∷
                                                 , body ∷ { choice ∷ Int }
                                                 , response ∷ Empty
                                                 }
+                                    , throw ∷
+                                          POST "/throw"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , body ∷ { message ∷ String }
+                                                , response ∷ { id :: Int }
+                                                }
                                   }
                     , backer ∷
                             GET "/backer"

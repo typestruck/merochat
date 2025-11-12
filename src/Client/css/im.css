@@ -579,7 +579,8 @@ a {
 .contact-name,
 .contact-list-last-message>*,
 .chat-input::placeholder,
-.settings-name {
+.settings-name,
+.paper-thrown-message {
     white-space: nowrap;
     display: inline-block;
     margin: 0;

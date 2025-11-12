@@ -1,7 +1,6 @@
 module Client.Im.Chat where
 
 import Prelude
-import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), Touch, Turn, User, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
 
 import Client.AppId (imAppId)
 import Client.Dom as CCD
@@ -22,7 +21,6 @@ import Data.Either (Either(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-
 import Data.Ord as DO
 import Data.String (Pattern(..))
 import Data.String as DS
@@ -44,10 +42,12 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
+import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), SelectedImage, ShowContextMenu(..), Touch, Turn, User, WebSocketConnectionStatus(..), WebSocketPayloadServer(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal (ChatModal(..), Modal(..))
 import Shared.Options.Doppelganger (message)
+import Shared.ResizeInput as SRI
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
@@ -60,21 +60,6 @@ import Web.HTML.Event.DragEvent as WHED
 import Web.HTML.HTMLElement as WHHE
 import Web.HTML.HTMLTextAreaElement as WHHTA
 import Web.Socket.WebSocket (WebSocket)
-
-foreign import resizeTextarea_ ∷ EffectFn1 Element Unit
-
-resizeTextarea ∷ Element → Effect Unit
-resizeTextarea = EU.runEffectFn1 resizeTextarea_
-
--- | The chatting textarea grows / shrink as text is inputed
-resizeChatInput ∷ Event → ImModel → NoMessages
-resizeChatInput event model = model /\ [ resize ]
-      where
-      resize = do
-            EC.liftEffect <<< resizeTextarea <<< SU.fromJust $ do
-                  target ← WEE.target event
-                  WDE.fromEventTarget target
-            pure Nothing
 
 -- | Send a message on enter
 enterSendMessage ∷ ElementId → Event → ImModel → NoMessages
@@ -106,7 +91,7 @@ messageContent elementId model = do
       cleanUp input = EC.liftEffect do
             WHHE.focus <<< SU.fromJust $ WHHE.fromElement input
             CCD.setValue input ""
-            resizeTextarea input
+            SRI.resizeInput input
 
 -- | Prepare and send a message via web socket
 prepareSendMessage ∷ ElementId → Content → DateTimeWrapper → WebSocket → ImModel → MoreMessages
@@ -303,7 +288,7 @@ setTextAt input position markdown = do
       WHHE.focus $ WHHTA.toHTMLElement textarea
       WHHTA.setValue markdown textarea
       WHHTA.setSelectionEnd position textarea
-      resizeTextarea input
+      SRI.resizeInput input
 
 -- | Handle drag and drop
 catchFile ∷ Event → ImModel → NoMessages

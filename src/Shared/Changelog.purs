@@ -14,7 +14,6 @@ import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 type Changelog =
       { id ∷ Int
@@ -73,9 +72,3 @@ instance Enum ChangelogAction where
 derive instance Eq ChangelogAction
 
 derive instance Ord ChangelogAction
-
-instance ReadForeign ChangelogAction where
-      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
-
-instance WriteForeign ChangelogAction where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum

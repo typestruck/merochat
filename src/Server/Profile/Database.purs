@@ -7,6 +7,7 @@ import Server.Database.BadgesUsers
 import Server.Database.CompleteProfiles
 import Server.Database.Privileges
 
+import Data.Argonaut as DAR
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
@@ -29,7 +30,6 @@ import Server.Profile.Database.Flat (FlatProfileUser)
 import Shared.Post (Post)
 import Shared.ProfileColumn as CP
 import Shared.Unsafe as SU
-import Simple.JSON as SJ
 import Type.Proxy (Proxy(..))
 
 presentProfile ∷ Int → ServerEffect FlatProfileUser
@@ -114,5 +114,5 @@ saveTags connection loggedUserId tags = void do
       else do
             upsertCompletness connection loggedUserId CP.Tags
             -- update anyway so we can have a returning for all rows
-            tagIds ∷ Array { id ∷ Int } ← SD.unsafeQueryWith connection "INSERT INTO tags (name) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (tag text)) ON CONFLICT ON CONSTRAINT unique_tag DO UPDATE SET name = excluded.name RETURNING id" { jsonInput: SJ.writeJSON $ map { tag: _ } tags }
+            tagIds ∷ Array { id ∷ Int } ← SD.unsafeQueryWith connection "INSERT INTO tags (name) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (tag text)) ON CONFLICT ON CONSTRAINT unique_tag DO UPDATE SET name = excluded.name RETURNING id" { jsonInput: DAR.stringify <<< DAR.encodeJson $ map { tag: _ } tags }
             SD.executeWith connection $ insert # into tags_users (_creator /\ _tag) # values (map ((loggedUserId /\ _) <<< _.id) tagIds)

@@ -67,6 +67,7 @@ import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT
 import Shared.ProfileColumn (ProfileColumn)
+import Shared.ResizeInput as SIR
 import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
@@ -129,7 +130,7 @@ update st model =
       case _ of
             --chat
             DropFile event → CIC.catchFile event model
-            ResizeChatInput event → CIC.resizeChatInput event model
+            ResizeChatInput event → SIR.resizeInputFrom event model
             EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
             ForceSendMessage elementId → CIC.forceSendMessage elementId model
             SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model

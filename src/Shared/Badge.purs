@@ -15,7 +15,6 @@ import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 data Badge
       = Admin
@@ -74,12 +73,6 @@ unshow = case _ of
       "Admin" → Admin
       "Contributor" → Contributor
       c → Custom c
-
-instance ReadForeign Badge where
-      readImpl f = unshow <$> F.readString f
-
-instance WriteForeign Badge where
-      writeImpl = F.unsafeToForeign <<< show
 
 instance FromValue Badge where
       fromValue v = map unshow (DL.fromValue v ∷ Either String String)

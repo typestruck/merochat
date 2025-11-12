@@ -7,8 +7,9 @@ import Data.Maybe (Maybe(..))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.WordChain as SEW
 import Shared.Experiments.Doppelganger as SED
+import Shared.Experiments.PaperPlane as SEP
+import Shared.Experiments.WordChain as SEW
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.id "chat-experiments", HA.class' { hidden: not model.visible } ]
@@ -27,3 +28,4 @@ extra ∷ ExperimentsModel → Experiment → Html ExperimentsMessage
 extra model = case _ of
       WordChain → SEW.view model
       Doppelganger → SED.view model
+      PaperPlanes → SEP.view model

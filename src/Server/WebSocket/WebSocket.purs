@@ -7,7 +7,7 @@ import Prelude
 
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
-import Data.Newtype (class Newtype)
+
 import Effect (Effect)
 import Effect.Exception (Error)
 import Effect.Uncurried (EffectFn1, EffectFn2, EffectFn3)
@@ -39,7 +39,6 @@ foreign import onOpen_ ∷ EffectFn2 WebSocketConnection (EffectFn1 Unit Unit) U
 newtype WebSocketMessage = WebSocketMessage String
 
 derive newtype instance showWSM ∷ Show WebSocketMessage
-derive instance newtypeWSM ∷ Newtype WebSocketMessage _
 
 type WebSocketServerOptions = (host ∷ String, backlog ∷ Int)
 

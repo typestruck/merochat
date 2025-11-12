@@ -17,7 +17,7 @@ import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
-import Simple.JSON (class ReadForeign, class WriteForeign)
+
 
 data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
@@ -116,12 +116,6 @@ instance DecodeJson What where
 
 instance DecodeJson ProfileMode where
       decodeJson = DADGR.genericDecodeJson
-
-instance ReadForeign What where
-      readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
-
-instance WriteForeign What where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum
 
 instance Bounded What where
       bottom = Name

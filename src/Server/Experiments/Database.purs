@@ -18,6 +18,8 @@ import Server.Database.DoppelgangerAnswers (_taker, doppelganger_answers)
 import Server.Database.DoppelgangerChoices (_asked, _choice, doppelganger_choices)
 import Server.Database.DoppelgangerQuestions (_question, doppelganger_questions)
 import Server.Database.LastSeen (_who)
+import Server.Database.Messages (_status)
+import Server.Database.PaperPlanes (_message, _thrower, paper_planes)
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database.Flat (FlatQuestion)
 import Shared.Changelog (ChangelogAction(..))
@@ -59,6 +61,17 @@ saveMatchChangelog loggedUserId description userIds = SD.execute $ insert # into
 
 saveAnswer ∷ Int → Int → ServerEffect Unit
 saveAnswer loggedUserId choice = SD.execute $ insert # into doppelganger_answers (_taker /\ _choice) # values (loggedUserId /\ choice)
+
+savePlane ∷ Int → String → ServerEffect { id ∷ Int }
+savePlane loggedUserId message = SU.fromJust <$> SD.single (insert # into paper_planes (_thrower /\ _message /\ _status) # values (loggedUserId /\ message /\ Flying) # returning _id)
+
+countPaperPlanes ∷ Int → ServerEffect (Maybe BigInt)
+countPaperPlanes loggedUserId = do
+      count <- SD.single $ select (count _id # as c) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed)
+      pure $ map _.c count
+
+fetchPaperPlanes ∷ Int → ServerEffect (Array PaperPlane)
+fetchPaperPlanes loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _date
 
 q ∷ Proxy "q"
 q = Proxy

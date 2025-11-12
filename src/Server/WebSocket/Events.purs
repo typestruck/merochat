@@ -2,7 +2,10 @@ module Server.WebSocket.Events where
 
 import Prelude
 
+import Browser.Cookies.Data (Cookie(..))
 import Browser.Cookies.Internal as BCI
+import Data.Argonaut (class EncodeJson)
+import Data.Argonaut as DAR
 import Data.Array as DA
 import Data.DateTime (DateTime(..), Time(..))
 import Data.DateTime as DDT
@@ -11,11 +14,10 @@ import Data.Enum as DEN
 import Data.Foldable as DF
 import Data.HashMap (HashMap)
 import Data.HashMap as DH
-import Browser.Cookies.Data (Cookie(..))
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype (class Newtype)
+
 import Data.Set (Set)
 import Data.Set as DS
 import Data.Time.Duration (Minutes(..))
@@ -69,8 +71,7 @@ import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
-import Simple.JSON (class WriteForeign)
-import Simple.JSON as SJS
+import Unsafe.Coerce as UC
 
 -- | Keep each users web socket/availability in a ref
 type UserAvailability =
@@ -502,7 +503,7 @@ trackAvailabilityFromTerminated pool allUsersAvailabilityRef = do
       let terminatedConnections = DA.filter (DH.isEmpty <<< _.connections <<< DT.snd) $ DH.toArrayBy (/\) allUsersAvailability
       unless (DA.null terminatedConnections) do
             DF.traverse_ (sendAvailability allUsersAvailability) terminatedConnections
-            EA.launchAff_ <<< SE.poolEffect pool unit <<< SIDE.bulkUpsertLastSeen <<< SJS.writeJSON <<< DA.catMaybes $ map whoDate terminatedConnections
+            EA.launchAff_ <<< SE.poolEffect pool unit <<< SIDE.bulkUpsertLastSeen <<< DAR.stringify <<< DAR.encodeJson <<< DA.catMaybes $ map whoDate terminatedConnections
       where
       sendAvailability allUsersAvailability (userId /\ userAvailability) = DF.traverse_ (sendTrackedAvailability allUsersAvailability userAvailability.availability userId) userAvailability.trackedBy
 
@@ -521,8 +522,7 @@ withConnections userAvailability handler =
             Just ua → DF.traverse_ handler $ DH.values ua.connections
             Nothing → pure unit
 
-instance Newtype DT DateTime
-instance WriteForeign DT where
-      writeImpl (DT (DateTime dt (Time h m s ms))) = F.unsafeToForeign (SDT.formatIsoDate' dt <> "t" <> time <> "+0000")
+instance EncodeJson DT where
+      encodeJson (DT (DateTime dt (Time h m s ms))) = UC.unsafeCoerce (SDT.formatIsoDate' dt <> "t" <> time <> "+0000")
             where
             time = show (DEN.fromEnum h) <> ":" <> show (DEN.fromEnum m) <> ":" <> show (DEN.fromEnum s) <> "." <> show (DEN.fromEnum ms)

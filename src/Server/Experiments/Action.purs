@@ -3,22 +3,25 @@ module Server.Experiments.Action where
 import Prelude
 
 import Data.Array as DA
-import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as DAN
+import Data.BigInt as BI
+import Data.Maybe (Maybe(..))
 import Debug (spy)
+import Run.Except as RE
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database as SED
-import Server.Experiments.Database.Flat (FlatQuestion)
 import Shared.Experiments.Types (Question, Match)
 import Shared.Options.Doppelganger (changelogEntry, totalQuestions)
-import Shared.Unsafe as SU
+import Shared.Options.PaperPlane (maxPaperPlanes)
+import Shared.ResponseError (ResponseError(..))
 
 experiments ∷ Int → ServerEffect _
 experiments loggedUserId = do
       list ← SED.fetchExperiments
       user ← SED.fetchExperimentUser loggedUserId
       count ← SED.fetchAnswerCount loggedUserId
-      pure { experiments: list, user, completedDoppelganger: count == totalQuestions }
+      thrown ← SED.fetchPaperPlanes loggedUserId
+      pure { experiments: list, user, completedDoppelganger: count == totalQuestions, thrown }
 
 buildQuestions ∷ Int → ServerEffect (Array Question)
 buildQuestions loggedUserId = do
@@ -38,3 +41,9 @@ fetchMatches loggedUserId = do
 
 saveAnswer ∷ Int → Int → ServerEffect Unit
 saveAnswer loggedUserId choice = SED.saveAnswer loggedUserId choice
+
+throwPlane ∷ Int → String → ServerEffect {id :: Int }
+throwPlane loggedUserId message = do
+      c <- SED.countPaperPlanes loggedUserId
+      when (c == Just (BI.fromInt maxPaperPlanes)) <<< RE.throw $ BadRequest { reason: "too many planes"}
+      SED.savePlane loggedUserId message

@@ -20,7 +20,7 @@ import Data.Int as DI
 import Data.List as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-import Data.Newtype (class Newtype)
+
 
 import Data.Number as DNM
 import Data.Show.Generic as DGRS
@@ -72,27 +72,11 @@ latestEligibleBirthday = do
       now ← EN.nowDate
       pure <<< SU.fromJust $ DD.adjust (Days $ negate (365.0 * 18.0)) now
 
-getYear ∷ ∀ t10. Newtype t10 Date ⇒ t10 → Int
-getYear = DE.fromEnum <<< DD.year <<< SC.coerce
-
-getMonth ∷ ∀ t22. Newtype t22 Date ⇒ t22 → Int
-getMonth = DE.fromEnum <<< DD.month <<< SC.coerce
-
-getDay ∷ ∀ t56. Newtype t56 Date ⇒ t56 → Int
-getDay = DE.fromEnum <<< DD.day <<< SC.coerce
-
 epoch ∷ DateTime
 epoch = DateTime (DD.canonicalDate (SU.toEnum 3000) (SU.toEnum 1) (SU.toEnum 1)) zeroTime
 
 zeroTime ∷ Time
 zeroTime = Time (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0) (SU.toEnum 0)
-
-readDate ∷ Foreign → F DateTime
-readDate foreignDateTime = do
-      milliseconds ← F.readNumber foreignDateTime
-      case DDI.instant $ DTD.Milliseconds milliseconds of
-            Nothing → F.fail $ ForeignError "could not parse datetime"
-            Just instant → pure $ DDI.toDateTime instant
 
 dateToNumber ∷ DateWrapper → Number
 dateToNumber = SC.coerce <<< DDI.unInstant <<< DDI.fromDate <<< SC.coerce
@@ -214,10 +198,3 @@ instance FromValue DateWrapper where
 
 instance ToValue DateWrapper where
       toValue = F.unsafeToForeign <<< formatIsoDate
-
--- instance ReadForeign DateWrapper where
---       readImpl foreignDate = DateWrapper <<< DT.date <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDate
-
--- instance ReadForeign DateTimeWrapper where
---       readImpl foreignDateTime = DateTimeWrapper <<< DDI.toDateTime <<< SU.fromJust <<< DDI.instant <<< DTD.Milliseconds <$> F.readNumber foreignDateTime
-

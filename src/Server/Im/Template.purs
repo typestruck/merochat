@@ -13,7 +13,6 @@ import Environment (production)
 import Flame as F
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Server.Im.Types (Payload)
 import Server.Template (defaultParameters)
 import Server.Template as ST
 import Shared.DateTime (DateTimeWrapper(..))
@@ -25,7 +24,7 @@ import Shared.Modal (Modal(..))
 import Shared.Resource (Bundle(..), ResourceType(..), updateHash)
 import Shared.Resource as SP
 
-template ∷ Payload → Effect Html
+template ∷ _ → Effect Html
 template payload = do
       lt ← EN.nowDateTime
       Html <$> F.preMount (SE.toQuerySelector SE.Im)

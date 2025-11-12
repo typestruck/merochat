@@ -15,7 +15,6 @@ import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Foreign as F
 import Shared.Unsafe as SU
-import Simple.JSON (class ReadForeign, class WriteForeign)
 
 data ProfileColumn
       = Name
@@ -118,9 +117,3 @@ instance EncodeJson ProfileColumn where
 
 instance DecodeJson ProfileColumn where
       decodeJson = DADGR.genericDecodeJson
-
-instance ReadForeign ProfileColumn where
-      readImpl f = SU.fromJust <<< DE.toEnum <$> F.readInt f
-
-instance WriteForeign ProfileColumn where
-      writeImpl = F.unsafeToForeign <<< DE.fromEnum

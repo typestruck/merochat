@@ -15,6 +15,26 @@
     max-width: 18em;
 }
 
+.new-throw {
+    display: flex;
+    flex-direction: column;
+}
+
+.new-throw .loading {
+    align-self: flex-end;
+}
+
+.new-throw .svg-32 {
+    align-self: center;
+    margin-top: 20px;
+}
+
+.paper-thrown-entry {
+    display: flex;
+    justify-content: space-between;
+    width: 534px;
+}
+
 #chat-experiments .green-button {
     width: max-content;
     margin: 0;
@@ -25,8 +45,27 @@
     margin: 23px 25px;
 }
 
+.paper-thrown-message {
+    max-width: 80%;
+    font-style: italic;
+}
+
 #chat-experiments .modal-section {
     width: 850px;
+}
+
+.paper-input {
+    margin: 10px 0;
+    width: 500px;
+    height: 22px;
+    padding: 10px 20px;
+    padding-bottom: 12px;
+    resize: none;
+    cursor: text;
+}
+
+.paper-waiting {
+    align-self: flex-end;
 }
 
 .choice-option label {
@@ -66,5 +105,13 @@
 
     .word-chain {
         margin-left: 0;
+    }
+
+    .paper-input {
+        width: auto;
+    }
+
+    .paper-thrown-entry {
+        width: calc(100vw - 47px);
     }
 }

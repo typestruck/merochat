@@ -25,5 +25,10 @@ template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
                       , loading: false
                       , selectedChoice: Nothing
                       }
+              , paperPlane:
+                      { loading: false
+                      , message: Nothing
+                      , thrown: payload.thrown
+                      }
               }
       }

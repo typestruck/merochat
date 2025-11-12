@@ -37,7 +37,6 @@ import Server.Im.Database.Flat as SIF
 import Server.Im.Database.Permission as SIDPP
 import Server.Im.Database.Present as SIDP
 import Server.Im.Database.Suggest as SIDS
-import Server.Im.Types (Payload)
 import Server.Sanitize as SS
 import Server.ThreeK as ST
 import Server.Wheel as SW
@@ -53,7 +52,7 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
 
-im ∷ Int → ServerEffect Payload
+im ∷ Int → ServerEffect _
 im loggedUserId = do
       maybeUser ← SIDP.presentUser loggedUserId
       case maybeUser of

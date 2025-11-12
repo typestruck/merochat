@@ -26,3 +26,6 @@ answer request = do
       SEA.saveAnswer request.guards.loggedUserId request.body.choice
       pure Empty
 
+throw ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { message ∷ String } } → ServerEffect {id :: Int}
+throw request = SEA.throwPlane request.guards.loggedUserId request.body.message
+

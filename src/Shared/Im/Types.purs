@@ -38,7 +38,6 @@ import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User (IU, ProfilePost(..))
-import Simple.JSON (class ReadForeign, class WriteForeign)
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
@@ -462,17 +461,6 @@ derive instance Ord PostMode
 derive instance Ord MessageStatus
 derive instance Ord SuggestionsFrom
 
-instance ReadForeign MessageStatus where
-      readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
-
-instance ReadForeign ReportReason where
-      readImpl value = SU.fromJust <<< DE.toEnum <$> F.readInt value
-
-instance WriteForeign ReportReason where
-      writeImpl reason = F.unsafeToForeign $ DE.fromEnum reason
-
-instance WriteForeign MessageStatus where
-      writeImpl messageStatus = F.unsafeToForeign $ DE.fromEnum messageStatus
 
 instance Bounded SuggestionsFrom where
       bottom = ThisWeek

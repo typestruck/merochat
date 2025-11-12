@@ -3,12 +3,15 @@ module Client.Experiments.Update where
 import Prelude
 import Shared.Experiments.Types
 
+import Client.AppId (imAppId)
 import Client.Location as CCL
 import Client.Network (request)
 import Client.Network as CCN
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.String as DS
 import Data.Tuple.Nested (type (/\), (/\))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
@@ -19,7 +22,7 @@ import Flame.Subscription as FS
 import Shared.Im.Types (RetryableRequest(..))
 import Shared.Im.Types as SIT
 import Shared.Modal (Modal(..), ScreenModal(..))
-import Client.AppId (imAppId)
+import Shared.ResizeInput as SIR
 import Shared.Unsafe as SU
 
 update ∷ Update ExperimentsModel ExperimentsMessage
@@ -33,6 +36,7 @@ update model =
                           pure Nothing
                   ]
             UpdatePrivileges { privileges } → F.noMessages model { user { privileges = privileges } }
+
             ResumeQuestions → resumeQuestions model
             DisplayQuestions questions → displayQuestions questions model
             SelectChoice question choice → selectChoice question choice model
@@ -41,6 +45,31 @@ update model =
             FetchMatches → fetchMatches model
             DisplayMatches matches → displayMatches matches model
             MessageDoppelganger userId → messageDoppelganger userId model
+
+            SetPlaneMessage message → setPlaneMessage message model
+            ThrowPlane → throwPlane model
+            AfterThrowPlane id → afterThrowPlane id model
+            ResizeMessageInput event → SIR.resizeInputFrom event model
+
+setPlaneMessage ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+setPlaneMessage message model = model { paperPlane = model.paperPlane { message = if DS.null message then Nothing else Just message } } /\ []
+
+throwPlane ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+throwPlane model = model { paperPlane = model.paperPlane { loading = true } } /\ [ throwIt ]
+      where
+      throwIt = do
+            r ← CCN.silentResponse $ request.experiments.throw { body: { message: SU.fromJust model.paperPlane.message } }
+            pure <<< Just $ AfterThrowPlane r.id
+
+afterThrowPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+afterThrowPlane id model =
+      model
+            { paperPlane = model.paperPlane
+                    { loading = false
+                    , message = Nothing
+                    , thrown = { id, message: SU.fromJust model.paperPlane.message, status: Flying } : model.paperPlane.thrown
+                    }
+            } /\ []
 
 resumeQuestions ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 resumeQuestions model = model /\ [ resume ]

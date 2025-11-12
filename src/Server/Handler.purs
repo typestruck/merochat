@@ -119,6 +119,7 @@ handlers reading =
               , questions: runJson reading SEH.questions
               , matches: runJson reading SEH.matches
               , answer: runJson reading SEH.answer
+              , throw: runJson reading SEH.throw
               }
       , sw
       , developmentFiles
