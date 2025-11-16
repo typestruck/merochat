@@ -20,6 +20,7 @@ import Server.Database.DoppelgangerQuestions (_question, doppelganger_questions)
 import Server.Database.LastSeen (_who)
 import Server.Database.Messages (_status)
 import Server.Database.PaperPlanes (_message, _thrower, paper_planes)
+import Server.Database.Recoveries (_created)
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database.Flat (FlatQuestion)
 import Shared.Changelog (ChangelogAction(..))
@@ -71,7 +72,7 @@ countPaperPlanes loggedUserId = do
       pure $ map _.c count
 
 fetchPaperPlanes ∷ Int → ServerEffect (Array PaperPlane)
-fetchPaperPlanes loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _date
+fetchPaperPlanes loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _created
 
 q ∷ Proxy "q"
 q = Proxy

@@ -3,6 +3,7 @@ module Server.Database.PaperPlanes where
 import Droplet.Language
 
 import Data.DateTime (DateTime)
+import Data.Maybe (Maybe)
 import Data.Tuple.Nested (type (/\))
 import Shared.Experiments.Types (PlaperPlaneStatus)
 import Type.Proxy (Proxy(..))
@@ -11,7 +12,9 @@ type PaperPlanes =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
       , thrower ∷ Int
       , message ∷ String
-      , date ∷ Column DateTime Default
+      , created ∷ Column DateTime Default
+      , caughtByAt :: Maybe DateTime
+      , by :: Maybe Int
       , status ∷ PlaperPlaneStatus
       )
 
@@ -23,3 +26,9 @@ _thrower = Proxy
 
 _message ∷ Proxy "message"
 _message = Proxy
+
+_by ∷ Proxy "by"
+_by = Proxy
+
+_caughtByAt ∷ Proxy "caught_by_at"
+_caughtByAt = Proxy

@@ -200,6 +200,26 @@ end;
 $$
 language plpgsql;
 
+-- select cron.schedule('0 * * * *', $$select handle_paper_planes()$$);
+create or replace function handle_paper_planes()
+    returns void as
+$$
+begin
+    update paper_planes p
+    set by_at = utc_now(), by = (
+        select u.id
+        from users u join last_seen l on u.id = l.who join karma_leaderboard k on u.id = k.ranker
+        where (p.by is null or u.id <> p.by) and
+              not temporary and
+              (extract(epoch from (utc_now()) - l.date) / 3600 <= (24 * 7)) and
+              k.current_karma >= 80 and
+              ((select count(1) from paper_planes where by = u.id and status <> 1) < 7)
+        order by random() limit 1)
+    where status = 1 and (by is null or extract(epoch from (utc_now()) - by_at) / 3600 > (24 * 7));
+end;
+$$
+language plpgsql;
+
 -- select cron.schedule('45 2 * * *', $$select purge_temporary_users()$$);
 create or replace function purge_temporary_users()
     returns void as
@@ -386,10 +406,12 @@ create table posts_seen (
 create table paper_planes(
     id integer generated always as identity primary key,
     message text not null,
-    date timestamptz not null default (utc_now()),
+    created timestamptz not null default (utc_now()),
     thrower integer not null,
     status smallint not null,
     by integer,
+    by_at timestamptz,
+    thrown smallint default 0,
 
     constraint thrower_user foreign key (thrower) references users(id) on delete cascade
 );
@@ -427,28 +449,6 @@ $$
 language plpgsql;
 
 create trigger overwrite_moderated_fields after update on users for each row execute function overwrite_profile_fields();
-
-create or replace function unread_for
-(dt timestamptz) returns int as
-$$
-declare minutes int = (extract(epoch from (utc_now() - dt)) / 60);
-begin
-    if (minutes <= 10) then
-        return 0;
-    end if;
-    if (minutes > 60 and minutes <= 70) then
-        return  1;
-    end if;
-    if (minutes > 60 * 24 and minutes <= 60 * 24 + 10) then
-        return 2;
-    end if;
-    if (minutes > 60 * 24 * 30 and minutes <= 60 * 24 * 30 + 10) then
-        return 3;
-    end if;
-    return 1000;
-end;
-  $$
-  language plpgsql;
 
 create or replace function insert_history
 (sender_id int, recipient_id int) returns void as
