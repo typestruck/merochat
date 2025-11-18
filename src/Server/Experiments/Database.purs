@@ -19,7 +19,7 @@ import Server.Database.DoppelgangerChoices (_asked, _choice, doppelganger_choice
 import Server.Database.DoppelgangerQuestions (_question, doppelganger_questions)
 import Server.Database.LastSeen (_who)
 import Server.Database.Messages (_status)
-import Server.Database.PaperPlanes (_message, _thrower, paper_planes)
+import Server.Database.PaperPlanes (_by, _byAt, _message, _thrower, paper_planes)
 import Server.Database.Recoveries (_created)
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database.Flat (FlatQuestion)
@@ -73,6 +73,9 @@ countPaperPlanes loggedUserId = do
 
 fetchPaperPlanes ∷ Int → ServerEffect (Array PaperPlane)
 fetchPaperPlanes loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _created
+
+fetchPaperPlanesFlying ∷ Int → ServerEffect (Array PaperPlane)
+fetchPaperPlanesFlying loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_by .=. loggedUserId) # orderBy _byAt
 
 q ∷ Proxy "q"
 q = Proxy

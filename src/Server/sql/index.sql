@@ -205,17 +205,32 @@ create or replace function handle_paper_planes()
     returns void as
 $$
 begin
+    with updated as (update paper_planes p
+        set by_at = utc_now(), thrown = p.thrown + 1, by = (
+            select u.id
+            from users u join last_seen l on u.id = l.who join karma_leaderboard k on u.id = k.ranker
+            where p.thrower <> u.id and
+                (p.by is null or u.id <> p.by) and
+                not temporary and
+                (extract(epoch from (utc_now()) - l.date) / 3600 <= (24 * 7)) and
+                k.current_karma >= 80 and
+                ((select count(1) from paper_planes where by = u.id and status = 1) < 7)
+            order by random() limit 1)
+        where status = 1 and thrown < 7 and (by is null or extract(epoch from (utc_now()) - by_at) / 3600 > (24 * 7))
+        returning  by, 'There are planes flying by. Catch?', 2)
+    insert into changelogs(changed, description, action) select * from updated;
+end;
+$$
+language plpgsql;
+
+-- select cron.schedule('0 0 * * *', $$select handle_paper_planes()$$);
+create or replace function crash_paper_planes()
+    returns void as
+$$
+begin
     update paper_planes p
-    set by_at = utc_now(), by = (
-        select u.id
-        from users u join last_seen l on u.id = l.who join karma_leaderboard k on u.id = k.ranker
-        where (p.by is null or u.id <> p.by) and
-              not temporary and
-              (extract(epoch from (utc_now()) - l.date) / 3600 <= (24 * 7)) and
-              k.current_karma >= 80 and
-              ((select count(1) from paper_planes where by = u.id and status <> 1) < 7)
-        order by random() limit 1)
-    where status = 1 and (by is null or extract(epoch from (utc_now()) - by_at) / 3600 > (24 * 7));
+    set by_at = utc_now(), by = null, status = 3
+    where status = 1 and thrown >= 7;
 end;
 $$
 language plpgsql;
@@ -411,7 +426,7 @@ create table paper_planes(
     status smallint not null,
     by integer,
     by_at timestamptz,
-    thrown smallint default 0,
+    thrown smallint default ,
 
     constraint thrower_user foreign key (thrower) references users(id) on delete cascade
 );

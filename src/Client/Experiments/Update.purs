@@ -29,7 +29,6 @@ update ∷ Update ExperimentsModel ExperimentsMessage
 update model =
       case _ of
             ToggleVisibility modal → model { visible = modal == ShowExperiments } /\ []
-            ToggleSection section → F.noMessages model { section = section }
             RedirectKarma → model /\
                   [ do
                           liftEffect <<< FS.send imAppId <<< SIT.SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges
@@ -41,6 +40,7 @@ update model =
             DisplayQuestions questions → displayQuestions questions model
             SelectChoice question choice → selectChoice question choice model
             AnswerQuestion → answerQuestion model
+            ToggleDoppelgangerSection section → F.noMessages model { doppelganger = model.doppelganger { section = section } }
             AfterAnswerQuestion → afterAnswerQuestion model
             FetchMatches → fetchMatches model
             DisplayMatches matches → displayMatches matches model
@@ -50,6 +50,21 @@ update model =
             ThrowPlane → throwPlane model
             AfterThrowPlane id → afterThrowPlane id model
             ResizeMessageInput event → SIR.resizeInputFrom event model
+            TogglePaperPlaneSection section → togglePaperPlaneSection section model
+            DisplayFlyingPaperPlanes planes -> displayFlyingPaperPlanes planes model
+
+displayFlyingPaperPlanes ∷ Array PaperPlane → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+displayFlyingPaperPlanes planes model = model { paperPlane = model.paperPlane { flyingBy = planes } } /\ []
+
+togglePaperPlaneSection ∷ PaperPlaneSection → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+togglePaperPlaneSection section model = model { paperPlane = model.paperPlane { section = section } } /\ effects
+      where
+      fetch = do
+            r ← CCN.silentResponse $ request.experiments.flying {  }
+            pure <<< Just $ DisplayFlyingPaperPlanes r
+      effects
+            | model.paperPlane.section /= section && section == ShowFlyingBy && DA.null model.paperPlane.flyingBy = [fetch]
+            | otherwise = []
 
 setPlaneMessage ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 setPlaneMessage message model = model { paperPlane = model.paperPlane { message = if DS.null message then Nothing else Just message } } /\ []
@@ -79,7 +94,7 @@ resumeQuestions model = model /\ [ resume ]
             pure <<< Just $ DisplayQuestions questions
 
 displayQuestions ∷ Array Question → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
-displayQuestions questions model = model { section = ShowingDoppelganger ShowNextQuestion, doppelganger { questions = questions } } /\ []
+displayQuestions questions model = model { doppelganger { section = ShowNextQuestion, questions = questions } } /\ []
 
 selectChoice ∷ Int → Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 selectChoice question choice model = model { doppelganger = model.doppelganger { selectedChoice = Just { question, choice } } } /\ []
@@ -124,7 +139,7 @@ fetchMatches model = model /\ [ fetch ]
             pure <<< Just $ DisplayMatches response
 
 displayMatches ∷ Array Match → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
-displayMatches matches model = model { section = ShowingDoppelganger ShowMatches, doppelganger = model.doppelganger { matches = matches } } /\ []
+displayMatches matches model = model { doppelganger = model.doppelganger { section = ShowMatches, matches = matches } } /\ []
 
 messageDoppelganger ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 messageDoppelganger userId model = model /\ [ send ]

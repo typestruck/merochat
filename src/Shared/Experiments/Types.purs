@@ -30,7 +30,6 @@ type ChatExperimentUser = { privileges ∷ Array Privilege }
 data ExperimentsMessage
       = ToggleVisibility ScreenModal
       | RedirectKarma
-      | ToggleSection ShowingExperiment
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
 
       | ResumeQuestions
@@ -39,6 +38,7 @@ data ExperimentsMessage
       | AfterAnswerQuestion
       | DisplayQuestions (Array Question)
       | FetchMatches
+      | ToggleDoppelgangerSection DoppelgangerSection
       | DisplayMatches (Array Match)
       | MessageDoppelganger Int
 
@@ -46,6 +46,8 @@ data ExperimentsMessage
       | ThrowPlane
       | AfterThrowPlane Int
       | ResizeMessageInput Event
+      | TogglePaperPlaneSection PaperPlaneSection
+      | DisplayFlyingPaperPlanes (Array PaperPlane)
 
 type Match =
       { name ∷ String
@@ -62,18 +64,20 @@ type ExperimentsModel =
       { experiments ∷ Array ChatExperiment
       , user ∷ ChatExperimentUser
       , visible ∷ Boolean
-      , section ∷ ShowingExperiment
       , doppelganger ∷
               { questions ∷ Array Question
               , loading ∷ Boolean
               , selectedChoice ∷ Maybe { question ∷ Int, choice ∷ Int }
               , matches ∷ Array Match
+              , section ∷ DoppelgangerSection
               , completed ∷ Boolean
               }
       , paperPlane ∷
               { loading ∷ Boolean
               , message ∷ Maybe String
+              , section ∷ PaperPlaneSection
               , thrown ∷ Array PaperPlane
+              , flyingBy ∷ Array PaperPlane
               }
       }
 
@@ -96,10 +100,9 @@ type Question =
 
 data Experiment = WordChain | Doppelganger | PaperPlanes
 
-data ShowingExperiment = HideExperiments | ShowingDoppelganger DoppelgangerSection | ShowingPaperPlane PaperPlaneSection
-
-data PaperPlaneSection =
-      ShowThrowPlane
+data PaperPlaneSection
+      = ShowNew
+      | ShowFlyingBy
 
 data DoppelgangerSection
       = ShowDoppelganger
@@ -108,6 +111,7 @@ data DoppelgangerSection
 
 derive instance Eq Experiment
 derive instance Eq PlaperPlaneStatus
+derive instance Eq PaperPlaneSection
 
 derive instance Ord Experiment
 derive instance Ord PlaperPlaneStatus
@@ -165,13 +169,9 @@ instance Enum Experiment where
             PaperPlanes → Just Doppelganger
 
 derive instance Generic Experiment _
-derive instance Generic ShowingExperiment _
 derive instance Generic DoppelgangerSection _
 derive instance Generic PlaperPlaneStatus _
 derive instance Generic PaperPlaneSection _
-
-instance DecodeJson ShowingExperiment where
-      decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson PaperPlaneSection where
       decodeJson = DADGR.genericDecodeJson
@@ -186,9 +186,6 @@ instance DecodeJson Experiment where
       decodeJson = DADGR.genericDecodeJson
 
 instance EncodeJson Experiment where
-      encodeJson = DAEGR.genericEncodeJson
-
-instance EncodeJson ShowingExperiment where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson PlaperPlaneStatus where

@@ -9,15 +9,15 @@ import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.Types (DoppelgangerSection(..), ExperimentsMessage(..), ExperimentsModel, ShowingExperiment(..))
+import Shared.Experiments.Types (DoppelgangerSection(..), ExperimentsMessage(..), ExperimentsModel)
 import Shared.Unsafe as SU
 import Web.HTML.HTMLInputElement as WHHI
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "word-chain duller" ]
-      [ case model.section of
-              ShowingDoppelganger ShowNextQuestion → showNextQuestion
-              ShowingDoppelganger ShowMatches → showMatches
+      [ case model.doppelganger.section of
+              ShowNextQuestion → showNextQuestion
+              ShowMatches → showMatches
               _ →
                     if model.doppelganger.completed then
                           HE.input [ HA.type' "button", HA.onClick FetchMatches, HA.class' "green-button", HA.value "Check results" ]

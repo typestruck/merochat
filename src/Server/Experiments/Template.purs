@@ -17,18 +17,20 @@ template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
               { experiments: payload.experiments
               , visible: true
               , user: payload.user
-              , section: HideExperiments
               , doppelganger:
                       { questions: []
                       , matches: []
                       , completed: payload.completedDoppelganger
                       , loading: false
+                      , section: ShowDoppelganger
                       , selectedChoice: Nothing
                       }
               , paperPlane:
                       { loading: false
+                      , section: ShowNew
                       , message: Nothing
                       , thrown: payload.thrown
+                      , flyingBy : payload.flyingBy
                       }
               }
       }

@@ -8,49 +8,59 @@ import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel)
+import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..))
 import Shared.Options.PaperPlane (maxMessageCharacters, maxPaperPlanes)
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
 view model = HE.div [ HA.class' "paper-plane duller" ]
       [ HE.div [ HA.class' "green-tab" ]
-              [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": true } ] [ HE.text "New" ]
-              , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": false } ] [ HE.text "Flying by" ]
+              [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowNew }, HA.onClick $ TogglePaperPlaneSection ShowNew ] [ HE.text "New" ]
+              , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowFlyingBy }, HA.onClick $ TogglePaperPlaneSection ShowFlyingBy ] [ HE.text "Flying by" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": false } ] [ HE.text "Caught" ]
               ]
-      , case model.section of
-              _ → new model
+      , case model.paperPlane.section of
+              ShowNew → new model
+              ShowFlyingBy → flyingBy model
       ]
 
+flyingBy ∷ ExperimentsModel → Html ExperimentsMessage
+flyingBy model =
+      HE.div [ HA.class' "flying-by" ] $
+            if DA.null model.paperPlane.flyingBy then
+                  [ HE.i [] [ HE.text "No paper plane passing by" ] ]
+            else
+                  map display model.paperPlane.flyingBy
+      where
+      display plane = HE.div [ HA.class' "paper-thrown-entry" ]
+            [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
+            ]
+
 new ∷ ExperimentsModel → Html ExperimentsMessage
-new model = HE.div [ HA.class' "new-throw" ]
-      [ HE.textarea'
-              [ HA.maxlength maxMessageCharacters
-              , HA.onInput' ResizeMessageInput
-              , HA.autocomplete "off"
-              , HA.class' "modal-input paper-input "
-              , HA.value $ DM.fromMaybe "" model.paperPlane.message
-              , HA.onInput SetPlaneMessage
-              , HA.placeholder "What does the world need to know?"
-              ]
-      , if DA.length model.paperPlane.thrown == maxPaperPlanes then
-              HE.div [ HA.class' "paper-waiting" ] [ HE.text "Waiting for planes to be caught..." ]
-        else if model.paperPlane.loading then
-              HE.div' [ HA.class' "loading" ]
-        else
-              HE.input
-                    [ HA.type' "button"
-                    , HA.onClick ThrowPlane
-                    , HA.disabled $ DM.isNothing model.paperPlane.message
-                    , HA.class' "green-button"
-                    , HA.value "Throw paper plane"
-                    ]
-      , HE.fragment $
-              if DA.null model.paperPlane.thrown then
-                    []
-              else
-                    (planeIcon : map plane model.paperPlane.thrown)
-      ]
+new model =
+      HE.div [ HA.class' "new-throw" ]
+            ( [ HE.textarea'
+                      [ HA.maxlength maxMessageCharacters
+                      , HA.onInput' ResizeMessageInput
+                      , HA.autocomplete "off"
+                      , HA.class' "modal-input paper-input "
+                      , HA.value $ DM.fromMaybe "" model.paperPlane.message
+                      , HA.onInput SetPlaneMessage
+                      , HA.placeholder "What does the world need to know?"
+                      ]
+              , if DA.length model.paperPlane.thrown == maxPaperPlanes then
+                      HE.div [ HA.class' "paper-waiting" ] [ HE.text "Waiting for planes to be caught..." ]
+                else if model.paperPlane.loading then
+                      HE.div' [ HA.class' "loading" ]
+                else
+                      HE.input
+                            [ HA.type' "button"
+                            , HA.onClick ThrowPlane
+                            , HA.disabled $ DM.isNothing model.paperPlane.message
+                            , HA.class' "green-button"
+                            , HA.value "Throw paper plane"
+                            ]
+              ] <> (planeIcon : map plane model.paperPlane.thrown)
+            )
       where
       plane thrown = HE.div [ HA.class' "paper-thrown-entry" ]
             [ HE.div [ HA.class' "paper-thrown-message" ] [ HE.text thrown.message ]

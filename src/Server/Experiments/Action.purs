@@ -10,7 +10,7 @@ import Debug (spy)
 import Run.Except as RE
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database as SED
-import Shared.Experiments.Types (Question, Match)
+import Shared.Experiments.Types (Match, Question, PaperPlane)
 import Shared.Options.Doppelganger (changelogEntry, totalQuestions)
 import Shared.Options.PaperPlane (maxPaperPlanes)
 import Shared.ResponseError (ResponseError(..))
@@ -21,7 +21,8 @@ experiments loggedUserId = do
       user ← SED.fetchExperimentUser loggedUserId
       count ← SED.fetchAnswerCount loggedUserId
       thrown ← SED.fetchPaperPlanes loggedUserId
-      pure { experiments: list, user, completedDoppelganger: count == totalQuestions, thrown }
+      flyingBy ← SED.fetchPaperPlanesFlying loggedUserId
+      pure { experiments: list, user, completedDoppelganger: count == totalQuestions, thrown, flyingBy }
 
 buildQuestions ∷ Int → ServerEffect (Array Question)
 buildQuestions loggedUserId = do
@@ -42,8 +43,11 @@ fetchMatches loggedUserId = do
 saveAnswer ∷ Int → Int → ServerEffect Unit
 saveAnswer loggedUserId choice = SED.saveAnswer loggedUserId choice
 
-throwPlane ∷ Int → String → ServerEffect {id :: Int }
+throwPlane ∷ Int → String → ServerEffect { id ∷ Int }
 throwPlane loggedUserId message = do
-      c <- SED.countPaperPlanes loggedUserId
-      when (c == Just (BI.fromInt maxPaperPlanes)) <<< RE.throw $ BadRequest { reason: "too many planes"}
+      c ← SED.countPaperPlanes loggedUserId
+      when (c == Just (BI.fromInt maxPaperPlanes)) <<< RE.throw $ BadRequest { reason: "too many planes" }
       SED.savePlane loggedUserId message
+
+flyingPlanes ∷ Int → ServerEffect (Array PaperPlane)
+flyingPlanes loggedUserId = SED.fetchPaperPlanesFlying loggedUserId

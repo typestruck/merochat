@@ -10,7 +10,7 @@ import Payload.ResponseTypes (Empty)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (EmailCaptcha, EmailPassword, EmailPasswordCaptcha, ResetPassword)
 import Shared.Changelog (Changelog)
-import Shared.Experiments.Types (Question, Match)
+import Shared.Experiments.Types (Match, Question, PaperPlane)
 import Shared.Html (Html)
 import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
@@ -69,12 +69,12 @@ spec ∷
                                   , get ∷
                                           GET "/?poster=<poster>"
                                                 { query ∷ { poster ∷ Int }
-                                                , response ∷  (Array Post)
+                                                , response ∷ (Array Post)
                                                 }
                                   , post ∷
                                           POST "/post"
                                                 { body ∷ PostPayload
-                                                , response ∷  { id ∷ Int }
+                                                , response ∷ { id ∷ Int }
                                                 }
                                   , seen ∷
                                           POST "/seen"
@@ -109,14 +109,14 @@ spec ∷
                                   , contacts ∷
                                           GET "/contacts?skip=<skip>"
                                                 { query ∷ { skip ∷ Int }
-                                                , response ∷  Array Contact
+                                                , response ∷ Array Contact
                                                 }
                                   , changelog ∷
                                           Routes "/changelog"
                                                 { get ∷
                                                         GET "/?before=<before>"
                                                               { query ∷ { before ∷ Maybe Int }
-                                                              , response ∷  Array Changelog
+                                                              , response ∷ Array Changelog
                                                               }
                                                 , post ∷
                                                         POST "/"
@@ -127,17 +127,17 @@ spec ∷
                                   , contact ∷
                                           GET "/contact?id=<id>"
                                                 { query ∷ { id ∷ Int }
-                                                , response ∷  (Array Contact)
+                                                , response ∷ (Array Contact)
                                                 }
                                   , history ∷
                                           GET "/history?with=<with>&skip=<skip>"
                                                 { query ∷ { skip ∷ Int, with ∷ Int }
-                                                , response ∷  (Array HistoryMessage)
+                                                , response ∷ (Array HistoryMessage)
                                                 }
                                   , suggestions ∷
                                           GET "/suggestions?skip=<skip>&sg=<sg>"
                                                 { query ∷ { skip ∷ Int, sg ∷ SuggestionsFrom }
-                                                , response ∷  (Array Suggestion)
+                                                , response ∷ (Array Suggestion)
                                                 }
                                   , block ∷
                                           POST "/block"
@@ -152,7 +152,7 @@ spec ∷
                                   , missedContacts ∷
                                           GET "/missed?since=<since>&last=<last>"
                                                 { query ∷ { since ∷ DateTime, last ∷ Maybe Int }
-                                                , response ∷  (Array Contact)
+                                                , response ∷ (Array Contact)
                                                 }
                                   , fortune ∷
                                           GET "/fortune"
@@ -183,17 +183,17 @@ spec ∷
                                   , posts ∷
                                           GET "/posts?after=<after>"
                                                 { query ∷ { after ∷ Maybe Int }
-                                                , response ∷  (Array Post)
+                                                , response ∷ (Array Post)
                                                 }
                                   , generated ∷
                                           POST "/generated"
                                                 { body ∷ GeneratedInput
-                                                , response ∷  String
+                                                , response ∷ String
                                                 }
                                   , save ∷
                                           POST "/save"
                                                 { body ∷ SavedFields
-                                                , response ∷  { avatar ∷ Maybe String }
+                                                , response ∷ { avatar ∷ Maybe String }
                                                 }
                                   }
                     , settings ∷
@@ -208,7 +208,7 @@ spec ∷
                                                 { background ∷
                                                         POST "background"
                                                               { body ∷ { ownBackground ∷ Boolean, image ∷ Maybe String }
-                                                              , response ∷  String
+                                                              , response ∷ String
                                                               }
                                                 }
                                   , account ∷
@@ -296,12 +296,12 @@ spec ∷
                                   , questions ∷
                                           GET "/questions"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
-                                                , response ∷  (Array Question)
+                                                , response ∷ (Array Question)
                                                 }
                                   , matches ∷
                                           GET "/matches"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
-                                                , response ∷  (Array Match)
+                                                , response ∷ (Array Match)
                                                 }
                                   , answer ∷
                                           POST "/answer"
@@ -309,11 +309,16 @@ spec ∷
                                                 , body ∷ { choice ∷ Int }
                                                 , response ∷ Empty
                                                 }
-                                    , throw ∷
+                                  , throw ∷
                                           POST "/throw"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
                                                 , body ∷ { message ∷ String }
-                                                , response ∷ { id :: Int }
+                                                , response ∷ { id ∷ Int }
+                                                }
+                                  , flying ∷
+                                          GET "/flying"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , response ∷ Array PaperPlane
                                                 }
                                   }
                     , backer ∷
@@ -349,12 +354,12 @@ spec ∷
                                   }
                     , sw ∷
                             GET "/sw.js"
-                                  { response ∷ Stream (read :: Read)
+                                  { response ∷ Stream (read ∷ Read)
                                   }
                     , developmentFiles ∷
                             GET "/file/<..path>"
                                   { params ∷ { path ∷ List String }
-                                  , response ∷ Stream (read :: Read)
+                                  , response ∷ Stream (read ∷ Read)
                                   }
                     ,
                       --404 can only be matched as a catch all route

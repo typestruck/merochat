@@ -13,7 +13,7 @@ type PaperPlanes =
       , thrower ∷ Int
       , message ∷ String
       , created ∷ Column DateTime Default
-      , caughtByAt :: Maybe DateTime
+      , by_at :: Maybe DateTime
       , by :: Maybe Int
       , status ∷ PlaperPlaneStatus
       )
@@ -30,5 +30,5 @@ _message = Proxy
 _by ∷ Proxy "by"
 _by = Proxy
 
-_caughtByAt ∷ Proxy "caught_by_at"
-_caughtByAt = Proxy
+_byAt ∷ Proxy "by_at"
+_byAt = Proxy

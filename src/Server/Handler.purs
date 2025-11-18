@@ -120,6 +120,7 @@ handlers reading =
               , matches: runJson reading SEH.matches
               , answer: runJson reading SEH.answer
               , throw: runJson reading SEH.throw
+              , flying: runJson reading SEH.flying
               }
       , sw
       , developmentFiles

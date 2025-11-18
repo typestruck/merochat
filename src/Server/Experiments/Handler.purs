@@ -7,7 +7,7 @@ import Payload.ResponseTypes (Empty(..))
 import Run as R
 import Server.Experiments.Action as SEA
 import Server.Experiments.Template as SET
-import Shared.Experiments.Types (Question, Match)
+import Shared.Experiments.Types (Match, Question, PaperPlane)
 import Shared.Html (Html(..))
 
 experiments ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
@@ -28,4 +28,7 @@ answer request = do
 
 throw ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { message ∷ String } } → ServerEffect {id :: Int}
 throw request = SEA.throwPlane request.guards.loggedUserId request.body.message
+
+flying ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array PaperPlane)
+flying request = SEA.flyingPlanes request.guards.loggedUserId
 
