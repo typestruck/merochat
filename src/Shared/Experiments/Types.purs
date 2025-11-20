@@ -48,6 +48,8 @@ data ExperimentsMessage
       | ResizeMessageInput Event
       | TogglePaperPlaneSection PaperPlaneSection
       | DisplayFlyingPaperPlanes (Array PaperPlane)
+      | CatchPaperPlane Int
+      | AfterCatchPlane Int
 
 type Match =
       { name ∷ String
@@ -57,7 +59,7 @@ type Match =
 type PaperPlane =
       { id ∷ Int
       , message ∷ String
-      , status ∷ PlaperPlaneStatus
+      , status ∷ PaperPlaneStatus
       }
 
 type ExperimentsModel =
@@ -78,10 +80,11 @@ type ExperimentsModel =
               , section ∷ PaperPlaneSection
               , thrown ∷ Array PaperPlane
               , flyingBy ∷ Array PaperPlane
+              , caught ∷ Array PaperPlane
               }
       }
 
-data PlaperPlaneStatus
+data PaperPlaneStatus
       = Flying
       | Caught
       | Crashed
@@ -103,6 +106,7 @@ data Experiment = WordChain | Doppelganger | PaperPlanes
 data PaperPlaneSection
       = ShowNew
       | ShowFlyingBy
+      | ShowCaught
 
 data DoppelgangerSection
       = ShowDoppelganger
@@ -110,13 +114,13 @@ data DoppelgangerSection
       | ShowMatches
 
 derive instance Eq Experiment
-derive instance Eq PlaperPlaneStatus
+derive instance Eq PaperPlaneStatus
 derive instance Eq PaperPlaneSection
 
 derive instance Ord Experiment
-derive instance Ord PlaperPlaneStatus
+derive instance Ord PaperPlaneStatus
 
-instance Bounded PlaperPlaneStatus where
+instance Bounded PaperPlaneStatus where
       bottom = Flying
       top = Crashed
 
@@ -124,7 +128,7 @@ instance Bounded Experiment where
       bottom = WordChain
       top = PaperPlanes
 
-instance BoundedEnum PlaperPlaneStatus where
+instance BoundedEnum PaperPlaneStatus where
       cardinality = Cardinality 1
       fromEnum = case _ of
             Flying → 1
@@ -148,7 +152,7 @@ instance BoundedEnum Experiment where
             30 → Just PaperPlanes
             _ → Nothing
 
-instance Enum PlaperPlaneStatus where
+instance Enum PaperPlaneStatus where
       succ = case _ of
             Flying → Just Caught
             Caught → Just Crashed
@@ -170,7 +174,7 @@ instance Enum Experiment where
 
 derive instance Generic Experiment _
 derive instance Generic DoppelgangerSection _
-derive instance Generic PlaperPlaneStatus _
+derive instance Generic PaperPlaneStatus _
 derive instance Generic PaperPlaneSection _
 
 instance DecodeJson PaperPlaneSection where
@@ -179,7 +183,7 @@ instance DecodeJson PaperPlaneSection where
 instance DecodeJson DoppelgangerSection where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson PlaperPlaneStatus where
+instance DecodeJson PaperPlaneStatus where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Experiment where
@@ -188,7 +192,7 @@ instance DecodeJson Experiment where
 instance EncodeJson Experiment where
       encodeJson = DAEGR.genericEncodeJson
 
-instance EncodeJson PlaperPlaneStatus where
+instance EncodeJson PaperPlaneStatus where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson PaperPlaneSection where
@@ -200,16 +204,16 @@ instance EncodeJson DoppelgangerSection where
 instance ToValue Experiment where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
-instance ToValue PlaperPlaneStatus where
+instance ToValue PaperPlaneStatus where
       toValue = F.unsafeToForeign <<< DE.fromEnum
 
-instance FromValue PlaperPlaneStatus where
+instance FromValue PaperPlaneStatus where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
 
 instance FromValue Experiment where
       fromValue v = map (SU.fromJust <<< DE.toEnum) (DL.fromValue v ∷ Either String Int)
 
-instance Show PlaperPlaneStatus where
+instance Show PaperPlaneStatus where
       show = case _ of
             Flying → "Flying"
             Caught → "Caught"

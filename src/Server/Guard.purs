@@ -35,7 +35,7 @@ guards reading =
 
 checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { pool } request = do
-      token <- checkLoggedUserToken request
+      token ← checkLoggedUserToken request
       maybeUserId ← SE.poolEffect pool Nothing $ ST.userIdFromToken tokenSecret token
       case maybeUserId of
             Just userId → pure $ Right userId
@@ -48,7 +48,7 @@ checkLoggedUser { pool } request = do
       isPost = NH.requestMethod request == "POST"
       redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
 
-checkLoggedUserToken ∷  Request → Aff String
+checkLoggedUserToken ∷ Request → Aff String
 checkLoggedUserToken request = do
       cookies ← PSG.cookies request
       pure <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies

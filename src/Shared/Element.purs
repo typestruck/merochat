@@ -1,8 +1,7 @@
 module Shared.Element
-  ( ElementId(..)
-  , toQuerySelector
-  )
-  where
+      ( ElementId(..)
+      , toQuerySelector
+      ) where
 
 import Prelude
 
@@ -54,7 +53,7 @@ data ElementId
       | TemporaryUserSignUpForm
       | KarmaPrivilegesRoot
 
-toQuerySelector :: ElementId -> QuerySelector
+toQuerySelector ∷ ElementId → QuerySelector
 toQuerySelector id = QuerySelector $ "#" <> show id
 
 instance Hashable ElementId where
@@ -72,7 +71,7 @@ instance Show ElementId where
             ProfileEditionForm → "profile-edition-form"
             MiniSuggestionContextMenu → "mini-suggestion-context-menu"
             Cards → "cards"
-            ChatSettings -> "chat-settings"
+            ChatSettings → "chat-settings"
             ChatInput → "chat-input"
             ChatInputSuggestion → "chat-input-suggestion"
             ChatInputContact → "chat-input-contact"
@@ -91,7 +90,7 @@ instance Show ElementId where
             TermsSection → "terms"
             Im → "im"
             EmailInput → "email-input"
-            PrivacySettings -> "privacy-settings"
+            PrivacySettings → "privacy-settings"
             PrivacySection → "privacy"
             FaqLink → "faq-link"
             BackerRoot → "backer-root"

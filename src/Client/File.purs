@@ -26,7 +26,7 @@ import Web.HTML.HTMLInputElement as WHI
 
 foreign import fileSize ∷ String → Int
 
-compressImage ∷ forall message. AppId ClientAppId message → Event → Boolean -> (Int → Int → String → message) → Aff Unit
+compressImage ∷ ∀ message. AppId ClientAppId message → Event → Boolean → (Int → Int → String → message) → Aff Unit
 compressImage appId event preserveSize message = EC.liftEffect do
       maybeFileList ← WHI.files input
       compressImageFromFileList maybeFileList appId preserveSize message
@@ -35,7 +35,7 @@ compressImage appId event preserveSize message = EC.liftEffect do
             target ← WEE.target event
             WHI.fromEventTarget target
 
-compressImageFromFileList ∷ ∀ message. Maybe FileList → AppId ClientAppId message → Boolean -> (Int → Int → String → message) → Effect Unit
+compressImageFromFileList ∷ ∀ message. Maybe FileList → AppId ClientAppId message → Boolean → (Int → Int → String → message) → Effect Unit
 compressImageFromFileList maybeFileList appId preserveSize message =
       case maybeFileList >>= WFL.item 0 of
             Nothing → pure unit
@@ -46,7 +46,7 @@ foreign import compressImage_ ∷ EffectFn3 File Boolean (Int → Int → String
 triggerFileSelect ∷ Element → Effect Unit
 triggerFileSelect = WHH.click <<< SU.fromJust <<< WHH.fromElement
 
-setUpFileChange ∷ ∀ message. Warn (Text "Deprecated") => (Int → Int → String → message) → Element → AppId ClientAppId message → Effect Unit
+setUpFileChange ∷ ∀ message. Warn (Text "Deprecated") ⇒ (Int → Int → String → message) → Element → AppId ClientAppId message → Effect Unit
 setUpFileChange message input appId = do
       CCD.addEventListener input change $ \_ → do
             let htmlInput = SU.fromJust $ WHI.fromElement input

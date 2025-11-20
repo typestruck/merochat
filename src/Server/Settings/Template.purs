@@ -22,7 +22,7 @@ template settings =
                           , passwordConfirmation: ""
                           , confirmTermination: false
                           , visible: true
-                          , tab : Privacy
+                          , tab: Privacy
                           , erroredFields: []
                           , hideSuccessMessage: true
                           }

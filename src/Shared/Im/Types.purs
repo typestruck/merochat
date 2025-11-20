@@ -156,7 +156,7 @@ type Im =
       , modalsLoaded ∷ Array ScreenModal
       , imUpdated ∷ Boolean
       , react ∷ ReactWith
-      , loadingContact :: Maybe Int
+      , loadingContact ∷ Maybe Int
       , enableNotificationsVisible ∷ Boolean
       , showSuggestionChatInput ∷ Maybe Int
       , showChangelogs ∷ Boolean
@@ -460,7 +460,6 @@ derive instance Ord ReportReason
 derive instance Ord PostMode
 derive instance Ord MessageStatus
 derive instance Ord SuggestionsFrom
-
 
 instance Bounded SuggestionsFrom where
       bottom = ThisWeek

@@ -51,7 +51,26 @@ update model =
             AfterThrowPlane id → afterThrowPlane id model
             ResizeMessageInput event → SIR.resizeInputFrom event model
             TogglePaperPlaneSection section → togglePaperPlaneSection section model
-            DisplayFlyingPaperPlanes planes -> displayFlyingPaperPlanes planes model
+            DisplayFlyingPaperPlanes planes → displayFlyingPaperPlanes planes model
+            CatchPaperPlane id → catchPaperPlane id model
+            AfterCatchPlane id  → afterCatchPlane id  model
+
+afterCatchPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+afterCatchPlane id model =
+      model
+            { paperPlane = model.paperPlane
+                    { loading = false
+                    , flyingBy = DA.filter ((_ /= id) <<< _.id) model.paperPlane.flyingBy
+                    , caught = ((SU.fromJust $ DA.find ((_ == id) <<< _.id) model.paperPlane.flyingBy) { status = Caught }) : model.paperPlane.caught
+                    }
+            } /\ []
+
+catchPaperPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+catchPaperPlane id model = model { paperPlane = model.paperPlane { loading = true } } /\ [ setIt ]
+      where
+      setIt = do
+            void <<< CCN.silentResponse $ request.experiments.catch { body: { id } }
+            pure <<< Just $ AfterCatchPlane id
 
 displayFlyingPaperPlanes ∷ Array PaperPlane → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 displayFlyingPaperPlanes planes model = model { paperPlane = model.paperPlane { flyingBy = planes } } /\ []
@@ -60,10 +79,10 @@ togglePaperPlaneSection ∷ PaperPlaneSection → ExperimentsModel → Experimen
 togglePaperPlaneSection section model = model { paperPlane = model.paperPlane { section = section } } /\ effects
       where
       fetch = do
-            r ← CCN.silentResponse $ request.experiments.flying {  }
+            r ← CCN.silentResponse $ request.experiments.flying {}
             pure <<< Just $ DisplayFlyingPaperPlanes r
       effects
-            | model.paperPlane.section /= section && section == ShowFlyingBy && DA.null model.paperPlane.flyingBy = [fetch]
+            | model.paperPlane.section /= section && section == ShowFlyingBy && DA.null model.paperPlane.flyingBy = [ fetch ]
             | otherwise = []
 
 setPlaneMessage ∷ String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))

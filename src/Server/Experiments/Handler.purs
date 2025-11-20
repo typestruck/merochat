@@ -1,14 +1,14 @@
 module Server.Experiments.Handler where
 
 import Prelude
-import Server.Effect
+import Server.Effect (ServerEffect)
 
 import Payload.ResponseTypes (Empty(..))
 import Run as R
 import Server.Experiments.Action as SEA
 import Server.Experiments.Template as SET
-import Shared.Experiments.Types (Match, Question, PaperPlane)
-import Shared.Html (Html(..))
+import Shared.Experiments.Types (Match, PaperPlane, Question)
+import Shared.Html (Html)
 
 experiments ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
 experiments { guards: { loggedUserId } } = do
@@ -26,8 +26,13 @@ answer request = do
       SEA.saveAnswer request.guards.loggedUserId request.body.choice
       pure Empty
 
-throw ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { message ∷ String } } → ServerEffect {id :: Int}
+throw ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { message ∷ String } } → ServerEffect { id ∷ Int }
 throw request = SEA.throwPlane request.guards.loggedUserId request.body.message
+
+catch ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int} } → ServerEffect Empty
+catch request = do
+      SEA.catchPlane request.guards.loggedUserId request.body.id
+      pure Empty
 
 flying ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array PaperPlane)
 flying request = SEA.flyingPlanes request.guards.loggedUserId

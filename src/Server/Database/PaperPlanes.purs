@@ -5,7 +5,7 @@ import Droplet.Language
 import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Data.Tuple.Nested (type (/\))
-import Shared.Experiments.Types (PlaperPlaneStatus)
+import Shared.Experiments.Types (PaperPlaneStatus)
 import Type.Proxy (Proxy(..))
 
 type PaperPlanes =
@@ -13,9 +13,9 @@ type PaperPlanes =
       , thrower ∷ Int
       , message ∷ String
       , created ∷ Column DateTime Default
-      , by_at :: Maybe DateTime
-      , by :: Maybe Int
-      , status ∷ PlaperPlaneStatus
+      , by_at ∷ Maybe DateTime
+      , by ∷ Maybe Int
+      , status ∷ PaperPlaneStatus
       )
 
 paper_planes ∷ Table "paper_planes" PaperPlanes

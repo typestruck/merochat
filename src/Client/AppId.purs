@@ -40,7 +40,7 @@ instance Show ClientAppId where
       show = case _ of
             Im → "im-app-id"
             Profile → "profile-app-id"
-            Settings -> "settings-app-id"
+            Settings → "settings-app-id"
             Feedback → "feedback-app-id"
             Experiments → "experiments-app-id"
             KarmaPrivileges → "karma-privileges-app-id"

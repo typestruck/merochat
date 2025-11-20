@@ -30,7 +30,8 @@ template payload = Html <$> F.preMount (QuerySelector "#chat-experiments")
                       , section: ShowNew
                       , message: Nothing
                       , thrown: payload.thrown
-                      , flyingBy : payload.flyingBy
+                      , flyingBy: payload.flyingBy
+                      , caught: payload.caught
                       }
               }
       }

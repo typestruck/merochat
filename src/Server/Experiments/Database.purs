@@ -68,14 +68,20 @@ savePlane loggedUserId message = SU.fromJust <$> SD.single (insert # into paper_
 
 countPaperPlanes ∷ Int → ServerEffect (Maybe BigInt)
 countPaperPlanes loggedUserId = do
-      count <- SD.single $ select (count _id # as c) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed)
+      count ← SD.single $ select (count _id # as c) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed)
       pure $ map _.c count
+
+updatePlaneStatus ∷ Int → Int -> PaperPlaneStatus -> ServerEffect Unit
+updatePlaneStatus loggedUserId id status = SD.execute $ update paper_planes # set (_status .=. status) # wher (_id .=. id .&&. _by .=.  loggedUserId)
 
 fetchPaperPlanes ∷ Int → ServerEffect (Array PaperPlane)
 fetchPaperPlanes loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _created
 
 fetchPaperPlanesFlying ∷ Int → ServerEffect (Array PaperPlane)
-fetchPaperPlanesFlying loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_by .=. loggedUserId) # orderBy _byAt
+fetchPaperPlanesFlying loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_by .=. loggedUserId .&&. _status .=. Flying) # orderBy _byAt
+
+fetchPaperPlanesCaught ∷ Int → ServerEffect (Array PaperPlane)
+fetchPaperPlanesCaught loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_by .=. loggedUserId .&&. _status .=. Caught) # orderBy _byAt
 
 q ∷ Proxy "q"
 q = Proxy

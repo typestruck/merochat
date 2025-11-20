@@ -77,8 +77,8 @@ changeStatus loggedUserId status = case _ of
 insertBlock ∷ Int → Int → ServerEffect Unit
 insertBlock loggedUserId blocked = SD.execute $ blockQuery loggedUserId blocked
 
-updateReaction :: Int -> Int -> String -> ServerEffect Unit
-updateReaction loggedUserId messageId reaction = SD.execute $ update messages # set (_reaction .=. Just reaction) # wher (_id .=. messageId .&&.( _sender .=. loggedUserId .||. _recipient .=. loggedUserId))
+updateReaction ∷ Int → Int → String → ServerEffect Unit
+updateReaction loggedUserId messageId reaction = SD.execute $ update messages # set (_reaction .=. Just reaction) # wher (_id .=. messageId .&&. (_sender .=. loggedUserId .||. _recipient .=. loggedUserId))
 
 markAsDeleted ∷ Boolean → Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit
 markAsDeleted isSender loggedUserId { userId, messageId }

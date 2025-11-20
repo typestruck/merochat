@@ -10,7 +10,7 @@ import Payload.ResponseTypes (Empty)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (EmailCaptcha, EmailPassword, EmailPasswordCaptcha, ResetPassword)
 import Shared.Changelog (Changelog)
-import Shared.Experiments.Types (Match, Question, PaperPlane)
+import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus, Question)
 import Shared.Html (Html)
 import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
@@ -314,6 +314,12 @@ spec ∷
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
                                                 , body ∷ { message ∷ String }
                                                 , response ∷ { id ∷ Int }
+                                                }
+                                  , catch ∷
+                                          POST "/catch"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , body ∷ { id ∷ Int }
+                                                , response ∷ Empty
                                                 }
                                   , flying ∷
                                           GET "/flying"

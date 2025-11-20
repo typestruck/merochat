@@ -153,8 +153,8 @@ accountSection model = HE.div_
 
 chatsSection ∷ SettingsModel → Html SettingsMessage
 chatsSection model = HE.div [ HA.id $ show ChatSettings ]
-      [ HE.div [HA.class' "duller"] [HE.text "Chat background"]
-        , HE.div_
+      [ HE.div [ HA.class' "duller" ] [ HE.text "Chat background" ]
+      , HE.div_
               [ HE.input [ HA.id "background-toggle", HA.type' "checkbox", HA.class' "modal-input-checkbox", HA.checked model.ownBackground, HA.onChange (SetSField (_ { ownBackground = not model.ownBackground })) ]
               , HE.label [ HA.for "background-toggle", HA.class' "inline" ] [ HE.text $ if DM.isJust model.chatBackground then "Use this background instead of contacts'" else "No chat backgrounds" ]
               ]

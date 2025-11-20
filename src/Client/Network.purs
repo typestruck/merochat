@@ -100,7 +100,7 @@ silentResponse aff = do
 defaultResponse ∷ ∀ r. Aff (ClientResponse r) → Aff (Either ClientError r)
 defaultResponse aff = map (_.body <<< coerce) <$> aff
       where
-      coerce :: Response r -> { body ∷ r, status ∷ HttpStatus, headers ∷ Headers }
+      coerce ∷ Response r → { body ∷ r, status ∷ HttpStatus, headers ∷ Headers }
       coerce = SC.coerce
 
 logError ∷ ∀ e. Show e ⇒ e → Aff Unit

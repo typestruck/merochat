@@ -8,8 +8,8 @@ import Shared.User (ProfileVisibility)
 
 toUserSettings ∷
       { readReceipts ∷ Checked
-      , chatBackground :: Maybe String
-      , ownBackground :: Checked
+      , chatBackground ∷ Maybe String
+      , ownBackground ∷ Checked
       , typingStatus ∷ Checked
       , profileVisibility ∷ ProfileVisibility
       , onlineStatus ∷ Checked

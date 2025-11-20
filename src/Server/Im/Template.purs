@@ -47,13 +47,13 @@ template payload = do
             { chatting: Nothing
             , freeToFetchSuggestions: true
             , temporaryId: 0
-            , loadingContact : Nothing
+            , loadingContact: Nothing
             , typingIds: []
             , suggesting:
                     if DA.null payload.suggestions then Nothing
                     else map _.id $ DA.head payload.suggestions
             , freeToFetchChatHistory: true
-            , react : WithEmoji
+            , react: WithEmoji
             , suggestionsPage: 1
             , errorMessage: ""
             , suggestionsFrom: ThisWeek

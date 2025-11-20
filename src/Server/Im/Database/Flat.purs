@@ -25,8 +25,8 @@ type FlatFields rest =
       , country ∷ Maybe String
       , description ∷ String
       , gender ∷ Maybe Gender
-      , ownBackground :: Checked
-      , chatBackground :: Maybe String
+      , ownBackground ∷ Checked
+      , chatBackground ∷ Maybe String
       , backer ∷ Checked
       , totalPosts ∷ Maybe BigInt
       , headline ∷ String
@@ -89,8 +89,8 @@ fromFlatUser fc =
       , posts: []
       , unseenPosts: DM.fromMaybe 0 (fc.unseenPosts >>= BI.toInt)
       , postsVisibility: fc.postsVisibility
-      , ownBackground : SC.coerce fc.ownBackground
-      , chatBackground : fc.chatBackground
+      , ownBackground: SC.coerce fc.ownBackground
+      , chatBackground: fc.chatBackground
       , isContact: fc.isContact
       , showing: ShowInfo
       , totalPosts: DM.fromMaybe 0 (fc.totalPosts >>= BI.toInt)
@@ -126,7 +126,7 @@ fromFlatMessage fm =
       , recipient: fm.recipient
       , edited: fm.edited
       , date: fm.date
-      , reaction : fm.reaction
+      , reaction: fm.reaction
       , content: fm.content
       , status: fm.status
       }

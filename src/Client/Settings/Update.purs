@@ -45,7 +45,7 @@ update model message =
             SetChatBackground image → setChatBackground image model
             AfterSaveChatBackground url → afterSaveChatBackground url model
             TerminateAccount → terminateAccount model
-            RemoveChatBackground -> removeChatBackground model
+            RemoveChatBackground → removeChatBackground model
             SaveChatBackground → saveChatBackground model
             ChangePrivacySettings → changePrivacySettings model
             ToggleVisibility modal → setIt (_ { visible = modal == ShowSettings }) model

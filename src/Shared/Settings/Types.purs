@@ -17,14 +17,14 @@ type SM =
       , password ∷ String
       , erroredFields ∷ Array String
       , passwordConfirmation ∷ String
-      , tab :: Tab
+      , tab ∷ Tab
       , visible ∷ Boolean
       , hideSuccessMessage ∷ Boolean
       , confirmTermination ∷ Boolean
       | US
       )
 
-type US  = (chatBackground :: Maybe String, ownBackground :: Boolean | PS)
+type US = (chatBackground ∷ Maybe String, ownBackground ∷ Boolean | PS)
 
 type UserSettings = Record US
 
@@ -56,10 +56,10 @@ data SettingsMessage
       | ToggleTerminateAccount
       | TerminateAccount --very bad
 
-data Tab =
-      Privacy |
-      Chats |
-      Account
+data Tab
+      = Privacy
+      | Chats
+      | Account
 
 derive instance Eq Tab
 

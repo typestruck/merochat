@@ -12,12 +12,12 @@ import Data.Set as DS
 import Environment (production)
 
 allowedMediaTypes ∷ HashMap String String
-allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64", audioMediaType, videoMediaType  ] $ DS.toUnfoldable allowedExtensions
+allowedMediaTypes = DH.fromFoldable <<< DA.zip [ "data:image/png;base64", "data:image/jpeg;base64", "data:image/tiff;base64", "data:image/bmp;base64", "data:image/gif;base64", audioMediaType, videoMediaType ] $ DS.toUnfoldable allowedExtensions
 
-audioMediaType :: String
+audioMediaType ∷ String
 audioMediaType = "data:audio/webm;base64"
 
-videoMediaType :: String
+videoMediaType ∷ String
 videoMediaType = "data:video/mp4;base64"
 
 allowedExtensions ∷ Set String

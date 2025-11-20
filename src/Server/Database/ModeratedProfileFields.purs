@@ -24,7 +24,7 @@ moderated_profile_fields = Table
 _moderated ∷ Proxy "moderated"
 _moderated = Proxy
 
-_chatBackgrounded :: Proxy "chat_backgrounded"
+_chatBackgrounded ∷ Proxy "chat_backgrounded"
 _chatBackgrounded = Proxy
 
 _headlined ∷ Proxy "headlined"
@@ -38,5 +38,4 @@ _avatared = Proxy
 
 _named ∷ Proxy "named"
 _named = Proxy
-
 

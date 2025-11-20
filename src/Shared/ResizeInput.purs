@@ -13,10 +13,10 @@ import Web.DOM.Element as WDE
 import Web.Event.Event as WEE
 import Web.Event.Internal.Types (Event)
 
-foreign import resizeInput ∷ Element -> Effect Unit
+foreign import resizeInput ∷ Element → Effect Unit
 
 -- | The chatting textarea grows / shrink as text is inputed
-resizeInputFrom ∷ forall model message. Event → model → model /\ (Array (Aff (Maybe message)))
+resizeInputFrom ∷ ∀ model message. Event → model → model /\ (Array (Aff (Maybe message)))
 resizeInputFrom event model = model /\ [ resize ]
       where
       resize = do

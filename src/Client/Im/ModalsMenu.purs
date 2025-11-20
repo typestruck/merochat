@@ -21,7 +21,7 @@ import Effect.Class (liftEffect)
 import Effect.Class as EC
 import Flame as F
 import Flame.Subscription.Unsafe.CustomEvent as FS
-import Shared.Html(Html(..))
+import Shared.Html (Html(..))
 import Safe.Coerce as SC
 import Shared.Element (ElementId(..))
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))

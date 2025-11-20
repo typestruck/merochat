@@ -11,6 +11,7 @@ import Flame.Subscription as FS
 import Shared.Settings.Types (SettingsMessage(..))
 import Shared.Settings.View as SSV
 import Web.DOM.ParentNode (QuerySelector(..))
+
 main ∷ Effect Unit
 main =
       void $ F.resumeMount (QuerySelector "#settings-edition") settingsAppId

@@ -102,7 +102,7 @@ postsFilter loggedUserId =
                     )
       )
 
-postsFilterUnseen :: Int -> _
+postsFilterUnseen ∷ Int → _
 postsFilterUnseen loggedUserId = postsFilter loggedUserId .&&. (not (exists $ select (1 # as u) # from posts_seen # wher (_poster .=. u ... _id .&&. _reader .=. loggedUserId .&&. _until .>=. p ... _id)))
 
 suggestMainQuery loggedUserId skip filter =

@@ -8,7 +8,7 @@ import Data.Maybe as DM
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..))
+import Shared.Experiments.Types (ExperimentsMessage(..), ExperimentsModel, PaperPlaneSection(..), PaperPlaneStatus(..))
 import Shared.Options.PaperPlane (maxMessageCharacters, maxPaperPlanes)
 
 view ∷ ExperimentsModel → Html ExperimentsMessage
@@ -16,23 +16,44 @@ view model = HE.div [ HA.class' "paper-plane duller" ]
       [ HE.div [ HA.class' "green-tab" ]
               [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowNew }, HA.onClick $ TogglePaperPlaneSection ShowNew ] [ HE.text "New" ]
               , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowFlyingBy }, HA.onClick $ TogglePaperPlaneSection ShowFlyingBy ] [ HE.text "Flying by" ]
-              , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": false } ] [ HE.text "Caught" ]
+              , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.paperPlane.section == ShowCaught }, HA.onClick $ TogglePaperPlaneSection ShowCaught ] [ HE.text "Caught" ]
               ]
       , case model.paperPlane.section of
               ShowNew → new model
               ShowFlyingBy → flyingBy model
+              ShowCaught -> caught model
       ]
+
+caught ∷ ExperimentsModel → Html ExperimentsMessage
+caught model =
+      HE.div [ HA.class' "flying-by" ] $
+            if DA.null model.paperPlane.caught then
+                  [ HE.i [] [ HE.text "No planes caught yet" ] ]
+            else
+                  map display model.paperPlane.caught
+      where
+      display plane = HE.div_
+            [ HE.div [ HA.class' "paper-thrown-entry" ]
+                    [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
+                    ]
+            ]
 
 flyingBy ∷ ExperimentsModel → Html ExperimentsMessage
 flyingBy model =
       HE.div [ HA.class' "flying-by" ] $
             if DA.null model.paperPlane.flyingBy then
-                  [ HE.i [] [ HE.text "No paper plane passing by" ] ]
+                  [ HE.i [] [ HE.text "No planes passing by" ] ]
             else
                   map display model.paperPlane.flyingBy
       where
-      display plane = HE.div [ HA.class' "paper-thrown-entry" ]
-            [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
+      display plane = HE.div_
+            [ HE.div [ HA.class' "paper-thrown-entry" ]
+                    [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
+                    ]
+            , HE.div [ HA.class' "paper-thrown-options" ]
+                    [ HE.a [ HA.class' "paper-catch" ] [ HE.text "Pass" ]
+                    , HE.a [ HA.class' "paper-catch", HA.onClick $ CatchPaperPlane plane.id ] [ HE.text "Catch!" ]
+                    ]
             ]
 
 new ∷ ExperimentsModel → Html ExperimentsMessage

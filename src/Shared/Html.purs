@@ -20,9 +20,9 @@ instance EncodeResponse Html where
             , status
             }
 
-instance  DecodeResponse Html where
-  decodeResponse resp = do
-      text <- PCF.text resp.raw
-      case text of
-            Right t -> pure <<< Right $ Html t
-            Left l -> pure <<< Left <<< PCD.unknown $ show l
+instance DecodeResponse Html where
+      decodeResponse resp = do
+            text ← PCF.text resp.raw
+            case text of
+                  Right t → pure <<< Right $ Html t
+                  Left l → pure <<< Left <<< PCD.unknown $ show l

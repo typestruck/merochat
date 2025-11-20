@@ -41,7 +41,7 @@ backerUser =
       , joined: DateTimeWrapper epoch
       , readReceipts: true
       , posts: []
-      , ownBackground : false
+      , ownBackground: false
       , chatBackground: Nothing
       , showing: ShowInfo
       , messageTimestamps: true

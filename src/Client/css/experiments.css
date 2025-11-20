@@ -98,6 +98,22 @@
 .paper-flown-message {
     word-wrap: break-word;
     overflow: auto;
+    font-style: italic;
+}
+
+.paper-catch {
+    color: var(--merochat-green);
+    margin-left: 10px;
+    margin-bottom: 15px;
+}
+
+.paper-catch:last-child {
+    font-weight: bold;
+}
+
+.paper-thrown-options {
+    display: flex;
+    justify-content: flex-end;
 }
 
 @media (max-width:1279px) {
@@ -122,7 +138,8 @@
         width: auto;
     }
 
-    .paper-thrown-entry, .flying-by {
+    .paper-thrown-entry,
+    .flying-by {
         width: calc(100vw - 47px);
     }
 }

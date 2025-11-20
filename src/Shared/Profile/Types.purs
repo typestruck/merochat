@@ -18,7 +18,6 @@ import Shared.Privilege (Privilege)
 import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
 
-
 data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
       | SetLanguage String

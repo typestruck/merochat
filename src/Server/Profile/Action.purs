@@ -76,10 +76,10 @@ save loggedUserId fields = do
       eighteen ← Just <$> R.liftEffect SDT.latestEligibleBirthday
       when (map SC.coerce fields.age > eighteen) $ SR.throwBadRequest tooYoungMessage
       moreTags ← SDP.hasPrivilege loggedUserId MoreTags
-      badWordedFields <- SD.withTransaction $ \connection → do
+      badWordedFields ← SD.withTransaction $ \connection → do
             current ← SPD.presentGeneratedFields connection loggedUserId
             let name = DS.take nameMaxCharacters $ DS.trim fields.name.value
-            nameHasBadWord <-
+            nameHasBadWord ←
                   if name == current.name then
                         pure Nothing
                   else if hasBadWords name then do
@@ -89,7 +89,7 @@ save loggedUserId fields = do
                         SPD.saveRequiredField connection loggedUserId Name name fields.name.generated
                         pure Nothing
             let headline = DS.take headlineMaxCharacters $ DS.trim fields.headline.value
-            headlineHasBadWord <-
+            headlineHasBadWord ←
                   if headline == current.headline then
                         pure Nothing
                   else if hasBadWords headline then do
@@ -99,18 +99,18 @@ save loggedUserId fields = do
                         SPD.saveRequiredField connection loggedUserId Headline headline fields.headline.generated
                         pure Nothing
             let description = DS.take descriptionMaxCharacters $ DS.trim fields.description.value
-            descriptionHasBadWord <-
+            descriptionHasBadWord ←
                   if description == current.description then
                         pure Nothing
                   else if hasBadWords description then do
                         SPD.saveForApproval connection loggedUserId Description description
                         pure <<< Just $ Description /\ description
-                  else  do
+                  else do
                         SPD.saveRequiredField connection loggedUserId Description description fields.description.generated
                         pure Nothing
-            avatarIsNaughty <- case avatar of
+            avatarIsNaughty ← case avatar of
                   Save (Just fileName) → do
-                        isNaughty <- R.liftAff <<< SF.isNsfw $ localBasePath <> uploadFolder <> fileName
+                        isNaughty ← R.liftAff <<< SF.isNsfw $ localBasePath <> uploadFolder <> fileName
                         if isNaughty then do
                               SPD.saveForApproval connection loggedUserId Avatar (spy ("naughty avatar for " <> show loggedUserId) fileName)
                               pure <<< Just $ Avatar /\ fileName
@@ -118,7 +118,7 @@ save loggedUserId fields = do
                               SPD.saveField connection loggedUserId Avatar $ Just fileName
                               pure Nothing
                   Save Nothing → do
-                        SPD.saveField connection loggedUserId Avatar (Nothing :: Maybe String)
+                        SPD.saveField connection loggedUserId Avatar (Nothing ∷ Maybe String)
                         pure Nothing
                   _ → pure Nothing
             SPD.saveField connection loggedUserId Birthday fields.age
@@ -130,9 +130,9 @@ save loggedUserId fields = do
                         | moreTags = maxFinalTags
                         | otherwise = maxStartingTags
             SPD.saveTags connection loggedUserId <<< DA.take numberTags $ map (DS.take tagMaxCharacters) fields.tags
-            pure [nameHasBadWord, headlineHasBadWord, descriptionHasBadWord, avatarIsNaughty]
+            pure [ nameHasBadWord, headlineHasBadWord, descriptionHasBadWord, avatarIsNaughty ]
       --if a user inputs some bad word into their profile we save it on a different table that is shown only to that user and then needs to be approved
-      DF.traverse_ (\b -> SE.sendEmail (Approve {user_id : loggedUserId, field: show $ DT.fst b, value : DT.snd b })) $ DA.catMaybes badWordedFields
+      DF.traverse_ (\b → SE.sendEmail (Approve { user_id: loggedUserId, field: show $ DT.fst b, value: DT.snd b })) $ DA.catMaybes badWordedFields
       pure $ case avatar of
             Save a → { avatar: a }
             Ignore → { avatar: fields.avatar }

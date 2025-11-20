@@ -19,7 +19,7 @@ data Email
       = Feedback { feedbacker ∷ Int, comments ∷ String, file ∷ String }
       | Report { reported ∷ Int, reporter ∷ Int, reason ∷ String, comment ∷ String }
       | Reset { email ∷ String, user_id ∷ Int, token ∷ String }
-      | Approve { user_id :: Int, field :: String, value :: String }
+      | Approve { user_id ∷ Int, field ∷ String, value ∷ String }
 
 foreign import sendEmail_ ∷ EffectFn2 String Foreign Unit
 

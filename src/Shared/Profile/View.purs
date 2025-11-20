@@ -190,5 +190,3 @@ preview model =
       languages = DH.fromArrayBy _.id _.name model.languages
       languageEntry id = HE.span_ [ HE.text <<< SU.fromJust $ DH.lookup id languages ]
 
-
-

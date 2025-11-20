@@ -23,7 +23,7 @@ update model =
       case _ of
             ToggleVisibility modal → toggleVisibility modal model
             SetComments input → setComments input model
-            BeforeSetScreenshot event -> beforeSetScreenshot event model
+            BeforeSetScreenshot event → beforeSetScreenshot event model
             SetScreenshot base64 → setScreenshot base64 model
             SendFeedback → sendFeedback model
             AfterSendFeedback status → afterSendFeedback status model
@@ -31,7 +31,7 @@ update model =
 toggleVisibility ∷ ScreenModal → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
 toggleVisibility modal model = model { visible = modal == ShowFeedback } /\ []
 
-setComments :: String -> FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+setComments ∷ String → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
 setComments input model =
       model
             { comments = input
@@ -44,13 +44,13 @@ beforeSetScreenshot event model = model /\ [ before ]
             CCF.compressImage feedbackAppId event false (\_ _ b → SetScreenshot b)
             pure Nothing
 
-setScreenshot :: String -> FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+setScreenshot ∷ String → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
 setScreenshot base64 model =
       model
             { screenshot = Just base64
             } /\ []
 
-sendFeedback :: FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+sendFeedback ∷ FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
 sendFeedback model = case DS.trim model.comments of
       "" → model { feedbackStatus = Just NoComments } /\ []
       trimmed → model { loading = true } /\ [ send trimmed ]
@@ -61,7 +61,7 @@ sendFeedback model = case DS.trim model.comments of
                   Right _ → pure <<< Just <<< AfterSendFeedback $ Just Success
                   Left err → pure <<< Just <<< AfterSendFeedback <<< Just <<< Failure $ SN.errorMessage err
 
-afterSendFeedback :: Maybe RequestStatus -> FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
+afterSendFeedback ∷ Maybe RequestStatus → FeedbackModel → FeedbackModel /\ Array (Aff (Maybe FeedbackMessage))
 afterSendFeedback status model = case status of
       Nothing → model { feedbackStatus = Nothing } /\ []
       Just (Failure _) → model { loading = false, feedbackStatus = Request <$> status } /\ []

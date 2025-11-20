@@ -120,6 +120,7 @@ handlers reading =
               , matches: runJson reading SEH.matches
               , answer: runJson reading SEH.answer
               , throw: runJson reading SEH.throw
+              , catch: runJson reading SEH.catch
               , flying: runJson reading SEH.flying
               }
       , sw
@@ -144,15 +145,15 @@ runHtml reading handler input = run `EA.catchError` catch
                         InternalError { reason } → SIEH.internalError reason
                         ExpiredSession → pure $ SL.logout (routes.login.get {}) ""
 
-runJson ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String)  b)
+runJson ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
 runJson reading handler = R.runBaseAff' <<< RE.catch handleRequestError <<< RR.runReader reading <<< map Right <<< handler
-        where
-        handleRequestError ohno = do
-                R.liftEffect <<< EC.log $ "server error " <> show ohno
-                pure <<< Left $ case ohno of
-                        BadRequest { reason } → PSR.badRequest reason
-                        InternalError { reason } → PSR.internalError reason
-                        ExpiredSession → PSR.unauthorized ""
+      where
+      handleRequestError ohno = do
+            R.liftEffect <<< EC.log $ "server error " <> show ohno
+            pure <<< Left $ case ohno of
+                  BadRequest { reason } → PSR.badRequest reason
+                  InternalError { reason } → PSR.internalError reason
+                  ExpiredSession → PSR.unauthorized ""
 
 --we need to hardcode this becuse service workers scope to their path
 sw ∷ _ → Aff _

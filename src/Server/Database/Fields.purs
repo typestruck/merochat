@@ -74,10 +74,10 @@ readReceipts = Proxy
 typingStatus ∷ Proxy "typingStatus"
 typingStatus = Proxy
 
-chatBackground :: Proxy "chatBackground"
+chatBackground ∷ Proxy "chatBackground"
 chatBackground = Proxy
 
-ownBackground :: Proxy "ownBackground"
+ownBackground ∷ Proxy "ownBackground"
 ownBackground = Proxy
 
 onlineStatus ∷ Proxy "onlineStatus"

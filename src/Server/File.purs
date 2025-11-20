@@ -29,10 +29,10 @@ foreign import realFileExtension_ ∷ Buffer → Effect (Promise String)
 realFileExtension ∷ Buffer → Aff String
 realFileExtension buffer = CP.toAffE $ realFileExtension_ buffer
 
-foreign import isNsfw_ :: String -> Effect (Promise Boolean)
+foreign import isNsfw_ ∷ String → Effect (Promise Boolean)
 
-isNsfw :: String -> Aff Boolean
-isNsfw filePath = CP.toAffE $ isNsfw_  filePath
+isNsfw ∷ String → Aff Boolean
+isNsfw filePath = CP.toAffE $ isNsfw_ filePath
 
 invalidImageMessage ∷ String
 invalidImageMessage = "Invalid file"

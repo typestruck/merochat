@@ -67,7 +67,7 @@ chatHistory model =
                         , onScrollEvent chatting.user.id
                         ] $
                         if chatting.user.availability == Unavailable then
-                                []
+                              []
                         else
                               let
                                     entries = retryOrWarning chatting.user.id : temporaryChatWarning <> displayChatHistory chatting
