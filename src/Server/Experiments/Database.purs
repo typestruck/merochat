@@ -74,6 +74,9 @@ countPaperPlanes loggedUserId = do
 updatePlaneStatus ∷ Int → Int -> PaperPlaneStatus -> ServerEffect Unit
 updatePlaneStatus loggedUserId id status = SD.execute $ update paper_planes # set (_status .=. status) # wher (_id .=. id .&&. _by .=.  loggedUserId)
 
+updatePlaneBy ∷ Int → Int -> ServerEffect Unit
+updatePlaneBy loggedUserId id  = SD.execute $ update paper_planes # set (_by .=. Nothing) # wher (_id .=. id .&&. _by .=.  loggedUserId)
+
 fetchPaperPlanes ∷ Int → ServerEffect (Array PaperPlane)
 fetchPaperPlanes loggedUserId = SD.query $ select (_id /\ _message /\ _status) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _created
 

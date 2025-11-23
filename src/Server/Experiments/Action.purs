@@ -53,5 +53,8 @@ throwPlane loggedUserId message = do
 catchPlane ∷ Int → Int → ServerEffect Unit
 catchPlane loggedUserId id = SED.updatePlaneStatus loggedUserId id Caught
 
+passPlane ∷ Int → Int → ServerEffect Unit
+passPlane loggedUserId id = SED.updatePlaneBy loggedUserId id
+
 flyingPlanes ∷ Int → ServerEffect (Array PaperPlane)
 flyingPlanes loggedUserId = SED.fetchPaperPlanesFlying loggedUserId

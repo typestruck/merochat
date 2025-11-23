@@ -34,6 +34,11 @@ catch request = do
       SEA.catchPlane request.guards.loggedUserId request.body.id
       pure Empty
 
+pass ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int} } → ServerEffect Empty
+pass request = do
+      SEA.passPlane request.guards.loggedUserId request.body.id
+      pure Empty
+
 flying ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array PaperPlane)
 flying request = SEA.flyingPlanes request.guards.loggedUserId
 

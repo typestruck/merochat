@@ -51,7 +51,7 @@ flyingBy model =
                     [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
                     ]
             , HE.div [ HA.class' "paper-thrown-options" ]
-                    [ HE.a [ HA.class' "paper-catch" ] [ HE.text "Pass" ]
+                    [ HE.a [ HA.class' "paper-catch", HA.onClick $ PassPaperPlane plane.id ] [ HE.text "Pass" ]
                     , HE.a [ HA.class' "paper-catch", HA.onClick $ CatchPaperPlane plane.id ] [ HE.text "Catch!" ]
                     ]
             ]

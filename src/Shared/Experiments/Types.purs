@@ -50,6 +50,8 @@ data ExperimentsMessage
       | DisplayFlyingPaperPlanes (Array PaperPlane)
       | CatchPaperPlane Int
       | AfterCatchPlane Int
+      | PassPaperPlane Int
+      | AfterPassPlane Int
 
 type Match =
       { name ∷ String

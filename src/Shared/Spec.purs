@@ -321,6 +321,12 @@ spec ∷
                                                 , body ∷ { id ∷ Int }
                                                 , response ∷ Empty
                                                 }
+                                 , pass ∷
+                                          POST "/pass"
+                                                { guards ∷ Guards ("loggedUserId" : Nil)
+                                                , body ∷ { id ∷ Int }
+                                                , response ∷ Empty
+                                                }
                                   , flying ∷
                                           GET "/flying"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)

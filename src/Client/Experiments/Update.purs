@@ -53,7 +53,25 @@ update model =
             TogglePaperPlaneSection section → togglePaperPlaneSection section model
             DisplayFlyingPaperPlanes planes → displayFlyingPaperPlanes planes model
             CatchPaperPlane id → catchPaperPlane id model
-            AfterCatchPlane id  → afterCatchPlane id  model
+            AfterCatchPlane id → afterCatchPlane id model
+            PassPaperPlane id → passPaperPlane id model
+            AfterPassPlane id → afterPassPlane id model
+
+afterPassPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+afterPassPlane id model =
+      model
+            { paperPlane = model.paperPlane
+                    { loading = false
+                    , flyingBy = DA.filter ((_ /= id) <<< _.id) model.paperPlane.flyingBy
+                    }
+            } /\ []
+
+passPaperPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+passPaperPlane id model = model { paperPlane = model.paperPlane { loading = true } } /\ [ setIt ]
+      where
+      setIt = do
+            void <<< CCN.silentResponse $ request.experiments.pass { body: { id } }
+            pure <<< Just $ AfterPassPlane id
 
 afterCatchPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 afterCatchPlane id model =

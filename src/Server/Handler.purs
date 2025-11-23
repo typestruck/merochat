@@ -121,6 +121,7 @@ handlers reading =
               , answer: runJson reading SEH.answer
               , throw: runJson reading SEH.throw
               , catch: runJson reading SEH.catch
+              , pass: runJson reading SEH.pass
               , flying: runJson reading SEH.flying
               }
       , sw
