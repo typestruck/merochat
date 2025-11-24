@@ -21,7 +21,7 @@ view model = HE.div [ HA.class' "paper-plane duller" ]
       , case model.paperPlane.section of
               ShowNew → new model
               ShowFlyingBy → flyingBy model
-              ShowCaught -> caught model
+              ShowCaught → caught model
       ]
 
 caught ∷ ExperimentsModel → Html ExperimentsMessage
@@ -51,7 +51,8 @@ flyingBy model =
                     [ HE.div [ HA.class' "paper-flown-message" ] [ HE.text plane.message ]
                     ]
             , HE.div [ HA.class' "paper-thrown-options" ]
-                    [ HE.a [ HA.class' "paper-catch", HA.onClick $ PassPaperPlane plane.id ] [ HE.text "Pass" ]
+                    [ HE.a [ HA.class' "paper-catch report", HA.onClick $ ReportPlane plane.id plane.thrower ] [ HE.text "Report" ]
+                    , HE.a [ HA.class' "paper-catch", HA.onClick $ PassPaperPlane plane.id ] [ HE.text "Pass" ]
                     , HE.a [ HA.class' "paper-catch", HA.onClick $ CatchPaperPlane plane.id ] [ HE.text "Catch!" ]
                     ]
             ]

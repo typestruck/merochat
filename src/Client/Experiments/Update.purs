@@ -19,7 +19,7 @@ import Effect.Class as EC
 import Flame (Update)
 import Flame as F
 import Flame.Subscription as FS
-import Shared.Im.Types (RetryableRequest(..))
+import Shared.Im.Types (ReportReason(..), RetryableRequest(..))
 import Shared.Im.Types as SIT
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.ResizeInput as SIR
@@ -56,6 +56,14 @@ update model =
             AfterCatchPlane id → afterCatchPlane id model
             PassPaperPlane id → passPaperPlane id model
             AfterPassPlane id → afterPassPlane id model
+            ReportPlane id userId → reportPlane id userId model
+
+reportPlane ∷ Int → Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+reportPlane id userId model = model { paperPlane = model.paperPlane { loading = true } } /\ [ setIt ]
+      where
+      setIt = do
+            void <<< CCN.silentResponse $ request.im.report { body: { userId, reason: OtherReason, comment: Just $ "paper plane reported: " <> show id } }
+            pure <<< Just $ PassPaperPlane id
 
 afterPassPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 afterPassPlane id model =
@@ -119,7 +127,7 @@ afterThrowPlane id model =
             { paperPlane = model.paperPlane
                     { loading = false
                     , message = Nothing
-                    , thrown = { id, message: SU.fromJust model.paperPlane.message, status: Flying } : model.paperPlane.thrown
+                    , thrown = { id, thrower: model.user.id, message: SU.fromJust model.paperPlane.message, status: Flying } : model.paperPlane.thrown
                     }
             } /\ []
 
