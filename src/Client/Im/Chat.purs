@@ -46,7 +46,6 @@ import Shared.Im.Types (Contact, ImMessage(..), ImModel, MessageStatus(..), Retr
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
 import Shared.Modal (ChatModal(..), Modal(..))
-import Shared.Options.Doppelganger (message)
 import Shared.ResizeInput as SRI
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
@@ -459,8 +458,8 @@ deleteMessage id webSocket model =
             EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId: SU.fromJust model.chatting }
             pure Nothing
 
-messageDoppelganger ∷ Int → WebSocket → ImModel → MoreMessages
-messageDoppelganger userId webSocket model =
+messageFromExperiment ∷ Int → String -> WebSocket → ImModel → MoreMessages
+messageFromExperiment userId message webSocket model =
       if isContact then
             model /\ [ hide, resume, send ]
       else if isSuggestion then

@@ -12,6 +12,7 @@ import Data.BigInt (BigInt)
 import Data.BigInt as BI
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
+import Droplet.Driver.Internal.Query (Connection(..))
 import Server.Database as SD
 import Server.Database.Changelogs (_action, _changed, _value, changelogs)
 import Server.Database.DoppelgangerAnswers (_taker, doppelganger_answers)
@@ -21,6 +22,7 @@ import Server.Database.LastSeen (_who)
 import Server.Database.Messages (_status)
 import Server.Database.PaperPlanes (_by, _byAt, _message, _thrower, paper_planes)
 import Server.Database.Recoveries (_created)
+import Server.Database.Users (users)
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database.Flat (FlatQuestion)
 import Shared.Changelog (ChangelogAction(..))
@@ -69,20 +71,26 @@ countPaperPlanes loggedUserId = do
       count ← SD.single $ select (count _id # as c) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed)
       pure $ map _.c count
 
-updatePlaneStatus ∷ Int → Int → PaperPlaneStatus → ServerEffect Unit
-updatePlaneStatus loggedUserId id status = SD.execute $ update paper_planes # set (_status .=. status) # wher (_id .=. id .&&. _by .=. loggedUserId)
+updatePlaneStatus ∷ Connection -> Int → Int → PaperPlaneStatus → _
+updatePlaneStatus connection loggedUserId id status = SD.executeWith connection $ update paper_planes # set (_status .=. status) # wher (_id .=. id .&&. _by .=. loggedUserId)
+
+fetchThrower :: Connection -> Int -> Int -> _
+fetchThrower connection loggedUserId id = SD.singleWith connection $ select _thrower # from paper_planes # wher (_id .=. id .&&. _by .=. loggedUserId)
 
 updatePlaneBy ∷ Int → Int → ServerEffect Unit
 updatePlaneBy loggedUserId id = SD.execute $ update paper_planes # set (_by .=. Nothing) # wher (_id .=. id .&&. _by .=. loggedUserId)
 
 fetchPaperPlanes ∷ Int → ServerEffect (Array PaperPlane)
-fetchPaperPlanes loggedUserId = SD.query $ select (_id /\ _message /\ _thrower /\ _status) # from paper_planes # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _created
+fetchPaperPlanes loggedUserId = SD.query $ select ((p ... _id # as _id) /\ _name /\ _message /\ _thrower /\ _status) # from (join (paper_planes # as p) (users # as u) # on (u ... _id .=. _thrower) ) # wher (_thrower .=. loggedUserId .&&. _status .<>. Crashed) # orderBy _created
 
 fetchPaperPlanesFlying ∷ Int → ServerEffect (Array PaperPlane)
-fetchPaperPlanesFlying loggedUserId = SD.query $ select (_id /\ _message /\ _thrower /\ _status) # from paper_planes # wher (_by .=. loggedUserId .&&. _status .=. Flying) # orderBy _byAt
+fetchPaperPlanesFlying loggedUserId = SD.query $ select ((p ... _id # as _id) /\ _message /\ _name /\ _thrower /\ _status) # from (join (paper_planes # as p) (users # as u) # on (u ... _id .=. _thrower) ) # wher (_by .=. loggedUserId .&&. _status .=. Flying) # orderBy _byAt
 
 fetchPaperPlanesCaught ∷ Int → ServerEffect (Array PaperPlane)
-fetchPaperPlanesCaught loggedUserId = SD.query $ select (_id /\ _message /\ _thrower /\ _status) # from paper_planes # wher (_by .=. loggedUserId .&&. _status .=. Caught) # orderBy _byAt
+fetchPaperPlanesCaught loggedUserId = SD.query $ select ((p ... _id # as _id) /\ _name /\ _message /\ _thrower /\ _status) # from (join (paper_planes # as p) (users # as u) # on (u ... _id .=. _thrower) ) # wher (_by .=. loggedUserId .&&. _status .=. Caught) # orderBy _byAt
+
+notifyPlaneCaught :: Connection -> Int -> String -> _
+notifyPlaneCaught connection userId description = SD.executeWith connection $ insert # into changelogs (_changed /\ _description /\ _action) # values (Just userId  /\ description /\ Just OpenExperimentsPage )
 
 q ∷ Proxy "q"
 q = Proxy

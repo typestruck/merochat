@@ -151,7 +151,7 @@ update st model =
             SetTyping text → CIC.sendTyping text (EU.unsafePerformEffect EN.nowDateTime) webSocket model
             NoTyping id → F.noMessages $ CIC.toggleTyping id false model
             TypingId id → F.noMessages model { typingIds = DA.snoc model.typingIds $ SC.coerce id }
-            MessageDoppelganger userId → CIC.messageDoppelganger userId webSocket model
+            MessageFromExperiment userId message → CIC.messageFromExperiment userId message webSocket model
 
             --contacts
             ResumeChat userId → CICN.resumeChat userId model

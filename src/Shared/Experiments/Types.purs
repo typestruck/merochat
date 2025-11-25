@@ -40,7 +40,7 @@ data ExperimentsMessage
       | FetchMatches
       | ToggleDoppelgangerSection DoppelgangerSection
       | DisplayMatches (Array Match)
-      | MessageDoppelganger Int
+      | MessageFromExperiment Int
 
       | SetPlaneMessage String
       | ThrowPlane
@@ -53,6 +53,7 @@ data ExperimentsMessage
       | PassPaperPlane Int
       | AfterPassPlane Int
       | ReportPlane Int Int
+      | MessagePaperPlane Int String
 
 type Match =
       { name ∷ String
@@ -63,6 +64,7 @@ type PaperPlane =
       { id ∷ Int
       , message ∷ String
       , thrower :: Int
+      , name :: String
       , status ∷ PaperPlaneStatus
       }
 

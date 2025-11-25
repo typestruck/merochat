@@ -8,6 +8,7 @@ import Data.BigInt as BI
 import Data.Maybe (Maybe(..))
 import Debug (spy)
 import Run.Except as RE
+import Server.Database as SD
 import Server.Effect (ServerEffect)
 import Server.Experiments.Database as SED
 import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus(..), Question)
@@ -51,7 +52,12 @@ throwPlane loggedUserId message = do
       SED.savePlane loggedUserId message
 
 catchPlane ∷ Int → Int → ServerEffect Unit
-catchPlane loggedUserId id = SED.updatePlaneStatus loggedUserId id Caught
+catchPlane loggedUserId id = SD.withTransaction $ \connection -> do
+      SED.updatePlaneStatus connection loggedUserId id Caught
+      found <- SED.fetchThrower connection loggedUserId id
+      case found  of
+            Just { thrower }-> SED.notifyPlaneCaught connection thrower "One your paper planes have been caught"
+            _ -> pure unit
 
 passPlane ∷ Int → Int → ServerEffect Unit
 passPlane loggedUserId id = SED.updatePlaneBy loggedUserId id

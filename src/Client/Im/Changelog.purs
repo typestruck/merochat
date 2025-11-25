@@ -2,16 +2,17 @@ module Client.Im.Changelog where
 
 import Prelude
 
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Network (request)
 import Client.Network as CCN
 import Client.Network as CNN
-import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Shared.Changelog (Changelog, ChangelogAction(..))
 import Shared.Im.Types (ImMessage(..), ImModel, RetryableRequest(..))
 import Shared.Modal (Modal(..), ScreenModal(..))
+import Shared.Options.Doppelganger as SOD
 import Shared.Unsafe as SU
 
 fetchChangelog ∷ ImModel → NextMessage
@@ -31,7 +32,7 @@ performChangelogAction action value model = model /\ effects
             Nothing → []
             Just OpenBackerPage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowBacker ]
             Just OpenExperimentsPage → [ pure <<< Just $ SpecialRequest <<< ToggleModal $ Screen ShowExperiments ]
-            Just SendDoppelgangerMessage → [ pure <<< Just <<< MessageDoppelganger $ SU.fromJust value ]
+            Just SendDoppelgangerMessage → [ pure <<< Just $ MessageFromExperiment (SU.fromJust value) SOD.message ]
 
 toggleChangelog ∷ ImModel → NoMessages
 toggleChangelog model =

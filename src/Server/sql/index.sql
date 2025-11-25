@@ -214,7 +214,8 @@ begin
                 not temporary and
                 (extract(epoch from (utc_now()) - l.date) / 3600 <= (24 * 7)) and
                 k.current_karma >= 80 and
-                ((select count(1) from paper_planes where by = u.id and status = 1) < 7)
+                ((select count(1) from paper_planes where by = u.id and status = 1) < 7) and
+                not exists (select 1 from blocks where blocked = thrower and blocker = u.id or blocked = u.id and blocker = thrower)
             order by random() limit 1)
         where status = 1 and thrown < 7 and (by is null or extract(epoch from (utc_now()) - by_at) / 3600 > (24 * 7))
         returning  by, 'There are planes flying by. Catch?', 2)

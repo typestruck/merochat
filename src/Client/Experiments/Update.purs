@@ -22,6 +22,8 @@ import Flame.Subscription as FS
 import Shared.Im.Types (ReportReason(..), RetryableRequest(..))
 import Shared.Im.Types as SIT
 import Shared.Modal (Modal(..), ScreenModal(..))
+import Shared.Options.Doppelganger as SDO
+import Shared.Options.PaperPlane as SPO
 import Shared.ResizeInput as SIR
 import Shared.Unsafe as SU
 
@@ -44,7 +46,7 @@ update model =
             AfterAnswerQuestion → afterAnswerQuestion model
             FetchMatches → fetchMatches model
             DisplayMatches matches → displayMatches matches model
-            MessageDoppelganger userId → messageDoppelganger userId model
+            MessageFromExperiment userId → messageDoppelganger userId model
 
             SetPlaneMessage message → setPlaneMessage message model
             ThrowPlane → throwPlane model
@@ -57,6 +59,14 @@ update model =
             PassPaperPlane id → passPaperPlane id model
             AfterPassPlane id → afterPassPlane id model
             ReportPlane id userId → reportPlane id userId model
+            MessagePaperPlane userId message → messagePaperPlane userId message model
+
+messagePaperPlane ∷ Int → String  -> ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+messagePaperPlane userId message model = model /\ [ send ]
+      where
+      send = EC.liftEffect do
+            FS.send imAppId <<< SIT.MessageFromExperiment userId $ SPO.message message
+            pure Nothing
 
 reportPlane ∷ Int → Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 reportPlane id userId model = model { paperPlane = model.paperPlane { loading = true } } /\ [ setIt ]
@@ -121,13 +131,13 @@ throwPlane model = model { paperPlane = model.paperPlane { loading = true } } /\
             r ← CCN.silentResponse $ request.experiments.throw { body: { message: SU.fromJust model.paperPlane.message } }
             pure <<< Just $ AfterThrowPlane r.id
 
-afterThrowPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+afterThrowPlane ∷ Int →  ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 afterThrowPlane id model =
       model
             { paperPlane = model.paperPlane
                     { loading = false
                     , message = Nothing
-                    , thrown = { id, thrower: model.user.id, message: SU.fromJust model.paperPlane.message, status: Flying } : model.paperPlane.thrown
+                    , thrown = { id, thrower: model.user.id, name : "", message: SU.fromJust model.paperPlane.message, status: Flying } : model.paperPlane.thrown
                     }
             } /\ []
 
@@ -190,5 +200,5 @@ messageDoppelganger ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array 
 messageDoppelganger userId model = model /\ [ send ]
       where
       send = EC.liftEffect do
-            FS.send imAppId $ SIT.MessageDoppelganger userId
+            FS.send imAppId $ SIT.MessageFromExperiment userId SDO.message
             pure Nothing

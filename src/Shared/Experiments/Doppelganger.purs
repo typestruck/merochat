@@ -25,7 +25,7 @@ view model = HE.div [ HA.class' "word-chain duller" ]
                           HE.input [ HA.type' "button", HA.onClick ResumeQuestions, HA.class' "green-button", HA.value "Take quiz" ]
       ]
       where
-      matchLink match = HE.a [ HA.title "Send message to user", HA.onClick $ MessageDoppelganger match.id ] [ HE.text match.name ]
+      matchLink match = HE.a [ HA.title "Send message to user", HA.onClick $ MessageFromExperiment match.id ] [ HE.text match.name ]
 
       showMatches
             | DA.null model.doppelganger.matches = HE.div [] [ HE.text "No evil clones found. Yet." ]

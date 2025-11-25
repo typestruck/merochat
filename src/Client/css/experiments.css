@@ -35,6 +35,10 @@
     width: 534px;
 }
 
+.paper-thrown-from {
+    margin-bottom: 10px;
+}
+
 #chat-experiments .green-button {
     width: max-content;
     margin: 0;

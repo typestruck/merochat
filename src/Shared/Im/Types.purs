@@ -300,7 +300,7 @@ data ImMessage
       | SetTyping String
       | NoTyping Int
       | TypingId TimeoutId
-      | MessageDoppelganger Int
+      | MessageFromExperiment Int String
 
       --changelog
       | DisplayChangelog (Array Changelog)
