@@ -1,9 +1,7 @@
 module Shared.Post where
 
-import Prelude
-
 import Data.Maybe (Maybe)
-import Shared.DateTime (DateTimeWrapper(..))
+import Shared.DateTime (DateTimeWrapper)
 import Shared.Content (Content)
 
 type Post =
