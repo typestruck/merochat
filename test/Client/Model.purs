@@ -32,15 +32,18 @@ model =
       , typingIds: []
       , showBuildProfile: true
       , showChangelogs: false
-      , loadingContact : Nothing
+      , loadingContact: Nothing
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
+      , asks:
+              { freeToFetch: true
+              }
       , showSuggestionChatInput: Nothing
       , changelogs: []
       , showSuggestionsPostForm: false
       , showCollapsedMiniSuggestions: false
-      , react : WithEmoji
+      , react: WithEmoji
       , modalsLoaded: []
       , showMiniChatInput: false
       , temporaryEmail: Nothing
@@ -75,7 +78,7 @@ model =
               , text: Nothing
               , link: Nothing
               , caption: Nothing
-              , image : Nothing
+              , image: Nothing
               }
       , suggestions: [ suggestion ]
       , temporaryId: 0
@@ -97,10 +100,12 @@ imUser =
       , unseenPosts: 0
       , id: imUserId
       , showing: ShowInfo
+      , totalAsks:0
       , profileVisibility: Everyone
       , backer: false
-      , chatBackground : Nothing
-      , ownBackground : false
+      , chatBackground: Nothing
+      , ownBackground: false
+      , asks: []
       , posts: []
       , totalPosts: 0
       , completedFields: []
@@ -153,7 +158,7 @@ historyMessage =
       , recipient: contactId
       , date: DateTimeWrapper $ EU.unsafePerformEffect EN.nowDateTime
       , content: "test"
-      , reaction : Nothing
+      , reaction: Nothing
       , status: Received
       }
 

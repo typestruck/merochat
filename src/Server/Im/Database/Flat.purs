@@ -29,6 +29,7 @@ type FlatFields rest =
       , chatBackground ∷ Maybe String
       , backer ∷ Checked
       , totalPosts ∷ Maybe BigInt
+      , totalAsks ∷ Maybe BigInt
       , headline ∷ String
       , id ∷ Int
       , bin ∷ Int
@@ -87,6 +88,7 @@ fromFlatUser fc =
       , name: fc.name
       , headline: fc.headline
       , posts: []
+      , asks: []
       , unseenPosts: DM.fromMaybe 0 (fc.unseenPosts >>= BI.toInt)
       , postsVisibility: fc.postsVisibility
       , ownBackground: SC.coerce fc.ownBackground
@@ -94,6 +96,7 @@ fromFlatUser fc =
       , isContact: fc.isContact
       , showing: ShowInfo
       , totalPosts: DM.fromMaybe 0 (fc.totalPosts >>= BI.toInt)
+      , totalAsks: DM.fromMaybe 0 (fc.totalAsks >>= BI.toInt)
       , bin: fc.bin
       , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility

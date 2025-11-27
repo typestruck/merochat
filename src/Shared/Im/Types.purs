@@ -37,7 +37,7 @@ import Shared.Resource (Bundle)
 import Shared.ResponseError (DatabaseError)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
-import Shared.User (IU, ProfilePost(..))
+import Shared.User (IU, ProfileTab(..))
 import Unsafe.Coerce as UC
 import Web.Event.Internal.Types (Event)
 
@@ -172,6 +172,15 @@ type Im =
               , caption ∷ Maybe String
               , image ∷ SelectedImage
               }
+      , asks ∷
+              { --freeToSend ∷ Boolean
+               freeToFetch ∷ Boolean
+            --   , text ∷ Maybe String
+            --   , mode ∷ PostMode
+            --   , link ∷ Maybe String
+            --   , caption ∷ Maybe String
+            --   , image ∷ SelectedImage
+              }
       )
 
 type ImModel = Record Im
@@ -224,6 +233,7 @@ data RetryableRequest
       | FetchContacts Boolean
       | FetchMissedContacts
       | FetchPosts Int
+      | FetchAsks Int
       | ToggleModal Modal
       | BlockUser Int
       | PreviousSuggestion
@@ -316,11 +326,12 @@ data ImMessage
       | SetPostCaption (Maybe String)
       | SendPost
       | SetPostImage SelectedImage
-      | ToggleShowing Int For ProfilePost
+      | ToggleShowing Int For ProfileTab
       | SetPostMode PostMode
       | PreparePostImage Event
       | AfterSendPost Int
-      --   | CheckFetchPosts Int Event
+
+      --asks
 
       --main
       | ReloadPage

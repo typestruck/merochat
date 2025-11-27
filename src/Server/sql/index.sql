@@ -432,6 +432,18 @@ create table paper_planes(
     constraint thrower_user foreign key (thrower) references users(id) on delete cascade
 );
 
+create table asks(
+    id integer generated always as identity primary key,
+    question text not null,
+    answer text,
+    date timestamptz not null default (utc_now()),
+    asker int not null,
+    answerer int not null,
+
+    constraint asker_user foreign key (asker) references users(id) on delete cascade,
+    constraint aswerer_user foreign key (answerer) references users(id) on delete cascade
+);
+
 -- when users first edit new field in their profile, place them higher in the suggestions list if have filled 3 or more profile fields
 create or replace function temporarily_place_at_top() returns trigger as
 $$
@@ -1014,9 +1026,9 @@ insert into stock_text (contents, text_type) values
     ('what is something you can''t cook?', 2),
     ('if you could make everyone forget one thing, what would it be?', 2),
     ('the zombie apocalypse is coming, who are 3 people you want on your team?', 2),
-    ('Have you ever been told you look like someone famous, and who was it?', 2),
+    ('have you ever been told you look like someone famous, and who was it?', 2),
     ('if you were famous, what would you be famous for?', 2),
-    ('what was your least favorite food as a child? Do you still hate it or do you love it now?', 2),
+    ('what was your least favorite food as a child? do you still hate it or do you love it now?', 2),
     ('if you were left on a deserted island with either your worst enemy or no one, which would you choose?', 2),
     ('if aliens landed on earth tomorrow and offered to take you home with them, would you go?', 2),
     ('what''s your favorite dinosaur?', 2),

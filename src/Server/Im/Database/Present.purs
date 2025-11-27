@@ -22,6 +22,7 @@ import Data.Maybe (Maybe(..))
 import Data.Time.Duration (Days(..), Hours(..))
 import Data.Tuple.Nested ((/\))
 import Server.Database as SD
+import Server.Database.Asks (_answerer, _totalAsks, asks)
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
 import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _moderated, _named, moderated_profile_fields)
@@ -85,6 +86,7 @@ presentUserContactFields =
       , backer
       , completed_tutorial "completedTutorial"
       , (select count(1) "totalPosts" from posts where poster = u.id and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
+      , (select count(1) "totalAsks" from asks where answerer = u.id and answer is not null)
       , (select count(1) "unseenPosts" from posts p where poster = u.id and date >= @dayAgo and not (exists(select 1 from posts_seen where poster = u.id and reader = @loggedUserId and until >= p.id)) and (u.posts_visibility = @everyone or u.posts_visibility = @noTemporaryUsers and not (exists (select 1 from users where id = @loggedUserId and temporary)) or u.posts_visibility = @contacts and h.sender is not null))
       , date_part_age ('year', birthday) age
       , name
@@ -234,5 +236,6 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from (joi
                   /\ (1 # as _bin)
                   /\ (false # as _isContact)
                   /\ (select (count _id # as _totalPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _totalPosts # limit (Proxy ∷ _ 1))
+                  /\ (select (count _id # as _totalAsks) # from asks # wher (_answerer .=. u ... _id) # orderBy _totalAsks # limit (Proxy ∷ _ 1))
                   /\ (select (count _id # as _unseenPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _unseenPosts # limit (Proxy ∷ _ 1))
                   /\ completeness

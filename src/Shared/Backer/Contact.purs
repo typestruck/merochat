@@ -12,7 +12,7 @@ import Shared.Im.Contact as SC
 import Shared.Im.Types (Contact, MessageStatus(..), User)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
-import Shared.User (ProfilePost(..), ProfileVisibility(..))
+import Shared.User (ProfileTab(..), ProfileVisibility(..))
 
 backerId ∷ Int
 backerId = 0
@@ -41,6 +41,8 @@ backerUser =
       , joined: DateTimeWrapper epoch
       , readReceipts: true
       , posts: []
+      , asks: []
+      , totalAsks:0
       , ownBackground: false
       , chatBackground: Nothing
       , showing: ShowInfo

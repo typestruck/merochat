@@ -2787,6 +2787,10 @@ label {
     border-bottom: 1px dotted var(--light-color);
 }
 
+.ask-entry {
+    margin: 15px 0;
+    border-bottom: 1px dotted var(--light-color);
+}
 
 .posts-input-tab {
     display: flex;

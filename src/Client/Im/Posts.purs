@@ -24,7 +24,7 @@ import Shared.Modal (Modal(..), SpecialModal(..))
 import Shared.Post (Post)
 import Shared.Resource (maxImageSize)
 import Shared.Unsafe as SU
-import Shared.User (ProfilePost(..))
+import Shared.User (ProfileTab(..))
 import Type.Proxy (Proxy(..))
 import Web.Event.Event as WEE
 import Web.Event.Internal.Types (Event)
@@ -117,13 +117,13 @@ sendPost model = model { posts = model.posts { freeToSend = not maySend } } /\ e
             | maySend = [ send ]
             | otherwise = []
 
-toggleShowing ∷ Int → ProfilePost → For → ImModel → MoreMessages
+toggleShowing ∷ Int → ProfileTab → For → ImModel → MoreMessages
 toggleShowing userId toggle for model =
       case for of
             ForSuggestions → toggleShowingSuggestions userId toggle model
             ForContacts → toggleShowingContacts userId toggle model
 
-toggleShowingSuggestions ∷ Int → ProfilePost → ImModel → MoreMessages
+toggleShowingSuggestions ∷ Int → ProfileTab → ImModel → MoreMessages
 toggleShowingSuggestions userId toggle model =
       model
             { suggestions = map update model.suggestions
@@ -144,7 +144,7 @@ toggleShowingSuggestions userId toggle model =
             | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchPosts userId ]
             | otherwise = []
 
-toggleShowingContacts ∷ Int → ProfilePost → ImModel → MoreMessages
+toggleShowingContacts ∷ Int → ProfileTab → ImModel → MoreMessages
 toggleShowingContacts userId toggle model =
       model
             { contacts = map update model.contacts

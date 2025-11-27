@@ -26,7 +26,7 @@ import Shared.Im.Contact as SIC
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
-import Shared.User (ProfilePost(..))
+import Shared.User (ProfileTab(..))
 import Web.DOM.Element as WDE
 
 -- | Display next suggestion card

@@ -27,7 +27,7 @@ import Shared.Im.View.Retry as SIVR
 import Shared.Markdown as SM
 import Shared.Modal (Modal(..), ScreenModal(..))
 import Shared.Unsafe as SU
-import Shared.User (ProfilePost(..), ProfileVisibility(..))
+import Shared.User (ProfileTab(..), ProfileVisibility(..))
 
 -- | Users that have exchanged messages with the current logged in user
 contactList ∷ Boolean → ImModel → Html ImMessage

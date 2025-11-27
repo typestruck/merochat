@@ -31,6 +31,7 @@ import Shared.Im.Contact as SCN
 import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, home, nextArrow)
 import Shared.Im.Svg as SIA
+import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Posts as SIVP
 import Shared.Im.View.Retry as SIVR
@@ -166,7 +167,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                                             ]
                                                   <> [ HE.div_ $ genderAge user <> countrySeparator user <> from user ]
                                                   <> speaks user
-                                                  <> postsCount user
+                                                  <> postsAsksCount user
                                           )
                                   ]
                           ]
@@ -174,24 +175,35 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                   , HE.div [ HA.class' { "green-tab": true, hidden: user.temporary } ]
                           [ HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowInfo } ] [ HE.text "Info" ]
                           , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPosts } ] [ HE.text "Posts" ]
+                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowAsks } ] [ HE.text "Asks" ]
                           ]
 
-                  , HE.div [ HA.class' { "full-card-headline-tags": true, hidden: user.showing == ShowPosts } ]
+                  , HE.div [ HA.class' { "full-card-headline-tags": true, hidden: user.showing /= ShowInfo } ]
                           ( [ HE.div [ HA.class' "card-headline" ] [ HE.text user.headline ]
                             , HE.hr' [ HA.class' "tag-ruler" ]
                             ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) user.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
                           )
-                  , HE.div [ HA.class' { "card-description": true, hidden: user.showing == ShowPosts }, HA.title "See full profile" ]
+                  , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
                           [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                           , HE.div' [ HA.innerHtml $ SM.parse user.description ]
                           ]
 
-                  , HE.div [ HA.class' { posts: true, hidden: user.showing == ShowInfo } ]
+                  , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
                           [ SIVR.retry "Failed to load posts" (FetchPosts user.id) model.failedRequests
                           , if model.posts.freeToFetch && DA.null user.posts then
                                   HE.div_ [ HE.text $ user.name <> " has not posted yet" ]
                             else if model.posts.freeToFetch then
                                   HE.div [ HA.class' "post-list" ] $ map (SIVP.posted user.name) user.posts
+                            else
+                                  HE.div' [ HA.class' "loading" ]
+                          ]
+
+                  , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowAsks } ]
+                          [ SIVR.retry "Failed to load asks" (FetchAsks user.id) model.failedRequests
+                          , if model.asks.freeToFetch && DA.null user.asks then
+                                  HE.div_ [ HE.text $ user.name <> " has not answered anything yet" ]
+                            else if model.asks.freeToFetch then
+                                  HE.div [ HA.class' "asks-list" ] $ map SIVA.asked user.asks
                             else
                                   HE.div' [ HA.class' "loading" ]
                           ]
@@ -237,7 +249,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                                       ]
                                             <> [ HE.div_ $ genderAge suggestion <> countrySeparator suggestion <> from suggestion ]
                                             <> speaks suggestion
-                                            <> postsCount suggestion
+                                            <> postsAsksCount suggestion
 
                                     )
                             , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIA.contextMenu $ show FullProfileContextMenu ]
@@ -251,24 +263,35 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
             , HE.div [ HA.class' { "green-tab": true, hidden: suggestion.temporary } ]
                     [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
                     , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
+                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowAsks } ] [ HE.text "Asks" ]
                     ]
 
-            , HE.div [ HA.class' { hidden: suggestion.showing == ShowPosts } ]
+            , HE.div [ HA.class' { hidden: suggestion.showing /= ShowInfo } ]
                     ( [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
                       , HE.hr' [ HA.class' "tag-ruler" ]
                       ] <> map (\c → HE.span [ HA.class' "tag" ] [ HE.text c ]) suggestion.tags <> [ HE.hr' [ HA.class' "tag-ruler" ] ]
                     )
-            , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing == ShowPosts } ]
+            , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing /= ShowInfo } ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                     , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
                     ]
 
-            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing == ShowInfo } ]
+            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]
                     [ SIVR.retry "Failed to load posts" (FetchPosts suggestion.id) model.failedRequests
                     , if model.posts.freeToFetch && DA.null suggestion.posts then
                             HE.div_ [ HE.text $ suggestion.name <> " has not posted yet" ]
                       else if model.posts.freeToFetch then
                             HE.div [ HA.class' "post-list" ] $ map (SIVP.posted suggestion.name) suggestion.posts
+                      else
+                            HE.div' [ HA.class' "loading" ]
+                    ]
+
+            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowAsks } ]
+                    [ SIVR.retry "Failed to load asks" (FetchAsks suggestion.id) model.failedRequests
+                    , if model.asks.freeToFetch && DA.null suggestion.asks then
+                            HE.div_ [ HE.text $ suggestion.name <> " has not answered anything yet" ]
+                      else if model.asks.freeToFetch then
+                            HE.div [ HA.class' "ask-list" ] $ map SIVA.asked suggestion.asks
                       else
                             HE.div' [ HA.class' "loading" ]
                     ]
@@ -286,10 +309,8 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
             ]
 
-postsCount ∷ Suggestion → Array (Html ImMessage)
-postsCount user
-      | user.totalPosts == 0 = []
-      | otherwise = [ HE.span_ [ HE.text $ show user.totalPosts <> " posts" ] ]
+postsAsksCount ∷ Suggestion → Array (Html ImMessage)
+postsAsksCount user = [ HE.div_  [HE.span_ [ HE.text $ show user.totalPosts <> " posts • " ], HE.span_ [ HE.text $ show user.totalAsks <> " asks" ] ]]
 
 countrySeparator ∷ Suggestion → Array (Html ImMessage)
 countrySeparator user

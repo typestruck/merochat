@@ -59,6 +59,9 @@ h = Proxy
 s ∷ Proxy "s"
 s = Proxy
 
+a ∷ Proxy "a"
+a = Proxy
+
 t ∷ Proxy "t"
 t = Proxy
 

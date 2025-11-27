@@ -9,6 +9,7 @@ import Shared.User
 import Client.AppId (imAppId, profileAppId)
 import Client.Dom as CCD
 import Client.File as CCF
+import Client.Im.Asks as CIA
 import Client.Im.Changelog as CICL
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
@@ -186,6 +187,9 @@ update st model =
             SendPost → CIPS.sendPost model
             AfterSendPost id → CIPS.afterSendPost id webSocket model
             ToggleShowing userId for toggle → CIPS.toggleShowing userId toggle for model
+
+            --asks
+            SpecialRequest (FetchAsks userId) → CIA.fetchAsks userId model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model

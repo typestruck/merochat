@@ -37,17 +37,15 @@ import Server.Database.Privileges (_feature, _privileges, _quantity, privileges)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Tags (_tags, tags)
 import Server.Database.TagsUsers (_creator, _tag, tags_users)
+import Server.Database.Asks
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_avatar, _birthday, _chatBackground, _completedTutorial, _country, _description, _email, _gender, _headline, _isContact, _joined, _messageTimestamps, _onlineStatus, _password, _postsVisibility, _readReceipts, _temporary, _typingStatus, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
-import Server.Im.Database.Flat (FlatContactHistoryMessage, FlatUser, FlatContact)
+import Server.Im.Database.Flat (FlatUser)
 import Server.Im.Database.Present (completeness, userFields, usersSource)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
-import Shared.Im.Types (HistoryMessage, MessageStatus(..), Report, SuggestionsFrom(..))
-import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
-import Shared.Unsafe as SU
-import Shared.User (ProfileVisibility(..))
+import Shared.Im.Types (SuggestionsFrom(..))
 import Type.Proxy (Proxy(..))
 
 suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array FlatUser)
@@ -81,6 +79,7 @@ suggestBaseQuery loggedUserId filter =
                     /\ completeness
                     /\ (isNotNull _sender # as _isContact)
                     /\ ((select (count _id # as _totalPosts) # from (posts # as p) # wher (postsFilter loggedUserId) # orderBy _totalPosts # limit (Proxy ∷ _ 1)) # as _totalPosts)
+                    /\ ((select (count _id # as _totalAsks) # from (asks # as a) # wher (_answerer .=. u ... _id .&&. isNotNull _answer) # orderBy _totalAsks # limit (Proxy ∷ _ 1)) # as _totalAsks)
                     /\ ((select (count _id # as _unseenPosts) # from (posts # as p) # wher ((postsFilterUnseen loggedUserId .&&. _date .>=. DateTimeWrapper (ST.unsafeAdjustFromNow (Hours (-24.0))))) # orderBy _unseenPosts # limit (Proxy ∷ _ 1)) # as _unseenPosts)
             )
             # from (leftJoin (join usersSource (suggestions # as s) # on (u ... _id .=. _suggested)) (histories # as h) # on (_sender .=. u ... _id .&&. _recipient .=. (loggedUserId ∷ Int) .||. _sender .=. loggedUserId .&&. _recipient .=. u ... _id))

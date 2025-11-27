@@ -28,6 +28,7 @@ import Foreign as F
 import Payload.Client.EncodeBody (class EncodeBody)
 import Payload.ContentType (class HasContentType, json)
 import Payload.Server.DecodeBody (class DecodeBody)
+import Shared.Ask (Ask)
 import Shared.Availability (Availability)
 import Shared.Badge (Badge)
 import Shared.DateTime (DateTimeWrapper(..))
@@ -63,7 +64,7 @@ type IU =
               , chatBackground ∷ Maybe String
               , ownBackground ∷ Boolean
               , posts ∷ Array Post
-              , showing ∷ ProfilePost
+              , showing ∷ ProfileTab
               , profileVisibility ∷ ProfileVisibility
               , postsVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
@@ -72,14 +73,16 @@ type IU =
               , backer ∷ Boolean
               , messageTimestamps ∷ Boolean
               , totalPosts ∷ Int
+              , totalAsks ∷ Int
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
               , bin ∷ Int
+              , asks :: Array Ask
               , privileges ∷ Array Privilege
               )
       )
 
-data ProfilePost = ShowInfo | ShowPosts
+data ProfileTab = ShowInfo | ShowPosts | ShowAsks
 
 data ReceiveEmail = AllEmails | UnreadMessageEmails | NoEmails
 
@@ -98,13 +101,13 @@ data ProfileVisibility
 
 derive instance Eq ReceiveEmail
 derive instance Eq ProfileVisibility
-derive instance Eq ProfilePost
+derive instance Eq ProfileTab
 derive instance Eq Gender
 
 instance DecodeJson ReceiveEmail where
       decodeJson = DADGR.genericDecodeJson
 
-instance DecodeJson ProfilePost where
+instance DecodeJson ProfileTab where
       decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson Gender where
@@ -116,7 +119,7 @@ instance DecodeJson ProfileVisibility where
 instance EncodeJson ReceiveEmail where
       encodeJson = DAEGR.genericEncodeJson
 
-instance EncodeJson ProfilePost where
+instance EncodeJson ProfileTab where
       encodeJson = DAEGR.genericEncodeJson
 
 instance EncodeJson Gender where
@@ -135,12 +138,12 @@ instance Show Gender where
 instance Show ProfileVisibility where
       show = DSG.genericShow
 
-instance Show ProfilePost where
+instance Show ProfileTab where
       show = DSG.genericShow
 
 derive instance Generic ReceiveEmail _
 derive instance Generic Gender _
-derive instance Generic ProfilePost _
+derive instance Generic ProfileTab _
 derive instance Generic ProfileVisibility _
 
 instance ToValue ReceiveEmail where
@@ -151,7 +154,7 @@ instance ToValue Gender where
 
 derive instance Ord ReceiveEmail
 derive instance Ord Gender
-derive instance Ord ProfilePost
+derive instance Ord ProfileTab
 derive instance Ord ProfileVisibility
 
 --refactor: should just use Enum (have to fix read/writeforeign instances for gender)
@@ -168,19 +171,21 @@ instance Bounded Gender where
       bottom = Female
       top = Other
 
-instance Bounded ProfilePost where
+instance Bounded ProfileTab where
       bottom = ShowInfo
-      top = ShowPosts
+      top = ShowAsks
 
-instance BoundedEnum ProfilePost where
+instance BoundedEnum ProfileTab where
       cardinality = Cardinality 1
       fromEnum = case _ of
             ShowInfo → 0
             ShowPosts → 1
+            ShowAsks → 2
 
       toEnum = case _ of
             0 → Just ShowInfo
             1 → Just ShowPosts
+            2 → Just ShowAsks
             _ → Nothing
 
 instance BoundedEnum Gender where
@@ -212,13 +217,15 @@ instance Enum Gender where
             NonBinary → Just Male
             Other → Just NonBinary
 
-instance Enum ProfilePost where
+instance Enum ProfileTab where
       succ = case _ of
             ShowInfo → Just ShowPosts
-            ShowPosts → Nothing
+            ShowPosts → Just ShowAsks
+            ShowAsks → Nothing
       pred = case _ of
             ShowInfo → Nothing
             ShowPosts → Just ShowInfo
+            ShowAsks → Just ShowPosts
 
 instance Bounded ProfileVisibility where
       bottom = Everyone
