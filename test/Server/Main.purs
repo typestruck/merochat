@@ -4,6 +4,7 @@ import Prelude
 
 import Test.Server.Landing.Action as TSLA
 import Test.Server.Profile.Action as TSPA
+import Test.Server.Unsubscribe as TSU
 import Test.Server.Login.Action as TSLIA
 import Test.Server.Token as TST
 import Test.Server.Im.Action as TSIA
@@ -13,6 +14,7 @@ tests ∷ TestSuite
 tests = do
       TSLA.tests
       TST.tests
+      TSU.tests
       TSLIA.tests
       TSIA.tests
       TSPA.tests

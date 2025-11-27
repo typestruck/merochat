@@ -43,9 +43,9 @@ spec ∷
                                   , response ∷ Empty
                                   }
                     , unsubscribe ∷
-                            GET "/unsubscribe?email_id=<emailId>"
+                            GET "/unsubscribe?email_id=<token>"
                                   { guards ∷ Guards Nil
-                                  , query ∷ { emailId ∷ String }
+                                  , query ∷ { token ∷ String }
                                   , response ∷ Html
                                   }
                     , login ∷

@@ -427,7 +427,7 @@ create table paper_planes(
     status smallint not null,
     by integer,
     by_at timestamptz,
-    thrown smallint default ,
+    thrown smallint default 0,
 
     constraint thrower_user foreign key (thrower) references users(id) on delete cascade
 );

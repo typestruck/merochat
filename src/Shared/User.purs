@@ -314,3 +314,6 @@ temporaryUserExpiration ∷ DateTimeWrapper → Days
 temporaryUserExpiration (DateTimeWrapper dt) = DDT.diff dt (SU.fromJust $ DDT.adjust (DTD.negateDuration temporaryAccountDuration) unsafeNow)
       where
       unsafeNow = EU.unsafePerformEffect EN.nowDateTime
+
+instance Show ReceiveEmail where
+      show = DSG.genericShow
