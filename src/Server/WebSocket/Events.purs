@@ -243,6 +243,7 @@ sendBan allUsersAvailability userId = do
             , onlineStatus: true
             , readReceipts: true
             , typingStatus: true
+            , asksVisibility: TemporarilyBanned
             , postsVisibility: TemporarilyBanned
             , profileVisibility: TemporarilyBanned
             }

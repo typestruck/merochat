@@ -56,7 +56,7 @@ setIt s model = s model /\ []
 changePrivacySettings ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 changePrivacySettings model = model /\ [ change ]
       where
-      payload = { postsVisibility: model.postsVisibility, profileVisibility: model.profileVisibility, readReceipts: model.readReceipts, typingStatus: model.typingStatus, onlineStatus: model.onlineStatus, messageTimestamps: model.messageTimestamps }
+      payload = { asksVisibility: model.asksVisibility, postsVisibility: model.postsVisibility, profileVisibility: model.profileVisibility, readReceipts: model.readReceipts, typingStatus: model.typingStatus, onlineStatus: model.onlineStatus, messageTimestamps: model.messageTimestamps }
       change = do
             status ← CNN.formRequest (show PrivacySettings) $ request.settings.account.privacy { body: payload }
             case status of

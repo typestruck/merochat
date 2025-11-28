@@ -12,6 +12,7 @@ toUserSettings ∷
       , ownBackground ∷ Checked
       , typingStatus ∷ Checked
       , profileVisibility ∷ ProfileVisibility
+      , asksVisibility ∷ ProfileVisibility
       , onlineStatus ∷ Checked
       , messageTimestamps ∷ Checked
       , postsVisibility ∷ ProfileVisibility

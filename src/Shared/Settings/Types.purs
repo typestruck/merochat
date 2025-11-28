@@ -32,6 +32,7 @@ type PS =
       ( readReceipts ∷ Boolean
       , typingStatus ∷ Boolean
       , profileVisibility ∷ ProfileVisibility
+      , asksVisibility ∷ ProfileVisibility
       , postsVisibility ∷ ProfileVisibility
       , onlineStatus ∷ Boolean
       , messageTimestamps ∷ Boolean

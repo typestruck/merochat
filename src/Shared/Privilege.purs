@@ -20,8 +20,8 @@ import Shared.Unsafe as SU
 data Privilege
       = ReceiveChats
       | StartChats
+      | SendAsks
       | StartChatExperiments
-      | ImpersonationChatExperiment
       | PublishPosts
       | MoreTags
       | SendLinks
@@ -54,7 +54,7 @@ instance BoundedEnum Privilege where
             ReceiveChats → 0
             StartChats → 100
             StartChatExperiments → 200
-            ImpersonationChatExperiment → 201
+            SendAsks → 201
             PublishPosts → 202
             MoreTags → 300
             SendLinks → 400
@@ -65,7 +65,7 @@ instance BoundedEnum Privilege where
             0 → Just ReceiveChats
             100 → Just StartChats
             200 → Just StartChatExperiments
-            201 → Just ImpersonationChatExperiment
+            201 → Just SendAsks
             202 → Just PublishPosts
             300 → Just MoreTags
             400 → Just SendLinks
@@ -77,8 +77,8 @@ instance Enum Privilege where
       succ = case _ of
             ReceiveChats → Just StartChats
             StartChats → Just StartChatExperiments
-            StartChatExperiments → Just PublishPosts
-            ImpersonationChatExperiment → Nothing
+            StartChatExperiments → Just SendAsks
+            SendAsks →  Just PublishPosts
             PublishPosts → Just MoreTags
             MoreTags → Just SendLinks
             SendLinks → Just SendImages
@@ -88,8 +88,8 @@ instance Enum Privilege where
       pred = case _ of
             ReceiveChats → Nothing
             StartChats → Just ReceiveChats
-            StartChatExperiments → Just StartChats
-            ImpersonationChatExperiment → Nothing
+            StartChatExperiments → Just SendAsks
+            SendAsks → Just StartChats
             PublishPosts → Just StartChatExperiments
             MoreTags → Just PublishPosts
             SendLinks → Just MoreTags

@@ -68,6 +68,9 @@ t = Proxy
 profileVisibility ∷ Proxy "profileVisibility"
 profileVisibility = Proxy
 
+asksVisibility ∷ Proxy "asksVisibility"
+asksVisibility = Proxy
+
 postsVisibility ∷ Proxy "postsVisibility"
 postsVisibility = Proxy
 

@@ -32,6 +32,7 @@ type Users =
       , avatar ∷ Maybe String
       , pwa ∷ Column Checked Default
       , backer ∷ Column Checked Default
+      , asks_visibility :: Column ProfileVisibility Default
       , receive_email ∷ Column ReceiveEmail Default
       , gender ∷ Maybe Gender
       , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)
@@ -108,6 +109,9 @@ _visibility = Proxy
 
 _postsVisibility ∷ Proxy "posts_visibility"
 _postsVisibility = Proxy
+
+_asksVisibility ∷ Proxy "asks_visibility"
+_asksVisibility = Proxy
 
 _visibility_last_updated ∷ Proxy "visibility_last_updated"
 _visibility_last_updated = Proxy

@@ -35,6 +35,7 @@ create table users
     typing_status boolean not null default true,
     online_status boolean not null default true,
     posts_visibility smallint not null default 0,
+    asks_visibility smallint not null default 1,
     chat_background text,
     own_background boolean default false,
     message_timestamps boolean not null default true,
@@ -1042,8 +1043,9 @@ insert into stock_text (contents, text_type) values
 
 insert into privileges (feature, name, description, quantity) values
     (0, 'Receive chats', 'Access basic chat features, edit your profile and settings', 1),
-    (100, 'Start chats', 'View new chat suggetions, and start new chats', 25),
+    (100, 'Start chats', 'View new chat suggetions, start new chats or answer asks', 25),
     (200, 'Participate in chat experiments', 'Take part in chat experiments. Some experiments may require more karma', 50),
+    (201, 'Send asks', 'Send asks to other users', 70),
     (202, 'Posts', 'Post to your profile feed', 200),
     (300, 'More tags', 'Increased number of max profile tags', 250),
     (400, 'Send links', 'Use markdown links in chats or posts', 1000),
