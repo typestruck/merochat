@@ -4,6 +4,7 @@ import Prelude
 
 import Client.Dom as CCD
 import Data.Maybe (Maybe(..))
+import Data.String as DS
 import Flame.Html.Event as HA
 import Flame.Types (NodeData)
 import Shared.Unsafe as SU
@@ -19,3 +20,7 @@ onChange message = HA.createRawEvent "change" handler
                   WDE.fromEventTarget target
             pure <<< Just $ message value
 
+toMaybe ∷ String → Maybe String
+toMaybe s = if DS.null trimmed then Nothing else Just trimmed
+      where
+      trimmed = DS.trim s

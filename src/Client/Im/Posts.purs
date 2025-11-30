@@ -130,6 +130,7 @@ toggleShowingSuggestions userId toggle model =
             --we need this bookkeeping for big suggestion cards
             , suggesting = Just userId
             , modal = Special $ ShowSuggestionCard userId
+            , asks = model.asks { question = Nothing }
             , posts = model.posts { freeToFetch = not shouldFetch }
             } /\ effects
       where
@@ -149,6 +150,7 @@ toggleShowingContacts userId toggle model =
       model
             { contacts = map update model.contacts
             , posts = model.posts { freeToFetch = not shouldFetch }
+            , asks = model.asks { question = Nothing }
             , fullContactProfileVisible = true
             } /\ effects
       where

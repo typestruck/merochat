@@ -173,13 +173,11 @@ type Im =
               , image ∷ SelectedImage
               }
       , asks ∷
-              { --freeToSend ∷ Boolean
-               freeToFetch ∷ Boolean
-            --   , text ∷ Maybe String
-            --   , mode ∷ PostMode
-            --   , link ∷ Maybe String
-            --   , caption ∷ Maybe String
-            --   , image ∷ SelectedImage
+              { freeToSend ∷ Boolean
+              , freeToFetch ∷ Boolean
+              , question ∷ Maybe String
+              , unallowed ∷ Array Int
+              , sent :: Array Int
               }
       )
 
@@ -332,6 +330,9 @@ data ImMessage
       | AfterSendPost Int
 
       --asks
+      | SetAsk (Maybe String)
+      | SendAsk Int
+      | AfterSendAsk Int Boolean
 
       --main
       | ReloadPage

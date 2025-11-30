@@ -198,11 +198,10 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                                   HE.div' [ HA.class' "loading" ]
                           ]
 
-                  , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowAsks } ]
+                  , HE.div [ HA.class' { asks: true, hidden: user.showing /= ShowAsks } ]
                           [ SIVR.retry "Failed to load asks" (FetchAsks user.id) model.failedRequests
-                          , if model.asks.freeToFetch && DA.null user.asks then
-                                  HE.div_ [ HE.text $ user.name <> " has not answered anything yet" ]
-                            else if model.asks.freeToFetch then
+                          , SIVA.askForm model user
+                          , if model.asks.freeToFetch then
                                   HE.div [ HA.class' "asks-list" ] $ map SIVA.asked user.asks
                             else
                                   HE.div' [ HA.class' "loading" ]
@@ -286,11 +285,10 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                             HE.div' [ HA.class' "loading" ]
                     ]
 
-            , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowAsks } ]
+            , HE.div [ HA.class' { asks: true, hidden: suggestion.showing /= ShowAsks } ]
                     [ SIVR.retry "Failed to load asks" (FetchAsks suggestion.id) model.failedRequests
-                    , if model.asks.freeToFetch && DA.null suggestion.asks then
-                            HE.div_ [ HE.text $ suggestion.name <> " has not answered anything yet" ]
-                      else if model.asks.freeToFetch then
+                    , SIVA.askForm model suggestion
+                    , if model.asks.freeToFetch then
                             HE.div [ HA.class' "ask-list" ] $ map SIVA.asked suggestion.asks
                       else
                             HE.div' [ HA.class' "loading" ]
@@ -310,7 +308,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
             ]
 
 postsAsksCount ∷ Suggestion → Array (Html ImMessage)
-postsAsksCount user = [ HE.div_  [HE.span_ [ HE.text $ show user.totalPosts <> " posts • " ], HE.span_ [ HE.text $ show user.totalAsks <> " asks" ] ]]
+postsAsksCount user = [ HE.div_ [ HE.span_ [ HE.text $ show user.totalPosts <> " posts • " ], HE.span_ [ HE.text $ show user.totalAsks <> " asks" ] ] ]
 
 countrySeparator ∷ Suggestion → Array (Html ImMessage)
 countrySeparator user

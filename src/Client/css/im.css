@@ -2782,6 +2782,24 @@ label {
     font-size: 0.95em;
 }
 
+.asks {
+    display: flex;
+    flex-direction: column;
+}
+
+.ask-button {
+    border: 0 !important;
+    margin-top: 10px;
+}
+
+.asks-form {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    align-self: center;
+    padding: 15px 0;
+}
+
 .post-entry {
     margin: 15px 0;
     border-bottom: 1px dotted var(--light-color);
@@ -2843,10 +2861,15 @@ label {
     padding-bottom: 15px;
 }
 
+.asks-form .chat-input,
 .post-card .chat-input {
-    border: 0;
     width: 93%;
     border-radius: 5px;
+}
+
+.big-card .asks-form .chat-input,
+.post-card .chat-input {
+    border: 0;
 }
 
 .post-card .svg-55 {
@@ -3614,6 +3637,11 @@ label {
     .post-modal {
         width: calc(100vw - 40px);
         padding: 20px;
+    }
+
+    .asks-form {
+        width: calc(100vw - 40px);
+        padding: 0px;
     }
 
     .modal-form .audio-button {

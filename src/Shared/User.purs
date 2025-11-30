@@ -67,6 +67,7 @@ type IU =
               , showing ∷ ProfileTab
               , profileVisibility ∷ ProfileVisibility
               , postsVisibility ∷ ProfileVisibility
+              , asksVisibility ∷ ProfileVisibility
               , onlineStatus ∷ Boolean
               , isContact ∷ Boolean
               , temporary ∷ Boolean

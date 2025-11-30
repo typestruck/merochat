@@ -45,6 +45,7 @@ userFields =
             /\ (_ownBackground # as ownBackground)
             /\ _temporary
             /\ (_postsVisibility # as postsVisibility)
+            /\ _asksVisibility
             /\ _backer
             /\ (_onlineStatus # as onlineStatus)
             /\ (_completedTutorial # as completedTutorial)
@@ -75,6 +76,7 @@ presentUserContactFields =
       , h.last_message_date "lastMessageDate"
       , date_part ('day', utc_now() - COALESCE(first_message_date, utc_now())) "chatAge"
       , u.posts_visibility as "postsVisibility"
+      , u.asks_visibility
       , false as "isContact"
       , u.id
       , avatar

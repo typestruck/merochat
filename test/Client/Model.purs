@@ -38,6 +38,10 @@ model =
       , showLargeAvatar: false
       , asks:
               { freeToFetch: true
+              , freeToSend: true
+              , unallowed : []
+              , sent : []
+              , question: Nothing
               }
       , showSuggestionChatInput: Nothing
       , changelogs: []
@@ -100,8 +104,9 @@ imUser =
       , unseenPosts: 0
       , id: imUserId
       , showing: ShowInfo
-      , totalAsks:0
+      , totalAsks: 0
       , profileVisibility: Everyone
+      , asksVisibility: Everyone
       , backer: false
       , chatBackground: Nothing
       , ownBackground: false

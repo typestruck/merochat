@@ -4,11 +4,12 @@ import Prelude
 
 import Client.AppId (imAppId)
 import Client.File as CCF
-import Client.Network (request)
-import Client.Network as CCN
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.WebSocket as CIW
+import Client.Network (request)
+import Client.Network as CCN
 import Control.Alt ((<|>))
+import Data.Array ((:))
 import Data.Array as DA
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
@@ -34,3 +35,30 @@ import Web.Socket.WebSocket (WebSocket)
 
 fetchAsks ∷ Int → ImModel → MoreMessages
 fetchAsks userId model = model /\ []
+
+setAsk ∷ Maybe String → ImModel → MoreMessages
+setAsk value model = model { asks = model.asks { question = value } } /\ []
+
+sendAsk ∷ Int → ImModel → MoreMessages
+sendAsk userId model = model { asks = model.asks { freeToSend = false } } /\ [ send ]
+      where
+      send = do
+            response ← CCN.silentResponse $ request.asks.post { body: { userId, question: SU.fromJust model.asks.question } }
+            pure <<< Just $ AfterSendAsk userId response.allowed
+
+afterSendAsk ∷ Int → Boolean → ImModel → MoreMessages
+afterSendAsk userId allowed model =
+      model
+            { asks = model.asks
+                    { freeToSend = true
+                    , question = Nothing
+                    , sent = updatedSent
+                    , unallowed = updatedUnallowed
+                    }
+            } /\ []
+      where
+      updatedSent /\ updatedUnallowed =
+            if allowed then
+                  (userId : model.asks.sent) /\ model.asks.unallowed
+            else
+                  model.asks.sent /\ (userId : model.asks.unallowed)

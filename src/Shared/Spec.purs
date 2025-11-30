@@ -85,6 +85,15 @@ spec ∷
                                                 , response ∷ Empty
                                                 }
                                   }
+                  , asks ∷
+                            Routes "/asks"
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
+                                  , post ∷
+                                          POST "/post"
+                                                { body ∷ { userId :: Int, question :: String }
+                                                , response ∷ { allowed :: Boolean }
+                                                }
+                                  }
                     , im ∷
                             Routes "/im"
                                   { guards ∷ Guards ("loggedUserId" : Nil)

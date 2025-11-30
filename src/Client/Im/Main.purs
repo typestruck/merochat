@@ -73,6 +73,7 @@ import Shared.Routes (routes)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User as SUR
+import Test.Client.Model (model)
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
@@ -190,6 +191,9 @@ update st model =
 
             --asks
             SpecialRequest (FetchAsks userId) → CIA.fetchAsks userId model
+            SetAsk value → CIA.setAsk value model
+            SendAsk userId → CIA.sendAsk userId model
+            AfterSendAsk userId  allowed → CIA.afterSendAsk userId allowed model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model

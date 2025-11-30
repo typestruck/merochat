@@ -42,6 +42,7 @@ backerUser =
       , readReceipts: true
       , posts: []
       , asks: []
+      , asksVisibility: Everyone
       , totalAsks:0
       , ownBackground: false
       , chatBackground: Nothing

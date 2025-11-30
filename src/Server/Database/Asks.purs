@@ -31,6 +31,9 @@ asks = Table
 _answerer ∷ Proxy "answerer"
 _answerer = Proxy
 
+_asker ∷ Proxy "asker"
+_asker = Proxy
+
 _answer ∷ Proxy "answer"
 _answer = Proxy
 

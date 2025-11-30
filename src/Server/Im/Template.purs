@@ -86,7 +86,13 @@ template payload = do
             , reportReason: Nothing
             , reportComment: Nothing
             , imUpdated: false
-            , asks: { freeToFetch: true }
+            , asks:
+                    { freeToFetch: true
+                    , freeToSend: true
+                    , unallowed: []
+                    ,sent : []
+                    , question: Nothing
+                    }
             , posts:
                     { freeToFetch: true
                     , freeToSend: true

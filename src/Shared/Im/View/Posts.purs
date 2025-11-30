@@ -45,10 +45,10 @@ postForm model =
       , case model.posts.mode of
               TextOnly → HE.textarea'
                     [ HA.class' "chat-input"
-                    , HA.placeholder ("What's in your mind?")
+                    , HA.placeholder "What's in your mind?"
                     , HA.maxlength maxPostCharacters
                     , HA.onInput' ResizeChatInput
-                    , SCN.onChange (SetPostText <<< toMaybe)
+                    , SCN.onChange (SetPostText <<< SCN.toMaybe)
                     , HA.autocomplete "off"
                     , HA.value $ DM.fromMaybe "" model.posts.text
                     ]
@@ -58,7 +58,7 @@ postForm model =
                                   [ HE.input
                                           [ HA.class' "chat-input"
                                           , HA.maxlength maxPostCharacters
-                                          , SCN.onChange (SetPostLink <<< toMaybe)
+                                          , SCN.onChange (SetPostLink <<< SCN.toMaybe)
                                           , HA.value $ DM.fromMaybe "" model.posts.link
                                           , HA.placeholder "Link (required)"
                                           ]
@@ -67,7 +67,7 @@ postForm model =
                                           , HA.value $ DM.fromMaybe "" model.posts.caption
                                           , HA.placeholder "Caption"
                                           , HA.maxlength maxPostCharacters
-                                          , SCN.onChange (SetPostCaption <<< toMaybe)
+                                          , SCN.onChange (SetPostCaption <<< SCN.toMaybe)
                                           ]
                                   ]
                       else
@@ -92,7 +92,7 @@ postForm model =
                                           , HA.value $ DM.fromMaybe "" model.posts.caption
                                           , HA.placeholder "Caption"
                                           , HA.maxlength maxPostCharacters
-                                          , SCN.onChange (SetPostCaption <<< toMaybe)
+                                          , SCN.onChange (SetPostCaption <<< SCN.toMaybe)
                                           ]
                                   ]
                       else
@@ -108,11 +108,6 @@ postForm model =
               ]
 
       ]
-
-toMaybe ∷ String → Maybe String
-toMaybe s = if DS.null trimmed then Nothing else Just trimmed
-      where
-      trimmed = DS.trim s
 
 linkIcon ∷ Html ImMessage
 linkIcon = HE.svg [ HA.class' "post-input-tab-svg", HA.viewBox "0 0 1024 1024" ]

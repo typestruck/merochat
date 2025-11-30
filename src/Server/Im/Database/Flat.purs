@@ -41,6 +41,7 @@ type FlatFields rest =
       , completedTutorial ∷ Checked
       , languages ∷ Maybe (Array String)
       , profileVisibility ∷ ProfileVisibility
+      , asks_visibility ∷ ProfileVisibility
       , joined ∷ DateTime
       , readReceipts ∷ Checked
       , messageTimestamps ∷ Checked
@@ -98,6 +99,7 @@ fromFlatUser fc =
       , totalPosts: DM.fromMaybe 0 (fc.totalPosts >>= BI.toInt)
       , totalAsks: DM.fromMaybe 0 (fc.totalAsks >>= BI.toInt)
       , bin: fc.bin
+      , asksVisibility: fc.asks_visibility
       , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility
       , readReceipts: SC.coerce fc.readReceipts

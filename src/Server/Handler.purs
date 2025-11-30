@@ -17,6 +17,7 @@ import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Server.Admin.Handler as SHA
+import Server.Asks.Handler as SAH
 import Server.Backer.Handler as SBH
 import Server.Banned.Handler as SBNH
 import Server.Elsewhere.Handler as SESH
@@ -53,6 +54,9 @@ handlers reading =
               { get: runJson reading SPSH.posts
               , post: runJson reading SPSH.post
               , seen: runJson reading SPSH.seen
+              }
+      , asks:
+              { post: runJson reading SAH.post
               }
       , im:
               { get: runHtml reading SIH.im
