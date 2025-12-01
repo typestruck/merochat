@@ -20,7 +20,6 @@ import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
 
-
 post ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { userId :: Int, question :: String } } → ServerEffect { allowed:: Boolean }
 post request = do
     allowed <- SAA.sendAsk request.guards.loggedUserId request.body.userId request.body.question

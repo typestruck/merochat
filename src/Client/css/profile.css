@@ -39,7 +39,7 @@
 
 .created-account {
     color: var(--merochat-green);
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .profile-buttons {
@@ -51,7 +51,8 @@
     background-color: var(--im-background-color);
 }
 
-.profile-edition .full-card-headline-tags, .profile-edition .card-description  {
+.profile-edition .full-card-headline-tags,
+.profile-edition .card-description {
     width: 47em;
 }
 
@@ -82,6 +83,23 @@
     width: fit-content;
 }
 
+.ask-answer-form {
+    display: flex;
+    align-items: center;
+    width: 500px;
+}
+
+.ask-answer-form .modal-input {
+    margin-top: 5px;
+    margin-bottom: 25px;
+    padding-bottom: 0;
+}
+
+.ask-answer-form .send-button {
+    margin-left: 7px;
+    margin-bottom: 25px;
+}
+
 @media (max-width:1279px) {
     .profile-section-wedge {
         flex-direction: column;
@@ -92,11 +110,14 @@
         margin-bottom: 10px;
     }
 
-    .profile-edition .posts {
-       width: auto;
-    }
-
-    .profile-section .profile-section-wedge .modal-input, .profile-section .profile-section-wedge .modal-select, .profile-section .modal-input, .profile-section .modal-select, .profile-edition .full-card-headline-tags, .profile-edition .card-description  {
+    .ask-answer-form,
+    .profile-edition .posts ,
+    .profile-section .profile-section-wedge .modal-input,
+    .profile-section .profile-section-wedge .modal-select,
+    .profile-section .modal-input,
+    .profile-section .modal-select,
+    .profile-edition .full-card-headline-tags,
+    .profile-edition .card-description {
         width: auto;
     }
 

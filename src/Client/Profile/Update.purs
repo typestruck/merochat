@@ -6,6 +6,7 @@ import Client.AppId (imAppId)
 import Client.Dom as CCD
 import Client.File as CCF
 import Client.Network (request)
+import Client.Network as CN
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Either (Either(..))
@@ -27,17 +28,20 @@ import Flame.Subscription as FS
 import Payload.ResponseTypes (Response(..))
 import Prim.Row (class Cons)
 import Record as R
+import Shared.Ask (Ask)
 import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (ImMessage(..), RetryableRequest(..))
+import Shared.Im.Types (RetryableRequest(..))
+import Shared.Im.Types as SIT
 import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
-import Shared.Profile.Types (PM, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
+import Shared.Profile.Types (PM, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..), ProfileAsk)
 import Shared.ProfileColumn as SP
+import Shared.ResizeInput as SIR
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
 
@@ -58,18 +62,49 @@ update model = case _ of
       SetLanguage value → setLanguage value model
       SetTag value → setTag value model
       Save → save model
+      ResizeChatInput event → SIR.resizeInputFrom event model
       AfterRegistration → setFromTemporary model
       UpdatePrivileges _ → model /\ []
-      RefreshAsks -> refreshAsks model
+      RefreshAsks → refreshAsks model
+      SetAnswer id value → setAnswer id value model
+      SendAnswer id → sendAnswer id model
+      AfterSendAnswer id → afterSendAnswer id model
+
+afterSendAnswer ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+afterSendAnswer id model = model { loading = false, asks = map upd model.asks } /\ []
+      where
+      upd ask
+            | ask.id == id = ask { answer = ask.typedAnswer }
+            | otherwise = ask
+
+sendAnswer ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+sendAnswer id model = model { loading = DM.isJust answer } /\ effects
+      where
+      answer =  DA.find ((_ == id) <<< _.id) model.asks >>= _.typedAnswer
+
+      send value = do
+            void <<< CN.silentResponse $ request.profile.answer { body: { id, answer: value } }
+            pure <<< Just $ AfterSendAnswer id
+      effects = case answer of
+            Just value → [ send value ]
+            Nothing → []
+
+setAnswer ∷ Int → Maybe String → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+setAnswer id value model = model { asks = map upd model.asks } /\ []
+      where
+      upd ask
+            | ask.id == id = ask { typedAnswer = value }
+            | otherwise = ask
 
 refreshAsks ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-refreshAsks model = model { mode = Asked } /\ [] -- [ fetch ]
-      -- where
-      -- fetch = do
-      --       result ← request.profile.posts { query: { after: _.id <$> DA.head model.posts } }
-      --       case result of
-      --             Right (Response response) → pure <<< Just <<< SetPField $ _ { posts = response.body <> model.posts }
-      --             _ → pure Nothing
+refreshAsks model = model { mode = Asked } /\ [ fetch ]
+      where
+      fetch = do
+            result ← request.profile.asks { query: { after: _.id <$> DA.head model.asks } }
+            case result of
+                  Right (Response response) → pure <<< Just <<< SetPField $ _ { asks = map extend response.body <> model.asks }
+                  _ → pure Nothing
+      extend ask = (R.merge (ask :: Ask) { typedAnswer : Nothing :: Maybe String}) :: ProfileAsk
 
 refreshPosts ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 refreshPosts model = model { mode = OwnPosts } /\ [ fetch ]
@@ -115,9 +150,9 @@ save model = model { loading = true, fromTemporary = false } /\ [ saveIt ]
             case result of
                   Right (Response response) → do
                         EC.liftEffect do
-                              FS.send imAppId $ SetNameFromProfile fields.name.value
-                              FS.send imAppId $ SetAvatarFromProfile response.body.avatar
-                              FS.send imAppId $ SetCompletedFields
+                              FS.send imAppId $ SIT.SetNameFromProfile fields.name.value
+                              FS.send imAppId $ SIT.SetAvatarFromProfile response.body.avatar
+                              FS.send imAppId $ SIT.SetCompletedFields
                                     ( (if DA.elem Name model.generated || model.nameInputed == Just model.user.name then [ SP.Name ] else [])
                                             <>
                                                   (if DA.elem Headline model.generated || model.headlineInputed == Just model.user.headline then [] else [ SP.Headline ])

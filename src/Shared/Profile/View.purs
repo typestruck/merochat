@@ -19,10 +19,12 @@ import Shared.Availability (Availability(..))
 import Shared.Avatar (defaultAvatar)
 import Shared.Avatar as SA
 import Shared.Change as SC
+import Shared.Change as SCN
 import Shared.DateTime as DST
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
 import Shared.Im.View.Asks as SIVA
+import Shared.Im.View.ChatInput as SICI
 import Shared.Im.View.Posts as SIVPS
 import Shared.Im.View.Profile (separator)
 import Shared.Im.View.Profile as SIVP
@@ -30,30 +32,35 @@ import Shared.Intl as SI
 import Shared.Keydown as SK
 import Shared.Markdown as SM
 import Shared.Network (RequestStatus(..))
+import Shared.Options.Ask (maxAskCharacters)
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
 import Shared.Profile.Types (ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
-import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
 
 view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div [ HA.id $ show ProfileEditionForm ]
       [ HE.div [ HA.class' { "profile-edition": true, hidden: not model.visible } ]
-              ([ HE.div [ HA.class' "green-tab" ]
-                      [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]
-                      , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [ HE.text "Preview" ]
-                      , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == OwnPosts }, HA.onClick RefreshPosts ] [ HE.text "Posts" ]
-                      , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Asked }, HA.onClick RefreshAsks ] [ HE.text "Asks" ]
-                      ]
-              ] <> if model.mode == Edit then
+              ( [ HE.div [ HA.class' "green-tab" ]
+                        [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]
+                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [ HE.text "Preview" ]
+                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == OwnPosts }, HA.onClick RefreshPosts ] [ HE.text "Posts" ]
+                        , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Asked }, HA.onClick RefreshAsks ] [ HE.text $ unasweredAsks <> "Asks" ]
+                        ]
+                ] <>
+                      if model.mode == Edit then
                             edit model
                       else if model.mode == Preview then
                             preview model
                       else if model.mode == OwnPosts then
                             posts model
                       else
-                        asks model)
+                            asks model
+              )
       ]
+      where
+      unasweredAsks =
+            let count = DA.length $ DA.filter (DM.isNothing <<< _.answer) model.asks in if count == 0 then "" else "(" <> show count <> ") "
 
 asks ∷ ProfileModel → Array (Html ProfileMessage)
 asks model =
@@ -62,8 +69,23 @@ asks model =
       ]
       where
       unaswered ask = HE.div []
-            [ HE.i [] [ HE.text "MeroChat user asks: " ]
-            , HE.text ask.question
+            [ HE.text "MeroChat user asks: "
+            , HE.b [] [ HE.i [] [ HE.text ask.question ] ]
+            , HE.div [ HA.class' "ask-answer-form" ]
+                    $
+                          if model.loading then
+                                [ HE.div' [ HA.class' "loading" ] ]
+                          else
+                                [ HE.textarea'
+                                        [ HA.class' "modal-input"
+                                        , HA.placeholder "Type your answer"
+                                        , HA.onInput' ResizeChatInput
+                                        , SCN.onChange (SetAnswer ask.id <<< SCN.toMaybe)
+                                        , HA.autocomplete "off"
+                                        , HA.maxlength (maxAskCharacters * 2)
+                                        ]
+                                , HE.svg [ HA.class' "send-button svg-50", HA.viewBox "0 0 16 16", HA.onClick $ SendAnswer ask.id ] $ SICI.sendButtonElements "Answer"
+                                ]
             ]
 
 posts ∷ ProfileModel → Array (Html ProfileMessage)

@@ -84,6 +84,8 @@ handlers reading =
               , generated: runJson reading SPH.generated
               , save: runJson reading SPH.save
               , posts: runJson reading SPH.posts
+              , asks: runJson reading SPH.asks
+              , answer: runJson reading SPH.answer
               }
       , login:
               { get: runHtml reading SLGH.login

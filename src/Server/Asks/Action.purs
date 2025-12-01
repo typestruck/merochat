@@ -2,8 +2,10 @@ module Server.Asks.Action where
 
 import Prelude
 
+import Client.Profile.Update (refreshAsks)
 import Data.Array as DA
 import Data.Either (Either(..))
+import Data.Maybe (Maybe)
 import Data.Maybe as DM
 import Data.Nullable as DN
 import Data.String (Pattern(..))
@@ -16,6 +18,7 @@ import Server.Database.Privileges as SPD
 import Server.Effect (ServerEffect)
 import Server.File as SF
 import Server.Sanitize as SS
+import Shared.Ask (Ask)
 import Shared.Content (Content(..))
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
@@ -26,6 +29,9 @@ import Shared.Privilege (Privilege(..))
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
+
+refreshAsks ∷ Int → Maybe Int → ServerEffect (Array Ask)
+refreshAsks loggedUserId id = SAD.presentAllAsks loggedUserId id
 
 sendAsk ∷ Int → Int → String → ServerEffect Boolean
 sendAsk loggedUserId userId question = do

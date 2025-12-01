@@ -14,9 +14,10 @@ import Data.Tuple as DT
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Run as R
+import Run.Except as RE
 import Safe.Coerce as SC
-import Server.Database as SD
 import Server.Asks.Database as SAD
+import Server.Database as SD
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
 import Server.Email (Email(..))
@@ -27,14 +28,17 @@ import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Server.Response as SR
 import Server.ThreeK as ST
+import Shared.Ask (Ask)
 import Shared.DateTime as SDT
 import Shared.File as SSF
+import Shared.Options.Ask (maxAskCharacters)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (SavedFields)
 import Shared.Profile.Types as SPT
 import Shared.ProfileColumn (ProfileColumn(..))
 import Shared.Resource (localBasePath, uploadFolder)
+import Shared.ResponseError (ResponseError(..))
 
 tooYoungMessage ∷ String
 tooYoungMessage = "You must be over 18 years old in order to use MeroChat"
@@ -48,7 +52,7 @@ profile loggedUserId = do
       posts ← SPD.presentPosts loggedUserId Nothing
       countries ← SPD.presentCountries
       languages ← SPD.presentLanguages
-      asks <- SAD.presentAllAsks loggedUserId
+      asks <- SAD.presentAllAsks loggedUserId Nothing
       pure
             { user: profileUser
             , countries
@@ -66,6 +70,15 @@ generateField field = do
 
 refreshPosts ∷ Int → Maybe Int → ServerEffect (Array Post)
 refreshPosts loggedUserId id = SPD.presentPosts loggedUserId id
+
+refreshAsks ∷ Int → Maybe Int → ServerEffect (Array Ask)
+refreshAsks loggedUserId id = SAD.presentAllAsks loggedUserId id
+
+saveAnswer :: Int -> Int -> String -> ServerEffect Unit
+saveAnswer loggedUserId askId answer = do
+      let trimmed = DS.trim answer
+      when (DS.null trimmed || DS.length trimmed > maxAskCharacters * 2) <<< RE.throw $ BadRequest { reason : "invalid answer"}
+      SPD.saveAnswer loggedUserId askId answer
 
 data SaveAvatar = Ignore | Save (Maybe String)
 

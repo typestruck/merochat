@@ -4,11 +4,12 @@ import Prelude
 
 import Data.DateTime (DateTime)
 import Data.List (List)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe)np
 import Node.Stream (Read, Stream)
 import Payload.ResponseTypes (Empty)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
 import Shared.Account (EmailCaptcha, EmailPassword, EmailPasswordCaptcha, ResetPassword)
+import Shared.Ask (Ask)
 import Shared.Changelog (Changelog)
 import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus, Question)
 import Shared.Html (Html)
@@ -85,13 +86,13 @@ spec ∷
                                                 , response ∷ Empty
                                                 }
                                   }
-                  , asks ∷
+                    , asks ∷
                             Routes "/asks"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
                                   , post ∷
                                           POST "/post"
-                                                { body ∷ { userId :: Int, question :: String }
-                                                , response ∷ { allowed :: Boolean }
+                                                { body ∷ { userId ∷ Int, question ∷ String }
+                                                , response ∷ { allowed ∷ Boolean }
                                                 }
                                   }
                     , im ∷
@@ -189,10 +190,20 @@ spec ∷
                                           GET "/"
                                                 { response ∷ Html
                                                 }
+                                  , asks ∷
+                                          GET "/asks?after=<after>"
+                                                { query ∷ { after ∷ Maybe Int }
+                                                , response ∷ Array Ask
+                                                }
+                                  , answer ∷
+                                          POST "answer"
+                                                { body ∷ { id ∷ Int, answer ∷ String }
+                                                , response ∷ Empty
+                                                }
                                   , posts ∷
                                           GET "/posts?after=<after>"
                                                 { query ∷ { after ∷ Maybe Int }
-                                                , response ∷ (Array Post)
+                                                , response ∷ Array Post
                                                 }
                                   , generated ∷
                                           POST "/generated"
@@ -330,7 +341,7 @@ spec ∷
                                                 , body ∷ { id ∷ Int }
                                                 , response ∷ Empty
                                                 }
-                                 , pass ∷
+                                  , pass ∷
                                           POST "/pass"
                                                 { guards ∷ Guards ("loggedUserId" : Nil)
                                                 , body ∷ { id ∷ Int }

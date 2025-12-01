@@ -6,18 +6,16 @@ import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
-import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Foreign as F
-import Shared.Ask (Ask)
+import Shared.Ask (Ask, A)
 import Shared.DateTime (DateWrapper)
 import Shared.Modal (ScreenModal)
 import Shared.Network (RequestStatus)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege)
-import Shared.Unsafe as SU
 import Shared.User (BasicUser, Gender)
+import Web.Event.Internal.Types (Event)
 
 data ProfileMessage
       = SetPField (ProfileModel → ProfileModel)
@@ -27,6 +25,7 @@ data ProfileMessage
       | Clear
       | SetGender String
       | SetCountry String
+      | ResizeChatInput Event
       | Save
       | SetTag String
       | ToggleVisibility ScreenModal
@@ -35,6 +34,9 @@ data ProfileMessage
       | RefreshAsks
       | AfterRegistration
       | UpdatePrivileges { karma ∷ Int, privileges ∷ Array Privilege }
+      | SetAnswer Int (Maybe String)
+      | SendAnswer Int
+      | AfterSendAnswer Int
 
 data What
       = Name
@@ -70,6 +72,8 @@ type GeneratedInput = { field ∷ What }
 
 data ProfileMode = Edit | Preview | OwnPosts | Asked
 
+type ProfileAsk = Record (A (typedAnswer :: Maybe String ))
+
 --used to generically set records
 type ProfileModel = Record PM
 
@@ -85,7 +89,7 @@ type PM =
       , generated ∷ Array What
       , visible ∷ Boolean
       , posts ∷ Array Post
-      , asks :: Array Ask
+      , asks :: Array ProfileAsk
       , languagesInputed ∷ Array Int
       , tagsInputed ∷ Array String
       , mode ∷ ProfileMode

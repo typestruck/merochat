@@ -12,7 +12,7 @@ import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
 import Safe.Coerce as SC
-import Shared.Ask (Ask)
+import Shared.Ask (Ask, A)
 import Shared.Change as SCN
 import Shared.DateTime as SDT
 import Shared.Im.Svg as SIS
@@ -30,7 +30,7 @@ import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
-asked ∷ ∀ message. Ask → Html message
+asked ∷ ∀ message r. Record (A r) → Html message
 asked ask = HE.div [ HA.class' "ask-entry" ]
       [ HE.div [] [ HE.text ask.question ]
       , HE.div [] [ HE.text $ SU.fromJust ask.answer ]

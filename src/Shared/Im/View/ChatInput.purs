@@ -162,7 +162,7 @@ sendButton elementId model
                       [ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message" ]
               ]
 
-sendButtonElements ∷ String → Array (Html ImMessage)
+sendButtonElements ∷ forall message. String → Array (Html message)
 sendButtonElements title =
       [ HE.title [ HE.text title ]
       , HE.path' [ HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.25A7.25,7.25,0,1,1,15.25,8,7.26,7.26,0,0,1,8,15.25Z" ]

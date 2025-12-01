@@ -6,7 +6,7 @@ import Prelude hiding (not, join)
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
-import Droplet.Driver.Internal.Query (Connection(..))
+import Droplet.Driver.Internal.Query (Connection)
 import Server.Database as SD
 import Server.Database.Asks (_answer, _answerer, _asker, asks)
 import Server.Database.Blocks (_blocked, _blocker, blocks)
@@ -21,9 +21,12 @@ import Server.Effect (ServerEffect)
 import Shared.Ask (Ask)
 import Shared.Changelog (ChangelogAction(..))
 import Shared.User (ProfileVisibility(..))
+import Type.Proxy (Proxy(..))
 
-presentAllAsks :: Int -> ServerEffect (Array Ask)
-presentAllAsks loggedUserId = SD.query $ select ((a ... _id # as _id) /\ _asker /\ _answer /\ _name /\ _question) # from (join (asks # as a) (users # as u) # on (_asker .=. u ... _id)) # wher (_answerer .=. loggedUserId) # orderBy ((_date # desc))
+presentAllAsks :: Int -> Maybe Int -> ServerEffect (Array Ask)
+presentAllAsks loggedUserId = case _ of
+      Just id -> SD.query $ select ((a ... _id # as _id) /\ _asker /\ _answer /\ _name /\ _question) # from (join (asks # as a) (users # as u) # on (_asker .=. u ... _id)) # wher (_answerer .=. loggedUserId .&&. (a ... _id) .>. id) # orderBy ((_date # desc)) # limit (Proxy :: _ 10)
+      Nothing -> SD.query $ select ((a ... _id # as _id) /\ _asker /\ _answer /\ _name /\ _question) # from (join (asks # as a) (users # as u) # on (_asker .=. u ... _id)) # wher (_answerer .=. loggedUserId) # orderBy ((_date # desc)) # limit (Proxy :: _ 10)
 
 isAllowedToAsk ∷ Int → Int → ServerEffect Boolean
 isAllowedToAsk loggedUserId userId = do

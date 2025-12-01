@@ -12,10 +12,14 @@ import Data.Array as DA
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Droplet.Driver.Internal.Query (Connection(..))
+import Effect.Class as EC
+import Effect.Now as EN
 import Prelude as P
 import Server.Database as SD
+import Server.Database.Asks (_answer, _answerer, asks)
 import Server.Database.Countries (countries)
-import Server.Database.Fields (_date, _id, _name, b, bu, k, p, l, lu, onlineStatus, p, tu, u)
+import Server.Database.Fields (_date, _id, _name, b, bu, k, l, lu, onlineStatus, p, tu, u)
+import Server.Database.Functions (utc_now)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
 import Server.Database.LanguagesUsers (_language, _speaker, languages_users)
@@ -27,6 +31,7 @@ import Server.Database.TagsUsers (_creator, _tag, tags_users)
 import Server.Database.Users (_avatar, _birthday, _country, _description, _gender, _headline, _onlineStatus, users)
 import Server.Effect (ServerEffect)
 import Server.Profile.Database.Flat (FlatProfileUser)
+import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Post (Post)
 import Shared.ProfileColumn as CP
 import Shared.Unsafe as SU
@@ -116,3 +121,8 @@ saveTags connection loggedUserId tags = void do
             -- update anyway so we can have a returning for all rows
             tagIds ∷ Array { id ∷ Int } ← SD.unsafeQueryWith connection "INSERT INTO tags (name) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (tag text)) ON CONFLICT ON CONSTRAINT unique_tag DO UPDATE SET name = excluded.name RETURNING id" { jsonInput: DAR.stringify <<< DAR.encodeJson $ map { tag: _ } tags }
             SD.executeWith connection $ insert # into tags_users (_creator /\ _tag) # values (map ((loggedUserId /\ _) <<< _.id) tagIds)
+
+saveAnswer :: Int -> Int -> String -> ServerEffect Unit
+saveAnswer loggedUserId id answer = do
+      dt <- EC.liftEffect EN.nowDateTime
+      SD.execute $ update asks # set ((_answer .=. Just answer) /\ (_date .=. DateTimeWrapper dt)) # wher (_id .=. id .&&. _answerer .=. loggedUserId)

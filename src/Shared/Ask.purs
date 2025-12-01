@@ -4,10 +4,13 @@ import Data.Maybe (Maybe)
 import Shared.Content (Content)
 import Shared.DateTime (DateTimeWrapper(..))
 
-type Ask =
-      { id ∷ Int
-      , asker :: Int
-      , name :: String
+type A r =
+      ( id ∷ Int
+      , asker ∷ Int
+      , name ∷ String
       , question ∷ String
-      , answer :: Maybe String
-      }
+      , answer ∷ Maybe String
+      | r
+      )
+
+type Ask = Record (A ())
