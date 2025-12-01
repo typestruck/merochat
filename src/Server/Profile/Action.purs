@@ -16,6 +16,7 @@ import Debug (spy)
 import Run as R
 import Safe.Coerce as SC
 import Server.Database as SD
+import Server.Asks.Database as SAD
 import Server.Database.Privileges as SDP
 import Server.Effect (ServerEffect)
 import Server.Email (Email(..))
@@ -24,7 +25,6 @@ import Server.File as SF
 import Server.Profile.BadWords (badWords)
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
-import Server.Profile.Types (Payload)
 import Server.Response as SR
 import Server.ThreeK as ST
 import Shared.DateTime as SDT
@@ -42,16 +42,18 @@ tooYoungMessage = "You must be over 18 years old in order to use MeroChat"
 fieldTooBigMessage ∷ String
 fieldTooBigMessage = "Field exceeded max value"
 
-profile ∷ Int → ServerEffect Payload
+profile ∷ Int → ServerEffect _
 profile loggedUserId = do
       profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserId
       posts ← SPD.presentPosts loggedUserId Nothing
       countries ← SPD.presentCountries
       languages ← SPD.presentLanguages
+      asks <- SAD.presentAllAsks loggedUserId
       pure
             { user: profileUser
             , countries
             , posts
+            , asks
             , languages
             }
 

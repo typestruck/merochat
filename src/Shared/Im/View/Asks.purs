@@ -26,13 +26,14 @@ import Shared.Post (Post)
 import Shared.Privilege (Privilege(..))
 import Shared.Privilege as SP
 import Shared.Resource (maxImageSizeKB)
+import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
 asked ∷ ∀ message. Ask → Html message
 asked ask = HE.div [ HA.class' "ask-entry" ]
       [ HE.div [] [ HE.text ask.question ]
-      , HE.div [] [ HE.text ask.answer ]
+      , HE.div [] [ HE.text $ SU.fromJust ask.answer ]
       ]
 
 askForm ∷ ImModel → User → Html ImMessage

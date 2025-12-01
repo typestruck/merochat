@@ -16,16 +16,8 @@ import Shared.Post (Post)
 
 profile ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
 profile { guards: { loggedUserId } } = do
-      profileUser ← SPDF.fromFlatProfileUser <$> SPD.presentProfile loggedUserId
-      countries ← SPD.presentCountries
-      languages ← SPD.presentLanguages
-      posts ← SPD.presentPosts loggedUserId Nothing
-      R.liftEffect $ SPT.template
-            { user: profileUser
-            , posts
-            , countries
-            , languages
-            }
+      payload <- SPA.profile loggedUserId
+      R.liftEffect $ SPT.template payload
 
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What } } → ServerEffect String
 generated { body } = SPA.generateField body.field

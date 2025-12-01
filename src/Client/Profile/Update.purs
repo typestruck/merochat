@@ -2,6 +2,7 @@ module Client.Profile.Update where
 
 import Prelude
 
+import Client.AppId (imAppId)
 import Client.Dom as CCD
 import Client.File as CCF
 import Client.Network (request)
@@ -33,7 +34,6 @@ import Shared.Im.Types (ImMessage(..), RetryableRequest(..))
 import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
-import Client.AppId (imAppId)
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
 import Shared.Profile.Types (PM, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
@@ -60,6 +60,16 @@ update model = case _ of
       Save → save model
       AfterRegistration → setFromTemporary model
       UpdatePrivileges _ → model /\ []
+      RefreshAsks -> refreshAsks model
+
+refreshAsks ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+refreshAsks model = model { mode = Asked } /\ [] -- [ fetch ]
+      -- where
+      -- fetch = do
+      --       result ← request.profile.posts { query: { after: _.id <$> DA.head model.posts } }
+      --       case result of
+      --             Right (Response response) → pure <<< Just <<< SetPField $ _ { posts = response.body <> model.posts }
+      --             _ → pure Nothing
 
 refreshPosts ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 refreshPosts model = model { mode = OwnPosts } /\ [ fetch ]

@@ -22,6 +22,7 @@ import Shared.Change as SC
 import Shared.DateTime as DST
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
+import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.Posts as SIVPS
 import Shared.Im.View.Profile (separator)
 import Shared.Im.View.Profile as SIVP
@@ -32,27 +33,38 @@ import Shared.Network (RequestStatus(..))
 import Shared.Options.Profile (descriptionMaxCharacters, headlineMaxCharacters, nameMaxCharacters, tagMaxCharacters)
 import Shared.Profile.Types (ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
 import Shared.Resource (Media(..), ResourceType(..))
-import Shared.Resource (resourcePath) as SP
 import Shared.Unsafe as SU
 import Shared.User (Gender(..))
 
 view ∷ ProfileModel → Html ProfileMessage
 view model = HE.div [ HA.id $ show ProfileEditionForm ]
       [ HE.div [ HA.class' { "profile-edition": true, hidden: not model.visible } ]
-              [ HE.div [ HA.class' "green-tab" ]
+              ([ HE.div [ HA.class' "green-tab" ]
                       [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]
                       , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [ HE.text "Preview" ]
                       , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == OwnPosts }, HA.onClick RefreshPosts ] [ HE.text "Posts" ]
+                      , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Asked }, HA.onClick RefreshAsks ] [ HE.text "Asks" ]
                       ]
-              , HE.fragment $
-                      if model.mode == Edit then
+              ] <> if model.mode == Edit then
                             edit model
                       else if model.mode == Preview then
                             preview model
-                      else
+                      else if model.mode == OwnPosts then
                             posts model
-              ]
+                      else
+                        asks model)
       ]
+
+asks ∷ ProfileModel → Array (Html ProfileMessage)
+asks model =
+      [ HE.div [] <<< map unaswered $ DA.filter (DM.isNothing <<< _.answer) model.asks
+      , HE.div [ HA.class' "ask-list" ] <<< map SIVA.asked $ DA.filter (DM.isJust <<< _.answer) model.asks
+      ]
+      where
+      unaswered ask = HE.div []
+            [ HE.i [] [ HE.text "MeroChat user asks: " ]
+            , HE.text ask.question
+            ]
 
 posts ∷ ProfileModel → Array (Html ProfileMessage)
 posts model =

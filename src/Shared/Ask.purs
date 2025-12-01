@@ -1,12 +1,13 @@
 module Shared.Ask where
 
 import Data.Maybe (Maybe)
-import Shared.DateTime (DateTimeWrapper)
 import Shared.Content (Content)
+import Shared.DateTime (DateTimeWrapper(..))
 
 type Ask =
       { id ∷ Int
-      , asker :: String
+      , asker :: Int
+      , name :: String
       , question ∷ String
-      , answer :: String
+      , answer :: Maybe String
       }

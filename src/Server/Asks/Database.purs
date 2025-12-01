@@ -1,7 +1,7 @@
 module Server.Asks.Database where
 
 import Droplet.Language
-import Prelude hiding (not)
+import Prelude hiding (not, join)
 
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -13,13 +13,17 @@ import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Changelogs (_action, _changed, changelogs)
 import Server.Database.DoppelgangerQuestions (_question)
 import Server.Database.Experiments (_description)
-import Server.Database.Fields (_id, _recipient, _sender, l, s, u)
+import Server.Database.Fields (_date, _id, _name, _recipient, _sender, a, l, s, u)
 import Server.Database.Histories (histories)
 import Server.Database.Types (Checked(..))
 import Server.Database.Users (_asksVisibility, _temporary, users)
 import Server.Effect (ServerEffect)
+import Shared.Ask (Ask)
 import Shared.Changelog (ChangelogAction(..))
 import Shared.User (ProfileVisibility(..))
+
+presentAllAsks :: Int -> ServerEffect (Array Ask)
+presentAllAsks loggedUserId = SD.query $ select ((a ... _id # as _id) /\ _asker /\ _answer /\ _name /\ _question) # from (join (asks # as a) (users # as u) # on (_asker .=. u ... _id)) # wher (_answerer .=. loggedUserId) # orderBy ((_date # desc))
 
 isAllowedToAsk ∷ Int → Int → ServerEffect Boolean
 isAllowedToAsk loggedUserId userId = do
