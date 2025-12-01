@@ -24,7 +24,7 @@ type Changelog =
       , read ∷ Boolean
       }
 
-data ChangelogAction = OpenBackerPage | SendDoppelgangerMessage | OpenExperimentsPage
+data ChangelogAction = OpenBackerPage | SendDoppelgangerMessage | OpenExperimentsPage | OpenProfilePage
 
 derive instance Generic ChangelogAction _
 
@@ -42,7 +42,7 @@ instance ToValue ChangelogAction where
 
 instance Bounded ChangelogAction where
       bottom = OpenBackerPage
-      top = OpenExperimentsPage
+      top = OpenProfilePage
 
 instance BoundedEnum ChangelogAction where
       cardinality = Cardinality 1
@@ -51,23 +51,27 @@ instance BoundedEnum ChangelogAction where
             OpenBackerPage → 0
             SendDoppelgangerMessage → 1
             OpenExperimentsPage → 2
+            OpenProfilePage -> 3
 
       toEnum = case _ of
             0 → Just OpenBackerPage
             1 → Just SendDoppelgangerMessage
             2 → Just OpenExperimentsPage
+            3 -> Just OpenProfilePage
             _ → Nothing
 
 instance Enum ChangelogAction where
       succ = case _ of
             OpenBackerPage → Just SendDoppelgangerMessage
             SendDoppelgangerMessage → Just OpenExperimentsPage
-            OpenExperimentsPage → Nothing
+            OpenExperimentsPage → Just OpenProfilePage
+            OpenProfilePage -> Nothing
 
       pred = case _ of
             OpenBackerPage → Nothing
             SendDoppelgangerMessage → Just OpenBackerPage
             OpenExperimentsPage → Just SendDoppelgangerMessage
+            OpenProfilePage -> Just OpenExperimentsPage
 
 derive instance Eq ChangelogAction
 
