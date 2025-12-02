@@ -2889,6 +2889,10 @@ label {
     border-bottom-color: transparent;
 }
 
+.contact-full-profile .ask-question, .contact-full-profile .ask-question:after {
+    background-color: var(--background-color);
+}
+
 .ask-question-itself {
     padding-top: 15px;
 }
@@ -3100,6 +3104,10 @@ label {
 
     .avatar-contact-list.newly-posted {
         padding: 6px;
+    }
+
+    .ask-list {
+        width: auto;
     }
 
     .back-filter .svg-back-profile {
