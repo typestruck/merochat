@@ -26,6 +26,7 @@ import Foreign.Object (Object)
 import Foreign.Object as FO
 import Payload.Client.QueryParams (class EncodeQueryParam)
 import Payload.Server.QueryParams (class DecodeQueryParam, DecodeError(..))
+import Shared.Ask (Ask)
 import Shared.Changelog (Changelog, ChangelogAction)
 import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper)
@@ -333,6 +334,7 @@ data ImMessage
       | SetAsk (Maybe String)
       | SendAsk Int
       | AfterSendAsk Int Boolean
+      | DisplayAsks Int (Array Ask)
 
       --main
       | ReloadPage

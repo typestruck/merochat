@@ -4,7 +4,7 @@ import Prelude
 
 import Data.DateTime (DateTime)
 import Data.List (List)
-import Data.Maybe (Maybe)np
+import Data.Maybe (Maybe)
 import Node.Stream (Read, Stream)
 import Payload.ResponseTypes (Empty)
 import Payload.Spec (type (:), GET, Guards, Nil, POST, Routes, Spec(..))
@@ -89,6 +89,11 @@ spec ∷
                     , asks ∷
                             Routes "/asks"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
+                                    , get ∷
+                                          GET "/?answerer=<answerer>"
+                                                { query ∷ { answerer ∷ Int }
+                                                , response ∷ Array Ask
+                                                }
                                   , post ∷
                                           POST "/post"
                                                 { body ∷ { userId ∷ Int, question ∷ String }

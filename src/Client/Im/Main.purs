@@ -175,6 +175,14 @@ update st model =
             React userId messageId value event → CIH.react userId messageId value event model
             DisplayReaction userId messageId reaction → CIH.displayReaction userId messageId reaction model
 
+            --asks
+            SpecialRequest (FetchAsks userId) → CIA.fetchAsks userId model
+            SetAsk value → CIA.setAsk value model
+            SendAsk userId → CIA.sendAsk userId model
+            AfterSendAsk userId  allowed → CIA.afterSendAsk userId allowed model
+            ToggleShowing userId for ShowAsks → CIA.toggleShowing userId for model
+            DisplayAsks userId asks → CIA.displayAsks userId asks model
+
             --posts
             DisplayPosts userId posts → CIPS.displayPosts userId posts model
             SpecialRequest (FetchPosts userId) → CIPS.fetchPosts userId model
@@ -188,12 +196,6 @@ update st model =
             SendPost → CIPS.sendPost model
             AfterSendPost id → CIPS.afterSendPost id webSocket model
             ToggleShowing userId for toggle → CIPS.toggleShowing userId toggle for model
-
-            --asks
-            SpecialRequest (FetchAsks userId) → CIA.fetchAsks userId model
-            SetAsk value → CIA.setAsk value model
-            SendAsk userId → CIA.sendAsk userId model
-            AfterSendAsk userId  allowed → CIA.afterSendAsk userId allowed model
 
             --suggestion
             FetchMoreSuggestions → CIS.fetchMoreSuggestions model

@@ -2805,9 +2805,17 @@ label {
     border-bottom: 1px dotted var(--light-color);
 }
 
+.ask-list {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    width: 500px;
+}
+
 .ask-entry {
     margin: 15px 0;
-    border-bottom: 1px dotted var(--light-color);
+    position: relative;
+    width: fit-content;
 }
 
 .posts-input-tab {
@@ -2859,6 +2867,40 @@ label {
 
 .bottom {
     padding-bottom: 15px;
+}
+
+.ask-question {
+    background-color: var(--im-second-background-color);
+    border-radius: 5px;
+    padding: 15px 20px;
+    color: var(--light-color);
+}
+
+.ask-question:after {
+    content: "";
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    left: 99%;
+    width: 0px;
+    height: 0px;
+    border: 8px solid var(--im-second-background-color);
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+}
+
+.ask-question-itself {
+    padding-top: 15px;
+}
+
+.ask-header {
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+.ask-answer {
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .asks-form .chat-input,

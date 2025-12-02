@@ -56,7 +56,8 @@ handlers reading =
               , seen: runJson reading SPSH.seen
               }
       , asks:
-              { post: runJson reading SAH.post
+              { get: runJson reading SAH.asks
+              , post: runJson reading SAH.post
               }
       , im:
               { get: runHtml reading SIH.im

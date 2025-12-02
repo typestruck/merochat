@@ -80,7 +80,7 @@ afterSendAnswer id model = model { loading = false, asks = map upd model.asks } 
 sendAnswer ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 sendAnswer id model = model { loading = DM.isJust answer } /\ effects
       where
-      answer =  DA.find ((_ == id) <<< _.id) model.asks >>= _.typedAnswer
+      answer = DA.find ((_ == id) <<< _.id) model.asks >>= _.typedAnswer
 
       send value = do
             void <<< CN.silentResponse $ request.profile.answer { body: { id, answer: value } }
@@ -104,7 +104,7 @@ refreshAsks model = model { mode = Asked } /\ [ fetch ]
             case result of
                   Right (Response response) → pure <<< Just <<< SetPField $ _ { asks = map extend response.body <> model.asks }
                   _ → pure Nothing
-      extend ask = (R.merge (ask :: Ask) { typedAnswer : Nothing :: Maybe String}) :: ProfileAsk
+      extend ask = (R.merge (ask ∷ Ask) { typedAnswer: Nothing ∷ Maybe String }) ∷ ProfileAsk
 
 refreshPosts ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 refreshPosts model = model { mode = OwnPosts } /\ [ fetch ]

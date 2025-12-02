@@ -16,9 +16,13 @@ import Server.Im.Template as SIT
 import Server.Posts.Action as SPA
 import Server.Response as SR
 import Shared.Account (EmailPassword)
+import Shared.Ask (Ask)
 import Shared.Changelog (Changelog)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
+
+asks ∷ { guards ∷ { loggedUserId ∷ Int }, query :: { answerer :: Int } } → ServerEffect (Array Ask)
+asks request = SAA.presentAsks request.query.answerer
 
 post ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { userId :: Int, question :: String } } → ServerEffect { allowed:: Boolean }
 post request = do

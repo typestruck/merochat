@@ -30,6 +30,9 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
 
+presentAsks :: Int -> ServerEffect (Array Ask)
+presentAsks userId = SAD.presentAsks userId
+
 refreshAsks ∷ Int → Maybe Int → ServerEffect (Array Ask)
 refreshAsks loggedUserId id = SAD.presentAllAsks loggedUserId id
 

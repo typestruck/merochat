@@ -11,6 +11,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.String (Pattern(..))
 import Data.String as DS
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -95,7 +96,8 @@ posts model =
 
 edit ∷ ProfileModel → Array (Html ProfileMessage)
 edit model =
-      [ HE.div [ HA.class' { "profile-section created-account": true, hidden: not model.fromTemporary } ] [ HE.text "You account has been created" ]
+      [ --likely a rendering bug on flame as it wont work with regular div
+        HE.createElement "vid" [ HA.class' { "profile-section created-account": true, hidden: not model.fromTemporary } ] [ HE.text "Your account has been created" ]
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Avatar" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]

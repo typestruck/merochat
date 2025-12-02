@@ -130,12 +130,11 @@ toggleShowingSuggestions userId toggle model =
             --we need this bookkeeping for big suggestion cards
             , suggesting = Just userId
             , modal = Special $ ShowSuggestionCard userId
-            , asks = model.asks { question = Nothing }
             , posts = model.posts { freeToFetch = not shouldFetch }
             } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
-      shouldFetch = toggle == ShowPosts && Just ShowInfo == (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
+      shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
 
       update suggestion
             | suggestion.id == userId = suggestion { showing = toggle }
@@ -150,12 +149,11 @@ toggleShowingContacts userId toggle model =
       model
             { contacts = map update model.contacts
             , posts = model.posts { freeToFetch = not shouldFetch }
-            , asks = model.asks { question = Nothing }
             , fullContactProfileVisible = true
             } /\ effects
       where
       found = _.user <$> DA.find ((_ == userId) <<< _.id <<< _.user) model.contacts
-      shouldFetch = toggle == ShowPosts && Just ShowInfo == (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
+      shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
 
       update contact
             | contact.user.id == userId = contact { user = contact.user { showing = toggle } }
