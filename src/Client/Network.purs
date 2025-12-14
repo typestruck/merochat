@@ -1,11 +1,10 @@
 module Client.Network
-  ( request
-  , formRequest
-  , routes
-  , retryableRequest
-  , silentRequest
-  )
-  where
+      ( request
+      , formRequest
+      , routes
+      , retryableRequest
+      , silentRequest
+      ) where
 
 import Prelude
 import Shared.Im.Types (ImMessage(..), RetryableRequest)
@@ -93,7 +92,7 @@ retryableRequest ∷ ∀ response. RetryableRequest → (response → ImMessage)
 retryableRequest rr message aff = do
       result ← aff
       case result of
-            Right r → pure <<< Just $ message (SC.coerce r ∷ { body ∷ response, status ∷ HttpStatus, headers ∷ Headers }).body
+            Right r → pure <<< Just $ message (coerceResponse r).body
             Left err → do
                   logError err
                   pure <<< Just $ RequestFailed { routes: rr, errorMessage: Just $ SN.errorMessage err }
@@ -103,15 +102,15 @@ silentRequest ∷ ∀ a. Aff (ClientResponse a) → Aff a
 silentRequest aff = do
       result ← aff
       case result of
-            Right r → pure (SC.coerce r ∷ { body ∷ a, status ∷ HttpStatus, headers ∷ Headers }).body
+            Right r → pure (coerceResponse r).body
             Left err → CMEC.throwError <<< EE.error $ "Response error: " <> show err
 
 -- | Performs a request
 request ∷ ∀ r. Aff (ClientResponse r) → Aff (Either ClientError r)
-request aff = map (_.body <<< coerce) <$> aff
-      where
-      coerce ∷ Response r → { body ∷ r, status ∷ HttpStatus, headers ∷ Headers }
-      coerce = SC.coerce
+request aff = map (_.body <<< coerceResponse) <$> aff
+
+coerceResponse ∷ ∀ r. Response r → { body ∷ r, status ∷ HttpStatus, headers ∷ Headers }
+coerceResponse = SC.coerce
 
 logError ∷ ∀ e. Show e ⇒ e → Aff Unit
 logError err = liftEffect <<< EC.log $ "Response error: " <> show err

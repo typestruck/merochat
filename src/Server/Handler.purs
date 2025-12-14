@@ -20,7 +20,6 @@ import Server.Admin.Handler as SHA
 import Server.Asks.Handler as SAH
 import Server.Backer.Handler as SBH
 import Server.Banned.Handler as SBNH
-import Server.Elsewhere.Handler as SESH
 import Server.Experiments.Handler as SEH
 import Server.Feedback.Handler as SFH
 import Server.Fortune.Handler as SFTH
@@ -114,7 +113,6 @@ handlers reading =
       , logout: runJson reading SLOH.logout
       , help: runHtml reading SHH.help
       , backer: runHtml reading (const SBH.backer)
-      , elsewhere: runHtml reading SESH.elsewhere
       , banned: runHtml reading SBNH.banned
       , feedback:
               { get: runHtml reading SFH.feedback
