@@ -32,6 +32,7 @@ template payload = do
                     , asks: extend <$> payload.asks
                     , languagesInputed: payload.user.languages
                     , visible: true
+                    , contextMenuFor: Nothing
                     , generated: []
                     , avatarInputed: payload.user.avatar
                     , tagsInputed: payload.user.tags

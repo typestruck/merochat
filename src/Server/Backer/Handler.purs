@@ -1,11 +1,10 @@
 module Server.Backer.Handler where
 
-import Prelude
-import Server.Effect
+import Server.Effect (ServerEffect)
 
 import Effect.Class as EC
 import Server.Backer.Template as SBT
 import Shared.Html (Html)
 
-backer ∷ ∀ r. { | r } → ServerEffect Html
-backer _ = EC.liftEffect SBT.template
+backer ∷ ServerEffect Html
+backer = EC.liftEffect SBT.template

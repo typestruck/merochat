@@ -113,7 +113,7 @@ handlers reading =
       , leaderboard: runJson reading SLBH.leaderboard
       , logout: runJson reading SLOH.logout
       , help: runHtml reading SHH.help
-      , backer: runHtml reading SBH.backer
+      , backer: runHtml reading (const SBH.backer)
       , elsewhere: runHtml reading SESH.elsewhere
       , banned: runHtml reading SBNH.banned
       , feedback:

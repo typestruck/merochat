@@ -10,6 +10,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Shared.Ask (Ask, A)
 import Shared.DateTime (DateWrapper)
+import Shared.Im.Svg (contextMenu)
 import Shared.Modal (ScreenModal)
 import Shared.Network (RequestStatus)
 import Shared.Post (Post)
@@ -86,6 +87,7 @@ type PM =
       , fromTemporary ∷ Boolean
       , genderInputed ∷ Maybe Gender
       , countryInputed ∷ Maybe Int
+      , contextMenuFor :: Maybe Int
       , generated ∷ Array What
       , visible ∷ Boolean
       , posts ∷ Array Post

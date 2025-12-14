@@ -89,8 +89,15 @@
     width: 500px;
 }
 
+.ask-answer-form {
+    padding-top: 5px;
+}
+
+.ask-answer-form .outer-user-menu {
+    margin-top: -10px;
+}
+
 .ask-answer-form .modal-input {
-    margin-top: 5px;
     margin-bottom: 25px;
     padding-bottom: 0;
 }
@@ -111,7 +118,7 @@
     }
 
     .ask-answer-form,
-    .profile-edition .posts ,
+    .profile-edition .posts,
     .profile-section .profile-section-wedge .modal-input,
     .profile-section .profile-section-wedge .modal-select,
     .profile-section .modal-input,

@@ -19,7 +19,7 @@ import Test.Unit.Assert as TUA
 
 tests ∷ TestSuite
 tests = do
-      TU.suiteOnly "/unsubscribe" do
+      TU.suite "/unsubscribe" do
             TU.test "updates user email setting"
                   $ TS.serverAction
                   do

@@ -24,6 +24,7 @@ import Shared.Change as SCN
 import Shared.DateTime as DST
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
+import Shared.Im.Svg as SIA
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SICI
 import Shared.Im.View.Posts as SIVPS
@@ -77,7 +78,12 @@ asks model =
                           if model.loading then
                                 [ HE.div' [ HA.class' "loading" ] ]
                           else
-                                [ HE.textarea'
+                                [ HE.div [ HA.class' "outer-user-menu hidden" ]
+                                        [ SIA.contextMenu $ show AskContextMenu <> show ask.id
+                                        , HE.div [ HA.class' {"user-menu-item menu-item-heading": true, hidden: model.contextMenuFor /= Just ask.id} ] [ HE.text "Ignore" ]
+                                        , HE.div [ HA.class' {"user-menu-item menu-item-heading": true, hidden: model.contextMenuFor /= Just ask.id} ] [ HE.text "Report" ]
+                                        ]
+                                , HE.textarea'
                                         [ HA.class' "modal-input"
                                         , HA.placeholder "Type your answer"
                                         , HA.onInput' ResizeChatInput

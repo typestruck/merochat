@@ -1,4 +1,4 @@
-module Server.ThreeK.Name where
+module Server.Generate.Name where
 
 import Prelude
 
@@ -15,7 +15,7 @@ import Data.Tuple (Tuple(..))
 import Data.Tuple as DT
 import Effect (Effect)
 import Effect.Random as ER
-import Server.ThreeK.Data (GrammaticalClass(..), grammaticalClasses)
+import Server.Generate.Data (GrammaticalClass(..), grammaticalClasses)
 import Shared.Unsafe as SU
 
 -- | A "simple name" is a string containing <adjective> [, <adjective>] <noun>

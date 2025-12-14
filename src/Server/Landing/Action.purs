@@ -6,7 +6,7 @@ import Server.Effect
 import Data.Maybe (Maybe(..))
 import Server.AccountValidation as SA
 import Server.Landing.Database as SLD
-import Server.ThreeK as SB
+import Server.Generate as SB
 import Server.Token as ST
 import Shared.Account (EmailPasswordCaptcha)
 

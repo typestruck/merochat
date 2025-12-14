@@ -18,6 +18,7 @@ data ElementId
       | ChatInputContact
       | ChatInputSuggestion
       | ChatInput
+      | AskContextMenu
       | ProfileEditionForm
       | ImageFormCaption
       | FeedbackForm
@@ -89,6 +90,7 @@ instance Show ElementId where
             Faq → "faq"
             TermsSection → "terms"
             Im → "im"
+            AskContextMenu → "ask-context-menu"
             EmailInput → "email-input"
             PrivacySettings → "privacy-settings"
             PrivacySection → "privacy"

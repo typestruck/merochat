@@ -20,10 +20,10 @@ MeroChat is a friendly random chat!
 
 * Zero tolerance for bots, spammers or perverts
 
-A note on naming: mero is the Guarani word for melon. Hence the fruit theming.
+A note on naming: mero is the Guarani word for melon.
 
 ### Contributing
 
-Pull requests are welcome! We have a [spec](docs/README.md). Issues correspond to spec items, but feel free to contact me (or just fork the thing) if you wish to help.
+Pull requests are welcome! Feel free to contact me if you need help, or would like to know more about PureScript.
 
 See [CONTRIBUTING](CONTRIBUTING.md) for how to get started and [ARCHITECTURE](ARCHITECTURE.md) for a high level overview of the project.

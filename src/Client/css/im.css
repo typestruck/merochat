@@ -3892,6 +3892,11 @@ label {
 }
 
 @media (min-width:1280px) and (max-width:1919px) {
+    .modal-menu {
+        padding-top: 5px;
+        padding-bottom:50px;
+    }
+
     .back-side-suggestion {
         padding: 14px 6px;
     }
