@@ -39,8 +39,8 @@ suggestions ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { skip ∷ Int,
 suggestions { guards: { loggedUserId }, query } = SIA.suggest loggedUserId query.skip query.sg
 
 react ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int, reaction ∷ String } } → ServerEffect Empty
-react request = do
-      SIA.react request.guards.loggedUserId request.body.id request.body.reaction
+react routes = do
+      SIA.react routes.guards.loggedUserId routes.body.id routes.body.reaction
       pure Empty
 
 block ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Empty
@@ -59,15 +59,15 @@ subscribe { guards } = do
       pure Empty
 
 changelogs ∷ { query ∷ { before ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Changelog)
-changelogs request = SIA.listChangelogs request.guards.loggedUserId request.query.before
+changelogs routes = SIA.listChangelogs routes.guards.loggedUserId routes.query.before
 
 changelog ∷ { body ∷ { ids ∷ Array Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect Empty
-changelog request = do
-      SIA.markRead request.guards.loggedUserId request.body.ids
+changelog routes = do
+      SIA.markRead routes.guards.loggedUserId routes.body.ids
       pure Empty
 
 missedContacts ∷ { query ∷ { since ∷ DateTime, last ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Contact)
-missedContacts request = SIA.listMissedContacts request.guards.loggedUserId request.query.since request.query.last
+missedContacts routes = SIA.listMissedContacts routes.guards.loggedUserId routes.query.since routes.query.last
 
 report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ Report } → ServerEffect Empty
 report { guards: { loggedUserId }, body } = do

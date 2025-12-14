@@ -10,7 +10,7 @@ import Client.Im.Record as CIR
 import Client.Im.Scroll as CIS
 import Client.Im.Suggestion as SIS
 import Client.Im.WebSocket as CIW
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCNT
 import Data.Array ((!!), (:))
 import Data.Array as DA
@@ -483,4 +483,4 @@ messageFromExperiment userId message webSocket model =
                   , content: Text message
                   , turn: Nothing
                   }
-            CCNT.retryableResponse FetchMissedContacts DisplayNewContacts $ request.im.contact { query: { id: userId } }
+            CCNT.retryableRequest FetchMissedContacts DisplayNewContacts $ routes.im.contact { query: { id: userId } }

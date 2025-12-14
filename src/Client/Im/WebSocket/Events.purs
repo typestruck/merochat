@@ -3,7 +3,7 @@ module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, receiv
 import Prelude
 
 import Client.Dom as CCD
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCNT
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
@@ -242,7 +242,7 @@ receiveIncomingMessage webSocket isFocused payload model =
             case fromIncomingMessage payload unsuggestedModel of
                   Left id →
                         --new message from an user that is not currently in the contacts
-                        unsuggestedModel /\ [ CCNT.retryableResponse FetchMissedContacts DisplayNewContacts $ request.im.contact { query: { id } } ]
+                        unsuggestedModel /\ [ CCNT.retryableRequest FetchMissedContacts DisplayNewContacts $ routes.im.contact { query: { id } } ]
                   Right updatedModel →
                         if model.user.id == payload.senderId then
                               --syncing message sent from other connections

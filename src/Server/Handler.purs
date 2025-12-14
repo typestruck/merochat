@@ -42,7 +42,7 @@ import Server.Settings.Handler as SSH
 import Server.Unsubscribe.Handler as SUH
 import Shared.Resource (localBasePath)
 import Shared.ResponseError (ResponseError(..))
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 
 handlers ∷ ServerReader → _
 handlers reading =
@@ -151,7 +151,7 @@ runHtml reading handler input = run `EA.catchError` catch
                   map Left $ case ohno of
                         BadRequest { reason } → SIEH.internalError reason
                         InternalError { reason } → SIEH.internalError reason
-                        ExpiredSession → pure $ SL.logout (routes.login.get {}) ""
+                        ExpiredSession → pure $ SL.logout (routesSpec.login.get {}) ""
 
 runJson ∷ ∀ a b. ServerReader → (a → ServerEffect b) → a → Aff (Either (Response String) b)
 runJson reading handler = R.runBaseAff' <<< RE.catch handleRequestError <<< RR.runReader reading <<< map Right <<< handler

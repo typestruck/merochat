@@ -4,7 +4,7 @@ import Prelude
 
 import Client.AppId (imAppId)
 import Client.File as CCF
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.WebSocket as CIW
@@ -51,14 +51,14 @@ displayPosts userId posts model =
             | DA.null posts = []
             | otherwise =
                     [ do
-                            void <<< CCN.silentResponse $ request.posts.seen { body: { id: (SU.fromJust $ DA.head posts).id, poster: userId } }
+                            void <<< CCN.silentRequest $ routes.posts.seen { body: { id: (SU.fromJust $ DA.head posts).id, poster: userId } }
                             pure Nothing
                     ]
 
 fetchPosts ∷ Int → ImModel → MoreMessages
 fetchPosts userId model = model { posts = model.posts { freeToFetch = false } } /\ [ fetch ]
       where
-      fetch = CCN.retryableResponse (FetchPosts userId) (DisplayPosts userId) $ request.posts.get { query: { poster: userId } }
+      fetch = CCN.retryableRequest (FetchPosts userId) (DisplayPosts userId) $ routes.posts.get { query: { poster: userId } }
 
 togglePostForm ∷ ImModel → NoMessages
 togglePostForm model = model { showSuggestionsPostForm = not model.showSuggestionsPostForm } /\ []
@@ -104,7 +104,7 @@ sendPost model = model { posts = model.posts { freeToSend = not maySend } } /\ e
       where
       maySend = model.posts.mode == TextOnly && DM.isJust model.posts.text || model.posts.mode == LinkOnly && DM.isJust model.posts.link || model.posts.mode == ImageOnly && DM.isJust model.posts.image
       send = do
-            response ← CCN.silentResponse $ request.posts.post
+            response ← CCN.silentRequest $ routes.posts.post
                   { body:
                           { content: case model.posts.mode of
                                   LinkOnly → Link (SU.fromJust model.posts.link) model.posts.caption

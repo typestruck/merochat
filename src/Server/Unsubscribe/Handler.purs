@@ -10,6 +10,6 @@ import Server.Unsubscribe.Template as SUT
 import Shared.Html (Html)
 
 unsubscribe ∷ { query ∷ { token ∷ String } } → ServerEffect Html
-unsubscribe request = do
-      unsubbed ← SUA.unsubscribe request.query.token
+unsubscribe routes = do
+      unsubbed ← SUA.unsubscribe routes.query.token
       EC.liftEffect $ if unsubbed then SUT.template else SUN.template

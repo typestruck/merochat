@@ -3,7 +3,7 @@ module Client.Im.Asks where
 import Prelude
 
 import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Data.Array ((:))
 import Data.Array as DA
@@ -33,7 +33,7 @@ displayAsks userId asks model =
 fetchAsks ∷ Int → ImModel → MoreMessages
 fetchAsks userId model = model { asks = model.asks { freeToFetch = false } } /\ [ fetch ]
       where
-      fetch = CCN.retryableResponse (FetchAsks userId) (DisplayAsks userId) $ request.asks.get { query: { answerer: userId } }
+      fetch = CCN.retryableRequest (FetchAsks userId) (DisplayAsks userId) $ routes.asks.get { query: { answerer: userId } }
 
 setAsk ∷ Maybe String → ImModel → MoreMessages
 setAsk value model = model { asks = model.asks { question = value } } /\ []
@@ -42,7 +42,7 @@ sendAsk ∷ Int → ImModel → MoreMessages
 sendAsk userId model = model { asks = model.asks { freeToSend = false } } /\ [ send ]
       where
       send = do
-            response ← CCN.silentResponse $ request.asks.post { body: { userId, question: SU.fromJust model.asks.question } }
+            response ← CCN.silentRequest $ routes.asks.post { body: { userId, question: SU.fromJust model.asks.question } }
             pure <<< Just $ AfterSendAsk userId response.allowed
 
 afterSendAsk ∷ Int → Boolean → ImModel → MoreMessages

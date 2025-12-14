@@ -1,7 +1,14 @@
-module Client.Network where
+module Client.Network
+  ( request
+  , formRequest
+  , routes
+  , retryableRequest
+  , silentRequest
+  )
+  where
 
 import Prelude
-import Shared.Im.Types
+import Shared.Im.Types (ImMessage(..), RetryableRequest)
 
 import Client.Dom as CCD
 import Control.Monad.Error.Class as CMEC
@@ -19,18 +26,18 @@ import Payload.Client (ClientError, ClientResponse, defaultOpts)
 import Payload.Client as PC
 import Payload.Headers (Headers)
 import Payload.ResponseTypes (Response(..), HttpStatus)
-import Safe.Coerce (class Coercible)
+import Prim.TypeError (class Warn, Text)
 import Safe.Coerce as SC
 import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Spec (spec)
 import Web.DOM.Element as WDE
 
-request ∷ _
-request = PC.mkGuardedClient (defaultOpts { baseUrl = "/" }) spec
+routes ∷ _
+routes = PC.mkGuardedClient (defaultOpts { baseUrl = "/" }) spec
 
--- | Performs a request that has loading UI and possible error/success messages
-formRequest ∷ ∀ a. String → Aff (ClientResponse a) → Aff RequestStatus
+-- | Performs a request that has a loading UI and possible error/success messages
+formRequest ∷ ∀ a. Warn (Text "Deprecated") ⇒ String → Aff (ClientResponse a) → Aff RequestStatus
 formRequest formSelector aff = do
       previousLabel ← liftEffect do
             button ← CCD.unsafeQuerySelector buttonSelector
@@ -79,26 +86,29 @@ formRequest formSelector aff = do
             existingClasses ← WDE.className formDiv
             WDE.setClassName (existingClasses <> " input success") formDiv
 
--- | Performs a request that has can be retried through the UI in case of errors
-retryableResponse ∷ ∀ response. RetryableRequest → (response → ImMessage) → Aff (ClientResponse response) → Aff (Maybe ImMessage)
-retryableResponse requestMessage message aff = do
+-- | Performs a request that is added to the failure list in case of errors
+-- |
+-- | Useful for managing retry UIs
+retryableRequest ∷ ∀ response. RetryableRequest → (response → ImMessage) → Aff (ClientResponse response) → Aff (Maybe ImMessage)
+retryableRequest rr message aff = do
       result ← aff
       case result of
             Right r → pure <<< Just $ message (SC.coerce r ∷ { body ∷ response, status ∷ HttpStatus, headers ∷ Headers }).body
             Left err → do
                   logError err
-                  pure <<< Just $ RequestFailed { request: requestMessage, errorMessage: Just $ SN.errorMessage err }
+                  pure <<< Just $ RequestFailed { routes: rr, errorMessage: Just $ SN.errorMessage err }
 
 -- | Perform a request, throwing on errors
-silentResponse ∷ ∀ a. Aff (ClientResponse a) → Aff a
-silentResponse aff = do
+silentRequest ∷ ∀ a. Aff (ClientResponse a) → Aff a
+silentRequest aff = do
       result ← aff
       case result of
             Right r → pure (SC.coerce r ∷ { body ∷ a, status ∷ HttpStatus, headers ∷ Headers }).body
             Left err → CMEC.throwError <<< EE.error $ "Response error: " <> show err
 
-defaultResponse ∷ ∀ r. Aff (ClientResponse r) → Aff (Either ClientError r)
-defaultResponse aff = map (_.body <<< coerce) <$> aff
+-- | Performs a request
+request ∷ ∀ r. Aff (ClientResponse r) → Aff (Either ClientError r)
+request aff = map (_.body <<< coerce) <$> aff
       where
       coerce ∷ Response r → { body ∷ r, status ∷ HttpStatus, headers ∷ Headers }
       coerce = SC.coerce

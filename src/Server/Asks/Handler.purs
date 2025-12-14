@@ -22,11 +22,11 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Html (Html(..))
 
 asks ∷ { guards ∷ { loggedUserId ∷ Int }, query :: { answerer :: Int } } → ServerEffect (Array Ask)
-asks request = SAA.presentAsks request.query.answerer
+asks routes = SAA.presentAsks routes.query.answerer
 
 post ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { userId :: Int, question :: String } } → ServerEffect { allowed:: Boolean }
-post request = do
-    allowed <- SAA.sendAsk request.guards.loggedUserId request.body.userId request.body.question
+post routes = do
+    allowed <- SAA.sendAsk routes.guards.loggedUserId routes.body.userId routes.body.question
     pure { allowed }
 
 

@@ -223,7 +223,7 @@ type Turn =
       }
 
 type RequestFailure =
-      { request ∷ RetryableRequest
+      { routes ∷ RetryableRequest
       , errorMessage ∷ Maybe String
       }
 

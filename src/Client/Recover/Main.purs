@@ -4,21 +4,21 @@ import Prelude
 
 import Client.Account as CCA
 import Client.Location as CCL
-import Client.Network (request)
+import Client.Network (routes)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Milliseconds(..))
 import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Shared.Network (RequestStatus(..))
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 
 recover ∷ Effect Unit
 recover = do
       inputed ← CCA.validateEmail
       case inputed of
             Nothing → pure unit
-            Just email → EA.launchAff_ <<< void <<< CCA.formRequest $ request.recover.post { body: { email, captchaResponse: "" } }
+            Just email → EA.launchAff_ <<< void <<< CCA.formRequest $ routes.recover.post { body: { email, captchaResponse: "" } }
 
 reset ∷ String → Effect Unit
 reset token = do
@@ -27,10 +27,10 @@ reset token = do
       case passwordConfirmationInputed of
             Just password →
                   EA.launchAff_ do
-                        status ← CCA.formRequest $ request.recover.reset { body: { token, password } }
+                        status ← CCA.formRequest $ routes.recover.reset { body: { token, password } }
                         when (status == Success) do
                               EA.delay $ Milliseconds 3000.0
-                              liftEffect <<< CCL.setLocation $ routes.login.get {}
+                              liftEffect <<< CCL.setLocation $ routesSpec.login.get {}
             _ → pure unit
 
 main ∷ Effect Unit

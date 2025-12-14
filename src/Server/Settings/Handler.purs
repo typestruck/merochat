@@ -39,4 +39,4 @@ changePrivacy { guards: { loggedUserId }, body } = do
       pure Empty
 
 background ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { ownBackground ∷ Boolean, image ∷ Maybe String } } → ServerEffect String
-background request = SSA.saveChatBackground request.guards.loggedUserId request.body.ownBackground request.body.image
+background routes = SSA.saveChatBackground routes.guards.loggedUserId routes.body.ownBackground routes.body.image

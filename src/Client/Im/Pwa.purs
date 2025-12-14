@@ -3,7 +3,7 @@ module Client.Im.Pwa where
 import Prelude
 
 import Client.Dom as CCD
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Client.Im.Flame (NoMessages)
 import Client.Im.History as CIH
@@ -132,13 +132,13 @@ subscribePush id registration = getSubscription registration handler
       handler existing = case DN.toMaybe existing of
             Nothing →
                   EA.launchAff_ do
-                        void <<< CCN.silentResponse $ request.im.subscribe {}
+                        void <<< CCN.silentRequest $ routes.im.subscribe {}
                         EC.liftEffect $ subscribe registration topic
             Just s → topic s
 
       topic subscription = do
             body ← topicBody subscription $ SOT.makeTopic id
-            EA.launchAff_ <<< void <<< CCN.silentResponse $ request.topic
+            EA.launchAff_ <<< void <<< CCN.silentRequest $ routes.topic
                   { params: { path: Cons "v1" $ Cons "webpush" Nil }
                   , body
                   }

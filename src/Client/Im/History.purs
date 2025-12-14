@@ -6,7 +6,7 @@ import Prelude
 import Shared.Im.Types
 
 import Client.Dom as CCD
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Client.Im.Scroll as CIS
 import Data.Array as DA
@@ -36,10 +36,10 @@ fetchHistory userId shouldFetch model
                           model
                                 { freeToFetchChatHistory = false
                                 } /\
-                                [ CCN.retryableResponse
+                                [ CCN.retryableRequest
                                         (FetchHistory contact.user.id true)
                                         (DisplayHistory contact.user.id)
-                                        (request.im.history { query: { with: contact.user.id, skip: if contact.shouldFetchChatHistory then 0 else DA.length contact.history } })
+                                        (routes.im.history { query: { with: contact.user.id, skip: if contact.shouldFetchChatHistory then 0 else DA.length contact.history } })
                                 ]
       | otherwise = F.noMessages model
 
@@ -93,7 +93,7 @@ react userId messageId value event model = model /\ [ save ]
             reaction ← EC.liftEffect case value of
                   Right text → pure text
                   Left id → CCD.unsafeQuerySelector ("#" <> id) >>= CCD.value >>= (pure <<< DS.toUpper)
-            void <<< CCN.silentResponse $ request.im.react { body: { id: messageId, reaction } }
+            void <<< CCN.silentRequest $ routes.im.react { body: { id: messageId, reaction } }
             pure <<< Just $ DisplayReaction userId messageId reaction
 
 displayReaction ∷ Int → Int → String → ImModel → NoMessages

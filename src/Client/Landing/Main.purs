@@ -5,7 +5,7 @@ import Prelude
 import Client.Account as CCA
 import Client.Dom as CCD
 import Client.Location as CCL
-import Client.Network (request)
+import Client.Network (routes)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable)
 import Data.Nullable as DN
@@ -15,7 +15,7 @@ import Effect.Aff as EA
 import Effect.Class (liftEffect)
 import Shared.Element (ElementId(..))
 import Shared.Network (RequestStatus(..))
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 import Shared.Unsafe as SU
 import Web.HTML.Event.EventTypes (click)
 
@@ -25,16 +25,16 @@ registerRegularUser = do
       case registerLogin of
             Nothing → pure unit
             Just rl → EA.launchAff_ do
-                  status ← CCA.formRequest $ request.register { body: { email: rl.email, password: rl.password, captchaResponse: "" } }
+                  status ← CCA.formRequest $ routes.register { body: { email: rl.email, password: rl.password, captchaResponse: "" } }
                   liftEffect $ case status of
-                        Success → CCL.setLocation $ routes.im.get {}
+                        Success → CCL.setLocation $ routesSpec.im.get {}
                         Failure _ → pure unit
 
 registerTemporaryUser ∷ Effect Unit
 registerTemporaryUser = EA.launchAff_ do
-      status ← CCA.formRequest $ request.temporary {}
+      status ← CCA.formRequest $ routes.temporary {}
       liftEffect $ case status of
-            Success → CCL.setLocation $ routes.im.get {}
+            Success → CCL.setLocation $ routesSpec.im.get {}
             Failure _ → pure unit
 
 registerTemporaryUserEvents ∷ Effect Unit

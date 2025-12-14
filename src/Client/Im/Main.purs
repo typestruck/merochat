@@ -25,7 +25,7 @@ import Client.Im.Theme as CIT
 import Client.Im.WebSocket as CIW
 import Client.Im.WebSocket.Events as CIWE
 import Client.Location as CCL
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Client.Network as CCNT
 import Client.Network as CNN
@@ -69,7 +69,7 @@ import Shared.Options.Profile (passwordMinCharacters)
 import Shared.Profile.Types as SPT
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.ResizeInput as SIR
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User as SUR
@@ -117,7 +117,7 @@ main = do
       resumeFromNotification
 
       --disable the back button on desktop/make the back button go back to previous screen on mobile
-      CCD.pushState $ routes.im.get {}
+      CCD.pushState $ routesSpec.im.get {}
       historyChange smallScreen
 
       --image upload
@@ -267,7 +267,7 @@ removeChatBackground ∷ ImModel → NoMessages
 removeChatBackground model = model { toggleContextMenu = HideContextMenu, user { ownBackground = true } } /\ [ save ]
       where
       save = do
-            void <<< CNN.silentResponse $ request.settings.chat.background { body: { ownBackground: true, image: model.user.chatBackground } }
+            void <<< CNN.silentRequest $ routes.settings.chat.background { body: { ownBackground: true, image: model.user.chatBackground } }
             pure Nothing
 
 setChatBackgroundFromProfile ∷ Boolean → Maybe String → ImModel → NoMessages
@@ -324,7 +324,7 @@ registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
       else
             model { erroredFields = [] } /\
                   [ do
-                          status ← CCN.formRequest (show TemporaryUserSignUpForm) $ request.im.register { body: { email: SU.fromJust temporaryEmail, password: SU.fromJust temporaryPassword } }
+                          status ← CCN.formRequest (show TemporaryUserSignUpForm) $ routes.im.register { body: { email: SU.fromJust temporaryEmail, password: SU.fromJust temporaryPassword } }
                           case status of
                                 Failure _ → pure Nothing
                                 Success → pure $ Just SetRegistered
@@ -336,10 +336,10 @@ registerUser model@{ temporaryEmail, temporaryPassword, erroredFields } =
 terminateAccount ∷ ImModel → NextMessage
 terminateAccount model = model /\
       [ do
-              status ← CNN.formRequest (show ConfirmAccountTerminationForm) $ request.settings.account.terminate { body: {} }
+              status ← CNN.formRequest (show ConfirmAccountTerminationForm) $ routes.settings.account.terminate { body: {} }
               when (status == Success) do
                     EA.delay $ Milliseconds 3000.0
-                    EC.liftEffect <<< CCL.setLocation $ routes.login.get {}
+                    EC.liftEffect <<< CCL.setLocation $ routesSpec.login.get {}
               pure Nothing
       ]
 
@@ -365,19 +365,19 @@ finishTutorial model = model { user { completedTutorial = true } } /\ [ greet ]
       where
       sender = 4
       greet = do
-            void <<< CCNT.silentResponse $ request.im.tutorial {}
+            void <<< CCNT.silentRequest $ routes.im.tutorial {}
             EA.delay $ Milliseconds 2000.0
-            void <<< CCNT.silentResponse $ request.im.greeting {}
-            contact ← CCNT.silentResponse $ request.im.contact { query: { id: sender } }
+            void <<< CCNT.silentRequest $ routes.im.greeting {}
+            contact ← CCNT.silentRequest $ routes.im.contact { query: { id: sender } }
             pure <<< Just $ DisplayNewContacts contact
 
 blockUser ∷ WebSocket → Int → ImModel → NextMessage
 blockUser webSocket id model = updateAfterBlock id model /\ [ block, track ]
       where
       block = do
-            result ← CCN.defaultResponse $ request.im.block { body: { id } }
+            result ← CCN.request $ routes.im.block { body: { id } }
             case result of
-                  Left _ → pure <<< Just $ RequestFailed { request: BlockUser id, errorMessage: Nothing }
+                  Left _ → pure <<< Just $ RequestFailed { routes: BlockUser id, errorMessage: Nothing }
                   _ → do
                         EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id }
                         pure Nothing
@@ -411,9 +411,9 @@ report userId webSocket model = case model.reportReason of
       Nothing → F.noMessages model
       where
       reportIt rs = do
-            result ← CCN.defaultResponse $ request.im.report { body: { userId, reason: rs, comment: model.reportComment } }
+            result ← CCN.request $ routes.im.report { body: { userId, reason: rs, comment: model.reportComment } }
             case result of
-                  Left _ → pure <<< Just $ RequestFailed { request: ReportUser userId, errorMessage: Nothing }
+                  Left _ → pure <<< Just $ RequestFailed { routes: ReportUser userId, errorMessage: Nothing }
                   _ → do
                         EC.liftEffect <<< CIW.sendPayload webSocket $ UnavailableFor { id: userId }
                         pure Nothing
@@ -473,7 +473,7 @@ handleRequestFailure ∷ RequestFailure → ImModel → NoMessages
 handleRequestFailure failure model =
       model
             { failedRequests = failure : model.failedRequests
-            , errorMessage = case failure.request of
+            , errorMessage = case failure.routes of
                     BlockUser _ → "Could not block user. Please try again"
                     ReportUser _ → "Could not report user. Please try again"
                     PreviousSuggestion → suggestionsError
@@ -486,7 +486,7 @@ handleRequestFailure failure model =
 
 toggleFortune ∷ Boolean → ImModel → MoreMessages
 toggleFortune isVisible model
-      | isVisible = model /\ [ Just <<< DisplayFortune <$> CCNT.silentResponse (request.im.fortune {}) ]
+      | isVisible = model /\ [ Just <<< DisplayFortune <$> CCNT.silentRequest (routes.im.fortune {}) ]
       | otherwise = F.noMessages $ model
               { fortune = Nothing
               }
@@ -513,7 +513,7 @@ fetchMissedContacts model = model /\ [ fetchIt ]
       fetchIt = do
             since ← EC.liftEffect $ sinceLastMessage model
             let last = (map _.history <<< DA.last <<< DA.sortWith _.lastMessageDate $ DA.filter ((backerId /= _) <<< _.id <<< _.user) model.contacts) >>= (map _.id <<< DA.last)
-            CCNT.retryableResponse FetchMissedContacts DisplayMissedContacts $ request.im.missedContacts { query: { since, last } }
+            CCNT.retryableRequest FetchMissedContacts DisplayMissedContacts $ routes.im.missedContacts { query: { since, last } }
 
 sinceLastMessage ∷ ImModel → Effect DateTime
 sinceLastMessage model = case _.lastMessageDate <$> DA.last model.contacts of
@@ -546,7 +546,7 @@ historyChange smallScreen = do
       WET.addEventListener popstate popStateListener false $ WHW.toEventTarget window
       where
       handler = do
-            CCD.pushState $ routes.im.get {}
+            CCD.pushState $ routesSpec.im.get {}
             when smallScreen <<< FS.send imAppId $ ToggleInitialScreen true
 
 onVisibilityChange ∷ ∀ message. message → Subscription message

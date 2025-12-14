@@ -9,7 +9,7 @@ import Flame.Renderer.String as FRS
 import Server.Template (externalDefaultParameters)
 import Server.Template as ST
 import Shared.Html (Html(..))
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 
 template ∷ Effect Html
 template = do
@@ -22,6 +22,6 @@ template = do
       content =
             [ HE.div [ HA.class' "pastel-area green-box" ]
                     [ HE.h2 [ HA.class' "ext-heading" ] [ HE.text "Logged in from another device" ]
-                    , HE.a [ HA.href $ routes.login.get {} ] [ HE.text "Click here to login again" ]
+                    , HE.a [ HA.href $ routesSpec.login.get {} ] [ HE.text "Click here to login again" ]
                     ]
             ]

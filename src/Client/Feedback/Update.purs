@@ -5,7 +5,7 @@ import Shared.Feedback.Types (FeedbackMessage(..), FeedbackModel, Status(..))
 
 import Client.AppId (feedbackAppId)
 import Client.File as CCF
-import Client.Network (request)
+import Client.Network (routes)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.String as DS
@@ -56,7 +56,7 @@ sendFeedback model = case DS.trim model.comments of
       trimmed → model { loading = true } /\ [ send trimmed ]
       where
       send trimmed = do
-            response ← request.feedback.send { body: { comments: trimmed, screenshot: model.screenshot } }
+            response ← routes.feedback.send { body: { comments: trimmed, screenshot: model.screenshot } }
             case response of
                   Right _ → pure <<< Just <<< AfterSendFeedback $ Just Success
                   Left err → pure <<< Just <<< AfterSendFeedback <<< Just <<< Failure $ SN.errorMessage err

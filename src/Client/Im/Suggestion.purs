@@ -4,7 +4,7 @@ import Prelude
 import Shared.Im.Types
 
 import Client.Dom as CCD
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Client.Network as CCNT
 import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
@@ -76,7 +76,7 @@ fetchMoreSuggestions model =
             , showLargeAvatar = false
             , showMiniChatInput = false
             } /\
-            [ CCN.retryableResponse NextSuggestion DisplayMoreSuggestions $ request.im.suggestions
+            [ CCN.retryableRequest NextSuggestion DisplayMoreSuggestions $ routes.im.suggestions
                     { query:
                             { skip: suggestionsPerPage * model.suggestionsPage
                             , sg: model.suggestionsFrom
@@ -181,5 +181,5 @@ resumeSuggestionChat userId model =
       where
       existing = SIC.findContact userId model.contacts
       resume = case existing of
-            Nothing → CCNT.retryableResponse (FetchContacts true) (DisplaySuggestionContact userId) $ request.im.contact { query: { id: userId } }
+            Nothing → CCNT.retryableRequest (FetchContacts true) (DisplaySuggestionContact userId) $ routes.im.contact { query: { id: userId } }
             _ → pure <<< Just $ ResumeChat userId

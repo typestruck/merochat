@@ -13,7 +13,7 @@ import Client.Im.Pwa as CIP
 import Client.Im.Scroll as CIS
 import Client.Im.Suggestion as CISN
 import Client.Im.WebSocket as CIW
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Control.Alt ((<|>))
 import Data.Array ((:))
@@ -168,7 +168,7 @@ fetchContacts shouldFetch model@{ contacts }
       | shouldFetch =
               model
                     { freeToFetchContactList = false
-                    } /\ [ CCN.retryableResponse (FetchContacts true) DisplayContacts $ request.im.contacts { query: { skip: DA.length contacts } } ]
+                    } /\ [ CCN.retryableRequest (FetchContacts true) DisplayContacts $ routes.im.contacts { query: { skip: DA.length contacts } } ]
       | otherwise = F.noMessages model
 
 --paginated contacts
@@ -239,8 +239,8 @@ deleteChat userId model =
       lastMessageId = SIC.findContact userId model.contacts >>= (map _.id <<< DA.last <<< _.history)
 
       delete id = do
-            result ← CCN.defaultResponse $ request.im.delete { body: { userId, messageId: id } }
+            result ← CCN.request $ routes.im.delete { body: { userId, messageId: id } }
             case result of
-                  Left _ → pure <<< Just $ RequestFailed { request: DeleteChat userId, errorMessage: Nothing }
+                  Left _ → pure <<< Just $ RequestFailed { routes: DeleteChat userId, errorMessage: Nothing }
                   _ → pure Nothing
       track = pure $ Just TrackAvailability

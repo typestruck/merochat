@@ -14,7 +14,7 @@ import Shared.Html (Html(..))
 import Shared.Options.Profile (emailMaxCharacters, passwordMaxCharacters, passwordMinCharacters)
 import Shared.Resource (Bundle(..), ResourceType(..))
 import Shared.Resource as SP
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 
 template ∷ Maybe String → Effect Html
 template token = do
@@ -40,8 +40,8 @@ template token = do
                                                 , HE.div [ HA.class' "input" ]
                                                         [ HE.input [ HA.type' "button", HA.value "Recover" ]
                                                         ]
-                                                , HE.span' [ HA.class' "request-error-message error-message" ]
-                                                , HE.span [ HA.id "request-success-message", HA.class' "success-message" ] [ HE.text "Recovery email sent. Please check your inbox" ]
+                                                , HE.span' [ HA.class' "routes-error-message error-message" ]
+                                                , HE.span [ HA.id "routes-success-message", HA.class' "success-message" ] [ HE.text "Recovery email sent. Please check your inbox" ]
                                                 , HE.div' [ HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible" ]
 
                                                 ]
@@ -58,12 +58,12 @@ template token = do
                                                 , HE.div [ HA.class' "input" ]
                                                         [ HE.input [ HA.type' "button", HA.value "Change password", HA.class' "action-button" ]
                                                         ]
-                                                , HE.span' [ HA.class' "request-error-message error-message" ]
+                                                , HE.span' [ HA.class' "routes-error-message error-message" ]
                                                 , HE.span [ HA.class' "success-message" ] [ HE.text "Password reseted. Redirecting to login..." ]
 
                                                 ]
                             , HE.div [ HA.class' "forgot-sign-up" ]
-                                    [ HE.a [ HA.href $ routes.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
+                                    [ HE.a [ HA.href $ routesSpec.landing {}, HA.class' "question-link" ] [ HE.text "Don't have an account?" ]
 
                                     ]
                             ]

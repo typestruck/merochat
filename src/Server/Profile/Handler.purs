@@ -25,15 +25,15 @@ generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What }
 generated { body } = SPA.generateField body.field
 
 posts ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { after ∷ Maybe Int } } → ServerEffect (Array Post)
-posts request = SPA.refreshPosts request.guards.loggedUserId request.query.after
+posts routes = SPA.refreshPosts routes.guards.loggedUserId routes.query.after
 
 asks ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { after ∷ Maybe Int } } → ServerEffect (Array Ask)
-asks request = SPA.refreshAsks request.guards.loggedUserId request.query.after
+asks routes = SPA.refreshAsks routes.guards.loggedUserId routes.query.after
 
 answer ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ {id :: Int, answer :: String} } → ServerEffect Empty
-answer request = do
-      SPA.saveAnswer request.guards.loggedUserId request.body.id request.body.answer
+answer routes = do
+      SPA.saveAnswer routes.guards.loggedUserId routes.body.id routes.body.answer
       pure Empty
 
 save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect { avatar ∷ Maybe String }
-save request = SPA.save request.guards.loggedUserId request.body
+save routes = SPA.save routes.guards.loggedUserId routes.body

@@ -7,7 +7,7 @@ import Client.AppId (imAppId, settingsAppId)
 import Client.File as CCF
 import Client.File as CF
 import Client.Location as CCL
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CNN
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -27,7 +27,8 @@ import Shared.Element (ElementId(..))
 import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
 import Shared.Resource (maxImageSize)
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
+import Shared.Routes as SR
 import Shared.Settings.Types (SettingsMessage(..), SettingsModel)
 import Shared.Settings.View as SSV
 import Type.Proxy (Proxy(..))
@@ -58,7 +59,7 @@ changePrivacySettings model = model /\ [ change ]
       where
       payload = { asksVisibility: model.asksVisibility, postsVisibility: model.postsVisibility, profileVisibility: model.profileVisibility, readReceipts: model.readReceipts, typingStatus: model.typingStatus, onlineStatus: model.onlineStatus, messageTimestamps: model.messageTimestamps }
       change = do
-            status ← CNN.formRequest (show PrivacySettings) $ request.settings.account.privacy { body: payload }
+            status ← CNN.formRequest (show PrivacySettings) $ routes.settings.account.privacy { body: payload }
             case status of
                   Success → do
                         --let im know that the settings has changed
@@ -77,21 +78,21 @@ toggleTerminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe 
 toggleTerminateAccount model = model { confirmTermination = not model.confirmTermination } /\ []
 
 changeEmail ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-changeEmail model = model /\ [ requestAndLogout (Proxy ∷ Proxy "email") $ request.settings.account.email { body: { email: model.email } } ]
+changeEmail model = model /\ [ requestAndLogout (Proxy ∷ Proxy "email") $ routes.settings.account.email { body: { email: model.email } } ]
 
 changePassword ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-changePassword model = model /\ [ requestAndLogout (Proxy ∷ Proxy "password") $ request.settings.account.password { body: { password: model.password } } ]
+changePassword model = model /\ [ requestAndLogout (Proxy ∷ Proxy "password") $ routes.settings.account.password { body: { password: model.password } } ]
 
 requestAndLogout ∷ ∀ v field. IsSymbol field ⇒ Proxy field → Aff (ClientResponse v) → Aff (Maybe SettingsMessage)
 requestAndLogout field aff = do
       status ← CNN.formRequest (SSV.formId field) aff
       when (status == Success) $ do
             EA.delay $ Milliseconds 3000.0
-            EC.liftEffect <<< CCL.setLocation $ routes.login.get {}
+            EC.liftEffect <<< CCL.setLocation $ routesSpec.login.get {}
       pure Nothing
 
 terminateAccount ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
-terminateAccount model = model /\ [ requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ request.settings.account.terminate { body: {} } ]
+terminateAccount model = model /\ [ requestAndLogout (Proxy ∷ Proxy "confirmTermination") $ routes.settings.account.terminate { body: {} } ]
 
 beforeSetChatBackground ∷ Event → SettingsModel → SettingsModel /\ Array (Aff (Maybe SettingsMessage))
 beforeSetChatBackground event model = model /\ [ before ]
@@ -122,7 +123,7 @@ saveChatBackground ∷ SettingsModel → SettingsModel /\ Array (Aff (Maybe Sett
 saveChatBackground model = model /\ [ save ]
       where
       save = do
-            response ← request.settings.chat.background { body: { ownBackground: model.ownBackground, image: model.chatBackground } }
+            response ← routes.settings.chat.background { body: { ownBackground: model.ownBackground, image: model.chatBackground } }
             case response of
                   Right (Response { body: url }) → pure <<< Just <<< AfterSaveChatBackground $ if DS.null url then Nothing else Just url
                   _ → pure Nothing

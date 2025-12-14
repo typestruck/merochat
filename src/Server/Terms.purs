@@ -5,7 +5,7 @@ import Prelude
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 
 terms ∷ ∀ m. Html m
 terms =
@@ -17,7 +17,7 @@ terms =
                     [ HE.h2_ [ HE.text "Privacy policy" ]
                     , HE.p_
                             [ HE.text "You can view the privacy policy at "
-                            , HE.a [ HA.href $ routes.help {} <> "#privacy" ] [ HE.text "https://mero.chat/privacy." ]
+                            , HE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "https://mero.chat/privacy." ]
                             ]
                     ]
             , HE.h2_ [ HE.text "Limitations and liability" ]

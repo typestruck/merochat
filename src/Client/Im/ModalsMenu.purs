@@ -10,7 +10,7 @@ import Client.Im.Pwa (SwMessage(..))
 import Client.Im.Pwa as CIP
 import Client.Im.Suggestion (byAvailability)
 import Client.Location as CCL
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Data.Array ((:))
 import Data.Array as DA
@@ -27,7 +27,7 @@ import Shared.Element (ElementId(..))
 import Shared.Im.Types (AfterLogout(..), ImMessage(..), ImModel, PostMode(..), RetryableRequest(..), ShowContextMenu(..))
 import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
 import Shared.Resource (Bundle(..))
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 import Shared.Unsafe as SU
 
 toggleInitialScreen ∷ Boolean → ImModel → MoreMessages
@@ -59,22 +59,22 @@ logout ∷ AfterLogout → ImModel → MoreMessages
 logout after model = model /\ [ out ]
       where
       out = do
-            void $ request.logout { body: {} }
+            void $ routes.logout { body: {} }
             liftEffect <<< CCL.setLocation $ case after of
-                  LoginPage → routes.login.get {}
-                  Banned → routes.banned {}
+                  LoginPage → routesSpec.login.get {}
+                  Banned → routesSpec.banned {}
             pure Nothing
 
 modal ∷ Modal → ImModel → NextMessage
 modal toggled model =
       case toggled of
-            Screen ShowProfile → showModal request.profile.get ShowProfile Profile ProfileEditionRoot
-            Screen ShowSettings → showModal request.settings.get ShowSettings Settings SettingsEditionRoot
-            Screen ShowKarmaPrivileges → showModal request.leaderboard ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
-            Screen ShowHelp → showModal request.internalHelp ShowHelp InternalHelp HelpRoot
-            Screen ShowExperiments → showModal request.experiments.get ShowExperiments Experiments ExperimentsRoot
-            Screen ShowBacker → showModal request.internalBacker ShowBacker InternalBacker BackerRoot
-            Screen ShowFeedback → showModal request.feedback.get ShowFeedback Feedback FeedbackRoot
+            Screen ShowProfile → showModal routes.profile.get ShowProfile Profile ProfileEditionRoot
+            Screen ShowSettings → showModal routes.settings.get ShowSettings Settings SettingsEditionRoot
+            Screen ShowKarmaPrivileges → showModal routes.leaderboard ShowKarmaPrivileges KarmaPrivileges KarmaPrivilegesRoot
+            Screen ShowHelp → showModal routes.internalHelp ShowHelp InternalHelp HelpRoot
+            Screen ShowExperiments → showModal routes.experiments.get ShowExperiments Experiments ExperimentsRoot
+            Screen ShowBacker → showModal routes.internalBacker ShowBacker InternalBacker BackerRoot
+            Screen ShowFeedback → showModal routes.feedback.get ShowFeedback Feedback FeedbackRoot
             Special ShowPostForm → model { modal = toggled, showSuggestionsPostForm = false } /\ []
             Special (ShowSuggestionCard id) → F.noMessages model
                   { modal = toggled
@@ -113,7 +113,7 @@ modal toggled model =
                                 [ visible toggle ]
                           else
                                 [ visible toggle
-                                , CCN.retryableResponse (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req {})
+                                , CCN.retryableRequest (ToggleModal $ Screen toggle) (SetModalContents resource root <<< SC.coerce) (req {})
                                 ]
 
 setModalContents ∷ Bundle → ElementId → String → ImModel → NextMessage

@@ -12,7 +12,7 @@ import Flame.Html.Element as HE
 import Shared.Svg as SS
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 
 type Parameters a =
       { title ∷ String
@@ -54,10 +54,10 @@ externalDefaultParameters =
                               ]
                       , HE.div [ HA.class' "menu-merochat" ]
                               [ HE.div [ HA.class' "menu" ]
-                                      [ HE.a [ HA.href $ routes.landing {} ] [ HE.text "Home" ]
-                                      , HE.a [ HA.href $ routes.help {} <> "#faq" ] [ HE.text "FAQ" ]
-                                      , HE.a [ HA.href $ routes.backer {} ] [ HE.text "Support us" ]
-                                      , HE.a [ HA.href $ routes.login.get {}, HA.class' "login-link" ] [ HE.text "Login" ]
+                                      [ HE.a [ HA.href $ routesSpec.landing {} ] [ HE.text "Home" ]
+                                      , HE.a [ HA.href $ routesSpec.help {} <> "#faq" ] [ HE.text "FAQ" ]
+                                      , HE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Support us" ]
+                                      , HE.a [ HA.href $ routesSpec.login.get {}, HA.class' "login-link" ] [ HE.text "Login" ]
                                       , HE.div [ HA.class' "theme-switcher" ]
                                               [ SS.sun []
                                               , SS.moon []
@@ -75,10 +75,10 @@ externalDefaultParameters =
       , content: []
       , footer:
               [ HE.div [ HA.class' "footer" ]
-                      [ HE.a [ HA.href $ routes.help {} <> "#privacy" ] [ HE.text "Terms and conditions" ]
-                      , HE.a [ HA.href $ routes.help {} <> "#privacy" ] [ HE.text "Privacy policy" ]
+                      [ HE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Terms and conditions" ]
+                      , HE.a [ HA.href $ routesSpec.help {} <> "#privacy" ] [ HE.text "Privacy policy" ]
                       , HE.a [ HA.href "https://github.com/typestruck/merochat", HA.target "_blank" ] [ HE.text "Source code" ]
-                      , HE.a [ HA.href $ routes.backer {} ] [ HE.text "Donate" ]
+                      , HE.a [ HA.href $ routesSpec.backer {} ] [ HE.text "Donate" ]
                       ]
               ]
       }

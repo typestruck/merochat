@@ -129,7 +129,7 @@ privacySection model = HE.div [ HA.id $ show PrivacySettings ]
                       , HA.value "Change privacy settings"
                       , HA.onClick ChangePrivacySettings
                       ]
-              , HE.span' [ HA.class' "request-error-message" ]
+              , HE.span' [ HA.class' "routes-error-message" ]
               , HE.span [ HA.class' { "success-message": true, hidden: model.hideSuccessMessage } ]
                       [ HE.text "Privacy settings changed!"
                       ]
@@ -147,7 +147,7 @@ accountSection model = HE.div_
             [ HE.label_ [ HE.text "Permanently delete all my data and close my account" ]
             , HE.div [ HA.class' "section-buttons margined" ]
                     [ HE.input [ HA.type' "button", HA.value "Terminate account", HA.class' "green-button danger", HA.onClick ToggleTerminateAccount ]
-                    , HE.span' [ HA.class' "request-error-message" ]
+                    , HE.span' [ HA.class' "routes-error-message" ]
                     , HE.span [ HA.class' "success-message" ]
                             [ HE.text "Account terminated!"
                             , HE.br
@@ -203,7 +203,7 @@ chatsSection model = HE.div [ HA.id $ show ChatSettings ]
                             , HA.value "Set chat background"
                             , HA.onClick SaveChatBackground
                             ]
-              , HE.span' [ HA.class' "request-error-message" ]
+              , HE.span' [ HA.class' "routes-error-message" ]
               , HE.div [ HA.class' "success" ]
                       [ HE.span [ HA.class' { "success-message": true, hidden: model.hideSuccessMessage } ]
                               [ HE.text "Chat background set!"
@@ -227,7 +227,7 @@ fieldConfirmationSection model field inputType maxChars validator fieldErrorMess
                     ]
             , HE.div [ HA.class' "section-buttons" ]
                     [ HE.input [ HA.type' "button", HA.class' "green-button", HA.disabled $ hasErrors || hasConfirmationErrors, HA.value $ "Change " <> stringField, HA.onClick messageIfValidated ]
-                    , HE.span' [ HA.class' "request-error-message" ]
+                    , HE.span' [ HA.class' "routes-error-message" ]
                     , HE.span [ HA.class' "success-message" ]
                             [ HE.text $ capitalizedStringField <> " changed!"
                             , HE.br

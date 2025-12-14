@@ -3,7 +3,7 @@ module Client.Im.Changelog where
 import Prelude
 
 import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Client.Network as CNN
 import Data.Array as DA
@@ -19,7 +19,7 @@ fetchChangelog ∷ ImModel → NextMessage
 fetchChangelog model = model /\ [ fetchIt ]
       where
       fetchIt = do
-            changes ← CNN.silentResponse $ request.im.changelog.get { query: { before: _.id <$> DA.last model.changelogs } }
+            changes ← CNN.silentRequest $ routes.im.changelog.get { query: { before: _.id <$> DA.last model.changelogs } }
             pure <<< Just $ DisplayChangelog changes
 
 displayChangelog ∷ Array Changelog → ImModel → NoMessages
@@ -46,5 +46,5 @@ toggleChangelog model =
 
       readIt = do
             let ids = map _.id $ DA.filter (not <<< _.read) model.changelogs
-            unless (DA.null ids) <<< void <<< CCN.silentResponse $ request.im.changelog.post { body: { ids } }
+            unless (DA.null ids) <<< void <<< CCN.silentRequest $ routes.im.changelog.post { body: { ids } }
             pure Nothing

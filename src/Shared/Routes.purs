@@ -1,4 +1,4 @@
-module Shared.Routes (routes) where
+module Shared.Routes (routesSpec) where
 
 import Prelude
 
@@ -21,8 +21,8 @@ import Type.Proxy (Proxy(..))
 --refactor: actually give this any thought
 
 --this is a hack adapted from payload source code, as I didn't see an builtin/easier way to do it
-routes ∷ _
-routes = makeRoutes spec
+routesSpec ∷ _
+routesSpec = makeRoutes spec
 
 makeRoutes ∷ ∀ r routesSpec routesSpecList client. RowToList routesSpec routesSpecList ⇒ ToRouteList routesSpecList "" () (Record client) ⇒ Spec { routes ∷ Record routesSpec | r } → Record client
 makeRoutes _ = makeRouteList (Proxy ∷ _ routesSpecList) (Proxy ∷ _ "") (Proxy ∷ _ (Record ()))

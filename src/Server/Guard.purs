@@ -24,7 +24,7 @@ import Server.Cookies (cookieName)
 import Server.Effect as SE
 import Server.Environment (tokenSecret)
 import Server.Token as ST
-import Shared.Routes (routes)
+import Shared.Routes (routesSpec)
 
 guards ∷ ServerReader → _
 guards reading =
@@ -46,11 +46,11 @@ checkLoggedUser { pool } request = do
                         redirectLogin
       where
       isPost = NH.requestMethod request == "POST"
-      redirectLogin = redirect $ routes.login.get { query: { next: Just $ NH.requestURL request } }
+      redirectLogin = redirect $ routesSpec.login.get { query: { next: Just $ NH.requestURL request } }
 
 checkLoggedUserToken ∷ Request → Aff String
-checkLoggedUserToken request = do
-      cookies ← PSG.cookies request
+checkLoggedUserToken routes = do
+      cookies ← PSG.cookies routes
       pure <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
 
 checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
@@ -66,7 +66,7 @@ checkAnonymous { pool } request = do
             _ → pure $ Right unit
       where
       isPost = NH.requestMethod request == "POST"
-      redirectIm = redirect $ routes.im.get {}
+      redirectIm = redirect $ routesSpec.im.get {}
 
 badRequest ∷ ∀ r. Aff (Either (Response Empty) r)
 badRequest = pure <<< Left $ PSR.badRequest Empty

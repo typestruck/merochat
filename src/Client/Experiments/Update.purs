@@ -5,7 +5,7 @@ import Shared.Experiments.Types
 
 import Client.AppId (imAppId)
 import Client.Location as CCL
-import Client.Network (request)
+import Client.Network (routes)
 import Client.Network as CCN
 import Data.Array ((:))
 import Data.Array as DA
@@ -72,7 +72,7 @@ reportPlane ∷ Int → Int → ExperimentsModel → ExperimentsModel /\ (Array 
 reportPlane id userId model = model { paperPlane = model.paperPlane { loading = true } } /\ [ setIt ]
       where
       setIt = do
-            void <<< CCN.silentResponse $ request.im.report { body: { userId, reason: OtherReason, comment: Just $ "paper plane reported: " <> show id } }
+            void <<< CCN.silentRequest $ routes.im.report { body: { userId, reason: OtherReason, comment: Just $ "paper plane reported: " <> show id } }
             pure <<< Just $ PassPaperPlane id
 
 afterPassPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -88,7 +88,7 @@ passPaperPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff 
 passPaperPlane id model = model { paperPlane = model.paperPlane { loading = true } } /\ [ setIt ]
       where
       setIt = do
-            void <<< CCN.silentResponse $ request.experiments.pass { body: { id } }
+            void <<< CCN.silentRequest $ routes.experiments.pass { body: { id } }
             pure <<< Just $ AfterPassPlane id
 
 afterCatchPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -105,7 +105,7 @@ catchPaperPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff
 catchPaperPlane id model = model { paperPlane = model.paperPlane { loading = true } } /\ [ setIt ]
       where
       setIt = do
-            void <<< CCN.silentResponse $ request.experiments.catch { body: { id } }
+            void <<< CCN.silentRequest $ routes.experiments.catch { body: { id } }
             pure <<< Just $ AfterCatchPlane id
 
 displayFlyingPaperPlanes ∷ Array PaperPlane → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -115,7 +115,7 @@ togglePaperPlaneSection ∷ PaperPlaneSection → ExperimentsModel → Experimen
 togglePaperPlaneSection section model = model { paperPlane = model.paperPlane { section = section } } /\ effects
       where
       fetch = do
-            r ← CCN.silentResponse $ request.experiments.flying {}
+            r ← CCN.silentRequest $ routes.experiments.flying {}
             pure <<< Just $ DisplayFlyingPaperPlanes r
       effects
             | model.paperPlane.section /= section && section == ShowFlyingBy && DA.null model.paperPlane.flyingBy = [ fetch ]
@@ -128,7 +128,7 @@ throwPlane ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe Exper
 throwPlane model = model { paperPlane = model.paperPlane { loading = true } } /\ [ throwIt ]
       where
       throwIt = do
-            r ← CCN.silentResponse $ request.experiments.throw { body: { message: SU.fromJust model.paperPlane.message } }
+            r ← CCN.silentRequest $ routes.experiments.throw { body: { message: SU.fromJust model.paperPlane.message } }
             pure <<< Just $ AfterThrowPlane r.id
 
 afterThrowPlane ∷ Int →  ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -145,7 +145,7 @@ resumeQuestions ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe 
 resumeQuestions model = model /\ [ resume ]
       where
       resume = do
-            questions ← CCN.silentResponse $ request.experiments.questions {}
+            questions ← CCN.silentRequest $ routes.experiments.questions {}
             pure <<< Just $ DisplayQuestions questions
 
 displayQuestions ∷ Array Question → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -159,7 +159,7 @@ answerQuestion model = model { doppelganger = model.doppelganger { loading = tru
       where
       answer = do
             let selected = SU.fromJust model.doppelganger.selectedChoice
-            void <<< CCN.silentResponse $ request.experiments.answer { body: { choice: selected.choice } }
+            void <<< CCN.silentRequest $ routes.experiments.answer { body: { choice: selected.choice } }
             pure $ Just AfterAnswerQuestion
 
 afterAnswerQuestion ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
@@ -190,7 +190,7 @@ fetchMatches ∷ ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe Exp
 fetchMatches model = model /\ [ fetch ]
       where
       fetch = do
-            response ← CCN.silentResponse $ request.experiments.matches {}
+            response ← CCN.silentRequest $ routes.experiments.matches {}
             pure <<< Just $ DisplayMatches response
 
 displayMatches ∷ Array Match → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))

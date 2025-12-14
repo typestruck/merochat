@@ -104,7 +104,7 @@ inactiveMinutes ∷ Int
 inactiveMinutes = 30
 
 handleConnection ∷ Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
-handleConnection pool allUsersAvailabilityRef connection request = EA.launchAff_ do
+handleConnection pool allUsersAvailabilityRef connection routes = EA.launchAff_ do
       userId ← SE.poolEffect pool Nothing $ ST.userIdFromToken tokenSecret token
       case userId of
             Nothing → EC.liftEffect do
@@ -121,7 +121,7 @@ handleConnection pool allUsersAvailabilityRef connection request = EA.launchAff_
                         SW.onMessage connection (runMessageHandler loggedUserId)
       where
       token = DM.fromMaybe "" do
-            uncooked ← FO.lookup "cookie" $ NH.requestHeaders request
+            uncooked ← FO.lookup "cookie" $ NH.requestHeaders routes
             map (\(Cookie { value }) → value) <<< DA.find (\(Cookie { key }) → cookieName == key) $ BCI.bakeCookies uncooked
 
       initialAvailability hasPwa = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, hasPwa, availability: None }

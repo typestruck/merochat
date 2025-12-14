@@ -172,7 +172,7 @@ edit model =
                       ]
                 else
                       HE.input [ HA.type' "button", HA.onClick Save, HA.class' "green-button bigger", HA.value "Save" ]
-              , HE.span [ HA.class' { "request-error-message": true, hidden: model.updateRequestStatus == Nothing } ] [ HE.text $ DM.maybe "" unwrapFailure model.updateRequestStatus ]
+              , HE.span [ HA.class' { "routes-error-message": true, hidden: model.updateRequestStatus == Nothing } ] [ HE.text $ DM.maybe "" unwrapFailure model.updateRequestStatus ]
               ]
       ]
       where
