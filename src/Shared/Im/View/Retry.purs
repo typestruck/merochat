@@ -11,7 +11,7 @@ import Flame.Html.Element as HE
 retry ∷ String → RetryableRequest → Array RequestFailure → Html ImMessage
 retry failedText requestMessage failedRequests =
       HE.div
-            [ HA.class' { retry: true, invisible: not $ DA.any ((requestMessage == _) <<< _.routes) failedRequests } ]
+            [ HA.class' { retry: true, hidden: not $ DA.any ((requestMessage == _) <<< _.routes) failedRequests } ]
             <<< retryForm failedText $ SpecialRequest requestMessage
 
 retryForm ∷ String → ImMessage → Array (Html ImMessage)

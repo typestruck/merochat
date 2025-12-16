@@ -77,7 +77,7 @@ contactList isClientRender model =
                                                 HE.div' [ HA.class' "contact-list-last-message duller", HA.innerHtml $ SM.parseRestricted lastHistoryEntry.content ]
                                         ]
                                 , HE.div [ HA.class' "contact-options" ]
-                                        [ HE.span [ HA.class' { duller: true, invisible: not isClientRender || not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.ago $ SC.coerce lastHistoryEntry.date ]
+                                        [ HE.span [ HA.class' { duller: true, hidden: not isClientRender || not model.user.messageTimestamps || not contact.user.messageTimestamps } ] [ HE.text <<< SD.ago $ SC.coerce lastHistoryEntry.date ]
                                         , HE.div [ HA.class' { "unread-messages": true, hidden: numberUnreadMessages == 0 } ] [ HE.span [ HA.class' "unread-number" ] [ HE.text $ show numberUnreadMessages ] ]
                                         , HE.div [ HA.class' { "duller": true, hidden: numberUnreadMessages > 0 || lastHistoryEntry.sender == contact.user.id || not contact.user.readReceipts || not model.user.readReceipts } ] [ HE.text $ show lastHistoryEntry.status ]
                                         ]

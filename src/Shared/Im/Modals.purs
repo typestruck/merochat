@@ -74,7 +74,7 @@ confirmReport id erroredFields =
       HE.div [ HA.class' "confirmation report" ]
             [ HE.span [ HA.class' "report-title" ] [ HE.text "Report user" ]
             , HE.div [ HA.class' "report-reasons" ] $ DA.mapWithIndex toRadio [ DatingContent, Harassment, HateSpeech, Spam, Minor, OtherReason ]
-            , HE.span [ HA.class' { "error-message": true, "invisible": not (DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "reportReason")) erroredFields) } ] [ HE.text "Please choose a reason" ]
+            , HE.span [ HA.class' { "error-message": true, "hidden": not (DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "reportReason")) erroredFields) } ] [ HE.text "Please choose a reason" ]
             , HE.div [ HA.class' "report-comment" ]
                     [ HE.label_ [ HE.text "Comment" ]
                     , HE.input [ HA.type' "text", HA.maxlength 300, HA.class' "modal-input", HA.onInput setReportComment ]
@@ -197,12 +197,12 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
             , HE.div_
                     [ HE.label_ [ HE.text "Email" ]
                     , HE.input [ HA.class' "modal-input", HA.type' "text", HA.id "email", HA.value $ DM.fromMaybe "" temporaryEmail, HA.onInput (SS.setJust (Proxy ∷ Proxy "temporaryEmail")), HA.maxlength emailMaxCharacters ]
-                    , HE.span [ HA.class' { "error-message": true, invisible: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryEmail")) erroredFields } ] [ HE.text "Please enter a valid email" ]
+                    , HE.span [ HA.class' { "error-message": true, hidden: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryEmail")) erroredFields } ] [ HE.text "Please enter a valid email" ]
                     ]
             , HE.div_
                     [ HE.label_ [ HE.text "Password" ]
                     , HE.input [ HA.class' "modal-input", HA.type' "password", HA.maxlength passwordMaxCharacters, HA.autocomplete "new-password", HA.value $ DM.fromMaybe "" temporaryPassword, HA.onInput (SS.setJust (Proxy ∷ Proxy "temporaryPassword")) ]
-                    , HE.span [ HA.class' { "error-message": true, invisible: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryPassword")) erroredFields } ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
+                    , HE.span [ HA.class' { "error-message": true, hidden: not $ DA.elem (TDS.reflectSymbol (Proxy ∷ Proxy "temporaryPassword")) erroredFields } ] [ HE.text $ "Password must be " <> show passwordMinCharacters <> " characters or more" ]
                     ]
             , HE.div_
                     [ HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Create account", HA.onClick CreateUserFromTemporary ]

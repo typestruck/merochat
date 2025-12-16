@@ -42,8 +42,6 @@ template token = do
                                                         ]
                                                 , HE.span' [ HA.class' "routes-error-message error-message" ]
                                                 , HE.span [ HA.id "routes-success-message", HA.class' "success-message" ] [ HE.text "Recovery email sent. Please check your inbox" ]
-                                                , HE.div' [ HA.class' "g-recaptcha", HA.createAttribute "data-sitekey" "6LeDyE4UAAAAABhlkiT86xpghyJqiHfXdGZGJkB0", HA.id "captcha", HA.createAttribute "data-callback" "completeRecover", HA.createAttribute "data-size" "invisible" ]
-
                                                 ]
                                     _ →
                                           HE.fragment

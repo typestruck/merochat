@@ -1486,10 +1486,6 @@ input:not(type=button):focus {
     position: relative;
 }
 
-.invisible {
-    visibility: hidden !important;
-}
-
 .settings-karma {
     cursor: pointer;
 }
@@ -1931,11 +1927,6 @@ input:not(type=button):focus {
     margin: 10px 0;
 }
 
-.contact-box .retry.invisible,
-.posts .retry.invisible {
-    display: none;
-}
-
 .retry-button {
     cursor: pointer;
     padding: 5px 15px;
@@ -1948,7 +1939,7 @@ input:not(type=button):focus {
     fill: red;
 }
 
-.retry-modal .retry:not(.invisible)~.loading {
+.retry-modal .retry:not(.hidden)~.loading {
     display: none;
 }
 
@@ -3194,11 +3185,6 @@ label {
 
     .modal-section {
         padding: 15px
-    }
-
-    .message-history .retry.invisible {
-        visibility: unset;
-        display: none;
     }
 
     .suggestion-box-error {
