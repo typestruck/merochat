@@ -39,7 +39,7 @@ import Shared.Network (RequestStatus(..))
 import Shared.Network as SN
 import Shared.Options.Profile (maxFinalTags, maxLanguages, maxStartingTags)
 import Shared.Privilege (Privilege(..))
-import Shared.Profile.Types (PM, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..), ProfileAsk)
+import Shared.Profile.Types (PM, ProfileAsk, ProfileMessage(..), ProfileMode(..), ProfileModel, What(..))
 import Shared.ProfileColumn as SP
 import Shared.ResizeInput as SIR
 import Type.Proxy (Proxy(..))
@@ -69,6 +69,10 @@ update model = case _ of
       SetAnswer id value → setAnswer id value model
       SendAnswer id → sendAnswer id model
       AfterSendAnswer id → afterSendAnswer id model
+      ToggleAskMenu id -> toggleAskMenu id model
+
+toggleAskMenu ∷ Maybe Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+toggleAskMenu id model = model { contextMenuFor = spy "eyyeh" id } /\ []
 
 afterSendAnswer ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 afterSendAnswer id model = model { loading = false, asks = map upd model.asks } /\ []

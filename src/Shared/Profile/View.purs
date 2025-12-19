@@ -24,6 +24,7 @@ import Shared.Change as SCN
 import Shared.DateTime as DST
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
+import Shared.Im.Svg (contextMenuElements)
 import Shared.Im.Svg as SIA
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SICI
@@ -41,8 +42,8 @@ import Shared.Unsafe as SU
 import Shared.User (Gender(..))
 
 view ∷ ProfileModel → Html ProfileMessage
-view model = HE.div [ HA.id $ show ProfileEditionForm ]
-      [ HE.div [ HA.class' { "profile-edition": true, hidden: not model.visible } ]
+view model = HE.div [ HA.id $ show ProfileEditionForm]
+      [ HE.div [ HA.onClick $ ToggleAskMenu Nothing, HA.class' { "profile-edition": true, hidden: not model.visible } ]
               ( [ HE.div [ HA.class' "green-tab" ]
                         [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]
                         , HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Preview }, HA.onClick <<< SetPField $ _ { mode = Preview } ] [ HE.text "Preview" ]
@@ -68,6 +69,7 @@ asks ∷ ProfileModel → Array (Html ProfileMessage)
 asks model =
       [ HE.div [] <<< map unaswered $ DA.filter (DM.isNothing <<< _.answer) model.asks
       , HE.div [ HA.class' "ask-list" ] <<< map SIVA.asked $ DA.filter (DM.isJust <<< _.answer) model.asks
+
       ]
       where
       unaswered ask = HE.div []
@@ -78,10 +80,12 @@ asks model =
                           if model.loading then
                                 [ HE.div' [ HA.class' "loading" ] ]
                           else
-                                [ HE.div [ HA.class' "outer-user-menu hidden" ]
-                                        [ SIA.contextMenu $ show AskContextMenu <> show ask.id
-                                        , HE.div [ HA.class' {"user-menu-item menu-item-heading": true, hidden: model.contextMenuFor /= Just ask.id} ] [ HE.text "Ignore" ]
-                                        , HE.div [ HA.class' {"user-menu-item menu-item-heading": true, hidden: model.contextMenuFor /= Just ask.id} ] [ HE.text "Report" ]
+                                [ HE.div [ HA.class' "outer-user-menu" ]
+                                        [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16", HA.id $ show AskContextMenu <> show ask.id, HA.onClick <<< ToggleAskMenu $ Just ask.id ] contextMenuElements
+                                        , HE.div [ HA.class' { "ask-context-menu": true, hidden: model.contextMenuFor /= Just ask.id } ]
+                                                [ HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Ignore" ]
+                                                , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Report" ]
+                                                ]
                                         ]
                                 , HE.textarea'
                                         [ HA.class' "modal-input"

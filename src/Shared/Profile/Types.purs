@@ -38,6 +38,7 @@ data ProfileMessage
       | SetAnswer Int (Maybe String)
       | SendAnswer Int
       | AfterSendAnswer Int
+      | ToggleAskMenu (Maybe Int)
 
 data What
       = Name

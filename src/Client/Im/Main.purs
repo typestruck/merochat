@@ -434,7 +434,7 @@ toggleAskNotification model@{ enableNotificationsVisible } = F.noMessages $ mode
 toggleUserContextMenu ∷ Event → ImModel → MoreMessages
 toggleUserContextMenu event model
       | model.toggleContextMenu /= HideContextMenu =
-              F.noMessages $ model { toggleContextMenu = HideContextMenu }
+              F.noMessages model { toggleContextMenu = HideContextMenu }
       | otherwise =
               model /\
                     [

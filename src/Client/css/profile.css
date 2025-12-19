@@ -97,6 +97,14 @@
     margin-top: -10px;
 }
 
+.ask-answer-form .ask-context-menu {
+    position: absolute;
+    z-index: 23;
+    background-color: var(--im-second-background-color);
+    padding: 10px;
+    border-radius: 5px;
+}
+
 .ask-answer-form .modal-input {
     margin-bottom: 25px;
     padding-bottom: 0;
