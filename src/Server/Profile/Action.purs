@@ -156,3 +156,6 @@ hasBadWords ∷ String → Boolean
 hasBadWords phrase = DA.any (flip DST.member set) badWords
       where
       set = DST.fromFoldable $ DS.split (Pattern " ") $ DS.toLower phrase
+
+ignoreAsk :: Int -> Int -> ServerEffect Unit
+ignoreAsk loggedUserId id = SPD.ignoreAsk loggedUserId id

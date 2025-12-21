@@ -122,7 +122,10 @@ saveTags connection loggedUserId tags = void do
             tagIds ∷ Array { id ∷ Int } ← SD.unsafeQueryWith connection "INSERT INTO tags (name) (SELECT * FROM jsonb_to_recordset(@jsonInput::jsonb) AS y (tag text)) ON CONFLICT ON CONSTRAINT unique_tag DO UPDATE SET name = excluded.name RETURNING id" { jsonInput: DAR.stringify <<< DAR.encodeJson $ map { tag: _ } tags }
             SD.executeWith connection $ insert # into tags_users (_creator /\ _tag) # values (map ((loggedUserId /\ _) <<< _.id) tagIds)
 
-saveAnswer :: Int -> Int -> String -> ServerEffect Unit
+saveAnswer ∷ Int → Int → String → ServerEffect Unit
 saveAnswer loggedUserId id answer = do
-      dt <- EC.liftEffect EN.nowDateTime
+      dt ← EC.liftEffect EN.nowDateTime
       SD.execute $ update asks # set ((_answer .=. Just answer) /\ (_date .=. DateTimeWrapper dt)) # wher (_id .=. id .&&. _answerer .=. loggedUserId)
+
+ignoreAsk ∷ Int → Int → ServerEffect Unit
+ignoreAsk loggedUserId id = SD.execute $ delete # from asks # wher (_id .=. id .&&. _answerer .=. loggedUserId .&&. isNull _answer)

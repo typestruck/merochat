@@ -195,6 +195,11 @@ spec ∷
                                           GET "/"
                                                 { response ∷ Html
                                                 }
+                                    , ignore ∷
+                                          POST "/ignore"
+                                                { body ∷ { id ∷  Int }
+                                                , response ∷ Empty
+                                                }
                                   , asks ∷
                                           GET "/asks?after=<after>"
                                                 { query ∷ { after ∷ Maybe Int }

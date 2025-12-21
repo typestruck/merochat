@@ -83,7 +83,7 @@ asks model =
                                 [ HE.div [ HA.class' "outer-user-menu" ]
                                         [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16", HA.id $ show AskContextMenu <> show ask.id, HA.onClick <<< ToggleAskMenu $ Just ask.id ] contextMenuElements
                                         , HE.div [ HA.class' { "ask-context-menu": true, hidden: model.contextMenuFor /= Just ask.id } ]
-                                                [ HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Ignore" ]
+                                                [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick $ IgnoreAsk ask.id ] [ HE.text "Ignore" ]
                                                 , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Report" ]
                                                 ]
                                         ]

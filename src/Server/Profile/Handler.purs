@@ -37,3 +37,8 @@ answer routes = do
 
 save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect { avatar ∷ Maybe String }
 save routes = SPA.save routes.guards.loggedUserId routes.body
+
+ignore ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int } } → ServerEffect Empty
+ignore routes = do
+      SPA.ignoreAsk routes.guards.loggedUserId routes.body.id
+      pure Empty

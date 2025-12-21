@@ -39,6 +39,7 @@ data ProfileMessage
       | SendAnswer Int
       | AfterSendAnswer Int
       | ToggleAskMenu (Maybe Int)
+      | IgnoreAsk Int
 
 data What
       = Name

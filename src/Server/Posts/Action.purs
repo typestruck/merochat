@@ -58,3 +58,4 @@ canSendImages = DA.any ((_ == SendImages) <<< _.feature)
 
 markSeen ∷ Int → Int → Int → ServerEffect Unit
 markSeen loggedUserId poster id = SPD.markSeen loggedUserId poster id
+

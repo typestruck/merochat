@@ -70,9 +70,17 @@ update model = case _ of
       SendAnswer id → sendAnswer id model
       AfterSendAnswer id → afterSendAnswer id model
       ToggleAskMenu id -> toggleAskMenu id model
+      IgnoreAsk id -> ignoreAsk id model
+
+ignoreAsk ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+ignoreAsk id model = model { asks = DA.filter ( (_ /= id) <<< _.id) model.asks } /\ [ignore]
+      where
+      ignore = do
+            void <<< CN.silentRequest $ routes.profile.ignore { body : {id} }
+            pure Nothing
 
 toggleAskMenu ∷ Maybe Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-toggleAskMenu id model = model { contextMenuFor = spy "eyyeh" id } /\ []
+toggleAskMenu id model = model { contextMenuFor = id } /\ []
 
 afterSendAnswer ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 afterSendAnswer id model = model { loading = false, asks = map upd model.asks } /\ []
