@@ -69,14 +69,14 @@ update model = case _ of
       SetAnswer id value → setAnswer id value model
       SendAnswer id → sendAnswer id model
       AfterSendAnswer id → afterSendAnswer id model
-      ToggleAskMenu id -> toggleAskMenu id model
-      IgnoreAsk id -> ignoreAsk id model
+      ToggleAskMenu id → toggleAskMenu id model
+      IgnoreAsk id → ignoreAsk id model
 
 ignoreAsk ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
-ignoreAsk id model = model { asks = DA.filter ( (_ /= id) <<< _.id) model.asks } /\ [ignore]
+ignoreAsk id model = model { asks = DA.filter ((_ /= id) <<< _.id) model.asks } /\ [ ignore ]
       where
       ignore = do
-            void <<< CN.silentRequest $ routes.profile.ignore { body : {id} }
+            void <<< CN.silentRequest $ routes.profile.ignore { body: { id } }
             pure Nothing
 
 toggleAskMenu ∷ Maybe Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))

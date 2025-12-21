@@ -175,7 +175,7 @@ confirmTermination = HE.div [ HA.class' "modal-placeholder-overlay" ]
                       [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Cancel" ]
                       , HE.button [ HA.class' "green-button danger", HA.onClick TerminateTemporaryUser ] [ HE.text "Yes, delete my data" ]
                       ]
-              , HE.span' [ HA.class' "routes-error-message" ]
+              , HE.span' [ HA.class' "request-error-message" ]
               , HE.span [ HA.class' "success-message right-align" ]
                       [ HE.text "Your data has been deleted"
                       , HE.br
@@ -206,7 +206,7 @@ temporaryUserSignUp { temporaryEmail, temporaryPassword, erroredFields, user: { 
                     ]
             , HE.div_
                     [ HE.input [ HA.type' "button", HA.class' "green-button", HA.value "Create account", HA.onClick CreateUserFromTemporary ]
-                    , HE.span' [ HA.class' "routes-error-message error-message" ]
+                    , HE.span' [ HA.class' "request-error-message error-message" ]
                     ]
             ]
       where

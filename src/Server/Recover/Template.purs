@@ -40,7 +40,7 @@ template token = do
                                                 , HE.div [ HA.class' "input" ]
                                                         [ HE.input [ HA.type' "button", HA.value "Recover" ]
                                                         ]
-                                                , HE.span' [ HA.class' "routes-error-message error-message" ]
+                                                , HE.span' [ HA.class' "request-error-message error-message" ]
                                                 , HE.span [ HA.id "routes-success-message", HA.class' "success-message" ] [ HE.text "Recovery email sent. Please check your inbox" ]
                                                 ]
                                     _ →
@@ -56,7 +56,7 @@ template token = do
                                                 , HE.div [ HA.class' "input" ]
                                                         [ HE.input [ HA.type' "button", HA.value "Change password", HA.class' "action-button" ]
                                                         ]
-                                                , HE.span' [ HA.class' "routes-error-message error-message" ]
+                                                , HE.span' [ HA.class' "request-error-message error-message" ]
                                                 , HE.span [ HA.class' "success-message" ] [ HE.text "Password reseted. Redirecting to login..." ]
 
                                                 ]

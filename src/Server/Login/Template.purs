@@ -41,7 +41,7 @@ template = do
                                     ]
                             , HE.div [ HA.class' "input" ]
                                     [ HE.input [ HA.type' "button", HA.value "Log in" ]
-                                    , HE.span' [ HA.class' "routes-error-message error-message" ]
+                                    , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]
                             , HE.div [ HA.class' "forgot-sign-up" ]
                                     [ HE.a [ HA.href $ routesSpec.recover.get { query: { token: Nothing } }, HA.class' "question-link forgot" ] [ HE.text "Forgot your password?" ]

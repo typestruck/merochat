@@ -60,7 +60,7 @@ template = do
                                             ]
                                     , HE.input [ HA.id $ show CreateAccount, HA.class' "shadow", HA.type' "button", HA.value "Create account" ]
                                     , HE.a [ HA.id $ show TemporaryUserSignUp ] [ HE.text "Or continue as a guest →" ]
-                                    , HE.span' [ HA.class' "routes-error-message error-message" ]
+                                    , HE.span' [ HA.class' "request-error-message error-message" ]
                                     ]
                             ]
                     , HE.div [ HA.class' "features skew-left" ]
