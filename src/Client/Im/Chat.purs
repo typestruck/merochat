@@ -29,6 +29,7 @@ import Data.Symbol as TDS
 import Data.Time.Duration (Milliseconds(..), Minutes(..))
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
+import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class as EC
@@ -404,7 +405,7 @@ sendAudioMessage base64 model =
 -- | Messages can be quote from context menu, double click on desktop and swipe on mobile
 quoteMessage ∷ String → Either Touch (Maybe Event) → ImModel → NextMessage
 quoteMessage contents touchEvent model =
-      case touchEvent of
+      case spy "aaa" touchEvent of
             Right Nothing →
                   model { toggleContextMenu = HideContextMenu } /\ [ quoteIt ]
             Right (Just event) →
@@ -422,7 +423,7 @@ quoteMessage contents touchEvent model =
             classes ← EC.liftEffect <<< WDE.className <<< SU.fromJust $ do
                   target ← WEE.target event
                   WDE.fromEventTarget target
-            if DS.contains (Pattern "message") classes then
+            if DS.contains (Pattern "message") (spy "assas" classes) then
                   quoteIt
             else
                   pure Nothing

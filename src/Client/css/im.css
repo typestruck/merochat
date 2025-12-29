@@ -801,6 +801,7 @@ a {
 .message {
     flex-direction: column;
     display: flex;
+    width: 100%;
     margin: 2px 0px;
 }
 
@@ -808,7 +809,7 @@ a {
     margin-top: 8px;
 }
 
-.incoming-message {
+.incoming-message .message-content{
     align-self: flex-start;
 }
 
@@ -823,7 +824,7 @@ a {
     background: #ffd1dc;
 }
 
-.outgoing-message {
+.outgoing-message .message-content{
     align-self: flex-end;
 }
 
