@@ -72,7 +72,7 @@ asks model =
 
       ]
       where
-      unaswered ask = HE.div []
+      unaswered ask = HE.div_
             [ HE.text "MeroChat user asks: "
             , HE.b [] [ HE.i [] [ HE.text ask.question ] ]
             , HE.div [ HA.class' "ask-answer-form" ]
@@ -84,7 +84,7 @@ asks model =
                                         [ HE.svg [ HA.class' "svg-32", HA.viewBox "0 0 16 16", HA.id $ show AskContextMenu <> show ask.id, HA.onClick <<< ToggleAskMenu $ Just ask.id ] contextMenuElements
                                         , HE.div [ HA.class' { "ask-context-menu": true, hidden: model.contextMenuFor /= Just ask.id } ]
                                                 [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick $ IgnoreAsk ask.id ] [ HE.text "Ignore" ]
-                                                , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Report" ]
+                                                , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick $ ReportAsk ask.id ask.asker ] [ HE.text "Report" ]
                                                 ]
                                         ]
                                 , HE.textarea'

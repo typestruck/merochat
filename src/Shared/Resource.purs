@@ -147,9 +147,9 @@ resourceName = case _ of
       Left Favicon10Plus → "favicon-10-plus"
       Left Avatar → "avatar"
       Left NicolasCageHiclipart → "nicolas_cage_hiclipart"
+      Left SocratesStingWikimedia → "socrates_Sting_wikimedia"
       Left BatmanNounProjectAnushaNarvekar → "batman_noun_project_Anusha_Narvekar"
       Left Loading → "loading"
-      Left SocratesStingWikimedia → "socrates_Sting_wikimedia"
       Left (Upload up) → up
 
 resourceType ∷ ResourceType → String
@@ -157,8 +157,8 @@ resourceType = case _ of
       Ico → ".ico"
       Svg → ".svg"
       Png → ".png"
-      Css → ".css"
       Js → ".bundle.js"
+      Css → ".css"
       Ignore → ""
 
 replacement ∷ Bundle → ResourceType → String

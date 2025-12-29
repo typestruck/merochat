@@ -86,6 +86,7 @@ handlers reading =
               , posts: runJson reading SPH.posts
               , asks: runJson reading SPH.asks
               , ignore: runJson reading SPH.ignore
+              , report: runJson reading SPH.report
               , answer: runJson reading SPH.answer
               }
       , login:

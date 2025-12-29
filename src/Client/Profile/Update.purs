@@ -32,7 +32,7 @@ import Shared.Ask (Ask)
 import Shared.DateTime (DateWrapper(..))
 import Shared.DateTime as SDT
 import Shared.Element (ElementId(..))
-import Shared.Im.Types (RetryableRequest(..))
+import Shared.Im.Types (ReportReason(..), RetryableRequest(..))
 import Shared.Im.Types as SIT
 import Shared.Modal (ScreenModal(..))
 import Shared.Network (RequestStatus(..))
@@ -71,6 +71,14 @@ update model = case _ of
       AfterSendAnswer id → afterSendAnswer id model
       ToggleAskMenu id → toggleAskMenu id model
       IgnoreAsk id → ignoreAsk id model
+      ReportAsk id userId → reportAsk id userId model
+
+reportAsk ∷ Int → Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+reportAsk id userId model = model { asks = DA.filter ((_ /= id) <<< _.id) model.asks } /\ [ report ]
+      where
+      report = do
+            void <<< CN.silentRequest $ routes.profile.report { body: { id, userId } }
+            pure Nothing
 
 ignoreAsk ∷ Int → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
 ignoreAsk id model = model { asks = DA.filter ((_ /= id) <<< _.id) model.asks } /\ [ ignore ]

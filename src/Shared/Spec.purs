@@ -89,7 +89,7 @@ spec ∷
                     , asks ∷
                             Routes "/asks"
                                   { guards ∷ Guards ("loggedUserId" : Nil)
-                                    , get ∷
+                                  , get ∷
                                           GET "/?answerer=<answerer>"
                                                 { query ∷ { answerer ∷ Int }
                                                 , response ∷ Array Ask
@@ -195,9 +195,14 @@ spec ∷
                                           GET "/"
                                                 { response ∷ Html
                                                 }
-                                    , ignore ∷
+                                  , ignore ∷
                                           POST "/ignore"
-                                                { body ∷ { id ∷  Int }
+                                                { body ∷ { id ∷ Int }
+                                                , response ∷ Empty
+                                                }
+                                  , report ∷
+                                          POST "/report"
+                                                { body ∷ { id ∷ Int, userId ∷ Int }
                                                 , response ∷ Empty
                                                 }
                                   , asks ∷

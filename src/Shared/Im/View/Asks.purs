@@ -5,6 +5,7 @@ import Prelude
 import Client.Privilege as CCP
 import Data.Array as DA
 import Data.Maybe as DM
+import Debug (spy)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -24,7 +25,7 @@ asked ask = HE.div [ HA.class' "ask-entry" ]
               [ HE.span [ HA.class' "duller" ] [ HE.text $ ask.name <> " asks: " ]
               , HE.div [HA.class' "ask-question-itself"] [ HE.b [] [ HE.i [] [ HE.text ask.question ] ] ]
               ]
-      , HE.div [ HA.class' "ask-answer" ] [ HE.text $ SU.fromJust ask.answer ]
+      , HE.div [ HA.class' "ask-answer" ] [ HE.text $ SU.fromJust (spy "ask" ask).answer ]
       ]
 
 askForm ∷ ImModel → User → Html ImMessage

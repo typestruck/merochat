@@ -42,3 +42,8 @@ ignore ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int } } → S
 ignore routes = do
       SPA.ignoreAsk routes.guards.loggedUserId routes.body.id
       pure Empty
+
+report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int, userId :: Int } } → ServerEffect Empty
+report routes = do
+      SPA.reportAsk routes.guards.loggedUserId routes.body.id routes.body.userId
+      pure Empty

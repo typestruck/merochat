@@ -23,14 +23,16 @@ import Server.Effect (ServerEffect)
 import Server.Email (Email(..))
 import Server.Email as SE
 import Server.File as SF
+import Server.Generate as ST
+import Server.Im.Action as SIA
 import Server.Profile.BadWords (badWords)
 import Server.Profile.Database as SPD
 import Server.Profile.Database.Flat as SPDF
 import Server.Response as SR
-import Server.Generate as ST
 import Shared.Ask (Ask)
 import Shared.DateTime as SDT
 import Shared.File as SSF
+import Shared.Im.Types (ReportReason(..), Report)
 import Shared.Options.Ask (maxAskCharacters)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege(..))
@@ -52,7 +54,7 @@ profile loggedUserId = do
       posts ← SPD.presentPosts loggedUserId Nothing
       countries ← SPD.presentCountries
       languages ← SPD.presentLanguages
-      asks <- SAD.presentAllAsks loggedUserId Nothing
+      asks ← SAD.presentAllAsks loggedUserId Nothing
       pure
             { user: profileUser
             , countries
@@ -74,10 +76,10 @@ refreshPosts loggedUserId id = SPD.presentPosts loggedUserId id
 refreshAsks ∷ Int → Maybe Int → ServerEffect (Array Ask)
 refreshAsks loggedUserId id = SAD.presentAllAsks loggedUserId id
 
-saveAnswer :: Int -> Int -> String -> ServerEffect Unit
+saveAnswer ∷ Int → Int → String → ServerEffect Unit
 saveAnswer loggedUserId askId answer = do
       let trimmed = DS.trim answer
-      when (DS.null trimmed || DS.length trimmed > maxAskCharacters * 2) <<< RE.throw $ BadRequest { reason : "invalid answer"}
+      when (DS.null trimmed || DS.length trimmed > maxAskCharacters * 2) <<< RE.throw $ BadRequest { reason: "invalid answer" }
       SPD.saveAnswer loggedUserId askId answer
 
 data SaveAvatar = Ignore | Save (Maybe String)
@@ -157,5 +159,11 @@ hasBadWords phrase = DA.any (flip DST.member set) badWords
       where
       set = DST.fromFoldable $ DS.split (Pattern " ") $ DS.toLower phrase
 
-ignoreAsk :: Int -> Int -> ServerEffect Unit
+ignoreAsk ∷ Int → Int → ServerEffect Unit
 ignoreAsk loggedUserId id = SPD.ignoreAsk loggedUserId id
+
+reportAsk ∷ Int → Int → Int → ServerEffect Unit
+reportAsk loggedUserId id userId = do
+      SIA.reportUser loggedUserId { comment: Just $ "ask id reported: " <> show id, userId, reason: OtherReason }
+      SPD.ignoreAsk loggedUserId id
+

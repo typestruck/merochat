@@ -24,7 +24,7 @@ import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
 presentAsks ∷ Int → ServerEffect (Array Ask)
-presentAsks userId = SD.query $ select ((a ... _id # as _id) /\ _asker /\ _answer /\ _name /\ _question) # from (join (asks # as a) (users # as u) # on (_asker .=. u ... _id)) # wher (_answerer .=. userId) # orderBy ((_date # desc)) # limit (Proxy ∷ _ 10)
+presentAsks userId = SD.query $ select ((a ... _id # as _id) /\ _asker /\ _answer /\ _name /\ _question) # from (join (asks # as a) (users # as u) # on (_asker .=. u ... _id)) # wher (_answerer .=. userId .&&. isNotNull _answer) # orderBy ((_date # desc)) # limit (Proxy ∷ _ 10)
 
 presentAllAsks ∷ Int → Maybe Int → ServerEffect (Array Ask)
 presentAllAsks loggedUserId = case _ of

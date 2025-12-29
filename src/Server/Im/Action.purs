@@ -181,7 +181,7 @@ deleteChat loggedUserId ids@{ userId } = do
 reportUser ∷ Int → Report → ServerEffect Unit
 reportUser loggedUserId report = do
       void $ SIDE.insertReport loggedUserId report
-      SE.sendEmail $ SE.Report
+      SE.sendEmail $ Report
             { reported: report.userId
             , reporter: loggedUserId
             , reason: show report.reason
