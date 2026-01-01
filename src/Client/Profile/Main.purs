@@ -22,6 +22,3 @@ main = do
             , subscribe: [ FS.onCustomEvent modalVisible ToggleVisibility ]
             , update: CPU.update
             }
-      --avatar changes
-      input ← CPU.getFileInput
-      CCF.setUpFileChange (\_ _ b → SetPField $ _ { avatarInputed = Just b }) input profileAppId

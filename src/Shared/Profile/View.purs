@@ -113,7 +113,7 @@ edit model =
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your profile picture" ]
               , HE.div [ HA.class' "fit", HA.onClick SelectAvatar ]
                       [ HE.img [ HA.class' "avatar-profile-edition", HA.src <<< DM.fromMaybe defaultAvatar $ SA.fromAvatarPath model.avatarInputed ]
-                      , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
+                      , HE.input [ HA.id "avatar-file-input", HA.type' "file", HA.onChange' PrepareAvatar, HA.class' "hidden", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
                       , HE.svg [ HA.class' "svg-16", HA.viewBox "0 0 16 16", HA.onClick <<< SetPField $ _ { avatarInputed = Nothing } ]
                               [ HE.title [ HE.text "Reset profile picture" ]
                               , HE.path' [ HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.5A7.5,7.5,0,1,1,15.5,8,7.5,7.5,0,0,1,8,15.5Z" ]

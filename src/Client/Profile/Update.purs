@@ -2,7 +2,7 @@ module Client.Profile.Update where
 
 import Prelude
 
-import Client.AppId (imAppId)
+import Client.AppId (imAppId, profileAppId)
 import Client.Dom as CCD
 import Client.File as CCF
 import Client.Network (routes)
@@ -44,14 +44,13 @@ import Shared.ProfileColumn as SP
 import Shared.ResizeInput as SIR
 import Type.Proxy (Proxy(..))
 import Web.DOM (Element)
-
-getFileInput ∷ Effect Element
-getFileInput = CCD.unsafeGetElementById AvatarFileInput
+import Web.Event.Internal.Types (Event)
 
 update ∷ Update ProfileModel ProfileMessage
 update model = case _ of
       SetPField upd → setField model upd
       SelectAvatar → selectAvatar model
+      PrepareAvatar event → prepareAvatar event model
       RefreshPosts → refreshPosts model
       SetCountry value → setCountry value model
       SetAge value → setAge value model
@@ -271,6 +270,13 @@ selectAvatar ∷ ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessa
 selectAvatar model = model /\ [ selectIt ]
       where
       selectIt = liftEffect do
-            input ← getFileInput
+            input ← CCD.unsafeGetElementById AvatarFileInput
             CCF.triggerFileSelect input
+            pure Nothing
+
+prepareAvatar ∷ Event → ProfileModel → ProfileModel /\ Array (Aff (Maybe ProfileMessage))
+prepareAvatar event model = model /\ [ before ]
+      where
+      before = do
+            CCF.compressImage profileAppId event false $ \_ _ b → SetPField $ _ { avatarInputed = Just b }
             pure Nothing
