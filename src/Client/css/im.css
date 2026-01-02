@@ -824,8 +824,8 @@ a {
     background: #ffd1dc;
 }
 
-.outgoing-message .message-content {
-    align-self: flex-end;
+.outgoing-message {
+    align-items: flex-end;
 }
 
 .modal-placeholder-overlay,
@@ -3077,6 +3077,7 @@ label {
 
 .outgoing-message .reactions {
     background: var(--im-second-background-color);
+    margin-right: 12px;
 }
 
 .with-chat-background .outgoing-message .message-content {
@@ -3314,6 +3315,10 @@ label {
     .suggestion.old {
         padding: 10px 10px;
 
+    }
+
+    .incoming-message .reactions {
+        margin-left: 10px;
     }
 
     #profile-edition-form,
