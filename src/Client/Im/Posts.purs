@@ -134,7 +134,7 @@ toggleShowingSuggestions userId toggle model =
             } /\ effects
       where
       found = DA.find ((_ == userId) <<< _.id) model.suggestions
-      shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
+      shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found)
 
       update suggestion
             | suggestion.id == userId = suggestion { showing = toggle }
@@ -153,7 +153,7 @@ toggleShowingContacts userId toggle model =
             } /\ effects
       where
       found = _.user <$> DA.find ((_ == userId) <<< _.id <<< _.user) model.contacts
-      shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found) && Just 0 == (DA.length <<< _.posts <$> found)
+      shouldFetch = toggle == ShowPosts && Just ShowPosts /= (_.showing <$> found)
 
       update contact
             | contact.user.id == userId = contact { user = contact.user { showing = toggle } }

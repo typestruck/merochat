@@ -180,10 +180,10 @@ receivePost p model = model { suggestions = map updateSuggestion model.suggestio
       alreadyReceived = DA.any ((p.post.id == _) <<< _.id)
 
       updateSuggestion suggestion
-            | suggestion.id == p.userId && not (alreadyReceived suggestion.posts) = suggestion { posts = p.post : suggestion.posts, unseenPosts = suggestion.unseenPosts + 1 }
+            | suggestion.id == p.userId && not (alreadyReceived suggestion.posts) = suggestion { unseenPosts = suggestion.unseenPosts + 1 }
             | otherwise = suggestion
       updateContact contact
-            | contact.user.id == p.userId && not (alreadyReceived contact.user.posts) = contact { user = contact.user { posts = p.post : contact.user.posts, unseenPosts = contact.user.unseenPosts + 1 } }
+            | contact.user.id == p.userId && not (alreadyReceived contact.user.posts) = contact { user = contact.user { unseenPosts = contact.user.unseenPosts + 1 } }
             | otherwise = contact
 
 receiveAvailability ∷ { id ∷ Int, availability ∷ Availability } → ImModel → NoMessages

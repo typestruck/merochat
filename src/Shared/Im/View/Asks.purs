@@ -25,7 +25,7 @@ asked ask = HE.div [ HA.class' "ask-entry" ]
               [ HE.span [ HA.class' "duller" ] [ HE.text $ ask.name <> " asks: " ]
               , HE.div [HA.class' "ask-question-itself"] [ HE.b [] [ HE.i [] [ HE.text ask.question ] ] ]
               ]
-      , HE.div [ HA.class' "ask-answer" ] [ HE.text $ SU.fromJust (spy "ask" ask).answer ]
+      , HE.div [ HA.class' "ask-answer" ] [ HE.text $ SU.fromJust ask.answer ]
       ]
 
 askForm ∷ ImModel → User → Html ImMessage

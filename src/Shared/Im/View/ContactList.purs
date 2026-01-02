@@ -62,7 +62,22 @@ contactList isClientRender model =
                                 , HA.onClick $ if backingCall then SpecialRequest (ToggleModal $ Screen ShowBacker) else ResumeChat contact.user.id
                                 ]
                                 [ HE.div [ HA.class' "avatar-contact-list-div", HA.title $ if contact.user.onlineStatus && model.user.onlineStatus then show contact.user.availability else "" ]
-                                        [ HE.img (if contact.user.unseenPosts > 0 then [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list newly-posted", HA.onClick $ ResumeChat contact.user.id, HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts, HA.src $ SA.fromAvatar contact.user ] else [ SA.async, SA.decoding "lazy", HA.class' "avatar-contact-list", HA.src $ SA.fromAvatar contact.user ])
+                                        [ HE.img
+                                                ( if contact.user.unseenPosts > 0 then
+                                                        [ SA.async
+                                                        , SA.decoding "lazy"
+                                                        , HA.class' "avatar-contact-list newly-posted"
+                                                        , HA.onClick $ ResumeChat contact.user.id
+                                                        , HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts
+                                                        , HA.src $ SA.fromAvatar contact.user
+                                                        ]
+                                                  else
+                                                        [ SA.async
+                                                        , SA.decoding "lazy"
+                                                        , HA.class' "avatar-contact-list"
+                                                        , HA.src $ SA.fromAvatar contact.user
+                                                        ]
+                                                )
                                         ]
                                 , HE.div [ HA.class' "contact-profile" ]
                                         [ HE.div [ HA.class' "contact-online-wrapper" ]
