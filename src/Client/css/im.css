@@ -3087,6 +3087,11 @@ label {
     justify-content: center;
 }
 
+.message-history .retry.hidden {
+    display: block !important;
+    visibility: hidden;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;
