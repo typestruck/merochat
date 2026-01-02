@@ -809,7 +809,7 @@ a {
     margin-top: 8px;
 }
 
-.incoming-message .message-content{
+.incoming-message .message-content {
     align-self: flex-start;
 }
 
@@ -824,7 +824,7 @@ a {
     background: #ffd1dc;
 }
 
-.outgoing-message .message-content{
+.outgoing-message .message-content {
     align-self: flex-end;
 }
 
@@ -2881,7 +2881,8 @@ label {
     border-bottom-color: transparent;
 }
 
-.contact-full-profile .ask-question, .contact-full-profile .ask-question:after {
+.contact-full-profile .ask-question,
+.contact-full-profile .ask-question:after {
     background-color: var(--background-color);
 }
 
@@ -3886,7 +3887,7 @@ label {
 @media (min-width:1280px) and (max-width:1919px) {
     .modal-menu {
         padding-top: 5px;
-        padding-bottom:50px;
+        padding-bottom: 50px;
     }
 
     .back-side-suggestion {
