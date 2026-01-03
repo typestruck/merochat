@@ -372,6 +372,13 @@ modal toggle model =
             CCF.triggerFileSelect fileInput
             pure Nothing
 
+prepareSelectedImage ∷ Event → ImModel → MoreMessages
+prepareSelectedImage event model = model /\ [ before ]
+      where
+      before = do
+            CCF.compressImage imAppId event false $ \width height base64 → SetSelectedImage $ Just { width, height, base64 }
+            pure Nothing
+
 -- | Record an audio message
 beforeAudioMessage ∷ ImModel → MoreMessages
 beforeAudioMessage model = model /\ [ record ]
@@ -423,7 +430,7 @@ quoteMessage contents touchEvent model =
             classes ← EC.liftEffect <<< WDE.className <<< SU.fromJust $ do
                   target ← WEE.target event
                   WDE.fromEventTarget target
-            if DS.contains (Pattern "message")  classes then
+            if DS.contains (Pattern "message") classes then
                   quoteIt
             else
                   pure Nothing
@@ -459,7 +466,7 @@ deleteMessage id webSocket model =
             EC.liftEffect <<< CIW.sendPayload webSocket $ DeletedMessage { id, userId: SU.fromJust model.chatting }
             pure Nothing
 
-messageFromExperiment ∷ Int → String -> WebSocket → ImModel → MoreMessages
+messageFromExperiment ∷ Int → String → WebSocket → ImModel → MoreMessages
 messageFromExperiment userId message webSocket model =
       if isContact then
             model /\ [ hide, resume, send ]

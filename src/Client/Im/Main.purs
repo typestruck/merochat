@@ -120,10 +120,6 @@ main = do
       CCD.pushState $ routesSpec.im.get {}
       historyChange smallScreen
 
-      --image upload
-      input ← CCD.unsafeGetElementById ImageFileInput
-      CCF.setUpFileChange (\width height base64 → SetSelectedImage $ Just { width, height, base64 }) input imAppId
-
       --greet new users after they have created an account
       unless (model.user.completedTutorial) $ FS.send imAppId FinishTutorial
 
@@ -133,6 +129,7 @@ update st model =
             --chat
             DropFile event → CIC.catchFile event model
             ResizeChatInput event → SIR.resizeInputFrom event model
+            PrepareSelectedImage event → CIC.prepareSelectedImage event model
             EnterSendMessage elementId event → CIC.enterSendMessage elementId event model
             ForceSendMessage elementId → CIC.forceSendMessage elementId model
             SendMessage elementId content dt → CIC.prepareSendMessage elementId content dt webSocket model
@@ -179,7 +176,7 @@ update st model =
             SpecialRequest (FetchAsks userId) → CIA.fetchAsks userId model
             SetAsk value → CIA.setAsk value model
             SendAsk userId → CIA.sendAsk userId model
-            AfterSendAsk userId  allowed → CIA.afterSendAsk userId allowed model
+            AfterSendAsk userId allowed → CIA.afterSendAsk userId allowed model
             ToggleShowing userId for ShowAsks → CIA.toggleShowing userId for model
             DisplayAsks userId asks → CIA.displayAsks userId asks model
 

@@ -285,6 +285,7 @@ data ImMessage
       | ToggleSuggestionChatInput Int
 
       --chat
+      | PrepareSelectedImage Event
       | SetSelectedImage SelectedImage
       | ToggleContactProfile
       | ToggleMiniChatInput

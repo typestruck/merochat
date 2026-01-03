@@ -49,7 +49,13 @@ imageModal model =
             if SP.hasPrivilege SendImages model.user then
                   [ SIS.closeX [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ]
                   , HE.div [ HA.class' { "upload-div": true, hidden: not imageValidationFailed } ]
-                          [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp" ]
+                          [ HE.input
+                                  [ HA.id $ show ImageFileInput
+                                  , HA.type' "file"
+                                  , HA.onChange' PrepareSelectedImage
+                                  , HA.value ""
+                                  , HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp"
+                                  ]
                           , HE.div [ HA.class' "error-message" ] [ HE.text $ "Image is larger than the " <> maxImageSizeKB <> " limit. Please select a different file." ]
                           ]
                   , HE.div [ HA.class' { "image-form-image": true, hidden: imageValidationFailed } ]
@@ -61,8 +67,7 @@ imageModal model =
                           ]
                   ]
             else
-                  [ HE.input [ HA.id $ show ImageFileInput, HA.type' "file", HA.value "", HA.accept ".png, .jpg, .jpeg, .tif, .tiff, .bmp", HA.class' "hidden" ]
-                  , CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
+                  [ CCP.notEnoughKarma "send images" (SpecialRequest <<< ToggleModal $ Screen ShowKarmaPrivileges)
                   , HE.div [ HA.class' "image-buttons" ] [ HE.button [ HA.class' "green-button", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Dismiss" ] ]
                   ]
       where
@@ -162,7 +167,7 @@ sendButton elementId model
                       [ HE.svg [ HA.class' "send-button", HA.viewBox "0 0 16 16" ] $ sendButtonElements "Send message" ]
               ]
 
-sendButtonElements ∷ forall message. String → Array (Html message)
+sendButtonElements ∷ ∀ message. String → Array (Html message)
 sendButtonElements title =
       [ HE.title [ HE.text title ]
       , HE.path' [ HA.class' "strokeless", HA.d "M8,0a8,8,0,1,0,8,8A8,8,0,0,0,8,0ZM8,15.25A7.25,7.25,0,1,1,15.25,8,7.26,7.26,0,0,1,8,15.25Z" ]
