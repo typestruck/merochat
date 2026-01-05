@@ -64,6 +64,7 @@ type IU =
               , chatBackground ∷ Maybe String
               , ownBackground ∷ Boolean
               , posts ∷ Array Post
+              , favorite :: Boolean
               , showing ∷ ProfileTab
               , profileVisibility ∷ ProfileVisibility
               , postsVisibility ∷ ProfileVisibility

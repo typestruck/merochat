@@ -200,6 +200,7 @@ update st model =
             ToggleContactProfile → CIS.toggleContactProfile model
             ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
+            SpecialRequest (Favorite id) → CIS.favorite id model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → blockUser webSocket id model

@@ -10,7 +10,6 @@ import Data.DateTime (DateTime)
 import Data.Int as DI
 import Data.Maybe (Maybe)
 import Data.Maybe as DM
-import Debug (spy)
 import Safe.Coerce as SC
 import Server.Database.Types (Checked(..))
 import Shared.Badge (Badge)
@@ -34,6 +33,7 @@ type FlatFields rest =
       , id ∷ Int
       , bin ∷ Int
       , unseenPosts ∷ Maybe BigInt
+      , favorite :: Boolean
       , karma ∷ Int
       , karmaPosition ∷ Int
       , postsVisibility ∷ ProfileVisibility
@@ -100,6 +100,7 @@ fromFlatUser fc =
       , totalAsks: DM.fromMaybe 0 (fc.totalAsks >>= BI.toInt)
       , bin: fc.bin
       , asksVisibility: fc.asks_visibility
+      , favorite : fc.favorite
       , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility
       , readReceipts: SC.coerce fc.readReceipts

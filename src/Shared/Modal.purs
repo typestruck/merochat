@@ -29,6 +29,7 @@ data ScreenModal
 data ConfirmationModal
       = ConfirmLogout
       | ConfirmTerminationTemporaryUser
+      | ConfirmFavorite Int String
       | ConfirmDeleteChat Int
       | ConfirmBlockUser Int
       | ConfirmReport Int

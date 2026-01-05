@@ -24,7 +24,7 @@ import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
 import Server.Database.Functions (date_part_age, datetime_part_age, insert_history, utc_now)
-import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories)
+import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories, _favorite)
 import Server.Database.KarmaHistories (_amount, _target, karma_histories)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
@@ -45,7 +45,7 @@ import Server.Im.Database.Flat (FlatUser)
 import Server.Im.Database.Present (completeness, userFields, usersSource)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
-import Shared.Im.Types (SuggestionsFrom(..))
+import Shared.Im.Types (SuggestionsFrom(..), Favorited(..))
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
 
@@ -78,6 +78,7 @@ suggestBaseQuery loggedUserId filter =
                     /\ _bin
                     /\ (_chatBackground # as chatBackground)
                     /\ completeness
+                    /\ (((_sender .=. loggedUserId .&&. _favorite .=. FavoritedBySender) .||. _favorite .>. FavoritedBySender) # as _favorite)
                     /\ ((isNotNull _sender .&&. ((_sender .=. loggedUserId .&&.  isNull _sender_deleted_to) .||. (_recipient .=. loggedUserId .&&.  isNull _recipient_deleted_to))) # as _isContact)
                     /\ ((select (count _id # as _totalPosts) # from (posts # as p) # wher (postsFilter loggedUserId) # orderBy _totalPosts # limit (Proxy ∷ _ 1)) # as _totalPosts)
                     /\ ((select (count _id # as _totalAsks) # from (asks # as a) # wher (_answerer .=. u ... _id .&&. isNotNull _answer) # orderBy _totalAsks # limit (Proxy ∷ _ 1)) # as _totalAsks)

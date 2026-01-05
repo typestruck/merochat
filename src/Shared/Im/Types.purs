@@ -178,7 +178,7 @@ type Im =
               , freeToFetch ∷ Boolean
               , question ∷ Maybe String
               , unallowed ∷ Array Int
-              , sent :: Array Int
+              , sent ∷ Array Int
               }
       )
 
@@ -235,6 +235,7 @@ data RetryableRequest
       | FetchAsks Int
       | ToggleModal Modal
       | BlockUser Int
+      | Favorite Int
       | PreviousSuggestion
       | NextSuggestion
       | ReportUser Int
@@ -247,6 +248,12 @@ data ReportReason
       | Spam
       | Minor
       | OtherReason
+
+data Favorited
+      = NotFavorited
+      | FavoritedBySender
+      | FavoritedByRecipient
+      | FavoritedByBoth
 
 type Touch = { startX ∷ Int, endX ∷ Int, startY ∷ Int, endY ∷ Int }
 
@@ -279,7 +286,6 @@ data ImMessage
       | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
-
       | ToggleSuggestionsFromOnline
       | ResumeSuggestionChat Int
       | ToggleSuggestionChatInput Int
@@ -467,11 +473,13 @@ instance DecodeQueryParam SuggestionsFrom where
 derive instance Eq SuggestionsFrom
 derive instance Eq FocusEvent
 derive instance Eq ReactWith
+derive instance Eq Favorited
 derive instance Eq PostMode
 derive instance Eq When
 derive instance Eq WebSocketConnectionStatus
 
 derive instance Ord ReportReason
+derive instance Ord Favorited
 derive instance Ord PostMode
 derive instance Ord MessageStatus
 derive instance Ord SuggestionsFrom
@@ -480,6 +488,10 @@ instance Bounded SuggestionsFrom where
       bottom = ThisWeek
       top = All
 
+instance Bounded Favorited where
+      bottom = NotFavorited
+      top = FavoritedByBoth
+
 instance Bounded MessageStatus where
       bottom = Received
       top = Read
@@ -487,6 +499,20 @@ instance Bounded MessageStatus where
 instance Bounded ReportReason where
       bottom = DatingContent
       top = OtherReason
+
+instance BoundedEnum Favorited where
+      cardinality = Cardinality 1
+      fromEnum = case _ of
+            NotFavorited → 0
+            FavoritedBySender → 1
+            FavoritedByRecipient → 2
+            FavoritedByBoth → 3
+      toEnum = case _ of
+            0 → Just NotFavorited
+            1 → Just FavoritedBySender
+            2 → Just FavoritedByRecipient
+            3 → Just FavoritedByBoth
+            _ → Nothing
 
 instance BoundedEnum SuggestionsFrom where
       cardinality = Cardinality 1
@@ -538,6 +564,18 @@ instance BoundedEnum ReportReason where
             255 → Just OtherReason
             _ → Nothing
 
+instance Enum Favorited where
+      succ = case _ of
+            NotFavorited → Just FavoritedBySender
+            FavoritedBySender → Just FavoritedByRecipient
+            FavoritedByRecipient → Just FavoritedByBoth
+            FavoritedByBoth → Nothing
+      pred = case _ of
+            NotFavorited → Nothing
+            FavoritedBySender → Just NotFavorited
+            FavoritedByRecipient → Just FavoritedBySender
+            FavoritedByBoth → Just FavoritedByBoth
+
 instance Enum SuggestionsFrom where
       succ = case _ of
             OnlineOnly → Just ThisWeek
@@ -584,6 +622,9 @@ instance Enum MessageStatus where
 
 instance DecodeJson TimeoutIdWrapper where
       decodeJson = Right <<< UC.unsafeCoerce
+
+instance DecodeJson Favorited where
+      decodeJson = DADGR.genericDecodeJson
 
 instance DecodeJson SuggestionsFrom where
       decodeJson = DADGR.genericDecodeJson
@@ -639,6 +680,9 @@ instance EncodeJson WebSocketPayloadServer where
 instance EncodeJson WebSocketPayloadClient where
       encodeJson = DAEGR.genericEncodeJson
 
+instance EncodeJson Favorited where
+      encodeJson = DAEGR.genericEncodeJson
+
 instance EncodeJson PostMode where
       encodeJson = DAEGR.genericEncodeJson
 
@@ -687,6 +731,7 @@ derive instance Eq RetryableRequest
 derive instance Eq ReportReason
 derive instance Eq MessageStatus
 
+derive instance Generic Favorited _
 derive instance Generic MessageStatus _
 derive instance Generic WebSocketConnectionStatus _
 derive instance Generic PostMode _
@@ -704,10 +749,16 @@ derive instance Generic RetryableRequest _
 instance ToValue MessageStatus where
       toValue v = F.unsafeToForeign $ DE.fromEnum v
 
+instance ToValue Favorited where
+      toValue v = F.unsafeToForeign $ DE.fromEnum v
+
 instance ToValue ReportReason where
       toValue v = F.unsafeToForeign $ DE.fromEnum v
 
 instance FromValue ReportReason where
+      fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v ∷ Either String Int)
+
+instance FromValue Favorited where
       fromValue v = SU.fromJust <<< DE.toEnum <$> (DL.fromValue v ∷ Either String Int)
 
 instance FromValue MessageStatus where

@@ -41,6 +41,7 @@ backerUser =
       , joined: DateTimeWrapper epoch
       , readReceipts: true
       , posts: []
+      , favorite : false
       , asks: []
       , asksVisibility: Everyone
       , totalAsks:0

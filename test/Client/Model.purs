@@ -102,6 +102,7 @@ imUser =
       , age: Nothing
       , name: "test"
       , unseenPosts: 0
+      , favorite : false
       , id: imUserId
       , showing: ShowInfo
       , totalAsks: 0

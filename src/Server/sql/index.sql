@@ -254,8 +254,7 @@ create table histories
     recipient integer not null,
     first_message_date timestamptz not null default (utc_now()),
     last_message_date timestamptz not null default (utc_now()),
-    sender_archived boolean not null default false,
-    recipient_archived boolean not null default false,
+    favorite smallint not null default 0,
     sender_deleted_to int,
     recipient_deleted_to int,
 
@@ -484,12 +483,12 @@ create or replace function insert_history
 $$
 begin
     if exists(select 1 from histories where sender = recipient_id and recipient = sender_id) then
-        update histories set sender_archived = false, recipient_archived = false, last_message_date = (utc_now()) where sender = recipient_id and recipient = sender_id;
+        update histories set last_message_date = (utc_now()) where sender = recipient_id and recipient = sender_id;
     else
         insert into histories (sender, recipient)
         values (sender_id, recipient_id)
         on conflict (sender, recipient) do
-        update set sender_archived = false, recipient_archived = false, last_message_date = (utc_now());
+        update set last_message_date = (utc_now());
     end if;
 end;
   $$

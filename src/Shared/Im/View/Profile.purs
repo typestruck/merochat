@@ -113,7 +113,7 @@ compactProfile contact model =
                     [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick RemoveChatBackground ] [ HE.text "Remove chat background" ] ]
               else
                     []
-            ) <> profileContextMenu contact.user.id true
+            ) <> profileContextMenu contact.user true
 
       showProfileAction
             | contact.user.unseenPosts > 0 = [ HA.class' "avatar-profile newly-posted", HA.title "Click to see recent posts", HA.onClick $ ToggleShowing contact.user.id ForContacts ShowPosts ]
@@ -133,7 +133,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
             , HE.div [ HA.class' { "outer-user-menu": true, hidden: model.showLargeAvatar } ]
                     [ SIA.contextMenu $ show FullProfileContextMenu
                     ]
-            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user.id true
+            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu user true
             , SIA.closeX [ HA.class' "svg-close-profile", HA.onClick $ if model.showLargeAvatar then ToggleLargeAvatar else ToggleContactProfile ]
             ]
 
@@ -252,7 +252,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
                                     )
                             , HE.div [ HA.class' "outer-user-menu order-3" ] [ SIA.contextMenu $ show FullProfileContextMenu ]
-                            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion.id false
+                            , HE.div [ HA.class' { "user-menu": true, visible: model.toggleContextMenu == ShowFullProfileContextMenu } ] $ profileContextMenu suggestion false
                             , HE.div [ HA.class' "close-cards", HA.title "Close suggestion", HA.onClick <<< SpecialRequest <<< ToggleModal $ HideModal ]
                                     [ SIA.closeX []
                                     ]
@@ -469,11 +469,12 @@ badges source = map (it <<< SB.badgeFor) source
       where
       it bf = HE.div [ HA.class' "badge", HA.title bf.description ] [ HE.img [ HA.width "18px", HA.height "18px", HA.class' "badge-img", HA.src $ SR.resourcePath (Left SR.Favicon) Ico ], HE.span [ HA.class' "badge-text" ] [ HE.text bf.text ] ]
 
-profileContextMenu ∷ Int → Boolean → Array (Html ImMessage)
-profileContextMenu id delete =
-      [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmDeleteChat id ] [ HE.text "Delete chat" ]
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmBlockUser id ] [ HE.text "Block" ]
-      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmReport id ] [ HE.text "Report" ]
+profileContextMenu ∷ User → Boolean → Array (Html ImMessage)
+profileContextMenu user delete =
+      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmFavorite user.id user.name ] [ HE.text $ if user.favorite then "Remove from favorites" else "Mark as favorite" ]
+      , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmDeleteChat user.id ] [ HE.text "Delete chat" ]
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmBlockUser user.id ] [ HE.text "Block" ]
+      , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmReport user.id ] [ HE.text "Report" ]
       ]
 
 welcomeTemporary ∷ ImModel → Html ImMessage
@@ -573,7 +574,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                                                   ]
                                           , HE.div [ HA.class' "outer-user-menu" ]
                                                   [ SIA.contextMenu $ show MiniSuggestionContextMenu
-                                                  , HE.div [ HA.class' { "user-menu mini menu-up": true, visible: model.toggleContextMenu == ShowMiniSuggestionContextMenu } ] $ profileContextMenu suggestion.id false
+                                                  , HE.div [ HA.class' { "user-menu mini menu-up": true, visible: model.toggleContextMenu == ShowMiniSuggestionContextMenu } ] $ profileContextMenu suggestion false
                                                   ]
                                           ]
                                   ]

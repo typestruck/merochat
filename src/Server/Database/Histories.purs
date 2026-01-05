@@ -6,6 +6,7 @@ import Data.DateTime (DateTime)
 import Data.Maybe (Maybe)
 import Data.Tuple.Nested (type (/\))
 import Server.Database.Users (UsersTable)
+import Shared.Im.Types (Favorited)
 import Type.Proxy (Proxy(..))
 
 type Histories =
@@ -14,8 +15,8 @@ type Histories =
       , recipient ∷ Column Int (ForeignKey "id" UsersTable)
       , first_message_date ∷ Column DateTime Default
       , last_message_date ∷ Column DateTime Default
-      , sender_archived ∷ Column Boolean Default
       , recipient_archived ∷ Column Boolean Default
+      , favorite :: Column Favorited Default
       , sender_deleted_to ∷ Maybe Int
       , recipient_deleted_to ∷ Maybe Int
       )
@@ -37,3 +38,6 @@ _sender_deleted_to = Proxy
 
 _recipient_deleted_to ∷ Proxy "recipient_deleted_to"
 _recipient_deleted_to = Proxy
+
+_favorite ∷ Proxy "favorite"
+_favorite = Proxy

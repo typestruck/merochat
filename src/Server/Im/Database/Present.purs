@@ -25,12 +25,13 @@ import Server.Database as SD
 import Server.Database.Asks (_answerer, _totalAsks, asks)
 import Server.Database.CompleteProfiles (_completed, _completer, complete_profiles)
 import Server.Database.Functions (date_part_age)
+import Server.Database.Histories (_favorite)
 import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _moderated, _named, moderated_profile_fields)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
 import Server.Effect (ServerEffect)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
-import Shared.Im.Types (HistoryMessage, MessageStatus(..))
+import Shared.Im.Types (HistoryMessage, MessageStatus(..), Favorited(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
@@ -78,6 +79,7 @@ presentUserContactFields =
       , u.posts_visibility as "postsVisibility"
       , u.asks_visibility
       , false as "isContact"
+      , (h.sender = @loggedUserId and h.favorite = @favoritedBySender or h.favorite > @favoritedBySender) as "favorite"
       , u.id
       , avatar
       , gender
@@ -137,6 +139,7 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       , contacts: Contacts
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
+      , favoritedBySender: FavoritedBySender
       , limit: n
       , dayAgo: ST.unsafeAdjustFromNow $ Hours (-24.0)
       , offset: skip
@@ -178,6 +181,7 @@ presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
       , messagesPerPage
+      , favoritedBySender: FavoritedBySender
       , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
       , offset
       }
@@ -205,6 +209,7 @@ presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery 
       , lastSentId
       , status: Read
       , contacts: Contacts
+      , favoritedBySender: FavoritedBySender
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
       }
@@ -237,6 +242,7 @@ presentUser loggedUserId = SD.single $ select userPresentationFields # from (joi
                   /\ (_chatBackgrounded # as chatBackground)
                   /\ (1 # as _bin)
                   /\ (false # as _isContact)
+                  /\ (false # as _favorite)
                   /\ (select (count _id # as _totalPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _totalPosts # limit (Proxy ∷ _ 1))
                   /\ (select (count _id # as _totalAsks) # from asks # wher (_answerer .=. u ... _id) # orderBy _totalAsks # limit (Proxy ∷ _ 1))
                   /\ (select (count _id # as _unseenPosts) # from posts # wher (_poster .=. u ... _id) # orderBy _unseenPosts # limit (Proxy ∷ _ 1))

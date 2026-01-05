@@ -4,10 +4,10 @@ import Prelude
 import Shared.Im.Types
 
 import Client.Dom as CCD
+import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
 import Client.Network (routes)
 import Client.Network as CCN
 import Client.Network as CCNT
-import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Data.Array ((!!))
 import Data.Array as DA
 import Data.Enum as DE
@@ -183,3 +183,8 @@ resumeSuggestionChat userId model =
       resume = case existing of
             Nothing → CCNT.retryableRequest (FetchContacts true) (DisplaySuggestionContact userId) $ routes.im.contact { query: { id: userId } }
             _ → pure <<< Just $ ResumeChat userId
+
+favorite :: Int → ImModel → NoMessages
+favorite userId model = model /\ [ fav ]
+      where fav = do
+                  pure Nothing

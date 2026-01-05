@@ -56,6 +56,7 @@ modals model =
             Confirmation cf → case cf of
                   ConfirmReport id → [ confirmReport id model.erroredFields ]
                   ConfirmLogout → [ confirmLogout ]
+                  ConfirmFavorite id name → [ confirmFavorite id name ]
                   ConfirmDeleteChat id → [ confirmDeleteChat id ]
                   ConfirmBlockUser id → [ confirmBlockUser id ]
                   ConfirmTerminationTemporaryUser → [ confirmTermination ]
@@ -103,6 +104,16 @@ confirmLogout =
             , HE.div [ HA.class' "buttons" ]
                     [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Cancel" ]
                     , HE.button [ HA.class' "green-button danger", HA.onClick $ Logout LoginPage ] [ HE.text "Logout" ]
+                    ]
+            ]
+
+confirmFavorite ∷  Int → String -> Html ImMessage
+confirmFavorite id name =
+      HE.div [ HA.class' "confirmation" ]
+            [ HE.span [ HA.class' "bold" ] [ HE.text $ "Mark " <> name <> " as favorite?" ]
+            , HE.div [ HA.class' "buttons" ]
+                    [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Cancel" ]
+                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ Favorite id ] [ HE.text "Mark" ]
                     ]
             ]
 
