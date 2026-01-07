@@ -187,4 +187,5 @@ resumeSuggestionChat userId model =
 favorite :: Int → ImModel → NoMessages
 favorite userId model = model /\ [ fav ]
       where fav = do
+                  void <<< CCNT.silentRequest $ routes.im.favorite { body : { userId }}
                   pure Nothing

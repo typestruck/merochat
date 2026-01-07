@@ -78,7 +78,7 @@ suggestBaseQuery loggedUserId filter =
                     /\ _bin
                     /\ (_chatBackground # as chatBackground)
                     /\ completeness
-                    /\ (((_sender .=. loggedUserId .&&. _favorite .=. FavoritedBySender) .||. _favorite .>. FavoritedBySender) # as _favorite)
+                    /\ (isNotNull _favorite .&&. ((_sender .=. loggedUserId .&&. _favorite .=. FavoritedBySender) .||. _favorite .>. FavoritedBySender) # as _favorite)
                     /\ ((isNotNull _sender .&&. ((_sender .=. loggedUserId .&&.  isNull _sender_deleted_to) .||. (_recipient .=. loggedUserId .&&.  isNull _recipient_deleted_to))) # as _isContact)
                     /\ ((select (count _id # as _totalPosts) # from (posts # as p) # wher (postsFilter loggedUserId) # orderBy _totalPosts # limit (Proxy ∷ _ 1)) # as _totalPosts)
                     /\ ((select (count _id # as _totalAsks) # from (asks # as a) # wher (_answerer .=. u ... _id .&&. isNotNull _answer) # orderBy _totalAsks # limit (Proxy ∷ _ 1)) # as _totalAsks)

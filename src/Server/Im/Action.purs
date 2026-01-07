@@ -61,7 +61,7 @@ im loggedUserId = do
             Just user → do
                   suggestions ← suggest loggedUserId 0 ThisWeek
                   contacts ← listContacts loggedUserId 0
-                  let shouldDonate = not (SC.coerce user.backer) && SD.daysDiff user.joined > 3
+                  let shouldDonate = not (SC.coerce user.backer) && (spy user.name (SD.daysDiff user.joined)) > 3
                   pure
                         { contacts: if shouldDonate then SBC.backerContact user.id : contacts else contacts
                         , suggestions: if shouldDonate then DA.snoc suggestions backerUser else suggestions
@@ -170,6 +170,10 @@ react loggedUserId messageId reaction = do
             SIDE.updateReaction loggedUserId messageId sanitized
       else
             RE.throw $ BadRequest { reason: "invalid reaction" }
+
+favorite ∷ Int → Int → ServerEffect Unit
+favorite loggedUserId userId  = do
+      pure unit
 
 deleteChat ∷ Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit
 deleteChat loggedUserId ids@{ userId } = do

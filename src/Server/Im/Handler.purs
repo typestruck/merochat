@@ -43,6 +43,11 @@ react routes = do
       SIA.react routes.guards.loggedUserId routes.body.id routes.body.reaction
       pure Empty
 
+favorite ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { userId ∷ Int } } → ServerEffect Empty
+favorite routes = do
+      SIA.favorite routes.guards.loggedUserId routes.body.userId
+      pure Empty
+
 block ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Empty
 block { guards: { loggedUserId }, body: { id } } = do
       SIA.blockUser loggedUserId id

@@ -67,14 +67,14 @@ suggestionProfile model =
       where
       notChatting = DM.isNothing model.chatting
 
-      emptySuggestions = HE.div [ HA.class' { "suggestion empty retry": true, hidden: DM.isJust model.chatting } ]
-            ( if model.suggestionsFrom == OnlineOnly then
-                    onlineOnlyFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
-              else
-                    SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
-            )
+      emptySuggestions = HE.div [ HA.class' "suggestion empty retry" ]
+            $
+                  if model.suggestionsFrom == OnlineOnly then
+                        onlineOnlyFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
+                  else
+                        SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
 
-      suggestionWarning = HE.div [ HA.class' { "suggestion": true, hidden: DM.isJust model.chatting } ] [ welcome model ]
+      suggestionWarning = HE.div [ HA.class' "suggestion" ] [ welcome model ]
 
 -- | Contact was deleted, made private or they blocked the logged user
 unavailable ∷ String → Html ImMessage
@@ -515,7 +515,6 @@ welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
                                   Contacts → warn "contacts only"
                                   _ →
                                         [ HE.text "Here are your newest chat suggestions"
-
                                         ]
               ]
       , HE.div [ HA.class' "back-filter" ]

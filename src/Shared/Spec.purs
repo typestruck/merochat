@@ -107,6 +107,11 @@ spec ∷
                                           GET "/"
                                                 { response ∷ Html
                                                 }
+                                  , favorite ∷
+                                          POST "/favorite"
+                                                { body ∷ { userId ∷ Int }
+                                                , response ∷ Empty
+                                                }
                                   , subscribe ∷
                                           POST "/subscribe"
                                                 { response ∷ Empty
