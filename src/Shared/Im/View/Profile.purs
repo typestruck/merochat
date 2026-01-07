@@ -31,6 +31,7 @@ import Shared.Im.Contact as SCN
 import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, home, nextArrow)
 import Shared.Im.Svg as SIA
+import Shared.Im.Svg as SIS
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Posts as SIVP
@@ -70,7 +71,7 @@ suggestionProfile model =
       emptySuggestions = HE.div [ HA.class' "suggestion empty retry" ]
             $
                   if model.suggestionsFrom == OnlineOnly then
-                        onlineOnlyFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
+                        suggestionsFilter model : (SIVR.retryForm "No users currently online :(" $ SpecialRequest NextSuggestion)
                   else
                         SIVR.retryForm "Could not find suggestions" $ SpecialRequest NextSuggestion
 
@@ -485,7 +486,7 @@ welcomeTemporary model = HE.div [ HA.class' "card-top-welcome-filter" ]
               ]
       , HE.div [ HA.class' "back-filter" ]
               [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
-              , onlineOnlyFilter model
+              , suggestionsFilter model
               ]
       ]
 
@@ -514,12 +515,12 @@ welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
                                   Nobody → warn "hidden"
                                   Contacts → warn "contacts only"
                                   _ →
-                                        [ HE.text "Here are your newest chat suggestions"
+                                        [
                                         ]
               ]
       , HE.div [ HA.class' "back-filter" ]
               [ SIA.arrow [ HA.class' "svg-back-profile hidden", HA.onClick $ ToggleInitialScreen true ]
-              , onlineOnlyFilter model
+              , suggestionsFilter model
               ]
       ]
 
@@ -530,11 +531,20 @@ welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
             , HE.text "to see new chat suggestions"
             ]
 
-onlineOnlyFilter ∷ ImModel → Html ImMessage
-onlineOnlyFilter model =
-      HE.div [ HA.class' { "online-only-filter": true, hidden: model.user.profileVisibility == Nobody } ]
-            [ HE.input [ HA.type' "checkbox", HA.checked (model.suggestionsFrom == OnlineOnly), HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
-            , HE.label [ HA.for "online-only", HA.class' "online-only-label" ] [ HE.text "Show only users online" ]
+suggestionsFilter ∷ ImModel → Html ImMessage
+suggestionsFilter model =
+      HE.div [ HA.class' { "suggestions-filter": true, hidden: model.user.profileVisibility == Nobody } ]
+            [ HE.text "Showing: new suggestions "
+            , SIS.gear [ HA.id $ show SuggestionsFilterMenu ]
+            , HE.div [ HA.class' { "user-menu mini": true, visible: model.toggleContextMenu == ShowSuggestionsFilterMenu } ]
+                    [ HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "New suggestions" ]
+                    , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Online users" ]
+                    , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your contacts" ]
+                    , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your favorites" ]
+                    ]
+
+            --HE.input [ HA.type' "checkbox", HA.checked (model.suggestionsFrom == OnlineOnly), HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
+            --, HE.label [ HA.for "online-only", HA.class' "online-only-label" ] [ HE.text "Show only users online" ]
             ]
 
 miniSuggestions ∷ ImModel → Html ImMessage

@@ -1065,10 +1065,16 @@ svg.toolbar-action {
     flex-direction: row;
 }
 
-.online-only-filter {
-    text-align: center;
+.suggestions-filter {
+    position: relative;
     font-size: 1em;
+    align-items: center;
+    display: flex;
     margin: 8px 0px;
+}
+
+.suggestions-filter svg {
+    margin-left: 8px;
 }
 
 .svg-55.emoji-access {
@@ -1076,7 +1082,7 @@ svg.toolbar-action {
     height: 30px;
 }
 
-.online-only-filter label,
+.suggestions-filter label,
 .chat-input-options label {
     display: inline;
 }
@@ -3094,6 +3100,15 @@ label {
     visibility: hidden;
 }
 
+.suggestion-showing {
+    background-color: var(--merochat-green);
+    color: var(--light-color);
+    border: 0;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 3px;
+}
+
 @media (max-width:1279px) {
     #im {
         display: flex;
@@ -3336,7 +3351,7 @@ label {
         width: 100%;
     }
 
-    .online-only-filter {
+    .suggestions-filter {
         align-self: center;
         flex-grow: 2;
     }
@@ -4065,7 +4080,7 @@ label {
         margin-top: 20px;
     }
 
-    .online-only-filter {
+    .suggestions-filter {
         margin-top: 5px
     }
 

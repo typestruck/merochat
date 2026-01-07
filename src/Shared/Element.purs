@@ -23,6 +23,7 @@ data ElementId
       | ImageFormCaption
       | FeedbackForm
       | PasswordConfirmationInput
+      | SuggestionsFilterMenu
       | Im
       | MiniChatInputSuggestion
       | LinkFormUrl
@@ -76,6 +77,7 @@ instance Show ElementId where
             ChatInput → "chat-input"
             ChatInputSuggestion → "chat-input-suggestion"
             ChatInputContact → "chat-input-contact"
+            SuggestionsFilterMenu → "suggestions-filter-menu"
             MiniChatInputSuggestion → "mini-chat-input-suggestion"
             ImageFormCaption → "image-form-caption"
             FeedbackForm → "feedback-form"

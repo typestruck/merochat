@@ -452,6 +452,7 @@ toggleUserContextMenu event model
               where
               toggle elementId parentId
                     | elementId == show SuggestionContextMenu || parentId == show SuggestionContextMenu = ShowSuggestionContextMenu
+                    | elementId == show SuggestionsFilterMenu || parentId == show SuggestionsFilterMenu = ShowSuggestionsFilterMenu
                     | elementId == show CompactProfileContextMenu || parentId == show CompactProfileContextMenu = ShowCompactProfileContextMenu
                     | elementId == show FullProfileContextMenu || parentId == show FullProfileContextMenu = ShowFullProfileContextMenu
                     | elementId == show MiniSuggestionContextMenu || parentId == show MiniSuggestionContextMenu = ShowMiniSuggestionContextMenu

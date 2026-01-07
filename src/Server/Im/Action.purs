@@ -61,7 +61,7 @@ im loggedUserId = do
             Just user → do
                   suggestions ← suggest loggedUserId 0 ThisWeek
                   contacts ← listContacts loggedUserId 0
-                  let shouldDonate = not (SC.coerce user.backer) && (spy user.name (SD.daysDiff user.joined)) > 3
+                  let shouldDonate = not (SC.coerce user.backer) && (SD.daysDiff user.joined) > 3
                   pure
                         { contacts: if shouldDonate then SBC.backerContact user.id : contacts else contacts
                         , suggestions: if shouldDonate then DA.snoc suggestions backerUser else suggestions

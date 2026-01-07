@@ -207,6 +207,7 @@ data ShowContextMenu
       | ShowCompactProfileContextMenu
       | ShowMiniSuggestionContextMenu
       | ShowFullProfileContextMenu
+      | ShowSuggestionsFilterMenu
       | ShowMessageContextMenu Int
 
 type Stats =
