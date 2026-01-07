@@ -169,10 +169,11 @@ byAvailability suggestions = DA.snoc (DA.filter ((backerId /= _) <<< _.id) $ DA.
                   a, s → s `compare` a
 
 -- | Switch to on or from online only suggestions
-toggleSuggestionsFromOnline ∷ ImModel → MoreMessages
-toggleSuggestionsFromOnline model = fetchMoreSuggestions model
-      { suggestionsFrom = if model.suggestionsFrom == OnlineOnly then ThisWeek else OnlineOnly
+toggleSuggestionsFromOnline ∷ Boolean -> ImModel → MoreMessages
+toggleSuggestionsFromOnline onlineOnly model = fetchMoreSuggestions model
+      { suggestionsFrom = if onlineOnly then OnlineOnly else ThisWeek
       , suggestionsPage = 0
+      , toggleContextMenu = HideContextMenu
       }
 
 resumeSuggestionChat ∷ Int → ImModel → NextMessage

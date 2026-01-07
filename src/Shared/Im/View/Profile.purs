@@ -27,7 +27,6 @@ import Shared.Badge (Badge)
 import Shared.Badge as SB
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Element (ElementId(..))
-import Shared.Im.Contact as SCN
 import Shared.Im.Contact as SIC
 import Shared.Im.Svg (backArrow, home, nextArrow)
 import Shared.Im.Svg as SIA
@@ -534,18 +533,19 @@ welcome model = HE.div [ HA.class' "card-top-welcome-filter" ]
 suggestionsFilter ∷ ImModel → Html ImMessage
 suggestionsFilter model =
       HE.div [ HA.class' { "suggestions-filter": true, hidden: model.user.profileVisibility == Nobody } ]
-            [ HE.text "Showing: new suggestions "
+            [ HE.text $ "Showing: " <> filterName
             , SIS.gear [ HA.id $ show SuggestionsFilterMenu ]
             , HE.div [ HA.class' { "user-menu mini": true, visible: model.toggleContextMenu == ShowSuggestionsFilterMenu } ]
-                    [ HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "New suggestions" ]
-                    , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Online users" ]
-                    , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your contacts" ]
-                    , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your favorites" ]
+                    [ HE.div [ HA.class' {"user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom /= OnlineOnly }, HA.onClick $ ToggleSuggestionsFromOnline false ] [ HE.text "New suggestions" ]
+                    , HE.div [ HA.class' {"user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == OnlineOnly}, HA.onClick $ ToggleSuggestionsFromOnline true ] [ HE.text "Online users" ]
+                    --, HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your contacts" ]
+                   -- , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your favorites" ]
                     ]
-
-            --HE.input [ HA.type' "checkbox", HA.checked (model.suggestionsFrom == OnlineOnly), HA.id "online-only", HA.onClick ToggleSuggestionsFromOnline ]
-            --, HE.label [ HA.for "online-only", HA.class' "online-only-label" ] [ HE.text "Show only users online" ]
             ]
+        where
+        filterName
+                | model.suggestionsFrom == OnlineOnly = "Online users"
+                | otherwise = "New Suggestions"
 
 miniSuggestions ∷ ImModel → Html ImMessage
 miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]

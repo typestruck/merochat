@@ -205,7 +205,7 @@ update st model =
             SpecialRequest NextSuggestion → CIS.nextSuggestion model
             SpecialRequest (BlockUser id) → blockUser webSocket id model
             DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
-            ToggleSuggestionsFromOnline → CIS.toggleSuggestionsFromOnline model
+            ToggleSuggestionsFromOnline onlineOnly → CIS.toggleSuggestionsFromOnline onlineOnly model
             ResumeSuggestionChat userId → CIS.resumeSuggestionChat userId model
 
             --user menu

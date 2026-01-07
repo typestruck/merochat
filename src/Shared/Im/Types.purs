@@ -287,7 +287,7 @@ data ImMessage
       | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
-      | ToggleSuggestionsFromOnline
+      | ToggleSuggestionsFromOnline Boolean
       | ResumeSuggestionChat Int
       | ToggleSuggestionChatInput Int
 
