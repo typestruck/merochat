@@ -536,16 +536,17 @@ suggestionsFilter model =
             [ HE.text $ "Showing: " <> filterName
             , SIS.gear [ HA.id $ show SuggestionsFilterMenu ]
             , HE.div [ HA.class' { "user-menu mini": true, visible: model.toggleContextMenu == ShowSuggestionsFilterMenu } ]
-                    [ HE.div [ HA.class' {"user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom /= OnlineOnly }, HA.onClick $ ToggleSuggestionsFromOnline false ] [ HE.text "New suggestions" ]
-                    , HE.div [ HA.class' {"user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == OnlineOnly}, HA.onClick $ ToggleSuggestionsFromOnline true ] [ HE.text "Online users" ]
-                    --, HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your contacts" ]
-                   -- , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your favorites" ]
+                    [ HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= FromContacts }, HA.onClick $ ToggleSuggestionsFrom ThisWeek ] [ HE.text "New suggestions" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == OnlineOnly }, HA.onClick $ ToggleSuggestionsFrom OnlineOnly ] [ HE.text "Online users" ]
+                    , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, "filter-selected": model.suggestionsFrom == FromContacts }, HA.onClick $ ToggleSuggestionsFrom FromContacts ] [ HE.text "Contacts" ]
+                    -- , HE.div [ HA.class' "user-menu-item menu-item-heading" ] [ HE.text "Your favorites" ]
                     ]
             ]
-        where
-        filterName
-                | model.suggestionsFrom == OnlineOnly = "Online users"
-                | otherwise = "New Suggestions"
+      where
+      filterName
+            | model.suggestionsFrom == OnlineOnly = "online users"
+            | model.suggestionsFrom == FromContacts = "contacts"
+            | otherwise = "new suggestions"
 
 miniSuggestions ∷ ImModel → Html ImMessage
 miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]

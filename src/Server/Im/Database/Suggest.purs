@@ -24,7 +24,7 @@ import Server.Database as SD
 import Server.Database.Blocks (_blocked, _blocker, blocks)
 import Server.Database.Countries (countries)
 import Server.Database.Functions (date_part_age, datetime_part_age, insert_history, utc_now)
-import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories, _favorite)
+import Server.Database.Histories (_first_message_date, _recipient_deleted_to, _sender_deleted_to, histories, _favorite, _last_message_date)
 import Server.Database.KarmaHistories (_amount, _target, karma_histories)
 import Server.Database.KarmaLeaderboard (_current_karma, _karma, _karmaPosition, _position, _ranker, karma_leaderboard)
 import Server.Database.Languages (_languages, languages)
@@ -57,12 +57,14 @@ suggest loggedUserId skip =
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
             All → SD.query $ suggestAllQuery loggedUserId skip baseFilter
+            FromContacts → SD.query $ suggestContacts loggedUserId skip contactsFilter
 
       where
       onlineFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Minutes (-1.0))
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))
+      contactsFilter = baseFilter .&&. isNotNull _favorite
 
       baseFilter = u ... _id .<>. loggedUserId .&&. (u ... _id .<>. 6761) .&&. visibilityFilter .&&. blockedFilter
       visibilityFilter =
@@ -117,5 +119,11 @@ suggestAllQuery loggedUserId skip filter = suggestBaseQuery loggedUserId filter 
 suggestOnlineQuery loggedUserId skip filter =
       suggestBaseQuery loggedUserId filter
             # orderBy ((_sender # desc) /\ _bin /\ (l ... _date # desc))
+            # limit (Proxy ∷ Proxy 10)
+            # offset skip
+
+suggestContacts loggedUserId skip filter =
+      suggestBaseQuery loggedUserId filter
+            # orderBy ((_last_message_date # desc) /\ _favorite)
             # limit (Proxy ∷ Proxy 10)
             # offset skip

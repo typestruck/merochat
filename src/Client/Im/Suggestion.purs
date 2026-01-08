@@ -14,19 +14,16 @@ import Data.Enum as DE
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect.Class as EC
 import Flame as F
-import Server.Database.LastSeen (LastSeen)
 import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.Element (ElementId(..))
 import Shared.Im.Contact as SIC
-import Shared.Modal (Modal(..), ScreenModal(..), SpecialModal(..))
+import Shared.Modal (Modal(..))
 import Shared.Options.Page (suggestionsPerPage)
 import Shared.Unsafe as SU
-import Shared.User (ProfileTab(..))
 import Web.DOM.Element as WDE
 
 -- | Display next suggestion card
@@ -108,7 +105,7 @@ displayMoreSuggestions suggestions model =
       lowQualityUsersBin = 5
       lowQualityUsersIn = DA.length <<< DA.filter ((_ >= lowQualityUsersBin) <<< _.bin)
       suggestionsFrom
-            | model.suggestionsFrom /= OnlineOnly && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
+            | model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= FromContacts && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
             | otherwise = model.suggestionsFrom
 
       scrollToTop = do
@@ -168,10 +165,9 @@ byAvailability suggestions = DA.snoc (DA.filter ((backerId /= _) <<< _.id) $ DA.
                   LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → anotherDt `compare` dt
                   a, s → s `compare` a
 
--- | Switch to on or from online only suggestions
-toggleSuggestionsFromOnline ∷ Boolean -> ImModel → MoreMessages
-toggleSuggestionsFromOnline onlineOnly model = fetchMoreSuggestions model
-      { suggestionsFrom = if onlineOnly then OnlineOnly else ThisWeek
+toggleSuggestionsFrom ∷ SuggestionsFrom -> ImModel → MoreMessages
+toggleSuggestionsFrom from model = fetchMoreSuggestions model
+      { suggestionsFrom = from
       , suggestionsPage = 0
       , toggleContextMenu = HideContextMenu
       }

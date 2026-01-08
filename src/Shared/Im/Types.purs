@@ -287,7 +287,7 @@ data ImMessage
       | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
-      | ToggleSuggestionsFromOnline Boolean
+      | ToggleSuggestionsFrom SuggestionsFrom
       | ResumeSuggestionChat Int
       | ToggleSuggestionChatInput Int
 
@@ -459,7 +459,13 @@ data MessageError = UserUnavailable | InvalidMessage
 
 data FocusEvent = VisibilityChange | FocusBlur
 
-data SuggestionsFrom = ThisWeek | LastTwoWeeks | LastMonth | All | OnlineOnly
+data SuggestionsFrom
+      = ThisWeek
+      | LastTwoWeeks
+      | LastMonth
+      | All
+      | OnlineOnly
+      | FromContacts
 
 instance EncodeQueryParam SuggestionsFrom where
       encodeQueryParam = Just <<< show <<< DE.fromEnum
@@ -487,7 +493,7 @@ derive instance Ord SuggestionsFrom
 
 instance Bounded SuggestionsFrom where
       bottom = ThisWeek
-      top = All
+      top = FromContacts
 
 instance Bounded Favorited where
       bottom = NotFavorited
@@ -523,12 +529,14 @@ instance BoundedEnum SuggestionsFrom where
             LastTwoWeeks → 2
             LastMonth → 3
             All → 4
+            FromContacts -> 5
       toEnum = case _ of
             0 → Just OnlineOnly
             1 → Just ThisWeek
             2 → Just LastTwoWeeks
             3 → Just LastMonth
             4 → Just All
+            5 -> Just FromContacts
             _ → Nothing
 
 instance BoundedEnum MessageStatus where
@@ -583,13 +591,15 @@ instance Enum SuggestionsFrom where
             ThisWeek → Just LastTwoWeeks
             LastTwoWeeks → Just LastMonth
             LastMonth → Just All
-            All → Nothing
+            All → Just FromContacts
+            FromContacts -> Nothing
       pred = case _ of
             OnlineOnly → Nothing
             ThisWeek → Just OnlineOnly
             LastTwoWeeks → Just ThisWeek
             LastMonth → Just LastTwoWeeks
             All → Just LastMonth
+            FromContacts -> Just All
 
 instance Enum ReportReason where
       succ = case _ of
