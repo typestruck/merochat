@@ -105,7 +105,7 @@ displayMoreSuggestions suggestions model =
       lowQualityUsersBin = 5
       lowQualityUsersIn = DA.length <<< DA.filter ((_ >= lowQualityUsersBin) <<< _.bin)
       suggestionsFrom
-            | model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= FromContacts && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
+            | model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= ContactsOnly && model.suggestionsFrom /= FavoritesOnly && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
             | otherwise = model.suggestionsFrom
 
       scrollToTop = do

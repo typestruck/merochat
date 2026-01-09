@@ -57,7 +57,8 @@ suggest loggedUserId skip =
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
             All → SD.query $ suggestAllQuery loggedUserId skip baseFilter
-            FromContacts → SD.query $ suggestContacts loggedUserId skip contactsFilter
+            ContactsOnly → SD.query $ suggestContacts loggedUserId skip contactsFilter
+            FavoritesOnly → SD.query $ suggestContacts loggedUserId skip favoritesFilter
 
       where
       onlineFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Minutes (-1.0))
@@ -65,6 +66,7 @@ suggest loggedUserId skip =
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))
       contactsFilter = baseFilter .&&. isNotNull _favorite
+      favoritesFilter = baseFilter .&&. isNotNull _favorite .&&. ((_sender .=. loggedUserId .&&. _favorite .=. FavoritedBySender) .||. (_recipient .=. loggedUserId .&&. _favorite .=. FavoritedByRecipient) .||. _favorite .=. FavoritedByBoth)
 
       baseFilter = u ... _id .<>. loggedUserId .&&. (u ... _id .<>. 6761) .&&. visibilityFilter .&&. blockedFilter
       visibilityFilter =
@@ -80,7 +82,7 @@ suggestBaseQuery loggedUserId filter =
                     /\ _bin
                     /\ (_chatBackground # as chatBackground)
                     /\ completeness
-                    /\ (isNotNull _favorite .&&. ((_sender .=. loggedUserId .&&. _favorite .=. FavoritedBySender) .||. _favorite .>. FavoritedBySender) # as _favorite)
+                    /\ (isNotNull _favorite .&&. ((_sender .=. loggedUserId .&&. _favorite .=. FavoritedBySender) .||. (_recipient .=. loggedUserId .&&. _favorite .=. FavoritedByRecipient) .||. _favorite .=. FavoritedByBoth) # as _favorite)
                     /\ ((isNotNull _sender .&&. ((_sender .=. loggedUserId .&&.  isNull _sender_deleted_to) .||. (_recipient .=. loggedUserId .&&.  isNull _recipient_deleted_to))) # as _isContact)
                     /\ ((select (count _id # as _totalPosts) # from (posts # as p) # wher (postsFilter loggedUserId) # orderBy _totalPosts # limit (Proxy ∷ _ 1)) # as _totalPosts)
                     /\ ((select (count _id # as _totalAsks) # from (asks # as a) # wher (_answerer .=. u ... _id .&&. isNotNull _answer) # orderBy _totalAsks # limit (Proxy ∷ _ 1)) # as _totalAsks)
@@ -124,6 +126,7 @@ suggestOnlineQuery loggedUserId skip filter =
 
 suggestContacts loggedUserId skip filter =
       suggestBaseQuery loggedUserId filter
-            # orderBy ((_last_message_date # desc) /\ _favorite)
+            # orderBy _name
             # limit (Proxy ∷ Proxy 10)
             # offset skip
+

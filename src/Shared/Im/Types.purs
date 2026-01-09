@@ -465,7 +465,8 @@ data SuggestionsFrom
       | LastMonth
       | All
       | OnlineOnly
-      | FromContacts
+      | ContactsOnly
+      | FavoritesOnly
 
 instance EncodeQueryParam SuggestionsFrom where
       encodeQueryParam = Just <<< show <<< DE.fromEnum
@@ -493,7 +494,7 @@ derive instance Ord SuggestionsFrom
 
 instance Bounded SuggestionsFrom where
       bottom = ThisWeek
-      top = FromContacts
+      top = FavoritesOnly
 
 instance Bounded Favorited where
       bottom = NotFavorited
@@ -529,14 +530,16 @@ instance BoundedEnum SuggestionsFrom where
             LastTwoWeeks → 2
             LastMonth → 3
             All → 4
-            FromContacts -> 5
+            ContactsOnly -> 5
+            FavoritesOnly -> 6
       toEnum = case _ of
             0 → Just OnlineOnly
             1 → Just ThisWeek
             2 → Just LastTwoWeeks
             3 → Just LastMonth
             4 → Just All
-            5 -> Just FromContacts
+            5 -> Just ContactsOnly
+            6 -> Just FavoritesOnly
             _ → Nothing
 
 instance BoundedEnum MessageStatus where
@@ -591,15 +594,17 @@ instance Enum SuggestionsFrom where
             ThisWeek → Just LastTwoWeeks
             LastTwoWeeks → Just LastMonth
             LastMonth → Just All
-            All → Just FromContacts
-            FromContacts -> Nothing
+            All → Just ContactsOnly
+            ContactsOnly -> Just FavoritesOnly
+            FavoritesOnly -> Nothing
       pred = case _ of
             OnlineOnly → Nothing
             ThisWeek → Just OnlineOnly
             LastTwoWeeks → Just ThisWeek
             LastMonth → Just LastTwoWeeks
             All → Just LastMonth
-            FromContacts -> Just All
+            ContactsOnly -> Just All
+            FavoritesOnly -> Just ContactsOnly
 
 instance Enum ReportReason where
       succ = case _ of
