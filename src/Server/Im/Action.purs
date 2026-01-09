@@ -9,7 +9,7 @@ import Shared.Privilege
 import Data.Array ((:))
 import Data.Array as DA
 import Data.Array.NonEmpty as DAN
-import Data.DateTime (DateTime(..))
+import Data.DateTime (DateTime)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
@@ -19,31 +19,30 @@ import Data.Set as DST
 import Data.String as DS
 import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
-import Effect.Aff (Milliseconds(..), delay)
 import Environment (production)
-import Run (liftAff)
 import Run.Except as RE
 import Safe.Coerce as SC
 import Server.AccountValidation as SA
+import Server.Database as SDB
 import Server.Database.Types (Checked(..))
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Email (Email(..))
 import Server.Email as SE
 import Server.File as SF
+import Server.Generate as ST
 import Server.Im.Database.Changelog as SIDC
 import Server.Im.Database.Execute as SIDE
+import Server.Im.Database.Favorite as SIDF
 import Server.Im.Database.Flat (FlatContactHistoryMessage, fromFlatContact, fromFlatMessage)
 import Server.Im.Database.Flat as SIF
 import Server.Im.Database.Permission as SIDPP
 import Server.Im.Database.Present as SIDP
 import Server.Im.Database.Suggest as SIDS
 import Server.Sanitize as SS
-import Server.Generate as ST
 import Server.Wheel as SW
 import Shared.Backer.Contact (backerUser)
 import Shared.Backer.Contact as SBC
 import Shared.Changelog (Changelog)
-import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SD
 import Shared.Markdown (Token(..))
 import Shared.Markdown as SM
@@ -172,7 +171,33 @@ react loggedUserId messageId reaction = do
             RE.throw $ BadRequest { reason: "invalid reaction" }
 
 favorite ∷ Int → Int → ServerEffect Unit
-favorite loggedUserId userId  = do
+favorite loggedUserId userId = do
+      SDB.withTransaction $ \connection → do
+            history ← SIDF.fetchHistory connection loggedUserId userId
+            case history of
+                  Just found → do
+                        let
+                              favorited =
+                                    if found.sender == loggedUserId then
+                                          if found.favorite == NotFavorited then
+                                                FavoritedBySender
+                                          else if found.favorite == FavoritedBySender then
+                                                NotFavorited
+                                          else if found.favorite == FavoritedByRecipient then
+                                                FavoritedByBoth
+                                          else
+                                                FavoritedByRecipient
+                                    else if found.favorite == NotFavorited then
+                                          FavoritedByRecipient
+                                    else if found.favorite == FavoritedByRecipient then
+                                          NotFavorited
+                                    else if found.favorite == FavoritedBySender then
+                                          FavoritedByBoth
+                                    else
+                                          FavoritedBySender
+                        SIDF.updateFavorite connection found.id favorited
+                        pure unit
+                  Nothing → pure unit
       pure unit
 
 deleteChat ∷ Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit

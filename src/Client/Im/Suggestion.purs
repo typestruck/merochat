@@ -165,7 +165,7 @@ byAvailability suggestions = DA.snoc (DA.filter ((backerId /= _) <<< _.id) $ DA.
                   LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → anotherDt `compare` dt
                   a, s → s `compare` a
 
-toggleSuggestionsFrom ∷ SuggestionsFrom -> ImModel → MoreMessages
+toggleSuggestionsFrom ∷ SuggestionsFrom → ImModel → MoreMessages
 toggleSuggestionsFrom from model = fetchMoreSuggestions model
       { suggestionsFrom = from
       , suggestionsPage = 0
@@ -181,8 +181,18 @@ resumeSuggestionChat userId model =
             Nothing → CCNT.retryableRequest (FetchContacts true) (DisplaySuggestionContact userId) $ routes.im.contact { query: { id: userId } }
             _ → pure <<< Just $ ResumeChat userId
 
-favorite :: Int → ImModel → NoMessages
-favorite userId model = model /\ [ fav ]
-      where fav = do
-                  void <<< CCNT.silentRequest $ routes.im.favorite { body : { userId }}
-                  pure Nothing
+favorite ∷ Int → ImModel → NoMessages
+favorite userId model = model { modal = HideModal, contacts = map toggleContact model.contacts, suggestions = map toggleSuggestion model.suggestions } /\ [ fav ]
+      where
+      fav = do
+            void <<< CCNT.silentRequest $ routes.im.favorite { body: { userId } }
+            pure Nothing
+
+      toggleSuggestion suggestion
+            | suggestion.id == userId = suggestion { favorite = not suggestion.favorite }
+            | otherwise = suggestion
+      toggleContact contact
+            | contact.user.id == userId = contact
+                    { user = contact.user { favorite = not contact.user.favorite }
+                    }
+            | otherwise = contact

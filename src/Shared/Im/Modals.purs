@@ -56,7 +56,7 @@ modals model =
             Confirmation cf → case cf of
                   ConfirmReport id → [ confirmReport id model.erroredFields ]
                   ConfirmLogout → [ confirmLogout ]
-                  ConfirmFavorite id name → [ confirmFavorite id name ]
+                  ConfirmFavorite id name alreadyFavorite → [ confirmFavorite id name alreadyFavorite ]
                   ConfirmDeleteChat id → [ confirmDeleteChat id ]
                   ConfirmBlockUser id → [ confirmBlockUser id ]
                   ConfirmTerminationTemporaryUser → [ confirmTermination ]
@@ -107,15 +107,19 @@ confirmLogout =
                     ]
             ]
 
-confirmFavorite ∷  Int → String -> Html ImMessage
-confirmFavorite id name =
+confirmFavorite ∷ Int → String → Boolean → Html ImMessage
+confirmFavorite id name alreadyFavorite =
       HE.div [ HA.class' "confirmation" ]
-            [ HE.span [ HA.class' "bold" ] [ HE.text $ "Mark " <> name <> " as favorite?" ]
+            [ HE.span [ HA.class' "bold" ] [ HE.text $ verb <> " " <> name <> "?" ]
             , HE.div [ HA.class' "buttons" ]
                     [ HE.button [ HA.class' "cancel", HA.onClick <<< SpecialRequest $ ToggleModal HideModal ] [ HE.text "Cancel" ]
-                    , HE.button [ HA.class' "green-button danger", HA.onClick <<< SpecialRequest $ Favorite id ] [ HE.text "Mark" ]
+                    , HE.button [ HA.class' { "green-button": true, danger: alreadyFavorite }, HA.onClick <<< SpecialRequest $ Favorite id ] [ HE.text verb ]
                     ]
             ]
+      where
+      verb
+            | alreadyFavorite = "Unfavorite"
+            | otherwise = "Favorite"
 
 confirmDeleteChat ∷ Int → Html ImMessage
 confirmDeleteChat id =

@@ -471,7 +471,7 @@ badges source = map (it <<< SB.badgeFor) source
 
 profileContextMenu ∷ User → Boolean → Array (Html ImMessage)
 profileContextMenu user delete =
-      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmFavorite user.id user.name ] [ HE.text $ if user.favorite then "Remove from favorites" else "Mark as favorite" ]
+      [ HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmFavorite user.id user.name user.favorite ] [ HE.text $ if user.favorite then "Unfavorite" else "Favorite" ]
       , HE.div [ HA.class' { "user-menu-item menu-item-heading": true, hidden: not delete }, HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmDeleteChat user.id ] [ HE.text "Delete chat" ]
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmBlockUser user.id ] [ HE.text "Block" ]
       , HE.div [ HA.class' "user-menu-item menu-item-heading", HA.onClick <<< SpecialRequest <<< ToggleModal <<< Confirmation $ ConfirmReport user.id ] [ HE.text "Report" ]
