@@ -172,34 +172,42 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
                  WHERE status < @status OR n <= @initialMessages
                  ORDER BY date) s"""
 
---refactor: this can use droplet
-presentSingleContact ∷ Int → Int → Int → ServerEffect (Array FlatContactHistoryMessage)
-presentSingleContact loggedUserId userId offset = SD.unsafeQuery query
+presentSingleContact ∷ Int → Int → ServerEffect (Array FlatContact)
+presentSingleContact loggedUserId userId  = SD.unsafeQuery query
       { loggedUserId
       , userId
       , contacts: Contacts
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
-      , messagesPerPage
       , favoritedBySender: FavoritedBySender
       , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
-      , offset
       }
       where
-      query = "SELECT * from (SELECT" <> presentContactFields <>
+      query = "SELECT" <> presentUserContactFields <>
             """from users u
       JOIN karma_leaderboard k ON u.id = k.ranker
       JOIN histories h ON u.id = h.sender AND h.recipient = @loggedUserId OR u.id = h.recipient AND h.sender = @loggedUserId
-      JOIN messages s ON s.sender = h.sender AND s.recipient = h.recipient OR s.sender = h.recipient AND s.recipient = h.sender
       LEFT JOIN last_seen ls ON u.id = ls.who
 WHERE visibility <= @contacts
       AND u.id = @userId
-      AND NOT (h.sender = @loggedUserId AND h.sender_deleted_to IS NOT NULL AND s.id <= h.sender_deleted_to OR
-               h.recipient = @loggedUserId AND h.recipient_deleted_to IS NOT NULL AND s.id <= h.recipient_deleted_to)
-      AND NOT EXISTS (SELECT 1 from blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)
-ORDER BY s.date DESC
-LIMIT @messagesPerPage
-OFFSET @offset) m ORDER BY m.date"""
+      AND NOT EXISTS (SELECT 1 from blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)"""
+
+presentSingleContactHistory ∷ Int → Int  -> Int → ServerEffect (Array (Record (FlatMessage)))
+presentSingleContactHistory loggedUserId userId  offset = SD.unsafeQuery query
+      { loggedUserId
+      , userId
+      , messagesPerPage
+      , offset
+      }
+      where
+      query = "SELECT" <> presentMessageFields <>
+            """from messages s JOIN histories h on h.sender = @loggedUserId AND h.recipient = @userId OR h.sender = @userId AND h.recipient = @loggedUserId
+                  WHERE  (s.sender = @loggedUserId AND s.recipient = @userId OR s.sender = @userId AND s.recipient = @loggedUserId) AND
+                  (h.sender = @loggedUserId AND h.sender_deleted_to IS NULL OR s.id > h.sender_deleted_to OR
+                   h.recipient = @loggedUserId AND h.recipient_deleted_to IS NULL OR s.id > h.recipient_deleted_to)
+                  ORDER BY s.date DESC
+                  LIMIT @messagesPerPage
+                  OFFSET @offset"""
 
 presentMissedContacts ∷ Int → DateTime → Maybe Int → ServerEffect (Array FlatContactHistoryMessage)
 presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery query

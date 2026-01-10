@@ -74,10 +74,14 @@ listContacts ∷ Int → Int → ServerEffect (Array Contact)
 listContacts loggedUserId skip = presentContacts <$> SIDP.presentContacts loggedUserId skip
 
 listSingleContact ∷ Int → Int → ServerEffect (Array Contact)
-listSingleContact loggedUserId userId = presentContacts <$> SIDP.presentSingleContact loggedUserId userId 0
+listSingleContact loggedUserId userId = do
+      rows ← SIDP.presentSingleContact loggedUserId userId
+      --separated to account for deleted messages
+      history ← SIDP.presentSingleContactHistory loggedUserId userId 0
+      pure $ map (\r → (fromFlatContact r) { history = map fromFlatMessage history }) rows
 
 resumeChatHistory ∷ Int → Int → Int → ServerEffect (Array HistoryMessage)
-resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SIDP.presentSingleContact loggedUserId userId skip
+resumeChatHistory loggedUserId userId skip = map fromFlatMessage <$> SIDP.presentSingleContactHistory loggedUserId userId skip
 
 listMissedContacts ∷ Int → DateTime → Maybe Int → ServerEffect (Array Contact)
 listMissedContacts loggedUserId dt lastSentId = presentContacts <$> SIDP.presentMissedContacts loggedUserId dt lastSentId
@@ -86,7 +90,6 @@ presentContacts ∷ Array FlatContactHistoryMessage → Array Contact
 presentContacts = map chatHistory <<< DA.groupBy sameContact
       where
       sameContact a b = a.id == b.id
-
       chatHistory records = (fromFlatContact $ DAN.head records) { history = fromFlatMessage <$> DAN.toArray records }
 
 subscribe ∷ Int → ServerEffect Unit

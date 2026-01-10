@@ -68,7 +68,9 @@ type FlatC r = FlatFields
 
 type FlatContact = FlatC ()
 
-type FlatContactHistoryMessage = FlatC (HM (messageId ∷ Int))
+type FlatMessage = HM (messageId ∷ Int)
+
+type FlatContactHistoryMessage = FlatC (FlatMessage)
 
 fromFlatContact ∷ ∀ r. FlatC r → Contact
 fromFlatContact fc =
@@ -125,7 +127,7 @@ fromFlatUser fc =
       , age: DI.ceil <$> fc.age
       }
 
-fromFlatMessage ∷ FlatContactHistoryMessage → HistoryMessage
+fromFlatMessage ∷ _ → HistoryMessage
 fromFlatMessage fm =
       { id: fm.messageId
       , sender: fm.sender
