@@ -50,6 +50,7 @@ import Shared.Options.Reaction (maxReactionCharacters)
 import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
+import Shared.Unsafe as SU
 
 im ∷ Int → ServerEffect _
 im loggedUserId = do
@@ -200,7 +201,10 @@ favorite loggedUserId userId = do
                                           FavoritedBySender
                         SIDF.updateFavorite connection found.id favorited
                         pure unit
-                  Nothing → pure unit
+                  Nothing → do
+                        SIDF.createHistory connection loggedUserId userId
+                        newHistory ← SIDF.fetchHistory connection loggedUserId userId
+                        SIDF.updateFavorite connection (SU.fromJust newHistory).id FavoritedBySender
       pure unit
 
 deleteChat ∷ Int → { userId ∷ Int, messageId ∷ Int } → ServerEffect Unit

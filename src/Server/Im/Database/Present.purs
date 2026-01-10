@@ -29,7 +29,6 @@ import Server.Database.Histories (_favorite)
 import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _moderated, _named, moderated_profile_fields)
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
 import Server.Effect (ServerEffect)
-import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Im.Types (HistoryMessage, MessageStatus(..), Favorited(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
