@@ -200,14 +200,14 @@ presentSingleContactHistory loggedUserId userId  offset = SD.unsafeQuery query
       , offset
       }
       where
-      query = "SELECT" <> presentMessageFields <>
+      query = "SELECT * FROM (SELECT" <> presentMessageFields <>
             """from messages s JOIN histories h on h.sender = @loggedUserId AND h.recipient = @userId OR h.sender = @userId AND h.recipient = @loggedUserId
                   WHERE  (s.sender = @loggedUserId AND s.recipient = @userId OR s.sender = @userId AND s.recipient = @loggedUserId) AND
                   (h.sender = @loggedUserId AND h.sender_deleted_to IS NULL OR s.id > h.sender_deleted_to OR
                    h.recipient = @loggedUserId AND h.recipient_deleted_to IS NULL OR s.id > h.recipient_deleted_to)
-                  ORDER BY s.date DESC
+                  ORDER BY s.date desc
                   LIMIT @messagesPerPage
-                  OFFSET @offset"""
+                  OFFSET @offset) m ORDER BY m.date """
 
 presentMissedContacts ∷ Int → DateTime → Maybe Int → ServerEffect (Array FlatContactHistoryMessage)
 presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery query
