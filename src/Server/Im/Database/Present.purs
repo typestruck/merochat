@@ -30,7 +30,7 @@ import Server.Database.ModeratedProfileFields (_avatared, _chatBackgrounded, _mo
 import Server.Database.Posts (_poster, _totalPosts, _unseenPosts, posts)
 import Server.Effect (ServerEffect)
 import Shared.DateTime as ST
-import Shared.Im.Types (HistoryMessage, MessageStatus(..), Favorited(..))
+import Shared.Im.Types (Favorited(..), HistoryMessage, MessageStatus(..))
 import Shared.Options.Page (contactsPerPage, initialMessagesPerPage, messagesPerPage)
 import Shared.User (ProfileVisibility(..))
 import Type.Proxy (Proxy(..))
@@ -78,7 +78,7 @@ presentUserContactFields =
       , u.posts_visibility as "postsVisibility"
       , u.asks_visibility
       , false as "isContact"
-      , (h.sender = @loggedUserId and h.favorite = @favoritedBySender or h.favorite > @favoritedBySender) as "favorite"
+      , favorite is not null and ((h.sender = @loggedUserId and favorite = @favoritedBySender) or (h.recipient = @loggedUserId and favorite = @favoritedByRecipient) or favorite = @favoritedByBoth) "favorite"
       , u.id
       , avatar
       , gender
@@ -139,6 +139,8 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
       , favoritedBySender: FavoritedBySender
+      , favoritedByRecipient: FavoritedByRecipient
+      , favoritedByBoth : FavoritedByBoth
       , limit: n
       , dayAgo: ST.unsafeAdjustFromNow $ Hours (-24.0)
       , offset: skip
@@ -179,6 +181,8 @@ presentSingleContact loggedUserId userId  = SD.unsafeQuery query
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
       , favoritedBySender: FavoritedBySender
+      , favoritedByRecipient: FavoritedByRecipient
+      , favoritedByBoth : FavoritedByBoth
       , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
       }
       where
@@ -217,6 +221,8 @@ presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery 
       , status: Read
       , contacts: Contacts
       , favoritedBySender: FavoritedBySender
+      , favoritedByRecipient: FavoritedByRecipient
+      , favoritedByBoth : FavoritedByBoth
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
       }
