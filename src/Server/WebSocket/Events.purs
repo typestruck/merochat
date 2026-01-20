@@ -17,7 +17,6 @@ import Data.HashMap as DH
 import Data.Int as DI
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
-
 import Data.Set (Set)
 import Data.Set as DS
 import Data.Time.Duration (Minutes(..))
@@ -56,6 +55,8 @@ import Server.Effect as SE
 import Server.Environment (tokenSecret)
 import Server.Im.Action as SIA
 import Server.Im.Database.Execute as SIDE
+import Server.Im.Database.Flat as SIF
+import Server.Im.Database.Suggest as SIDS
 import Server.Push (PushMessage(..))
 import Server.Push as SP
 import Server.Settings.Action as SSA
@@ -65,7 +66,7 @@ import Server.WebSocket as SW
 import Shared.Availability (Availability(..))
 import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as SDT
-import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), MessageStatus(..), OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
+import Shared.Im.Types (AfterLogout(..), DeletedRecord, EditedRecord, FullWebSocketPayloadClient(..), MessageError(..), SuggestionsFrom(..), MessageStatus(..), OutgoingRecord, WebSocketPayloadClient(..), WebSocketPayloadServer(..))
 import Shared.Json as SJ
 import Shared.Resource (updateHash)
 import Shared.ResponseError (DatabaseError, ResponseError(..))
@@ -183,6 +184,7 @@ handleMessage payload = do
             TrackAvailabilityFor for → trackAvailability context.loggedUserId context.allUsersAvailabilityRef for
             DeletedMessage message → unsendMessage context.token context.loggedUserId allUsersAvailability message
             ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
+            OnlineSuggestions s → sendOnlineSuggestions context.token context.loggedUserId s.skip allUsersAvailability
             Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
             UpdateAvailability flags → updateAvailability context.token context.loggedUserId context.allUsersAvailabilityRef flags
             Posted { id } → sharePost context.loggedUserId context.allUsersAvailabilityRef id
@@ -223,12 +225,12 @@ updateAvailability token loggedUserId allUsersAvailabilityRef flags = do
             LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → dt > anotherDt
             newAvailability, oldAvailability → newAvailability /= oldAvailability
 
-      --ignore last seen if only difference is in seconds / milliseconds
-      zeroFromMinutes dt = DDT.modifyTime (DDT.setSecond (SU.fromJust $ DEN.toEnum 0) <<< DDT.setMillisecond (SU.fromJust $ DEN.toEnum 0)) dt
-
       sendAvailability allUsersAvailability availability userId = case DH.lookup userId allUsersAvailability of
             Just found → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: loggedUserId, availability }) found.connections
             Nothing → pure unit
+
+--ignore last seen if only difference is in seconds / milliseconds
+zeroFromMinutes dt = DDT.modifyTime (DDT.setSecond (SU.fromJust $ DEN.toEnum 0) <<< DDT.setMillisecond (SU.fromJust $ DEN.toEnum 0)) dt
 
 trackAvailability ∷ Int → Ref (HashMap Int UserAvailability) → { ids ∷ Array Int } → WebSocketEffect
 trackAvailability loggedUserId allUsersAvailabilityRef for = R.liftEffect $ DF.traverse_ (\id → ER.modify_ (DH.update track id) allUsersAvailabilityRef) for.ids
@@ -320,6 +322,20 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
                   , status: changes.status
                   , userId
                   }
+
+sendOnlineSuggestions ∷ String → Int → Int -> HashMap Int UserAvailability → WebSocketEffect
+sendOnlineSuggestions token loggedUserId skip allUsersAvailability = do
+      now ← zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
+      let ids = DA.catMaybes $ DH.toArrayBy (onlines <<< LastSeen $ DateTimeWrapper now) allUsersAvailability
+      suggestions <- map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip ids OnlineOnly
+
+      let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
+      sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) <<< Content $ CurrentOnlineSuggestions {suggestions}
+
+      where
+      onlines now id userAvailability
+            | userAvailability.availability == Online || userAvailability.availability == now = Just id
+            | otherwise = Nothing
 
 -- | Send a message or another user or sync a message sent from another connection
 sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect
@@ -512,6 +528,7 @@ trackAvailabilityFromTerminated pool allUsersAvailabilityRef = do
             LastSeen (DateTimeWrapper dt) → Just { who: userId, date: DT dt }
             _ → Nothing
 
+--we could also remove from the tracked list if the connection is not found
 sendTrackedAvailability ∷ HashMap Int UserAvailability → Availability → Int → Int → Effect Unit
 sendTrackedAvailability allUsersAvailability availability trackedUserId userId = case DH.lookup userId allUsersAvailability of
       Just userAvailability → DF.traverse_ (\connection → sendWebSocketMessage connection <<< Content $ TrackedAvailability { id: trackedUserId, availability }) userAvailability.connections

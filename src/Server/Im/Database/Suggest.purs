@@ -47,12 +47,13 @@ import Shared.DateTime (DateTimeWrapper(..))
 import Shared.DateTime as ST
 import Shared.Im.Types (SuggestionsFrom(..), Favorited(..))
 import Shared.User (ProfileVisibility(..))
+import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 
-suggest ∷ Int → Int → SuggestionsFrom → ServerEffect (Array FlatUser)
-suggest loggedUserId skip =
+suggest ∷ forall r. Int → Int → Array Int -> SuggestionsFrom → BaseEffect { pool ∷ Pool | r } (Array FlatUser)
+suggest loggedUserId skip ids =
       case _ of
-            OnlineOnly → SD.query $ suggestOnlineQuery loggedUserId skip onlineFilter
+            OnlineOnly → SD.query $ suggestOnlineQuery loggedUserId skip $ onlineFilter ids --list of id users from open socket connections
             ThisWeek → SD.query $ suggestMainQuery loggedUserId skip thisWeekFilter
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
@@ -61,7 +62,7 @@ suggest loggedUserId skip =
             FavoritesOnly → SD.query $ suggestContacts loggedUserId skip favoritesFilter
 
       where
-      onlineFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Minutes (-1.0))
+      onlineFilter userIds = baseFilter .&&. ((u ... _id) `in_`  (SU.fromJust $ DAN.fromArray userIds))
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))

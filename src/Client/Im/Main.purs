@@ -73,7 +73,7 @@ import Shared.Routes (routesSpec)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User as SUR
-
+import Test.Client.Model (webSocket)
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
@@ -195,17 +195,17 @@ update st model =
             ToggleShowing userId for toggle → CIPS.toggleShowing userId toggle for model
 
             --suggestion
-            FetchMoreSuggestions → CIS.fetchMoreSuggestions model
+            FetchMoreSuggestions → CIS.fetchMoreSuggestions webSocket model
             ResumeSuggesting → CIS.resumeSuggesting model
             ToggleContactProfile → CIS.toggleContactProfile model
             ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
             SpecialRequest (Favorite id) → CIS.favorite id model
-            SpecialRequest PreviousSuggestion → CIS.previousSuggestion model
-            SpecialRequest NextSuggestion → CIS.nextSuggestion model
+            SpecialRequest PreviousSuggestion → CIS.previousSuggestion webSocket model
+            SpecialRequest NextSuggestion → CIS.nextSuggestion webSocket model
             SpecialRequest (BlockUser id) → blockUser webSocket id model
-            DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions suggestions model
-            ToggleSuggestionsFrom from → CIS.toggleSuggestionsFrom from model
+            DisplayMoreSuggestions suggestions → CIS.displayMoreSuggestions webSocket suggestions model
+            ToggleSuggestionsFrom from → CIS.toggleSuggestionsFrom webSocket from model
             ResumeSuggestionChat userId → CIS.resumeSuggestionChat userId model
 
             --user menu

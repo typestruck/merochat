@@ -398,6 +398,7 @@ data WebSocketPayloadServer
       | UpdateAvailability { online ∷ Boolean }
       | Posted { id ∷ Int }
       | TrackAvailabilityFor { ids ∷ Array Int }
+      | OnlineSuggestions { skip :: Int }
       | Ping
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord
@@ -414,14 +415,6 @@ type OutgoingRecord =
             , content ∷ Content
             , turn ∷ Maybe Turn
             )
-
-type Challenge =
-      { algorithm ∷ String
-      , challenge ∷ String
-      , maxnumber ∷ Number
-      , salt ∷ String
-      , signature ∷ String
-      }
 
 type EditedRecord = { id ∷ Int, userId ∷ Int, content ∷ Content }
 
@@ -440,6 +433,7 @@ data WebSocketPayloadClient
       | NewPost { userId ∷ Int, post ∷ Post }
       | NewDeletedMessage DeletedMessagePayload
       | TrackedAvailability { id ∷ Int, availability ∷ Availability }
+      | CurrentOnlineSuggestions { suggestions :: Array Suggestion }
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
               { previousId ∷ Int

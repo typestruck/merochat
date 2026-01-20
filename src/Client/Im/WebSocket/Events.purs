@@ -2,15 +2,16 @@ module Client.Im.WebSocket.Events (startWebSocket, updateWebSocketStatus, receiv
 
 import Prelude
 
+import Client.AppId (experimentsAppId, imAppId, profileAppId)
 import Client.Dom as CCD
-import Client.Network (routes)
-import Client.Network as CCNT
 import Client.Im.Chat as CIC
 import Client.Im.Contacts as CICN
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (MoreMessages, NoMessages, NextMessage)
 import Client.Im.Notification as CIUC
 import Client.Im.Scroll as CISM
 import Client.Im.WebSocket as CIW
+import Client.Network (routes)
+import Client.Network as CCNT
 import Control.Monad.Except as CME
 import Data.Array ((:))
 import Data.Array as DA
@@ -39,9 +40,8 @@ import Safe.Coerce as SC
 import Shared.Availability (Availability(..))
 import Shared.Experiments.Types as SET
 import Shared.Im.Contact as SIC
-import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..), ImModel)
+import Shared.Im.Types (ClientMessagePayload, Contact, DeletedMessagePayload, EditedMessagePayload, FullWebSocketPayloadClient(..), HistoryMessage, ImMessage(..), ImModel, MessageStatus(..), RetryableRequest(..), TimeoutIdWrapper(..), WebSocketConnectionStatus(..), WebSocketPayloadClient(..), WebSocketPayloadServer(..), When(..), Suggestion)
 import Shared.Json as SJ
-import Client.AppId (experimentsAppId, imAppId, profileAppId)
 import Shared.Post (Post)
 import Shared.Privilege (Privilege)
 import Shared.Profile.Types as SPT
@@ -163,6 +163,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       ServerChangedStatus cs → receiveStatusChange cs model
       ServerReceivedMessage rm → receiveAcknowledgement rm model
       NewIncomingMessage ni → receiveIncomingMessage webSocket isFocused ni model
+      CurrentOnlineSuggestions s -> receiveCurrentOnlineSuggestions s.suggestions model
       NewEditedMessage ni → receiveEditedMessage webSocket isFocused ni model
       NewDeletedMessage nd → receiveDeletedMessage nd model
       ContactTyping tp → receiveTyping tp model
@@ -173,6 +174,9 @@ receiveMessage webSocket isFocused payload model = case payload of
       ContactUnavailable cu → receiveUnavailable cu model
       BadMessage bm → receiveBadMessage bm model
       PayloadError p → receivePayloadError p model
+
+receiveCurrentOnlineSuggestions ∷ Array Suggestion → ImModel -> NextMessage
+receiveCurrentOnlineSuggestions suggestions model = model /\ [ pure <<< Just $ DisplayMoreSuggestions suggestions ]
 
 receivePost ∷ { post ∷ Post, userId ∷ Int } → ImModel → NoMessages
 receivePost p model = model { suggestions = map updateSuggestion model.suggestions, contacts = map updateContact model.contacts } /\ []
