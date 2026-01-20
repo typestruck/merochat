@@ -3,8 +3,9 @@ module Client.Im.Suggestion where
 import Prelude
 import Shared.Im.Types
 
+import Client.AppId (imAppId)
 import Client.Dom as CCD
-import Client.Im.Flame (MoreMessages, NextMessage, NoMessages)
+import Client.Im.Flame (NextMessage, NoMessages, MoreMessages)
 import Client.Im.WebSocket as CIW
 import Client.Network (routes)
 import Client.Network as CCN
@@ -16,7 +17,9 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Tuple.Nested ((/\))
 import Effect.Class as EC
+import Effect.Timer as ET
 import Flame as F
+import Flame.Subscription as FS
 import Shared.Availability (Availability(..))
 import Shared.Backer.Contact (backerId, backerUser)
 import Shared.DateTime (DateTimeWrapper(..))
@@ -29,7 +32,7 @@ import Web.DOM.Element as WDE
 import Web.Socket.WebSocket (WebSocket)
 
 -- | Display next suggestion card
-nextSuggestion ∷ WebSocket -> ImModel → MoreMessages
+nextSuggestion ∷ WebSocket → ImModel → MoreMessages
 nextSuggestion webSocket model =
       if DM.isNothing next then
             fetchMoreSuggestions webSocket model
@@ -44,7 +47,7 @@ nextSuggestion webSocket model =
       next = moveSuggestion model 1
 
 -- | Display previous suggestion card
-previousSuggestion ∷ WebSocket -> ImModel → MoreMessages
+previousSuggestion ∷ WebSocket → ImModel → MoreMessages
 previousSuggestion webSocket model =
       if DM.isNothing previous then
             fetchMoreSuggestions webSocket model
@@ -66,8 +69,13 @@ moveSuggestion model by = do
       suggestion ← model.suggestions !! (index + by)
       Just $ suggestion.id
 
+refreshOnlineSuggestions ∷ WebSocket → ImModel → MoreMessages
+refreshOnlineSuggestions webSocket model
+      | model.suggestionsFrom == OnlineOnly = fetchMoreSuggestions webSocket model
+      | otherwise = model /\ []
+
 -- | Fetch next page of suggestions
-fetchMoreSuggestions ∷ WebSocket -> ImModel → NextMessage
+fetchMoreSuggestions ∷ WebSocket → ImModel → NextMessage
 fetchMoreSuggestions webSocket model =
       model
             { freeToFetchSuggestions = false --ui uses this flag to show a loading icon and prevent repeated requests
@@ -79,9 +87,11 @@ fetchMoreSuggestions webSocket model =
             ]
       where
       more
-            | model.suggestionsFrom == OnlineOnly = do
-                  EC.liftEffect <<< CIW.sendPayload webSocket  $ OnlineSuggestions  { skip: suggestionsPerPage * model.suggestionsPage }
-                  pure Nothing
+            | model.suggestionsFrom == OnlineOnly = EC.liftEffect do
+                    focused ← CCD.documentHasFocus
+                    when focused $ CIW.sendPayload webSocket OnlineSuggestions
+                    void <<< ET.setTimeout 1500 $ FS.send imAppId RefreshOnlineSuggestions
+                    pure Nothing
             | otherwise = CCN.retryableRequest NextSuggestion DisplayMoreSuggestions $ routes.im.suggestions
                     { query:
                             { skip: suggestionsPerPage * model.suggestionsPage
@@ -92,7 +102,7 @@ fetchMoreSuggestions webSocket model =
 -- | Show these suggesions to the user
 -- |
 -- | Suggestions are picked according to `SuggestionsFrom`. If 60% of the suggestions are low quality users, switch to next option in `SuggestionsFrom``
-displayMoreSuggestions ∷ WebSocket -> Array Suggestion → ImModel → MoreMessages
+displayMoreSuggestions ∷ WebSocket → Array Suggestion → ImModel → MoreMessages
 displayMoreSuggestions webSocket suggestions model =
       if suggestionsSize == 0 && model.suggestionsPage > 0 then
             fetchMoreSuggestions webSocket model
@@ -103,10 +113,10 @@ displayMoreSuggestions webSocket suggestions model =
             model
                   { freeToFetchSuggestions = true
                   , suggesting = _.id <$> DA.head suggestions
-                  , suggestions = suggestions <> DA.filter ((backerId == _) <<< _.id) model.suggestions
+                  , suggestions = fixSuggestions suggestions model.suggestions
                   , suggestionsPage = if suggestionsSize == 0 || suggestionsFrom /= model.suggestionsFrom then 0 else model.suggestionsPage + 1
                   , suggestionsFrom = suggestionsFrom
-                  } /\ [ scrollToTop, track ]
+                  } /\ effects
       where
       suggestionsSize = DA.length suggestions
 
@@ -116,10 +126,17 @@ displayMoreSuggestions webSocket suggestions model =
             | model.suggestionsFrom /= OnlineOnly && model.suggestionsFrom /= ContactsOnly && model.suggestionsFrom /= FavoritesOnly && (suggestionsSize == 0 || lowQualityUsersIn suggestions / suggestionsSize * 100 >= 60) = DM.fromMaybe ThisWeek $ DE.succ model.suggestionsFrom
             | otherwise = model.suggestionsFrom
 
+      effects
+            | model.suggestionsFrom == OnlineOnly = [ track ]
+            | otherwise = [ scrollToTop, track ]
       scrollToTop = do
             EC.liftEffect (CCD.unsafeGetElementById Cards >>= WDE.setScrollTop 0.0)
             pure Nothing
       track = pure $ Just TrackAvailability
+
+      fixSuggestions new old
+            | model.suggestionsFrom == OnlineOnly = DA.nubBy (\u v → compare u.id v.id) $ new <> old -- append and remove dups on refreshing online only
+            | otherwise = new <> DA.filter ((backerId == _) <<< _.id) old
 
 -- | Show or hide full user profile
 toggleSuggestionChatInput ∷ Int → ImModel → NoMessages
@@ -173,7 +190,7 @@ byAvailability suggestions = DA.snoc (DA.filter ((backerId /= _) <<< _.id) $ DA.
                   LastSeen (DateTimeWrapper dt), LastSeen (DateTimeWrapper anotherDt) → anotherDt `compare` dt
                   a, s → s `compare` a
 
-toggleSuggestionsFrom ∷ WebSocket -> SuggestionsFrom → ImModel → MoreMessages
+toggleSuggestionsFrom ∷ WebSocket → SuggestionsFrom → ImModel → MoreMessages
 toggleSuggestionsFrom webSocket from model = fetchMoreSuggestions webSocket model
       { suggestionsFrom = from
       , suggestionsPage = 0

@@ -53,7 +53,7 @@ import Type.Proxy (Proxy(..))
 suggest ∷ forall r. Int → Int → Array Int -> SuggestionsFrom → BaseEffect { pool ∷ Pool | r } (Array FlatUser)
 suggest loggedUserId skip ids =
       case _ of
-            OnlineOnly → SD.query $ suggestOnlineQuery loggedUserId skip $ onlineFilter ids --list of id users from open socket connections
+            OnlineOnly → SD.query $ suggestOnlineQuery loggedUserId $ onlineFilter ids --list of id users from open socket connections
             ThisWeek → SD.query $ suggestMainQuery loggedUserId skip thisWeekFilter
             LastTwoWeeks → SD.query $ suggestMainQuery loggedUserId skip lastTwoWeeksFilter
             LastMonth → SD.query $ suggestMainQuery loggedUserId skip lastMonthFilter
@@ -119,11 +119,10 @@ suggestMainQuery loggedUserId skip filter =
 
 suggestAllQuery loggedUserId skip filter = suggestBaseQuery loggedUserId filter # orderBy ((_score # desc) /\ (l ... _date # desc)) # limit (Proxy ∷ Proxy 10) # offset skip
 
-suggestOnlineQuery loggedUserId skip filter =
+suggestOnlineQuery loggedUserId filter =
       suggestBaseQuery loggedUserId filter
             # orderBy ((_sender # desc) /\ _bin /\ (l ... _date # desc))
-            # limit (Proxy ∷ Proxy 10)
-            # offset skip
+            # limit (Proxy ∷ Proxy 15)
 
 suggestContacts loggedUserId skip filter =
       suggestBaseQuery loggedUserId filter

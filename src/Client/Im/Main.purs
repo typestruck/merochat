@@ -73,7 +73,6 @@ import Shared.Routes (routesSpec)
 import Shared.Settings.Types (PrivacySettings)
 import Shared.Unsafe as SU
 import Shared.User as SUR
-import Test.Client.Model (webSocket)
 import Type.Proxy (Proxy(..))
 import Web.DOM.Element as WDE
 import Web.DOM.Node as WDN
@@ -200,6 +199,7 @@ update st model =
             ToggleContactProfile → CIS.toggleContactProfile model
             ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
+            RefreshOnlineSuggestions ->  CIS.refreshOnlineSuggestions webSocket model
             SpecialRequest (Favorite id) → CIS.favorite id model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion webSocket model
             SpecialRequest NextSuggestion → CIS.nextSuggestion webSocket model

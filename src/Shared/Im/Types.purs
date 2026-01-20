@@ -287,6 +287,7 @@ data ImMessage
       | FetchMoreSuggestions
       | ResumeSuggesting
       | DisplayMoreSuggestions (Array Suggestion)
+      | RefreshOnlineSuggestions
       | ToggleSuggestionsFrom SuggestionsFrom
       | ResumeSuggestionChat Int
       | ToggleSuggestionChatInput Int
@@ -398,7 +399,7 @@ data WebSocketPayloadServer
       | UpdateAvailability { online ∷ Boolean }
       | Posted { id ∷ Int }
       | TrackAvailabilityFor { ids ∷ Array Int }
-      | OnlineSuggestions { skip :: Int }
+      | OnlineSuggestions
       | Ping
       | Typing { id ∷ Int }
       | OutgoingMessage OutgoingRecord

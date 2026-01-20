@@ -184,7 +184,7 @@ handleMessage payload = do
             TrackAvailabilityFor for → trackAvailability context.loggedUserId context.allUsersAvailabilityRef for
             DeletedMessage message → unsendMessage context.token context.loggedUserId allUsersAvailability message
             ChangeStatus changes → sendStatusChange context.token context.loggedUserId allUsersAvailability changes
-            OnlineSuggestions s → sendOnlineSuggestions context.token context.loggedUserId s.skip allUsersAvailability
+            OnlineSuggestions → sendOnlineSuggestions context.token context.loggedUserId allUsersAvailability
             Typing { id } → sendTyping context.loggedUserId allUsersAvailability id
             UpdateAvailability flags → updateAvailability context.token context.loggedUserId context.allUsersAvailabilityRef flags
             Posted { id } → sharePost context.loggedUserId context.allUsersAvailabilityRef id
@@ -323,19 +323,22 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
                   , userId
                   }
 
-sendOnlineSuggestions ∷ String → Int → Int -> HashMap Int UserAvailability → WebSocketEffect
-sendOnlineSuggestions token loggedUserId skip allUsersAvailability = do
+sendOnlineSuggestions ∷ String → Int → HashMap Int UserAvailability → WebSocketEffect
+sendOnlineSuggestions token loggedUserId allUsersAvailability = do
       now ← zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
       let ids = DA.catMaybes $ DH.toArrayBy (onlines <<< LastSeen $ DateTimeWrapper now) allUsersAvailability
-      suggestions <- map SIF.fromFlatUser <$> SIDS.suggest loggedUserId skip ids OnlineOnly
+      suggestions ← map (ensureStatus <<< SIF.fromFlatUser) <$> SIDS.suggest loggedUserId 0 ids OnlineOnly
 
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
-      sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) <<< Content $ CurrentOnlineSuggestions {suggestions}
+      sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) <<< Content $ CurrentOnlineSuggestions { suggestions }
 
       where
       onlines now id userAvailability
             | userAvailability.availability == Online || userAvailability.availability == now = Just id
             | otherwise = Nothing
+
+      --we want to show online in case last seen is within same minute
+      ensureStatus user = user { availability = Online }
 
 -- | Send a message or another user or sync a message sent from another connection
 sendOutgoingMessage ∷ String → Int → HashMap Int UserAvailability → OutgoingRecord → WebSocketEffect

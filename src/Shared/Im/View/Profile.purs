@@ -154,7 +154,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                                   [ HE.img (if user.unseenPosts > 0 then [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar newly-posted", HA.onClick $ ToggleShowing user.id ForContacts ShowPosts ] else [ HA.src $ SA.fromAvatar user, HA.title "Open avatar", HA.class' "big-suggestion-avatar", HA.onClick ToggleLargeAvatar ])
                                   , HE.div [ HA.class' "big-suggestion-info" ]
                                           ( HE.strong [ HA.class' "big-card-name" ] [ HE.text user.name ]
-                                                  : badges user.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.suggestionsFrom model.user user ]
+                                                  : badges user.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user user ]
                                           )
                                   , HE.div [ HA.class' "big-suggestion-info auto-left" ]
                                           ( [ HE.div_ $
@@ -235,7 +235,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                             [ HE.div [ HA.class' "full" ] [ HE.img (if suggestion.unseenPosts > 0 then [ HA.title "User has new posts", HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar newly-posted" ] else [ HA.title "Open avatar", HA.onClick ToggleLargeAvatar, HA.src $ SA.fromAvatar suggestion, HA.class' "big-suggestion-avatar" ]) ]
                             , HE.div [ HA.class' "big-suggestion-info full" ]
                                     ( HE.strong [ HA.class' "big-card-name" ] [ HE.text suggestion.name ]
-                                            : badges suggestion.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.suggestionsFrom model.user suggestion ]
+                                            : badges suggestion.badges <> [ HE.div [ HA.class' "duller" ] $ onlineStatus model.user suggestion ]
                                     )
                             , HE.div [ HA.class' "big-suggestion-info auto-left order-2" ]
                                     ( [ HE.div_ $
@@ -357,16 +357,18 @@ suggestionCards model =
       check p = HE.div [ HA.class' "build-checked" ] [ SS.checked "", HE.text $ SPC.displayColumn p ]
       uncheck p = HE.div_ [ HE.text $ "➡ " <> show p ]
 
-      moreCards =
-            [ if model.freeToFetchSuggestions then
-                    HE.div [ HA.class' "card card-load-more", HA.onClick FetchMoreSuggestions ]
-                          [ HE.i_ [ HE.text "Load more suggestions" ]
-                          , nextArrow
-                          ]
-              else
-                    HE.div [ HA.class' "card card-load-more" ]
-                          [ HE.div' [ HA.class' "loading" ] ]
-            ]
+      moreCards
+            | model.suggestionsFrom == OnlineOnly = []
+            | model.freeToFetchSuggestions =
+                    [ HE.div [ HA.class' "card card-load-more", HA.onClick FetchMoreSuggestions ]
+                            [ HE.i_ [ HE.text "Load more suggestions" ]
+                            , nextArrow
+                            ]
+                    ]
+            | otherwise =
+                    [ HE.div [ HA.class' "card card-load-more" ]
+                            [ HE.div' [ HA.class' "loading" ] ]
+                    ]
       card suggestion =
             HE.div [ HA.class' { "card": true, "backing-card": suggestion.id == backerId } ]
                   [ HE.div [ HA.class' "avatar-info" ]
@@ -379,13 +381,13 @@ suggestionCards model =
                                                     ]
                                             ] <> genderAge suggestion
                                                   <> from suggestion
-                                                  <> onlineStatus model.suggestionsFrom model.user suggestion
+                                                  <> onlineStatus model.user suggestion
                                           )
                                   ]
                           ]
                   , HE.div [ HA.class' "card-name-online" ]
                           [ HE.strong [ HA.class' "card-name" ] [ HE.text suggestion.name ]
-                          , HE.div' [ HA.class' { "online-indicator": true, hidden: model.suggestionsFrom /= OnlineOnly && (suggestion.availability /= Online || not suggestion.onlineStatus || not model.user.onlineStatus) } ]
+                          , HE.div' [ HA.class' { "online-indicator": true, hidden: suggestion.availability /= Online || not suggestion.onlineStatus || not model.user.onlineStatus } ]
                           ]
                   , HE.div [ HA.class' "rest-card" ]
                           [ HE.div [ HA.class' "card-headline" ] [ HE.text suggestion.headline ]
@@ -434,10 +436,9 @@ genderAge suggestion =
 separator ∷ ∀ m. Html m
 separator = HE.span [ HA.class' "duller" ] [ HE.text " • " ]
 
-onlineStatus ∷ SuggestionsFrom → User → Suggestion → Array (Html ImMessage)
-onlineStatus suggestionsFrom user suggestion
+onlineStatus ∷ User → Suggestion → Array (Html ImMessage)
+onlineStatus user suggestion
       | not user.onlineStatus || not suggestion.onlineStatus = []
-      | suggestionsFrom == OnlineOnly = [ HE.span_ [ HE.text $ show Online ] ]
       | otherwise = [ HE.span_ [ HE.text $ show suggestion.availability ] ]
 
 temporary ∷ Array (Html ImMessage)
@@ -571,7 +572,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                                                             , HE.span [ HA.class' "duller" ] [ HE.text $ " karma • #" <> show suggestion.karmaPosition ]
                                                             ]
                                                     ] <> genderAge suggestion
-                                                          <> onlineStatus model.suggestionsFrom model.user suggestion
+                                                          <> onlineStatus model.user suggestion
                                                   )
                                           ]
                                   , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
@@ -612,7 +613,7 @@ miniSuggestions model = HE.div [ HA.class' "mini-suggestions" ]
                                           [ avatar suggestion
                                           , HE.div [ HA.class' "mini-suggestion-info" ]
                                                   ( [ HE.strong [ HA.class' "collapsed-name" ] [ HE.text suggestion.name ]
-                                                    ] <> onlineStatus model.suggestionsFrom model.user suggestion
+                                                    ] <> onlineStatus model.user suggestion
                                                   )
                                           ]
                                   , arrow nextArrow model.freeToFetchSuggestions [ "next-arrow" ] $ SpecialRequest NextSuggestion
