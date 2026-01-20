@@ -194,6 +194,7 @@ toggleSuggestionsFrom ∷ WebSocket → SuggestionsFrom → ImModel → MoreMess
 toggleSuggestionsFrom webSocket from model = fetchMoreSuggestions webSocket model
       { suggestionsFrom = from
       , suggestionsPage = 0
+      , suggestions = DA.filter ((backerId == _) <<< _.id) model.suggestions
       , toggleContextMenu = HideContextMenu
       }
 
