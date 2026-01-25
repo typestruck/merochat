@@ -11,6 +11,7 @@ import Data.Array as DA
 import Data.Array.NonEmpty as DAN
 import Data.DateTime (DateTime)
 import Data.Either (Either(..))
+import Data.HashMap as DH
 import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Nullable as DN
@@ -19,8 +20,11 @@ import Data.Set as DST
 import Data.String as DS
 import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Driver (Pool)
+import Effect.Class as EC
+import Effect.Ref as ER
 import Environment (production)
 import Run.Except as RE
+import Run.Reader as RR
 import Safe.Coerce as SC
 import Server.AccountValidation as SA
 import Server.Database as SDB
@@ -93,8 +97,13 @@ presentContacts = map chatHistory <<< DA.groupBy sameContact
       sameContact a b = a.id == b.id
       chatHistory records = (fromFlatContact $ DAN.head records) { history = fromFlatMessage <$> DAN.toArray records }
 
-subscribe ∷ Int → ServerEffect Unit
-subscribe loggedUserId = SIDE.subscribe loggedUserId
+subscribe ∷ Int → String → ServerEffect Unit
+subscribe loggedUserId token = do
+      context ← RR.ask
+      EC.liftEffect $ ER.modify_ addSub context.allUserSubscriptionsRef
+      SIDE.subscribe loggedUserId token
+      where
+      addSub hm = DH.insertWith (\n e -> DA.nubEq $ n <> e) loggedUserId [ token ] hm
 
 processMessage ∷ ∀ r. Int → Int → Content → BaseEffect { pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do

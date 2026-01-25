@@ -368,6 +368,7 @@ data ImMessage
       | SetCompletedFields (Array ProfileColumn)
       | CheckUserExpiration
       | StartPwa
+      | UpdateSubscription
       | UpdateWebSocketStatus WebSocketConnectionStatus
       | SetField (ImModel → ImModel)
       | TerminateTemporaryUser

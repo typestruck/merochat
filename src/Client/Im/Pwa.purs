@@ -2,11 +2,12 @@ module Client.Im.Pwa where
 
 import Prelude
 
+import Client.AppId (imAppId)
 import Client.Dom as CCD
-import Client.Network (routes)
-import Client.Network as CCN
 import Client.Im.Flame (NoMessages)
 import Client.Im.History as CIH
+import Client.Network (routes)
+import Client.Network as CCN
 import Data.Array as DA
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
@@ -23,9 +24,7 @@ import Environment (vapidPublicKey)
 import Flame.Subscription as FS
 import Foreign (Foreign)
 import Foreign as F
-import Shared.Im.Types (ClientMessagePayload, ImMessage(..), ImModel, MessageStatus(..), WebSocketPayloadClient(..))
-import Client.AppId (imAppId)
-import Shared.Options.Topic as SOT
+import Shared.Im.Types (ClientMessagePayload, ImMessage(..), MessageStatus(..), WebSocketPayloadClient(..), ImModel)
 import Shared.Unsafe as SU
 import Web.HTML (Navigator)
 import Web.HTML as WH
@@ -45,17 +44,14 @@ foreign import getSubscription_ ∷ EffectFn2 Registration (Nullable Subscriptio
 
 foreign import subscribe_ ∷ EffectFn3 String Registration (Subscription → Effect Unit) Unit
 
-foreign import topicBody_ ∷ EffectFn2 Subscription String String
-
 foreign import receiveMessage_ ∷ EffectFn1 (String → Foreign → Effect Unit) Unit
 
 foreign import postMessage_ ∷ EffectFn2 String Foreign Unit
 
+foreign import serializeSubscription ∷ Subscription → String
+
 subscribe ∷ Registration → (Subscription → Effect Unit) → Effect Unit
 subscribe = EU.runEffectFn3 subscribe_ vapidPublicKey
-
-topicBody ∷ Subscription → String → Effect String
-topicBody = EU.runEffectFn2 topicBody_
 
 getSubscription ∷ Registration → (Nullable Subscription → Effect Unit) → Effect Unit
 getSubscription = EU.runEffectFn2 getSubscription_
@@ -71,8 +67,6 @@ receiveMessage = EU.runEffectFn1 receiveMessage_
 
 postMessage ∷ SwMessage → Effect Unit
 postMessage message = do
-      window ← WH.window
-      navigator ← WHW.navigator window
       case message of
             OpenChat userId → EU.runEffectFn2 postMessage_ "read" $ F.unsafeToForeign { userId }
             NotChatting → EU.runEffectFn2 postMessage_ "not-chatting" $ F.unsafeToForeign DN.null
@@ -87,15 +81,14 @@ startPwa ∷ ImModel → NoMessages
 startPwa model = model /\ [ startIt ]
       where
       startIt = EC.liftEffect do
-            registerServiceWorker model.user.id
+            registerServiceWorker
             pure Nothing
 
-registerServiceWorker ∷ Int → Effect Unit
-registerServiceWorker id = do
+registerServiceWorker ∷ Effect Unit
+registerServiceWorker = do
       window ← WH.window
       navigator ← WHW.navigator window
       register navigator "/sw.js"
-      ready navigator (subscribePush id)
       receiveMessage handler
       where
       handler message payload
@@ -125,21 +118,20 @@ receiveMessageFromPush payload model = model { contacts = map update model.conta
                     }
             | otherwise = contact
 
--- | Subscribe to push notifications
-subscribePush ∷ Int → Registration → Effect Unit
-subscribePush id registration = getSubscription registration handler
+updateSubscription ∷ ImModel → NoMessages
+updateSubscription model = model /\ [ update ]
       where
-      handler existing = case DN.toMaybe existing of
-            Nothing →
-                  EA.launchAff_ do
-                        void <<< CCN.silentRequest $ routes.im.subscribe {}
-                        EC.liftEffect $ subscribe registration topic
-            Just s → topic s
+      update = EC.liftEffect do
+            window ← WH.window
+            navigator ← WHW.navigator window
+            ready navigator start
+            pure Nothing
 
-      topic subscription = do
-            body ← topicBody subscription $ SOT.makeTopic id
-            EA.launchAff_ <<< void <<< CCN.silentRequest $ routes.topic
-                  { params: { path: Cons "v1" $ Cons "webpush" Nil }
-                  , body
-                  }
+      start registration = getSubscription registration (handler registration)
+
+      handler registration existing = case DN.toMaybe existing of
+            Nothing → subscribe registration (EA.launchAff_ <<< sendSubscription)
+            Just s → EA.launchAff_ $ sendSubscription s
+
+      sendSubscription subscription = void <<< CCN.silentRequest $ routes.im.subscribe { body: { token: serializeSubscription subscription } }
 

@@ -1,17 +1,20 @@
 module Server.Effect where
 
-import Droplet.Driver (Pool)
-import Run (AFF, Run, EFFECT)
 import Prelude
+
+import Data.HashMap (HashMap)
+import Droplet.Driver (Pool)
+import Effect.Class (liftEffect)
+import Effect.Console as EC
+import Effect.Ref (Ref)
+import Run (AFF, Run, EFFECT)
+import Run as R
 import Run.Except (EXCEPT)
+import Run.Except as RE
 import Run.Reader (READER)
+import Run.Reader as RR
 import Shared.ResponseError (ResponseError)
 import Type.Row (type (+))
-import Effect.Console as EC
-import Run as R
-import Run.Except as RE
-import Run.Reader as RR
-import Effect.Class (liftEffect)
 
 type BaseReader extension =
       { pool ∷ Pool
@@ -19,7 +22,7 @@ type BaseReader extension =
       }
 
 type ServerReader = BaseReader
-      (
+      ( allUserSubscriptionsRef ∷ Ref (HashMap Int (Array String))
       )
 
 type BaseEffect r a = Run (READER r + EXCEPT ResponseError + AFF + EFFECT + ()) a

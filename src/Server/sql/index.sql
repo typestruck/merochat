@@ -21,7 +21,6 @@ create table users
     joined timestamptz default (utc_now()),
     email text,
     birthday date,
-    pwa boolean not null default false,
     gender smallint,
     headline text not null,
     avatar text,
@@ -43,6 +42,16 @@ create table users
     temporary boolean not null default false,
 
     constraint country_user foreign key (country) references countries(id)
+);
+
+create table subscriptions
+(
+  id integer generated always as identity primary key,
+  token text not null,
+  subscriber integer not null,
+
+  constraint unique_sub_token unique(subscriber, token),
+  constraint sub_user foreign key (subscriber) references users(id) on delete cascade
 );
 
 create table moderated_profile_fields(

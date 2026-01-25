@@ -107,6 +107,7 @@ export default {
             new webpack.DefinePlugin({
                   'process.env.PRODUCTION': false,
                   'process.env.VAPID_PUBLIC_KEY': "'something or the other'",
+                  'process.env.VAPID_PRIVATE_KEY': "'secret something or the other'",
               })
       ]
 };

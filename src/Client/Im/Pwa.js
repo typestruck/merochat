@@ -34,16 +34,8 @@ export function subscribe_(vp, registration, cb) {
     });
 }
 
-export function topicBody_(subscription, topic) {
-    let serializedSubscription = JSON.parse(JSON.stringify(subscription));
-
-    return JSON.stringify(
-        {
-            endpoint: serializedSubscription.endpoint,
-            auth: serializedSubscription.keys.auth,
-            p256dh: serializedSubscription.keys.p256dh,
-            topics: [topic],
-        });
+export function serializeSubscription(s) {
+    return JSON.stringify(s);
 }
 
 let channel = new BroadcastChannel("merochat");

@@ -114,7 +114,8 @@ spec ∷
                                                 }
                                   , subscribe ∷
                                           POST "/subscribe"
-                                                { response ∷ Empty
+                                                { body ∷ { token ∷ String }
+                                                , response ∷ Empty
                                                 }
                                   , register ∷
                                           POST "/register"

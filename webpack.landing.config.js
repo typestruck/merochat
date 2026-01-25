@@ -24,7 +24,8 @@ export default {
         }),
         new webpack.DefinePlugin({
             'process.env.PRODUCTION': true,
-            'process.env.VAPID_PUBLIC_KEY': JSON.stringify(process.env.VAPID_PUBLIC_KEY)
+            'process.env.VAPID_PUBLIC_KEY': JSON.stringify(process.env.VAPID_PUBLIC_KEY),
+            'process.env.VAPID_PRIVATE_KEY': JSON.stringify(process.env.VAPID_PRIVATE_KEY)
         }),
         new ReplaceHashPlugin({ files: ['output-es/Shared.Resource/index.js'] }),
         new InlineResourcePlugin({ files: [{resourceFile: 'file/bundle/style.css', htmlFile: 'output-es/Server.Landing.Template/index.js'} ]}),

@@ -40,7 +40,6 @@ fetchUser id = SD.single $ select fields # from users # wher (_id .=. id)
             /\ _completedTutorial
             /\ _description
             /\ _avatar
-            /\ _pwa
             /\ _backer
             /\ _receiveEmail
             /\ _gender

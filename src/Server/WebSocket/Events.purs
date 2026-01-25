@@ -49,6 +49,7 @@ import Server.Database.KarmaLeaderboard as SIKL
 import Server.Database.LastSeen (LastSeen)
 import Server.Database.Posts as SDP
 import Server.Database.Privileges as SIP
+import Server.Database.Subscriptions as SDS
 import Server.Database.Users as SDU
 import Server.Effect (BaseEffect, BaseReader)
 import Server.Effect as SE
@@ -78,7 +79,6 @@ import Unsafe.Coerce as UC
 type UserAvailability =
       { connections ∷ HashMap String WebSocketConnection
       , trackedBy ∷ Set Int
-      , hasPwa ∷ Boolean --only send push notifications if user registered for it
       , availability ∷ Availability
       }
 
@@ -88,10 +88,7 @@ type WebSocketReader = BaseReader
       ( loggedUserId ∷ Int
       , token ∷ String --use this to tell connections apart
       , allUsersAvailabilityRef ∷ Ref (HashMap Int UserAvailability)
-      )
-
-type WebSocketReaderLite = BaseReader
-      ( allUsersAvailabilityRef ∷ Ref (HashMap Int UserAvailability)
+      , allUserSubscriptionsRef ∷ Ref (HashMap Int (Array String))
       )
 
 -- | Wrapper so we can serialize dates in a way postgresql understands
@@ -104,8 +101,8 @@ inactiveInterval = 1000 * 60 * inactiveMinutes
 inactiveMinutes ∷ Int
 inactiveMinutes = 30
 
-handleConnection ∷ Pool → Ref (HashMap Int UserAvailability) → WebSocketConnection → Request → Effect Unit
-handleConnection pool allUsersAvailabilityRef connection routes = EA.launchAff_ do
+handleConnection ∷ Pool → Ref (HashMap Int UserAvailability) → Ref (HashMap Int (Array String)) → WebSocketConnection → Request → Effect Unit
+handleConnection pool allUsersAvailabilityRef allUserSubscriptionsRef connection routes = EA.launchAff_ do
       userId ← SE.poolEffect pool Nothing $ ST.userIdFromToken tokenSecret token
       case userId of
             Nothing → EC.liftEffect do
@@ -113,10 +110,9 @@ handleConnection pool allUsersAvailabilityRef connection routes = EA.launchAff_ 
                   sendWebSocketMessage connection $ CloseConnection LoginPage
                   ECS.log "terminated due to auth error"
             Just loggedUserId → do
-                  pwa ← SE.poolEffect pool false $ SDU.hasPwa loggedUserId
                   EC.liftEffect do
                         now ← EN.nowDateTime
-                        ER.modify_ (DH.alter (upsertUserAvailability now pwa) loggedUserId) allUsersAvailabilityRef
+                        ER.modify_ (DH.alter (upsertUserAvailability now) loggedUserId) allUsersAvailabilityRef
                         SW.onError connection handleError
                         SW.onClose connection (handleClose token loggedUserId pool allUsersAvailabilityRef)
                         SW.onMessage connection (runMessageHandler loggedUserId)
@@ -125,11 +121,11 @@ handleConnection pool allUsersAvailabilityRef connection routes = EA.launchAff_ 
             uncooked ← FO.lookup "cookie" $ NH.requestHeaders routes
             map (\(Cookie { value }) → value) <<< DA.find (\(Cookie { key }) → cookieName == key) $ BCI.bakeCookies uncooked
 
-      initialAvailability hasPwa = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, hasPwa, availability: None }
-      upsertUserAvailability date hasPwa =
+      initialAvailability = { connections: DH.fromArray [ Tuple token connection ], trackedBy: DS.empty, availability: None }
+      upsertUserAvailability date =
             case _ of
-                  Nothing → Just $ makeUserAvailabity (initialAvailability hasPwa) (Right token) date None --could also query the db
-                  Just userAvailability → Just $ makeUserAvailabity (userAvailability { hasPwa = hasPwa, connections = DH.insert token connection userAvailability.connections }) (Right token) date None
+                  Nothing → Just $ makeUserAvailabity initialAvailability (Right token) date None --could also query the db
+                  Just userAvailability → Just $ makeUserAvailabity (userAvailability { connections = DH.insert token connection userAvailability.connections }) (Right token) date None
 
       runMessageHandler loggedUserId (WebSocketMessage message) = do
             case SJ.fromJson message of
@@ -138,9 +134,8 @@ handleConnection pool allUsersAvailabilityRef connection routes = EA.launchAff_ 
                               run =
                                     R.runBaseAff'
                                           <<< RE.catch (\e → reportError payload (checkInternalError e) e)
-                                          <<<
-                                                RR.runReader { allUsersAvailabilityRef, pool, loggedUserId, token } $
-                                          handleMessage payload
+                                          <<< RR.runReader { allUsersAvailabilityRef, allUserSubscriptionsRef, pool, loggedUserId, token }
+                                          $ handleMessage payload
                         EA.launchAff_ <<< EA.catchError run $ reportError payload Nothing
                   Left error → do
                         SW.terminate connection
@@ -306,9 +301,9 @@ sendStatusChange token loggedUserId allUsersAvailability changes = do
       let loggedUserConnections = DH.values $ DH.filterKeys (token /= _) loggedUserAvailability.connections
       DF.traverse_ (sendLoggedUser loggedUserConnections) changes.ids
 
-      when (changes.status == Read && loggedUserAvailability.hasPwa) $ DF.traverse_ sendPushStatus changes.ids
+      when (changes.status == Read) sendPushStatus
       where
-      sendPushStatus (userId /\ _) = EC.liftEffect <<< SP.push loggedUserId "" $ MessageReadSomewhereElse { userId }
+      sendPushStatus = SP.push loggedUserId "" $ MessageReadSomewhereElse { userIds: map DT.fst changes.ids }
 
       sendReceipients (userId /\ messageIds) = do
             let userAvailability = DH.lookup userId allUsersAvailability
@@ -327,7 +322,7 @@ sendOnlineSuggestions ∷ String → Int → HashMap Int UserAvailability → We
 sendOnlineSuggestions token loggedUserId allUsersAvailability = do
       now ← zeroFromMinutes <$> EC.liftEffect EN.nowDateTime
       let ids = DA.catMaybes $ DH.toArrayBy (onlines <<< LastSeen $ DateTimeWrapper now) allUsersAvailability
-      suggestions ← map (ensureStatus <<< SIF.fromFlatUser) <$> SIDS.suggest loggedUserId 0 ids OnlineOnly
+      suggestions ← if DA.null ids then pure [] else map (ensureStatus <<< SIF.fromFlatUser) <$> SIDS.suggest loggedUserId 0 ids OnlineOnly
 
       let userAvailability = SU.fromJust $ DH.lookup loggedUserId allUsersAvailability
       sendWebSocketMessage (SU.fromJust $ DH.lookup token userAvailability.connections) <<< Content $ CurrentOnlineSuggestions { suggestions }
@@ -357,7 +352,7 @@ sendOutgoingMessage token loggedUserId allUsersAvailability outgoing = do
                   let otherConnections = DH.values $ DH.filterKeys (token /= _) loggedUserConnections
                   DF.traverse_ (sendRecipient messageId content now) otherConnections
 
-                  when (DM.maybe false _.hasPwa receipientUserAvailability) <<< R.liftEffect <<< SP.push outgoing.userId outgoing.userName $ IncomingMessage
+                  SP.push outgoing.userId outgoing.userName $ IncomingMessage
                         { id: messageId
                         , senderId: loggedUserId
                         , recipientId: outgoing.userId
@@ -465,8 +460,7 @@ unsendMessage token loggedUserId allUsersAvailability deleted = do
 
 makeUserAvailabity ∷ UserAvailability → Either String String → DateTime → Availability → UserAvailability
 makeUserAvailabity old token date currentAvailability =
-      { hasPwa: old.hasPwa
-      , trackedBy: old.trackedBy
+      { trackedBy: old.trackedBy
       , connections:
               case token of
                     Right t → DH.update (Just <<< SW.lastPing date) t old.connections --ping on the socket is used to determine inactive connections

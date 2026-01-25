@@ -26,14 +26,14 @@ import Server.Environment (tokenSecret)
 import Server.Token as ST
 import Shared.Routes (routesSpec)
 
-guards ∷ ServerReader → _
+guards ∷ BaseReader () → _
 guards reading =
       { loggedUserId: checkLoggedUser reading
       , loggedUserToken: checkLoggedUserToken
       , checkAnonymous: checkAnonymous reading
       }
 
-checkLoggedUser ∷ ServerReader → Request → Aff (Either (Response Empty) Int)
+checkLoggedUser ∷ BaseReader () → Request → Aff (Either (Response Empty) Int)
 checkLoggedUser { pool } request = do
       token ← checkLoggedUserToken request
       maybeUserId ← SE.poolEffect pool Nothing $ ST.userIdFromToken tokenSecret token
@@ -53,7 +53,7 @@ checkLoggedUserToken routes = do
       cookies ← PSG.cookies routes
       pure <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies
 
-checkAnonymous ∷ ServerReader → Request → Aff (Either (Response Empty) Unit)
+checkAnonymous ∷ BaseReader () → Request → Aff (Either (Response Empty) Unit)
 checkAnonymous { pool } request = do
       cookies ← PSG.cookies request
       maybeUserId ← SE.poolEffect pool Nothing <<< ST.userIdFromToken tokenSecret <<< DMB.fromMaybe "" $ DM.lookup cookieName cookies

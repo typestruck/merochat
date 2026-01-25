@@ -76,4 +76,9 @@ updateTabCount model contacts = do
 checkNotifications ∷ Effect Unit
 checkNotifications = do
       status ← CCD.notificationPermission
-      when (status == "default") $ FS.send imAppId ToggleAskNotification
+      if status == "default" then
+            FS.send imAppId ToggleAskNotification
+      else if status == "granted" then
+            FS.send imAppId UpdateSubscription
+      else
+            pure unit

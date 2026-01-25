@@ -58,9 +58,9 @@ deleteChat { guards: { loggedUserId }, body } = do
       SIA.deleteChat loggedUserId body
       pure Empty
 
-subscribe ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Empty
-subscribe { guards } = do
-      SIA.subscribe guards.loggedUserId
+subscribe ∷ { guards ∷ { loggedUserId ∷ Int }, body :: { token :: String } } → ServerEffect Empty
+subscribe request = do
+      SIA.subscribe request.guards.loggedUserId request.body.token
       pure Empty
 
 changelogs ∷ { query ∷ { before ∷ Maybe Int }, guards ∷ { loggedUserId ∷ Int } } → ServerEffect (Array Changelog)

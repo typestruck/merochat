@@ -63,13 +63,14 @@ async function handlePush(raw) {
     let data = raw.json();
 
     if (data.message) {
-        let parsed = JSON.parse(data.message.message);
+        let parsed = JSON.parse(data.message);
 
         switch (parsed.type) {
             case 'incoming':
-                return notify(data.message, parsed);
+                return notify(data.title, parsed);
             case 'read':
-                await hideNotifications(parsed);
+                for (let userId of parsed.userIds)
+                    await hideNotifications({ userId });
                 return setBadge();
         }
     }
@@ -91,7 +92,7 @@ let apple = (function () {
     return platform.startsWith('mac') || platform.startsWith('iphone') || platform.startsWith('ipad') || platform.startsWith('pike');
 })();
 
-async function pushNotification(data, incoming) {
+async function pushNotification(title, incoming) {
     let body,
         allIncoming = [],
         previousNotifications = await self.registration.getNotifications({ tag: incoming.senderId });
@@ -111,7 +112,7 @@ async function pushNotification(data, incoming) {
             body = allIncoming.map(ai => ai.content).join('\n');
     }
 
-    return self.registration.showNotification(data.title, {
+    return self.registration.showNotification(title, {
         body,
         icon: 'https://mero.chat/file/default/android-launchericon-48-48.png',
         badge: 'https://mero.chat/file/default/badge.png',
@@ -164,8 +165,7 @@ async function resume(notification) {
         channel.postMessage({ message: 'resume', payload: userId });
     } else {
         noChatsOpened();
-        //the promise for openWindow might never resolve (ask the chrome developers) so the url is a hack for resuming into a chat
-        await self.clients.openWindow(`/im?resume=${userId}`);
+        await self.clients.openWindow('/im?resume=${userId}');
     }
 }
 

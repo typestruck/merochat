@@ -46,8 +46,11 @@ export function screenWidth() {
       return screen.width;
 }
 
-export function requestNotificationPermission() {
-      Notification.requestPermission();
+export async function requestNotificationPermission(cb) {
+      let status = await Notification.requestPermission();
+
+      if (status == 'granted')
+            cb()();
 }
 
 export function notificationPermission() {

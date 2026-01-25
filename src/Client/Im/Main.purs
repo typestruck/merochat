@@ -199,7 +199,7 @@ update st model =
             ToggleContactProfile → CIS.toggleContactProfile model
             ToggleLargeAvatar → CIS.toggleLargeAvatar model
             ToggleCollapsedMiniSuggestions → CIS.toggleCollapsedMiniSuggestions model
-            RefreshOnlineSuggestions ->  CIS.refreshOnlineSuggestions webSocket model
+            RefreshOnlineSuggestions → CIS.refreshOnlineSuggestions webSocket model
             SpecialRequest (Favorite id) → CIS.favorite id model
             SpecialRequest PreviousSuggestion → CIS.previousSuggestion webSocket model
             SpecialRequest NextSuggestion → CIS.nextSuggestion webSocket model
@@ -256,6 +256,7 @@ update st model =
             RequestFailed failure → handleRequestFailure failure model
             SpecialRequest (ReportUser userId) → report userId webSocket model
             SetSmallScreen → CISS.setSmallScreen model
+            UpdateSubscription → CIP.updateSubscription model
             SetRegistered → setRegistered model
             SetPrivacySettings ps → setPrivacySettings ps model
       where
@@ -421,13 +422,17 @@ reloadPage ∷ ImModel → NextMessage
 reloadPage model = model /\ [ EC.liftEffect CCL.reload *> pure Nothing ]
 
 askNotification ∷ ImModel → MoreMessages
-askNotification model = model { enableNotificationsVisible = false } /\ [ EC.liftEffect CCD.requestNotificationPermission *> pure Nothing ]
+askNotification model = model { enableNotificationsVisible = false } /\ [ ask ]
+      where
+      ask = do
+            EC.liftEffect $ CCD.requestNotificationPermission (FS.send imAppId UpdateSubscription)
+            pure Nothing
 
---refactor: all messages like this can be dryed into a single function
 toggleAskNotification ∷ ImModel → NoMessages
-toggleAskNotification model@{ enableNotificationsVisible } = F.noMessages $ model
-      { enableNotificationsVisible = not enableNotificationsVisible
-      }
+toggleAskNotification model =
+      model
+            { enableNotificationsVisible = not model.enableNotificationsVisible
+            } /\ []
 
 toggleUserContextMenu ∷ Event → ImModel → MoreMessages
 toggleUserContextMenu event model
