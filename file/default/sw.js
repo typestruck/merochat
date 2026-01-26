@@ -165,7 +165,7 @@ async function resume(notification) {
         channel.postMessage({ message: 'resume', payload: userId });
     } else {
         noChatsOpened();
-        await self.clients.openWindow('/im?resume=${userId}');
+        await self.clients.openWindow(`/im?resume=${userId}`);
     }
 }
 

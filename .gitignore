@@ -20,10 +20,8 @@ spago.log
 *.apk
 *.apk.*
 *.aab
-*.gradle
-gradle*
+.gradle
 *.txt
-store_icon.png
-twa-manifest.json
 build/
-app/
+app/build/
+gradle/
