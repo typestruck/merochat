@@ -54,6 +54,17 @@ create table subscriptions
   constraint sub_user foreign key (subscriber) references users(id) on delete cascade
 );
 
+create table praises(
+    id integer generated always as identity primary key,
+    praiser integer not null,
+    praised integer not null,
+    content text not null,
+    accepted boolean not null default false,
+
+    constraint praiser_user foreign key (praiser) references users(id) on delete cascade,
+    constraint praised_user foreign key (praised) references users(id) on delete cascade
+);
+
 create table moderated_profile_fields(
     named text not null,
     headlined text not null,

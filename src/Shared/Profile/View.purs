@@ -161,7 +161,7 @@ edit model =
       , HE.div [ HA.class' "profile-section" ]
               [ HE.div [ HA.class' "profile-section-label" ] [ HE.text "Tags" ]
               , HE.div [ HA.class' "profile-section-label-smaller" ] [ HE.text "Your interests, labels, things to talk about, etc" ]
-              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength tagMaxCharacters, HA.placeholder "Enter to add", SK.onEnter SetTag ]
+              , HE.input [ HA.class' "modal-input", HA.type' "text", HA.maxlength tagMaxCharacters, HA.placeholder "Enter to add", SK.onEnter SetTag, enterKeyHint "enter" ]
               , HE.div [ HA.class' { hidden: DA.null model.tagsInputed } ] $ map tagEntry model.tagsInputed
               ]
       , HE.div [ HA.class' "profile-section" ]
@@ -189,6 +189,8 @@ edit model =
       unwrapFailure = case _ of
             Failure s → s
             _ → ""
+
+      enterKeyHint = HA.createAttribute "enterkeyhint"
 
 preview ∷ ProfileModel → Array (Html ProfileMessage)
 preview model =
