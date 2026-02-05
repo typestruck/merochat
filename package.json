@@ -39,7 +39,7 @@
     "purs-backend-es": "^1.4.3",
     "purs-loader": "^3.7.2",
     "purs-tidy": "^0.11.0",
-    "webpack": "^5.99.9",
+    "webpack": "^5.105.0",
     "webpack-cli": "4.9.2"
   },
   "optionalDependencies": {
