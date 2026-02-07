@@ -1066,6 +1066,7 @@ insert into privileges (feature, name, description, quantity) values
     (200, 'Participate in chat experiments', 'Take part in chat experiments. Some experiments may require more karma', 50),
     (201, 'Send asks', 'Send asks to other users', 70),
     (202, 'Posts', 'Post to your profile feed', 200),
+    (203, 'Praise', 'Praise other users', 60),
     (300, 'More tags', 'Increased number of max profile tags', 250),
     (400, 'Send links', 'Use markdown links in chats or posts', 1000),
     (401, 'Send audio', 'Send voice messages', 500),

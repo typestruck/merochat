@@ -799,8 +799,8 @@ a {
 }
 
 .message {
-    flex-direction: column;
     display: flex;
+    flex-direction: column;
     width: 100%;
     margin: 2px 0px;
 }
@@ -2780,7 +2780,8 @@ label {
     font-size: 0.95em;
 }
 
-.asks {
+.asks,
+.praise {
     display: flex;
     flex-direction: column;
 }
@@ -2790,7 +2791,8 @@ label {
     margin-top: 10px;
 }
 
-.asks-form {
+.asks-form,
+.praises-form {
     display: flex;
     flex-direction: column;
     width: 500px;
@@ -2901,19 +2903,34 @@ label {
     margin-bottom: 5px;
 }
 
+.tag-praise {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.tag-praise:hover {
+    border-color: var(--merochat-green);
+    color: var(--merochat-green);
+}
+
+.label-praise {
+    margin-bottom: 10px;
+}
+
 .ask-answer {
     margin-top: 10px;
     margin-bottom: 20px;
 }
 
 .asks-form .chat-input,
-.post-card .chat-input {
+.post-card .chat-input,
+.praises-form .chat-input {
     width: 93%;
     border-radius: 5px;
 }
 
 .big-card .asks-form .chat-input,
-.post-card .chat-input {
+.post-card .chat-input .post-card .praises-form .chat-input {
     border: 0;
 }
 
@@ -3342,7 +3359,15 @@ label {
     }
 
     .incoming-message .reactions {
-        margin-left: 10px;
+        margin-left: 0px;
+    }
+
+    .outgoing-message .reactions {
+        margin-right: 0px;
+    }
+
+    .message-content {
+        max-width: 80%;
     }
 
     #profile-edition-form,
@@ -3429,16 +3454,12 @@ label {
 
     }
 
-    .message div {
-        max-width: 100%;
-    }
-
     .incoming-message .message-content {
-        margin-left: 10px;
+        margin-left: 0px;
     }
 
     .outgoing-message .message-content {
-        margin-right: 10px;
+        margin-right: 0px;
     }
 
     .modal-placeholder {
@@ -3711,7 +3732,8 @@ label {
         padding: 20px;
     }
 
-    .asks-form {
+    .asks-form,
+    .praises-form {
         width: calc(100vw - 40px);
         padding: 0px;
     }

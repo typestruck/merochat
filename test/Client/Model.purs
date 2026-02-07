@@ -36,6 +36,10 @@ model =
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
+      , praise : {
+             freeToSend: true,
+             selected : []
+      }
       , asks:
               { freeToFetch: true
               , freeToSend: true

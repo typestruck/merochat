@@ -179,6 +179,9 @@ update st model =
             ToggleShowing userId for ShowAsks → CIA.toggleShowing userId for model
             DisplayAsks userId asks → CIA.displayAsks userId asks model
 
+            --praise
+            SpecialRequest (FetchPraise _) ->model /\ []
+
             --posts
             DisplayPosts userId posts → CIPS.displayPosts userId posts model
             SpecialRequest (FetchPosts userId) → CIPS.fetchPosts userId model
@@ -360,7 +363,7 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
             } /\ [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
-finishTutorial model = model { user { completedTutorial = true } } /\ [ greet ]
+finishTutorial model = model { user { completedTutorial = true},  suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions  } /\ [ greet ]
       where
       sender = 4
       greet = do

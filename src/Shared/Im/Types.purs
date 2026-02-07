@@ -32,6 +32,7 @@ import Shared.Content (Content(..))
 import Shared.DateTime (DateTimeWrapper)
 import Shared.Experiments.Types (ExperimentsMessage(..))
 import Shared.Post (Post)
+import Shared.Praise (PraisedFor)
 import Shared.Privilege (Privilege)
 import Shared.ProfileColumn (ProfileColumn)
 import Shared.Resource (Bundle)
@@ -180,6 +181,10 @@ type Im =
               , unallowed ∷ Array Int
               , sent ∷ Array Int
               }
+      , praise ∷
+              { freeToSend ∷ Boolean,
+              selected :: Array PraisedFor
+              }
       )
 
 type ImModel = Record Im
@@ -233,6 +238,7 @@ data RetryableRequest
       | FetchContacts Boolean
       | FetchMissedContacts
       | FetchPosts Int
+      | FetchPraise Int
       | FetchAsks Int
       | ToggleModal Modal
       | BlockUser Int
@@ -435,7 +441,7 @@ data WebSocketPayloadClient
       | NewPost { userId ∷ Int, post ∷ Post }
       | NewDeletedMessage DeletedMessagePayload
       | TrackedAvailability { id ∷ Int, availability ∷ Availability }
-      | CurrentOnlineSuggestions { suggestions :: Array Suggestion }
+      | CurrentOnlineSuggestions { suggestions ∷ Array Suggestion }
       | ContactTyping { id ∷ Int }
       | ServerReceivedMessage
               { previousId ∷ Int
@@ -526,16 +532,16 @@ instance BoundedEnum SuggestionsFrom where
             LastTwoWeeks → 2
             LastMonth → 3
             All → 4
-            ContactsOnly -> 5
-            FavoritesOnly -> 6
+            ContactsOnly → 5
+            FavoritesOnly → 6
       toEnum = case _ of
             0 → Just OnlineOnly
             1 → Just ThisWeek
             2 → Just LastTwoWeeks
             3 → Just LastMonth
             4 → Just All
-            5 -> Just ContactsOnly
-            6 -> Just FavoritesOnly
+            5 → Just ContactsOnly
+            6 → Just FavoritesOnly
             _ → Nothing
 
 instance BoundedEnum MessageStatus where
@@ -591,16 +597,16 @@ instance Enum SuggestionsFrom where
             LastTwoWeeks → Just LastMonth
             LastMonth → Just All
             All → Just ContactsOnly
-            ContactsOnly -> Just FavoritesOnly
-            FavoritesOnly -> Nothing
+            ContactsOnly → Just FavoritesOnly
+            FavoritesOnly → Nothing
       pred = case _ of
             OnlineOnly → Nothing
             ThisWeek → Just OnlineOnly
             LastTwoWeeks → Just ThisWeek
             LastMonth → Just LastTwoWeeks
             All → Just LastMonth
-            ContactsOnly -> Just All
-            FavoritesOnly -> Just ContactsOnly
+            ContactsOnly → Just All
+            FavoritesOnly → Just ContactsOnly
 
 instance Enum ReportReason where
       succ = case _ of

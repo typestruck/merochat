@@ -34,6 +34,7 @@ import Shared.Im.Svg as SIS
 import Shared.Im.View.Asks as SIVA
 import Shared.Im.View.ChatInput as SIVC
 import Shared.Im.View.Posts as SIVP
+import Shared.Im.View.Praise as SIVPR
 import Shared.Im.View.Retry as SIVR
 import Shared.Intl as SI
 import Shared.Markdown as SM
@@ -174,6 +175,7 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
 
                   , HE.div [ HA.class' { "green-tab": true, hidden: user.temporary } ]
                           [ HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowInfo } ] [ HE.text "Info" ]
+                          , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPraise } ] [ HE.text "Praise" ]
                           , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowPosts } ] [ HE.text "Posts" ]
                           , HE.div [ HA.onClick $ ToggleShowing user.id ForContacts ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": user.showing == ShowAsks } ] [ HE.text "Asks" ]
                           ]
@@ -186,6 +188,15 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                   , HE.div [ HA.class' { "card-description": true, hidden: user.showing /= ShowInfo }, HA.title "See full profile" ]
                           [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                           , HE.div' [ HA.innerHtml $ SM.parse user.description ]
+                          ]
+
+                 , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
+                          [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
+                          , SIVPR.praiseForm model user
+                          -- , if model.praise.freeToFetch then
+                             --     HE.div [ HA.class' "asks-list" ] $ map SIVPR.praised user.asks
+                            -- else
+                              --    HE.div' [ HA.class' "loading" ]
                           ]
 
                   , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
@@ -261,6 +272,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
             , HE.div [ HA.class' { "green-tab": true, hidden: suggestion.temporary } ]
                     [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
+                    ,  HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPraise } ] [ HE.text "Praise" ]
                     , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
                     , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowAsks } ] [ HE.text "Asks" ]
                     ]
@@ -273,6 +285,15 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
             , HE.div [ HA.class' { "card-description": true, hidden: suggestion.showing /= ShowInfo } ]
                     [ HE.span [ HA.class' "card-about-description" ] [ HE.text "About" ]
                     , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
+                    ]
+
+             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
+                    [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
+                    , SIVPR.praiseForm model suggestion
+                   -- , if model.praise.freeToFetch then
+                     --       HE.div [ HA.class' "praise-list" ] $ map SIVPR.praised suggestion.praise
+                     -- else
+                       --     HE.div' [ HA.class' "loading" ]
                     ]
 
             , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]

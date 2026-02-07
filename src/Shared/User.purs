@@ -84,7 +84,7 @@ type IU =
               )
       )
 
-data ProfileTab = ShowInfo | ShowPosts | ShowAsks
+data ProfileTab = ShowInfo | ShowPosts | ShowAsks | ShowPraise
 
 data ReceiveEmail = AllEmails | UnreadMessageEmails | NoEmails
 
@@ -175,7 +175,7 @@ instance Bounded Gender where
 
 instance Bounded ProfileTab where
       bottom = ShowInfo
-      top = ShowAsks
+      top = ShowPraise
 
 instance BoundedEnum ProfileTab where
       cardinality = Cardinality 1
@@ -183,11 +183,13 @@ instance BoundedEnum ProfileTab where
             ShowInfo → 0
             ShowPosts → 1
             ShowAsks → 2
+            ShowPraise → 3
 
       toEnum = case _ of
             0 → Just ShowInfo
             1 → Just ShowPosts
             2 → Just ShowAsks
+            3 -> Just ShowPraise
             _ → Nothing
 
 instance BoundedEnum Gender where
@@ -223,11 +225,13 @@ instance Enum ProfileTab where
       succ = case _ of
             ShowInfo → Just ShowPosts
             ShowPosts → Just ShowAsks
-            ShowAsks → Nothing
+            ShowAsks → Just ShowPraise
+            ShowPraise -> Nothing
       pred = case _ of
             ShowInfo → Nothing
             ShowPosts → Just ShowInfo
             ShowAsks → Just ShowPosts
+            ShowPraise -> Just ShowPosts
 
 instance Bounded ProfileVisibility where
       bottom = Everyone

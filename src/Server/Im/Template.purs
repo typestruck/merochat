@@ -86,6 +86,10 @@ template payload = do
             , reportReason: Nothing
             , reportComment: Nothing
             , imUpdated: false
+            , praise : {
+                     freeToSend: true
+                    , selected : []
+            }
             , asks:
                     { freeToFetch: true
                     , freeToSend: true
