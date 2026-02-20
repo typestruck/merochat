@@ -22,18 +22,18 @@ tests = do
       TU.suite "/unsubscribe" do
             TU.test "updates user email setting"
                   $ TS.serverAction
-                  do
-                        userId <- TSU.createUser
-                        SD.execute $ insert # into unsubscribeTokens (_contents /\ _unsubscriber) # values ("1234" /\ userId)
-                        void $ SUH.unsubscribe { query : { token : "1234" }}
-                        user <- TSU.fetchUser userId
-                        R.liftAff $ TUA.equal  (Just NoEmails) ( _.receive_email <$> user)
+                          do
+                                userId ← TSU.createUser
+                                SD.execute $ insert # into unsubscribeTokens (_contents /\ _unsubscriber) # values ("1234" /\ userId)
+                                void $ SUH.unsubscribe { query: { token: "1234" } }
+                                user ← TSU.fetchUser userId
+                                R.liftAff $ TUA.equal (Just NoEmails) (_.receive_email <$> user)
 
             TU.test "deletes unsubscribe token"
                   $ TS.serverAction
-                  do
-                        userId <- TSU.createUser
-                        SD.execute $ insert # into unsubscribeTokens (_contents /\ _unsubscriber) # values ("1234" /\ userId)
-                        void $ SUH.unsubscribe { query : { token : "1234" }}
-                        token <- SD.single $ select _id # from unsubscribeTokens # wher (_contents .=. "1234")
-                        R.liftAff $ TUA.equal Nothing token
+                          do
+                                userId ← TSU.createUser
+                                SD.execute $ insert # into unsubscribeTokens (_contents /\ _unsubscriber) # values ("1234" /\ userId)
+                                void $ SUH.unsubscribe { query: { token: "1234" } }
+                                token ← SD.single $ select _id # from unsubscribeTokens # wher (_contents .=. "1234")
+                                R.liftAff $ TUA.equal Nothing token

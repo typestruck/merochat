@@ -89,7 +89,7 @@ contactList isClientRender model =
                                           else
                                                 case lastHistoryEntry of
                                                       Just entry → case entry.reaction of
-                                                            Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [HE.text $ "Reacted with " <> reaction ]]
+                                                            Just reaction → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text $ "Reacted with " <> reaction ] ]
                                                             Nothing → HE.div' [ HA.class' "contact-list-last-message duller", HA.innerHtml $ SM.parseRestricted entry.content ]
                                                       _ → HE.div [ HA.class' "contact-list-last-message duller" ] [ HE.i_ [ HE.text "No messages yet" ] ]
                                         ]

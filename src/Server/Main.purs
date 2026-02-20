@@ -33,7 +33,7 @@ main = do
       startWebSocketServer pool allUserSubscriptionsRef
       startHttpServer pool allUserSubscriptionsRef
 
-startWebSocketServer ∷ Pool -> Ref (HashMap Int (Array String)) -> Effect Unit
+startWebSocketServer ∷ Pool → Ref (HashMap Int (Array String)) → Effect Unit
 startWebSocketServer pool allUserSubscriptionsRef = do
       allUsersAvailabilityRef ← ER.new DH.empty
       webSocketServer ← SW.createWebSocketServerWithPort (Port localPort) {} $ const (EC.log $ "Web socket now up on ws://localhost:" <> show localPort)
@@ -42,7 +42,7 @@ startWebSocketServer pool allUserSubscriptionsRef = do
       inactiveIntervalId ← ET.setInterval inactiveInterval (SWE.terminateInactive pool allUsersAvailabilityRef)
       SW.onServerClose webSocketServer (const (ET.clearInterval inactiveIntervalId))
 
-startHttpServer ∷ Pool -> Ref (HashMap Int (Array String)) -> Effect Unit
+startHttpServer ∷ Pool → Ref (HashMap Int (Array String)) → Effect Unit
 startHttpServer pool allUserSubscriptionsRef =
       EA.launchAff_ $ void do
             PS.startGuarded (defaultOpts { port = port }) spec

@@ -61,7 +61,7 @@ update model =
             ReportPlane id userId → reportPlane id userId model
             MessagePaperPlane userId message → messagePaperPlane userId message model
 
-messagePaperPlane ∷ Int → String  -> ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+messagePaperPlane ∷ Int → String → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 messagePaperPlane userId message model = model /\ [ send ]
       where
       send = EC.liftEffect do
@@ -131,13 +131,13 @@ throwPlane model = model { paperPlane = model.paperPlane { loading = true } } /\
             r ← CCN.silentRequest $ routes.experiments.throw { body: { message: SU.fromJust model.paperPlane.message } }
             pure <<< Just $ AfterThrowPlane r.id
 
-afterThrowPlane ∷ Int →  ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
+afterThrowPlane ∷ Int → ExperimentsModel → ExperimentsModel /\ (Array (Aff (Maybe ExperimentsMessage)))
 afterThrowPlane id model =
       model
             { paperPlane = model.paperPlane
                     { loading = false
                     , message = Nothing
-                    , thrown = { id, thrower: model.user.id, name : "", message: SU.fromJust model.paperPlane.message, status: Flying } : model.paperPlane.thrown
+                    , thrown = { id, thrower: model.user.id, name: "", message: SU.fromJust model.paperPlane.message, status: Flying } : model.paperPlane.thrown
                     }
             } /\ []
 

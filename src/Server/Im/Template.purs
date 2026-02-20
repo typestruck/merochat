@@ -86,15 +86,16 @@ template payload = do
             , reportReason: Nothing
             , reportComment: Nothing
             , imUpdated: false
-            , praise : {
-                     freeToSend: true
-                    , selected : []
-            }
+            , praise:
+                    { freeToSave: true
+                    , selected: Nothing
+                    , other: Nothing
+                    }
             , asks:
                     { freeToFetch: true
                     , freeToSend: true
                     , unallowed: []
-                    ,sent : []
+                    , sent: []
                     , question: Nothing
                     }
             , posts:

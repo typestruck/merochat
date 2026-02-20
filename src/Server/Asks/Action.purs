@@ -30,7 +30,7 @@ import Shared.Resource (Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.ResponseError (ResponseError(..))
 
-presentAsks :: Int -> ServerEffect (Array Ask)
+presentAsks ∷ Int → ServerEffect (Array Ask)
 presentAsks userId = SAD.presentAsks userId
 
 refreshAsks ∷ Int → Maybe Int → ServerEffect (Array Ask)
@@ -43,7 +43,7 @@ sendAsk loggedUserId userId question = do
       canSendAsk ← SPD.hasPrivilege loggedUserId SendAsks
       unless canSendAsk <<< RE.throw $ BadRequest { reason: "not enough karma" }
       allowedToAsk ← SAD.isAllowedToAsk loggedUserId userId
-      when allowedToAsk <<< SD.withTransaction $ \connection -> do
+      when allowedToAsk <<< SD.withTransaction $ \connection → do
             SAD.saveAsk connection loggedUserId userId question
             SAD.notifyAsk connection userId
       pure allowedToAsk

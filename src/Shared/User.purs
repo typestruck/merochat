@@ -64,7 +64,7 @@ type IU =
               , chatBackground ∷ Maybe String
               , ownBackground ∷ Boolean
               , posts ∷ Array Post
-              , favorite :: Boolean
+              , favorite ∷ Boolean
               , showing ∷ ProfileTab
               , profileVisibility ∷ ProfileVisibility
               , postsVisibility ∷ ProfileVisibility
@@ -79,7 +79,7 @@ type IU =
               , joined ∷ DateTimeWrapper
               , completedTutorial ∷ Boolean
               , bin ∷ Int
-              , asks :: Array Ask
+              , asks ∷ Array Ask
               , privileges ∷ Array Privilege
               )
       )
@@ -189,7 +189,7 @@ instance BoundedEnum ProfileTab where
             0 → Just ShowInfo
             1 → Just ShowPosts
             2 → Just ShowAsks
-            3 -> Just ShowPraise
+            3 → Just ShowPraise
             _ → Nothing
 
 instance BoundedEnum Gender where
@@ -226,12 +226,12 @@ instance Enum ProfileTab where
             ShowInfo → Just ShowPosts
             ShowPosts → Just ShowAsks
             ShowAsks → Just ShowPraise
-            ShowPraise -> Nothing
+            ShowPraise → Nothing
       pred = case _ of
             ShowInfo → Nothing
             ShowPosts → Just ShowInfo
             ShowAsks → Just ShowPosts
-            ShowPraise -> Just ShowPosts
+            ShowPraise → Just ShowPosts
 
 instance Bounded ProfileVisibility where
       bottom = Everyone

@@ -38,7 +38,7 @@ caught model =
                     ]
             , HE.div [ HA.class' "paper-thrown-from" ]
                     [ HE.text $ "from "
-                    , HE.a [HA.onClick $ MessagePaperPlane plane.thrower plane.message] [ HE.text plane.name ]
+                    , HE.a [ HA.onClick $ MessagePaperPlane plane.thrower plane.message ] [ HE.text plane.name ]
                     ]
             ]
 

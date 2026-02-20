@@ -26,7 +26,7 @@ userMenu model =
                     [ envelope [ HA.viewBox "0 0 122.88 78.607", HA.class' "svg-inbox", HA.onClick ToggleChangelog, HA.title "MeroChat updates" ]
                     , changelogCount model
                     , changelogInbox model
-                    , SIS.gear [HA.onClick <<< SpecialRequest $ ToggleModal (Screen $ if model.smallScreen then ShowMenu else ShowProfile)]
+                    , SIS.gear [ HA.onClick <<< SpecialRequest $ ToggleModal (Screen $ if model.smallScreen then ShowMenu else ShowProfile) ]
                     ]
             ]
 

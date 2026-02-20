@@ -103,7 +103,7 @@ subscribe loggedUserId token = do
       EC.liftEffect $ ER.modify_ addSub context.allUserSubscriptionsRef
       SIDE.subscribe loggedUserId token
       where
-      addSub hm = DH.insertWith (\n e -> DA.nubEq $ n <> e) loggedUserId [ token ] hm
+      addSub hm = DH.insertWith (\n e → DA.nubEq $ n <> e) loggedUserId [ token ] hm
 
 processMessage ∷ ∀ r. Int → Int → Content → BaseEffect { pool ∷ Pool | r } (Either MessageError (Int /\ String))
 processMessage loggedUserId userId content = do

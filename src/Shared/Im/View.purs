@@ -11,6 +11,7 @@ import Data.String as DS
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
+import Shared.App.Banner as SAB
 import Shared.Im.Contact as SC
 import Shared.Im.View.ChatHistory as SIVH
 import Shared.Im.View.ChatInput as SIVC
@@ -27,7 +28,8 @@ import Shared.Resource as SP
 view ∷ Boolean → ImModel → Html ImMessage
 view isClientRender model = HE.div [ HA.id "im" ]
       [ HE.div [ HA.class' { "contact-box": true, "same-background": DM.isJust model.chatting, "current-mobile-screen": model.initialScreen } ]
-              [ SIVU.userMenu model
+              [ SAB.banner
+              , SIVU.userMenu model
               , HE.div [ HA.class' { "suggestion-box-error": true, flexed: model.smallScreen && not (DS.null model.errorMessage) } ] [ HE.text model.errorMessage ]
               , SIVN.reloadPage model.imUpdated
               , SIVN.prompt model.enableNotificationsVisible

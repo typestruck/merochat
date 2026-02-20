@@ -18,7 +18,7 @@ import Shared.Post (Post)
 
 profile ∷ { guards ∷ { loggedUserId ∷ Int } } → ServerEffect Html
 profile { guards: { loggedUserId } } = do
-      payload <- SPA.profile loggedUserId
+      payload ← SPA.profile loggedUserId
       R.liftEffect $ SPT.template payload
 
 generated ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { field ∷ What } } → ServerEffect String
@@ -30,7 +30,7 @@ posts routes = SPA.refreshPosts routes.guards.loggedUserId routes.query.after
 asks ∷ { guards ∷ { loggedUserId ∷ Int }, query ∷ { after ∷ Maybe Int } } → ServerEffect (Array Ask)
 asks routes = SPA.refreshAsks routes.guards.loggedUserId routes.query.after
 
-answer ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ {id :: Int, answer :: String} } → ServerEffect Empty
+answer ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int, answer ∷ String } } → ServerEffect Empty
 answer routes = do
       SPA.saveAnswer routes.guards.loggedUserId routes.body.id routes.body.answer
       pure Empty
@@ -38,12 +38,12 @@ answer routes = do
 save ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ SavedFields } → ServerEffect { avatar ∷ Maybe String }
 save routes = SPA.save routes.guards.loggedUserId routes.body
 
-ignore ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int } } → ServerEffect Empty
+ignore ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Empty
 ignore routes = do
       SPA.ignoreAsk routes.guards.loggedUserId routes.body.id
       pure Empty
 
-report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int, userId :: Int } } → ServerEffect Empty
+report ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int, userId ∷ Int } } → ServerEffect Empty
 report routes = do
       SPA.reportAsk routes.guards.loggedUserId routes.body.id routes.body.userId
       pure Empty

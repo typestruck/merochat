@@ -46,4 +46,4 @@ template payload = do
                     }
             }
       where
-      extend ask = (R.merge (ask :: Ask) { typedAnswer : Nothing :: Maybe String}) :: ProfileAsk
+      extend ask = (R.merge (ask ∷ Ask) { typedAnswer: Nothing ∷ Maybe String }) ∷ ProfileAsk

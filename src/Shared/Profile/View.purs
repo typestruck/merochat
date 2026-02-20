@@ -42,7 +42,7 @@ import Shared.Unsafe as SU
 import Shared.User (Gender(..))
 
 view ∷ ProfileModel → Html ProfileMessage
-view model = HE.div [ HA.id $ show ProfileEditionForm]
+view model = HE.div [ HA.id $ show ProfileEditionForm ]
       [ HE.div [ HA.onClick $ ToggleAskMenu Nothing, HA.class' { "profile-edition": true, hidden: not model.visible } ]
               ( [ HE.div [ HA.class' "green-tab" ]
                         [ HE.div [ HA.class' { "regular-green-tab": true, "selected-green-tab": model.mode == Edit }, HA.onClick <<< SetPField $ _ { mode = Edit } ] [ HE.text "Edit" ]

@@ -16,7 +16,7 @@ type Histories =
       , first_message_date ∷ Column DateTime Default
       , last_message_date ∷ Column DateTime Default
       , recipient_archived ∷ Column Boolean Default
-      , favorite :: Column Favorited Default
+      , favorite ∷ Column Favorited Default
       , sender_deleted_to ∷ Maybe Int
       , recipient_deleted_to ∷ Maybe Int
       )

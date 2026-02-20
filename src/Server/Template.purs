@@ -9,10 +9,11 @@ import Environment (production)
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
-import Shared.Svg as SS
+import Shared.App.Banner as SAB
 import Shared.Resource (Bundle(..), Media(..), ResourceType(..))
 import Shared.Resource as SP
 import Shared.Routes (routesSpec)
+import Shared.Svg as SS
 
 type Parameters a =
       { title ∷ String
@@ -47,7 +48,8 @@ externalDefaultParameters =
       , bundled: false
       , css: []
       , header:
-              [ HE.div [ HA.class' "header" ]
+              [ SAB.banner
+              , HE.div [ HA.class' "header" ]
                       [ HE.div [ HA.id "header", HA.class' "big-logo" ]
                               [ SS.logo
 

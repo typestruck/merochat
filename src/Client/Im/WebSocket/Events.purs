@@ -163,7 +163,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       ServerChangedStatus cs → receiveStatusChange cs model
       ServerReceivedMessage rm → receiveAcknowledgement rm model
       NewIncomingMessage ni → receiveIncomingMessage webSocket isFocused ni model
-      CurrentOnlineSuggestions s -> receiveCurrentOnlineSuggestions s.suggestions model
+      CurrentOnlineSuggestions s → receiveCurrentOnlineSuggestions s.suggestions model
       NewEditedMessage ni → receiveEditedMessage webSocket isFocused ni model
       NewDeletedMessage nd → receiveDeletedMessage nd model
       ContactTyping tp → receiveTyping tp model
@@ -175,7 +175,7 @@ receiveMessage webSocket isFocused payload model = case payload of
       BadMessage bm → receiveBadMessage bm model
       PayloadError p → receivePayloadError p model
 
-receiveCurrentOnlineSuggestions ∷ Array Suggestion → ImModel -> NextMessage
+receiveCurrentOnlineSuggestions ∷ Array Suggestion → ImModel → NextMessage
 receiveCurrentOnlineSuggestions suggestions model = model /\ [ pure <<< Just $ DisplayMoreSuggestions suggestions ]
 
 receivePost ∷ { post ∷ Post, userId ∷ Int } → ImModel → NoMessages

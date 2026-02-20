@@ -5,7 +5,9 @@ import Prelude
 import Client.Privilege as CCP
 import Data.Array as DA
 import Data.Enum as DE
+import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
+import Data.Tuple.Nested (type (/\), (/\))
 import Flame (Html)
 import Flame.Html.Attribute as HA
 import Flame.Html.Element as HE
@@ -40,37 +42,41 @@ praiseForm model user =
       else
             form
       where
-      praiseOption po = HE.div [HA.class' "tag tag-praise"] [HE.text po]
+      isSelected for = case model.praise.selected of
+            Nothing → false
+            Just (_ /\ selection) → DA.elem for selection
 
+      praiseOption (for /\ name) = HE.div [ HA.class' { "tag tag-praise": true, selected: isSelected for }, HA.onClick $ TogglePraise user.id for ] [ HE.text name ]
+
+      hasOtherPraise = isSelected $ Other ""
       form = HE.div [ HA.class' "praises-form" ]
-            [ HE.label [HA.class' "label-praise"] [ HE.text $ "What best describes " <> user.name <> "?" ]
+            [ HE.label [ HA.class' "label-praise" ] [ HE.text $ "What best describes " <> user.name <> "?" ]
             , HE.div_ $ map praiseOption praises
-             , HE.textarea'
-                    [ HA.class' { "chat-input" : true, hidden: true }
+            , HE.textarea'
+                    [ HA.class' { "chat-input": true, hidden: not hasOtherPraise }
                     , HA.placeholder "Please specify"
                     , HA.maxlength maxPraiseCharacters
                     , HA.onInput' ResizeChatInput
-                    --, SCN.onChange (SetPraise <<< SCN.toMaybe)
+                    , SCN.onChange (SetOtherPraise <<< SCN.toMaybe)
                     , HA.autocomplete "off"
-                    --, HA.value $ DM.fromMaybe "" model.praises.question
+                    , HA.value $ DM.fromMaybe "" model.praise.other
                     ]
-            , if model.praise.freeToSend then
-                    HE.input [ HA.disabled $ DA.null model.praise.selected, HA.type' "button", HA.class' "green-button post-button build praise-button", HA.value "Send praise"] --, HA.onClick $ SendPraise user.id ]
+            , if model.praise.freeToSave then
+                    HE.input [ HA.disabled $ DM.isNothing model.praise.selected || hasOtherPraise && DM.isNothing model.praise.other, HA.type' "button", HA.class' "green-button post-button build ask-button", HA.value "Save", HA.onClick SavePraise ]
               else
                     HE.div' [ HA.class' "loading" ]
             ]
 
-
-praises :: Array String
+praises ∷ Array (PraisedFor /\ String)
 praises = map praisedFor $ DE.upFromIncluding Funny
       where
-      praisedFor = case  _ of
-            Funny → "Funny"
-            Advice → "Good advice"
-            Arguing → "Likes to argue"
-            Serious → "Serious conversations"
-            FastReply → "Replies fast"
-            AlwaysReply → "Always reply"
-            LongReply → "Long form conversations"
-            Sarcastic → "Sarcastic "
-            Other _ →  "Other"
+      praisedFor = case _ of
+            Funny → Funny /\ "Funny"
+            Advice → Advice /\ "Good advice"
+            Arguing → Arguing /\ "Likes to argue"
+            Serious → Serious /\ "Serious conversations"
+            FastReply → FastReply /\ "Replies fast"
+            AlwaysReply → AlwaysReply /\ "Always reply"
+            LongReply → LongReply /\ "Long form conversations"
+            Sarcastic → Sarcastic /\ "Sarcastic "
+            Other _ → Other "" /\ "Other"

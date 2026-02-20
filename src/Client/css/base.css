@@ -236,8 +236,37 @@ svg {
     font-weight: bold;
 }
 
+.app-step {
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-step img {
+    width: 90%;
+}
+
+.app-banner {
+    display: none;
+    position: absolute;
+    top: 0;
+    text-align: center;
+    padding: 10px 0;
+    width: 100%;
+    background-color: var(--merochat-red);
+}
+
+.app-banner a {
+    color: var(--light-color);
+    font-weight: bold;
+    cursor: pointer;
+}
 
 @media (max-width:1279px) {
+    .app-banner {
+        display: block;
+    }
+
     .pastel-area {
         margin: 40px 0;
         padding: 20px;
@@ -251,6 +280,7 @@ svg {
 
     .tagline {
         font-size: 1.2em;
+        background-color: unset;
     }
 
     .forgot-sign-up .or {
@@ -291,6 +321,7 @@ svg {
         padding: 0;
         flex-direction: column;
         margin-right: 0;
+        margin-top: 35px;
     }
 
     .menu {
@@ -323,6 +354,12 @@ svg {
     }
 }
 
-altcha-widget {
-    /* display: none; */
+@media (display-mode: standalone) {
+    .header {
+        margin-top: unset;
+    }
+
+    .app-banner {
+        display: none;
+    }
 }

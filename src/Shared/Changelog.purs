@@ -51,13 +51,13 @@ instance BoundedEnum ChangelogAction where
             OpenBackerPage → 0
             SendDoppelgangerMessage → 1
             OpenExperimentsPage → 2
-            OpenProfilePage -> 3
+            OpenProfilePage → 3
 
       toEnum = case _ of
             0 → Just OpenBackerPage
             1 → Just SendDoppelgangerMessage
             2 → Just OpenExperimentsPage
-            3 -> Just OpenProfilePage
+            3 → Just OpenProfilePage
             _ → Nothing
 
 instance Enum ChangelogAction where
@@ -65,13 +65,13 @@ instance Enum ChangelogAction where
             OpenBackerPage → Just SendDoppelgangerMessage
             SendDoppelgangerMessage → Just OpenExperimentsPage
             OpenExperimentsPage → Just OpenProfilePage
-            OpenProfilePage -> Nothing
+            OpenProfilePage → Nothing
 
       pred = case _ of
             OpenBackerPage → Nothing
             SendDoppelgangerMessage → Just OpenBackerPage
             OpenExperimentsPage → Just SendDoppelgangerMessage
-            OpenProfilePage -> Just OpenExperimentsPage
+            OpenProfilePage → Just OpenExperimentsPage
 
 derive instance Eq ChangelogAction
 

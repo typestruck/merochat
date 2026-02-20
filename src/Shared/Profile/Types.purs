@@ -77,7 +77,7 @@ type GeneratedInput = { field ∷ What }
 
 data ProfileMode = Edit | Preview | OwnPosts | Asked
 
-type ProfileAsk = Record (A (typedAnswer :: Maybe String ))
+type ProfileAsk = Record (A (typedAnswer ∷ Maybe String))
 
 --used to generically set records
 type ProfileModel = Record PM
@@ -91,11 +91,11 @@ type PM =
       , fromTemporary ∷ Boolean
       , genderInputed ∷ Maybe Gender
       , countryInputed ∷ Maybe Int
-      , contextMenuFor :: Maybe Int
+      , contextMenuFor ∷ Maybe Int
       , generated ∷ Array What
       , visible ∷ Boolean
       , posts ∷ Array Post
-      , asks :: Array ProfileAsk
+      , asks ∷ Array ProfileAsk
       , languagesInputed ∷ Array Int
       , tagsInputed ∷ Array String
       , mode ∷ ProfileMode

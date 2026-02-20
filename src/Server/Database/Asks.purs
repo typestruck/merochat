@@ -18,8 +18,8 @@ type Asks =
       ( id ∷ Column Int (PrimaryKey /\ Identity)
       , asker ∷ Int
       , answerer ∷ Int
-      , question :: String
-      , answer :: Maybe String
+      , question ∷ String
+      , answer ∷ Maybe String
       , date ∷ Column DateTimeWrapper Default
       )
 

@@ -52,12 +52,12 @@ throwPlane loggedUserId message = do
       SED.savePlane loggedUserId message
 
 catchPlane ∷ Int → Int → ServerEffect Unit
-catchPlane loggedUserId id = SD.withTransaction $ \connection -> do
+catchPlane loggedUserId id = SD.withTransaction $ \connection → do
       SED.updatePlaneStatus connection loggedUserId id Caught
-      found <- SED.fetchThrower connection loggedUserId id
-      case found  of
-            Just { thrower }-> SED.notifyPlaneCaught connection thrower "One your paper planes have been caught"
-            _ -> pure unit
+      found ← SED.fetchThrower connection loggedUserId id
+      case found of
+            Just { thrower } → SED.notifyPlaneCaught connection thrower "One your paper planes have been caught"
+            _ → pure unit
 
 passPlane ∷ Int → Int → ServerEffect Unit
 passPlane loggedUserId id = SED.updatePlaneBy loggedUserId id

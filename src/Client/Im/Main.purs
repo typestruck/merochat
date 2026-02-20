@@ -18,6 +18,7 @@ import Client.Im.History as CIH
 import Client.Im.ModalsMenu as CIU
 import Client.Im.Notification as CIN
 import Client.Im.Posts as CIPS
+import Client.Im.Praise as CIPR
 import Client.Im.Pwa as CIP
 import Client.Im.SmallScreen as CISS
 import Client.Im.Suggestion as CIS
@@ -180,7 +181,11 @@ update st model =
             DisplayAsks userId asks → CIA.displayAsks userId asks model
 
             --praise
-            SpecialRequest (FetchPraise _) ->model /\ []
+            SpecialRequest (FetchPraise _) → model /\ []
+            TogglePraise userId praise → CIPR.togglePraise userId praise model
+            SetOtherPraise praise → CIPR.setOtherPraise praise model
+            SavePraise → CIPR.savePraise model
+            AfterSavePraise userId allowed → CIPR.afterSavePraise userId allowed model
 
             --posts
             DisplayPosts userId posts → CIPS.displayPosts userId posts model
@@ -363,7 +368,7 @@ setPrivacySettings { readReceipts, typingStatus, profileVisibility, onlineStatus
             } /\ [ pure $ Just FetchMoreSuggestions ]
 
 finishTutorial ∷ ImModel → NextMessage
-finishTutorial model = model { user { completedTutorial = true},  suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions  } /\ [ greet ]
+finishTutorial model = model { user { completedTutorial = true }, suggestions = DA.filter ((_ /= sender) <<< _.id) model.suggestions } /\ [ greet ]
       where
       sender = 4
       greet = do

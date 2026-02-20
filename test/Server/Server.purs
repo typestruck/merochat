@@ -36,8 +36,8 @@ newTestPool =
 
 serverAction ∷ ∀ a. ServerEffect a → Aff Unit
 serverAction action = do
-      pool ← liftEffect  newTestPool
-      allUserSubscriptionsRef <- EC.liftEffect $ ER.new DH.empty
+      pool ← liftEffect newTestPool
+      allUserSubscriptionsRef ← EC.liftEffect $ ER.new DH.empty
       R.runBaseAff' <<< RE.catch (\ex → R.liftAff $ TUA.failure ("unexpected exception caught: " <> show ex)) <<< RR.runReader
             { pool
             , allUserSubscriptionsRef
@@ -47,8 +47,8 @@ serverAction action = do
 
 serverActionCatch ∷ ∀ a. (ResponseError → Run (AFF + EFFECT + ()) Unit) → ServerEffect a → Aff Unit
 serverActionCatch c action = do
-      pool ← liftEffect  newTestPool
-      allUserSubscriptionsRef <- EC.liftEffect $ ER.new DH.empty
+      pool ← liftEffect newTestPool
+      allUserSubscriptionsRef ← EC.liftEffect $ ER.new DH.empty
       R.runBaseAff' <<< RE.catch c <<< RR.runReader
             { pool
             , allUserSubscriptionsRef

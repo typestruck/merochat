@@ -15,6 +15,7 @@ import Shared.Experiments.Types (Match, PaperPlane, PaperPlaneStatus, Question)
 import Shared.Html (Html)
 import Shared.Im.Types (Contact, HistoryMessage, Report, Suggestion, SuggestionsFrom)
 import Shared.Post (PostPayload, Post)
+import Shared.Praise (PraisedFor)
 import Shared.Profile.Types (GeneratedInput, SavedFields)
 import Shared.Settings.Types (PrivacySettings)
 
@@ -49,6 +50,11 @@ spec ∷
                                   , query ∷ { token ∷ String }
                                   , response ∷ Html
                                   }
+                    , app ∷
+                            GET "/app"
+                                  { response ∷ Html
+                                  }
+
                     , login ∷
                             Routes "/login"
                                   { guards ∷ Guards ("checkAnonymous" : Nil)
@@ -84,6 +90,15 @@ spec ∷
                                                         , poster ∷ Int
                                                         }
                                                 , response ∷ Empty
+                                                }
+                                  }
+                    , praise ∷
+                            Routes "/praise"
+                                  { guards ∷ Guards ("loggedUserId" : Nil)
+                                  , save ∷
+                                          POST "/save"
+                                                { body ∷ { userId ∷ Int, for ∷ Array PraisedFor }
+                                                , response ∷ { allowed ∷ Boolean }
                                                 }
                                   }
                     , asks ∷

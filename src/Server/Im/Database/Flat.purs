@@ -33,7 +33,7 @@ type FlatFields rest =
       , id ∷ Int
       , bin ∷ Int
       , unseenPosts ∷ Maybe BigInt
-      , favorite :: Boolean
+      , favorite ∷ Boolean
       , karma ∷ Int
       , karmaPosition ∷ Int
       , postsVisibility ∷ ProfileVisibility
@@ -102,7 +102,7 @@ fromFlatUser fc =
       , totalAsks: DM.fromMaybe 0 (fc.totalAsks >>= BI.toInt)
       , bin: fc.bin
       , asksVisibility: fc.asks_visibility
-      , favorite : fc.favorite
+      , favorite: fc.favorite
       , backer: SC.coerce fc.backer
       , profileVisibility: fc.profileVisibility
       , readReceipts: SC.coerce fc.readReceipts

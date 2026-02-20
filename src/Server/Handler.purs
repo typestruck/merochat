@@ -17,6 +17,7 @@ import Run as R
 import Run.Except as RE
 import Run.Reader as RR
 import Server.Admin.Handler as SHA
+import Server.App.Handler as SAPH
 import Server.Asks.Handler as SAH
 import Server.Backer.Handler as SBH
 import Server.Banned.Handler as SBNH
@@ -35,6 +36,7 @@ import Server.Logout as SL
 import Server.Logout.Handler as SLOH
 import Server.NotFound.Handler as SNH
 import Server.Posts.Handler as SPSH
+import Server.Praise.Handler as SPRH
 import Server.Profile.Handler as SPH
 import Server.Recover.Handler as SRH
 import Server.Settings.Handler as SSH
@@ -57,6 +59,9 @@ handlers reading =
       , asks:
               { get: runJson reading SAH.asks
               , post: runJson reading SAH.post
+              }
+      , praise:
+              { save: runJson reading SPRH.save
               }
       , im:
               { get: runHtml reading SIH.im
@@ -90,6 +95,7 @@ handlers reading =
               , report: runJson reading SPH.report
               , answer: runJson reading SPH.answer
               }
+      , app: runHtml reading SAPH.app
       , login:
               { get: runHtml reading SLGH.login
               , post: runJson reading SLGH.logon

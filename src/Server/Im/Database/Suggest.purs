@@ -50,7 +50,7 @@ import Shared.User (ProfileVisibility(..))
 import Shared.Unsafe as SU
 import Type.Proxy (Proxy(..))
 
-suggest ∷ forall r. Int → Int → Array Int -> SuggestionsFrom → BaseEffect { pool ∷ Pool | r } (Array FlatUser)
+suggest ∷ ∀ r. Int → Int → Array Int → SuggestionsFrom → BaseEffect { pool ∷ Pool | r } (Array FlatUser)
 suggest loggedUserId skip ids =
       case _ of
             OnlineOnly → SD.query $ suggestOnlineQuery loggedUserId $ onlineFilter ids --list of id users from open socket connections
@@ -62,7 +62,7 @@ suggest loggedUserId skip ids =
             FavoritesOnly → SD.query $ suggestContacts loggedUserId skip favoritesFilter
 
       where
-      onlineFilter userIds = baseFilter .&&. ((u ... _id) `in_`  (SU.fromJust $ DAN.fromArray userIds))
+      onlineFilter userIds = baseFilter .&&. ((u ... _id) `in_` (SU.fromJust $ DAN.fromArray userIds))
       thisWeekFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-7.0))
       lastTwoWeeksFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-14.0))
       lastMonthFilter = baseFilter .&&. (l ... _date) .>=. (ST.unsafeAdjustFromNow $ Days (-30.0))

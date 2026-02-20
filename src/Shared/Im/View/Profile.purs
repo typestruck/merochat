@@ -190,13 +190,13 @@ fullProfile user model = HE.div [ HA.class' "contact-full-profile" ] $ profileMe
                           , HE.div' [ HA.innerHtml $ SM.parse user.description ]
                           ]
 
-                 , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
+                  , HE.div [ HA.class' { praise: true, hidden: user.showing /= ShowPraise } ]
                           [ SIVR.retry "Failed to load praise" (FetchPraise user.id) model.failedRequests
                           , SIVPR.praiseForm model user
                           -- , if model.praise.freeToFetch then
-                             --     HE.div [ HA.class' "asks-list" ] $ map SIVPR.praised user.asks
-                            -- else
-                              --    HE.div' [ HA.class' "loading" ]
+                          --     HE.div [ HA.class' "asks-list" ] $ map SIVPR.praised user.asks
+                          -- else
+                          --    HE.div' [ HA.class' "loading" ]
                           ]
 
                   , HE.div [ HA.class' { posts: true, hidden: user.showing /= ShowPosts } ]
@@ -272,7 +272,7 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
 
             , HE.div [ HA.class' { "green-tab": true, hidden: suggestion.temporary } ]
                     [ HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowInfo, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowInfo } ] [ HE.text "Info" ]
-                    ,  HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPraise } ] [ HE.text "Praise" ]
+                    , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPraise, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPraise } ] [ HE.text "Praise" ]
                     , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowPosts, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowPosts } ] [ HE.text "Posts" ]
                     , HE.div [ HA.onClick $ ToggleShowing suggestion.id ForSuggestions ShowAsks, HA.class' { "regular-green-tab": true, "selected-green-tab": suggestion.showing == ShowAsks } ] [ HE.text "Asks" ]
                     ]
@@ -287,13 +287,13 @@ individualSuggestion suggestion model = HE.div [ HA.class' { "big-card": true, "
                     , HE.div' [ HA.innerHtml $ SM.parse suggestion.description ]
                     ]
 
-             , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
+            , HE.div [ HA.class' { praise: true, hidden: suggestion.showing /= ShowPraise } ]
                     [ SIVR.retry "Failed to load asks" (FetchPraise suggestion.id) model.failedRequests
                     , SIVPR.praiseForm model suggestion
-                   -- , if model.praise.freeToFetch then
-                     --       HE.div [ HA.class' "praise-list" ] $ map SIVPR.praised suggestion.praise
-                     -- else
-                       --     HE.div' [ HA.class' "loading" ]
+                    -- , if model.praise.freeToFetch then
+                    --       HE.div [ HA.class' "praise-list" ] $ map SIVPR.praised suggestion.praise
+                    -- else
+                    --     HE.div' [ HA.class' "loading" ]
                     ]
 
             , HE.div [ HA.class' { posts: true, hidden: suggestion.showing /= ShowPosts } ]

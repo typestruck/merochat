@@ -84,11 +84,13 @@ data Media
       | Favicon9
       | Favicon10
       | Favicon10Plus
-      | Loading
       | Avatar
-      | NicolasCageHiclipart
-      | SocratesStingWikimedia
-      | BatmanNounProjectAnushaNarvekar
+      | Loading
+      | AppShare
+      | AppGet
+      | AppHome
+      | AppMore
+      | AppAdd
       | BackerAvatar
       | Upload String
 
@@ -134,6 +136,7 @@ resourceName = case _ of
       Left Logo → "logo"
       Left Favicon → "favicon"
       Left Favicon1 → "favicon-1"
+      Left Avatar → "avatar"
       Left Favicon2 → "favicon-2"
       Left Favicon3 → "favicon-3"
       Left Favicon4 → "favicon-4"
@@ -145,10 +148,11 @@ resourceName = case _ of
       Left Favicon10 → "favicon-10"
       Left BackerAvatar → "backer-avatar"
       Left Favicon10Plus → "favicon-10-plus"
-      Left Avatar → "avatar"
-      Left NicolasCageHiclipart → "nicolas_cage_hiclipart"
-      Left SocratesStingWikimedia → "socrates_Sting_wikimedia"
-      Left BatmanNounProjectAnushaNarvekar → "batman_noun_project_Anusha_Narvekar"
+      Left AppShare → "share"
+      Left AppMore → "more"
+      Left AppAdd → "add"
+      Left AppHome → "home"
+      Left AppGet → "get"
       Left Loading → "loading"
       Left (Upload up) → up
 

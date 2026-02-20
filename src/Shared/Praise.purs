@@ -6,8 +6,12 @@ import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic as DADGR
 import Data.Argonaut.Encode.Generic as DAEGR
 import Data.Enum (class BoundedEnum, class Enum, Cardinality(..))
+import Data.Enum as DE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Debug (spy)
+import Droplet.Language (class ToValue)
+import Foreign as F
 import Shared.Content (Content)
 import Shared.DateTime (DateTimeWrapper(..))
 
@@ -91,3 +95,6 @@ instance EncodeJson PraisedFor where
 
 instance DecodeJson PraisedFor where
       decodeJson = DADGR.genericDecodeJson
+
+instance ToValue PraisedFor where
+      toValue p = spy "pasfasd" (F.unsafeToForeign $ DE.fromEnum p)

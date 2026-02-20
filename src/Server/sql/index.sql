@@ -58,7 +58,8 @@ create table praises(
     id integer generated always as identity primary key,
     praiser integer not null,
     praised integer not null,
-    content text not null,
+    praised_for smallint not null,
+    content text,
     accepted boolean not null default false,
 
     constraint praiser_user foreign key (praiser) references users(id) on delete cascade,

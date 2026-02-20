@@ -25,7 +25,7 @@ type ChatExperiment =
       , code ∷ Experiment
       }
 
-type ChatExperimentUser = { id :: Int, privileges ∷ Array Privilege }
+type ChatExperimentUser = { id ∷ Int, privileges ∷ Array Privilege }
 
 data ExperimentsMessage
       = ToggleVisibility ScreenModal
@@ -63,8 +63,8 @@ type Match =
 type PaperPlane =
       { id ∷ Int
       , message ∷ String
-      , thrower :: Int
-      , name :: String
+      , thrower ∷ Int
+      , name ∷ String
       , status ∷ PaperPlaneStatus
       }
 

@@ -27,7 +27,7 @@ type Users =
       , description ∷ String
       , avatar ∷ Maybe String
       , backer ∷ Column Checked Default
-      , asks_visibility :: Column ProfileVisibility Default
+      , asks_visibility ∷ Column ProfileVisibility Default
       , receive_email ∷ Column ReceiveEmail Default
       , gender ∷ Maybe Gender
       , country ∷ Column (Maybe Int) (ForeignKey "id" CountriesTable)

@@ -41,10 +41,10 @@ backerUser =
       , joined: DateTimeWrapper epoch
       , readReceipts: true
       , posts: []
-      , favorite : false
+      , favorite: false
       , asks: []
       , asksVisibility: Everyone
-      , totalAsks:0
+      , totalAsks: 0
       , ownBackground: false
       , chatBackground: Nothing
       , showing: ShowInfo

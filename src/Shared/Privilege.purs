@@ -81,8 +81,8 @@ instance Enum Privilege where
             ReceiveChats → Just StartChats
             StartChats → Just StartChatExperiments
             StartChatExperiments → Just SendAsks
-            SendAsks →  Just SendPraise
-            SendPraise -> Just PublishPosts
+            SendAsks → Just SendPraise
+            SendPraise → Just PublishPosts
             PublishPosts → Just MoreTags
             MoreTags → Just SendLinks
             SendLinks → Just SendImages
@@ -94,7 +94,7 @@ instance Enum Privilege where
             StartChats → Just ReceiveChats
             StartChatExperiments → Just SendAsks
             SendAsks → Just StartChats
-            SendPraise -> Just SendAsks
+            SendPraise → Just SendAsks
             PublishPosts → Just StartChatExperiments
             MoreTags → Just SendPraise
             SendLinks → Just MoreTags

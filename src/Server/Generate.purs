@@ -29,7 +29,7 @@ generateDescription = do
       lines ← generateDescriptionLines n
       pure <<< DS.joinWith "\n" $ map ("- " <> _) lines
 
-generateDescriptionLines ∷ Int -> ServerEffect (Array String)
+generateDescriptionLines ∷ Int → ServerEffect (Array String)
 generateDescriptionLines n = STBD.fetchDescription n
 
 generateConversationStarter ∷ ServerEffect String

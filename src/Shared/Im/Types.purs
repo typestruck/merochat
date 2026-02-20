@@ -18,6 +18,7 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe as DM
 import Data.Show.Generic as DGRS
 import Data.Tuple (Tuple)
+import Data.Tuple.Nested (type (/\), (/\))
 import Droplet.Language (class FromValue, class ToValue)
 import Droplet.Language as DL
 import Effect.Timer (TimeoutId)
@@ -182,8 +183,9 @@ type Im =
               , sent ∷ Array Int
               }
       , praise ∷
-              { freeToSend ∷ Boolean,
-              selected :: Array PraisedFor
+              { freeToSave ∷ Boolean
+              , selected ∷ Maybe (Int /\ Array PraisedFor)
+              , other ∷ Maybe String
               }
       )
 
@@ -350,6 +352,12 @@ data ImMessage
       | SendAsk Int
       | AfterSendAsk Int Boolean
       | DisplayAsks Int (Array Ask)
+
+      --praise
+      | TogglePraise Int PraisedFor
+      | SetOtherPraise (Maybe String)
+      | SavePraise
+      | AfterSavePraise Int Boolean
 
       --main
       | ReloadPage

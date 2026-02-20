@@ -140,7 +140,7 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
       , noTemporaryUsers: NoTemporaryUsers
       , favoritedBySender: FavoritedBySender
       , favoritedByRecipient: FavoritedByRecipient
-      , favoritedByBoth : FavoritedByBoth
+      , favoritedByBoth: FavoritedByBoth
       , limit: n
       , dayAgo: ST.unsafeAdjustFromNow $ Hours (-24.0)
       , offset: skip
@@ -174,7 +174,7 @@ presentNContacts loggedUserId n skip = SD.unsafeQuery query
                  ORDER BY date) s"""
 
 presentSingleContact ∷ Int → Int → ServerEffect (Array FlatContact)
-presentSingleContact loggedUserId userId  = SD.unsafeQuery query
+presentSingleContact loggedUserId userId = SD.unsafeQuery query
       { loggedUserId
       , userId
       , contacts: Contacts
@@ -182,7 +182,7 @@ presentSingleContact loggedUserId userId  = SD.unsafeQuery query
       , noTemporaryUsers: NoTemporaryUsers
       , favoritedBySender: FavoritedBySender
       , favoritedByRecipient: FavoritedByRecipient
-      , favoritedByBoth : FavoritedByBoth
+      , favoritedByBoth: FavoritedByBoth
       , dayAgo: ST.unsafeAdjustFromNow $ Days (-1.0)
       }
       where
@@ -195,8 +195,8 @@ WHERE visibility <= @contacts
       AND u.id = @userId
       AND NOT EXISTS (SELECT 1 from blocks WHERE blocker = h.recipient AND blocked = h.sender OR blocker = h.sender AND blocked = h.recipient)"""
 
-presentSingleContactHistory ∷ Int → Int  -> Int → ServerEffect (Array (Record (FlatMessage)))
-presentSingleContactHistory loggedUserId userId  offset = SD.unsafeQuery query
+presentSingleContactHistory ∷ Int → Int → Int → ServerEffect (Array (Record (FlatMessage)))
+presentSingleContactHistory loggedUserId userId offset = SD.unsafeQuery query
       { loggedUserId
       , userId
       , messagesPerPage
@@ -222,7 +222,7 @@ presentMissedContacts loggedUserId sinceMessageDate lastSentId = SD.unsafeQuery 
       , contacts: Contacts
       , favoritedBySender: FavoritedBySender
       , favoritedByRecipient: FavoritedByRecipient
-      , favoritedByBoth : FavoritedByBoth
+      , favoritedByBoth: FavoritedByBoth
       , everyone: Everyone
       , noTemporaryUsers: NoTemporaryUsers
       }

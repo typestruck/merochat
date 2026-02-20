@@ -24,7 +24,7 @@ import Server.Database.KarmaHistories (_amount, _target, karma_histories)
 import Server.Database.Messages (_content, _edited, _reaction, _status, messages)
 import Server.Database.Reports (_comment, _reason, _reported, _reporter, reports)
 import Server.Database.Types (Checked(..))
-import Server.Database.Users (_completedTutorial, _email, _password,  _temporary, _visibility, _visibility_last_updated, users)
+import Server.Database.Users (_completedTutorial, _email, _password, _temporary, _visibility, _visibility_last_updated, users)
 import Server.Effect (BaseEffect, ServerEffect)
 import Server.Im.Database.Present (senderRecipientFilter)
 import Shared.Changelog (ChangelogAction(..))
@@ -32,8 +32,8 @@ import Shared.Im.Types (MessageStatus, Report)
 import Shared.Unsafe as SU
 import Shared.User (ProfileVisibility(..))
 
-subscribe ∷ Int → String -> ServerEffect Unit
-subscribe loggedUserId token = SD.unsafeExecute "insert into subscriptions(subscriber, token) values (@loggedUserId, @token) on conflict on constraint unique_sub_token do nothing" {loggedUserId, token}
+subscribe ∷ Int → String → ServerEffect Unit
+subscribe loggedUserId token = SD.unsafeExecute "insert into subscriptions(subscriber, token) values (@loggedUserId, @token) on conflict on constraint unique_sub_token do nothing" { loggedUserId, token }
 
 isRecipientVisible ∷ ∀ r. Int → Int → BaseEffect { pool ∷ Pool | r } Boolean
 isRecipientVisible loggedUserId userId =

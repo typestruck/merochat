@@ -29,12 +29,12 @@ answer routes = do
 throw ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { message ∷ String } } → ServerEffect { id ∷ Int }
 throw routes = SEA.throwPlane routes.guards.loggedUserId routes.body.message
 
-catch ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int} } → ServerEffect Empty
+catch ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Empty
 catch routes = do
       SEA.catchPlane routes.guards.loggedUserId routes.body.id
       pure Empty
 
-pass ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id :: Int} } → ServerEffect Empty
+pass ∷ { guards ∷ { loggedUserId ∷ Int }, body ∷ { id ∷ Int } } → ServerEffect Empty
 pass routes = do
       SEA.passPlane routes.guards.loggedUserId routes.body.id
       pure Empty

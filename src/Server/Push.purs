@@ -50,7 +50,7 @@ initiazeSubscriptions pool allUserSubscriptionsRef = EA.launchAff_ $ SE.poolEffe
 
 foreign import push_ ∷ EffectFn3 String String String Unit
 
-push ∷ forall r. Int → String → PushMessage → PushEffect r
+push ∷ ∀ r. Int → String → PushMessage → PushEffect r
 push userId title message = do
       context ← RR.ask
       EC.liftEffect do

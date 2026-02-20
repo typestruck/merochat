@@ -65,10 +65,10 @@ afterSendAsk userId allowed model =
 toggleShowing ∷ Int → For → ImModel → MoreMessages
 toggleShowing userId for model =
       case for of
-            ForSuggestions → toggleShowingSuggestions userId  model
+            ForSuggestions → toggleShowingSuggestions userId model
             ForContacts → toggleShowingContacts userId model
 
-toggleShowingSuggestions ∷ Int  → ImModel → MoreMessages
+toggleShowingSuggestions ∷ Int → ImModel → MoreMessages
 toggleShowingSuggestions userId model =
       model
             { suggestions = map update model.suggestions
@@ -89,7 +89,7 @@ toggleShowingSuggestions userId model =
             | shouldFetch = [ pure <<< Just <<< SpecialRequest $ FetchAsks userId ]
             | otherwise = []
 
-toggleShowingContacts ∷ Int  → ImModel → MoreMessages
+toggleShowingContacts ∷ Int → ImModel → MoreMessages
 toggleShowingContacts userId model =
       model
             { contacts = map update model.contacts

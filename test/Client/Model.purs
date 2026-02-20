@@ -36,15 +36,16 @@ model =
       , initialScreen: true
       , suggestionsFrom: ThisWeek
       , showLargeAvatar: false
-      , praise : {
-             freeToSend: true,
-             selected : []
-      }
+      , praise:
+              { freeToSave: true
+              , selected: Nothing
+              , other: Nothing
+              }
       , asks:
               { freeToFetch: true
               , freeToSend: true
-              , unallowed : []
-              , sent : []
+              , unallowed: []
+              , sent: []
               , question: Nothing
               }
       , showSuggestionChatInput: Nothing
@@ -106,7 +107,7 @@ imUser =
       , age: Nothing
       , name: "test"
       , unseenPosts: 0
-      , favorite : false
+      , favorite: false
       , id: imUserId
       , showing: ShowInfo
       , totalAsks: 0

@@ -65,7 +65,7 @@ foreign import documentIsNotHidden ∷ Effect Boolean
 
 foreign import screenWidth ∷ Effect Int
 
-foreign import requestNotificationPermission ∷ Effect Unit -> Effect Unit
+foreign import requestNotificationPermission ∷ Effect Unit → Effect Unit
 
 foreign import notificationPermission ∷ Effect String
 

@@ -25,18 +25,18 @@ tests = do
       TU.suite "generate" do
             TU.test "generates name"
                   $ TS.serverAction
-                  do
-                        name <- SG.generateName
-                        R.liftAff <<< TUA.assert "has name" <<< not $ DS.null name
+                          do
+                                name ← SG.generateName
+                                R.liftAff <<< TUA.assert "has name" <<< not $ DS.null name
 
             TU.test "generates headline"
                   $ TS.serverAction
-                  do
-                        headline <- SG.generateHeadline
-                        R.liftAff <<< TUA.assert "has headline" <<< not $ DS.null headline
+                          do
+                                headline ← SG.generateHeadline
+                                R.liftAff <<< TUA.assert "has headline" <<< not $ DS.null headline
 
             TU.test "generates description"
                   $ TS.serverAction
-                  do
-                        lines <- SG.generateDescriptionLines 4
-                        R.liftAff <<< TUA.assert "numbe of lines" $ DA.length lines == 4
+                          do
+                                lines ← SG.generateDescriptionLines 4
+                                R.liftAff <<< TUA.assert "numbe of lines" $ DA.length lines == 4
